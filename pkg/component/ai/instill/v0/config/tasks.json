@@ -1573,5 +1573,287 @@
         "data"
       ]
     }
+  },
+  "TASK_KEYPOINT": {
+    "title": "Keypoint",
+    "instillShortDescription": "Detects and localizes multiple keypoints within objects in images, providing precise coordinates for each keypoint. This task is essential for applications like pose estimation, where key features such as joints or specific object parts need to be identified. By mapping these points, This task enables tracking and analysis of object structure, movement, or posture, making it valuable in fields like human-computer interaction, sports analytics, and robotics. It supports accurate feature extraction, contributing to detailed analysis and improved interaction between systems and visual data.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Keypoint Input",
+      "description": "Defines the input schema for the keypoint task, specifying data formats and model information required to process an image. Input can be provided as either a URL or a base64-encoded image file, with an associated model to perform keypoint localization. This schema helps standardize the input, ensuring accurate processing.",
+      "instillShortDescription": "Specifies input schema for keypoint, supporting URL or base64 image formats with model information.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "description": "Contains input data options, allowing for an image URL or a base64-encoded image file for keypoint detection. Each input type requires model selection for processing.",
+          "instillShortDescription": "Input data, supporting either image URL or base64 encoding with model selection.",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "Image URL",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task.",
+                  "instillShortDescription": "Model used for keypoint detection.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-url": {
+                  "title": "Input Image URL",
+                  "instillUIOrder": 2,
+                  "description": "URL of the input image for keypoint detection. The image must be accessible online and compatible with the selected model.",
+                  "instillShortDescription": "URL of the image for keypoint detection.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "title": "URL",
+                  "instillUIOrder": 1,
+                  "description": "Identifies the input type as an image URL, indicating the format for the keypoint detection model.",
+                  "instillShortDescription": "Specifies image URL as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-url"
+                }
+              },
+              "required": [
+                "model",
+                "image-url",
+                "type"
+              ]
+            },
+            {
+              "type": "object",
+              "title": "Image Base64",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task.",
+                  "instillShortDescription": "Model used for keypoint detection.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-base64": {
+                  "instillUIOrder": 2,
+                  "title": "Input Image File",
+                  "description": "Base64-encoded string of the image file for keypoint detection. This format allows direct image data input.",
+                  "instillShortDescription": "Base64-encoded image file for keypoint detection.",
+                  "instillAcceptFormats": [
+                    "image/*"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "instillUIOrder": 1,
+                  "title": "Image File",
+                  "description": "Identifies the input type as a base64-encoded image file, indicating the format for the keypoint detection model.",
+                  "instillShortDescription": "Specifies base64 image as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-base64"
+                }
+              },
+              "required": [
+                "model",
+                "image-base64",
+                "type"
+              ]
+            }
+          ],
+          "required": [
+            "model"
+          ],
+          "title": "Data",
+          "instillUIOrder": 0
+        },
+        "parameter": {
+          "description": "Optional parameters for the keypoint detection task, allowing for adjustments in processing.",
+          "instillShortDescription": "Optional parameters for keypoint detection.",
+          "type": "object",
+          "properties": {},
+          "instillUIOrder": 1,
+          "required": [],
+          "title": "Parameter"
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Keypoint Output",
+      "description": "Defines the output schema for keypoint detection, detailing the structure and data formats for results, including detected objects and related metadata, such as bounding boxes, keypoints, and confidence scores.",
+      "instillShortDescription": "Schema for keypoint detection output, including detected objects and metadata.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Data",
+          "instillUIOrder": 0,
+          "description": "Contains detected objects and associated keypoints for keypoint detection output. Each object includes its bounding box, keypoints, and confidence score.",
+          "instillShortDescription": "Output data for detected objects, including bounding boxes, keypoints, and scores.",
+          "type": "object",
+          "properties": {
+            "objects": {
+              "description": "List of detected objects, each containing a bounding box, keypoints list, and a confidence score.",
+              "instillShortDescription": "List of detected objects with bounding boxes, keypoints, and scores.",
+              "instillFormat": "array:structured/keypoint-object",
+              "items": {
+                "instillFormat": "structured/keypoint-object",
+                "properties": {
+                  "bounding-box": {
+                    "description": "The bounding box defining the outer limits of a detected object, including coordinates for spatial positioning.",
+                    "instillShortDescription": "Bounding box specifying detected object position.",
+                    "instillFormat": "structured/bounding-box",
+                    "properties": {
+                      "height": {
+                        "description": "Specifies the vertical dimension of the bounding box, representing its height in units of measurement.",
+                        "instillShortDescription": "Vertical height of the bounding box.",
+                        "instillUIOrder": 0,
+                        "instillFormat": "number",
+                        "title": "Height",
+                        "type": "number"
+                      },
+                      "left": {
+                        "description": "X-axis coordinate of the left edge of the bounding box, indicating its horizontal starting position.",
+                        "instillShortDescription": "X-axis coordinate of the left edge of the bounding box.",
+                        "instillFormat": "number",
+                        "instillUIOrder": 1,
+                        "title": "Left",
+                        "type": "number"
+                      },
+                      "top": {
+                        "description": "Y-axis coordinate of the top edge of the bounding box, representing its vertical starting position.",
+                        "instillShortDescription": "Y-axis position of the bounding box's top edge.",
+                        "instillUIOrder": 2,
+                        "instillFormat": "number",
+                        "title": "Top",
+                        "type": "number"
+                      },
+                      "width": {
+                        "description": "Horizontal dimension of the bounding box, indicating its width in units of measurement.",
+                        "instillShortDescription": "Horizontal width of the bounding box.",
+                        "instillUIOrder": 3,
+                        "instillFormat": "number",
+                        "title": "Width",
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "left",
+                      "top",
+                      "width",
+                      "height"
+                    ],
+                    "title": "Bounding Box",
+                    "instillUIOrder": 0,
+                    "type": "object"
+                  },
+                  "keypoints": {
+                    "description": "A list of predefined keypoints for a detected object, including each point’s x and y coordinates and visibility score.",
+                    "instillShortDescription": "List of keypoints with coordinates and visibility score.",
+                    "items": {
+                      "properties": {
+                        "v": {
+                          "title": "Visibility",
+                          "instillUIOrder": 0,
+                          "description": "Visibility score indicating the likelihood of keypoint presence in the detected object.",
+                          "instillShortDescription": "Visibility score of keypoint.",
+                          "instillFormat": "number",
+                          "type": "number"
+                        },
+                        "x": {
+                          "title": "X Coordinate",
+                          "instillUIOrder": 1,
+                          "description": "X-axis coordinate of the keypoint within the detected object’s bounding box.",
+                          "instillShortDescription": "X coordinate of the keypoint.",
+                          "instillFormat": "number",
+                          "type": "number"
+                        },
+                        "y": {
+                          "title": "Y Coordinate",
+                          "instillUIOrder": 2,
+                          "description": "Y-axis coordinate of the keypoint within the detected object’s bounding box.",
+                          "instillShortDescription": "Y coordinate of the keypoint.",
+                          "instillFormat": "number",
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "v"
+                      ],
+                      "title": "Keypoints",
+                      "type": "object"
+                    },
+                    "title": "Keypoints",
+                    "instillUIOrder": 1,
+                    "type": "array"
+                  },
+                  "score": {
+                    "description": "Confidence score indicating the accuracy of the detected object prediction.",
+                    "instillShortDescription": "Confidence score of the detected object.",
+                    "instillFormat": "number",
+                    "title": "Score",
+                    "instillUIOrder": 2,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "keypoints",
+                  "score",
+                  "bounding-box"
+                ],
+                "title": "Object",
+                "type": "object"
+              },
+              "title": "Objects",
+              "instillUIOrder": 0,
+              "type": "array"
+            }
+          },
+          "required": [
+            "objects"
+          ]
+        },
+        "metadata": {
+          "title": "Metadata",
+          "instillUIOrder": 1,
+          "description": "Contains additional metadata for the keypoint detection task output, including request-specific usage information.",
+          "instillShortDescription": "Metadata for output, including request usage details.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "Statistics detailing resource usage for the keypoint detection request, aiding in tracking and monitoring.",
+              "instillShortDescription": "Usage statistics for the detection request.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
   }
 }

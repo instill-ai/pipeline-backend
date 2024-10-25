@@ -13,6 +13,7 @@ It can carry out the following tasks:
 - [Text To Image](#text-to-image)
 - [Classification](#classification)
 - [Detection](#detection)
+- [Keypoint](#keypoint)
 
 
 
@@ -640,6 +641,119 @@ Specifies the detection model to be utilized for the task. This field must conta
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Usage](#detection-usage) | `usage` | object | A section includes statistics on the resource usage for the request. |
+</div>
+</details>
+
+### Keypoint
+
+Detects and localizes multiple keypoints within objects in images, providing precise coordinates for each keypoint. This task is essential for applications like pose estimation, where key features such as joints or specific object parts need to be identified. By mapping these points, This task enables tracking and analysis of object structure, movement, or posture, making it valuable in fields like human-computer interaction, sports analytics, and robotics. It supports accurate feature extraction, contributing to detailed analysis and improved interaction between systems and visual data.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_KEYPOINT` |
+| [Data](#keypoint-data) (required) | `data` | object | Contains input data options, allowing for an image URL or a base64-encoded image file for keypoint detection. Each input type requires model selection for processing. |
+| [Parameter](#keypoint-parameter) | `parameter` | object | Optional parameters for the keypoint detection task, allowing for adjustments in processing. |
+</div>
+
+
+<details>
+<summary> Input Objects in Keypoint</summary>
+
+</details>
+
+<details>
+<summary>The <code>data</code> Object </summary>
+
+<h4 id="keypoint-data">Data</h4>
+
+`data` must fulfill one of the following schemas:
+
+<h5 id="keypoint-image-url"><code>Image URL</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Input Image URL | `image-url` | string |  URL of the input image for keypoint detection. The image must be accessible online and compatible with the selected model.  |
+| Model Name | `model` | string |  Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task.  |
+| URL | `type` | string |  Must be `"image-url"`   |
+</div>
+
+<h5 id="keypoint-image-base64"><code>Image Base64</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Input Image File | `image-base64` | string |  Base64-encoded string of the image file for keypoint detection. This format allows direct image data input.  |
+| Model Name | `model` | string |  Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task.  |
+| Image File | `type` | string |  Must be `"image-base64"`   |
+</div>
+</details>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Data](#keypoint-data) | `data` | object | Contains detected objects and associated keypoints for keypoint detection output. Each object includes its bounding box, keypoints, and confidence score. |
+| [Metadata](#keypoint-metadata) (optional) | `metadata` | object | Contains additional metadata for the keypoint detection task output, including request-specific usage information. |
+</div>
+
+<details>
+<summary> Output Objects in Keypoint</summary>
+
+<h4 id="keypoint-data">Data</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Objects](#keypoint-objects) | `objects` | array | List of detected objects, each containing a bounding box, keypoints list, and a confidence score. |
+</div>
+
+<h4 id="keypoint-objects">Objects</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Bounding Box](#keypoint-bounding-box) | `bounding-box` | object | The bounding box defining the outer limits of a detected object, including coordinates for spatial positioning. |
+| [Keypoints](#keypoint-keypoints) | `keypoints` | array | A list of predefined keypoints for a detected object, including each point’s x and y coordinates and visibility score. |
+| Score | `score` | number | Confidence score indicating the accuracy of the detected object prediction. |
+</div>
+
+<h4 id="keypoint-bounding-box">Bounding Box</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Height | `height` | number | Specifies the vertical dimension of the bounding box, representing its height in units of measurement. |
+| Left | `left` | number | X-axis coordinate of the left edge of the bounding box, indicating its horizontal starting position. |
+| Top | `top` | number | Y-axis coordinate of the top edge of the bounding box, representing its vertical starting position. |
+| Width | `width` | number | Horizontal dimension of the bounding box, indicating its width in units of measurement. |
+</div>
+
+<h4 id="keypoint-keypoints">Keypoints</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Visibility | `v` | number | Visibility score indicating the likelihood of keypoint presence in the detected object. |
+| X Coordinate | `x` | number | X-axis coordinate of the keypoint within the detected object’s bounding box. |
+| Y Coordinate | `y` | number | Y-axis coordinate of the keypoint within the detected object’s bounding box. |
+</div>
+
+<h4 id="keypoint-metadata">Metadata</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Usage](#keypoint-usage) | `usage` | object | Statistics detailing resource usage for the keypoint detection request, aiding in tracking and monitoring. |
 </div>
 </details>
 

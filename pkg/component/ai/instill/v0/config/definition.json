@@ -5,7 +5,8 @@
     "TASK_COMPLETION",
     "TASK_TEXT_TO_IMAGE",
     "TASK_CLASSIFICATION",
-    "TASK_DETECTION"
+    "TASK_DETECTION",
+    "TASK_KEYPOINT"
   ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/ai/instill-model",
