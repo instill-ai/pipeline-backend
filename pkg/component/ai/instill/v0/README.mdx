@@ -453,7 +453,7 @@ This section defines optional parameters that modify the behavior of the image g
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Usage](#text-to-image-usage) | `usage` | object | Tracks how resources were utilized during the request, offering insights into the performance and efficiency of the task. |
+| Usage | `usage` | object | Tracks how resources were utilized during the request, offering insights into the performance and efficiency of the task. |
 </div>
 </details>
 
@@ -467,14 +467,11 @@ This task focuses on analyzing and categorizing images into predefined groups ba
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CLASSIFICATION` |
 | [Input Data](#classification-input-data) (required) | `data` | object | Contains the input image or visual data for classification. It specifies the image format, either via a URL or as a base64 encoded string. This section ensures that the classification model receives the appropriate input, enhancing the accuracy and efficiency of the classification task. |
-| [Parameter](#classification-parameter) | `parameter` | object | The parameter property allows for the inclusion of optional settings or configurations that may influence the classification process. While no specific properties are defined, this field enables users to customize the classification task as needed. |
+| Parameter | `parameter` | object | The parameter property allows for the inclusion of optional settings or configurations that may influence the classification process. While no specific properties are defined, this field enables users to customize the classification task as needed. |
 </div>
 
 
-<details>
-<summary> Input Objects in Classification</summary>
 
-</details>
 
 <details>
 <summary>The <code>data</code> Object </summary>
@@ -537,7 +534,7 @@ Specifies the classification model to be utilized for the task. This field must 
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Usage](#classification-usage) | `usage` | object | Contains statistics related to the usage of the classification request. This field can provide insights into how resources were utilized during processing, although no specific properties are defined within it. |
+| Usage | `usage` | object | Contains statistics related to the usage of the classification request. This field can provide insights into how resources were utilized during processing, although no specific properties are defined within it. |
 </div>
 </details>
 
@@ -551,14 +548,11 @@ This task focuses on identifying and localizing multiple objects within images, 
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DETECTION` |
 | [Data](#detection-data) (required) | `data` | object | Contains the data required for the detection process. It can include either an image URL or a base64-encoded image representation for detection. |
-| [Parameter](#detection-parameter) | `parameter` | object | An object representing any additional parameters for the detection task. This section is currently empty but can be extended for future needs. |
+| Parameter | `parameter` | object | An object representing any additional parameters for the detection task. This section is currently empty but can be extended for future needs. |
 </div>
 
 
-<details>
-<summary> Input Objects in Detection</summary>
 
-</details>
 
 <details>
 <summary>The <code>data</code> Object </summary>
@@ -643,7 +637,7 @@ Specifies the detection model to be utilized for the task. This field must conta
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Usage](#detection-usage) | `usage` | object | A section includes statistics on the resource usage for the request. |
+| Usage | `usage` | object | A section includes statistics on the resource usage for the request. |
 </div>
 </details>
 
@@ -657,14 +651,11 @@ Detects and localizes multiple keypoints within objects in images, providing pre
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_KEYPOINT` |
 | [Data](#keypoint-data) (required) | `data` | object | Contains input data options, allowing for an image URL or a base64-encoded image file for keypoint detection. Each input type requires model selection for processing. |
-| [Parameter](#keypoint-parameter) | `parameter` | object | Optional parameters for the keypoint detection task, allowing for adjustments in processing. |
+| Parameter | `parameter` | object | Optional parameters for the keypoint detection task, allowing for adjustments in processing. |
 </div>
 
 
-<details>
-<summary> Input Objects in Keypoint</summary>
 
-</details>
 
 <details>
 <summary>The <code>data</code> Object </summary>
@@ -756,7 +747,7 @@ Detects and localizes multiple keypoints within objects in images, providing pre
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Usage](#keypoint-usage) | `usage` | object | Statistics detailing resource usage for the keypoint detection request, aiding in tracking and monitoring. |
+| Usage | `usage` | object | Statistics detailing resource usage for the keypoint detection request, aiding in tracking and monitoring. |
 </div>
 </details>
 
@@ -770,14 +761,11 @@ Optical Character Recognition (OCR) is a process that detects and extracts text 
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_OCR` |
 | [Data](#ocr-data) (required) | `data` | object | Contains input data options, allowing for an image URL or a base64-encoded image file for OCR. Each input type requires model selection for processing. |
-| [Parameter](#ocr-parameter) | `parameter` | object | The parameter field is an optional object that allows you to provide specific configurations for the OCR task. Although empty by default, it can be populated with parameters that fine-tune processing or control the model’s behavior. These configurations can help adjust the output according to specific OCR requirements or performance optimizations. |
+| Parameter | `parameter` | object | The parameter field is an optional object that allows you to provide specific configurations for the OCR task. Although empty by default, it can be populated with parameters that fine-tune processing or control the model’s behavior. These configurations can help adjust the output according to specific OCR requirements or performance optimizations. |
 </div>
 
 
-<details>
-<summary> Input Objects in OCR</summary>
 
-</details>
 
 <details>
 <summary>The <code>data</code> Object </summary>
@@ -858,7 +846,7 @@ Optical Character Recognition (OCR) is a process that detects and extracts text 
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Usage](#ocr-usage) | `usage` | object | Provides details on resource consumption, such as processing time and model-specific metrics for the OCR request. |
+| Usage | `usage` | object | Provides details on resource consumption, such as processing time and model-specific metrics for the OCR request. |
 </div>
 </details>
 
@@ -872,14 +860,11 @@ This task involves classifying each pixel in an image into specific, predefined 
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEMANTIC_SEGMENTATION` |
 | [Data](#semantic-segmentation-data) (required) | `data` | object | Contains input data options, allowing for an image URL or a base64-encoded image file for semantic segmentation. Each input type requires model selection for processing. |
-| [Parameter](#semantic-segmentation-parameter) | `parameter` | object | This object contains configuration options that allow customization of the semantic segmentation task, such as adjusting thresholds or model settings. |
+| Parameter | `parameter` | object | This object contains configuration options that allow customization of the semantic segmentation task, such as adjusting thresholds or model settings. |
 </div>
 
 
-<details>
-<summary> Input Objects in Semantic Segmentation</summary>
 
-</details>
 
 <details>
 <summary>The <code>data</code> Object </summary>
@@ -947,7 +932,7 @@ This task involves classifying each pixel in an image into specific, predefined 
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Usage](#semantic-segmentation-usage) | `usage` | object | Provides statistics related to the usage of the segmentation request. This information can be useful for monitoring and analyzing system performance and resource utilization. |
+| Usage | `usage` | object | Provides statistics related to the usage of the segmentation request. This information can be useful for monitoring and analyzing system performance and resource utilization. |
 </div>
 </details>
 
@@ -961,14 +946,11 @@ This task is a computer vision task that identifies and distinguishes multiple o
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSTANCE_SEGMENTATION` |
 | [Data](#instance-segmentation-data) (required) | `data` | object | Contains input data options, allowing for an image URL or a base64-encoded image file for instance segmentation. Each input type requires model selection for processing. |
-| [Parameter](#instance-segmentation-parameter) | `parameter` | object | Placeholder for additional input parameters, providing flexibility for task customization. |
+| Parameter | `parameter` | object | Placeholder for additional input parameters, providing flexibility for task customization. |
 </div>
 
 
-<details>
-<summary> Input Objects in Instance Segmentation</summary>
 
-</details>
 
 <details>
 <summary>The <code>data</code> Object </summary>
@@ -1050,7 +1032,7 @@ This task is a computer vision task that identifies and distinguishes multiple o
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Usage](#instance-segmentation-usage) | `usage` | object | Data on the resource usage for the request, including processing time and resource allocation. |
+| Usage | `usage` | object | Data on the resource usage for the request, including processing time and resource allocation. |
 </div>
 </details>
 

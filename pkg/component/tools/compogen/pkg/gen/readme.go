@@ -584,7 +584,7 @@ func anchorSetupFromProperty(prop property) string {
 }
 
 func isSemiStructuredObject(p property) bool {
-	return p.Type == "object" && p.Properties == nil && p.OneOf == nil
+	return p.Type == "object" && (p.Properties == nil || len(p.Properties) == 0) && p.OneOf == nil
 }
 
 func arrayToBeSkipped(op property) bool {
