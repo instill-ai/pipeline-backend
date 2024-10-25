@@ -1,8 +1,11 @@
 package mistralai
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	mistralSDK "github.com/gage-technologies/mistral-go"
@@ -62,10 +65,15 @@ type TextEmbeddingOutput struct {
 	Usage     textEmbeddingUsage `json:"usage"`
 }
 
-func (e *execution) taskTextGeneration(in *structpb.Struct) (*structpb.Struct, error) {
+func (e *execution) taskTextGeneration(_ *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+
+	input, err := job.Input.Read(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error reading input: %v", err)
+	}
 
 	inputStruct := TextGenerationInput{}
-	err := base.ConvertFromStructpb(in, &inputStruct)
+	err = base.ConvertFromStructpb(input, &inputStruct)
 	if err != nil {
 		return nil, fmt.Errorf("error generating input struct: %v", err)
 	}
@@ -109,7 +117,7 @@ func (e *execution) taskTextGeneration(in *structpb.Struct) (*structpb.Struct, e
 		SafePrompt:  inputStruct.Safe,
 	}
 
-	resp, err := e.client.sdkClient.Chat(
+	respStream, err := e.client.sdkClient.ChatStream(
 		inputStruct.ModelName,
 		messages,
 		&params,
@@ -120,20 +128,42 @@ func (e *execution) taskTextGeneration(in *structpb.Struct) (*structpb.Struct, e
 	}
 
 	outputStruct := TextGenerationOutput{}
+	outputStruct.Text = ""
 
-	outputStruct.Text = resp.Choices[0].Message.Content
-	outputStruct.Usage = chatUsage{
-		InputTokens:  resp.Usage.PromptTokens,
-		OutputTokens: resp.Usage.CompletionTokens,
+	output := &structpb.Struct{}
+	for resp := range respStream {
+		fmt.Println("resp")
+		fmt.Println(resp.Choices[0].Delta.Content)
+		fmt.Println(resp.Usage)
+
+		outputStruct.Text += resp.Choices[0].Delta.Content
+		outputStruct.Usage = chatUsage{
+			InputTokens:  resp.Usage.PromptTokens,
+			OutputTokens: resp.Usage.CompletionTokens,
+		}
+		outputJSON, err := json.Marshal(outputStruct)
+		if err != nil {
+			job.Error.Error(ctx, err)
+			return nil, err
+		}
+
+		err = protojson.Unmarshal(outputJSON, output)
+		if err != nil {
+			job.Error.Error(ctx, err)
+			return nil, err
+		}
+
+		err = job.Output.Write(ctx, output)
+		if err != nil {
+			job.Error.Error(ctx, err)
+			return nil, err
+		}
 	}
-	output, err := base.ConvertToStructpb(outputStruct)
-	if err != nil {
-		return nil, err
-	}
+
 	return output, nil
 }
 
-func (e *execution) taskTextEmbedding(in *structpb.Struct) (*structpb.Struct, error) {
+func (e *execution) taskTextEmbedding(in *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
 	inputStruct := TextEmbeddingInput{}
 	err := base.ConvertFromStructpb(in, &inputStruct)
 	if err != nil {

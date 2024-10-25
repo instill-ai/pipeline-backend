@@ -15,6 +15,7 @@ type MistralClient struct {
 type mistralClientInterface interface {
 	Embeddings(model string, input []string) (*mistralSDK.EmbeddingResponse, error)
 	Chat(model string, messages []mistralSDK.ChatMessage, params *mistralSDK.ChatRequestParams) (*mistralSDK.ChatCompletionResponse, error)
+	ChatStream(model string, messages []mistralSDK.ChatMessage, params *mistralSDK.ChatRequestParams) (<-chan mistralSDK.ChatCompletionStreamResponse, error)
 }
 
 func newClient(apiKey string, logger *zap.Logger) MistralClient {
