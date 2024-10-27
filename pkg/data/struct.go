@@ -20,6 +20,21 @@ import (
 // These functions use reflection to handle various types, including nested
 // structs, slices, maps, and custom types that implement the format.Value
 // interface.
+//
+// The following struct tags are supported:
+//
+// - `key`: Specifies the key name to use when marshaling/unmarshaling the field.
+//   If not provided, the field name will be used. For example:
+//   type Person struct {
+//     FirstName string `key:"first_name"`  // Will use "first_name" as the key
+//     LastName  string                     // Will use "LastName" as the key
+//   }
+//
+// - `format`: Specifies MIME type conversions for File types:
+//   - For Image: "image/png", "image/jpeg", etc
+//   - For Video: "video/mp4", "video/webm", etc
+//   - For Audio: "audio/mp3", "audio/wav", etc
+//   - For Document: "application/pdf", "text/plain", etc
 
 // Unmarshal converts a Map value into the provided struct s using `key` tags.
 func Unmarshal(d format.Value, s any) error {
@@ -48,7 +63,7 @@ func unmarshalStruct(m Map, v reflect.Value) error {
 		if !ok {
 			continue
 		}
-		if err := unmarshalValue(val, fieldValue); err != nil {
+		if err := unmarshalValue(val, fieldValue, field); err != nil {
 			return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
 		}
 	}
@@ -56,10 +71,10 @@ func unmarshalStruct(m Map, v reflect.Value) error {
 }
 
 // unmarshalValue dispatches to type-specific unmarshal functions based on the value type.
-func unmarshalValue(val format.Value, field reflect.Value) error {
+func unmarshalValue(val format.Value, field reflect.Value, structField reflect.StructField) error {
 	switch v := val.(type) {
 	case format.File, format.Document, format.Image, format.Video, format.Audio:
-		return unmarshalInterface(v, field)
+		return unmarshalInterface(v, field, structField)
 	case format.Boolean:
 		return unmarshalBoolean(v, field)
 	case format.Number:
@@ -71,6 +86,10 @@ func unmarshalValue(val format.Value, field reflect.Value) error {
 	case Map:
 		return unmarshalMap(v, field)
 	case format.Null:
+		if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
+			field.Set(reflect.ValueOf(v))
+			return nil
+		}
 		return unmarshalNull(v, field)
 	default:
 		return fmt.Errorf("unsupported type: %T", val)
@@ -184,7 +203,7 @@ func unmarshalArray(v Array, field reflect.Value) error {
 	slice := reflect.MakeSlice(field.Type(), len(v), len(v))
 	for i, elem := range v {
 		elemValue := slice.Index(i)
-		if err := unmarshalValue(elem, elemValue); err != nil {
+		if err := unmarshalValue(elem, elemValue, reflect.StructField{}); err != nil {
 			return fmt.Errorf("error unmarshaling array element %d: %w", i, err)
 		}
 	}
@@ -217,7 +236,7 @@ func unmarshalToReflectMap(v Map, field reflect.Value) error {
 		elemType := field.Type().Elem()
 		elemValue := reflect.New(elemType).Elem()
 
-		if err := unmarshalValue(val, elemValue); err != nil {
+		if err := unmarshalValue(val, elemValue, reflect.StructField{}); err != nil {
 			return fmt.Errorf("error unmarshaling map value for key %s: %w", k, err)
 		}
 
@@ -240,7 +259,7 @@ func unmarshalToStruct(v Map, field reflect.Value) error {
 		if !ok {
 			continue
 		}
-		if err := unmarshalValue(val, fieldValue); err != nil {
+		if err := unmarshalValue(val, fieldValue, structField); err != nil {
 			return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
 		}
 	}
@@ -257,7 +276,7 @@ func unmarshalNull(v format.Null, field reflect.Value) error {
 }
 
 // unmarshalInterface handles unmarshaling of interface values.
-func unmarshalInterface(v format.Value, field reflect.Value) error {
+func unmarshalInterface(v format.Value, field reflect.Value, structField reflect.StructField) error {
 	if field.Kind() == reflect.String {
 		field.SetString(v.(format.String).String())
 		return nil
@@ -267,6 +286,48 @@ func unmarshalInterface(v format.Value, field reflect.Value) error {
 		return nil
 	}
 	if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
+		// Check for format tag and convert if needed
+		if formatTag := structField.Tag.Get("format"); formatTag != "" {
+			switch val := v.(type) {
+			case format.Image:
+				converted, err := val.Convert(formatTag)
+				if err != nil {
+					return err
+				}
+				field.Set(reflect.ValueOf(converted))
+				return nil
+			case format.Video:
+				converted, err := val.Convert(formatTag)
+				if err != nil {
+					return err
+				}
+				field.Set(reflect.ValueOf(converted))
+				return nil
+			case format.Audio:
+				converted, err := val.Convert(formatTag)
+				if err != nil {
+					return err
+				}
+				field.Set(reflect.ValueOf(converted))
+				return nil
+			case format.Document:
+				if formatTag == "application/pdf" {
+					converted, err := val.PDF()
+					if err != nil {
+						return err
+					}
+					field.Set(reflect.ValueOf(converted))
+					return nil
+				} else if formatTag == "text/plain" {
+					converted, err := val.Text()
+					if err != nil {
+						return err
+					}
+					field.Set(reflect.ValueOf(converted))
+					return nil
+				}
+			}
+		}
 		field.Set(reflect.ValueOf(v))
 		return nil
 	}
@@ -284,12 +345,25 @@ func getFieldName(field reflect.StructField) string {
 
 // Marshal converts a struct into a Map that represents the struct fields as values.
 func Marshal(val any) (format.Value, error) {
+	if val == nil {
+		return nil, fmt.Errorf("input must not be nil")
+	}
 	v := reflect.ValueOf(val)
 	return marshalValue(v)
 }
 
 // marshalValue handles marshaling of different value types.
 func marshalValue(v reflect.Value) (format.Value, error) {
+	if !v.IsValid() {
+		return NewNull(), nil
+	}
+
+	if v.CanInterface() {
+		if val, ok := v.Interface().(format.Value); ok {
+			return val, nil
+		}
+	}
+
 	// Dereference pointer if necessary
 	for v.Kind() == reflect.Ptr {
 		if v.IsNil() {
@@ -302,6 +376,9 @@ func marshalValue(v reflect.Value) (format.Value, error) {
 	case reflect.Struct:
 		return marshalStruct(v)
 	case reflect.Map:
+		if v.Type().Key().Kind() != reflect.String {
+			return nil, fmt.Errorf("map key must be string type")
+		}
 		return marshalMap(v)
 	case reflect.Slice, reflect.Array:
 		return marshalSlice(v)
@@ -314,12 +391,7 @@ func marshalValue(v reflect.Value) (format.Value, error) {
 	case reflect.String:
 		return NewString(v.String()), nil
 	default:
-		if v.CanInterface() {
-			if val, ok := v.Interface().(format.Value); ok {
-				return val, nil
-			}
-		}
-		return nil, fmt.Errorf("unsupported type: %v", v.Type())
+		return nil, fmt.Errorf("unsupported type: %v", v.Kind())
 	}
 }
 
@@ -342,6 +414,46 @@ func marshalStruct(v reflect.Value) (Map, error) {
 			fieldName = field.Name
 		}
 
+		// Handle format tag conversion before marshaling
+		if formatTag := field.Tag.Get("format"); formatTag != "" && fieldValue.CanInterface() {
+			if val, ok := fieldValue.Interface().(format.Value); ok {
+				switch v := val.(type) {
+				case format.Image:
+					converted, err := v.Convert(formatTag)
+					if err != nil {
+						return nil, err
+					}
+					fieldValue = reflect.ValueOf(converted)
+				case format.Video:
+					converted, err := v.Convert(formatTag)
+					if err != nil {
+						return nil, err
+					}
+					fieldValue = reflect.ValueOf(converted)
+				case format.Audio:
+					converted, err := v.Convert(formatTag)
+					if err != nil {
+						return nil, err
+					}
+					fieldValue = reflect.ValueOf(converted)
+				case format.Document:
+					if formatTag == "application/pdf" {
+						converted, err := v.PDF()
+						if err != nil {
+							return nil, err
+						}
+						fieldValue = reflect.ValueOf(converted)
+					} else if formatTag == "text/plain" {
+						converted, err := v.Text()
+						if err != nil {
+							return nil, err
+						}
+						fieldValue = reflect.ValueOf(converted)
+					}
+				}
+			}
+		}
+
 		marshaledValue, err := marshalValue(fieldValue)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling field %s: %w", fieldName, err)
@@ -357,22 +469,14 @@ func marshalStruct(v reflect.Value) (Map, error) {
 func marshalMap(v reflect.Value) (Map, error) {
 	m := Map{}
 	for _, key := range v.MapKeys() {
-		marshaledKey, err := marshalValue(key)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling map key: %w", err)
-		}
-
-		stringKey, ok := marshaledKey.(format.String)
-		if !ok {
-			return nil, fmt.Errorf("map key must be a string, got %T", marshaledKey)
-		}
+		keyStr := key.String()
 
 		marshaledValue, err := marshalValue(v.MapIndex(key))
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling map value: %w", err)
 		}
 
-		m[stringKey.String()] = marshaledValue
+		m[keyStr] = marshaledValue
 	}
 	return m, nil
 }
