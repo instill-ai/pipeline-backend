@@ -68,8 +68,7 @@ func newDocument(f *fileData) (*documentData, error) {
 			break
 		}
 	}
-	fmt.Println()
-	fmt.Println(isSupported)
+
 	if !isSupported {
 		return nil, fmt.Errorf("unsupported document type: %s", f.contentType)
 	}
