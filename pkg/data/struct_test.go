@@ -1,6 +1,7 @@
 package data
 
 import (
+	"os"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
@@ -144,6 +145,33 @@ func TestUnmarshal(t *testing.T) {
 		c.Assert(result.ValueMap["bool"].(format.Boolean).Boolean(), qt.Equals, true)
 	})
 
+	c.Run("Format tag", func(c *qt.C) {
+		type TestStruct struct {
+			Image format.Image `key:"image" format:"image/bmp"`
+		}
+
+		imageBytes, err := os.ReadFile("testdata/sample_640_426.jpeg")
+		c.Assert(err, qt.IsNil)
+
+		// Create a new Image from bytes and verify format tag handling
+		// The input is JPEG but NewImageFromBytes will auto convert to PNG.
+		img, err := NewImageFromBytes(imageBytes, "image/jpeg", "sample_640_426.jpeg")
+		c.Assert(err, qt.IsNil)
+
+		input := Map{
+			"image": img,
+		}
+
+		// Unmarshal the input into the TestStruct, since we set the format to be image/jpeg, the result will be a JPEG image.
+		var result TestStruct
+		err = Unmarshal(input, &result)
+
+		c.Assert(err, qt.IsNil)
+		c.Assert(result.Image.ContentType().String(), qt.Equals, "image/bmp")
+		c.Assert(result.Image.Width().Integer(), qt.Equals, 640)
+		c.Assert(result.Image.Height().Integer(), qt.Equals, 426)
+	})
+
 	c.Run("Null", func(c *qt.C) {
 		type TestStruct struct {
 			NullField *format.String `key:"null-field"`
@@ -178,6 +206,83 @@ func TestUnmarshal(t *testing.T) {
 			err := Unmarshal(NewString("not a map"), &s)
 			c.Assert(err, qt.ErrorMatches, "input value must be a Map")
 		})
+
+		c.Run("Invalid field type", func(c *qt.C) {
+			type InvalidStruct struct {
+				Field int `key:"field"`
+			}
+			input := Map{
+				"field": NewString("not a number"),
+			}
+			var result InvalidStruct
+			err := Unmarshal(input, &result)
+			c.Assert(err, qt.ErrorMatches, "error unmarshaling field field:.*")
+		})
+
+		c.Run("Invalid array element type", func(c *qt.C) {
+			type ArrayStruct struct {
+				Numbers []format.Number `key:"numbers"`
+			}
+			input := Map{
+				"numbers": Array{NewString("not a number")},
+			}
+			var result ArrayStruct
+			err := Unmarshal(input, &result)
+			c.Assert(err, qt.ErrorMatches, "error unmarshaling field numbers:.*")
+		})
+
+		c.Run("Invalid map value type", func(c *qt.C) {
+			type MapStruct struct {
+				Values map[string]format.Number `key:"values"`
+			}
+			input := Map{
+				"values": Map{
+					"key": NewString("not a number"),
+				},
+			}
+			var result MapStruct
+			err := Unmarshal(input, &result)
+			c.Assert(err, qt.ErrorMatches, "error unmarshaling field values:.*")
+		})
+	})
+
+	c.Run("Empty input", func(c *qt.C) {
+		type TestStruct struct {
+			OptionalField format.String  `key:"optional"`
+			RequiredPtr   *format.String `key:"required"`
+		}
+
+		input := Map{}
+		var result TestStruct
+		err := Unmarshal(input, &result)
+
+		c.Assert(err, qt.IsNil)
+		c.Assert(result.RequiredPtr, qt.IsNil)
+	})
+
+	c.Run("Mixed types array", func(c *qt.C) {
+		type TestStruct struct {
+			MixedArray Array `key:"mixed"`
+		}
+
+		input := Map{
+			"mixed": Array{
+				NewString("text"),
+				NewNumberFromFloat(42),
+				NewBoolean(true),
+				NewNull(),
+			},
+		}
+
+		var result TestStruct
+		err := Unmarshal(input, &result)
+
+		c.Assert(err, qt.IsNil)
+		c.Assert(len(result.MixedArray), qt.Equals, 4)
+		c.Assert(result.MixedArray[0].(format.String).String(), qt.Equals, "text")
+		c.Assert(result.MixedArray[1].(format.Number).Float64(), qt.Equals, 42.0)
+		c.Assert(result.MixedArray[2].(format.Boolean).Boolean(), qt.Equals, true)
+		c.Assert(result.MixedArray[3], qt.Equals, NewNull())
 	})
 }
 
@@ -273,6 +378,30 @@ func TestMarshal(t *testing.T) {
 		c.Assert(mapField["key2"].(format.String).String(), qt.Equals, "value2")
 	})
 
+	c.Run("Format tag", func(c *qt.C) {
+		imageBytes, err := os.ReadFile("testdata/sample_640_426.jpeg")
+		c.Assert(err, qt.IsNil)
+
+		img, err := NewImageFromBytes(imageBytes, "image/jpeg", "sample_640_426.jpeg")
+		c.Assert(err, qt.IsNil)
+
+		input := struct {
+			Image format.Image `key:"image" format:"image/jpeg"`
+		}{
+			Image: img,
+		}
+
+		result, err := Marshal(input)
+		c.Assert(err, qt.IsNil)
+		m, ok := result.(Map)
+		c.Assert(ok, qt.IsTrue)
+		image, ok := m["image"].(format.Image)
+		c.Assert(ok, qt.IsTrue)
+		c.Assert(image.ContentType().String(), qt.Equals, "image/jpeg")
+		c.Assert(image.Width().Integer(), qt.Equals, 640)
+		c.Assert(image.Height().Integer(), qt.Equals, 426)
+	})
+
 	c.Run("Null", func(c *qt.C) {
 		input := struct {
 			NullField *format.String `key:"null-field"`
@@ -352,4 +481,42 @@ func TestMarshal(t *testing.T) {
 		c.Assert(textMap["key1"].(format.String).String(), qt.Equals, "value1")
 		c.Assert(textMap["key2"].(format.Number).Float64(), qt.Equals, 42.0)
 	})
+
+	c.Run("Error cases", func(c *qt.C) {
+		c.Run("Invalid field type", func(c *qt.C) {
+			input := struct {
+				InvalidField chan int `key:"invalid"`
+			}{
+				InvalidField: make(chan int),
+			}
+			_, err := Marshal(input)
+			c.Assert(err, qt.ErrorMatches, "error marshaling field invalid: unsupported type: chan")
+		})
+
+		c.Run("Nil interface", func(c *qt.C) {
+			var input interface{}
+			_, err := Marshal(input)
+			c.Assert(err, qt.ErrorMatches, "input must not be nil")
+		})
+
+		c.Run("Invalid map key type", func(c *qt.C) {
+			input := struct {
+				InvalidMap map[int]string `key:"invalid-map"`
+			}{
+				InvalidMap: map[int]string{1: "value"},
+			}
+			_, err := Marshal(input)
+			c.Assert(err, qt.ErrorMatches, "error marshaling field invalid-map: map key must be string type")
+		})
+	})
+
+	c.Run("Empty struct", func(c *qt.C) {
+		input := struct{}{}
+		result, err := Marshal(input)
+		c.Assert(err, qt.IsNil)
+		m, ok := result.(Map)
+		c.Assert(ok, qt.IsTrue)
+		c.Assert(len(m), qt.Equals, 0)
+	})
+
 }
