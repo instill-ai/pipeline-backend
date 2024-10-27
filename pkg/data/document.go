@@ -56,7 +56,7 @@ func createDocumentData(b []byte, contentType, fileName string) (*documentData, 
 }
 
 func newDocument(f *fileData) (*documentData, error) {
-	supportedTypes := []string{DOC, DOCX, PPT, PPTX, XLS, XLSX, HTML, PDF, PLAIN, MARKDOWN, CSV, TEXT}
+	supportedTypes := []string{DOC, DOCX, PPT, PPTX, XLS, XLSX, HTML, PDF, PLAIN, MARKDOWN, CSV, TEXT, OCTETSTREAM}
 	isSupported := false
 	for _, supportedType := range supportedTypes {
 		if strings.HasPrefix(f.contentType, TEXT) {
