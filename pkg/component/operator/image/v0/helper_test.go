@@ -44,11 +44,11 @@ func createTestImage(c *qt.C, width, height int, color color.Color) format.Image
 
 func compareTestImage(c *qt.C, img format.Image, name string) {
 
-	fileName := fmt.Sprintf("testdata/test_output_%s_%s_%s.jpeg", name, strings.ToLower(strings.Split(c.Name(), "/")[0]), strings.ToLower(strings.Split(c.Name(), "/")[1]))
-	expectedImageBytes, err := testdata.ReadFile(fileName)
+	filename := fmt.Sprintf("testdata/test_output_%s_%s_%s.jpeg", name, strings.ToLower(strings.Split(c.Name(), "/")[0]), strings.ToLower(strings.Split(c.Name(), "/")[1]))
+	expectedImageBytes, err := testdata.ReadFile(filename)
 	c.Assert(err, qt.IsNil)
 
-	expectedImage, err := data.NewImageFromBytes(expectedImageBytes, "image/jpeg", fileName)
+	expectedImage, err := data.NewImageFromBytes(expectedImageBytes, "image/jpeg", filename)
 	c.Assert(err, qt.IsNil)
 	converted, err := img.Convert("image/jpeg")
 	c.Assert(err, qt.IsNil)
