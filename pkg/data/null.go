@@ -26,6 +26,9 @@ func (n *nullData) Get(p *path.Path) (v format.Value, err error) {
 	return nil, fmt.Errorf("path not found: %s", p)
 }
 
+// Deprecated: ToStructValue() is deprecated and will be removed in a future
+// version. structpb is not suitable for handling binary data and will be phased
+// out gradually.
 func (n nullData) ToStructValue() (v *structpb.Value, err error) {
 	return structpb.NewNullValue(), nil
 }

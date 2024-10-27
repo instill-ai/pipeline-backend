@@ -35,6 +35,9 @@ func (ir *inputReader) ReadData(ctx context.Context, input any) (err error) {
 	return ir.InputReader.ReadData(ctx, input)
 }
 
+// Deprecated: Read() is deprecated and will be removed in a future version. Use
+// ReadData() instead. structpb is not suitable for handling binary data and
+// will be phased out gradually.
 func (ir *inputReader) Read(ctx context.Context) (input *structpb.Struct, err error) {
 	input = ir.input
 	if err = Validate(input, ir.schema, "input"); err != nil {
@@ -68,6 +71,10 @@ func (ow *outputWriter) WriteData(ctx context.Context, output any) (err error) {
 
 	return ow.OutputWriter.WriteData(ctx, output)
 }
+
+// Deprecated: Write() is deprecated and will be removed in a future version.
+// Use WriteData() instead. structpb is not suitable for handling binary data
+// and will be phased out gradually.
 func (ow *outputWriter) Write(ctx context.Context, output *structpb.Struct) (err error) {
 
 	if err := Validate(output, ow.schema, "output"); err != nil {
@@ -142,6 +149,9 @@ func (e *ExecutionWrapper) Execute(ctx context.Context, jobs []*Job) (err error)
 
 }
 
+// Deprecated: SequentialExecutor() is deprecated and will be removed in a
+// future version. Use ConcurrentExecutor() instead to provide better
+// performance.
 func SequentialExecutor(ctx context.Context, jobs []*Job, execute func(*structpb.Struct) (*structpb.Struct, error)) error {
 	// The execution takes an array of inputs and returns an array of outputs,
 	// processed sequentially.
