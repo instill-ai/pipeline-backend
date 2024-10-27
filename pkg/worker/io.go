@@ -60,6 +60,9 @@ func NewInputReader(wfm memory.WorkflowMemory, compID string, originalIdx int) *
 	}
 }
 
+// Deprecated: read() is deprecated and will be removed in a future version. Use
+// ReadData() instead.
+// structpb is not suitable for handling binary data and will be phased out gradually.
 func (i *inputReader) read(ctx context.Context) (inputVal format.Value, err error) {
 
 	inputTemplate, err := i.wfm.GetComponentData(ctx, i.originalIdx, i.compID, memory.ComponentDataInput)
@@ -78,6 +81,9 @@ func (i *inputReader) read(ctx context.Context) (inputVal format.Value, err erro
 	return inputVal, nil
 }
 
+// Deprecated: Read() is deprecated and will be removed in a future version. Use
+// ReadData() instead. structpb is not suitable for handling binary data and
+// will be phased out gradually.
 func (i *inputReader) Read(ctx context.Context) (inputStruct *structpb.Struct, err error) {
 	inputVal, err := i.read(ctx)
 	if err != nil {
@@ -126,6 +132,9 @@ func (o *outputWriter) WriteData(ctx context.Context, output any) (err error) {
 	return o.write(ctx, val)
 }
 
+// Deprecated: Write() is deprecated and will be removed in a future version.
+// Use WriteData() instead. structpb is not suitable for handling binary data
+// and will be phased out gradually.
 func (o *outputWriter) Write(ctx context.Context, output *structpb.Struct) (err error) {
 
 	val, err := data.NewValueFromStruct(structpb.NewStructValue(output))
@@ -135,6 +144,9 @@ func (o *outputWriter) Write(ctx context.Context, output *structpb.Struct) (err 
 	return o.write(ctx, val)
 }
 
+// Deprecated: write() is deprecated and will be removed in a future version.
+// Use WriteData() instead. structpb is not suitable for handling binary data
+// and will be phased out gradually.
 func (o *outputWriter) write(ctx context.Context, val format.Value) (err error) {
 
 	if err := o.wfm.SetComponentData(ctx, o.originalIdx, o.compID, memory.ComponentDataOutput, val); err != nil {

@@ -171,6 +171,9 @@ func (f *fileData) Get(p *path.Path) (v format.Value, err error) {
 	return result.Get(remainingPath)
 }
 
+// Deprecated: ToStructValue() is deprecated and will be removed in a future
+// version. structpb is not suitable for handling binary data and will be phased
+// out gradually.
 func (f fileData) ToStructValue() (v *structpb.Value, err error) {
 	d, err := f.DataURI()
 	if err != nil {
