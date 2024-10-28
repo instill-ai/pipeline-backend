@@ -53,7 +53,7 @@ func Test_Concat(t *testing.T) {
 		err = protojson.Unmarshal([]byte(array1), expectedOutput)
 		c.Assert(err, qt.IsNil)
 
-		out, err := e.concat(inputStruct)
+		out, err := e.concat(inputStruct, nil, nil)
 
 		c.Assert(err, qt.IsNil)
 
@@ -104,7 +104,7 @@ func Test_Split(t *testing.T) {
 			err = protojson.Unmarshal([]byte(tc.output), expectedOutput)
 			c.Assert(err, qt.IsNil)
 
-			out, err := e.split(inputStruct)
+			out, err := e.split(inputStruct, nil, nil)
 
 			c.Assert(err, qt.IsNil)
 
