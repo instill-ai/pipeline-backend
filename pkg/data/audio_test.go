@@ -10,6 +10,7 @@ import (
 )
 
 func TestNewAudioFromBytes(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {
@@ -51,6 +52,7 @@ func TestNewAudioFromBytes(t *testing.T) {
 }
 
 func TestNewAudioFromURL(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {
@@ -78,6 +80,7 @@ func TestNewAudioFromURL(t *testing.T) {
 }
 
 func TestAudioProperties(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {
@@ -107,6 +110,7 @@ func TestAudioProperties(t *testing.T) {
 }
 
 func TestAudioConvert(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {
