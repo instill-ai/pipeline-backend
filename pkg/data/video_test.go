@@ -11,6 +11,7 @@ import (
 )
 
 func TestNewVideoFromBytes(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {
@@ -63,6 +64,7 @@ func TestNewVideoFromBytes(t *testing.T) {
 }
 
 func TestNewVideoFromURL(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	c.Run("Valid video URL", func(c *qt.C) {
@@ -91,6 +93,7 @@ func TestNewVideoFromURL(t *testing.T) {
 }
 
 func TestVideoProperties(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {
@@ -127,6 +130,7 @@ func TestVideoProperties(t *testing.T) {
 }
 
 func TestVideoConvert(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {

@@ -8,6 +8,7 @@ import (
 )
 
 func TestNewDocumentFromBytes(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {
@@ -45,6 +46,7 @@ func TestNewDocumentFromBytes(t *testing.T) {
 }
 
 func TestNewDocumentFromURL(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {
@@ -72,6 +74,7 @@ func TestNewDocumentFromURL(t *testing.T) {
 }
 
 func TestDocumentProperties(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {

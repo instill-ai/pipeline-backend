@@ -8,6 +8,7 @@ import (
 )
 
 func TestNewImageFromBytes(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {
@@ -50,6 +51,7 @@ func TestNewImageFromBytes(t *testing.T) {
 }
 
 func TestNewImageFromURL(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {
@@ -78,6 +80,7 @@ func TestNewImageFromURL(t *testing.T) {
 }
 
 func TestImageProperties(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {
@@ -108,6 +111,7 @@ func TestImageProperties(t *testing.T) {
 }
 
 func TestImageConvert(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	testCases := []struct {

@@ -10,6 +10,7 @@ import (
 )
 
 func TestUnmarshal(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	c.Run("Basic types", func(c *qt.C) {
@@ -287,6 +288,7 @@ func TestUnmarshal(t *testing.T) {
 }
 
 func TestMarshal(t *testing.T) {
+	t.Parallel()
 	c := qt.New(t)
 
 	c.Run("Basic types", func(c *qt.C) {
