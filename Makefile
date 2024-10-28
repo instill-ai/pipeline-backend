@@ -91,7 +91,7 @@ coverage:
 			instill/${SERVICE_NAME}:dev \
 				go tool cover -func=coverage.out && \
 				go tool cover -html=coverage.out && \
-				rm coverage.out \
+				rm coverage.out; \
 	fi
 
 .PHONY: test
