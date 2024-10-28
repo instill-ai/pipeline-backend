@@ -174,6 +174,7 @@ func (s *service) componentDefinitionToIntegration(
 
 var outputOnlyConnectionFields = []string{
 	"uid",
+	"namespace_id",
 	"integration_title",
 	"create_time",
 	"update_time",
@@ -259,7 +260,6 @@ func (s *service) validateConnectionCreation(conn *pb.Connection, integration *p
 	// Check REQUIRED fields are provided in the request.
 	requiredFields := []string{
 		"id",
-		"namespace_id",
 		"integration_id",
 		"method",
 		"setup",
@@ -320,7 +320,7 @@ func (s *service) validateConnectionUpdate(
 	}
 
 	// Return error if IMMUTABLE fields are intentionally changed.
-	immutableFields := []string{"namespace_id", "integration_id"}
+	immutableFields := []string{"integration_id"}
 	if err := checkfield.CheckUpdateImmutableFields(updateReq, destConn, immutableFields); err != nil {
 		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
 	}
@@ -334,8 +334,8 @@ func (s *service) validateConnectionUpdate(
 	return s.validateConnection(destConn, integration)
 }
 
-func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connection) (*pb.Connection, error) {
-	ns, err := s.GetRscNamespace(ctx, conn.GetNamespaceId())
+func (s *service) CreateNamespaceConnection(ctx context.Context, req *pb.CreateNamespaceConnectionRequest) (*pb.Connection, error) {
+	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
 	}
@@ -344,6 +344,7 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connec
 		return nil, fmt.Errorf("checking namespace permissions: %w", err)
 	}
 
+	conn := req.GetConnection()
 	integration, err := s.GetIntegration(ctx, conn.GetIntegrationId(), pb.View_VIEW_FULL)
 	if err != nil {
 		if errors.Is(err, errIntegrationNotFound) {
@@ -394,7 +395,7 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connec
 }
 
 func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pb.UpdateNamespaceConnectionRequest) (*pb.Connection, error) {
-	ns, err := s.GetRscNamespace(ctx, req.GetConnection().GetNamespaceId())
+	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
 	}

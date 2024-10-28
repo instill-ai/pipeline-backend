@@ -84,7 +84,7 @@ func (h *PublicHandler) CreateNamespaceConnection(ctx context.Context, req *pb.C
 		return nil, err
 	}
 
-	conn, err := h.service.CreateNamespaceConnection(ctx, req.GetConnection())
+	conn, err := h.service.CreateNamespaceConnection(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err

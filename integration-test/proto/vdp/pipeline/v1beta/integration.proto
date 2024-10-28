@@ -30,10 +30,7 @@ message Connection {
   // ID.
   string id = 2 [(google.api.field_behavior) = REQUIRED];
   // ID of the namespace owning the connection.
-  string namespace_id = 3 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.field_behavior) = IMMUTABLE
-  ];
+  string namespace_id = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Integration ID. It determines for which type of components can reference
   // this connection.
   string integration_id = 4 [
@@ -125,6 +122,8 @@ message GetNamespaceConnectionResponse {
 // CreateNamespaceConnectionRequest represents a request to create a
 // connection.
 message CreateNamespaceConnectionRequest {
+  // ID of the namespace that owns the connection.
+  string namespace_id = 2 [(google.api.field_behavior) = REQUIRED];
   // Properties of the connection to be created.
   Connection connection = 1 [(google.api.field_behavior) = REQUIRED];
 }
@@ -140,6 +139,8 @@ message CreateNamespaceConnectionResponse {
 message UpdateNamespaceConnectionRequest {
   // ID of the connection to be updated, as present in the database.
   string connection_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // ID of the namespace that owns the connection.
+  string namespace_id = 4 [(google.api.field_behavior) = REQUIRED];
   // Connection object with the new properties to be updated. Immutable and
   // output-only fields will be ignored. The Setup property must be updated
   // in block (no partial update is supported).
