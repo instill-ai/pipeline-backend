@@ -61,6 +61,7 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	}, nil
 }
 
+// newIndexClient creates a new httpclient.Client with the index URL provided in setup
 func newIndexClient(setup *structpb.Struct, logger *zap.Logger) *httpclient.Client {
 	c := httpclient.New("Pinecone", getURL(setup),
 		httpclient.WithLogger(logger),
@@ -73,7 +74,8 @@ func newIndexClient(setup *structpb.Struct, logger *zap.Logger) *httpclient.Clie
 	return c
 }
 
-func newPineconeBaseClient(setup *structpb.Struct, logger *zap.Logger) *httpclient.Client {
+// newBaseClient creates a new httpclient.Client with the default Pinecone API URL.
+func newBaseClient(setup *structpb.Struct, logger *zap.Logger) *httpclient.Client {
 	c := httpclient.New("Pinecone", "https://api.pinecone.io",
 		httpclient.WithLogger(logger),
 		httpclient.WithEndUserError(new(errBody)),
@@ -81,8 +83,6 @@ func newPineconeBaseClient(setup *structpb.Struct, logger *zap.Logger) *httpclie
 
 	c.SetHeader("Api-Key", getAPIKey(setup))
 	c.SetHeader("User-Agent", "source_tag=instillai")
-	c.SetHeader("X-Pinecone-API-Version", "2024-10") // TODO: Remove this once 2024-10 or above is default
-
 	return c
 }
 
@@ -164,7 +164,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 			}
 		case taskRerank:
 			// rerank task does not need index URL, so using the base client with the default pinecone API URL.
-			req := newPineconeBaseClient(e.Setup, e.GetLogger()).R()
+			req := newBaseClient(e.Setup, e.GetLogger()).R()
 
 			// parse input struct
 			inputStruct := rerankInput{}
