@@ -89,15 +89,6 @@ type drawKeypointOutput struct {
 	Image format.Image `key:"image"`
 }
 
-// type drawOCRInput struct {
-// 	Image format.Image `key:"image"`
-// 	OCR   []ocrResult  `key:"ocr"`
-// }
-
-// type drawOCROutput struct {
-// 	Image format.Image `key:"image"`
-// }
-
 type instanceSegmentationObject struct {
 	BoundingBox *boundingBox `key:"bounding-box" json:"bounding-box"`
 	Category    string       `key:"category" json:"category"`
@@ -144,40 +135,6 @@ type drawOCRInput struct {
 type drawOCROutput struct {
 	Image format.Image `key:"image"`
 }
-
-// type drawSemanticSegmentationInput struct {
-// 	Image        format.Image `key:"image"`
-// 	Segmentation format.Image `key:"segmentation"`
-// }
-
-// type drawSemanticSegmentationOutput struct {
-// 	Image format.Image `key:"image"`
-// }
-
-// type detection struct {
-// 	Label       string  `key:"label"`
-// 	Confidence  float64 `key:"confidence"`
-// 	BoundingBox bbox    `key:"bounding-box"`
-// }
-
-// type keypoint struct {
-// 	X     float64 `key:"x"`
-// 	Y     float64 `key:"y"`
-// 	Label string  `key:"label"`
-// }
-
-// type ocrResult struct {
-// 	Text        string  `key:"text"`
-// 	Confidence  float64 `key:"confidence"`
-// 	BoundingBox bbox    `key:"bounding-box"`
-// }
-
-// type instanceSegmentationObject struct {
-// 	Label       string  `key:"label"`
-// 	Confidence  float64 `key:"confidence"`
-// 	BoundingBox bbox    `key:"bounding-box"`
-// 	Mask        string  `key:"mask"`
-// }
 
 type boundingBox struct {
 	Top    int `key:"top" json:"top"`
