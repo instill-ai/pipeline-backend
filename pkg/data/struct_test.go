@@ -285,6 +285,40 @@ func TestUnmarshal(t *testing.T) {
 		c.Assert(result.MixedArray[2].(format.Boolean).Boolean(), qt.Equals, true)
 		c.Assert(result.MixedArray[3], qt.Equals, NewNull())
 	})
+
+	c.Run("Undetermined type", func(c *qt.C) {
+		type TestStruct struct {
+			Value format.Value `instill:"value"`
+		}
+
+		// Test string value
+		stringInput := Map{
+			"value": NewString("test"),
+		}
+		var stringResult TestStruct
+		err := Unmarshal(stringInput, &stringResult)
+		c.Assert(err, qt.IsNil)
+		c.Assert(stringResult.Value.(format.String).String(), qt.Equals, "test")
+
+		// Test number value
+		numberInput := Map{
+			"value": NewNumberFromFloat(42.5),
+		}
+		var numberResult TestStruct
+		err = Unmarshal(numberInput, &numberResult)
+		c.Assert(err, qt.IsNil)
+		c.Assert(numberResult.Value.(format.Number).Float64(), qt.Equals, 42.5)
+
+		// Test boolean value
+		boolInput := Map{
+			"value": NewBoolean(true),
+		}
+		var boolResult TestStruct
+		err = Unmarshal(boolInput, &boolResult)
+		c.Assert(err, qt.IsNil)
+		c.Assert(boolResult.Value.(format.Boolean).Boolean(), qt.Equals, true)
+
+	})
 }
 
 func TestMarshal(t *testing.T) {
@@ -482,6 +516,42 @@ func TestMarshal(t *testing.T) {
 		c.Assert(ok, qt.IsTrue)
 		c.Assert(textMap["key1"].(format.String).String(), qt.Equals, "value1")
 		c.Assert(textMap["key2"].(format.Number).Float64(), qt.Equals, 42.0)
+	})
+
+	c.Run("Undetermined type", func(c *qt.C) {
+		type TestStruct struct {
+			Value format.Value `instill:"value"`
+		}
+
+		// Test string value
+		stringInput := TestStruct{
+			Value: NewString("test"),
+		}
+		stringResult, err := Marshal(stringInput)
+		c.Assert(err, qt.IsNil)
+		stringMap, ok := stringResult.(Map)
+		c.Assert(ok, qt.IsTrue)
+		c.Assert(stringMap["value"].(format.String).String(), qt.Equals, "test")
+
+		// Test number value
+		numberInput := TestStruct{
+			Value: NewNumberFromFloat(42.5),
+		}
+		numberResult, err := Marshal(numberInput)
+		c.Assert(err, qt.IsNil)
+		numberMap, ok := numberResult.(Map)
+		c.Assert(ok, qt.IsTrue)
+		c.Assert(numberMap["value"].(format.Number).Float64(), qt.Equals, 42.5)
+
+		// Test boolean value
+		boolInput := TestStruct{
+			Value: NewBoolean(true),
+		}
+		boolResult, err := Marshal(boolInput)
+		c.Assert(err, qt.IsNil)
+		boolMap, ok := boolResult.(Map)
+		c.Assert(ok, qt.IsTrue)
+		c.Assert(boolMap["value"].(format.Boolean).Boolean(), qt.Equals, true)
 	})
 
 	c.Run("Error cases", func(c *qt.C) {
