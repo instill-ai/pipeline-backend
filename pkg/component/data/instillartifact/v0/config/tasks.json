@@ -137,6 +137,112 @@
       "instillUIOrder": 0,
       "title": "Namespace",
       "type": "string"
+    },
+    "third-party-files": {
+      "description": "File contents and metadata from third-part data storage.",
+      "instillUIOrder": 2,
+      "instillAcceptFormats": [
+        "array:*/*"
+      ],
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "items": {
+        "properties": {
+          "id": {
+            "description": "Unique ID of the file from third-party data storage.",
+            "instillFormat": "string",
+            "instillUIOrder": 0,
+            "title": "ID",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the file from third-party data storage.",
+            "instillFormat": "string",
+            "instillUIOrder": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "content": {
+            "description": "Base64 encoded content of the binary file without the `data:[MIME_TYPE];base64,` prefix.",
+            "instillFormat": "string",
+            "instillUIMultiline": true,
+            "instillUIOrder": 2,
+            "title": "Content",
+            "type": "string"
+          },
+          "created-time": {
+            "description": "Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ`.",
+            "instillFormat": "string",
+            "instillUIOrder": 3,
+            "title": "Created time",
+            "type": "string"
+          },
+          "modified-time": {
+            "description": "Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ`. It will be used to check if the file has been updated.",
+            "instillFormat": "string",
+            "instillUIOrder": 4,
+            "title": "Modified time",
+            "type": "string"
+          },
+          "size": {
+            "description": "Size of the file in bytes.",
+            "instillFormat": "integer",
+            "instillUIOrder": 5,
+            "title": "Size",
+            "type": "integer"
+          },
+          "mime-type": {
+            "description": "MIME type of the file.",
+            "instillFormat": "string",
+            "instillUIOrder": 6,
+            "title": "MIME type",
+            "type": "string"
+          },
+          "md5-checksum": {
+            "description": "MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user.",
+            "instillFormat": "string",
+            "instillUIOrder": 7,
+            "title": "MD5 checksum",
+            "type": "string"
+          },
+          "version": {
+            "description": "Version of the file.",
+            "instillFormat": "integer",
+            "instillUIOrder": 8,
+            "title": "Version",
+            "type": "integer"
+          },
+          "web-view-link": {
+            "description": "Link for opening the file in a relevant third-party data storage editor or viewer in a browser. It will be used to check the source of the file.",
+            "instillFormat": "string",
+            "instillUIOrder": 9,
+            "title": "Web View Link",
+            "type": "string"
+          },
+          "web-content-link": {
+            "description": "Link for downloading the content of the file in a browser.",
+            "instillFormat": "string",
+            "instillUIOrder": 10,
+            "title": "Web Content Link",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "created-time",
+          "modified-time",
+          "size",
+          "mime-type",
+          "version",
+          "web-view-link"
+        ],
+        "title": "Third Party File",
+        "type": "object"
+      },
+      "title": "Third Party Files",
+      "type": "array"
     }
   },
   "TASK_UPLOAD_FILE": {
@@ -1071,6 +1177,78 @@
       },
       "required": [
         "succeeded"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_SYNC_FILES": {
+    "instillShortDescription": "This task synchronizes files from third-party storage for cataloging. New files are uploaded, and updated files are overwritten based on third-party metadata. Files added through other channels, like the Artifact API or additional storage services, will not be removed. Currently, only Google Drive is supported.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "namespace": {
+          "$ref": "#/$defs/namespace"
+        },
+        "catalog-id": {
+          "description": "Catalog ID that you input to synchronize files from third-party data storage to catalog.",
+          "instillUIOrder": 1,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Catalog ID",
+          "type": "string"
+        },
+        "third-party-files": {
+          "$ref": "#/$defs/third-party-files"
+        }
+      },
+      "required": [
+        "namespace",
+        "catalog-id",
+        "third-party-files"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "uploaded-files": {
+          "description": "Files metadata in catalog. The metadata here is from Instill Artifact rather than third-party storage.",
+          "instillUIOrder": 0,
+          "items": {
+            "$ref": "#/$defs/file-item"
+          },
+          "instillFormat": "array:object",
+          "title": "Files",
+          "type": "array"
+        },
+        "failure-files": {
+          "description": "Files that failed to upload.",
+          "instillUIOrder": 1,
+          "items": {
+            "$ref": "#/$defs/third-party-files/items"
+          },
+          "instillFormat": "array:object",
+          "title": "Failure Files",
+          "type": "array"
+        },
+        "error-messages": {
+          "description": "Error messages for files that failed to upload.",
+          "instillUIOrder": 2,
+          "items": {
+            "type": "string"
+          },
+          "title": "Error Messages",
+          "type": "array"
+        }
+      },
+      "required": [
       ],
       "title": "Output",
       "type": "object"
