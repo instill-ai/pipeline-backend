@@ -104,7 +104,6 @@ func TestConcat(t *testing.T) {
 			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
 				capturedOutput = output
 				compareTestImage(c, output.(concatOutput).Image, "task_concat")
-				// compareTestImage(c, output.(concatOutput).Image, "task_concat")
 				return nil
 			})
 			eh.ErrorMock.Set(func(ctx context.Context, err error) {

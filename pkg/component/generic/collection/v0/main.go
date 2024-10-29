@@ -8,8 +8,6 @@ import (
 
 	_ "embed"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/x/errmsg"
 )
@@ -41,7 +39,7 @@ type component struct {
 type execution struct {
 	base.ComponentExecution
 
-	execute func(*structpb.Struct, *base.Job, context.Context) (*structpb.Struct, error)
+	execute func(context.Context, *base.Job) error
 }
 
 // Init returns an implementation of IOperator that processes JSON objects.

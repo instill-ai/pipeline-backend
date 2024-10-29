@@ -60,7 +60,6 @@ require (
 	github.com/openfga/api/proto v0.0.0-20240318145204-66b9e5cb403c
 	github.com/pkoukk/tiktoken-go v0.1.7
 	github.com/redis/go-redis/v9 v9.5.1
-	github.com/samber/lo v1.47.0
 	github.com/sijms/go-ora v1.3.2
 	github.com/slack-go/slack v0.12.5
 	github.com/tmc/langchaingo v0.1.10
