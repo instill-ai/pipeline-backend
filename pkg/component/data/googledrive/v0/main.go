@@ -3,15 +3,12 @@ package googledrive
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"sync"
 
 	_ "embed"
 
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -22,9 +19,13 @@ import (
 )
 
 const (
-	taskReadFile       = "TASK_READ_FILE"
-	taskReadFolder     = "TASK_READ_FOLDER"
-	cfgOAuthCredential = "oauth-credentials"
+	taskReadFile         = "TASK_READ_FILE"
+	taskReadFolder       = "TASK_READ_FOLDER"
+	cfgOAuthClientID     = "client-id"
+	cfgOAuthClientSecret = "client-secret"
+
+	authURL  = "https://accounts.google.com/o/oauth2/auth"
+	tokenURL = "https://oauth2.googleapis.com/token"
 )
 
 var (
@@ -41,8 +42,9 @@ var (
 
 type component struct {
 	base.Component
-	// The JSON string of OAuth credentials encoded by base64.
-	instillAICredentials string
+
+	instillAIClientID     string
+	instillAIClientSecret string
 }
 
 type execution struct {
@@ -97,17 +99,13 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 }
 
 func getDriveService(ctx context.Context, setup *structpb.Struct, c *component) (*drive.Service, error) {
-
-	decodedBytes, err := base64.StdEncoding.DecodeString(c.instillAICredentials)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode Instill AI credentials: %w", err)
-	}
-
-	config, err := google.ConfigFromJSON(decodedBytes, getConfigScopes()...)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to get Google config from JSON: %w", err)
+	config := &oauth2.Config{
+		ClientID:     c.instillAIClientID,
+		ClientSecret: c.instillAIClientSecret,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  authURL,
+			TokenURL: tokenURL,
+		},
 	}
 
 	refreshToken := setup.GetFields()["refresh-token"].GetStringValue()
@@ -127,17 +125,6 @@ func getDriveService(ctx context.Context, setup *structpb.Struct, c *component) 
 	return srv, nil
 }
 
-func getConfigScopes() []string {
-	type setupConfig struct {
-		InstillOAuthConfig struct {
-			Scopes []string `json:"scopes"`
-		} `json:"instillOAuthConfig"`
-	}
-	var setup setupConfig
-	_ = json.Unmarshal(setupJSON, &setup)
-	return setup.InstillOAuthConfig.Scopes
-}
-
 // Execute reads the input from the job, executes the task, and writes the output
 // to the job.
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
@@ -146,6 +133,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 
 // WithOAuthCredentials sets the OAuth credentials for the component.
 func (c *component) WithOAuthCredentials(s map[string]any) *component {
-	c.instillAICredentials = base.ReadFromGlobalConfig(cfgOAuthCredential, s)
+	c.instillAIClientID = base.ReadFromGlobalConfig(cfgOAuthClientID, s)
+	c.instillAIClientSecret = base.ReadFromGlobalConfig(cfgOAuthClientSecret, s)
 	return c
 }
