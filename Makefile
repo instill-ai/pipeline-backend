@@ -27,6 +27,7 @@ dev:							## Run dev container
 		-v $(PWD):/${SERVICE_NAME} \
 		-p ${PUBLIC_SERVICE_PORT}:${PUBLIC_SERVICE_PORT} \
 		-p ${PRIVATE_SERVICE_PORT}:${PRIVATE_SERVICE_PORT} \
+		--env-file .env.component \
 		--network instill-network \
 		--name ${SERVICE_NAME} \
 		instill/${SERVICE_NAME}:dev >/dev/null 2>&1
