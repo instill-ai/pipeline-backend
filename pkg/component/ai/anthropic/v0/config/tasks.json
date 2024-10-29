@@ -140,12 +140,14 @@
         },
         "model-name": {
           "enum": [
+            "claude-3-5-sonnet-latest",
+            "claude-3-5-sonnet-20241022",
             "claude-3-5-sonnet-20240620",
             "claude-3-opus-20240229",
             "claude-3-sonnet-20240229",
             "claude-3-haiku-20240307"
           ],
-          "example": "claude-3-5-sonnet-20240620",
+          "example": "claude-3-5-sonnet-latest",
           "description": "The Anthropic model to be used",
           "instillAcceptFormats": [
             "string"
@@ -158,6 +160,8 @@
           ],
           "instillCredentialMap": {
             "values": [
+              "claude-3-5-sonnet-latest",
+              "claude-3-5-sonnet-20241022",
               "claude-3-5-sonnet-20240620",
               "claude-3-opus-20240229",
               "claude-3-sonnet-20240229",
