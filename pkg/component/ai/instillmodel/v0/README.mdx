@@ -206,7 +206,43 @@ The parameters used to control how the model generates responses. These include 
 </div>
 </details>
 
+<details>
+<summary>The <code>content</code> Object </summary>
 
+<h4 id="chat-content">Content</h4>
+
+`content` must fulfill one of the following schemas:
+
+<h5 id="chat-text"><code>Text</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Text Message | `text` | string |  A text-based message, which is the most common format for chat communication.  |
+| Text | `type` | string |  Must be `"text"`   |
+</div>
+
+<h5 id="chat-image-url"><code>Image URL</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Image URL | `image-url` | string |  A URL that links to an image that is being shared in the chat.  |
+| Image URL | `type` | string |  Must be `"image-url"`   |
+</div>
+
+<h5 id="chat-image-base64"><code>Image Base64</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Image Base64 | `image-base64` | string |  An image encoded as a base64 string, allowing for the direct transfer of image data in the message.  |
+| Image File | `type` | string |  Must be `"image-base64"`   |
+</div>
+</details>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 

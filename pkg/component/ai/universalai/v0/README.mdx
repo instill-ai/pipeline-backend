@@ -106,7 +106,43 @@ Input parameter
 </div>
 </details>
 
+<details>
+<summary>The <code>content</code> Object </summary>
 
+<h4 id="chat-content">Content</h4>
+
+`content` must fulfill one of the following schemas:
+
+<h5 id="chat-text"><code>Text</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Text Message | `text` | string |  Text message.  |
+| Text | `type` | string |  Must be `"text"`   |
+</div>
+
+<h5 id="chat-image-url"><code>Image URL</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Image URL | `image-url` | string |  Image message URL.  |
+| Image URL | `type` | string |  Must be `"image-url"`   |
+</div>
+
+<h5 id="chat-image-base64"><code>Image Base64</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Image Base64 | `image-base64` | string |  Image base64 encoded string.  |
+| Image File | `type` | string |  Must be `"image-base64"`   |
+</div>
+</details>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 

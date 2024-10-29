@@ -504,6 +504,7 @@ func (rt *readmeTask) parseOneOfsProperties(properties map[string]property) {
 			})
 		}
 		rt.parseOneOfsProperties(op.Properties)
+		rt.parseOneOfsProperties(op.Items.Properties)
 	}
 
 	return
