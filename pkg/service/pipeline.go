@@ -1770,5 +1770,5 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 }
 
 func (s *service) GetExpiryTagBySubscriptionPlan(ctx context.Context, requesterUID string) (string, error) {
-	return config.FreePlanExpiryTag, nil
+	return config.DefaultExpiryTag, nil
 }
