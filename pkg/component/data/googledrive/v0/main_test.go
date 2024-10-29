@@ -39,7 +39,7 @@ var (
 	sharedFolderLink = fmt.Sprintf("https://drive.google.com/drive/folders/%s?usp=drive_link", fakeID)
 )
 
-// We will unify the unit tests for the component development.
+// To integrate the unit test methodology, we will fake the http server to return the expected response rather than mocking the interface.
 
 func Test_Execute_ReadFile(t *testing.T) {
 
