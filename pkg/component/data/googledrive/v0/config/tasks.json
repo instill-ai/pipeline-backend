@@ -5,7 +5,7 @@
       "instillUIOrder": 0,
       "properties": {
         "id": {
-          "description": "ID of the file.",
+          "description": "Unique ID of the file.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "ID",
@@ -27,14 +27,14 @@
           "type": "string"
         },
         "created-time": {
-          "description": "Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ`",
+          "description": "Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ`.",
           "instillFormat": "string",
           "instillUIOrder": 3,
           "title": "Created time",
           "type": "string"
         },
         "modified-time": {
-          "description": "Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ`",
+          "description": "Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ`.",
           "instillFormat": "string",
           "instillUIOrder": 4,
           "title": "Modified time",
@@ -48,7 +48,7 @@
           "type": "integer"
         },
         "mime-type": {
-          "description": "MIME type of the file.",
+          "description": "MIME type of the file. For example, `application/pdf`, `text/csv`, `image/jpeg`, etc.",
           "instillFormat": "string",
           "instillUIOrder": 6,
           "title": "MIME type",
@@ -62,7 +62,7 @@
           "type": "string"
         },
         "version": {
-          "description": "Version of the file.",
+          "description": "Version of the file in Google Drive.",
           "instillFormat": "integer",
           "instillUIOrder": 8,
           "title": "Version",

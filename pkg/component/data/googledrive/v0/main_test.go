@@ -2,9 +2,7 @@ package googledrive
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/gojuno/minimock/v3"
@@ -231,12 +229,9 @@ func Test_Execute_ReadFile(t *testing.T) {
 	bc := base.Component{}
 	component := Init(bc)
 
-	b, err := os.ReadFile("testdata/credentials.json")
-
-	c.Assert(err, qt.IsNil)
-
 	secrets := map[string]interface{}{
-		"oauthcredentials": base64.StdEncoding.EncodeToString(b),
+		"clientid":     "fake-client-id",
+		"clientsecret": "fake-client-secret",
 	}
 
 	component = component.WithOAuthCredentials(secrets)
@@ -410,12 +405,9 @@ func Test_Execute_ReadFolder(t *testing.T) {
 	bc := base.Component{}
 	component := Init(bc)
 
-	b, err := os.ReadFile("testdata/credentials.json")
-
-	c.Assert(err, qt.IsNil)
-
 	secrets := map[string]interface{}{
-		"oauthcredentials": base64.StdEncoding.EncodeToString(b),
+		"clientid":     "fake-client-id",
+		"clientsecret": "fake-client-secret",
 	}
 
 	component = component.WithOAuthCredentials(secrets)
@@ -500,12 +492,9 @@ func Test_CreateExecution(t *testing.T) {
 	bc := base.Component{}
 	component := Init(bc)
 
-	b, err := os.ReadFile("testdata/credentials.json")
-
-	c.Assert(err, qt.IsNil)
-
 	secrets := map[string]interface{}{
-		"oauthcredentials": base64.StdEncoding.EncodeToString(b),
+		"clientid":     "fake-client-id",
+		"clientsecret": "fake-client-secret",
 	}
 
 	component = component.WithOAuthCredentials(secrets)

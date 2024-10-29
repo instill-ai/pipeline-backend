@@ -9,7 +9,7 @@
   "id": "google-drive",
   "public": true,
   "title": "Google Drive",
-  "description": "Google Drive is a file storage and synchronization service developed by Google. It allows users to store files in the cloud, synchronize files across devices, and share files.",
+  "description": "Google Drive is a file storage and synchronization service developed by Google. It allows users to store files in the cloud, synchronize files across devices, and share files",
   "tombstone": false,
   "type": "COMPONENT_TYPE_DATA",
   "uid": "cd220d2d-3d19-468e-8b95-37dd6a57c15f",
