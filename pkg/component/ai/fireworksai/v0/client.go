@@ -160,8 +160,9 @@ type FireworksChatUsage struct {
 func (c FireworksClient) Chat(request ChatRequest) (ChatResponse, error) {
 	response := ChatResponse{}
 	req := c.httpClient.R().SetResult(&response).SetBody(request)
-	if _, err := req.Post(chatEndpoint); err != nil {
-		return response, fmt.Errorf("error when sending chat request %v", err)
+	if res, err := req.Post(chatEndpoint); err != nil {
+		errMsg := res.Body()
+		return response, fmt.Errorf("sending chat request, %v, %s", err, errMsg)
 	}
 	return response, nil
 }
