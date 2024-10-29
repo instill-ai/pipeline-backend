@@ -174,13 +174,7 @@ func Init(
 
 		{
 			conn := googledrive.Init(baseComp)
-			conn = conn.WithOAuthCredentials(secrets["google"])
-			compStore.Import(conn)
-		}
-
-		{
-			conn := googledrive.Init(baseComp)
-			conn = conn.WithOAuthCredentials(secrets["google"])
+			conn = conn.WithOAuthCredentials(secrets["googledrive"])
 			compStore.Import(conn)
 		}
 
