@@ -46,6 +46,7 @@ type File interface {
 	ContentType() (t String)
 	FileName() (t String)
 	SourceURL() (t String)
+	String() string
 }
 
 type Document interface {

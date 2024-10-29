@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"mime"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-resty/resty/v2"
@@ -97,6 +98,19 @@ func convertDataURIToBytes(url string) (b []byte, contentType string, fileName s
 		return
 	}
 	return b, contentType, fileName, nil
+}
+
+func (f *fileData) String() string {
+	if strings.HasPrefix(f.contentType, "text/") || utf8.Valid(f.raw) {
+		return string(f.raw)
+	}
+
+	// If the file is not a text file, convert it to a data URI
+	dataURI, err := f.DataURI()
+	if err != nil {
+		return ""
+	}
+	return dataURI.String()
 }
 
 func (f *fileData) Binary() (ba format.ByteArray, err error) {
