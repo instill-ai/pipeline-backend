@@ -43,7 +43,7 @@ func setIteratorIndex(v format.Value, identifier string, index int) format.Value
 		identifier = defaultRangeIdentifier
 	}
 	switch v := v.(type) {
-	case format.String:
+	case format.ReferenceString:
 		s := v.String()
 		val := ""
 		for {
