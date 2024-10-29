@@ -5,60 +5,60 @@ import (
 )
 
 type appendInput struct {
-	Array   []format.Value `key:"array"`
-	Element format.Value   `key:"element"`
+	Array   []format.Value `instill:"array"`
+	Element format.Value   `instill:"element"`
 }
 
 type appendOutput struct {
-	Array []format.Value `key:"array"`
+	Array []format.Value `instill:"array"`
 }
 
 type assignInput struct {
-	Data format.Value `key:"data"`
+	Data format.Value `instill:"data"`
 }
 
 type assignOutput struct {
-	Data format.Value `key:"data"`
+	Data format.Value `instill:"data"`
 }
 
 type concatInput struct {
-	Arrays [][]format.Value `key:"arrays"`
+	Arrays [][]format.Value `instill:"arrays"`
 }
 
 type concatOutput struct {
-	Array []format.Value `key:"array"`
+	Array []format.Value `instill:"array"`
 }
 
 type differenceInput struct {
-	SetA []format.Value `key:"set-a"`
-	SetB []format.Value `key:"set-b"`
+	SetA []format.Value `instill:"set-a"`
+	SetB []format.Value `instill:"set-b"`
 }
 
 type differenceOutput struct {
-	Set []format.Value `key:"set"`
+	Set []format.Value `instill:"set"`
 }
 
 type intersectionInput struct {
-	Sets [][]format.Value `key:"sets"`
+	Sets [][]format.Value `instill:"sets"`
 }
 
 type intersectionOutput struct {
-	Set []format.Value `key:"set"`
+	Set []format.Value `instill:"set"`
 }
 
 type splitInput struct {
-	Array     []format.Value `key:"array"`
-	GroupSize int            `key:"group-size"`
+	Array     []format.Value `instill:"array"`
+	GroupSize int            `instill:"group-size"`
 }
 
 type splitOutput struct {
-	Arrays [][]format.Value `key:"arrays"`
+	Arrays [][]format.Value `instill:"arrays"`
 }
 
 type unionInput struct {
-	Sets [][]format.Value `key:"sets"`
+	Sets [][]format.Value `instill:"sets"`
 }
 
 type unionOutput struct {
-	Set []format.Value `key:"set"`
+	Set []format.Value `instill:"set"`
 }
