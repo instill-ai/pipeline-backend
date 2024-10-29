@@ -537,6 +537,15 @@ func TestOperator_CreateExecution(t *testing.T) {
 }
 ```
 
+
+In our testing methodology, we use two main approaches for mocking external services:
+
+1. In some components, we mock only the interface and skip testing the actual client, as with services like Slack and HubSpot.
+2. In other components, we create a fake server for test purposes, as with OpenAI integrations.
+
+Moving forward, we plan to standardize on the second approach, integrating all components to use a fake server setup for testing.
+
+
 ### Initialize the component
 
 The last step before being able to use the component in **💧 Instill VDP** is
