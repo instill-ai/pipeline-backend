@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
@@ -13,7 +14,7 @@ import (
 //
 // The main functions in this file are:
 //
-// - Unmarshal: Converts a Map value into a provided struct using `key` tags.
+// - Unmarshal: Converts a Map value into a provided struct using `instill` tags.
 // - Marshal: Converts a struct into a Map that represents the struct fields as
 // values.
 //
@@ -23,20 +24,21 @@ import (
 //
 // The following struct tags are supported:
 //
-// - `key`: Specifies the key name to use when marshaling/unmarshaling the field.
+// - `instill`: Specifies the key name and optional format when marshaling/unmarshaling the field.
 //   If not provided, the field name will be used. For example:
 //   type Person struct {
-//     FirstName string `key:"first_name"`  // Will use "first_name" as the key
-//     LastName  string                     // Will use "LastName" as the key
+//     FirstName string `instill:"first_name"`           // Will use "first_name" as the key
+//     LastName  string                                  // Will use "LastName" as the key
+//     Avatar   format.Image `instill:"photo,image/png"` // Will use "photo" as key and convert to PNG
 //   }
 //
-// - `format`: Specifies MIME type conversions for File types:
+// The format portion of the tag supports:
 //   - For Image: "image/png", "image/jpeg", etc
 //   - For Video: "video/mp4", "video/webm", etc
 //   - For Audio: "audio/mp3", "audio/wav", etc
 //   - For Document: "application/pdf", "text/plain", etc
 
-// Unmarshal converts a Map value into the provided struct s using `key` tags.
+// Unmarshal converts a Map value into the provided struct s using `instill` tags.
 func Unmarshal(d format.Value, s any) error {
 	v := reflect.ValueOf(s)
 	if v.Kind() != reflect.Ptr || v.Elem().Kind() != reflect.Struct {
@@ -286,45 +288,49 @@ func unmarshalInterface(v format.Value, field reflect.Value, structField reflect
 		return nil
 	}
 	if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
-		// Check for format tag and convert if needed
-		if formatTag := structField.Tag.Get("format"); formatTag != "" {
-			switch val := v.(type) {
-			case format.Image:
-				converted, err := val.Convert(formatTag)
-				if err != nil {
-					return err
-				}
-				field.Set(reflect.ValueOf(converted))
-				return nil
-			case format.Video:
-				converted, err := val.Convert(formatTag)
-				if err != nil {
-					return err
-				}
-				field.Set(reflect.ValueOf(converted))
-				return nil
-			case format.Audio:
-				converted, err := val.Convert(formatTag)
-				if err != nil {
-					return err
-				}
-				field.Set(reflect.ValueOf(converted))
-				return nil
-			case format.Document:
-				if formatTag == "application/pdf" {
-					converted, err := val.PDF()
+		// Check for format in instill tag and convert if needed
+		if tag := structField.Tag.Get("instill"); tag != "" {
+			parts := strings.Split(tag, ",")
+			if len(parts) > 1 {
+				formatTag := parts[1]
+				switch val := v.(type) {
+				case format.Image:
+					converted, err := val.Convert(formatTag)
 					if err != nil {
 						return err
 					}
 					field.Set(reflect.ValueOf(converted))
 					return nil
-				} else if formatTag == "text/plain" {
-					converted, err := val.Text()
+				case format.Video:
+					converted, err := val.Convert(formatTag)
 					if err != nil {
 						return err
 					}
 					field.Set(reflect.ValueOf(converted))
 					return nil
+				case format.Audio:
+					converted, err := val.Convert(formatTag)
+					if err != nil {
+						return err
+					}
+					field.Set(reflect.ValueOf(converted))
+					return nil
+				case format.Document:
+					if formatTag == "application/pdf" {
+						converted, err := val.PDF()
+						if err != nil {
+							return err
+						}
+						field.Set(reflect.ValueOf(converted))
+						return nil
+					} else if formatTag == "text/plain" {
+						converted, err := val.Text()
+						if err != nil {
+							return err
+						}
+						field.Set(reflect.ValueOf(converted))
+						return nil
+					}
 				}
 			}
 		}
@@ -336,11 +342,12 @@ func unmarshalInterface(v format.Value, field reflect.Value, structField reflect
 
 // getFieldName returns the field name from the struct tag or the field name itself.
 func getFieldName(field reflect.StructField) string {
-	fieldName := field.Tag.Get("key")
-	if fieldName == "" {
-		fieldName = field.Name
+	tag := field.Tag.Get("instill")
+	if tag == "" {
+		return field.Name
 	}
-	return fieldName
+	parts := strings.Split(tag, ",")
+	return parts[0]
 }
 
 // Marshal converts a struct into a Map that represents the struct fields as values.
@@ -409,13 +416,22 @@ func marshalStruct(v reflect.Value) (Map, error) {
 			continue
 		}
 
-		fieldName := field.Tag.Get("key")
-		if fieldName == "" {
+		tag := field.Tag.Get("instill")
+		var fieldName string
+		var formatTag string
+
+		if tag != "" {
+			parts := strings.Split(tag, ",")
+			fieldName = parts[0]
+			if len(parts) > 1 {
+				formatTag = parts[1]
+			}
+		} else {
 			fieldName = field.Name
 		}
 
-		// Handle format tag conversion before marshaling
-		if formatTag := field.Tag.Get("format"); formatTag != "" && fieldValue.CanInterface() {
+		// Handle format conversion before marshaling
+		if formatTag != "" && fieldValue.CanInterface() {
 			if val, ok := fieldValue.Interface().(format.Value); ok {
 				switch v := val.(type) {
 				case format.Image:

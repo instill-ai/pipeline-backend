@@ -15,11 +15,11 @@ func TestUnmarshal(t *testing.T) {
 
 	c.Run("Basic types", func(c *qt.C) {
 		type TestStruct struct {
-			StringField   format.String  `key:"string-field"`
-			NumberField   format.Number  `key:"number-field"`
-			BooleanField  format.Boolean `key:"boolean-field"`
-			FloatField    float64        `key:"float-field"`
-			FloatPtrField *float64       `key:"float-ptr-field"`
+			StringField   format.String  `instill:"string-field"`
+			NumberField   format.Number  `instill:"number-field"`
+			BooleanField  format.Boolean `instill:"boolean-field"`
+			FloatField    float64        `instill:"float-field"`
+			FloatPtrField *float64       `instill:"float-ptr-field"`
 		}
 
 		floatVal := 42.5
@@ -44,13 +44,13 @@ func TestUnmarshal(t *testing.T) {
 
 	c.Run("Nested struct", func(c *qt.C) {
 		type NestedStruct struct {
-			NestedField format.String `key:"nested-field"`
+			NestedField format.String `instill:"nested-field"`
 		}
 
 		type TestStruct struct {
-			TopField     format.String `key:"top-field"`
-			NestedStruct NestedStruct  `key:"nested-struct"`
-			NestedPtr    *NestedStruct `key:"nested-ptr"`
+			TopField     format.String `instill:"top-field"`
+			NestedStruct NestedStruct  `instill:"nested-struct"`
+			NestedPtr    *NestedStruct `instill:"nested-ptr"`
 		}
 
 		input := Map{
@@ -74,9 +74,9 @@ func TestUnmarshal(t *testing.T) {
 
 	c.Run("Array", func(c *qt.C) {
 		type TestStruct struct {
-			ArrayField  Array           `key:"array-field"`
-			StringArray []format.String `key:"string-array"`
-			NumberArray []format.Number `key:"number-array"`
+			ArrayField  Array           `instill:"array-field"`
+			StringArray []format.String `instill:"string-array"`
+			NumberArray []format.Number `instill:"number-array"`
 		}
 
 		input := Map{
@@ -107,9 +107,9 @@ func TestUnmarshal(t *testing.T) {
 
 	c.Run("Map", func(c *qt.C) {
 		type TestStruct struct {
-			MapField  Map                      `key:"map-field"`
-			StringMap map[string]format.String `key:"string-map"`
-			ValueMap  map[string]format.Value  `key:"value-map"`
+			MapField  Map                      `instill:"map-field"`
+			StringMap map[string]format.String `instill:"string-map"`
+			ValueMap  map[string]format.Value  `instill:"value-map"`
 		}
 
 		input := Map{
@@ -148,7 +148,7 @@ func TestUnmarshal(t *testing.T) {
 
 	c.Run("Format tag", func(c *qt.C) {
 		type TestStruct struct {
-			Image format.Image `key:"image" format:"image/bmp"`
+			Image format.Image `instill:"image,image/bmp"`
 		}
 
 		imageBytes, err := os.ReadFile("testdata/sample_640_426.jpeg")
@@ -175,7 +175,7 @@ func TestUnmarshal(t *testing.T) {
 
 	c.Run("Null", func(c *qt.C) {
 		type TestStruct struct {
-			NullField *format.String `key:"null-field"`
+			NullField *format.String `instill:"null-field"`
 		}
 
 		input := Map{
@@ -210,7 +210,7 @@ func TestUnmarshal(t *testing.T) {
 
 		c.Run("Invalid field type", func(c *qt.C) {
 			type InvalidStruct struct {
-				Field int `key:"field"`
+				Field int `instill:"field"`
 			}
 			input := Map{
 				"field": NewString("not a number"),
@@ -222,7 +222,7 @@ func TestUnmarshal(t *testing.T) {
 
 		c.Run("Invalid array element type", func(c *qt.C) {
 			type ArrayStruct struct {
-				Numbers []format.Number `key:"numbers"`
+				Numbers []format.Number `instill:"numbers"`
 			}
 			input := Map{
 				"numbers": Array{NewString("not a number")},
@@ -234,7 +234,7 @@ func TestUnmarshal(t *testing.T) {
 
 		c.Run("Invalid map value type", func(c *qt.C) {
 			type MapStruct struct {
-				Values map[string]format.Number `key:"values"`
+				Values map[string]format.Number `instill:"values"`
 			}
 			input := Map{
 				"values": Map{
@@ -249,8 +249,8 @@ func TestUnmarshal(t *testing.T) {
 
 	c.Run("Empty input", func(c *qt.C) {
 		type TestStruct struct {
-			OptionalField format.String  `key:"optional"`
-			RequiredPtr   *format.String `key:"required"`
+			OptionalField format.String  `instill:"optional"`
+			RequiredPtr   *format.String `instill:"required"`
 		}
 
 		input := Map{}
@@ -263,7 +263,7 @@ func TestUnmarshal(t *testing.T) {
 
 	c.Run("Mixed types array", func(c *qt.C) {
 		type TestStruct struct {
-			MixedArray Array `key:"mixed"`
+			MixedArray Array `instill:"mixed"`
 		}
 
 		input := Map{
@@ -293,9 +293,9 @@ func TestMarshal(t *testing.T) {
 
 	c.Run("Basic types", func(c *qt.C) {
 		input := struct {
-			StringField  format.String  `key:"string-field"`
-			NumberField  format.Number  `key:"number-field"`
-			BooleanField format.Boolean `key:"boolean-field"`
+			StringField  format.String  `instill:"string-field"`
+			NumberField  format.Number  `instill:"number-field"`
+			BooleanField format.Boolean `instill:"boolean-field"`
 		}{
 			StringField:  NewString("test"),
 			NumberField:  NewNumberFromFloat(42.5),
@@ -314,14 +314,14 @@ func TestMarshal(t *testing.T) {
 
 	c.Run("Nested struct", func(c *qt.C) {
 		input := struct {
-			TopField     format.String `key:"top-field"`
+			TopField     format.String `instill:"top-field"`
 			NestedStruct struct {
-				NestedField format.String `key:"nested-field"`
-			} `key:"nested-struct"`
+				NestedField format.String `instill:"nested-field"`
+			} `instill:"nested-struct"`
 		}{
 			TopField: NewString("top"),
 			NestedStruct: struct {
-				NestedField format.String `key:"nested-field"`
+				NestedField format.String `instill:"nested-field"`
 			}{
 				NestedField: NewString("nested"),
 			},
@@ -340,7 +340,7 @@ func TestMarshal(t *testing.T) {
 
 	c.Run("Array", func(c *qt.C) {
 		input := struct {
-			ArrayField Array `key:"array-field"`
+			ArrayField Array `instill:"array-field"`
 		}{
 			ArrayField: Array{NewString("one"), NewString("two"), NewString("three")},
 		}
@@ -360,7 +360,7 @@ func TestMarshal(t *testing.T) {
 
 	c.Run("Map", func(c *qt.C) {
 		input := struct {
-			MapField Map `key:"map-field"`
+			MapField Map `instill:"map-field"`
 		}{
 			MapField: Map{
 				"key1": NewString("value1"),
@@ -388,7 +388,7 @@ func TestMarshal(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		input := struct {
-			Image format.Image `key:"image" format:"image/jpeg"`
+			Image format.Image `instill:"image,image/jpeg"`
 		}{
 			Image: img,
 		}
@@ -406,7 +406,7 @@ func TestMarshal(t *testing.T) {
 
 	c.Run("Null", func(c *qt.C) {
 		input := struct {
-			NullField *format.String `key:"null-field"`
+			NullField *format.String `instill:"null-field"`
 		}{
 			NullField: nil,
 		}
@@ -422,8 +422,8 @@ func TestMarshal(t *testing.T) {
 	c.Run("Pointer fields", func(c *qt.C) {
 		floatVal := 42.5
 		input := struct {
-			FloatPtr  *float64      `key:"float-ptr"`
-			StringPtr format.String `key:"string-ptr"`
+			FloatPtr  *float64      `instill:"float-ptr"`
+			StringPtr format.String `instill:"string-ptr"`
 		}{
 			FloatPtr:  &floatVal,
 			StringPtr: NewString("pointer string"),
@@ -440,14 +440,14 @@ func TestMarshal(t *testing.T) {
 
 	c.Run("Complex nested structure", func(c *qt.C) {
 		type NestedStruct struct {
-			NestedField format.String `key:"nested-field"`
+			NestedField format.String `instill:"nested-field"`
 		}
 
 		input := struct {
-			Text    format.String           `key:"text"`
-			Numbers []format.Number         `key:"numbers"`
-			Object  NestedStruct            `key:"object"`
-			TextMap map[string]format.Value `key:"text-map"`
+			Text    format.String           `instill:"text"`
+			Numbers []format.Number         `instill:"numbers"`
+			Object  NestedStruct            `instill:"object"`
+			TextMap map[string]format.Value `instill:"text-map"`
 		}{
 			Text:    NewString("example text"),
 			Numbers: []format.Number{NewNumberFromFloat(1), NewNumberFromFloat(2), NewNumberFromFloat(3)},
@@ -487,7 +487,7 @@ func TestMarshal(t *testing.T) {
 	c.Run("Error cases", func(c *qt.C) {
 		c.Run("Invalid field type", func(c *qt.C) {
 			input := struct {
-				InvalidField chan int `key:"invalid"`
+				InvalidField chan int `instill:"invalid"`
 			}{
 				InvalidField: make(chan int),
 			}
@@ -503,7 +503,7 @@ func TestMarshal(t *testing.T) {
 
 		c.Run("Invalid map key type", func(c *qt.C) {
 			input := struct {
-				InvalidMap map[int]string `key:"invalid-map"`
+				InvalidMap map[int]string `instill:"invalid-map"`
 			}{
 				InvalidMap: map[int]string{1: "value"},
 			}
