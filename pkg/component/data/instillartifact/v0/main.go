@@ -24,6 +24,7 @@ const (
 	taskMatchFileStatus   string = "TASK_MATCH_FILE_STATUS"
 	taskSearchChunks      string = "TASK_RETRIEVE"
 	taskQuery             string = "TASK_ASK"
+	taskSyncFiles         string = "TASK_SYNC_FILES"
 )
 
 var (
@@ -47,6 +48,7 @@ type execution struct {
 	connection Connection
 }
 
+// Init initializes the component.
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
@@ -58,6 +60,7 @@ func Init(bc base.Component) *component {
 	return comp
 }
 
+// CreateExecution creates a new execution instance.
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	e := &execution{ComponentExecution: x}
 
@@ -86,6 +89,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 		e.execute = e.searchChunks
 	case taskQuery:
 		e.execute = e.query
+	case taskSyncFiles:
+		e.execute = e.syncFiles
 	default:
 		return nil, fmt.Errorf("%s task is not supported", x.Task)
 	}
@@ -93,7 +98,13 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	return e, nil
 }
 
+// Execute executes the given jobs sequentially.
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	defer e.connection.Close()
 	return base.SequentialExecutor(ctx, jobs, e.execute)
+}
+
+// Connection is the interface that wraps the basic Close method.
+type Connection interface {
+	Close() error
 }
