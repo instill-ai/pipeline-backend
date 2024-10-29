@@ -11,7 +11,7 @@ import (
 	"google.golang.org/api/drive/v3"
 )
 
-// IDriveServiceMock implements mm_googledriveclient.IDriveService
+// IDriveServiceMock implements mm_client.IDriveService
 type IDriveServiceMock struct {
 	t          minimock.Tester
 	finishOnce sync.Once
@@ -31,7 +31,7 @@ type IDriveServiceMock struct {
 	ReadFolderMock          mIDriveServiceMockReadFolder
 }
 
-// NewIDriveServiceMock returns a mock for mm_googledriveclient.IDriveService
+// NewIDriveServiceMock returns a mock for mm_client.IDriveService
 func NewIDriveServiceMock(t minimock.Tester) *IDriveServiceMock {
 	m := &IDriveServiceMock{t: t}
 
@@ -238,7 +238,7 @@ func (mmReadFile *mIDriveServiceMockReadFile) invocationsDone() bool {
 	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
 }
 
-// ReadFile implements mm_googledriveclient.IDriveService
+// ReadFile implements mm_client.IDriveService
 func (mmReadFile *IDriveServiceMock) ReadFile(fileUID string) (fp1 *drive.File, sp1 *string, err error) {
 	mm_atomic.AddUint64(&mmReadFile.beforeReadFileCounter, 1)
 	defer mm_atomic.AddUint64(&mmReadFile.afterReadFileCounter, 1)
@@ -577,7 +577,7 @@ func (mmReadFolder *mIDriveServiceMockReadFolder) invocationsDone() bool {
 	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
 }
 
-// ReadFolder implements mm_googledriveclient.IDriveService
+// ReadFolder implements mm_client.IDriveService
 func (mmReadFolder *IDriveServiceMock) ReadFolder(folderUID string, readContent bool) (fpa1 []*drive.File, spa1 []*string, err error) {
 	mm_atomic.AddUint64(&mmReadFolder.beforeReadFolderCounter, 1)
 	defer mm_atomic.AddUint64(&mmReadFolder.afterReadFolderCounter, 1)

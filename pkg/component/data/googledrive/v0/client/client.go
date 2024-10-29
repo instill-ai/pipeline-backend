@@ -1,4 +1,4 @@
-package googledriveclient
+package client
 
 import (
 	"encoding/base64"
