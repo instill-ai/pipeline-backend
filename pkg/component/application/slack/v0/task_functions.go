@@ -14,8 +14,8 @@ import (
 )
 
 type userInputReadTask struct {
-	ChannelName     string `json:"channel-name"`
-	StartToReadDate string `json:"start-to-read-date"`
+	ChannelNames    []string `json:"channel-names"` // updated to match tasks.json
+	StartToReadDate string   `json:"start-to-read-date"`
 }
 
 type ReadTaskResp struct {
@@ -58,35 +58,34 @@ func (e *execution) readMessage(in *structpb.Struct) (*structpb.Struct, error) {
 		return nil, fmt.Errorf("converting task input: %w", err)
 	}
 
-	targetChannelID, err := loopChannelListAPI(client, params.ChannelName)
-
-	if err != nil {
-		return nil, fmt.Errorf("fetching channel ID: %w", err)
-	}
-
-	resp, err := getConversationHistory(client, targetChannelID, "")
-	if err != nil {
-		return nil, fmt.Errorf("fetching channel history: %w", err)
-	}
-
-	if params.StartToReadDate == "" {
-		currentTime := time.Now()
-		sevenDaysAgo := currentTime.AddDate(0, 0, -7)
-		sevenDaysAgoString := sevenDaysAgo.Format(time.DateOnly)
-		params.StartToReadDate = sevenDaysAgoString
-	}
-
 	var readTaskResp ReadTaskResp
-	err = setAPIRespToReadTaskResp(resp.Messages, &readTaskResp, params.StartToReadDate)
-	if err != nil {
-		return nil, err
+
+	// Iterate through multiple channel names
+	for _, channelName := range params.ChannelNames {
+		targetChannelID, err := loopChannelListAPI(client, channelName)
+		if err != nil {
+			return nil, fmt.Errorf("fetching channel ID for %s: %w", channelName, err)
+		}
+
+		resp, err := getConversationHistory(client, targetChannelID, "")
+		if err != nil {
+			return nil, fmt.Errorf("fetching channel history for %s: %w", channelName, err)
+		}
+
+		if params.StartToReadDate == "" {
+			currentTime := time.Now()
+			sevenDaysAgo := currentTime.AddDate(0, 0, -7)
+			sevenDaysAgoString := sevenDaysAgo.Format(time.DateOnly)
+			params.StartToReadDate = sevenDaysAgoString
+		}
+
+		err = setAPIRespToReadTaskResp(resp.Messages, &readTaskResp, params.StartToReadDate)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	// TODO: fetch historyAPI first if there are more conversations.
-	// if resp.ResponseMetaData.NextCursor != "" {
-
-	// }
-
+	// Fetch replies to conversations
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
@@ -96,21 +95,12 @@ func (e *execution) readMessage(in *structpb.Struct) (*structpb.Struct, error) {
 			go func(readTaskResp *ReadTaskResp, idx int) {
 				defer wg.Done()
 				replies, _ := getConversationReply(client, targetChannelID, readTaskResp.Conversations[idx].TS)
-				// TODO: to be discussed about this error handdling
-				// fail? or not fail?
-				// if err != nil {
-				// }
-
-				// TODO: fetch further replies if there are
-
 				mu.Lock()
 				err := setRepliedToConversation(readTaskResp, replies, idx)
-				// TODO: think a better way to pass lint, maybe use channel
 				if err != nil {
 					fmt.Println("error when set the output: ", err)
 				}
 				mu.Unlock()
-
 			}(&readTaskResp, i)
 		}
 	}
@@ -196,3 +186,4 @@ func (e *execution) sendMessage(in *structpb.Struct) (*structpb.Struct, error) {
 
 	return out, nil
 }
+
