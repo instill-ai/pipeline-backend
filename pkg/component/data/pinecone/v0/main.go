@@ -83,6 +83,11 @@ func newBaseClient(setup *structpb.Struct, logger *zap.Logger) *httpclient.Clien
 
 	c.SetHeader("Api-Key", getAPIKey(setup))
 	c.SetHeader("User-Agent", "source_tag=instillai")
+
+	// Currently, by default Pinecone API redirects request to OLDEST stable version i.e. 2024-04 right now and does not support Rerank
+	// It is recommended by Pinecone to specify API version to use: https://docs.pinecone.io/reference/api/versioning#specify-an-api-version
+	c.SetHeader("X-Pinecone-API-Version", "2024-10")
+
 	return c
 }
 
