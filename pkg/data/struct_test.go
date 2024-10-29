@@ -319,6 +319,41 @@ func TestUnmarshal(t *testing.T) {
 		c.Assert(boolResult.Value.(format.Boolean).Boolean(), qt.Equals, true)
 
 	})
+
+	c.Run("Undetermined type", func(c *qt.C) {
+
+		type TestStruct struct {
+			Value format.Value `instill:"value"`
+		}
+
+		// Test string value
+		stringInput := Map{
+			"value": NewString("test"),
+		}
+		var stringResult TestStruct
+		err := Unmarshal(stringInput, &stringResult)
+		c.Assert(err, qt.IsNil)
+		c.Assert(stringResult.Value.(format.String).String(), qt.Equals, "test")
+
+		// Test number value
+		numberInput := Map{
+			"value": NewNumberFromFloat(42.5),
+		}
+		var numberResult TestStruct
+		err = Unmarshal(numberInput, &numberResult)
+		c.Assert(err, qt.IsNil)
+		c.Assert(numberResult.Value.(format.Number).Float64(), qt.Equals, 42.5)
+
+		// Test boolean value
+		boolInput := Map{
+			"value": NewBoolean(true),
+		}
+		var boolResult TestStruct
+		err = Unmarshal(boolInput, &boolResult)
+		c.Assert(err, qt.IsNil)
+		c.Assert(boolResult.Value.(format.Boolean).Boolean(), qt.Equals, true)
+
+	})
 }
 
 func TestMarshal(t *testing.T) {
