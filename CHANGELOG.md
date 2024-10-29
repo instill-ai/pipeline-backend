@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.45.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.45.1-beta...v0.45.2-beta) (2024-10-29)
+
+
+### Features
+
+* **collection:** add task split ([#780](https://github.com/instill-ai/pipeline-backend/issues/780)) ([1719e48](https://github.com/instill-ai/pipeline-backend/commit/1719e48fbea205ed8a8ac84c6d6c262fd89ab86e))
+
+
+### Miscellaneous Chores
+
+* release v0.45.2-beta ([777a362](https://github.com/instill-ai/pipeline-backend/commit/777a36212312797e32beedae1d9b967c3b8f04e4))
+
 ## [0.45.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.45.0-beta...v0.45.1-beta) (2024-10-25)
 
 
