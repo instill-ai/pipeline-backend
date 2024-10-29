@@ -32,3 +32,10 @@ func (n *nullData) Get(p *path.Path) (v format.Value, err error) {
 func (n nullData) ToStructValue() (v *structpb.Value, err error) {
 	return structpb.NewNullValue(), nil
 }
+
+func (n *nullData) Equal(other format.Value) bool {
+	if _, ok := other.(*nullData); ok {
+		return true
+	}
+	return false
+}

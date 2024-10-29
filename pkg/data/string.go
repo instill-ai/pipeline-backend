@@ -38,3 +38,10 @@ func (s stringData) ToStructValue() (v *structpb.Value, err error) {
 	v = structpb.NewStringValue(s.Raw)
 	return
 }
+
+func (s *stringData) Equal(other format.Value) bool {
+	if other, ok := other.(format.String); ok {
+		return s.Raw == other.String()
+	}
+	return false
+}
