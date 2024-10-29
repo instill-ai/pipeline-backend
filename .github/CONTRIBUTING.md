@@ -91,12 +91,6 @@ At the end of the tests, some SQL queries are run to clean up the data.
 `DB_HOST` points to the database host so the SQL connection can be established.
 If empty, tests will try to connect to `localhost:5432`.
 
-#### Stop the dev container
-
-```bash
-$ make stop
-```
-
 #### Remove the dev container
 
 ```bash
