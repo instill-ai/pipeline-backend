@@ -21,6 +21,7 @@ func (booleanData) IsValue() {}
 func (b *booleanData) Boolean() bool {
 	return b.Raw
 }
+
 func (b *booleanData) String() (val string) {
 	if b.Raw {
 		return "true"
@@ -42,4 +43,15 @@ func (b *booleanData) Get(p *path.Path) (v format.Value, err error) {
 func (b booleanData) ToStructValue() (v *structpb.Value, err error) {
 	v = structpb.NewBoolValue(b.Raw)
 	return
+}
+
+func (b *booleanData) Equal(other format.Value) bool {
+	if other, ok := other.(format.Boolean); ok {
+		return b.Raw == other.Boolean()
+	}
+	return false
+}
+
+func (b *booleanData) Hash() string {
+	return fmt.Sprintf("%t", b.Raw)
 }

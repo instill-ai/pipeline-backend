@@ -49,3 +49,10 @@ func (n numberData) ToStructValue() (v *structpb.Value, err error) {
 	v = structpb.NewNumberValue(n.Raw)
 	return
 }
+
+func (n *numberData) Equal(other format.Value) bool {
+	if other, ok := other.(format.Number); ok {
+		return n.Raw == other.Float64()
+	}
+	return false
+}

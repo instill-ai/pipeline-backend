@@ -52,3 +52,18 @@ func (m Map) ToStructValue() (v *structpb.Value, err error) {
 	}
 	return structpb.NewStructValue(mp), nil
 }
+
+func (m Map) Equal(other format.Value) bool {
+	if other, ok := other.(Map); ok {
+		if len(m) != len(other) {
+			return false
+		}
+		for k, v := range m {
+			if !v.Equal(other[k]) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}

@@ -49,3 +49,18 @@ func (a Array) ToStructValue() (v *structpb.Value, err error) {
 	}
 	return structpb.NewListValue(arr), nil
 }
+
+func (a Array) Equal(other format.Value) bool {
+	if other, ok := other.(Array); ok {
+		if len(a) != len(other) {
+			return false
+		}
+		for i, v := range a {
+			if !v.Equal(other[i]) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}

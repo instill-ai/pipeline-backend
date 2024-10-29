@@ -181,3 +181,17 @@ func (f fileData) ToStructValue() (v *structpb.Value, err error) {
 	}
 	return structpb.NewStringValue(d.String()), nil
 }
+
+func (f *fileData) Equal(other format.Value) bool {
+	if other, ok := other.(format.File); ok {
+		ba, err := other.Binary()
+		if err != nil {
+			return false
+		}
+		return fmt.Sprintf("%x", f.raw) == fmt.Sprintf("%x", ba.ByteArray()) &&
+			f.contentType == other.ContentType().String() &&
+			f.fileName == other.FileName().String() &&
+			f.sourceURL == other.SourceURL().String()
+	}
+	return false
+}
