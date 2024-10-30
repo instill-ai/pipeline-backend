@@ -671,7 +671,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		}
 	}
 
-	if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && dbPipeline.Recipe.Variable != nil {
+	if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL {
 		spec, err := c.GeneratePipelineDataSpec(dbPipeline.Recipe.Variable, dbPipeline.Recipe.Output, dbPipeline.Recipe.Component)
 		if err == nil {
 			pbPipeline.DataSpecification = spec
