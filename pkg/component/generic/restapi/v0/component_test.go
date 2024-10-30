@@ -2,223 +2,19 @@ package restapi
 
 import (
 	"context"
-	"encoding/base64"
-	"fmt"
-	"io"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	qt "github.com/frankban/quicktest"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
-	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
-	"github.com/instill-ai/x/errmsg"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
-
-const (
-	errResp = `{"message": "Bad request"}`
-	okResp  = `{"title": "Be the wheel"}`
-)
-
-var (
-	path = "/good-songs/10"
-)
-
-func TestComponent_Execute(t *testing.T) {
-	c := qt.New(t)
-	ctx := context.Background()
-
-	bc := base.Component{}
-	cmp := Init(bc)
-	reqBody := map[string]any{
-		"title": "Be the wheel",
-	}
-
-	c.Run("nok - unsupported task", func(c *qt.C) {
-		task := "FOOBAR"
-
-		exec, err := cmp.CreateExecution(base.ComponentExecution{
-			Component: cmp,
-			Setup:     cfg(noAuthType),
-			Task:      task,
-		})
-		c.Assert(err, qt.IsNil)
-
-		pbIn := new(structpb.Struct)
-		ir, ow, eh, job := mock.GenerateMockJob(c)
-		ir.ReadMock.Optional().Return(pbIn, nil)
-		ow.WriteMock.Optional().Return(nil)
-		eh.ErrorMock.Optional()
-
-		err = exec.Execute(ctx, []*base.Job{job})
-		c.Check(err, qt.IsNotNil)
-
-		want := "FOOBAR task is not supported."
-		c.Check(errmsg.Message(err), qt.Equals, want)
-	})
-
-	c.Run("ok - POST, 400, basic auth", func(c *qt.C) {
-		h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c.Check(r.Method, qt.Equals, http.MethodPost)
-			c.Check(r.URL.Path, qt.Matches, path)
-
-			auth := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
-			c.Check(r.Header.Get("Authorization"), qt.Equals, "Basic "+auth)
-
-			c.Assert(r.Body, qt.IsNotNil)
-			defer r.Body.Close()
-
-			body, err := io.ReadAll(r.Body)
-			c.Assert(err, qt.IsNil)
-			c.Check(body, qt.JSONEquals, reqBody)
-
-			w.Header().Set("Content-Type", httpclient.MIMETypeJSON)
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, errResp)
-		})
-
-		srv := httptest.NewServer(h)
-		c.Cleanup(srv.Close)
-
-		exec, err := cmp.CreateExecution(base.ComponentExecution{
-			Component: cmp,
-			Setup:     cfg(basicAuthType),
-			Task:      taskPost,
-		})
-		c.Assert(err, qt.IsNil)
-
-		pbIn, err := base.ConvertToStructpb(TaskInput{
-			EndpointURL: srv.URL + path,
-			Body:        reqBody,
-		})
-		c.Assert(err, qt.IsNil)
-
-		ir, ow, eh, job := mock.GenerateMockJob(c)
-		ir.ReadMock.Return(pbIn, nil)
-		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
-			resp := output.AsMap()
-			c.Check(resp["status-code"], qt.Equals, float64(http.StatusBadRequest))
-			c.Check(resp["body"], qt.ContentEquals, map[string]any{"message": "Bad request"})
-			return nil
-		})
-		eh.ErrorMock.Optional()
-
-		err = exec.Execute(ctx, []*base.Job{job})
-		c.Check(err, qt.IsNil)
-
-	})
-
-	c.Run("ok - PUT + query auth", func(c *qt.C) {
-		h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c.Check(r.Method, qt.Equals, http.MethodPut)
-			c.Check(r.URL.Path, qt.Matches, path)
-
-			c.Check(r.FormValue(authKey), qt.Equals, authValue)
-			w.Header().Set("Content-Type", httpclient.MIMETypeJSON)
-			fmt.Fprintln(w, okResp)
-		})
-
-		srv := httptest.NewServer(h)
-		c.Cleanup(srv.Close)
-
-		exec, err := cmp.CreateExecution(base.ComponentExecution{
-			Component: cmp,
-			Setup:     cfg(apiKeyType),
-			Task:      taskPut,
-		})
-		c.Assert(err, qt.IsNil)
-
-		pbIn, err := base.ConvertToStructpb(TaskInput{
-			EndpointURL: srv.URL + path,
-			Body:        reqBody,
-		})
-
-		c.Assert(err, qt.IsNil)
-
-		ir, ow, eh, job := mock.GenerateMockJob(c)
-		ir.ReadMock.Return(pbIn, nil)
-		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
-			resp := output.AsMap()
-			c.Check(resp["status-code"], qt.Equals, float64(http.StatusOK))
-			c.Check(resp["body"], qt.ContentEquals, map[string]any{"title": "Be the wheel"})
-			return nil
-		})
-		eh.ErrorMock.Optional()
-
-		err = exec.Execute(ctx, []*base.Job{job})
-		c.Check(err, qt.IsNil)
-
-	})
-
-	c.Run("ok - GET + bearer auth", func(c *qt.C) {
-		h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c.Check(r.Method, qt.Equals, http.MethodGet)
-			c.Check(r.URL.Path, qt.Matches, path)
-
-			c.Check(r.Header.Get("Authorization"), qt.Equals, "Bearer "+token)
-
-			w.Header().Set("Content-Type", httpclient.MIMETypeJSON)
-			fmt.Fprintln(w, okResp)
-		})
-
-		srv := httptest.NewServer(h)
-		c.Cleanup(srv.Close)
-
-		exec, err := cmp.CreateExecution(base.ComponentExecution{
-			Component: cmp,
-			Setup:     cfg(bearerTokenType),
-			Task:      taskGet,
-		})
-		c.Assert(err, qt.IsNil)
-
-		pbIn, err := base.ConvertToStructpb(TaskInput{
-			EndpointURL: srv.URL + path,
-			Body:        reqBody,
-		})
-		c.Assert(err, qt.IsNil)
-
-		ir, ow, eh, job := mock.GenerateMockJob(c)
-		ir.ReadMock.Return(pbIn, nil)
-		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
-			resp := output.AsMap()
-			c.Check(resp["status-code"], qt.Equals, float64(http.StatusOK))
-			c.Check(resp["body"], qt.ContentEquals, map[string]any{"title": "Be the wheel"})
-			return nil
-		})
-		eh.ErrorMock.Optional()
-
-		err = exec.Execute(ctx, []*base.Job{job})
-		c.Check(err, qt.IsNil)
-
-	})
-}
-
-func TestComponent_Test(t *testing.T) {
-	c := qt.New(t)
-
-	bc := base.Component{}
-	cmp := Init(bc)
-
-	c.Run("ok - connected (even with non-2xx status", func(c *qt.C) {
-		h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c.Check(r.Method, qt.Equals, http.MethodGet)
-
-			w.WriteHeader(http.StatusNotFound)
-			w.Header().Set("Content-Type", "plain/text")
-			fmt.Fprintln(w, "Not Found")
-		})
-
-		srv := httptest.NewServer(h)
-		c.Cleanup(srv.Close)
-
-		err := cmp.Test(nil, cfg(noAuthType))
-		c.Check(err, qt.IsNil)
-	})
-}
 
 const (
 	username  = "foo"
@@ -229,6 +25,7 @@ const (
 )
 
 var testAuth = map[authType]map[string]any{
+
 	noAuthType: map[string]any{},
 	basicAuthType: map[string]any{
 		"username": username,
@@ -240,6 +37,179 @@ var testAuth = map[authType]map[string]any{
 		"key":           authKey,
 		"value":         authValue,
 	},
+}
+
+func TestComponent(t *testing.T) {
+	c := qt.New(t)
+
+	// Setup test HTTP server
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/json":
+			w.Header().Set("Content-Type", "application/json")
+			err := json.NewEncoder(w).Encode(map[string]string{"message": "hello"})
+			c.Assert(err, qt.IsNil)
+		case "/text":
+			w.Header().Set("Content-Type", "text/plain")
+			_, err := w.Write([]byte("hello"))
+			c.Assert(err, qt.IsNil)
+		case "/file":
+			w.Header().Set("Content-Type", "application/octet-stream")
+			w.Header().Set("Content-Disposition", `attachment; filename="test.bin"`)
+			_, err := w.Write([]byte("hello"))
+			c.Assert(err, qt.IsNil)
+		case "/error":
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+	}))
+	defer ts.Close()
+
+	testCases := []struct {
+		name     string
+		task     string
+		input    httpInput
+		expected httpOutput
+	}{
+		{
+			name: "GET JSON response",
+			task: "TASK_GET",
+			input: httpInput{
+				EndpointURL: ts.URL + "/json",
+			},
+			expected: httpOutput{
+				Body:       data.Map{"message": data.NewString("hello")},
+				Header:     map[string][]string{"Content-Type": {"application/json"}},
+				StatusCode: 200,
+			},
+		},
+		{
+			name: "GET text response",
+			task: "TASK_GET",
+			input: httpInput{
+				EndpointURL: ts.URL + "/text",
+			},
+			expected: httpOutput{
+				Body:       data.NewString("hello"),
+				Header:     map[string][]string{"Content-Type": {"text/plain"}},
+				StatusCode: 200,
+			},
+		},
+		{
+			name: "GET binary response",
+			task: "TASK_GET",
+			input: httpInput{
+				EndpointURL: ts.URL + "/file",
+			},
+			expected: httpOutput{
+				Body: func() format.Value {
+					v, _ := data.NewFileFromBytes([]byte("hello"), "application/octet-stream", "test.bin")
+					return v
+				}(),
+				Header:     map[string][]string{"Content-Type": {"application/octet-stream"}},
+				StatusCode: 200,
+			},
+		},
+		{
+			name: "POST JSON request/response",
+			task: "TASK_POST",
+			input: httpInput{
+				EndpointURL: ts.URL + "/json",
+				Header:      map[string][]string{"Content-Type": {"application/json"}},
+				Body:        data.Map{"message": data.NewString("hello")},
+			},
+			expected: httpOutput{
+				Body:       data.Map{"message": data.NewString("hello")},
+				Header:     map[string][]string{"Content-Type": {"application/json"}},
+				StatusCode: 200,
+			},
+		},
+		{
+			name: "PATCH text request/response",
+			task: "TASK_PATCH",
+			input: httpInput{
+				EndpointURL: ts.URL + "/text",
+				Header:      map[string][]string{"Content-Type": {"text/plain"}},
+				Body:        data.NewString("hello"),
+			},
+			expected: httpOutput{
+				Body:       data.NewString("hello"),
+				Header:     map[string][]string{"Content-Type": {"text/plain"}},
+				StatusCode: 200,
+			},
+		},
+		{
+			name: "DELETE request",
+			task: "TASK_DELETE",
+			input: httpInput{
+				EndpointURL: ts.URL + "/json",
+			},
+			expected: httpOutput{
+				Body:       data.Map{"message": data.NewString("hello")},
+				Header:     map[string][]string{"Content-Type": {"application/json"}},
+				StatusCode: 200,
+			},
+		},
+		{
+			name: "PUT request",
+			task: "TASK_PUT",
+			input: httpInput{
+				EndpointURL: ts.URL + "/json",
+				Body:        data.Map{"message": data.NewString("hello")},
+			},
+			expected: httpOutput{
+				Body:       data.Map{"message": data.NewString("hello")},
+				Header:     map[string][]string{"Content-Type": {"application/json"}},
+				StatusCode: 200,
+			},
+		},
+		{
+			name: "GET error response",
+			task: "TASK_GET",
+			input: httpInput{
+				EndpointURL: ts.URL + "/error",
+			},
+			expected: httpOutput{
+				Body:       data.NewString("Internal Server Error\n"),
+				Header:     map[string][]string{"Content-Type": {"text/plain; charset=utf-8"}},
+				StatusCode: 500,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		c.Run(tc.name, func(c *qt.C) {
+			component := Init(base.Component{})
+			c.Assert(component, qt.IsNotNil)
+
+			execution, err := component.CreateExecution(base.ComponentExecution{
+				Component: component,
+				Task:      tc.task,
+				Setup:     cfg(noAuthType),
+			})
+			c.Assert(err, qt.IsNil)
+
+			ir, ow, _, job := mock.GenerateMockJob(c)
+			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
+				switch input := input.(type) {
+				case *httpInput:
+					*input = tc.input
+				}
+				return nil
+			})
+
+			var capturedOutput httpOutput
+			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
+				capturedOutput = output.(httpOutput)
+				return nil
+			})
+
+			err = execution.Execute(context.Background(), []*base.Job{job})
+			c.Assert(err, qt.IsNil)
+			c.Assert(capturedOutput.Body.Equal(tc.expected.Body), qt.IsTrue)
+			c.Assert(capturedOutput.StatusCode, qt.Equals, tc.expected.StatusCode)
+			c.Assert(capturedOutput.Header["Content-Type"], qt.DeepEquals, tc.expected.Header["Content-Type"])
+		})
+	}
 }
 
 func cfg(atype authType) *structpb.Struct {

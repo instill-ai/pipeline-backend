@@ -10,7 +10,7 @@
         "body": {
           "description": "The request body",
           "instillAcceptFormats": [
-            "semi-structured/json"
+            "*"
           ],
           "instillShortDescription": "The request body",
           "instillUIOrder": 1,
@@ -106,7 +106,7 @@
       "properties": {
         "body": {
           "description": "The body of the response",
-          "instillFormat": "semi-structured/json",
+          "instillFormat": "*",
           "instillUIOrder": 1,
           "required": [],
           "title": "Body"
