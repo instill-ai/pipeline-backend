@@ -15,6 +15,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000029"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000031"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000032"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000033"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
@@ -76,6 +77,8 @@ func Migrate(version uint) error {
 		m = &convert000031.SlackSetupConverter{Basic: bc}
 	case 32:
 		m = &convert000032.ConvertToWeb{Basic: bc}
+	case 33:
+		m = &convert000033.RenameInstillFormat{Basic: bc}
 	default:
 		return nil
 	}
