@@ -7,19 +7,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
 )
 
-type TaskInput struct {
-	EndpointURL string      `json:"endpoint-url"`
-	Body        interface{} `json:"body,omitempty"`
-}
-
-type TaskOutput struct {
-	StatusCode int                 `json:"status-code"`
-	Body       interface{}         `json:"body"`
-	Header     map[string][]string `json:"header"`
-}
-
 func newClient(setup *structpb.Struct, logger *zap.Logger) (*httpclient.Client, error) {
-	c := httpclient.New("REST API", "",
+	c := httpclient.New("HTTP API", "",
 		httpclient.WithLogger(logger),
 	)
 
