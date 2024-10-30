@@ -21,6 +21,7 @@ type SystemVariables struct {
 	PipelineReleaseUID uuid.UUID              `json:"__PIPELINE_RELEASE_UID"`
 	PipelineOwnerType  resource.NamespaceType `json:"__PIPELINE_OWNER_TYPE"`
 	PipelineOwnerUID   uuid.UUID              `json:"__PIPELINE_OWNER_UID"`
+	ExpiryRuleTag      string                 `json:"__EXPIRY_RULE_TAG"`
 
 	// PipelineUserUID is the authenticated user executing a pipeline.
 	PipelineUserUID uuid.UUID `json:"__PIPELINE_USER_UID"`

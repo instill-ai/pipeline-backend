@@ -109,7 +109,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 	}
 
 	s.log.Info("start to get files from minio", zap.String("referenceIDs", strings.Join(referenceIDs, ",")))
-	fileContents, err := s.minioClient.GetFilesByPaths(ctx, referenceIDs)
+	fileContents, err := s.minioClient.GetFilesByPaths(ctx, s.log, referenceIDs)
 	if err != nil {
 		s.log.Error("failed to get files from minio", zap.Error(err))
 	}
@@ -126,12 +126,12 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 	}
 
 	userIDMap := make(map[string]*string)
-	for requesterID := range userUIDMap {
-		runner, err := s.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{Uid: requesterID})
+	for reqUID := range userUIDMap {
+		runner, err := s.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{Uid: reqUID})
 		if err != nil {
 			return nil, err
 		}
-		userIDMap[requesterID] = &runner.Id
+		userIDMap[reqUID] = &runner.Id
 	}
 
 	// Convert datamodel.PipelineRun to pb.PipelineRun
@@ -229,7 +229,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 	}
 
 	s.log.Info("start to get files from minio", zap.String("referenceIDs", strings.Join(referenceIDs, ",")))
-	fileContents, err := s.minioClient.GetFilesByPaths(ctx, referenceIDs)
+	fileContents, err := s.minioClient.GetFilesByPaths(ctx, s.log, referenceIDs)
 	if err != nil {
 		s.log.Error("failed to get files from minio", zap.Error(err))
 	}

@@ -17,13 +17,16 @@ type UploadToMinioActivityResponse struct {
 
 type UploadInputsToMinioActivityParam struct {
 	PipelineTriggerID string
+	ExpiryRuleTag     string
 }
 
 type UploadOutputsToMinioActivityParam struct {
 	PipelineTriggerID string
+	ExpiryRuleTag     string
 }
 
 type UploadRecipeToMinioActivityParam struct {
 	PipelineTriggerID string
+	ExpiryRuleTag     string
 	UploadToMinioActivityParam
 }
