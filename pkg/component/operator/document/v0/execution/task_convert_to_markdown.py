@@ -25,6 +25,7 @@ if __name__ == "__main__":
 	image_idx = 0
 	errors = []
 	all_page_images = []
+	markdowns = []
 
 	try:
 		times = len(pdf.raw_pages) // separator_number + 1
@@ -52,12 +53,15 @@ if __name__ == "__main__":
 
 			errors += pdf.errors
 
+			markdowns += pdf.markdowns
+
 		output = {
 			"body": result,
 			"images": images,
 			"parsing_error": errors,
 			"all_page_images": all_page_images,
 			"display_all_page_image": display_all_page_image,
+			"markdowns": markdowns,
 		}
 		print(json.dumps(output))
 	except Exception as e:
