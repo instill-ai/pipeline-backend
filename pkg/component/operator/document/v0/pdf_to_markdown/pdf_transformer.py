@@ -24,6 +24,8 @@ class PDFTransformer:
 	tables: list[dict]
 	base64_images: list[dict]
 	page_numbers_with_images: list[int]
+	# This is the result of the markdown transformation divided by pages.
+	markdowns: list[str]
 
 	def __init__(self, x: BytesIO, display_image_tag: bool = False, image_index: int = 0):
 		self.pdf = pdfplumber.open(x)
@@ -54,6 +56,7 @@ class PDFTransformer:
 		self.set_paragraph_information(self.lines)
 
 		self.result = ""
+		self.markdowns = len(self.pdf.pages) * [""]
 
 	def process_image(self, i: int):
 		image_index = i
@@ -157,8 +160,8 @@ class PDFTransformer:
 	def process_table(self, page: Page):
 		tables = page.find_tables(
 			table_settings={
-				"vertical_strategy": "lines",
-				"horizontal_strategy": "lines",
+				"vertical_strategy": "lines_strict",
+				"horizontal_strategy": "lines_strict",
 				}
 		)
 		if tables:
@@ -235,11 +238,20 @@ class PDFTransformer:
 	def transform_line_to_markdown(self, lines: list[dict]):
 		result = ""
 		to_be_processed_table = []
+		need_append_to_markdowns = False
+		page_number = 0
+
 		for i, line in enumerate(lines):
 			table = self.meet_table(line, line["page_number"])
 			if table and table not in to_be_processed_table:
 				to_be_processed_table.append(table)
 			elif table and table in to_be_processed_table:
+
+				# Deal with markdowns. If the table is the last element in the page, we need to add the table to the previous markdowns.
+				if i < len(lines) - 1 and line["page_number"] != lines[i+1]["page_number"]:
+					need_append_to_markdowns = True
+					page_number = line["page_number"]
+
 				continue
 			elif to_be_processed_table:
 				for table in to_be_processed_table:
@@ -310,10 +322,27 @@ class PDFTransformer:
 				result += "\n"
 
 
+			# Insert image sections
 			if i < len(lines) - 1:
 				result += self.insert_image(line, lines[i+1])
 			else:
 				result += self.insert_image(line, None)
+
+
+			# Deal with markdowns.
+			# If the table is the last element in the page, we need to add the table to the previous markdowns.
+			if need_append_to_markdowns:
+				self.markdowns[page_number] = result
+				result = ""
+				need_append_to_markdowns = False
+				page_number = 0
+
+			# If the next line is in the next page, we need to add the result to the markdowns.
+			elif i < len(lines) - 1 and line["page_number"] != lines[i+1]["page_number"]:
+				self.markdowns[line["page_number"] - 1] = result
+				result = ""
+
+
 		if self.tables:
 			processed_table = []
 			for table in self.tables:
@@ -324,7 +353,16 @@ class PDFTransformer:
 			for table in processed_table:
 				self.tables.remove(table)
 
-		return result
+		# Deal with the last page for markdowns
+		if result:
+			self.markdowns[lines[-1]["page_number"] - 1] = result
+
+		combined_markdown = ""
+
+		for markdown in self.markdowns:
+			combined_markdown += markdown
+
+		return combined_markdown
 
 	def line_process(self, line: dict, i: int, lines: list[dict], current_result: str):
 		result = ""

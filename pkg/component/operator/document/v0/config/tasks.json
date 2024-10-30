@@ -108,6 +108,16 @@
           },
           "title": "All Page Images",
           "type": "array"
+        },
+        "markdowns": {
+          "description": "Markdown text converted from the PDF document, and it will be separated by pages.",
+          "instillFormat": "array:string",
+          "instillUIOrder": 5,
+          "items": {
+            "type": "string"
+          },
+          "title": "Markdowns",
+          "type": "array"
         }
       },
       "required": [
