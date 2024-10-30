@@ -75,12 +75,13 @@ jobs:
       - name: Load .env file (instill-core)
         uses: cardinalby/export-env-action@v2
         with:
-          envFile: '.env|.env.component'
+          envFile: .env
 
       - name: Launch Instill Core (latest)
-        # CFG_COMPONENT_* variables are injected to test OAuth connection
+        # CFG_COMPONENT_SECRETS_GITHUB* variables are injected to test OAuth connection
         # creation
         run: |
+          sed -i 's/\(\w\+GITHUB\w\+\)=/\1=foo/' .env.component
           COMPOSE_PROFILES=all \
           EDITION=local-ce:test \
           RAY_LATEST_TAG=latest \
