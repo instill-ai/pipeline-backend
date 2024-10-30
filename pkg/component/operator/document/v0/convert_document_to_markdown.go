@@ -23,6 +23,7 @@ type ConvertDocumentToMarkdownOutput struct {
 	Images        []string `json:"images,omitempty"`
 	Error         string   `json:"error,omitempty"`
 	AllPageImages []string `json:"all-page-images,omitempty"`
+	Markdowns     []string `json:"markdowns"`
 }
 
 func ConvertDocumentToMarkdown(inputStruct *ConvertDocumentToMarkdownInput, transformerGetter MarkdownTransformerGetterFunc) (*ConvertDocumentToMarkdownOutput, error) {
@@ -53,6 +54,7 @@ func ConvertDocumentToMarkdown(inputStruct *ConvertDocumentToMarkdownInput, tran
 		Images:        converterOutput.Images,
 		Error:         strings.Join(converterOutput.ParsingError, "\n"),
 		AllPageImages: converterOutput.AllPageImages,
+		Markdowns:     converterOutput.Markdowns,
 	}
 
 	if inputStruct.Filename != "" {
