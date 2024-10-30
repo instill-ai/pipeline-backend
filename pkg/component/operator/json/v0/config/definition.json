@@ -14,7 +14,7 @@
   "title": "JSON",
   "type": "COMPONENT_TYPE_OPERATOR",
   "uid": "28f53d15-6150-46e6-99aa-f76b70a926c0",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "sourceUrl": "https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/json/v0",
   "description": "Manipulate and convert JSON entities",
   "releaseStage": "RELEASE_STAGE_ALPHA"
