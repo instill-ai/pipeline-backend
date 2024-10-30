@@ -110,7 +110,7 @@
           "type": "array"
         },
         "markdowns": {
-          "description": "Markdown text converted from the PDF document, and it will be separated by pages.",
+          "description": "Markdown text converted from the PDF document, separated by page.",
           "instillFormat": "array:string",
           "instillUIOrder": 5,
           "items": {
