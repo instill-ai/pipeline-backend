@@ -42,14 +42,14 @@ The component definition and tasks are defined in the [definition.json](https://
 
 ### Upload File
 
-Upload and process the files into chunks into Catalog
+Upload and process the files into chunks into Catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPLOAD_FILE` |
-| [Options](#upload-file-options) (required) | `options` | object | Choose to upload the files to existing catalog or create a new catalog |
+| [Options](#upload-file-options) (required) | `options` | object | Choose to upload the files to existing catalog or create a new catalog. |
 </div>
 
 
@@ -68,10 +68,10 @@ Upload and process the files into chunks into Catalog
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Catalog ID | `catalog-id` | string |  Catalog ID that you input in the Catalog  |
-| File | `file` | string |  base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into catalog  |
+| Catalog ID | `catalog-id` | string |  Catalog ID that you input in the Catalog.  |
+| File | `file` | string |  Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into catalog.  |
 | File Name | `file-name` | string |  Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.  |
-| Namespace | `namespace` | string |  Fill in your namespace, you can get namespace through the tab of switching namespace  |
+| Namespace | `namespace` | string |  Fill in your namespace, you can get namespace through the tab of switching namespace.  |
 | Option | `option` | string |  Must be `"existing catalog"`   |
 </div>
 
@@ -81,13 +81,13 @@ Upload and process the files into chunks into Catalog
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Catalog ID | `catalog-id` | string |  Catalog ID for new catalog you want to create  |
-| Description | `description` | string |  Description of the catalog  |
-| File | `file` | string |  base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into catalog  |
+| Catalog ID | `catalog-id` | string |  Catalog ID for new catalog you want to create.  |
+| Description | `description` | string |  Description of the catalog.  |
+| File | `file` | string |  Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into catalog.  |
 | File Name | `file-name` | string |  Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.  |
-| Namespace | `namespace` | string |  Fill in your namespace, you can get namespace through the tab of switching namespace  |
+| Namespace | `namespace` | string |  Fill in your namespace, you can get namespace through the tab of switching namespace.  |
 | Option | `option` | string |  Must be `"create new catalog"`   |
-| Tags | `tags` | array |  Tags for the catalog  |
+| Tags | `tags` | array |  Tags for the catalog.  |
 </div>
 </details>
 
@@ -95,8 +95,8 @@ Upload and process the files into chunks into Catalog
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [File](#upload-file-file) | `file` | object | Result of uploading file into catalog |
-| Status | `status` | boolean | The status of trigger file processing, if succeeded, return true |
+| [File](#upload-file-file) | `file` | object | Result of uploading file into catalog. |
+| Status | `status` | boolean | The status of trigger file processing, if succeeded, return true. |
 </div>
 
 <details>
@@ -108,26 +108,26 @@ Upload and process the files into chunks into Catalog
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Catalog ID | `catalog-id` | string | The ID of the catalog that you upload files |
-| Create Time | `create-time` | string | The creation time of the file in ISO 8601 format |
-| File Name | `file-name` | string | The name of the file |
-| Type | `file-type` | string | The type of the file |
-| File UID | `file-uid` | string | The unique identifier of the file |
-| Size | `size` | number | The size of the file in bytes |
-| Update Time | `update-time` | string | The update time of the file in ISO 8601 format |
+| Catalog ID | `catalog-id` | string | ID of the catalog that you upload files. |
+| Create Time | `create-time` | string | Creation time of the file in ISO 8601 format. |
+| File Name | `file-name` | string | Name of the file. |
+| Type | `file-type` | string | Type of the file. |
+| File UID | `file-uid` | string | Unique identifier of the file. |
+| Size | `size` | number | Size of the file in bytes. |
+| Update Time | `update-time` | string | Update time of the file in ISO 8601 format. |
 </div>
 </details>
 
 ### Upload Files
 
-Upload and process the files into chunks into Catalog
+Upload and process the files into chunks into Catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPLOAD_FILES` |
-| [Options](#upload-files-options) (required) | `options` | object | Choose to upload the files to existing catalog or create a new catalog |
+| [Options](#upload-files-options) (required) | `options` | object | Choose to upload the files to existing catalog or create a new catalog. |
 </div>
 
 
@@ -146,10 +146,10 @@ Upload and process the files into chunks into Catalog
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Catalog ID | `catalog-id` | string |  Catalog ID that you input in the Catalog  |
+| Catalog ID | `catalog-id` | string |  Catalog ID that you input in the Catalog.  |
 | File Names | `file-names` | array |  Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.  |
-| Files | `files` | array |  base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML files to be uploaded into catalog  |
-| Namespace | `namespace` | string |  Fill in your namespace, you can get namespace through the tab of switching namespace  |
+| Files | `files` | array |  Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML files to be uploaded into catalog.  |
+| Namespace | `namespace` | string |  Fill in your namespace, you can get namespace through the tab of switching namespace.  |
 | Option | `option` | string |  Must be `"existing catalog"`   |
 </div>
 
@@ -159,13 +159,13 @@ Upload and process the files into chunks into Catalog
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Catalog ID | `catalog-id` | string |  Catalog ID for new catalog you want to create  |
-| Description | `description` | string |  Description of the catalog  |
+| Catalog ID | `catalog-id` | string |  Catalog ID for new catalog you want to create.  |
+| Description | `description` | string |  Description of the catalog.  |
 | File Names | `file-names` | array |  Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.  |
-| Files | `files` | array |  base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML files to be uploaded into catalog  |
-| Namespace | `namespace` | string |  Fill in your namespace, you can get namespace through the tab of switching namespace  |
+| Files | `files` | array |  Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML files to be uploaded into catalog.  |
+| Namespace | `namespace` | string |  Fill in your namespace, you can get namespace through the tab of switching namespace.  |
 | Option | `option` | string |  Must be `"create new catalog"`   |
-| Tags | `tags` | array |  Tags for the catalog  |
+| Tags | `tags` | array |  Tags for the catalog.  |
 </div>
 </details>
 
@@ -173,8 +173,8 @@ Upload and process the files into chunks into Catalog
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Files](#upload-files-files) | `files` | array[object] | Files metadata in catalog |
-| Status | `status` | boolean | The status of trigger file processing, if ALL succeeded, return true |
+| [Files](#upload-files-files) | `files` | array[object] | Files metadata in catalog. |
+| Status | `status` | boolean | The status of trigger file processing, if ALL succeeded, return true. |
 </div>
 
 <details>
@@ -186,27 +186,27 @@ Upload and process the files into chunks into Catalog
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Catalog ID | `catalog-id` | string | The ID of the catalog that you upload files |
-| Create Time | `create-time` | string | The creation time of the file in ISO 8601 format |
-| File Name | `file-name` | string | The name of the file |
-| Type | `file-type` | string | The type of the file |
-| File UID | `file-uid` | string | The unique identifier of the file |
-| Size | `size` | number | The size of the file in bytes |
-| Update Time | `update-time` | string | The update time of the file in ISO 8601 format |
+| Catalog ID | `catalog-id` | string | ID of the catalog that you upload files. |
+| Create Time | `create-time` | string | Creation time of the file in ISO 8601 format. |
+| File Name | `file-name` | string | Name of the file. |
+| Type | `file-type` | string | Type of the file. |
+| File UID | `file-uid` | string | Unique identifier of the file. |
+| Size | `size` | number | Size of the file in bytes. |
+| Update Time | `update-time` | string | Update time of the file in ISO 8601 format. |
 </div>
 </details>
 
 ### Get Files Metadata
 
-get the metadata of the files in the catalog
+get the metadata of the files in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_FILES_METADATA` |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
+| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
 </div>
 
 
@@ -218,7 +218,7 @@ get the metadata of the files in the catalog
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Files](#get-files-metadata-files) | `files` | array[object] | Files metadata in catalog |
+| [Files](#get-files-metadata-files) | `files` | array[object] | Files metadata in catalog. |
 </div>
 
 <details>
@@ -230,28 +230,28 @@ get the metadata of the files in the catalog
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Catalog ID | `catalog-id` | string | The ID of the catalog that you upload files |
-| Create Time | `create-time` | string | The creation time of the file in ISO 8601 format |
-| File Name | `file-name` | string | The name of the file |
-| Type | `file-type` | string | The type of the file |
-| File UID | `file-uid` | string | The unique identifier of the file |
-| Size | `size` | number | The size of the file in bytes |
-| Update Time | `update-time` | string | The update time of the file in ISO 8601 format |
+| Catalog ID | `catalog-id` | string | ID of the catalog that you upload files. |
+| Create Time | `create-time` | string | Creation time of the file in ISO 8601 format. |
+| File Name | `file-name` | string | Name of the file. |
+| Type | `file-type` | string | Type of the file. |
+| File UID | `file-uid` | string | Unique identifier of the file. |
+| Size | `size` | number | Size of the file in bytes. |
+| Update Time | `update-time` | string | Update time of the file in ISO 8601 format. |
 </div>
 </details>
 
 ### Get Chunks Metadata
 
-get the metadata of the chunks from a file in the catalog
+get the metadata of the chunks from a file in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_CHUNKS_METADATA` |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace |
-| File UID (required) | `file-uid` | string | The unique identifier of the file |
+| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
+| File UID (required) | `file-uid` | string | The unique identifier of the file. |
 </div>
 
 
@@ -263,7 +263,7 @@ get the metadata of the chunks from a file in the catalog
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Chunks](#get-chunks-metadata-chunks) | `chunks` | array[object] | Chunks metadata of the file in catalog |
+| [Chunks](#get-chunks-metadata-chunks) | `chunks` | array[object] | Chunks metadata of the file in catalog. |
 </div>
 
 <details>
@@ -275,28 +275,28 @@ get the metadata of the chunks from a file in the catalog
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Chunk UID | `chunk-uid` | string | The unique identifier of the chunk |
-| Create Time | `create-time` | string | The creation time of the chunk in ISO 8601 format |
-| End Position | `end-position` | integer | The end position of the chunk in the file |
-| File UID | `original-file-uid` | string | The unique identifier of the file |
-| Retrievable | `retrievable` | boolean | The retrievable status of the chunk |
-| Start Position | `start-position` | integer | The start position of the chunk in the file |
-| Token Count | `token-count` | integer | The token count of the chunk |
+| Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
+| Create Time | `create-time` | string | The creation time of the chunk in ISO 8601 format. |
+| End Position | `end-position` | integer | The end position of the chunk in the file. |
+| File UID | `original-file-uid` | string | The unique identifier of the file. |
+| Retrievable | `retrievable` | boolean | The retrievable status of the chunk. |
+| Start Position | `start-position` | integer | The start position of the chunk in the file. |
+| Token Count | `token-count` | integer | The token count of the chunk. |
 </div>
 </details>
 
 ### Get File in Markdown
 
-get the file content in markdown format
+get the file content in markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_FILE_IN_MARKDOWN` |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace |
-| File UID (required) | `file-uid` | string | The unique identifier of the file |
+| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
+| File UID (required) | `file-uid` | string | The unique identifier of the file. |
 </div>
 
 
@@ -308,24 +308,24 @@ get the file content in markdown format
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| File UID | `original-file-uid` | string | The unique identifier of the file |
-| Content | `content` | string | The content of the file in markdown format |
-| Create Time | `create-time` | string | The creation time of the source file in ISO 8601 format |
-| Update Time | `update-time` | string | The update time of the source file in ISO 8601 format |
+| File UID | `original-file-uid` | string | The unique identifier of the file. |
+| Content | `content` | string | The content of the file in markdown format. |
+| Create Time | `create-time` | string | The creation time of the source file in ISO 8601 format. |
+| Update Time | `update-time` | string | The update time of the source file in ISO 8601 format. |
 </div>
 
 ### Match File Status
 
-Check if the specified file's processing status is done
+Check if the specified file's processing status is done.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_MATCH_FILE_STATUS` |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to check files' processing status in the Catalog |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace |
-| File UID (required) | `file-uid` | string | The unique identifier of the file |
+| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to check files' processing status in the Catalog. |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
+| File UID (required) | `file-uid` | string | The unique identifier of the file. |
 </div>
 
 
@@ -337,22 +337,22 @@ Check if the specified file's processing status is done
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `succeeded` | boolean | The status of the file processing, if succeeded, return true |
+| Status | `succeeded` | boolean | The status of the file processing, if succeeded, return true. |
 </div>
 
 ### Retrieve
 
-search the chunks in the catalog
+search the chunks in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_RETRIEVE` |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace |
-| Text Prompt (required) | `text-prompt` | string | The prompt string to search the chunks |
-| Top K | `top-k` | integer | The number of top chunks to return. The range is from 1~20, and default is 5 |
+| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
+| Text Prompt (required) | `text-prompt` | string | The prompt string to search the chunks. |
+| Top K | `top-k` | integer | The number of top chunks to return. The range is from 1~20, and default is 5. |
 </div>
 
 
@@ -376,26 +376,26 @@ search the chunks in the catalog
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Chunk UID | `chunk-uid` | string | The unique identifier of the chunk |
-| Similarity | `similarity-score` | number | The similarity score of the chunk |
-| Source File Name | `source-file-name` | string | The name of the source file |
-| Text Content | `text-content` | string | The text content of the chunk |
+| Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
+| Similarity | `similarity-score` | number | The similarity score of the chunk. |
+| Source File Name | `source-file-name` | string | The name of the source file. |
+| Text Content | `text-content` | string | The text content of the chunk. |
 </div>
 </details>
 
 ### Ask
 
-Reply the questions based on the files in the catalog
+Reply the questions based on the files in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_ASK` |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace |
-| Question (required) | `question` | string | The question to reply |
-| Top K | `top-k` | integer | The number of top answers to return. The range is from 1~20, and default is 5 |
+| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
+| Question (required) | `question` | string | The question to reply. |
+| Top K | `top-k` | integer | The number of top answers to return. The range is from 1~20, and default is 5. |
 </div>
 
 
@@ -407,8 +407,8 @@ Reply the questions based on the files in the catalog
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Answer | `answer` | string | Answers data from smart search |
-| [Chunks](#ask-chunks) (optional) | `chunks` | array[object] | Chunks data to answer question |
+| Answer | `answer` | string | Answers data from smart search. |
+| [Chunks](#ask-chunks) (optional) | `chunks` | array[object] | Chunks data to answer question. |
 </div>
 
 <details>
@@ -420,23 +420,23 @@ Reply the questions based on the files in the catalog
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Chunk UID | `chunk-uid` | string | The unique identifier of the chunk |
-| Similarity | `similarity-score` | number | The similarity score of the chunk |
-| Source File Name | `source-file-name` | string | The name of the source file |
-| Text Content | `text-content` | string | The text content of the chunk |
+| Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
+| Similarity | `similarity-score` | number | The similarity score of the chunk. |
+| Source File Name | `source-file-name` | string | The name of the source file. |
+| Text Content | `text-content` | string | The text content of the chunk. |
 </div>
 </details>
 
 ### Sync Files
 
-This task synchronizes files from third-party storage for cataloging. New files are uploaded, and updated files are overwritten based on third-party metadata. Files added through other channels, like the Artifact API or additional storage services, will not be removed. Currently, only Google Drive is supported.
+This task synchronizes files from third-party storage to instill catalog. New files are uploaded, and updated files are overwritten based on third-party metadata. Files added through other channels, like the Artifact API or additional storage services, will not be removed. Currently, only Google Drive is supported as a third-party storage service.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SYNC_FILES` |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
 | Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to synchronize files from third-party data storage to catalog. |
 | [Third Party Files](#sync-files-third-party-files) (required) | `third-party-files` | array[object] | File contents and metadata from third-part data storage. |
 </div>
@@ -489,13 +489,13 @@ File contents and metadata from third-part data storage.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Catalog ID | `catalog-id` | string | The ID of the catalog that you upload files |
-| Create Time | `create-time` | string | The creation time of the file in ISO 8601 format |
-| File Name | `file-name` | string | The name of the file |
-| Type | `file-type` | string | The type of the file |
-| File UID | `file-uid` | string | The unique identifier of the file |
-| Size | `size` | number | The size of the file in bytes |
-| Update Time | `update-time` | string | The update time of the file in ISO 8601 format |
+| Catalog ID | `catalog-id` | string | ID of the catalog that you upload files. |
+| Create Time | `create-time` | string | Creation time of the file in ISO 8601 format. |
+| File Name | `file-name` | string | Name of the file. |
+| Type | `file-type` | string | Type of the file. |
+| File UID | `file-uid` | string | Unique identifier of the file. |
+| Size | `size` | number | Size of the file in bytes. |
+| Update Time | `update-time` | string | Update time of the file in ISO 8601 format. |
 </div>
 
 <h4 id="sync-files-updated-files">Updated Files</h4>
@@ -504,13 +504,13 @@ File contents and metadata from third-part data storage.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Catalog ID | `catalog-id` | string | The ID of the catalog that you upload files |
-| Create Time | `create-time` | string | The creation time of the file in ISO 8601 format |
-| File Name | `file-name` | string | The name of the file |
-| Type | `file-type` | string | The type of the file |
-| File UID | `file-uid` | string | The unique identifier of the file |
-| Size | `size` | number | The size of the file in bytes |
-| Update Time | `update-time` | string | The update time of the file in ISO 8601 format |
+| Catalog ID | `catalog-id` | string | ID of the catalog that you upload files. |
+| Create Time | `create-time` | string | Creation time of the file in ISO 8601 format. |
+| File Name | `file-name` | string | Name of the file. |
+| Type | `file-type` | string | Type of the file. |
+| File UID | `file-uid` | string | Unique identifier of the file. |
+| Size | `size` | number | Size of the file in bytes. |
+| Update Time | `update-time` | string | Update time of the file in ISO 8601 format. |
 </div>
 
 <h4 id="sync-files-failure-files">Failure Files</h4>
