@@ -473,15 +473,32 @@ File contents and metadata from third-part data storage.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Files](#sync-files-files) (optional) | `uploaded-files` | array[object] | Files metadata in catalog. The metadata here is from Instill Artifact rather than third-party storage. |
-| [Failure Files](#sync-files-failure-files) (optional) | `failure-files` | array[object] | Files that failed to upload. |
-| Error Messages (optional) | `error-messages` | array[string] | Error messages for files that failed to upload. |
+| [Uploaded Files](#sync-files-uploaded-files) (optional) | `uploaded-files` | array[object] | Files metadata in catalog. The metadata here is from Instill Artifact rather than third-party storage. |
+| [Updated Files](#sync-files-updated-files) (optional) | `updated_files` | array[object] | Files that were updated. The metadata here is from Instill Artifact rather than third-party storage. |
+| [Failure Files](#sync-files-failure-files) (optional) | `failure-files` | array[object] | Files that failed to upload or overwrite. The metadata here is from third-party storage. |
+| Error Messages (optional) | `error-messages` | array[string] | Error messages for files that failed to upload or overwrite. |
+| Status (optional) | `status` | boolean | The status of the triggering processing files, if succeeded, return true. |
 </div>
 
 <details>
 <summary> Output Objects in Sync Files</summary>
 
-<h4 id="sync-files-files">Files</h4>
+<h4 id="sync-files-uploaded-files">Uploaded Files</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Catalog ID | `catalog-id` | string | The ID of the catalog that you upload files |
+| Create Time | `create-time` | string | The creation time of the file in ISO 8601 format |
+| File Name | `file-name` | string | The name of the file |
+| Type | `file-type` | string | The type of the file |
+| File UID | `file-uid` | string | The unique identifier of the file |
+| Size | `size` | number | The size of the file in bytes |
+| Update Time | `update-time` | string | The update time of the file in ISO 8601 format |
+</div>
+
+<h4 id="sync-files-updated-files">Updated Files</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 

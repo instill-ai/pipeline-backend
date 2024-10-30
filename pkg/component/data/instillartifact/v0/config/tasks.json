@@ -1225,12 +1225,22 @@
             "$ref": "#/$defs/file-item"
           },
           "instillFormat": "array:object",
-          "title": "Files",
+          "title": "Uploaded Files",
+          "type": "array"
+        },
+        "updated_files": {
+          "description": "Files that were updated. The metadata here is from Instill Artifact rather than third-party storage.",
+          "instillUIOrder": 1,
+          "items": {
+            "$ref": "#/$defs/file-item"
+          },
+          "instillFormat": "array:object",
+          "title": "Updated Files",
           "type": "array"
         },
         "failure-files": {
-          "description": "Files that failed to upload.",
-          "instillUIOrder": 1,
+          "description": "Files that failed to upload or overwrite. The metadata here is from third-party storage.",
+          "instillUIOrder": 2,
           "items": {
             "$ref": "#/$defs/third-party-files/items"
           },
@@ -1239,13 +1249,20 @@
           "type": "array"
         },
         "error-messages": {
-          "description": "Error messages for files that failed to upload.",
-          "instillUIOrder": 2,
+          "description": "Error messages for files that failed to upload or overwrite.",
+          "instillUIOrder": 3,
           "items": {
             "type": "string"
           },
           "title": "Error Messages",
           "type": "array"
+        },
+        "status": {
+          "description": "The status of the triggering processing files, if succeeded, return true.",
+          "instillUIOrder": 4,
+          "instillFormat": "boolean",
+          "title": "Status",
+          "type": "boolean"
         }
       },
       "required": [

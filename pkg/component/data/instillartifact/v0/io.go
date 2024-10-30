@@ -48,7 +48,7 @@ type FileOutput struct {
 	UpdateTime string `json:"update-time"`
 	// Size of the file
 	Size int64 `json:"size"`
-	// Tags for the file
+	// Catalog ID
 	CatalogID string `json:"catalog-id"`
 }
 
@@ -218,4 +218,54 @@ type MatchFileStatusInput struct {
 type MatchFileStatusOutput struct {
 	// Succeeded means if the file processing status is succeeded
 	Succeeded bool `json:"succeeded"`
+}
+
+// SyncFilesInput is the input for syncing files
+type SyncFilesInput struct {
+	// Namespace for syncing files
+	Namespace string `json:"namespace"`
+	// Catalog ID for syncing files
+	CatalogID string `json:"catalog-id"`
+	// Files for syncing from the third party system
+	ThirdPartyFiles []ThirdPartyFile `json:"third-party-files"`
+}
+
+// ThirdPartyFile is the data for a third party file
+type ThirdPartyFile struct {
+	// Unique ID of the file
+	ID string `json:"id"`
+	// Name of the file
+	Name string `json:"name"`
+	// Base64 encoded content of the file
+	Content string `json:"content"`
+	// CreatedTime is the time the file was created in the third party system, format: `YYYY-MM-DDTHH:MM:SSZ`
+	CreatedTime string `json:"created-time"`
+	// ModifiedTime is the time the file was modified in the third party system, format: `YYYY-MM-DDTHH:MM:SSZ`
+	ModifiedTime string `json:"modified-time"`
+	// Size of the file
+	Size int64 `json:"size"`
+	// MimeType of the file
+	MimeType string `json:"mime-type"`
+	// MD5Checksum is the MD5 checksum of the file
+	MD5Checksum string `json:"md5-checksum"`
+	// Version is the version of the file in the third party system
+	Version int64 `json:"version"`
+	// WebContentLink is the link to view the web content of the file
+	WebViewLink string `json:"web-view-link"`
+	// WebContentLink is the link to download the web content of the file
+	WebContentLink string `json:"web-content-link"`
+}
+
+// SyncFilesOutput is the output for syncing files
+type SyncFilesOutput struct {
+	// Uploaded files
+	UploadedFiles []FileOutput `json:"uploaded-files"`
+	// Updated files
+	UpdatedFiles []FileOutput `json:"updated-files"`
+	// Failure files, the length of the failure files should be the same as the error messages
+	FailureFiles []ThirdPartyFile `json:"failure-files"`
+	// Error messages, the length of the error messages should be the same as the failure files
+	ErrorMessages []string `json:"error-messages"`
+	// Status of the trigger file processing
+	Status bool `json:"status"`
 }
