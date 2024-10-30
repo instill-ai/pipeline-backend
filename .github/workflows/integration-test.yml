@@ -75,9 +75,11 @@ jobs:
       - name: Load .env file (instill-core)
         uses: cardinalby/export-env-action@v2
         with:
-          envFile: .env
+          envFile: '.env|.env.component'
 
       - name: Launch Instill Core (latest)
+        # CFG_COMPONENT_* variables are injected to test OAuth connection
+        # creation
         run: |
           COMPOSE_PROFILES=all \
           EDITION=local-ce:test \

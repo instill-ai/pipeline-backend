@@ -84,6 +84,7 @@ type IComponent interface {
 	Test(sysVars map[string]any, config *structpb.Struct) error
 
 	IsSecretField(target string) bool
+	SupportsOAuth() bool
 
 	// Note: These two functions are for the pipeline run-on-event feature,
 	// which is still experimental and may change at any time.
@@ -829,6 +830,12 @@ func (c *Component) traverseSecretField(input *structpb.Value, prefix string, se
 	}
 
 	return secretFields
+}
+
+// SupportsOAuth is false by default. To support OAuth, component
+// implementations must be composed with `OAuthComponent`.
+func (c *Component) SupportsOAuth() bool {
+	return false
 }
 
 func (c *Component) ListInputAcceptFormatsFields() (map[string]map[string][]string, error) {

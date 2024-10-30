@@ -131,6 +131,11 @@ export function CheckConnections(data) {
       [`POST ${path} (dictionary) has a creation time`]: (r) => new Date(r.json().connection.createTime).getTime() > new Date().setTime(0),
     });
 
+    // Besides an OAuth configuration on the component definition, OAuth
+    // support requires the client ID and secret to be defined in the config
+    // (as environment variables). Make sure .env.component contains a client
+    // secret and ID for GitHub and that it doesn't for Slack.
+
     // Successful creation: OAuth
     var oAuthReq = http.request(
       "POST",
@@ -157,6 +162,30 @@ export function CheckConnections(data) {
       [`POST ${path} (OAuth) has a creation time`]: (r) => new Date(r.json().connection.createTime).getTime() > new Date().setTime(0),
     });
 
+    // Check OAuth support.
+    var unsupportedOAuthReq = http.request(
+      "POST",
+      pipelinePublicHost + path,
+      JSON.stringify({
+        id: "unsupported-oauth",
+        integrationId: "slack",
+        method: "METHOD_OAUTH",
+        setup: setup,
+        scopes: ["foo", "bar"],
+        identity: identity,
+        oAuthAccessDetails: {
+          access_token: "one2THREE",
+          scope: "foo,bar",
+          token_type: "bearer",
+        }
+      }),
+      data.header
+    );
+    check(unsupportedOAuthReq, {
+      [`POST ${path} response status is 400 when component lacks client ID and secret`]: (r) => r.status === 400,
+    });
+
+
     // Check ID format
     var invalidID = dbIDPrefix + "This-Is-Invalid";
     var invalidIDReq = http.request(
@@ -180,7 +209,7 @@ export function CheckConnections(data) {
       "POST",
       pipelinePublicHost + path,
       JSON.stringify({
-        id: invalidID,
+        id: "invalid-setup",
         integrationId: integrationID,
         method: "METHOD_OAUTH",
         setup: {"token": 234},
@@ -197,7 +226,7 @@ export function CheckConnections(data) {
       "POST",
       pipelinePublicHost + path,
       JSON.stringify({
-        id: invalidID,
+        id: "invalid-method",
         integrationId: integrationID,
         method: "METHOD_DICTIONARY",
         setup: {"token": 234},
@@ -371,7 +400,7 @@ component:
   });
 
   group("Integration API: Update connection", () => {
-    var path = resourcePath;
+    var path = resourcePath + "-oauth";
     var originalConn = http.request(
       "GET",
       pipelinePublicHost + path,
