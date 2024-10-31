@@ -68,7 +68,7 @@ func TestNewVideoFromURL(t *testing.T) {
 	c := qt.New(t)
 
 	c.Run("Valid video URL", func(c *qt.C) {
-		url := "https://raw.githubusercontent.com/instill-ai/pipeline-backend/refs/heads/huitang/format/pkg/data/testdata/sample_640_360.mp4"
+		url := "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample_640_360.mp4"
 
 		video, err := NewVideoFromURL(url)
 
