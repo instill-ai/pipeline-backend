@@ -49,7 +49,6 @@ func (c *RenameInstillFormat) migratePipeline() error {
 								if varContent.Content[k].Value == "instill-format" {
 									varContent.Content[k].Value = "format"
 									isRecipeUpdated = true
-									fmt.Println("updated")
 								}
 							}
 						}
