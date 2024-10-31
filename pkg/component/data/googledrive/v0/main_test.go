@@ -49,15 +49,15 @@ func Test_Execute_ReadFile(t *testing.T) {
 	testcases := []struct {
 		name string
 
-		in            map[string]any
+		in            readFileInput
 		fakeDriveFile *drive.File
-		want          map[string]any
+		want          readFileOutput
 		wantErr       string
 	}{
 		{
 			name: "ok - read CSV file with file extension",
-			in: map[string]any{
-				"shared-link": sharedSheetLink,
+			in: readFileInput{
+				SharedLink: sharedSheetLink,
 			},
 			fakeDriveFile: &drive.File{
 				Id:             fakeID,
@@ -71,26 +71,26 @@ func Test_Execute_ReadFile(t *testing.T) {
 				WebViewLink:    webViewSheetLink,
 				WebContentLink: webContentSheetLink,
 			},
-			want: map[string]any{
-				"file": map[string]any{
-					"id":               fakeID,
-					"name":             "testdata.csv",
-					"content":          "fake content",
-					"created-time":     "2021-08-09T20:25:02.312Z",
-					"modified-time":    "2021-09-17T16:58:37.924Z",
-					"size":             0,
-					"mime-type":        "application/vnd.google-apps.spreadsheet",
-					"md5-checksum":     "7db67eab9238f9a63df30f570fda2bac",
-					"version":          0,
-					"web-view-link":    webViewSheetLink,
-					"web-content-link": webContentSheetLink,
+			want: readFileOutput{
+				File: file{
+					ID:             fakeID,
+					Name:           "testdata.csv",
+					Content:        "fake content",
+					CreatedTime:    "2021-08-09T20:25:02.312Z",
+					ModifiedTime:   "2021-09-17T16:58:37.924Z",
+					Size:           0,
+					MimeType:       "application/vnd.google-apps.spreadsheet",
+					Md5Checksum:    "7db67eab9238f9a63df30f570fda2bac",
+					Version:        0,
+					WebViewLink:    webViewSheetLink,
+					WebContentLink: webContentSheetLink,
 				},
 			},
 		},
 		{
 			name: "ok - read CSV file without file extension",
-			in: map[string]any{
-				"shared-link": sharedSheetLink,
+			in: readFileInput{
+				SharedLink: sharedSheetLink,
 			},
 			fakeDriveFile: &drive.File{
 				Id:             fakeID,
@@ -104,26 +104,26 @@ func Test_Execute_ReadFile(t *testing.T) {
 				WebViewLink:    webViewSheetLink,
 				WebContentLink: webContentSheetLink,
 			},
-			want: map[string]any{
-				"file": map[string]any{
-					"id":               fakeID,
-					"name":             "testdata.csv",
-					"content":          "fake content",
-					"created-time":     "2021-08-09T20:25:02.312Z",
-					"modified-time":    "2021-09-17T16:58:37.924Z",
-					"size":             0,
-					"mime-type":        "application/vnd.google-apps.spreadsheet",
-					"md5-checksum":     "7db67eab9238f9a63df30f570fda2bac",
-					"version":          0,
-					"web-view-link":    webViewSheetLink,
-					"web-content-link": webContentSheetLink,
+			want: readFileOutput{
+				File: file{
+					ID:             fakeID,
+					Name:           "testdata.csv",
+					Content:        "fake content",
+					CreatedTime:    "2021-08-09T20:25:02.312Z",
+					ModifiedTime:   "2021-09-17T16:58:37.924Z",
+					Size:           0,
+					MimeType:       "application/vnd.google-apps.spreadsheet",
+					Md5Checksum:    "7db67eab9238f9a63df30f570fda2bac",
+					Version:        0,
+					WebViewLink:    webViewSheetLink,
+					WebContentLink: webContentSheetLink,
 				},
 			},
 		},
 		{
 			name: "ok - read file Google doc file",
-			in: map[string]any{
-				"shared-link": sharedDocLink,
+			in: readFileInput{
+				SharedLink: sharedDocLink,
 			},
 			fakeDriveFile: &drive.File{
 				Id:             fakeID,
@@ -137,25 +137,25 @@ func Test_Execute_ReadFile(t *testing.T) {
 				WebViewLink:    webViewDocLink,
 				WebContentLink: webContentDocLink,
 			},
-			want: map[string]any{
-				"file": map[string]any{
-					"id":            fakeID,
-					"name":          "testdata.pdf",
-					"content":       "fake content",
-					"created-time":  "2021-08-09T20:25:02.312Z",
-					"modified-time": "2021-09-17T16:58:37.924Z",
-					"size":          0,
-					"mime-type":     "application/vnd.google-apps.document",
-					"md5-checksum":  "7db67eab9238f9a63df30f570fda2bac",
-					"version":       0,
-					"web-view-link": webViewDocLink,
+			want: readFileOutput{
+				File: file{
+					ID:           fakeID,
+					Name:         "testdata.pdf",
+					Content:      "fake content",
+					CreatedTime:  "2021-08-09T20:25:02.312Z",
+					ModifiedTime: "2021-09-17T16:58:37.924Z",
+					Size:         0,
+					MimeType:     "application/vnd.google-apps.document",
+					Md5Checksum:  "7db67eab9238f9a63df30f570fda2bac",
+					Version:      0,
+					WebViewLink:  webViewDocLink,
 				},
 			},
 		},
 		{
 			name: "ok - read file Google slide file",
-			in: map[string]any{
-				"shared-link": sharedSlideLink,
+			in: readFileInput{
+				SharedLink: sharedSlideLink,
 			},
 			fakeDriveFile: &drive.File{
 				Id:             fakeID,
@@ -169,25 +169,25 @@ func Test_Execute_ReadFile(t *testing.T) {
 				WebViewLink:    webViewSlideLink,
 				WebContentLink: webContentSlideLink,
 			},
-			want: map[string]any{
-				"file": map[string]any{
-					"id":            fakeID,
-					"name":          "testdata.pdf",
-					"content":       "fake content",
-					"created-time":  "2021-08-09T20:25:02.312Z",
-					"modified-time": "2021-09-17T16:58:37.924Z",
-					"size":          0,
-					"mime-type":     "application/vnd.google-apps.presentation",
-					"md5-checksum":  "7db67eab9238f9a63df30f570fda2bac",
-					"version":       0,
-					"web-view-link": webViewSlideLink,
+			want: readFileOutput{
+				File: file{
+					ID:           fakeID,
+					Name:         "testdata.pdf",
+					Content:      "fake content",
+					CreatedTime:  "2021-08-09T20:25:02.312Z",
+					ModifiedTime: "2021-09-17T16:58:37.924Z",
+					Size:         0,
+					MimeType:     "application/vnd.google-apps.presentation",
+					Md5Checksum:  "7db67eab9238f9a63df30f570fda2bac",
+					Version:      0,
+					WebViewLink:  webViewSlideLink,
 				},
 			},
 		},
 		{
 			name: "ok - read file",
-			in: map[string]any{
-				"shared-link": sharedFileLink,
+			in: readFileInput{
+				SharedLink: sharedFileLink,
 			},
 			fakeDriveFile: &drive.File{
 				Id:             fakeID,
@@ -201,26 +201,26 @@ func Test_Execute_ReadFile(t *testing.T) {
 				WebViewLink:    webViewFileLink,
 				WebContentLink: webContentFileLink,
 			},
-			want: map[string]any{
-				"file": map[string]any{
-					"id":               fakeID,
-					"name":             "testdata.png",
-					"content":          "fake content",
-					"created-time":     "2021-08-09T20:25:02.312Z",
-					"modified-time":    "2021-09-17T16:58:37.924Z",
-					"size":             0,
-					"mime-type":        "image/jpeg",
-					"md5-checksum":     "7db67eab9238f9a63df30f570fda2bac",
-					"version":          0,
-					"web-view-link":    webViewFileLink,
-					"web-content-link": webContentFileLink,
+			want: readFileOutput{
+				File: file{
+					ID:             fakeID,
+					Name:           "testdata.png",
+					Content:        "fake content",
+					CreatedTime:    "2021-08-09T20:25:02.312Z",
+					ModifiedTime:   "2021-09-17T16:58:37.924Z",
+					Size:           0,
+					MimeType:       "image/jpeg",
+					Md5Checksum:    "7db67eab9238f9a63df30f570fda2bac",
+					Version:        0,
+					WebViewLink:    webViewFileLink,
+					WebContentLink: webContentFileLink,
 				},
 			},
 		},
 		{
 			name: "nok - read file with invalid shared link",
-			in: map[string]any{
-				"shared-link": sharedFolderLink,
+			in: readFileInput{
+				SharedLink: sharedFolderLink,
 			},
 			wantErr: "the input link is a folder link, please use the read-folder operation",
 		},
@@ -230,11 +230,11 @@ func Test_Execute_ReadFile(t *testing.T) {
 	component := Init(bc)
 
 	secrets := map[string]interface{}{
-		"clientid":     "fake-client-id",
-		"clientsecret": "fake-client-secret",
+		"oauthclientid":     "fake-client-id",
+		"oauthclientsecret": "fake-client-secret",
 	}
 
-	component = component.WithOAuthCredentials(secrets)
+	component.WithOAuthConfig(secrets)
 
 	setup := map[string]any{
 		"refresh-token": "fake-refresh-token",
@@ -266,31 +266,34 @@ func Test_Execute_ReadFile(t *testing.T) {
 					Return(fakeDriveFile, &fakeContent, nil)
 			}
 
-			pbIn, err := structpb.NewStruct(tc.in)
-			c.Assert(err, qt.IsNil)
-
 			ir, ow, eh, job := mock.GenerateMockJob(c)
-			ir.ReadMock.Return(pbIn, nil)
 
-			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
-				gotJSON, err := output.MarshalJSON()
+			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
+				switch input := input.(type) {
+				case *readFileInput:
+					*input = tc.in
+				}
+				return nil
+			})
 
-				c.Check(err, qt.IsNil)
-				c.Check(gotJSON, qt.JSONEquals, tc.want)
-
+			ow.WriteDataMock.Optional().Set(func(ctx context.Context, output any) (err error) {
+				switch output := output.(type) {
+				case *readFileOutput:
+					c.Assert(output, qt.DeepEquals, &tc.want)
+				}
 				return nil
 			})
 
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				if tc.wantErr != "" {
-					c.Check(err, qt.ErrorMatches, tc.wantErr)
+					c.Assert(err, qt.ErrorMatches, tc.wantErr)
 				} else {
-					c.Check(err, qt.IsNil)
+					c.Assert(err, qt.IsNil)
 				}
 			})
 
 			err = exec.Execute(ctx, []*base.Job{job})
-			c.Check(err, qt.IsNil)
+			c.Assert(err, qt.IsNil)
 
 		})
 
@@ -306,17 +309,17 @@ func Test_Execute_ReadFolder(t *testing.T) {
 	testcases := []struct {
 		name string
 
-		in             map[string]any
+		in             readFolderInput
 		fakeDriveFiles []*drive.File
 		fakeContents   []*string
-		want           map[string]any
+		want           readFolderOutput
 		wantErr        string
 	}{
 		{
 			name: "ok - read folder with content",
-			in: map[string]any{
-				"shared-link":  sharedFolderLink,
-				"read-content": true,
+			in: readFolderInput{
+				SharedLink:  sharedFolderLink,
+				ReadContent: true,
 			},
 			fakeDriveFiles: []*drive.File{
 				{
@@ -335,29 +338,29 @@ func Test_Execute_ReadFolder(t *testing.T) {
 			fakeContents: []*string{
 				stringPointer("fake content"),
 			},
-			want: map[string]any{
-				"files": []map[string]any{
+			want: readFolderOutput{
+				Files: []*file{
 					{
-						"id":               fakeID,
-						"name":             "testdata.csv",
-						"content":          "fake content",
-						"created-time":     "2021-08-09T20:25:02.312Z",
-						"modified-time":    "2021-09-17T16:58:37.924Z",
-						"size":             0,
-						"mime-type":        "application/vnd.google-apps.spreadsheet",
-						"md5-checksum":     "7db67eab9238f9a63df30f570fda2bac",
-						"version":          0,
-						"web-view-link":    webViewSheetLink,
-						"web-content-link": webContentSheetLink,
+						ID:             fakeID,
+						Name:           "testdata.csv",
+						Content:        "fake content",
+						CreatedTime:    "2021-08-09T20:25:02.312Z",
+						ModifiedTime:   "2021-09-17T16:58:37.924Z",
+						Size:           0,
+						MimeType:       "application/vnd.google-apps.spreadsheet",
+						Md5Checksum:    "7db67eab9238f9a63df30f570fda2bac",
+						Version:        0,
+						WebViewLink:    webViewSheetLink,
+						WebContentLink: webContentSheetLink,
 					},
 				},
 			},
 		},
 		{
 			name: "ok - read folder without content",
-			in: map[string]any{
-				"shared-link":  sharedFolderLink,
-				"read-content": false,
+			in: readFolderInput{
+				SharedLink:  sharedFolderLink,
+				ReadContent: false,
 			},
 			fakeDriveFiles: []*drive.File{
 				{
@@ -374,29 +377,29 @@ func Test_Execute_ReadFolder(t *testing.T) {
 				},
 			},
 			fakeContents: nil,
-			want: map[string]any{
-				"files": []map[string]any{
+			want: readFolderOutput{
+				Files: []*file{
 					{
-						"id":               fakeID,
-						"name":             "testdata.csv",
-						"content":          "",
-						"created-time":     "2021-08-09T20:25:02.312Z",
-						"modified-time":    "2021-09-17T16:58:37.924Z",
-						"size":             0,
-						"mime-type":        "application/vnd.google-apps.spreadsheet",
-						"md5-checksum":     "7db67eab9238f9a63df30f570fda2bac",
-						"version":          0,
-						"web-view-link":    webViewSheetLink,
-						"web-content-link": webContentSheetLink,
+						ID:             fakeID,
+						Name:           "testdata.csv",
+						Content:        "",
+						CreatedTime:    "2021-08-09T20:25:02.312Z",
+						ModifiedTime:   "2021-09-17T16:58:37.924Z",
+						Size:           0,
+						MimeType:       "application/vnd.google-apps.spreadsheet",
+						Md5Checksum:    "7db67eab9238f9a63df30f570fda2bac",
+						Version:        0,
+						WebViewLink:    webViewSheetLink,
+						WebContentLink: webContentSheetLink,
 					},
 				},
 			},
 		},
 		{
 			name: "nok - read file",
-			in: map[string]any{
-				"shared-link":  sharedSheetLink,
-				"read-content": false,
+			in: readFolderInput{
+				SharedLink:  sharedSheetLink,
+				ReadContent: false,
 			},
 			wantErr: "the input link is not a folder link, please check the link",
 		},
@@ -406,11 +409,11 @@ func Test_Execute_ReadFolder(t *testing.T) {
 	component := Init(bc)
 
 	secrets := map[string]interface{}{
-		"clientid":     "fake-client-id",
-		"clientsecret": "fake-client-secret",
+		"oauthclientid":     "fake-client-id",
+		"oauthclientsecret": "fake-client-secret",
 	}
 
-	component = component.WithOAuthCredentials(secrets)
+	component.WithOAuthConfig(secrets)
 
 	setup := map[string]any{
 		"refresh-token": "fake-refresh-token",
@@ -437,7 +440,7 @@ func Test_Execute_ReadFolder(t *testing.T) {
 			fakeDriveFiles := tc.fakeDriveFiles
 			fakeContents := tc.fakeContents
 
-			readContent := tc.in["read-content"].(bool)
+			readContent := tc.in.ReadContent
 
 			if tc.wantErr == "" {
 				mockDriveService.ReadFolderMock.
@@ -445,18 +448,21 @@ func Test_Execute_ReadFolder(t *testing.T) {
 					Return(fakeDriveFiles, fakeContents, nil)
 			}
 
-			pbIn, err := structpb.NewStruct(tc.in)
-			c.Assert(err, qt.IsNil)
-
 			ir, ow, eh, job := mock.GenerateMockJob(c)
-			ir.ReadMock.Return(pbIn, nil)
 
-			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
-				gotJSON, err := output.MarshalJSON()
+			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
+				switch input := input.(type) {
+				case *readFolderInput:
+					*input = tc.in
+				}
+				return nil
+			})
 
-				c.Check(err, qt.IsNil)
-				c.Check(gotJSON, qt.JSONEquals, tc.want)
-
+			ow.WriteDataMock.Optional().Set(func(ctx context.Context, output any) (err error) {
+				switch output := output.(type) {
+				case *readFolderOutput:
+					c.Assert(output, qt.DeepEquals, &tc.want)
+				}
 				return nil
 			})
 
@@ -493,11 +499,11 @@ func Test_CreateExecution(t *testing.T) {
 	component := Init(bc)
 
 	secrets := map[string]interface{}{
-		"clientid":     "fake-client-id",
-		"clientsecret": "fake-client-secret",
+		"oauthclientid":     "fake-client-id",
+		"oauthclientsecret": "fake-client-secret",
 	}
 
-	component = component.WithOAuthCredentials(secrets)
+	component.WithOAuthConfig(secrets)
 
 	setup := map[string]any{
 		"refresh-token": "fake-refresh-token",

@@ -20,10 +20,8 @@ import (
 )
 
 const (
-	taskReadFile         = "TASK_READ_FILE"
-	taskReadFolder       = "TASK_READ_FOLDER"
-	cfgOAuthClientID     = "client-id"
-	cfgOAuthClientSecret = "client-secret"
+	taskReadFile   = "TASK_READ_FILE"
+	taskReadFolder = "TASK_READ_FOLDER"
 
 	authURL  = "https://accounts.google.com/o/oauth2/auth"
 	tokenURL = "https://oauth2.googleapis.com/token"
@@ -43,6 +41,7 @@ var (
 
 type component struct {
 	base.Component
+	base.OAuthConnector
 
 	instillAIClientID     string
 	instillAIClientSecret string
@@ -132,11 +131,9 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }
 
-// WithOAuthCredentials sets the OAuth credentials for the component.
-func (c *component) WithOAuthCredentials(s map[string]any) *component {
-	c.instillAIClientID = base.ReadFromGlobalConfig(cfgOAuthClientID, s)
-	c.instillAIClientSecret = base.ReadFromGlobalConfig(cfgOAuthClientSecret, s)
-	return c
+// SupportsOAuth checks whether the component is configured to support OAuth.
+func (c *component) SupportsOAuth() bool {
+	return c.OAuthConnector.SupportsOAuth()
 }
 
 // Now, we support the following types of Google Drive links:

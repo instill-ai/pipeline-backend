@@ -9,7 +9,7 @@ import (
 
 func (e *execution) readFile(ctx context.Context, job *base.Job) error {
 
-	inputStruct := readFileInput{}
+	inputStruct := &readFileInput{}
 
 	err := job.Input.ReadData(ctx, inputStruct)
 
@@ -36,7 +36,7 @@ func (e *execution) readFile(ctx context.Context, job *base.Job) error {
 	file := convertDriveFileToComponentFile(driveFile)
 	file.Content = *content
 
-	output := readFileOutput{
+	output := &readFileOutput{
 		File: *file,
 	}
 

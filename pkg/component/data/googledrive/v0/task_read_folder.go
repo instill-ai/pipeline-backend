@@ -8,7 +8,7 @@ import (
 )
 
 func (e *execution) readFolder(ctx context.Context, job *base.Job) error {
-	inputStruct := readFolderInput{}
+	inputStruct := &readFolderInput{}
 
 	err := job.Input.ReadData(ctx, inputStruct)
 
@@ -42,7 +42,7 @@ func (e *execution) readFolder(ctx context.Context, job *base.Job) error {
 		files[i] = file
 	}
 
-	output := readFolderOutput{
+	output := &readFolderOutput{
 		Files: files,
 	}
 

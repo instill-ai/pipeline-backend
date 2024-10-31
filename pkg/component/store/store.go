@@ -172,12 +172,6 @@ func Init(
 			compStore.Import(conn)
 		}
 
-		{
-			conn := googledrive.Init(baseComp)
-			conn = conn.WithOAuthCredentials(secrets["googledrive"])
-			compStore.Import(conn)
-		}
-
 		compStore.Import(instillapp.Init(baseComp))
 		compStore.Import(bigquery.Init(baseComp))
 		compStore.Import(googlecloudstorage.Init(baseComp))
@@ -206,6 +200,12 @@ func Init(
 			// Slack
 			conn := slack.Init(baseComp)
 			conn.WithOAuthConfig(secrets[conn.GetDefinitionID()])
+			compStore.Import(conn)
+		}
+		{
+			// Google Drive
+			conn := googledrive.Init(baseComp)
+			conn.WithOAuthConfig(secrets["googledrive"])
 			compStore.Import(conn)
 		}
 		compStore.Import(email.Init(baseComp))
