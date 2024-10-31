@@ -50,7 +50,7 @@ type component struct {
 
 type execution struct {
 	base.ComponentExecution
-	execute func(*structpb.Struct, *base.Job, context.Context) (*structpb.Struct, error)
+	execute func(context.Context, *base.Job) error
 
 	service client.IDriveService
 }
@@ -145,7 +145,6 @@ func (c *component) WithOAuthCredentials(s map[string]any) *component {
 // 3. Spreadsheet: https://docs.google.com/spreadsheets/d/
 // 4. Document: https://docs.google.com/document/d/
 // 5. Presentation: https://docs.google.com/presentation/d/
-// 6. Colab: https://colab.research.google.com/drive/
 // So, it means the Google Form, Google Map and other types of links are not supported
 func extractUIDFromSharedLink(driveLink string) (string, error) {
 	patterns := map[string]string{

@@ -4,35 +4,33 @@ import (
 	"context"
 	"fmt"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
-func (e *execution) readFile(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+func (e *execution) readFile(ctx context.Context, job *base.Job) error {
 
 	inputStruct := readFileInput{}
 
-	err := base.ConvertFromStructpb(input, &inputStruct)
+	err := job.Input.ReadData(ctx, inputStruct)
 
 	if err != nil {
-		return nil, fmt.Errorf("convert input to struct: %w", err)
+		return fmt.Errorf("read input data: %w", err)
 	}
 
 	if isFolder(inputStruct.SharedLink) {
-		return nil, fmt.Errorf("the input link is a folder link, please use the read-folder operation")
+		return fmt.Errorf("the input link is a folder link, please use the read-folder operation")
 	}
 
 	fileUID, err := extractUIDFromSharedLink(inputStruct.SharedLink)
 
 	if err != nil {
-		return nil, fmt.Errorf("extract UID from Google Drive link: %w", err)
+		return fmt.Errorf("extract UID from Google Drive link: %w", err)
 	}
 
 	driveFile, content, err := e.service.ReadFile(fileUID)
 
 	if err != nil {
-		return nil, fmt.Errorf("read file from Google Drive: %w", err)
+		return fmt.Errorf("read file from Google Drive: %w", err)
 	}
 
 	file := convertDriveFileToComponentFile(driveFile)
@@ -42,11 +40,11 @@ func (e *execution) readFile(input *structpb.Struct, job *base.Job, ctx context.
 		File: *file,
 	}
 
-	outputStruct, err := base.ConvertToStructpb(output)
+	err = job.Output.WriteData(ctx, output)
 
 	if err != nil {
-		return nil, fmt.Errorf("convert output to struct: %w", err)
+		return fmt.Errorf("write output data: %w", err)
 	}
 
-	return outputStruct, nil
+	return nil
 }

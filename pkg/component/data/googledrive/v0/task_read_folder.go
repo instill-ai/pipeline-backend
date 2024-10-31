@@ -4,34 +4,32 @@ import (
 	"context"
 	"fmt"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
-func (e *execution) readFolder(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+func (e *execution) readFolder(ctx context.Context, job *base.Job) error {
 	inputStruct := readFolderInput{}
 
-	err := base.ConvertFromStructpb(input, &inputStruct)
+	err := job.Input.ReadData(ctx, inputStruct)
 
 	if err != nil {
-		return nil, fmt.Errorf("convert input to struct: %w", err)
+		return fmt.Errorf("read input data: %w", err)
 	}
 
 	if !isFolder(inputStruct.SharedLink) {
-		return nil, fmt.Errorf("the input link is not a folder link, please check the link")
+		return fmt.Errorf("the input link is not a folder link, please check the link")
 	}
 
 	folderUID, err := extractUIDFromSharedLink(inputStruct.SharedLink)
 
 	if err != nil {
-		return nil, fmt.Errorf("extract UID from Google Drive link: %w", err)
+		return fmt.Errorf("extract UID from Google Drive link: %w", err)
 	}
 
 	driveFiles, contents, err := e.service.ReadFolder(folderUID, inputStruct.ReadContent)
 
 	if err != nil {
-		return nil, fmt.Errorf("read folder from Google Drive: %w", err)
+		return fmt.Errorf("read folder from Google Drive: %w", err)
 	}
 
 	files := make([]*file, len(driveFiles))
@@ -48,11 +46,11 @@ func (e *execution) readFolder(input *structpb.Struct, job *base.Job, ctx contex
 		Files: files,
 	}
 
-	outputStruct, err := base.ConvertToStructpb(output)
+	err = job.Output.WriteData(ctx, output)
 
 	if err != nil {
-		return nil, fmt.Errorf("convert output to struct: %w", err)
+		return fmt.Errorf("write output data: %w", err)
 	}
 
-	return outputStruct, nil
+	return nil
 }

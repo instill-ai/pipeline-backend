@@ -1,34 +1,32 @@
 package googledrive
 
-// TODO: Change to Instill Format.
-
 type readFileInput struct {
-	SharedLink string `json:"shared-link"`
+	SharedLink string `instill:"shared-link"`
 }
 
 type readFileOutput struct {
-	File file `json:"file"`
+	File file `instill:"file"`
 }
 
 type file struct {
-	ID             string `json:"id"`
-	Name           string `json:"name"`
-	Content        string `json:"content"`
-	CreatedTime    string `json:"created-time"`
-	ModifiedTime   string `json:"modified-time"`
-	Size           int64  `json:"size"`
-	MimeType       string `json:"mime-type"`
-	Md5Checksum    string `json:"md5-checksum,omitempty"`
-	Version        int64  `json:"version"`
-	WebViewLink    string `json:"web-view-link"`
-	WebContentLink string `json:"web-content-link,omitempty"`
+	ID             string `instill:"id"`
+	Name           string `instill:"name"`
+	Content        string `instill:"content"`
+	CreatedTime    string `instill:"created-time"`
+	ModifiedTime   string `instill:"modified-time"`
+	Size           int64  `instill:"size"`
+	MimeType       string `instill:"mime-type"`
+	Md5Checksum    string `instill:"md5-checksum,omitempty"`
+	Version        int64  `instill:"version"`
+	WebViewLink    string `instill:"web-view-link"`
+	WebContentLink string `instill:"web-content-link,omitempty"`
 }
 
 type readFolderInput struct {
-	SharedLink  string `json:"shared-link"`
-	ReadContent bool   `json:"read-content"`
+	SharedLink  string `instill:"shared-link"`
+	ReadContent bool   `instill:"read-content"`
 }
 
 type readFolderOutput struct {
-	Files []*file `json:"files"`
+	Files []*file `instill:"files"`
 }
