@@ -15,6 +15,7 @@ type ConvertDocumentToMarkdownOutput struct {
 	Images        []format.Image `instill:"images"`
 	Error         string         `instill:"error"`
 	AllPageImages []format.Image `instill:"all-page-images"`
+	Markdowns     []string       `instill:"markdowns"`
 }
 
 type ConvertDocumentToImagesInput struct {
