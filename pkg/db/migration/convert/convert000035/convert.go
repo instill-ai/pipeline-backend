@@ -27,7 +27,7 @@ func (c *RenameInstillFormat) Migrate() error {
 
 func (c *RenameInstillFormat) migratePipeline() error {
 	pipelines := make([]*datamodel.Pipeline, 0, batchSize)
-	return c.DB.Select("uid", "recipe_yaml", "recipe").FindInBatches(&pipelines, batchSize, func(tx *gorm.DB, _ int) error {
+	return c.DB.Select("uid", "recipe_yaml").FindInBatches(&pipelines, batchSize, func(tx *gorm.DB, _ int) error {
 		for _, p := range pipelines {
 			isRecipeUpdated := false
 			l := c.Logger.With(zap.String("pipelineUID", p.UID.String()))
@@ -78,7 +78,7 @@ func (c *RenameInstillFormat) migratePipeline() error {
 
 func (c *RenameInstillFormat) migratePipelineRelease() error {
 	pipelines := make([]*datamodel.Pipeline, 0, batchSize)
-	return c.DB.Select("uid", "recipe_yaml", "recipe").FindInBatches(&pipelines, batchSize, func(tx *gorm.DB, _ int) error {
+	return c.DB.Select("uid", "recipe_yaml").FindInBatches(&pipelines, batchSize, func(tx *gorm.DB, _ int) error {
 		for _, p := range pipelines {
 			isRecipeUpdated := false
 			l := c.Logger.With(zap.String("pipelineReleaseUID", p.UID.String()))
