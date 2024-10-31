@@ -159,7 +159,6 @@ func mockGetIssue(res http.ResponseWriter, req *http.Request) {
 		_, _ = res.Write([]byte(`{"errorMessages":["Issue does not exist or you do not have permission to see it"]}`))
 		return
 	}
-	fmt.Println(issue)
 	// response
 	res.WriteHeader(http.StatusOK)
 	respText, err := json.Marshal(issue)

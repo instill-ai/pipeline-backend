@@ -46,7 +46,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/weaviate/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/zilliz/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/generic/collection/v0"
-	"github.com/instill-ai/pipeline-backend/pkg/component/generic/restapi/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/generic/http/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/audio/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/base64/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0"
@@ -186,7 +186,7 @@ func Init(
 		compStore.Import(chroma.Init(baseComp))
 		compStore.Import(qdrant.Init(baseComp))
 		compStore.Import(instillartifact.Init(baseComp))
-		compStore.Import(restapi.Init(baseComp))
+		compStore.Import(http.Init(baseComp))
 		compStore.Import(collection.Init(baseComp))
 		compStore.Import(web.Init(baseComp))
 		{

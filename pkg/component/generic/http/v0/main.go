@@ -1,12 +1,14 @@
 //go:generate compogen readme ./config ./README.mdx
-package restapi
+package http
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"mime"
 	"net/http"
+	"strings"
 	"sync"
 
 	_ "embed"
@@ -15,6 +17,8 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/x/errmsg"
 
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -58,6 +62,9 @@ type component struct {
 
 type execution struct {
 	base.ComponentExecution
+
+	client  *httpclient.Client
+	execute func(context.Context, *base.Job) error
 }
 
 func Init(bc base.Component) *component {
@@ -72,9 +79,25 @@ func Init(bc base.Component) *component {
 }
 
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
-	return &execution{
-		ComponentExecution: x,
-	}, nil
+
+	// We may have different url in batch.
+	client, err := newClient(x.Setup, x.GetLogger())
+	if err != nil {
+		return nil, err
+	}
+	e := &execution{ComponentExecution: x, client: client}
+
+	switch x.Task {
+	case taskGet, taskPost, taskPatch, taskPut, taskDelete, taskHead, taskOptions:
+		e.execute = e.executeHTTP
+	default:
+		return nil, errmsg.AddMessage(
+			fmt.Errorf("not supported task: %s", x.Task),
+			fmt.Sprintf("%s task is not supported.", x.Task),
+		)
+	}
+	return e, nil
+
 }
 
 func getAuthentication(setup *structpb.Struct) (authentication, error) {
@@ -117,69 +140,81 @@ func getAuthentication(setup *structpb.Struct) (authentication, error) {
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 
-	method, ok := taskMethod[e.Task]
-	if !ok {
-		return errmsg.AddMessage(
-			fmt.Errorf("not supported task: %s", e.Task),
-			fmt.Sprintf("%s task is not supported.", e.Task),
-		)
+	return base.ConcurrentExecutor(ctx, jobs, e.execute)
+}
+
+func (e *execution) executeHTTP(ctx context.Context, job *base.Job) error {
+
+	in := httpInput{}
+	if err := job.Input.ReadData(ctx, &in); err != nil {
+		return err
 	}
 
-	for _, job := range jobs {
-		input, err := job.Input.Read(ctx)
+	// An API error is a valid output in this component.
+	req := e.client.R()
+	if in.Body != nil {
+		req.SetBody(in.Body)
+	}
+
+	resp, err := req.Execute(taskMethod[e.Task], in.EndpointURL)
+	if err != nil {
+		return err
+	}
+
+	// Try to parse response as JSON first
+	contentType := resp.Header().Get("Content-Type")
+
+	// Try to parse response based on content type
+	switch {
+	case strings.Contains(contentType, "application/json"):
+		var jsonBody any
+		if err := json.Unmarshal(resp.Body(), &jsonBody); err != nil {
+			return fmt.Errorf("failed to parse JSON response: %w", err)
+		}
+		value, err := data.NewValue(jsonBody)
 		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
+			return fmt.Errorf("failed to convert JSON response to format.Value: %w", err)
 		}
-		taskIn := TaskInput{}
-		taskOut := TaskOutput{}
-
-		if err := base.ConvertFromStructpb(input, &taskIn); err != nil {
-			job.Error.Error(ctx, err)
-			continue
+		out := httpOutput{
+			StatusCode: resp.StatusCode(),
+			Header:     resp.Header(),
+			Body:       value,
 		}
+		return job.Output.WriteData(ctx, out)
 
-		// We may have different url in batch.
-		client, err := newClient(e.Setup, e.GetLogger())
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
+	case strings.HasPrefix(contentType, "text/"):
+		textBody := string(resp.Body())
+		value := data.NewString(textBody)
+		out := httpOutput{
+			StatusCode: resp.StatusCode(),
+			Header:     resp.Header(),
+			Body:       value,
 		}
+		return job.Output.WriteData(ctx, out)
 
-		// An API error is a valid output in this component.
-		req := client.R().SetResult(&taskOut.Body).SetError(&taskOut.Body)
-		if taskIn.Body != nil {
-			req.SetBody(taskIn.Body)
-		}
-
-		resp, err := req.Execute(method, taskIn.EndpointURL)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
-
-		taskOut.StatusCode = resp.StatusCode()
-		taskOut.Header = resp.Header()
-
-		if taskOut.Body == nil {
-			// Maintain a JSON structure for the output to avoid frontend render overhead.
-			taskOut.Body = map[string]interface{}{
-				"response": resp.String(),
+	default:
+		// Get filename from Content-Disposition header if present
+		filename := ""
+		if cd := resp.Header().Get("Content-Disposition"); cd != "" {
+			if _, params, err := mime.ParseMediaType(cd); err == nil {
+				if fn, ok := params["filename"]; ok {
+					filename = fn
+				}
 			}
 		}
+		// For other content types, return raw bytes wrapped in format.Value
+		value, err := data.NewFileFromBytes(resp.Body(), contentType, filename)
+		if err != nil {
+			return fmt.Errorf("failed to convert response to format.Value: %w", err)
+		}
+		out := httpOutput{
+			StatusCode: resp.StatusCode(),
+			Header:     resp.Header(),
+			Body:       value,
+		}
 
-		output, err := base.ConvertToStructpb(taskOut)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
-		err = job.Output.Write(ctx, output)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
+		return job.Output.WriteData(ctx, out)
 	}
-	return nil
 }
 
 func (c *component) Test(sysVars map[string]any, setup *structpb.Struct) error {
