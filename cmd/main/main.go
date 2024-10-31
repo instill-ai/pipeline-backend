@@ -256,7 +256,7 @@ func main() {
 		logger.Fatal("failed to create minio client", zap.Error(err))
 	}
 	workerUID, _ := uuid.NewV4()
-	compStore := componentstore.Init(logger, config.Config.Connector.Secrets, nil)
+	compStore := componentstore.Init(logger, config.Config.Component.Secrets, nil)
 
 	service := service.NewService(
 		repo,

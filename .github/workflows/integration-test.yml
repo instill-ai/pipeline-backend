@@ -78,7 +78,10 @@ jobs:
           envFile: .env
 
       - name: Launch Instill Core (latest)
+        # CFG_COMPONENT_SECRETS_GITHUB* variables are injected to test OAuth connection
+        # creation
         run: |
+          sed -i 's/\(\w\+GITHUB\w\+\)=/\1=foo/' .env.component
           COMPOSE_PROFILES=all \
           EDITION=local-ce:test \
           RAY_LATEST_TAG=latest \

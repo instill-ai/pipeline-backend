@@ -19,7 +19,7 @@ server:
   instanceid: "pipeline-backend"
   datachanbuffersize: 100
   instillcorehost: http://localhost:8080
-connector:
+component:
 database:
   username: postgres
   password: password

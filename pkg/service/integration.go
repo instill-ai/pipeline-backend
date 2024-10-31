@@ -135,41 +135,52 @@ func (s *service) componentDefinitionToIntegration(
 		View:        view,
 	}
 
-	if view == pb.View_VIEW_FULL {
-		integration.SetupSchema = setup.GetStructValue()
-		schemaFields := integration.SetupSchema.GetFields()
-
-		if oAuthConfig, supportsOAuth := schemaFields["instillOAuthConfig"]; supportsOAuth {
-			// We extract the OAuth configuration to a dedicated proto field to
-			// have a structured contract with the clients.
-			j, err := oAuthConfig.GetStructValue().MarshalJSON()
-			if err != nil {
-				return nil, fmt.Errorf("marshalling OAuth config: %w", err)
-			}
-
-			integration.OAuthConfig = new(pb.Integration_OAuthConfig)
-			if err := protojson.Unmarshal(j, integration.OAuthConfig); err != nil {
-				return nil, fmt.Errorf("unmarshalling OAuth config: %w", err)
-			}
-
-			// We remove the information from the setup so it isn't duplicated
-			// in the response.
-			delete(schemaFields, "instillOAuthConfig")
-		}
-
-		//nolint:staticcheck
-		// This is deprecated and only maintained for backwards compatibility.
-		// TODO jvallesm: remove when Integration Milestone 2 (OAuth) is rolled
-		// // out.
-		integration.Schemas = []*pb.Integration_SetupSchema{
-			{
-				Method: pb.Connection_METHOD_DICTIONARY,
-				Schema: setup.GetStructValue(),
-			},
-		}
+	if view != pb.View_VIEW_FULL {
+		return integration, nil
 	}
 
+	integration.SetupSchema = setup.GetStructValue()
+	schemaFields := integration.SetupSchema.GetFields()
+
+	//nolint:staticcheck
+	// This is deprecated and only maintained for backwards compatibility.
+	// TODO jvallesm: remove when Integration Milestone 2 (OAuth) is rolled
+	// out.
+	integration.Schemas = []*pb.Integration_SetupSchema{
+		{
+			Method: pb.Connection_METHOD_DICTIONARY,
+			Schema: setup.GetStructValue(),
+		},
+	}
+
+	supportsOAuth, err := s.component.SupportsOAuth(uuid.FromStringOrNil(integration.Uid))
+	if err != nil {
+		return nil, fmt.Errorf("checking OAuth support: %w", err)
+	}
+
+	oAuthConfig, hasOAuthConfig := schemaFields["instillOAuthConfig"]
+	if !(supportsOAuth && hasOAuthConfig) {
+		return integration, nil
+	}
+
+	// We extract the OAuth configuration to a dedicated proto field to
+	// have a structured contract with the clients.
+	j, err := oAuthConfig.GetStructValue().MarshalJSON()
+	if err != nil {
+		return nil, fmt.Errorf("marshalling OAuth config: %w", err)
+	}
+
+	integration.OAuthConfig = new(pb.Integration_OAuthConfig)
+	if err := protojson.Unmarshal(j, integration.OAuthConfig); err != nil {
+		return nil, fmt.Errorf("unmarshalling OAuth config: %w", err)
+	}
+
+	// We remove the information from the setup so it isn't duplicated
+	// in the response.
+	delete(schemaFields, "instillOAuthConfig")
+
 	return integration, nil
+
 }
 
 var outputOnlyConnectionFields = []string{
@@ -205,10 +216,13 @@ func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integr
 			return errmsg.AddMessage(err, "OAuth access details only apply to OAuth connections.")
 		}
 		if conn.Identity != nil {
-			return errmsg.AddMessage(err, "Identity only applies OAuth connections.")
+			return errmsg.AddMessage(err, "Identity only applies to OAuth connections.")
 		}
 	case pb.Connection_METHOD_OAUTH:
 		err := fmt.Errorf("%w: invalid payload in OAuth connection", errdomain.ErrInvalidArgument)
+		if integration.GetOAuthConfig() == nil {
+			return errmsg.AddMessage(err, integration.GetTitle()+" connection doesn't accept METHOD_OAUTH.")
+		}
 		if conn.GetIdentity() == "" {
 			return errmsg.AddMessage(err, "Identity must be provided in OAuth connections.")
 		}
