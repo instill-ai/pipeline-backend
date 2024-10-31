@@ -571,6 +571,18 @@ func GenerateDAG(componentMap datamodel.ComponentMap) (*dag, error) {
 			if component.Input != nil {
 				parents = append(parents, FindReferenceParent(component.Input.(string))...)
 			}
+			if component.Range != nil {
+				switch rangeVal := component.Range.(type) {
+				case []any:
+					for _, v := range rangeVal {
+						parents = append(parents, FindReferenceParent(fmt.Sprintf("%v", v))...)
+					}
+				case map[string]any:
+					for _, v := range rangeVal {
+						parents = append(parents, FindReferenceParent(fmt.Sprintf("%v", v))...)
+					}
+				}
+			}
 			nestedComponentIDs := []string{id}
 			for nestedID := range component.Component {
 				nestedComponentIDs = append(nestedComponentIDs, nestedID)
