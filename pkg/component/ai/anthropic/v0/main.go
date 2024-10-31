@@ -3,7 +3,6 @@ package anthropic
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"slices"
 	"strings"
@@ -11,12 +10,12 @@ import (
 
 	_ "embed"
 
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	anthropicsdk "github.com/anthropics/anthropic-sdk-go"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
 const (
@@ -75,43 +74,6 @@ type messagesReq struct {
 	TopP          float32     `json:"top_p,omitempty"`
 }
 
-type MessagesInput struct {
-	ChatHistory  []ChatMessage `json:"chat-history"`
-	MaxNewTokens int           `json:"max-new-tokens"`
-	ModelName    string        `json:"model-name"`
-	Prompt       string        `json:"prompt"`
-	PromptImages []string      `json:"prompt-images"`
-	Seed         int           `json:"seed"`
-	SystemMsg    string        `json:"system-message"`
-	Temperature  float32       `json:"temperature"`
-	TopK         int           `json:"top-k"`
-}
-
-type ChatMessage struct {
-	Role    string              `json:"role"`
-	Content []MultiModalContent `json:"content"`
-}
-
-type MultiModalContent struct {
-	ImageURL URL    `json:"image-url"`
-	Text     string `json:"text"`
-	Type     string `json:"type"`
-}
-
-type URL struct {
-	URL string `json:"url"`
-}
-
-type MessagesOutput struct {
-	Text  string        `json:"text"`
-	Usage messagesUsage `json:"usage"`
-}
-
-type messagesUsage struct {
-	InputTokens  int `json:"input-tokens"`
-	OutputTokens int `json:"output-tokens"`
-}
-
 type message struct {
 	Role    string    `json:"role"`
 	Content []content `json:"content"`
@@ -149,7 +111,7 @@ func Init(bc base.Component) *component {
 type execution struct {
 	base.ComponentExecution
 
-	execute                func(*structpb.Struct, *base.Job, context.Context) (*structpb.Struct, error)
+	execute                func(context.Context, *base.Job) error
 	client                 *anthropicsdk.Client
 	usesInstillCredentials bool
 }
@@ -217,32 +179,14 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }
 
-func (e *execution) generateText(_ *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
-
-	input, err := job.Input.Read(ctx)
-	if err != nil {
-		job.Error.Error(ctx, err)
-		return nil, err
-	}
+func (e *execution) generateText(ctx context.Context, job *base.Job) error {
 
 	var inputStruct MessagesInput
-	err = base.ConvertFromStructpb(input, &inputStruct)
+	err := job.Input.ReadData(ctx, &inputStruct)
 	if err != nil {
 		job.Error.Error(ctx, err)
-		return nil, err
+		return err
 	}
-
-	// type MessagesInput struct {
-	// 	ChatHistory  []ChatMessage `json:"chat-history"`
-	// 	MaxNewTokens int           `json:"max-new-tokens"`
-	// 	ModelName    string        `json:"model-name"`
-	// 	Prompt       string        `json:"prompt"`
-	// 	PromptImages []string      `json:"prompt-images"`
-	// 	Seed         int           `json:"seed"`
-	// 	SystemMsg    string        `json:"system-message"`
-	// 	Temperature  float32       `json:"temperature"`
-	// 	TopK         int           `json:"top-k"`
-	// }
 
 	messageParams := anthropicsdk.MessageNewParams{
 		Model:     anthropicsdk.F(inputStruct.ModelName),
@@ -284,9 +228,9 @@ func (e *execution) generateText(_ *structpb.Struct, job *base.Job, ctx context.
 		// check if the image extension is supported
 		if !slices.Contains(supportedImageExtensions, extension) {
 			job.Error.Error(ctx, err)
-			return nil, fmt.Errorf("unsupported image extension, expected one of: %v , got %s", supportedImageExtensions, extension)
+			return fmt.Errorf("unsupported image extension, expected one of: %v , got %s", supportedImageExtensions, extension)
 		}
-		blocks = append(blocks, anthropicsdk.NewImageBlockBase64(fmt.Sprintf("image/%s", extension), base.TrimBase64Mime(image)))
+		blocks = append(blocks, anthropicsdk.NewImageBlockBase64(fmt.Sprintf("image/%s", extension), util.TrimBase64Mime(image)))
 	}
 	messages = append(messages, anthropicsdk.NewUserMessage(blocks...))
 	messageParams.Messages = anthropicsdk.F(messages)
@@ -308,35 +252,19 @@ func (e *execution) generateText(_ *structpb.Struct, job *base.Job, ctx context.
 		err = message.Accumulate(event)
 		if err != nil {
 			job.Error.Error(ctx, err)
-			return nil, err
+			return err
 		}
 
 		switch delta := event.Delta.(type) {
 		case anthropicsdk.ContentBlockDeltaEventDelta:
 
 			if delta.Text != "" {
-				fmt.Println("delta.Text")
-				fmt.Println(delta.Text)
 				text += delta.Text
 				outputStruct.Text = text
-
-				output := &structpb.Struct{}
-				outputJSON, err := json.Marshal(outputStruct)
+				err = job.Output.WriteData(ctx, outputStruct)
 				if err != nil {
 					job.Error.Error(ctx, err)
-					return nil, err
-				}
-
-				err = protojson.Unmarshal(outputJSON, output)
-				if err != nil {
-					job.Error.Error(ctx, err)
-					return nil, err
-				}
-
-				err = job.Output.Write(ctx, output)
-				if err != nil {
-					job.Error.Error(ctx, err)
-					return nil, err
+					return err
 				}
 			}
 		}
@@ -345,24 +273,11 @@ func (e *execution) generateText(_ *structpb.Struct, job *base.Job, ctx context.
 	outputStruct.Usage.InputTokens = int(message.Usage.InputTokens)
 	outputStruct.Usage.OutputTokens = int(message.Usage.OutputTokens)
 
-	outputJSON, err := json.Marshal(outputStruct)
+	err = job.Output.WriteData(ctx, outputStruct)
 	if err != nil {
 		job.Error.Error(ctx, err)
-		return nil, err
+		return err
 	}
 
-	output := &structpb.Struct{}
-	err = protojson.Unmarshal(outputJSON, output)
-	if err != nil {
-		job.Error.Error(ctx, err)
-		return nil, err
-	}
-
-	err = job.Output.Write(ctx, output)
-	if err != nil {
-		job.Error.Error(ctx, err)
-		return nil, err
-	}
-
-	return output, nil
+	return nil
 }

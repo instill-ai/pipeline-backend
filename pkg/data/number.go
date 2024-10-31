@@ -4,38 +4,55 @@ import (
 	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 )
 
-type Number struct {
+type numberData struct {
 	Raw float64
 }
 
-func NewNumberFromFloat(f float64) *Number {
-	return &Number{Raw: f}
+func NewNumberFromFloat(f float64) *numberData {
+	return &numberData{Raw: f}
 }
 
-func NewNumberFromInteger(i int) *Number {
-	return &Number{Raw: float64(i)}
+func NewNumberFromInteger(i int) *numberData {
+	return &numberData{Raw: float64(i)}
 }
 
-func (Number) isValue() {}
+func (numberData) IsValue() {}
 
-func (n *Number) GetInteger() int {
+func (n *numberData) Integer() int {
 	return int(n.Raw)
 }
 
-func (n *Number) GetFloat() float64 {
+func (n *numberData) Float64() float64 {
 	return n.Raw
 }
 
-func (n *Number) Get(path string) (v Value, err error) {
-	if path == "" {
-		return n, nil
-	}
-	return nil, fmt.Errorf("wrong path %s for Number", path)
+func (n *numberData) String() string {
+	return fmt.Sprintf("%f", n.Raw)
 }
 
-func (n Number) ToStructValue() (v *structpb.Value, err error) {
+func (n *numberData) Get(p *path.Path) (v format.Value, err error) {
+	if p == nil || p.IsEmpty() {
+		return n, nil
+	}
+	return nil, fmt.Errorf("path not found: %s", p)
+}
+
+// Deprecated: ToStructValue() is deprecated and will be removed in a future
+// version. structpb is not suitable for handling binary data and will be phased
+// out gradually.
+func (n numberData) ToStructValue() (v *structpb.Value, err error) {
 	v = structpb.NewNumberValue(n.Raw)
 	return
+}
+
+func (n *numberData) Equal(other format.Value) bool {
+	if other, ok := other.(format.Number); ok {
+		return n.Raw == other.Float64()
+	}
+	return false
 }

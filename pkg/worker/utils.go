@@ -8,6 +8,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 )
 
@@ -37,13 +38,13 @@ const (
 // setIteratorIndex converts the iterator index identifier into a numeric
 // index. For example, it converts `${variable.array[i]}` into
 // `${variable.array[0]}`.
-func setIteratorIndex(v data.Value, identifier string, index int) data.Value {
+func setIteratorIndex(v format.Value, identifier string, index int) format.Value {
 	if identifier == "" {
 		identifier = defaultRangeIdentifier
 	}
 	switch v := v.(type) {
-	case *data.String:
-		s := v.GetString()
+	case format.ReferenceString:
+		s := v.String()
 		val := ""
 		for {
 			startIdx := strings.Index(s, "${")
@@ -66,16 +67,16 @@ func setIteratorIndex(v data.Value, identifier string, index int) data.Value {
 			s = s[endIdx+1:]
 		}
 		return data.NewString(val)
-	case *data.Array:
-		m := data.NewArray(make([]data.Value, len(v.Values)))
-		for idx, item := range v.Values {
-			m.Values[idx] = setIteratorIndex(item, identifier, index)
+	case data.Array:
+		m := make(data.Array, len(v))
+		for idx, item := range v {
+			m[idx] = setIteratorIndex(item, identifier, index)
 		}
 		return m
-	case *data.Map:
-		m := data.NewMap(make(map[string]data.Value))
-		for k, v := range v.Fields {
-			m.Fields[k] = setIteratorIndex(v, identifier, index)
+	case data.Map:
+		m := data.Map{}
+		for k, v := range v {
+			m[k] = setIteratorIndex(v, identifier, index)
 		}
 		return m
 	default:

@@ -14,6 +14,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 	"github.com/instill-ai/x/errmsg"
 )
 
@@ -433,7 +434,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 				continue
 			}
 
-			b, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(inputStruct.Image))
+			b, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(inputStruct.Image))
 			if err != nil {
 				job.Error.Error(ctx, err)
 				continue
@@ -459,7 +460,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 				continue
 			}
 
-			b, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(inputStruct.Image))
+			b, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(inputStruct.Image))
 			if err != nil {
 				job.Error.Error(ctx, err)
 				continue
@@ -504,7 +505,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 				continue
 			}
 
-			b, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(inputStruct.Image))
+			b, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(inputStruct.Image))
 			if err != nil {
 				job.Error.Error(ctx, err)
 				continue
@@ -530,7 +531,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 				continue
 			}
 
-			b, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(inputStruct.Image))
+			b, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(inputStruct.Image))
 			if err != nil {
 				job.Error.Error(ctx, err)
 				continue
@@ -562,7 +563,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 				continue
 			}
 
-			b, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(inputStruct.Audio))
+			b, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(inputStruct.Audio))
 			if err != nil {
 				job.Error.Error(ctx, err)
 				continue
@@ -589,7 +590,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 				continue
 			}
 
-			b, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(inputStruct.Audio))
+			b, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(inputStruct.Audio))
 			if err != nil {
 				job.Error.Error(ctx, err)
 				continue

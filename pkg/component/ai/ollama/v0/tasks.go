@@ -4,6 +4,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
 type TaskTextGenerationChatInput struct {
@@ -58,7 +59,7 @@ func (e *execution) TaskTextGenerationChat(in *structpb.Struct) (*structpb.Struc
 			if content.Type == "text" {
 				textContent = textContent + content.Text
 			} else {
-				imageContent = append(imageContent, base.TrimBase64Mime(content.ImageURL.URL))
+				imageContent = append(imageContent, util.TrimBase64Mime(content.ImageURL.URL))
 			}
 		}
 		messages = append(messages, OllamaChatMessage{
@@ -71,7 +72,7 @@ func (e *execution) TaskTextGenerationChat(in *structpb.Struct) (*structpb.Struc
 	images := []string{}
 
 	for _, image := range input.PromptImages {
-		input.PromptImages = append(images, base.TrimBase64Mime(image))
+		input.PromptImages = append(images, util.TrimBase64Mime(image))
 	}
 
 	messages = append(messages, OllamaChatMessage{
