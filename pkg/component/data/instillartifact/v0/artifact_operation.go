@@ -88,7 +88,6 @@ func (e *execution) uploadFile(input *structpb.Struct) (*structpb.Struct, error)
 			}
 		}
 
-		fmt.Println("found", found)
 		if !found {
 			_, err = artifactClient.CreateCatalog(ctx, &artifactPB.CreateCatalogRequest{
 				NamespaceId: inputStruct.Options.Namespace,

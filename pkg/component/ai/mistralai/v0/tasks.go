@@ -70,9 +70,6 @@ func (e *execution) taskTextGeneration(ctx context.Context, job *base.Job) error
 	outputStruct.Text = ""
 
 	for resp := range respStream {
-		fmt.Println("resp")
-		fmt.Println(resp.Choices[0].Delta.Content)
-		fmt.Println(resp.Usage)
 
 		outputStruct.Text += resp.Choices[0].Delta.Content
 		outputStruct.Usage = chatUsage{

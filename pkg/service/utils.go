@@ -50,8 +50,6 @@ func (s *service) checkNamespacePermission(ctx context.Context, ns resource.Name
 		}
 	} else {
 		if ns.NsUID != uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)) {
-			// TODO: remove this debug print
-			fmt.Println("nsuid", ns.NsUID, constant.HeaderUserUIDKey)
 			return errdomain.ErrUnauthorized
 		}
 	}
