@@ -1,4 +1,4 @@
-package restapi
+package http
 
 import (
 	"context"
@@ -26,13 +26,15 @@ const (
 
 var testAuth = map[authType]map[string]any{
 
-	noAuthType: map[string]any{},
-	basicAuthType: map[string]any{
+	noAuthType: {},
+	basicAuthType: {
 		"username": username,
 		"password": password,
 	},
-	bearerTokenType: map[string]any{"token": token},
-	apiKeyType: map[string]any{
+	bearerTokenType: {
+		"token": token,
+	},
+	apiKeyType: {
 		"auth-location": string(query),
 		"key":           authKey,
 		"value":         authValue,

@@ -1,4 +1,4 @@
-package restapi
+package http
 
 import (
 	"go.uber.org/zap"

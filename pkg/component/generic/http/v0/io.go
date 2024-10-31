@@ -1,4 +1,4 @@
-package restapi
+package http
 
 import "github.com/instill-ai/pipeline-backend/pkg/data/format"
 
