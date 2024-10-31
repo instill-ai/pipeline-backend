@@ -27,8 +27,12 @@ func (c *RenameHTTPComponent) Migrate() error {
 }
 
 func (c *RenameHTTPComponent) migratePipeline() error {
+	q := c.DB.Select("uid", "recipe_yaml").
+		Where("recipe_yaml LIKE ?", "%%type: restapi%%").
+		Where("delete_time IS NULL")
+
 	pipelines := make([]*datamodel.Pipeline, 0, batchSize)
-	return c.DB.Select("uid", "recipe_yaml").FindInBatches(&pipelines, batchSize, func(tx *gorm.DB, _ int) error {
+	return q.FindInBatches(&pipelines, batchSize, func(tx *gorm.DB, _ int) error {
 		for _, p := range pipelines {
 			isRecipeUpdated := false
 			l := c.Logger.With(zap.String("pipelineUID", p.UID.String()))
@@ -75,8 +79,12 @@ func (c *RenameHTTPComponent) migratePipeline() error {
 }
 
 func (c *RenameHTTPComponent) migratePipelineRelease() error {
+	q := c.DB.Select("uid", "recipe_yaml").
+		Where("recipe_yaml LIKE ?", "%%type: restapi%%").
+		Where("delete_time IS NULL")
+
 	pipelineReleases := make([]*datamodel.PipelineRelease, 0, batchSize)
-	return c.DB.Select("uid", "recipe_yaml").FindInBatches(&pipelineReleases, batchSize, func(tx *gorm.DB, _ int) error {
+	return q.FindInBatches(&pipelineReleases, batchSize, func(tx *gorm.DB, _ int) error {
 		for _, pr := range pipelineReleases {
 			isRecipeUpdated := false
 			l := c.Logger.With(zap.String("pipelineReleaseUID", pr.UID.String()))
