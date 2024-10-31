@@ -53,8 +53,8 @@ func TestNewDocumentFromURL(t *testing.T) {
 		name string
 		url  string
 	}{
-		{"Valid PDF URL", "https://raw.githubusercontent.com/instill-ai/pipeline-backend/refs/heads/huitang/format/pkg/data/testdata/sample2.pdf"},
-		{"Valid TXT URL", "https://raw.githubusercontent.com/instill-ai/pipeline-backend/refs/heads/huitang/format/pkg/data/testdata/sample2.txt"},
+		{"Valid PDF URL", "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample2.pdf"},
+		{"Valid TXT URL", "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample2.txt"},
 		{"Valid DOCX URL", "https://filesamples.com/samples/document/docx/sample1.docx"},
 		{"Invalid URL", "https://invalid-url.com/document.pdf"},
 	}
