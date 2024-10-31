@@ -4,27 +4,6 @@ import (
 	"context"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
-)
-
-type ConvertDocumentToMarkdownInput struct {
-	Document            string `json:"document"`
-	DisplayImageTag     bool   `json:"display-image-tag"`
-	Filename            string `json:"filename"`
-	DisplayAllPageImage bool   `json:"display-all-page-image"`
-}
-
-type ConvertDocumentToMarkdownOutput struct {
-	Body          string   `json:"body"`
-	Filename      string   `json:"filename"`
-	Images        []string `json:"images,omitempty"`
-	Error         string   `json:"error,omitempty"`
-	AllPageImages []string `json:"all-page-images,omitempty"`
-	Markdowns     []string `json:"markdowns"`
-}
-
-func ConvertDocumentToMarkdown(inputStruct *ConvertDocumentToMarkdownInput, transformerGetter MarkdownTransformerGetterFunc) (*ConvertDocumentToMarkdownOutput, error) {
-	contentType, err := util.GetContentTypeFromBase64(inputStruct.Document)
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0/transformer"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
@@ -42,21 +21,11 @@ func (e *execution) convertDocumentToMarkdown(ctx context.Context, job *base.Job
 	if err != nil {
 		return err
 	}
-	converterOutput, err := transformer.Transform()
-	if err != nil {
-		return nil, err
-	}
-
-	outputStruct := &ConvertDocumentToMarkdownOutput{
-		Body:          converterOutput.Body,
-		Images:        converterOutput.Images,
-		Error:         strings.Join(converterOutput.ParsingError, "\n"),
-		AllPageImages: converterOutput.AllPageImages,
-	}
-
-	if inputStruct.Filename != "" {
-		filename := strings.Split(inputStruct.Filename, ".")[0] + ".md"
-		outputStruct.Filename = filename
+	transformerInputStruct := transformer.ConvertDocumentToMarkdownTransformerInput{
+		Document:            dataURI.String(),
+		DisplayImageTag:     inputStruct.DisplayImageTag,
+		Filename:            inputStruct.Filename,
+		DisplayAllPageImage: inputStruct.DisplayAllPageImage,
 	}
 
 	transformerOutputStruct, err := transformer.ConvertDocumentToMarkdown(&transformerInputStruct, e.getMarkdownTransformer)
