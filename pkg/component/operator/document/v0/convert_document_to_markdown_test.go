@@ -30,6 +30,7 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 				Body:          "# This is test file for markdown\n",
 				Images:        []format.Image{},
 				AllPageImages: []format.Image{},
+				Markdowns:     []string{"# This is test file for markdown\n"},
 			},
 		},
 		{
@@ -39,6 +40,7 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 				Body:          "# This is test file for markdown\n",
 				Images:        []format.Image{},
 				AllPageImages: []format.Image{},
+				Markdowns:     []string{"# This is test file for markdown\n"},
 			},
 		},
 		{
@@ -57,6 +59,7 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 				Body:          "# This           is     test          file       for markdown\n",
 				Images:        []format.Image{},
 				AllPageImages: []format.Image{},
+				Markdowns:     []string{"# This           is     test          file       for markdown\n"},
 			},
 		},
 		{

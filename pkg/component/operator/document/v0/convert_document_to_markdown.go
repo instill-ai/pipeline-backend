@@ -53,6 +53,7 @@ func (e *execution) convertDocumentToMarkdown(ctx context.Context, job *base.Job
 			}
 			return images
 		}(),
+		Markdowns: transformerOutputStruct.Markdowns,
 	}
 
 	err = job.Output.WriteData(ctx, outputStruct)

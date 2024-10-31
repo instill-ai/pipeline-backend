@@ -15,6 +15,7 @@ type converterOutput struct {
 	SystemError   string   `json:"system_error"`
 	AllPageImages []string `json:"all_page_images"`
 	AllPage       bool     `json:"display_all_page_image"`
+	Markdowns     []string `json:"markdowns"`
 }
 
 func convertPDFToMarkdownWithPDFPlumber(base64Text string, displayImageTag bool, displayAllPage bool) (converterOutput, error) {
