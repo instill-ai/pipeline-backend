@@ -96,6 +96,11 @@ coverage:
 
 .PHONY: test
 test:
+# Ideally, it should be ok to run without installing tparse locally.
+# However, there may be some issues that arise from running the tests
+# in the container. If you encounter any issues, please install tparse
+# locally via `go install github.com/mfridman/tparse/cmd/tparse@latest`
+# and run the tests locally.
 	@if [ "${OCR}" = "true" ]; then \
 		docker run --rm \
 			-v $(PWD):/${SERVICE_NAME} \
