@@ -17,6 +17,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000032"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000033"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000034"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000035"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
@@ -82,6 +83,8 @@ func Migrate(version uint) error {
 		m = &convert000033.ConvertWebFields{Basic: bc}
 	case 34:
 		m = &convert000034.RenameHTTPComponent{Basic: bc}
+	case 35:
+		m = &convert000035.RenameInstillFormat{Basic: bc}
 	default:
 		return nil
 	}

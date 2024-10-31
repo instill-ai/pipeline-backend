@@ -691,11 +691,11 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 		return ErrExceedMaxBatchSize
 	}
 
-	instillFormatMap := map[string]string{}
+	formatMap := map[string]string{}
 	defaultValueMap := map[string]any{}
 
 	for k, v := range r.Variable {
-		instillFormatMap[k] = v.InstillFormat
+		formatMap[k] = v.Format
 		defaultValueMap[k] = v.Default
 	}
 
@@ -719,7 +719,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 		for k := range m {
 			switch s := m[k].(type) {
 			case string:
-				if instillFormatMap[k] != "string" {
+				if formatMap[k] != "string" {
 					// Skip the base64 decoding if the string is a URL
 					if strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://") {
 						continue
@@ -727,7 +727,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					if !strings.HasPrefix(s, "data:") {
 						b, err := base64.StdEncoding.DecodeString(s)
 						if err != nil {
-							return fmt.Errorf("can not decode file %s, %s", instillFormatMap[k], s)
+							return fmt.Errorf("can not decode file %s, %s", formatMap[k], s)
 						}
 						mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
 						vars.Fields[k] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s))
@@ -735,7 +735,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 
 				}
 			case []string:
-				if instillFormatMap[k] != "array:string" {
+				if formatMap[k] != "array:string" {
 					for idx := range s {
 						// Skip the base64 decoding if the string is a URL
 						if strings.HasPrefix(s[idx], "http://") || strings.HasPrefix(s[idx], "https://") {
@@ -744,7 +744,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						if !strings.HasPrefix(s[idx], "data:") {
 							b, err := base64.StdEncoding.DecodeString(s[idx])
 							if err != nil {
-								return fmt.Errorf("can not decode file %s, %s", instillFormatMap[k], s)
+								return fmt.Errorf("can not decode file %s, %s", formatMap[k], s)
 							}
 							mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
 							vars.Fields[k].GetListValue().GetValues()[idx] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s[idx]))
@@ -767,26 +767,26 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 	}
 
 	formats := map[string][]string{}
-	for k, v := range instillFormatMap {
+	for k, v := range formatMap {
 		formats[k] = []string{v}
 	}
 
 	for idx, d := range pipelineData {
 
 		variable := data.Map{}
-		for k := range instillFormatMap {
+		for k := range formatMap {
 			v := d.Variable.Fields[k]
-			if _, ok := instillFormatMap[k]; !ok {
+			if _, ok := formatMap[k]; !ok {
 				continue
 			}
 
 			if v == nil {
 				if d, ok := defaultValueMap[k]; !ok || d == nil {
-					return fmt.Errorf("%w: missing or invalid value for %s field \"%s\"", errdomain.ErrInvalidArgument, instillFormatMap[k], k)
+					return fmt.Errorf("%w: missing or invalid value for %s field \"%s\"", errdomain.ErrInvalidArgument, formatMap[k], k)
 				}
 			}
 
-			switch instillFormatMap[k] {
+			switch formatMap[k] {
 			case "boolean":
 				if v == nil {
 					variable[k] = data.NewBoolean(defaultValueMap[k].(bool))
