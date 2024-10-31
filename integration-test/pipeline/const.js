@@ -112,7 +112,7 @@ version: v1beta
 variable:
   input:
     title: Input
-    instill-format: string
+    format: string
 
 output:
   answer:
