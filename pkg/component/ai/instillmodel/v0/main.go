@@ -50,7 +50,7 @@ type component struct {
 type execution struct {
 	base.ComponentExecution
 
-	execute    func(*structpb.Struct, *base.Job, context.Context) (*structpb.Struct, error)
+	execute    func(context.Context, *base.Job) error
 	client     modelPB.ModelPublicServiceClient
 	connection Connection
 }
