@@ -209,8 +209,8 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 			FileUID:    uploadRes.File.FileUid,
 			FileName:   uploadRes.File.Name,
 			FileType:   uploadRes.File.Type.String(),
-			CreateTime: uploadRes.File.CreateTime.String(),
-			UpdateTime: uploadRes.File.UpdateTime.String(),
+			CreateTime: util.FormatToISO8601(uploadRes.File.CreateTime),
+			UpdateTime: util.FormatToISO8601(uploadRes.File.UpdateTime),
 			Size:       uploadRes.File.Size,
 			CatalogID:  inputStruct.CatalogID,
 		})
@@ -242,8 +242,8 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 			FileUID:    uploadRes.File.FileUid,
 			FileName:   uploadRes.File.Name,
 			FileType:   uploadRes.File.Type.String(),
-			CreateTime: uploadRes.File.CreateTime.String(),
-			UpdateTime: uploadRes.File.UpdateTime.String(),
+			CreateTime: util.FormatToISO8601(uploadRes.File.CreateTime),
+			UpdateTime: util.FormatToISO8601(uploadRes.File.UpdateTime),
 			Size:       uploadRes.File.Size,
 			CatalogID:  inputStruct.CatalogID,
 		})

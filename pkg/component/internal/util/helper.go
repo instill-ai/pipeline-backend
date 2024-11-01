@@ -9,12 +9,14 @@ import (
 	"net/url"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/h2non/filetype"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
+	timestampPB "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func GetFileExt(fileData []byte) string {
@@ -305,4 +307,8 @@ func ExecutePythonCode(pythonCode string, params map[string]interface{}) ([]byte
 func TrimBase64Mime(b64 string) string {
 	splitB64 := strings.Split(b64, ",")
 	return splitB64[len(splitB64)-1]
+}
+
+func FormatToISO8601(ts *timestampPB.Timestamp) string {
+	return ts.AsTime().UTC().Format(time.RFC3339)
 }
