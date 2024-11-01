@@ -242,14 +242,3 @@ func ParseConfigFlag() string {
 
 	return *configPath
 }
-
-const (
-	DefaultExpiryTag = "default-expiry"
-)
-
-var MetadataExpiryRules = []miniox.ExpiryRule{
-	{
-		Tag:            DefaultExpiryTag,
-		ExpirationDays: 3,
-	},
-}
