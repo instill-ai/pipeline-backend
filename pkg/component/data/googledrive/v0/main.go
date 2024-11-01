@@ -42,9 +42,6 @@ var (
 type component struct {
 	base.Component
 	base.OAuthConnector
-
-	instillAIClientID     string
-	instillAIClientSecret string
 }
 
 type execution struct {
@@ -100,8 +97,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 
 func getDriveService(ctx context.Context, setup *structpb.Struct, c *component) (*drive.Service, error) {
 	config := &oauth2.Config{
-		ClientID:     c.instillAIClientID,
-		ClientSecret: c.instillAIClientSecret,
+		ClientID:     c.GetOAuthClientID(),
+		ClientSecret: c.GetOAuthClientSecret(),
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  authURL,
 			TokenURL: tokenURL,

@@ -28,3 +28,13 @@ func (c *OAuthConnector) WithOAuthConfig(s map[string]any) {
 func (c *OAuthConnector) SupportsOAuth() bool {
 	return c.oAuthClientID != "" && c.oAuthClientSecret != ""
 }
+
+// GetOAuthClientID returns the OAuth client ID.
+func (c *OAuthConnector) GetOAuthClientID() string {
+	return c.oAuthClientID
+}
+
+// GetOAuthClientSecret returns the OAuth client secret.
+func (c *OAuthConnector) GetOAuthClientSecret() string {
+	return c.oAuthClientSecret
+}
