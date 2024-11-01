@@ -1354,7 +1354,7 @@ func (s *service) triggerPipeline(
 
 	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
 
-	expiryRuleTag, err := s.GetExpiryTagBySubscriptionPlan(ctx, requesterUID)
+	expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, requesterUID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1439,10 +1439,11 @@ func (s *service) triggerAsyncPipeline(
 		},
 	}
 
-	userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
-	requesterUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey))
-	if requesterUID.IsNil() {
-		requesterUID = userUID
+	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+
+	expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, requesterUID)
+	if err != nil {
+		return nil, err
 	}
 
 	we, err := s.temporalClient.ExecuteWorkflow(
@@ -1458,9 +1459,10 @@ func (s *service) triggerAsyncPipeline(
 				PipelineReleaseUID:   pipelineReleaseUID,
 				PipelineOwnerType:    ns.NsType,
 				PipelineOwnerUID:     ns.NsUID,
-				PipelineUserUID:      userUID,
-				PipelineRequesterUID: requesterUID,
+				PipelineUserUID:      uuid.FromStringOrNil(userUID),
+				PipelineRequesterUID: uuid.FromStringOrNil(requesterUID),
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
+				ExpiryRuleTag:        expiryRuleTag,
 			},
 			Mode:           mgmtpb.Mode_MODE_ASYNC,
 			TriggerFromAPI: true,
@@ -1896,8 +1898,4 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 
 	operation.Name = fmt.Sprintf("operations/%s", workflowExecutionInfo.Execution.WorkflowId)
 	return &operation, nil
-}
-
-func (s *service) GetExpiryTagBySubscriptionPlan(ctx context.Context, requesterUID string) (string, error) {
-	return config.DefaultExpiryTag, nil
 }

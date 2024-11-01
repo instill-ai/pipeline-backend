@@ -251,7 +251,7 @@ func main() {
 	ms := memory.NewMemoryStore()
 
 	// Initialize Minio client
-	minioClient, err := miniox.NewMinioClientAndInitBucket(ctx, &config.Config.Minio, logger, config.MetadataExpiryRules...)
+	minioClient, err := miniox.NewMinioClientAndInitBucket(ctx, &config.Config.Minio, logger, service.MetadataExpiryRules...)
 	if err != nil {
 		logger.Fatal("failed to create minio client", zap.Error(err))
 	}
@@ -268,7 +268,7 @@ func main() {
 		minioClient,
 		compStore,
 		ms,
-		workerUID,
+		workerUID, nil,
 	)
 
 	privateGrpcS := grpc.NewServer(grpcServerOpts...)

@@ -94,8 +94,7 @@ func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadR
 		FileBytes:     b,
 		FileMimeType:  constant.ContentTypeJSON,
 		ExpiryRuleTag: param.ExpiryRuleTag,
-	},
-	)
+	})
 	if err != nil {
 		log.Error("failed to upload pipeline run inputs to minio", zap.Error(err))
 		return err

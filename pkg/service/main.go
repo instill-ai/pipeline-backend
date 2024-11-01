@@ -88,8 +88,6 @@ type Service interface {
 	GetNamespaceConnection(context.Context, *pb.GetNamespaceConnectionRequest) (*pb.Connection, error)
 	ListNamespaceConnections(context.Context, *pb.ListNamespaceConnectionsRequest) (*pb.ListNamespaceConnectionsResponse, error)
 	ListPipelineIDsByConnectionID(context.Context, *pb.ListPipelineIDsByConnectionIDRequest) (*pb.ListPipelineIDsByConnectionIDResponse, error)
-
-	GetExpiryTagBySubscriptionPlan(context.Context, string) (string, error)
 }
 
 // TriggerResult defines a new type to encapsulate the stream data
@@ -110,6 +108,7 @@ type service struct {
 	memory                   memory.MemoryStore
 	log                      *zap.Logger
 	workerUID                uuid.UUID
+	retentionHandler         MetadataRetentionHandler
 }
 
 // NewService initiates a service instance
@@ -124,8 +123,12 @@ func NewService(
 	cs *componentstore.Store,
 	memory memory.MemoryStore,
 	workerUID uuid.UUID,
+	retentionHandler MetadataRetentionHandler,
 ) Service {
 	zapLogger, _ := logger.GetZapLogger(context.Background())
+	if retentionHandler == nil {
+		retentionHandler = NewRetentionHandler()
+	}
 
 	return &service{
 		repository:               r,
@@ -139,5 +142,6 @@ func NewService(
 		memory:                   memory,
 		log:                      zapLogger,
 		workerUID:                workerUID,
+		retentionHandler:         retentionHandler,
 	}
 }

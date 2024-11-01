@@ -52,6 +52,7 @@ type SchedulePipelineWorkflowParam struct {
 	PipelineUID        uuid.UUID
 	PipelineReleaseID  string
 	PipelineReleaseUID uuid.UUID
+	ExpiryRuleTag      string
 }
 
 type SchedulePipelineLoaderActivityParam struct {
@@ -241,10 +242,12 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	_ = workflow.ExecuteActivity(minioCtx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
+		ExpiryRuleTag:     param.SystemVariables.ExpiryRuleTag,
 	}).Get(ctx, nil)
 
 	_ = workflow.ExecuteActivity(minioCtx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
+		ExpiryRuleTag:     param.SystemVariables.ExpiryRuleTag,
 	}).Get(ctx, nil)
 
 	dagData := &LoadDAGDataActivityResult{}
@@ -405,6 +408,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 		if err := workflow.ExecuteActivity(minioCtx, w.UploadOutputsToMinioActivity, &UploadOutputsToMinioActivityParam{
 			PipelineTriggerID: workflowID,
+			ExpiryRuleTag:     param.SystemVariables.ExpiryRuleTag,
 		}).Get(ctx, nil); err != nil {
 			return err
 		}
@@ -1322,6 +1326,7 @@ func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *Schedul
 			PipelineOwnerUID:     param.Namespace.NsUID,
 			PipelineUserUID:      param.Namespace.NsUID,
 			PipelineRequesterUID: param.Namespace.NsUID,
+			ExpiryRuleTag:        param.ExpiryRuleTag,
 		},
 		Mode: mgmtpb.Mode_MODE_ASYNC,
 	}

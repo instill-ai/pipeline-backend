@@ -77,6 +77,7 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 		compStore,
 		memory.NewMemoryStore(),
 		workerUID,
+		nil,
 	)
 
 	aclClient.CheckPermissionMock.Return(true, nil)
