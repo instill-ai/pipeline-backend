@@ -36,6 +36,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/chroma/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/elasticsearch/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/googlecloudstorage/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/data/googledrive/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/instillartifact/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/milvus/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/mongodb/v0"
@@ -199,6 +200,12 @@ func Init(
 			// Slack
 			conn := slack.Init(baseComp)
 			conn.WithOAuthConfig(secrets[conn.GetDefinitionID()])
+			compStore.Import(conn)
+		}
+		{
+			// Google Drive
+			conn := googledrive.Init(baseComp)
+			conn.WithOAuthConfig(secrets["googledrive"])
 			compStore.Import(conn)
 		}
 		compStore.Import(email.Init(baseComp))

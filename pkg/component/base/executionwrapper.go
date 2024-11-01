@@ -178,6 +178,7 @@ func SequentialExecutor(ctx context.Context, jobs []*Job, execute func(*structpb
 	return nil
 }
 
+// ConcurrentExecutor executes the jobs concurrently.
 func ConcurrentExecutor(ctx context.Context, jobs []*Job, execute func(context.Context, *Job) error) error {
 	var wg sync.WaitGroup
 	wg.Add(len(jobs))
