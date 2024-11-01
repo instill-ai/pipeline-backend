@@ -17,7 +17,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 
 	artifactPB "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	timestampPB "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func Test_uploadFile(t *testing.T) {
@@ -113,11 +113,11 @@ func Test_uploadFile(t *testing.T) {
 						Name:    tc.fileName,
 						Type:    artifactPB.FileType_FILE_TYPE_PDF,
 						Size:    1,
-						CreateTime: &timestamppb.Timestamp{
+						CreateTime: &timestampPB.Timestamp{
 							Seconds: 1,
 							Nanos:   1,
 						},
-						UpdateTime: &timestamppb.Timestamp{
+						UpdateTime: &timestampPB.Timestamp{
 							Seconds: 1,
 							Nanos:   1,
 						},
@@ -255,11 +255,11 @@ func Test_uploadFiles(t *testing.T) {
 							Name:    fileName,
 							Type:    artifactPB.FileType_FILE_TYPE_PDF,
 							Size:    1,
-							CreateTime: &timestamppb.Timestamp{
+							CreateTime: &timestampPB.Timestamp{
 								Seconds: 1,
 								Nanos:   1,
 							},
-							UpdateTime: &timestamppb.Timestamp{
+							UpdateTime: &timestampPB.Timestamp{
 								Seconds: 1,
 								Nanos:   1,
 							},

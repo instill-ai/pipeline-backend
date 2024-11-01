@@ -50,7 +50,9 @@ func (d *DriveService) ReadFile(fileUID string) (*drive.File, *string, error) {
 func (d *DriveService) ReadFolder(folderUID string, readContent bool) ([]*drive.File, []*string, error) {
 	srv := d.Service
 
-	q := fmt.Sprintf("'%s' in parents", folderUID)
+	// trashed = false is to filter out the trashed files.
+	// When users delete the files in Google Drive, we don't want to fetch the trashed files.
+	q := fmt.Sprintf("'%s' in parents and trashed = false", folderUID)
 
 	var allFiles []*drive.File
 
