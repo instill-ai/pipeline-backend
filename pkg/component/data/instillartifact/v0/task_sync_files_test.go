@@ -124,7 +124,7 @@ func Test_ExecuteSyncFiles(t *testing.T) {
 	ir, ow, eh, job := mock.GenerateMockJob(c)
 
 	ir.ReadMock.Return(pbIn, nil)
-	ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) error {
+	ow.WriteMock.Set(func(ctx context.Context, output *structpb.Struct) error {
 		uploadedFiles, ok := output.Fields["uploaded-files"]
 
 		c.Assert(ok, qt.Equals, true)
@@ -262,12 +262,12 @@ func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) 
 		c.Assert(in.File.ExternalMetadata, qt.Not(qt.IsNil))
 
 		var mockFileUID string
-		if in.File.Name == fileID {
+		if in.File.Name == fileName {
 			mockFileUID = catalogFileUID
-		} else if in.File.Name == fileID2 {
+		} else if in.File.Name == fileName2 {
 			mockFileUID = catalogFileUID2
 		} else {
-			c.Fatalf("Unexpected file name: %s", in.File.Name)
+			panic("Unexpected file name")
 		}
 
 		return &artifactPB.UploadCatalogFileResponse{

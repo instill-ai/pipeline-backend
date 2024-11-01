@@ -254,6 +254,7 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 			CatalogID:  inputStruct.CatalogID,
 		})
 	}
+
 	if len(toBeProcessFileUIDs) > 0 {
 		_, err = artifactClient.ProcessCatalogFiles(ctx, &artifactPB.ProcessCatalogFilesRequest{
 			FileUids: toBeProcessFileUIDs,
