@@ -75,11 +75,11 @@ func Test_ExecuteSyncFiles(t *testing.T) {
 	grpcServer := grpc.NewServer()
 	testServer := mock.NewArtifactPublicServiceServerMock(mc)
 
-	setListCatalogsMock(testServer, c)
-	setListCatalogFilesMock(testServer, c)
-	setDeleteCatalogFileMock(testServer, c)
-	setUploadCatalogFileMock(testServer, c)
-	setProcessCatalogFilesMock(testServer, c)
+	setListCatalogsMock(testServer)
+	setListCatalogFilesMock(testServer)
+	setDeleteCatalogFileMock(testServer)
+	setUploadCatalogFileMock(testServer)
+	setProcessCatalogFilesMock(testServer)
 
 	artifactPB.RegisterArtifactPublicServiceServer(grpcServer, testServer)
 	lis, err := net.Listen("tcp", ":0")
@@ -198,7 +198,7 @@ var (
 	}
 )
 
-func setListCatalogsMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) {
+func setListCatalogsMock(s *mock.ArtifactPublicServiceServerMock) {
 	s.ListCatalogsMock.Set(func(ctx context.Context, in *artifactPB.ListCatalogsRequest) (*artifactPB.ListCatalogsResponse, error) {
 		mock.Equal(in.NamespaceId, namespace)
 		return &artifactPB.ListCatalogsResponse{
@@ -212,7 +212,7 @@ func setListCatalogsMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) {
 	})
 }
 
-func setListCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) {
+func setListCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock) {
 	s.ListCatalogFilesMock.Set(func(ctx context.Context, in *artifactPB.ListCatalogFilesRequest) (*artifactPB.ListCatalogFilesResponse, error) {
 		mock.Equal(in.CatalogId, catalogID)
 
@@ -243,7 +243,7 @@ func setListCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) {
 	})
 }
 
-func setDeleteCatalogFileMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) {
+func setDeleteCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 	s.DeleteCatalogFileMock.Times(2).Set(func(ctx context.Context, in *artifactPB.DeleteCatalogFileRequest) (*artifactPB.DeleteCatalogFileResponse, error) {
 		mock.Contains([]string{catalogFileUID2, catalogFileUID3}, in.FileUid)
 
@@ -252,7 +252,7 @@ func setDeleteCatalogFileMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) 
 
 }
 
-func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) {
+func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 	s.UploadCatalogFileMock.Times(2).Set(func(ctx context.Context, in *artifactPB.UploadCatalogFileRequest) (*artifactPB.UploadCatalogFileResponse, error) {
 		mock.Equal(in.NamespaceId, namespace)
 		mock.Equal(in.CatalogId, catalogID)
@@ -283,7 +283,7 @@ func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) 
 	})
 }
 
-func setProcessCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) {
+func setProcessCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock) {
 	s.ProcessCatalogFilesMock.Set(func(ctx context.Context, in *artifactPB.ProcessCatalogFilesRequest) (*artifactPB.ProcessCatalogFilesResponse, error) {
 		mock.DeepEquals(in.FileUids, []string{catalogFileUID, catalogFileUID2})
 
