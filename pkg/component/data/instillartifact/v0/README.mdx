@@ -567,3 +567,45 @@ output:
     title: answer
     value: ${artifact-0.output.answer}
 ```
+
+
+### Sync files from Google Drive to Instill Catalog
+
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  namespace:
+    title: Namespace
+    instill-format: string
+  catalog:
+    title: Catalog
+    instill-format: string
+  folder-link:
+    title: Folder Link
+    instill-format: string
+
+component:
+  read-folder:
+    type: google-drive
+    input:
+      shared-link: ${variable.folder-link}
+      read-content: true
+    setup:
+      refresh-token: ${secret.refresh-token-gd}
+    task: TASK_READ_FOLDER
+
+  sync:
+    type: instill-artifact
+    input:
+      namespace: ${variable.namespace}
+      catalog-id: ${variable.catalog}
+      third-party-files: ${read-folder.output.files}
+    task: TASK_SYNC_FILES
+
+output:
+  sync-result:
+    title: Sync Result
+    value: ${sync.output}
+```
