@@ -155,7 +155,7 @@ func (s *service) convertComponentRunToPB(run datamodel.ComponentRun) (*pipeline
 	return result, nil
 }
 
-// CanViewPrivateData - only with credit owner ns could users see their input/output data
+// CanViewPrivateData - only with requester ns could users see their input/output data
 func CanViewPrivateData(namespace, requesterUID string) bool {
 	return namespace == requesterUID
 }

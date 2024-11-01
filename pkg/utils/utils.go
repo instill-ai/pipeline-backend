@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"context"
 	"strings"
 	"time"
 
@@ -10,7 +9,6 @@ import (
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
@@ -174,13 +172,4 @@ func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *stru
 		},
 		time.Now(),
 	)
-}
-
-func GetRequesterUIDAndUserUID(ctx context.Context) (string, string) {
-	requesterUID := resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey)
-	userUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
-	if len(strings.TrimSpace(requesterUID)) == 0 {
-		requesterUID = userUID
-	}
-	return requesterUID, userUID
 }
