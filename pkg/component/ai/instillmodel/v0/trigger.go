@@ -3,6 +3,7 @@ package instillmodel
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc/metadata"
@@ -50,4 +51,28 @@ func (e *execution) trigger(ctx context.Context, job *base.Job) error {
 	}
 
 	return job.Output.WriteData(ctx, res.TaskOutputs[0])
+}
+
+func getTriggerInfo(input *structpb.Struct) (*triggerInfo, error) {
+	if input == nil {
+		return nil, fmt.Errorf("input is nil")
+	}
+	data, ok := input.Fields["data"]
+	if !ok {
+		return nil, fmt.Errorf("data field not found")
+	}
+	model, ok := data.GetStructValue().Fields["model"]
+
+	if !ok {
+		return nil, fmt.Errorf("model field not found")
+	}
+	modelNameSplits := strings.Split(model.GetStringValue(), "/")
+	if len(modelNameSplits) != 3 {
+		return nil, fmt.Errorf("model name should be in the format of <namespace>/<model>/<version>")
+	}
+	return &triggerInfo{
+		nsID:    modelNameSplits[0],
+		modelID: modelNameSplits[1],
+		version: modelNameSplits[2],
+	}, nil
 }
