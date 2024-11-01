@@ -25,12 +25,14 @@ var (
 	namespace = "namespace123"
 	catalogID = "catalog-id123"
 	// To be uploaded file
-	fileID   = "file-id123"
-	fileName = "file-name123.pdf"
+	catalogFileUID = "catalog-file-uid123"
+	fileID         = "file-id123"
+	fileName       = "file-name123.pdf"
 	// To be updated file
-	fileID2   = "file-id456"
-	fileName2 = "file-name456.pdf"
-	fakeInput = map[string]interface{}{
+	catalogFileUID2 = "catalog-file-uid456"
+	fileID2         = "file-id456"
+	fileName2       = "file-name456.pdf"
+	fakeInput       = map[string]interface{}{
 		"namespace":  namespace,
 		"catalog-id": catalogID,
 		"third-party-files": []map[string]interface{}{
@@ -161,11 +163,12 @@ func Test_ExecuteSyncFiles(t *testing.T) {
 
 // Mock Server functions section
 var (
-	fileID3   = "file-id789"
-	fileName3 = "file-name789.pdf"
+	catalogFileUID3 = "catalog-file-uid789"
+	fileID3         = "file-id789"
+	fileName3       = "file-name789.pdf"
 
 	// To be updated file
-	fakeMetadata1 = map[string]interface{}{
+	fakeMetadata2 = map[string]interface{}{
 		"id":               fileID2,
 		"name":             fileName2,
 		"content":          "xGVzdDEyMw==",
@@ -180,7 +183,7 @@ var (
 	}
 
 	// To be deleted file
-	fakeMetadata2 = map[string]interface{}{
+	fakeMetadata3 = map[string]interface{}{
 		"id":               fileID3,
 		"name":             fileName3,
 		"content":          "xDVzdDEyMw==",
@@ -214,27 +217,27 @@ func setListCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) {
 	s.ListCatalogFilesMock.Set(func(ctx context.Context, in *artifactPB.ListCatalogFilesRequest) (*artifactPB.ListCatalogFilesResponse, error) {
 		c.Assert(in.CatalogId, qt.Equals, catalogID)
 
-		metadataStruct1 := new(structpb.Struct)
-		jsonData, err := json.Marshal(fakeMetadata1)
-		c.Assert(err, qt.IsNil)
-		err = protojson.Unmarshal(jsonData, metadataStruct1)
-		c.Assert(err, qt.IsNil)
-
 		metadataStruct2 := new(structpb.Struct)
-		jsonData, err = json.Marshal(fakeMetadata2)
+		jsonData, err := json.Marshal(fakeMetadata2)
 		c.Assert(err, qt.IsNil)
 		err = protojson.Unmarshal(jsonData, metadataStruct2)
+		c.Assert(err, qt.IsNil)
+
+		metadataStruct3 := new(structpb.Struct)
+		jsonData, err = json.Marshal(fakeMetadata3)
+		c.Assert(err, qt.IsNil)
+		err = protojson.Unmarshal(jsonData, metadataStruct3)
 		c.Assert(err, qt.IsNil)
 
 		return &artifactPB.ListCatalogFilesResponse{
 			Files: []*artifactPB.File{
 				{
-					FileUid:          fileID2,
-					ExternalMetadata: metadataStruct1,
+					FileUid:          catalogFileUID2,
+					ExternalMetadata: metadataStruct2,
 				},
 				{
-					FileUid:          fileID3,
-					ExternalMetadata: metadataStruct2,
+					FileUid:          catalogFileUID3,
+					ExternalMetadata: metadataStruct3,
 				},
 			},
 		}, nil
@@ -243,7 +246,7 @@ func setListCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) {
 
 func setDeleteCatalogFileMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) {
 	s.DeleteCatalogFileMock.Times(2).Set(func(ctx context.Context, in *artifactPB.DeleteCatalogFileRequest) (*artifactPB.DeleteCatalogFileResponse, error) {
-		c.Assert([]string{fileID2, fileID3}, qt.Contains, in.FileUid)
+		c.Assert([]string{catalogFileUID2, catalogFileUID3}, qt.Contains, in.FileUid)
 
 		return &artifactPB.DeleteCatalogFileResponse{}, nil
 	})
@@ -254,11 +257,22 @@ func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) 
 	s.UploadCatalogFileMock.Times(2).Set(func(ctx context.Context, in *artifactPB.UploadCatalogFileRequest) (*artifactPB.UploadCatalogFileResponse, error) {
 		c.Assert(in.NamespaceId, qt.Equals, namespace)
 		c.Assert(in.CatalogId, qt.Equals, catalogID)
+		c.Assert(in.File.Type, qt.Equals, artifactPB.FileType_FILE_TYPE_PDF)
+		c.Assert(in.File.Content, qt.IsNotNil)
 		c.Assert(in.File.ExternalMetadata, qt.Not(qt.IsNil))
+
+		var mockFileUID string
+		if in.File.Name == fileID {
+			mockFileUID = catalogFileUID
+		} else if in.File.Name == fileID2 {
+			mockFileUID = catalogFileUID2
+		} else {
+			c.Fatalf("Unexpected file name: %s", in.File.Name)
+		}
 
 		return &artifactPB.UploadCatalogFileResponse{
 			File: &artifactPB.File{
-				FileUid:          in.File.Name, // Use name as file uid for testing
+				FileUid:          mockFileUID,
 				Name:             in.File.Name,
 				Type:             in.File.Type,
 				CreateTime:       in.File.CreateTime,
@@ -272,7 +286,7 @@ func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) 
 
 func setProcessCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock, c *qt.C) {
 	s.ProcessCatalogFilesMock.Set(func(ctx context.Context, in *artifactPB.ProcessCatalogFilesRequest) (*artifactPB.ProcessCatalogFilesResponse, error) {
-		c.Assert(in.FileUids, qt.DeepEquals, []string{fileName, fileName2}) // We use fileName as mock return, so here, need to assert file names.
+		c.Assert(in.FileUids, qt.DeepEquals, []string{catalogFileUID, catalogFileUID2})
 
 		return &artifactPB.ProcessCatalogFilesResponse{}, nil
 	})

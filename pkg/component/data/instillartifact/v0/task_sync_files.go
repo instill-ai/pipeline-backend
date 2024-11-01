@@ -114,15 +114,11 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 		nextToken = filesRes.NextPageToken
 	}
 
-	catalogFilesMap := map[string]time.Time{}
+	catalogFilesMap := map[string]*artifactPB.File{}
 
 	for _, catalogFile := range catalogFiles {
-		id := getIDFromExternalMetadata(catalogFile)
-		modifiedTime, err := getModifiedTimeFromExternalMetadata(catalogFile)
-		if err != nil {
-			return nil, fmt.Errorf("get third-party modified time from catalog file: %w", err)
-		}
-		catalogFilesMap[id] = modifiedTime
+		externalUID := getIDFromExternalMetadata(catalogFile)
+		catalogFilesMap[externalUID] = catalogFile
 	}
 
 	thirdPartyFilesMap := map[string]ThirdPartyFile{}
@@ -138,11 +134,11 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 	toBeUpdateFiles := []ThirdPartyFile{}
 
 	// Delete file and update file section
-	for catalogFileUID, catalogFileModifiedTime := range catalogFilesMap {
+	for catalogFileUID, catalogFile := range catalogFilesMap {
 		thirdPartyFile, ok := thirdPartyFilesMap[catalogFileUID]
 
 		if !ok {
-			toBeDeleteFileUIDs = append(toBeDeleteFileUIDs, catalogFileUID)
+			toBeDeleteFileUIDs = append(toBeDeleteFileUIDs, catalogFile.FileUid)
 			continue
 		}
 
@@ -152,9 +148,15 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 			return nil, fmt.Errorf("parse modified time in sync file: %w", err)
 		}
 
+		catalogFileModifiedTime, err := getModifiedTimeFromExternalMetadata(catalogFile)
+
+		if err != nil {
+			return nil, fmt.Errorf("parse modified time in catalog file: %w", err)
+		}
+
 		// It means overwrite the file here.
 		if thirdPartyModifiedTime.After(catalogFileModifiedTime) {
-			toBeDeleteFileUIDs = append(toBeDeleteFileUIDs, catalogFileUID)
+			toBeDeleteFileUIDs = append(toBeDeleteFileUIDs, catalogFile.FileUid)
 			toBeUpdateFiles = append(toBeUpdateFiles, thirdPartyFile)
 		}
 	}
@@ -173,7 +175,7 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 			FileUid: fileUID,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("delete catalog file: %w", err)
+			return nil, fmt.Errorf("delete catalog file uid %s: %w", fileUID, err)
 		}
 	}
 
