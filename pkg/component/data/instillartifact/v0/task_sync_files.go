@@ -114,6 +114,23 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 		nextToken = filesRes.NextPageToken
 	}
 
+	catalogFilesMap := map[string]time.Time{}
+
+	for _, catalogFile := range catalogFiles {
+		id := getIDFromExternalMetadata(catalogFile)
+		modifiedTime, err := getModifiedTimeFromExternalMetadata(catalogFile)
+		if err != nil {
+			return nil, fmt.Errorf("get third-party modified time from catalog file: %w", err)
+		}
+		catalogFilesMap[id] = modifiedTime
+	}
+
+	thirdPartyFilesMap := map[string]ThirdPartyFile{}
+
+	for _, syncFile := range inputStruct.ThirdPartyFiles {
+		thirdPartyFilesMap[syncFile.ID] = syncFile
+	}
+
 	// Delete Files when
 	// 1. File is not in the third-party-files but in the catalog
 	// 2. File is in the third-party-files and in the catalog, but the third-party modified-time is newer than the catalog's third-party's modified-time
@@ -121,45 +138,32 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 	toBeUpdateFiles := []ThirdPartyFile{}
 
 	// Delete file and update file section
-	for _, catalogFile := range catalogFiles {
-		found := false
-		for _, syncFile := range inputStruct.ThirdPartyFiles {
-			if getIDFromExternalMetadata(catalogFile) == syncFile.ID {
-				catalogFileModifiedTime, err := getModifiedTimeFromExternalMetadata(catalogFile)
-				if err != nil {
-					return nil, fmt.Errorf("get third-party modified time from catalog file: %w", err)
-				}
-				syncFileModifiedTime, err := time.Parse(time.RFC3339, syncFile.ModifiedTime)
+	for catalogFileUID, catalogFileModifiedTime := range catalogFilesMap {
+		thirdPartyFile, ok := thirdPartyFilesMap[catalogFileUID]
 
-				if err != nil {
-					return nil, fmt.Errorf("parse modified time in sync file: %w", err)
-				}
-
-				// It means overwrite the file here.
-				if syncFileModifiedTime.After(catalogFileModifiedTime) {
-					toBeDeleteFileUIDs = append(toBeDeleteFileUIDs, catalogFile.FileUid)
-					toBeUpdateFiles = append(toBeUpdateFiles, syncFile)
-				}
-				found = true
-				break
-			}
+		if !ok {
+			toBeDeleteFileUIDs = append(toBeDeleteFileUIDs, catalogFileUID)
+			continue
 		}
-		if !found {
-			toBeDeleteFileUIDs = append(toBeDeleteFileUIDs, catalogFile.FileUid)
+
+		thirdPartyModifiedTime, err := time.Parse(time.RFC3339, thirdPartyFile.ModifiedTime)
+
+		if err != nil {
+			return nil, fmt.Errorf("parse modified time in sync file: %w", err)
+		}
+
+		// It means overwrite the file here.
+		if thirdPartyModifiedTime.After(catalogFileModifiedTime) {
+			toBeDeleteFileUIDs = append(toBeDeleteFileUIDs, catalogFileUID)
+			toBeUpdateFiles = append(toBeUpdateFiles, thirdPartyFile)
 		}
 	}
 
 	// New file section
 	toBeUploadFiles := []ThirdPartyFile{}
-	for _, syncFile := range inputStruct.ThirdPartyFiles {
-		found := false
-		for _, catalogFile := range catalogFiles {
-			if getIDFromExternalMetadata(catalogFile) == syncFile.ID {
-				found = true
-				break
-			}
-		}
-		if !found {
+	for syncFileUID, syncFile := range thirdPartyFilesMap {
+		_, ok := catalogFilesMap[syncFileUID]
+		if !ok {
 			toBeUploadFiles = append(toBeUploadFiles, syncFile)
 		}
 	}
