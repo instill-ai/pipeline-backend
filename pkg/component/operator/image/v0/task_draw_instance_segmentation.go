@@ -90,7 +90,7 @@ func drawInstanceSegmentation(ctx context.Context, job *base.Job) error {
 	for instIdx, obj := range inputStruct.Objects {
 		bbox := obj.BoundingBox
 		text := obj.Category
-		if err := drawObjectLabel(imgRGBA, bbox, text, inputStruct.ShowScore, instIdx); err != nil {
+		if err := drawObjectLabel(imgRGBA, bbox, text, obj.Score, inputStruct.ShowScore, instIdx); err != nil {
 			return err
 		}
 	}

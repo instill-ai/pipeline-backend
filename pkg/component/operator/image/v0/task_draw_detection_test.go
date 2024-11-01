@@ -79,15 +79,16 @@ func TestDrawDetection(t *testing.T) {
 						return err
 					}
 					var detectionResult struct {
-						Objects []*detectionObject `json:"objects"`
+						Objects []*detectionObject `instill:"objects"`
 					}
 					err = json.Unmarshal(tc.inputJSON, &detectionResult)
 					if err != nil {
 						return err
 					}
 					*input = drawDetectionInput{
-						Image:   img,
-						Objects: detectionResult.Objects,
+						Image:     img,
+						Objects:   detectionResult.Objects,
+						ShowScore: true,
 					}
 				}
 				return nil

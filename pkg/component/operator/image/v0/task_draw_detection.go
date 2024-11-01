@@ -20,6 +20,7 @@ func drawBoundingBox(img *image.RGBA, bbox *boundingBox, colorSeed int) error {
 	dc.Stroke()
 	return nil
 }
+
 func drawDetection(ctx context.Context, job *base.Job) error {
 
 	var inputStruct drawDetectionInput
@@ -41,10 +42,7 @@ func drawDetection(ctx context.Context, job *base.Job) error {
 		if err := drawBoundingBox(imgRGBA, obj.BoundingBox, catIdx[obj.Category]); err != nil {
 			return err
 		}
-	}
-
-	for _, obj := range inputStruct.Objects {
-		if err := drawObjectLabel(imgRGBA, obj.BoundingBox, obj.Category, false, catIdx[obj.Category]); err != nil {
+		if err := drawObjectLabel(imgRGBA, obj.BoundingBox, obj.Category, obj.Score, inputStruct.ShowScore, catIdx[obj.Category]); err != nil {
 			return err
 		}
 	}
