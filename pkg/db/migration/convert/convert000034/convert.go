@@ -18,12 +18,7 @@ type RenameHTTPComponent struct {
 	convert.Basic
 }
 
-// This migration mainly focuses on updating the following pipelines and the pipelines are similar to the following pipelines:
-// https://instill.tech/abrc/pipelines/stomavision/playground?version=v1.0.0
-// https://instill.tech/leochen5/pipelines/index-preprocess-img-desc/playground?version=v1.0.0
-// https://instill.tech/instill-wombat/pipelines/jumbotron-visual-understanding/preview?version=v4.0.0
-
-func (c *ConvertInstillModel) Migrate() error {
+func (c *RenameHTTPComponent) Migrate() error {
 	if err := c.migratePipeline(); err != nil {
 		return err
 	}
@@ -148,196 +143,25 @@ func (c *RenameHTTPComponent) updateComponentNode(node *yaml.Node) (bool, error)
 			}
 		}
 
-		if v, ok := input["image-url"]; ok {
-			input["data"] = map[string]interface{}{
-				"image-url": v,
-				"type":      "image-url",
-			}
-			delete(input, "image-url")
-		}
-
-		*instillModelComponentNames = append(*instillModelComponentNames, compName)
-
-		return true, nil
-	}
-
-	return false, nil
-}
-
-func (c *ConvertInstillModel) updateInstillModelChatRelatedTasks(compName string, comp *datamodel.Component, instillModelComponentNames *[]string) (bool, error) {
-
-	if comp.Type == "iterator" {
-		isComponentUpdated := false
-		for compNameInIterator, comp := range comp.Component {
-			isUpdated, err := c.updateInstillModelChatRelatedTasks(compNameInIterator, comp, instillModelComponentNames)
-			if err != nil {
-				return false, err
-			}
-			isComponentUpdated = isUpdated || isComponentUpdated
-		}
-		return isComponentUpdated, nil
-	}
-
-	if comp.Type != "instill-model" {
-		return false, nil
-	}
-
-	input, isMap := comp.Input.(map[string]interface{})
-
-	if !isMap {
-		return false, nil
-	}
-
-	answeringRelatedTasks := []string{
-		"TASK_TEXT_GENERATION",
-		"TASK_TEXT_GENERATION_CHAT",
-		"TASK_VISUAL_QUESTION_ANSWERING",
-	}
-
-	if slices.Contains(answeringRelatedTasks, comp.Task) {
-		if comp.Task == "TASK_TEXT_GENERATION_CHAT" || comp.Task == "TASK_VISUAL_QUESTION_ANSWERING" {
-			comp.Task = "TASK_CHAT"
-		}
-
-		if comp.Task == "TASK_TEXT_GENERATION" {
-			comp.Task = "TASK_COMPLETION"
-		}
-
-		if v, ok := input["model-name"]; ok {
-			input["data"] = map[string]interface{}{
-				"model": v,
-			}
-			delete(input, "model-name")
-		}
-
-		input["data"].(map[string]interface{})["messages"] = []map[string]interface{}{}
-
-		if v, ok := input["prompt"]; ok {
-			messages := input["data"].(map[string]interface{})["messages"].([]map[string]interface{})
-
-			newMessage := map[string]interface{}{
-				"content": []map[string]interface{}{
-					{
-						"text": v,
-						"type": "text",
-					},
-				},
-				"role": "user",
-			}
-
-			messages = append(messages, newMessage)
-
-			input["data"].(map[string]interface{})["messages"] = messages
-
-			delete(input, "prompt")
-		}
-
-		if v, ok := input["prompt-images"]; ok {
-
-			if v.(string) == "${variable.images}" {
-				v = "${variable.images[0]}"
-				messages := input["data"].(map[string]interface{})["messages"].([]map[string]interface{})
-
-				newMessage := map[string]interface{}{
-					"content": []map[string]interface{}{
-						{
-							"image-base64": v,
-							"type":         "image-base64",
-						},
-					},
-					"role": "user",
-				}
-				messages = append(messages, newMessage)
-				input["data"].(map[string]interface{})["messages"] = messages
-			}
-
-			if images, ok := v.([]interface{}); ok && len(images) > 0 {
-
-				for i := range images {
-					messages := input["data"].(map[string]interface{})["messages"].([]map[string]interface{})
-
-					newMessage := map[string]interface{}{
-						"content": []map[string]interface{}{
-							{
-								"image-base64": images[i],
-								"type":         "image-base64",
-							},
-						},
-						"role": "user",
+		if isIterator {
+			// If it's an iterator, find and process its nested components
+			for k := 0; k < len(compContent.Content); k += 2 {
+				if compContent.Content[k].Value == "component" {
+					isComponentUpdated, err := c.updateComponentNode(compContent.Content[k+1])
+					if err != nil {
+						return false, fmt.Errorf("updating iterator component: %w", err)
 					}
-					messages = append(messages, newMessage)
-					input["data"].(map[string]interface{})["messages"] = messages
+					isUpdated = isComponentUpdated || isUpdated
 				}
 			}
-
-			delete(input, "prompt-images")
-		}
-
-		if v, ok := input["max-new-tokens"]; ok {
-			input["parameter"] = map[string]interface{}{
-				"max-tokens": v,
+		} else {
+			// Regular component, check and update type if needed
+			for k := 0; k < len(compContent.Content); k += 2 {
+				if compContent.Content[k].Value == "type" && compContent.Content[k+1].Value == "restapi" {
+					compContent.Content[k+1].Value = "http"
+					isUpdated = true
+				}
 			}
-			delete(input, "max-new-tokens")
-		}
-
-		paramFields := []string{
-			"temperature",
-			"top-k",
-			"top-p",
-			"seed",
-			"stream",
-			"n",
-		}
-
-		for _, field := range paramFields {
-			if v, ok := input[field]; ok {
-				input["parameter"].(map[string]interface{})[field] = v
-				delete(input, field)
-			}
-		}
-
-		*instillModelComponentNames = append(*instillModelComponentNames, compName)
-
-		return true, nil
-	}
-
-	return false, nil
-}
-
-func (c *ConvertInstillModel) updateInstillModelImageRelatedOutput(recipeYAML string, instillModelComponentNames []string) (string, error) {
-	originalFields := []string{
-		"objects",
-	}
-
-	updatedRecipe := recipeYAML
-	for _, compName := range instillModelComponentNames {
-		for _, field := range originalFields {
-			// It will be wrong if we add `}` at the end
-			originalInstillModelOutput := fmt.Sprintf("${%s.output.%s", compName, field)
-			if !strings.Contains(recipeYAML, originalInstillModelOutput) {
-				continue
-			}
-			updatedRecipe = strings.ReplaceAll(updatedRecipe, originalInstillModelOutput, fmt.Sprintf("${%s.output.data.%s", compName, field))
-		}
-	}
-
-	return updatedRecipe, nil
-}
-
-func (c *ConvertInstillModel) updateInstillModelChatRelatedOutput(recipeYAML string, instillModelComponentNames []string) (string, error) {
-	originalFields := []string{
-		"text",
-	}
-
-	updatedRecipe := recipeYAML
-	for _, compName := range instillModelComponentNames {
-		for _, field := range originalFields {
-			// It will be wrong if we add `}` at the end
-			originalInstillModelOutput := fmt.Sprintf("${%s.output.%s", compName, field)
-			if !strings.Contains(recipeYAML, originalInstillModelOutput) {
-				continue
-			}
-			updatedRecipe = strings.ReplaceAll(updatedRecipe, originalInstillModelOutput, fmt.Sprintf("${%s.output.choices[0].message.content", compName))
 		}
 	}
 	return isUpdated, nil

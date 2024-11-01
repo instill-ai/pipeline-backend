@@ -1,4 +1,4 @@
-package convert000035
+package convert000036
 
 import (
 	"fmt"
@@ -23,6 +23,8 @@ type ConvertInstillModel struct {
 // https://instill.tech/abrc/pipelines/stomavision/playground?version=v1.0.0
 // https://instill.tech/leochen5/pipelines/index-preprocess-img-desc/playground?version=v1.0.0
 // https://instill.tech/instill-wombat/pipelines/jumbotron-visual-understanding/preview?version=v4.0.0
+// https://instill.tech/leochen5/pipelines/vlm-text-extraction-id/playground?view=BE8zvSpABUSjscJOGp1nRUaSOuHBUusr
+// https://instill.tech/leochen5/pipelines/image-quality-assureance/playground?view=ruuafgHXWiZtTHZiHVsMiUITK1BeWIA4
 
 func (c *ConvertInstillModel) Migrate() error {
 	if err := c.migratePipeline(); err != nil {
@@ -379,6 +381,26 @@ func (c *ConvertInstillModel) updateInstillModelChatRelatedTasks(compName string
 			}
 
 			delete(input, "prompt-images")
+		}
+
+		if v, ok := input["system-message"]; ok {
+			messages := input["data"].(map[string]interface{})["messages"].([]map[string]interface{})
+
+			newMessage := map[string]interface{}{
+				"content": []map[string]interface{}{
+					{
+						"text": v,
+						"type": "text",
+					},
+				},
+				"role": "system",
+			}
+
+			messages = append(messages, newMessage)
+
+			input["data"].(map[string]interface{})["messages"] = messages
+
+			delete(input, "system-message")
 		}
 
 		if v, ok := input["max-new-tokens"]; ok {
