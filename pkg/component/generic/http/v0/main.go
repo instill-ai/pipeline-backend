@@ -203,7 +203,7 @@ func (e *execution) executeHTTP(ctx context.Context, job *base.Job) error {
 			}
 		}
 		// For other content types, return raw bytes wrapped in format.Value
-		value, err := data.NewFileFromBytes(resp.Body(), contentType, filename)
+		value, err := data.NewBinaryFromBytes(resp.Body(), contentType, filename)
 		if err != nil {
 			return fmt.Errorf("failed to convert response to format.Value: %w", err)
 		}
