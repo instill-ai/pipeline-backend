@@ -1,6 +1,7 @@
 package data
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
 
@@ -45,7 +46,7 @@ func (b byteArrayData) ToStructValue() (v *structpb.Value, err error) {
 
 func (b *byteArrayData) Equal(other format.Value) bool {
 	if other, ok := other.(format.ByteArray); ok {
-		return fmt.Sprintf("%x", b.Raw) == fmt.Sprintf("%x", other.ByteArray())
+		return bytes.Equal(b.Raw, other.ByteArray())
 	}
 	return false
 }

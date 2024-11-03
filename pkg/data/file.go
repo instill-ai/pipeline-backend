@@ -1,6 +1,7 @@
 package data
 
 import (
+	"bytes"
 	"fmt"
 	"mime"
 	"strings"
@@ -202,7 +203,7 @@ func (f *fileData) Equal(other format.Value) bool {
 		if err != nil {
 			return false
 		}
-		return fmt.Sprintf("%x", f.raw) == fmt.Sprintf("%x", ba.ByteArray()) &&
+		return bytes.Equal(f.raw, ba.ByteArray()) &&
 			f.contentType == other.ContentType().String() &&
 			f.fileName == other.FileName().String() &&
 			f.sourceURL == other.SourceURL().String()

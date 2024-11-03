@@ -35,7 +35,7 @@ import (
 // The format portion of the tag supports:
 //   - For Image: "image/png", "image/jpeg", etc
 //   - For Video: "video/mp4", "video/webm", etc
-//   - For Audio: "audio/mp3", "audio/wav", etc
+//   - For Audio: "audio/mpeg", "audio/wav", etc
 //   - For Document: "application/pdf", "text/plain", etc
 
 // Unmarshal converts a Map value into the provided struct s using `instill` tags.
