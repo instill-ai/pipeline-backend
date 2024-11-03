@@ -67,7 +67,7 @@ func TestDrawSemanticSegmentation(t *testing.T) {
 						return err
 					}
 					var segmentationResult struct {
-						Stuffs []*semanticSegmentationStuff `json:"stuffs"`
+						Stuffs []*semanticSegmentationStuff `instill:"stuffs"`
 					}
 					err = json.Unmarshal(tc.inputJSON, &segmentationResult)
 					if err != nil {

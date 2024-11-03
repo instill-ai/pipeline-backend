@@ -67,17 +67,18 @@ func TestDrawClassification(t *testing.T) {
 						return err
 					}
 					var classificationResult struct {
-						Category string  `json:"category"`
-						Score    float64 `json:"score"`
+						Category string  `instill:"category"`
+						Score    float64 `instill:"score"`
 					}
 					err = json.Unmarshal(tc.inputJSON, &classificationResult)
 					if err != nil {
 						return err
 					}
 					*input = drawClassificationInput{
-						Image:    img,
-						Category: classificationResult.Category,
-						Score:    classificationResult.Score,
+						Image:     img,
+						Category:  classificationResult.Category,
+						Score:     classificationResult.Score,
+						ShowScore: true,
 					}
 				}
 				return nil

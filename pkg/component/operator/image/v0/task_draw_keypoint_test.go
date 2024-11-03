@@ -79,15 +79,16 @@ func TestDrawKeypoint(t *testing.T) {
 						return err
 					}
 					var keypointResult struct {
-						Objects []*keypointObject `json:"objects"`
+						Objects []*keypointObject `instill:"objects"`
 					}
 					err = json.Unmarshal(tc.inputJSON, &keypointResult)
 					if err != nil {
 						return err
 					}
 					*input = drawKeypointInput{
-						Image:   img,
-						Objects: keypointResult.Objects,
+						Image:     img,
+						Objects:   keypointResult.Objects,
+						ShowScore: false,
 					}
 				}
 				return nil

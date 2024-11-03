@@ -91,15 +91,16 @@ func TestDrawInstanceSegmentation(t *testing.T) {
 						return err
 					}
 					var segmentationResult struct {
-						Objects []*instanceSegmentationObject `json:"objects"`
+						Objects []*instanceSegmentationObject `instill:"objects"`
 					}
 					err = json.Unmarshal(tc.inputJSON, &segmentationResult)
 					if err != nil {
 						return err
 					}
 					*input = drawInstanceSegmentationInput{
-						Image:   img,
-						Objects: segmentationResult.Objects,
+						Image:     img,
+						Objects:   segmentationResult.Objects,
+						ShowScore: true,
 					}
 				}
 				return nil

@@ -1,6 +1,7 @@
 package image
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"math/rand"
@@ -133,17 +134,15 @@ func rleDecode(rle []int, width, height int) [][]bool {
 	return mask
 }
 
-func drawObjectLabel(img *image.RGBA, bbox *boundingBox, category string, maskAdjustment bool, colorSeed int) error {
+func drawImageLabel(img *image.RGBA, category string, score float64, showScore bool) error {
 
 	dc := gg.NewContextForRGBA(img)
 
-	// Parse the font
 	font, err := opentype.Parse(IBMPlexSansRegular)
 	if err != nil {
 		return err
 	}
 
-	// Create a font face
 	face, err := opentype.NewFace(font, &opentype.FaceOptions{
 		Size: 20,
 		DPI:  72,
@@ -152,43 +151,93 @@ func drawObjectLabel(img *image.RGBA, bbox *boundingBox, category string, maskAd
 		return err
 	}
 
-	// Set the font face
 	dc.SetFontFace(face)
 
-	w, h := dc.MeasureString(category)
-
-	// Set the rectangle padding
-	padding := 2.0
-
-	if bbox.Size() > 10000 && maskAdjustment {
-		x := float64(bbox.Left) - 2*padding
-		y := float64(bbox.Top) + float64(bbox.Height)/2 - padding
-		w += 4 * padding
-		h += padding
-		dc.SetRGBA(0, 0, 0, 128)
-		dc.DrawRoundedRectangle(x, y, w, h, 4)
-		dc.Fill()
-		// Draw the text centered on the screen
-		originalColor := color.RGBA{255, 255, 255, 255}
-		// Blend the original color with the mask color.
-		blendedColor := blendColors(originalColor, randomColor(colorSeed, 64))
-		dc.SetColor(blendedColor)
-		dc.DrawString(category, float64(bbox.Left), float64(bbox.Top)+float64(bbox.Height)/2+8*padding)
-	} else {
-		x := float64(bbox.Left) - 2*padding
-		y := float64(bbox.Top) - 1.1*h - padding
-		w += 4 * padding
-		h += padding
-		dc.SetRGBA(0, 0, 0, 128)
-		dc.DrawRoundedRectangle(x, y, w, h, 4)
-		dc.Fill()
-		// Draw the text centered on the screen
-		originalColor := color.RGBA{255, 255, 255, 255}
-		// Blend the original color with the mask color.
-		blendedColor := blendColors(originalColor, randomColor(colorSeed, 64))
-		dc.SetColor(blendedColor)
-		dc.DrawString(category, float64(bbox.Left), float64(bbox.Top)-h/3-padding)
+	labelText := category
+	if showScore {
+		labelText = fmt.Sprintf("%s: %.0f%%", category, score*100)
 	}
 
+	w, h := dc.MeasureString(labelText)
+
+	padding := 2.0
+	x := padding
+	y := padding
+	w += 6 * padding
+	h += padding
+	dc.SetRGB(0, 0, 0)
+	dc.DrawRoundedRectangle(x, y, w, h, 4)
+	dc.Fill()
+	dc.SetColor(color.RGBA{255, 255, 255, 255})
+	dc.DrawString(labelText, 4*padding, 11*padding)
+	return nil
+}
+
+func drawObjectLabel(img *image.RGBA, bbox *boundingBox, category string, score float64, showScore bool, colorSeed int) error {
+
+	dc := gg.NewContextForRGBA(img)
+
+	font, err := opentype.Parse(IBMPlexSansRegular)
+	if err != nil {
+		return err
+	}
+
+	face, err := opentype.NewFace(font, &opentype.FaceOptions{
+		Size: 20,
+		DPI:  72,
+	})
+	if err != nil {
+		return err
+	}
+
+	dc.SetFontFace(face)
+
+	labelText := category
+	if showScore {
+		labelText = fmt.Sprintf("%s: %.0f%%", category, score*100)
+	}
+
+	w, h := dc.MeasureString(labelText)
+
+	padding := 2.0
+	x := float64(bbox.Left) - 2*padding
+	y := float64(bbox.Top) - 1.1*h - padding
+	w += 4 * padding
+	h += padding
+	dc.SetRGBA(0, 0, 0, 128)
+	dc.DrawRoundedRectangle(x, y, w, h, 4)
+	dc.Fill()
+	originalColor := color.RGBA{255, 255, 255, 255}
+	blendedColor := blendColors(originalColor, randomColor(colorSeed, 64))
+	dc.SetColor(blendedColor)
+	dc.DrawString(labelText, float64(bbox.Left), float64(bbox.Top)-h/3-padding)
+
+	return nil
+}
+
+var skeleton = [][]int{{16, 14}, {14, 12}, {17, 15}, {15, 13}, {12, 13}, {6, 12},
+	{7, 13}, {6, 7}, {6, 8}, {7, 9}, {8, 10}, {9, 11}, {2, 3}, {1, 2}, {1, 3}, {2, 4}, {3, 5}, {4, 6}, {5, 7},
+}
+
+var keypointLimbColorIdx = []int{9, 9, 9, 9, 7, 7, 7, 0, 0, 0, 0, 0, 16, 16, 16, 16, 16, 16, 16}
+var keypointColorIdx = []int{16, 16, 16, 16, 16, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9}
+
+func drawSkeleton(img *image.RGBA, kpts []*keypoint) error {
+	dc := gg.NewContextForRGBA(img)
+	for idx, kpt := range kpts {
+		if kpt.V > 0.5 {
+			dc.SetColor(palette[keypointColorIdx[idx]])
+			dc.DrawPoint(kpt.X, kpt.Y, 2)
+			dc.Fill()
+		}
+	}
+	for idx, sk := range skeleton {
+		if kpts[sk[0]-1].V > 0.5 && kpts[sk[1]-1].V > 0.5 {
+			dc.SetColor(palette[keypointLimbColorIdx[idx]])
+			dc.SetLineWidth(2)
+			dc.DrawLine(kpts[sk[0]-1].X, kpts[sk[0]-1].Y, kpts[sk[1]-1].X, kpts[sk[1]-1].Y)
+			dc.Stroke()
+		}
+	}
 	return nil
 }

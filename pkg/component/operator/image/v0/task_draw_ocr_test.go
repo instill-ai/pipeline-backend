@@ -67,7 +67,7 @@ func TestDrawOCR(t *testing.T) {
 						return err
 					}
 					var ocrResult struct {
-						Objects []*ocrObject `json:"objects"`
+						Objects []*ocrObject `instill:"objects"`
 					}
 					err = json.Unmarshal(tc.inputJSON, &ocrResult)
 					if err != nil {
