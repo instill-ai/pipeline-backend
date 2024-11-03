@@ -31,6 +31,7 @@ import (
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	mockx "github.com/instill-ai/x/mock"
 )
 
 var db *gorm.DB
@@ -54,25 +55,25 @@ func TestService_ListPipelineRuns(t *testing.T) {
 	for i := range len(mockUIDs) {
 		mockUIDs[i] = uuid.Must(uuid.NewV4())
 	}
-	ownerUID := mockUIDs[0].String()
-	user2 := mockUIDs[1].String()
-	namespace1 := mockUIDs[2].String()
+	ownerUID := mockUIDs[0]
+	user2 := mockUIDs[1]
+	namespace1 := mockUIDs[2]
 	pipelineUID := mockUIDs[3]
 
 	t0 := time.Now()
-	ownerPermalink := "users/" + ownerUID
+	ownerPermalink := "users/" + ownerUID.String()
 	pipelineID := "pipelineID-test"
 
 	testCases := []struct {
 		description   string
-		runner        string
-		runNamespace  string
-		viewer        string
-		viewNamespace string
+		runner        uuid.UUID
+		runNamespace  uuid.UUID
+		viewer        uuid.UUID
+		viewNamespace uuid.UUID
 		canView       bool
 	}{
 		{
-			description:   "can view logs when view ns is resource owner ns or credit owner ns",
+			description:   "can view logs when view ns is resource owner ns or requester ns",
 			runner:        ownerUID,
 			runNamespace:  ownerUID,
 			viewer:        ownerUID,
@@ -80,7 +81,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			canView:       true,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
 			runner:        ownerUID,
 			runNamespace:  ownerUID,
 			viewer:        ownerUID,
@@ -88,7 +89,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			canView:       false,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
 			runner:        ownerUID,
 			runNamespace:  ownerUID,
 			viewer:        user2,
@@ -96,7 +97,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			canView:       false,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
 			runner:        ownerUID,
 			runNamespace:  ownerUID,
 			viewer:        user2,
@@ -112,7 +113,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			canView:       true,
 		},
 		{
-			description:   "can view logs when view ns is credit owner",
+			description:   "can view logs when view ns is requester",
 			runner:        ownerUID,
 			runNamespace:  namespace1,
 			viewer:        ownerUID,
@@ -120,7 +121,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			canView:       true,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
 			runner:        ownerUID,
 			runNamespace:  namespace1,
 			viewer:        user2,
@@ -128,7 +129,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			canView:       false,
 		},
 		{
-			description:   "can view logs when view ns is credit owner",
+			description:   "can view logs when view ns is requester",
 			runner:        ownerUID,
 			runNamespace:  namespace1,
 			viewer:        user2,
@@ -144,7 +145,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			canView:       true,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
 			runner:        user2,
 			runNamespace:  user2,
 			viewer:        ownerUID,
@@ -163,7 +164,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
 	mgmtPrivateClient.CheckNamespaceAdminMock.Return(&mgmtpb.CheckNamespaceAdminResponse{
 		Type: mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_USER,
-		Uid:  ownerUID,
+		Uid:  ownerUID.String(),
 	}, nil)
 	mgmtPrivateClient.CheckNamespaceByUIDAdminMock.Return(&mgmtpb.CheckNamespaceByUIDAdminResponse{
 		Type:  0,
@@ -171,7 +172,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 		Owner: nil,
 	}, nil)
 
-	mockMinio := mock.NewMinioIMock(mc)
+	mockMinio := mockx.NewMinioIMock(mc)
 	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some errors"))
 
 	for i, testCase := range testCases {
@@ -213,15 +214,15 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 			c.Check(got.NumberOfRuns, qt.Equals, 0)
 			c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
-			c.Check(got.OwnerUID().String(), qt.Equals, ownerUID)
+			c.Check(got.OwnerUID(), qt.Equals, ownerUID)
 
 			pipelineRun := &datamodel.PipelineRun{
 				PipelineTriggerUID: uuid.Must(uuid.NewV4()),
 				PipelineUID:        got.UID,
 				Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
 				Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
-				TriggeredBy:        testCase.runner,
-				Namespace:          testCase.runNamespace,
+				RunnerUID:          testCase.runner,
+				RequesterUID:       testCase.runNamespace,
 				StartedTime:        time.Now(),
 				TotalDuration:      null.IntFrom(42),
 				Components:         nil,
@@ -231,12 +232,12 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			m := make(map[string]string)
-			m[constant.HeaderRequesterUIDKey] = testCase.viewNamespace
-			m[constant.HeaderUserUIDKey] = testCase.viewer
+			m[constant.HeaderRequesterUIDKey] = testCase.viewNamespace.String()
+			m[constant.HeaderUserUIDKey] = testCase.viewer.String()
 
 			ctxWithHeader := metadata.NewIncomingContext(context.Background(), metadata.New(m))
 			req := &pb.ListPipelineRunsRequest{
-				NamespaceId: ownerUID,
+				NamespaceId: ownerUID.String(),
 				PipelineId:  pipelineID,
 				Page:        0,
 				PageSize:    10,
@@ -244,9 +245,10 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			runs, err := svc.ListPipelineRuns(ctxWithHeader, req, filtering.Filter{})
 			c.Assert(err, qt.IsNil)
 			if testCase.canView {
-				c.Check(len(runs.PipelineRuns), qt.Equals, 1)
+				c.Check(runs.PipelineRuns, qt.HasLen, 1)
+				c.Check(runs.PipelineRuns[0].RequesterId, qt.Equals, "test-user")
 			} else {
-				c.Check(len(runs.PipelineRuns), qt.Equals, 0)
+				c.Check(runs.PipelineRuns, qt.HasLen, 0)
 			}
 		})
 	}
@@ -260,27 +262,27 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 	for i := range len(mockUIDs) {
 		mockUIDs[i] = uuid.Must(uuid.NewV4())
 	}
-	orgUID := mockUIDs[0].String()
-	user1 := mockUIDs[1].String()
-	namespace1 := mockUIDs[2].String()
+	orgUID := mockUIDs[0]
+	user1 := mockUIDs[1]
+	namespace1 := mockUIDs[2]
 	pipelineUID := mockUIDs[3]
-	user2 := mockUIDs[4].String()
-	user3 := mockUIDs[5].String()
+	user2 := mockUIDs[4]
+	user3 := mockUIDs[5]
 
 	t0 := time.Now()
-	ownerPermalink := "organizations/" + orgUID
+	ownerPermalink := "organizations/" + orgUID.String()
 	pipelineID := "pipelineID-test"
 
 	testCases := []struct {
 		description   string
-		runner        string
-		runNamespace  string
-		viewer        string
-		viewNamespace string
+		runner        uuid.UUID
+		runNamespace  uuid.UUID
+		viewer        uuid.UUID
+		viewNamespace uuid.UUID
 		canView       bool
 	}{
 		{
-			description:   "can view logs when view ns is credit owner",
+			description:   "can view logs when view ns is requester",
 			runner:        user1,
 			runNamespace:  user1,
 			viewer:        user1,
@@ -296,7 +298,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			canView:       true,
 		},
 		{
-			description:   "can view logs when view ns is resource owner ns or credit owner ns",
+			description:   "can view logs when view ns is resource owner ns or requester ns",
 			runner:        user1,
 			runNamespace:  orgUID,
 			viewer:        user1,
@@ -304,7 +306,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			canView:       true,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
 			runner:        user1,
 			runNamespace:  orgUID,
 			viewer:        user1,
@@ -312,7 +314,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			canView:       false,
 		},
 		{
-			description:   "can view logs when view ns is resource owner ns or credit owner ns",
+			description:   "can view logs when view ns is resource owner ns or requester ns",
 			runner:        user1,
 			runNamespace:  orgUID,
 			viewer:        user2,
@@ -320,7 +322,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			canView:       true,
 		},
 		{
-			description:   "can view logs when view ns is credit owner",
+			description:   "can view logs when view ns is requester",
 			runner:        user2,
 			runNamespace:  user2,
 			viewer:        user2,
@@ -328,7 +330,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			canView:       true,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
 			runner:        user2,
 			runNamespace:  user2,
 			viewer:        user1,
@@ -344,7 +346,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			canView:       true,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
 			runner:        user2,
 			runNamespace:  orgUID,
 			viewer:        user1,
@@ -352,7 +354,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			canView:       false,
 		},
 		{
-			description:   "can view logs when view ns is resource owner ns or credit owner ns",
+			description:   "can view logs when view ns is resource owner ns or requester ns",
 			runner:        user2,
 			runNamespace:  orgUID,
 			viewer:        user1,
@@ -360,7 +362,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			canView:       true,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
 			runner:        user1,
 			runNamespace:  user1,
 			viewer:        user3,
@@ -368,7 +370,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			canView:       false,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
 			runner:        user1,
 			runNamespace:  orgUID,
 			viewer:        user3,
@@ -387,7 +389,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
 	mgmtPrivateClient.CheckNamespaceAdminMock.Return(&mgmtpb.CheckNamespaceAdminResponse{
 		Type: mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_ORGANIZATION,
-		Uid:  orgUID,
+		Uid:  orgUID.String(),
 	}, nil)
 	mgmtPrivateClient.CheckNamespaceByUIDAdminMock.Return(&mgmtpb.CheckNamespaceByUIDAdminResponse{
 		Type:  0,
@@ -395,7 +397,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 		Owner: nil,
 	}, nil)
 
-	mockMinio := mock.NewMinioIMock(mc)
+	mockMinio := mockx.NewMinioIMock(mc)
 	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some error happens"))
 
 	for i, testCase := range testCases {
@@ -441,15 +443,15 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 			c.Check(got.NumberOfRuns, qt.Equals, 0)
 			c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
-			c.Check(got.OwnerUID().String(), qt.Equals, orgUID)
+			c.Check(got.OwnerUID(), qt.Equals, orgUID)
 
 			pipelineRun := &datamodel.PipelineRun{
 				PipelineTriggerUID: uuid.Must(uuid.NewV4()),
 				PipelineUID:        got.UID,
 				Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
 				Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
-				TriggeredBy:        testCase.runner,
-				Namespace:          testCase.runNamespace,
+				RunnerUID:          testCase.runner,
+				RequesterUID:       testCase.runNamespace,
 				StartedTime:        time.Now(),
 				TotalDuration:      null.IntFrom(42),
 				Components:         nil,
@@ -459,8 +461,8 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			m := make(map[string]string)
-			m[constant.HeaderRequesterUIDKey] = testCase.viewNamespace
-			m[constant.HeaderUserUIDKey] = testCase.viewer
+			m[constant.HeaderRequesterUIDKey] = testCase.viewNamespace.String()
+			m[constant.HeaderUserUIDKey] = testCase.viewer.String()
 
 			ctxWithHeader := metadata.NewIncomingContext(context.Background(), metadata.New(m))
 			req := &pb.ListPipelineRunsRequest{
@@ -472,9 +474,10 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			runs, err := svc.ListPipelineRuns(ctxWithHeader, req, filtering.Filter{})
 			c.Assert(err, qt.IsNil)
 			if testCase.canView {
-				c.Check(len(runs.PipelineRuns), qt.Equals, 1)
+				c.Check(runs.PipelineRuns, qt.HasLen, 1)
+				c.Check(runs.PipelineRuns[0].RequesterId, qt.Equals, "test-user")
 			} else {
-				c.Check(len(runs.PipelineRuns), qt.Equals, 0)
+				c.Check(runs.PipelineRuns, qt.HasLen, 0)
 			}
 		})
 	}

@@ -1,7 +1,7 @@
 {
   "$defs": {
     "file": {
-      "description": "base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into catalog",
+      "description": "Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into catalog.",
       "instillUIOrder": 2,
       "instillAcceptFormats": [
         "*/*"
@@ -13,7 +13,7 @@
       "type": "string"
     },
     "files": {
-      "description": "base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML files to be uploaded into catalog",
+      "description": "Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML files to be uploaded into catalog.",
       "instillUIOrder": 2,
       "instillAcceptFormats": [
         "array:*/*"
@@ -30,49 +30,49 @@
     "file-item": {
       "properties": {
         "file-uid": {
-          "description": "The unique identifier of the file",
+          "description": "Unique identifier of the file.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "File UID",
           "type": "string"
         },
         "file-name": {
-          "description": "The name of the file",
+          "description": "Name of the file.",
           "instillFormat": "string",
           "instillUIOrder": 1,
           "title": "File Name",
           "type": "string"
         },
         "file-type": {
-          "description": "The type of the file",
+          "description": "Type of the file.",
           "instillFormat": "string",
           "instillUIOrder": 2,
           "title": "Type",
           "type": "string"
         },
         "create-time": {
-          "description": "The creation time of the file in ISO 8601 format",
+          "description": "Creation time of the file in ISO 8601 format.",
           "instillFormat": "string",
           "instillUIOrder": 3,
           "title": "Create Time",
           "type": "string"
         },
         "update-time": {
-          "description": "The update time of the file in ISO 8601 format",
+          "description": "Update time of the file in ISO 8601 format.",
           "instillFormat": "string",
           "instillUIOrder": 4,
           "title": "Update Time",
           "type": "string"
         },
         "size": {
-          "description": "The size of the file in bytes",
+          "description": "Size of the file in bytes.",
           "instillFormat": "number",
           "instillUIOrder": 5,
           "title": "Size",
           "type": "number"
         },
         "catalog-id": {
-          "description": "The ID of the catalog that you upload files",
+          "description": "ID of the catalog that you upload files.",
           "instillFormat": "string",
           "instillUIOrder": 8,
           "title": "Catalog ID",
@@ -88,28 +88,28 @@
     "chunk-item": {
       "properties": {
         "chunk-uid": {
-          "description": "The unique identifier of the chunk",
+          "description": "The unique identifier of the chunk.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Chunk UID",
           "type": "string"
         },
         "similarity-score": {
-          "description": "The similarity score of the chunk",
+          "description": "The similarity score of the chunk.",
           "instillFormat": "number",
           "instillUIOrder": 1,
           "title": "Similarity",
           "type": "number"
         },
         "text-content": {
-          "description": "The text content of the chunk",
+          "description": "The text content of the chunk.",
           "instillFormat": "string",
           "instillUIOrder": 2,
           "title": "Text Content",
           "type": "string"
         },
         "source-file-name": {
-          "description": "The name of the source file",
+          "description": "The name of the source file.",
           "instillFormat": "string",
           "instillUIOrder": 3,
           "title": "Source File Name",
@@ -126,7 +126,7 @@
       "type": "object"
     },
     "namespace": {
-      "description": "Fill in your namespace, you can get namespace through the tab of switching namespace",
+      "description": "Fill in your namespace, you can get namespace through the tab of switching namespace.",
       "instillUpstreamTypes": [
         "reference",
         "value"
@@ -137,16 +137,122 @@
       "instillUIOrder": 0,
       "title": "Namespace",
       "type": "string"
+    },
+    "third-party-files": {
+      "description": "File contents and metadata from third-part data storage.",
+      "instillUIOrder": 2,
+      "instillAcceptFormats": [
+        "array:*/*"
+      ],
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "items": {
+        "properties": {
+          "id": {
+            "description": "Unique ID of the file from third-party data storage.",
+            "instillFormat": "string",
+            "instillUIOrder": 0,
+            "title": "ID",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the file from third-party data storage.",
+            "instillFormat": "string",
+            "instillUIOrder": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "content": {
+            "description": "Base64 encoded content of the binary file without the `data:[MIME_TYPE];base64,` prefix.",
+            "instillFormat": "string",
+            "instillUIMultiline": true,
+            "instillUIOrder": 2,
+            "title": "Content",
+            "type": "string"
+          },
+          "created-time": {
+            "description": "Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ`.",
+            "instillFormat": "string",
+            "instillUIOrder": 3,
+            "title": "Created time",
+            "type": "string"
+          },
+          "modified-time": {
+            "description": "Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ`. It will be used to check if the file has been updated.",
+            "instillFormat": "string",
+            "instillUIOrder": 4,
+            "title": "Modified time",
+            "type": "string"
+          },
+          "size": {
+            "description": "Size of the file in bytes.",
+            "instillFormat": "integer",
+            "instillUIOrder": 5,
+            "title": "Size",
+            "type": "integer"
+          },
+          "mime-type": {
+            "description": "MIME type of the file.",
+            "instillFormat": "string",
+            "instillUIOrder": 6,
+            "title": "MIME type",
+            "type": "string"
+          },
+          "md5-checksum": {
+            "description": "MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user.",
+            "instillFormat": "string",
+            "instillUIOrder": 7,
+            "title": "MD5 checksum",
+            "type": "string"
+          },
+          "version": {
+            "description": "Version of the file.",
+            "instillFormat": "integer",
+            "instillUIOrder": 8,
+            "title": "Version",
+            "type": "integer"
+          },
+          "web-view-link": {
+            "description": "Link for opening the file in a relevant third-party data storage editor or viewer in a browser. It will be used to check the source of the file.",
+            "instillFormat": "string",
+            "instillUIOrder": 9,
+            "title": "Web View Link",
+            "type": "string"
+          },
+          "web-content-link": {
+            "description": "Link for downloading the content of the file in a browser.",
+            "instillFormat": "string",
+            "instillUIOrder": 10,
+            "title": "Web Content Link",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "created-time",
+          "modified-time",
+          "size",
+          "mime-type",
+          "version",
+          "web-view-link"
+        ],
+        "title": "Third Party File",
+        "type": "object"
+      },
+      "title": "Third Party Files",
+      "type": "array"
     }
   },
   "TASK_UPLOAD_FILE": {
-    "instillShortDescription": "Upload and process the files into chunks into Catalog",
+    "instillShortDescription": "Upload and process the files into chunks into Catalog.",
     "input": {
       "description": "Input",
       "instillUIOrder": 0,
       "properties": {
         "options": {
-          "description": "Choose to upload the files to existing catalog or create a new catalog",
+          "description": "Choose to upload the files to existing catalog or create a new catalog.",
           "title": "Options",
           "additionalProperties": true,
           "type": "object",
@@ -168,7 +274,7 @@
                   "$ref": "#/$defs/namespace"
                 },
                 "catalog-id": {
-                  "description": "Catalog ID that you input in the Catalog",
+                  "description": "Catalog ID that you input in the Catalog.",
                   "instillUIOrder": 1,
                   "instillAcceptFormats": [
                     "string"
@@ -184,7 +290,7 @@
                   "$ref": "#/$defs/file"
                 },
                 "file-name": {
-                  "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+                  "description": "Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.",
                   "instillUIOrder": 2,
                   "instillAcceptFormats": [
                     "string"
@@ -227,7 +333,7 @@
                   "$ref": "#/$defs/namespace"
                 },
                 "catalog-id": {
-                  "description": "Catalog ID for new catalog you want to create",
+                  "description": "Catalog ID for new catalog you want to create.",
                   "instillUIOrder": 1,
                   "instillAcceptFormats": [
                     "string"
@@ -243,7 +349,7 @@
                   "$ref": "#/$defs/file"
                 },
                 "file-name": {
-                  "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+                  "description": "Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.",
                   "instillUIOrder": 3,
                   "instillAcceptFormats": [
                     "string"
@@ -256,7 +362,7 @@
                   "type": "string"
                 },
                 "description": {
-                  "description": "Description of the catalog",
+                  "description": "Description of the catalog.",
                   "instillUIOrder": 4,
                   "instillAcceptFormats": [
                     "string"
@@ -270,7 +376,7 @@
                   "type": "string"
                 },
                 "tags": {
-                  "description": "Tags for the catalog",
+                  "description": "Tags for the catalog.",
                   "instillUIOrder": 5,
                   "instillAcceptFormats": [
                     "array:string"
@@ -315,10 +421,10 @@
       "type": "object"
     },
     "output": {
-      "description": "Result of uploading file into catalog",
+      "description": "Result of uploading file into catalog.",
       "properties": {
         "file": {
-          "description": "Result of uploading file into catalog",
+          "description": "Result of uploading file into catalog.",
           "instillUIOrder": 0,
           "properties": {
             "$ref": "#/$defs/file-item/properties"
@@ -337,7 +443,7 @@
           "type": "object"
         },
         "status": {
-          "description": "The status of trigger file processing, if succeeded, return true",
+          "description": "The status of trigger file processing, if succeeded, return true.",
           "instillUIOrder": 1,
           "instillFormat": "boolean",
           "title": "Status",
@@ -353,13 +459,13 @@
     }
   },
   "TASK_UPLOAD_FILES": {
-    "instillShortDescription": "Upload and process the files into chunks into Catalog",
+    "instillShortDescription": "Upload and process the files into chunks into Catalog.",
     "input": {
       "description": "Input",
       "instillUIOrder": 0,
       "properties": {
         "options": {
-          "description": "Choose to upload the files to existing catalog or create a new catalog",
+          "description": "Choose to upload the files to existing catalog or create a new catalog.",
           "title": "Options",
           "additionalProperties": true,
           "type": "object",
@@ -381,7 +487,7 @@
                   "$ref": "#/$defs/namespace"
                 },
                 "catalog-id": {
-                  "description": "Catalog ID that you input in the Catalog",
+                  "description": "Catalog ID that you input in the Catalog.",
                   "instillUIOrder": 1,
                   "instillAcceptFormats": [
                     "string"
@@ -397,7 +503,7 @@
                   "$ref": "#/$defs/files"
                 },
                 "file-names": {
-                  "description": "The names of the files, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+                  "description": "Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.",
                   "instillUIOrder": 2,
                   "instillAcceptFormats": [
                     "array:string"
@@ -442,7 +548,7 @@
                   "$ref": "#/$defs/namespace"
                 },
                 "catalog-id": {
-                  "description": "Catalog ID for new catalog you want to create",
+                  "description": "Catalog ID for new catalog you want to create.",
                   "instillUIOrder": 1,
                   "instillAcceptFormats": [
                     "string"
@@ -458,7 +564,7 @@
                   "$ref": "#/$defs/files"
                 },
                 "file-names": {
-                  "description": "The names of the files, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+                  "description": "Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.",
                   "instillUIOrder": 3,
                   "instillAcceptFormats": [
                     "array:string"
@@ -473,7 +579,7 @@
                   "type": "array"
                 },
                 "description": {
-                  "description": "Description of the catalog",
+                  "description": "Description of the catalog.",
                   "instillUIOrder": 4,
                   "instillAcceptFormats": [
                     "string"
@@ -487,7 +593,7 @@
                   "type": "string"
                 },
                 "tags": {
-                  "description": "Tags for the catalog",
+                  "description": "Tags for the catalog.",
                   "instillUIOrder": 5,
                   "instillAcceptFormats": [
                     "array:string"
@@ -532,10 +638,10 @@
       "type": "object"
     },
     "output": {
-      "description": "Result of uploading files into catalog",
+      "description": "Result of uploading files into catalog.",
       "properties": {
         "files": {
-          "description": "Files metadata in catalog",
+          "description": "Files metadata in catalog.",
           "instillUIOrder": 0,
           "items": {
             "$ref": "#/$defs/file-item"
@@ -545,7 +651,7 @@
           "type": "array"
         },
         "status": {
-          "description": "The status of trigger file processing, if ALL succeeded, return true",
+          "description": "The status of trigger file processing, if ALL succeeded, return true.",
           "instillUIOrder": 1,
           "instillFormat": "boolean",
           "title": "Status",
@@ -561,7 +667,7 @@
     }
   },
   "TASK_GET_FILES_METADATA": {
-    "instillShortDescription": "get the metadata of the files in the catalog",
+    "instillShortDescription": "get the metadata of the files in the catalog.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
@@ -569,7 +675,7 @@
           "$ref": "#/$defs/namespace"
         },
         "catalog-id": {
-          "description": "Catalog ID that you input to search files in the Catalog",
+          "description": "Catalog ID that you input to search files in the Catalog.",
           "instillUIOrder": 1,
           "instillAcceptFormats": [
             "string"
@@ -594,11 +700,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Files metadata into catalog",
+      "description": "Files metadata into catalog.",
       "instillUIOrder": 1,
       "properties": {
         "files": {
-          "description": "Files metadata in catalog",
+          "description": "Files metadata in catalog.",
           "instillUIOrder": 0,
           "items": {
             "$ref": "#/$defs/file-item"
@@ -616,7 +722,7 @@
     }
   },
   "TASK_GET_CHUNKS_METADATA": {
-    "instillShortDescription": "get the metadata of the chunks from a file in the catalog",
+    "instillShortDescription": "get the metadata of the chunks from a file in the catalog.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
@@ -624,7 +730,7 @@
           "$ref": "#/$defs/namespace"
         },
         "catalog-id": {
-          "description": "Catalog ID that you input to search files in the Catalog",
+          "description": "Catalog ID that you input to search files in the Catalog.",
           "instillUIOrder": 0,
           "instillAcceptFormats": [
             "string"
@@ -637,7 +743,7 @@
           "type": "string"
         },
         "file-uid": {
-          "description": "The unique identifier of the file",
+          "description": "The unique identifier of the file.",
           "instillUIOrder": 1,
           "instillAcceptFormats": [
             "string"
@@ -664,58 +770,58 @@
       "type": "object"
     },
     "output": {
-      "description": "Chunks metadata of the file in catalog",
+      "description": "Chunks metadata of the file in catalog.",
       "instillUIOrder": 1,
       "properties": {
         "chunks": {
-          "description": "Chunks metadata of the file in catalog",
+          "description": "Chunks metadata of the file in catalog.",
           "instillUIOrder": 0,
           "items": {
             "properties": {
               "chunk-uid": {
-                "description": "The unique identifier of the chunk",
+                "description": "The unique identifier of the chunk.",
                 "instillFormat": "string",
                 "instillUIOrder": 0,
                 "title": "Chunk UID",
                 "type": "string"
               },
               "retrievable": {
-                "description": "The retrievable status of the chunk",
+                "description": "The retrievable status of the chunk.",
                 "instillFormat": "boolean",
                 "instillUIOrder": 1,
                 "title": "Retrievable",
                 "type": "boolean"
               },
               "start-position": {
-                "description": "The start position of the chunk in the file",
+                "description": "The start position of the chunk in the file.",
                 "instillFormat": "integer",
                 "instillUIOrder": 2,
                 "title": "Start Position",
                 "type": "integer"
               },
               "end-position": {
-                "description": "The end position of the chunk in the file",
+                "description": "The end position of the chunk in the file.",
                 "instillFormat": "integer",
                 "instillUIOrder": 3,
                 "title": "End Position",
                 "type": "integer"
               },
               "token-count": {
-                "description": "The token count of the chunk",
+                "description": "The token count of the chunk.",
                 "instillFormat": "integer",
                 "instillUIOrder": 4,
                 "title": "Token Count",
                 "type": "integer"
               },
               "create-time": {
-                "description": "The creation time of the chunk in ISO 8601 format",
+                "description": "The creation time of the chunk in ISO 8601 format.",
                 "instillFormat": "string",
                 "instillUIOrder": 5,
                 "title": "Create Time",
                 "type": "string"
               },
               "original-file-uid": {
-                "description": "The unique identifier of the file",
+                "description": "The unique identifier of the file.",
                 "instillFormat": "string",
                 "instillUIOrder": 6,
                 "title": "File UID",
@@ -747,7 +853,7 @@
     }
   },
   "TASK_GET_FILE_IN_MARKDOWN": {
-    "instillShortDescription": "get the file content in markdown format",
+    "instillShortDescription": "get the file content in markdown format.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
@@ -755,7 +861,7 @@
           "$ref": "#/$defs/namespace"
         },
         "catalog-id": {
-          "description": "Catalog ID that you input to search files in the Catalog",
+          "description": "Catalog ID that you input to search files in the Catalog.",
           "instillUIOrder": 0,
           "instillAcceptFormats": [
             "string"
@@ -768,7 +874,7 @@
           "type": "string"
         },
         "file-uid": {
-          "description": "The unique identifier of the file",
+          "description": "The unique identifier of the file.",
           "instillUIOrder": 1,
           "instillAcceptFormats": [
             "string"
@@ -795,32 +901,32 @@
       "type": "object"
     },
     "output": {
-      "description": "File content in markdown format",
+      "description": "File content in markdown format.",
       "instillUIOrder": 1,
       "properties": {
         "original-file-uid": {
-          "description": "The unique identifier of the file",
+          "description": "The unique identifier of the file.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "File UID",
           "type": "string"
         },
         "content": {
-          "description": "The content of the file in markdown format",
+          "description": "The content of the file in markdown format.",
           "instillFormat": "string",
           "instillUIOrder": 1,
           "title": "Content",
           "type": "string"
         },
         "create-time": {
-          "description": "The creation time of the source file in ISO 8601 format",
+          "description": "The creation time of the source file in ISO 8601 format.",
           "instillFormat": "string",
           "instillUIOrder": 2,
           "title": "Create Time",
           "type": "string"
         },
         "update-time": {
-          "description": "The update time of the source file in ISO 8601 format",
+          "description": "The update time of the source file in ISO 8601 format.",
           "instillFormat": "string",
           "instillUIOrder": 3,
           "title": "Update Time",
@@ -838,7 +944,7 @@
     }
   },
   "TASK_RETRIEVE": {
-    "instillShortDescription": "search the chunks in the catalog",
+    "instillShortDescription": "search the chunks in the catalog.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
@@ -846,7 +952,7 @@
           "$ref": "#/$defs/namespace"
         },
         "catalog-id": {
-          "description": "Catalog ID that you input to search files in the Catalog",
+          "description": "Catalog ID that you input to search files in the Catalog.",
           "instillUIOrder": 0,
           "instillAcceptFormats": [
             "string"
@@ -859,7 +965,7 @@
           "type": "string"
         },
         "text-prompt": {
-          "description": "The prompt string to search the chunks",
+          "description": "The prompt string to search the chunks.",
           "instillUIOrder": 1,
           "instillAcceptFormats": [
             "string"
@@ -872,7 +978,7 @@
           "type": "string"
         },
         "top-k": {
-          "description": "The number of top chunks to return. The range is from 1~20, and default is 5",
+          "description": "The number of top chunks to return. The range is from 1~20, and default is 5.",
           "default": 5,
           "instillUIOrder": 2,
           "instillAcceptFormats": [
@@ -921,7 +1027,7 @@
     }
   },
   "TASK_ASK": {
-    "instillShortDescription": "Reply the questions based on the files in the catalog",
+    "instillShortDescription": "Reply the questions based on the files in the catalog.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
@@ -929,7 +1035,7 @@
           "$ref": "#/$defs/namespace"
         },
         "catalog-id": {
-          "description": "Catalog ID that you input to search files in the Catalog",
+          "description": "Catalog ID that you input to search files in the Catalog.",
           "instillUIOrder": 0,
           "instillAcceptFormats": [
             "string"
@@ -942,7 +1048,7 @@
           "type": "string"
         },
         "question": {
-          "description": "The question to reply",
+          "description": "The question to reply.",
           "instillUIOrder": 1,
           "instillAcceptFormats": [
             "string"
@@ -955,7 +1061,7 @@
           "type": "string"
         },
         "top-k": {
-          "description": "The number of top answers to return. The range is from 1~20, and default is 5",
+          "description": "The number of top answers to return. The range is from 1~20, and default is 5.",
           "default": 5,
           "instillUIOrder": 2,
           "instillAcceptFormats": [
@@ -986,14 +1092,14 @@
       "instillUIOrder": 1,
       "properties": {
         "answer": {
-          "description": "Answers data from smart search",
+          "description": "Answers data from smart search.",
           "instillUIOrder": 0,
           "instillFormat": "string",
           "title": "Answer",
           "type": "string"
         },
         "chunks": {
-          "description": "Chunks data to answer question",
+          "description": "Chunks data to answer question.",
           "instillUIOrder": 1,
           "instillFormat": "array:object",
           "items": {
@@ -1011,7 +1117,7 @@
     }
   },
   "TASK_MATCH_FILE_STATUS": {
-    "instillShortDescription": "Check if the specified file's processing status is done",
+    "instillShortDescription": "Check if the specified file's processing status is done.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
@@ -1019,7 +1125,7 @@
           "$ref": "#/$defs/namespace"
         },
         "catalog-id": {
-          "description": "Catalog ID that you input to check files' processing status in the Catalog",
+          "description": "Catalog ID that you input to check files' processing status in the Catalog.",
           "instillUIOrder": 0,
           "instillAcceptFormats": [
             "string"
@@ -1032,7 +1138,7 @@
           "type": "string"
         },
         "file-uid": {
-          "description": "The unique identifier of the file",
+          "description": "The unique identifier of the file.",
           "instillUIOrder": 1,
           "instillAcceptFormats": [
             "string"
@@ -1062,7 +1168,7 @@
       "instillUIOrder": 1,
       "properties": {
         "succeeded": {
-          "description": "The status of the file processing, if succeeded, return true",
+          "description": "The status of the file processing, if succeeded, return true.",
           "instillUIOrder": 0,
           "instillFormat": "boolean",
           "title": "Status",
@@ -1071,6 +1177,95 @@
       },
       "required": [
         "succeeded"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_SYNC_FILES": {
+    "instillShortDescription": "This task synchronizes files from third-party storage to instill catalog. New files are uploaded, and updated files are overwritten based on third-party metadata. Files added through other channels, like the Artifact API or additional storage services, will not be removed. Currently, only Google Drive is supported as a third-party storage service.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "namespace": {
+          "$ref": "#/$defs/namespace"
+        },
+        "catalog-id": {
+          "description": "Catalog ID that you input to synchronize files from third-party data storage to catalog.",
+          "instillUIOrder": 1,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Catalog ID",
+          "type": "string"
+        },
+        "third-party-files": {
+          "$ref": "#/$defs/third-party-files"
+        }
+      },
+      "required": [
+        "namespace",
+        "catalog-id",
+        "third-party-files"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "uploaded-files": {
+          "description": "Files metadata in catalog. The metadata here is from Instill Artifact rather than third-party storage.",
+          "instillUIOrder": 0,
+          "items": {
+            "$ref": "#/$defs/file-item"
+          },
+          "instillFormat": "array:object",
+          "title": "Uploaded Files",
+          "type": "array"
+        },
+        "updated_files": {
+          "description": "Files that were updated. The metadata here is from Instill Artifact rather than third-party storage.",
+          "instillUIOrder": 1,
+          "items": {
+            "$ref": "#/$defs/file-item"
+          },
+          "instillFormat": "array:object",
+          "title": "Updated Files",
+          "type": "array"
+        },
+        "failure-files": {
+          "description": "Files that failed to upload or overwrite. The metadata here is from third-party storage.",
+          "instillUIOrder": 2,
+          "items": {
+            "$ref": "#/$defs/third-party-files/items"
+          },
+          "instillFormat": "array:object",
+          "title": "Failure Files",
+          "type": "array"
+        },
+        "error-messages": {
+          "description": "Error messages for files that failed to upload or overwrite.",
+          "instillUIOrder": 3,
+          "items": {
+            "type": "string"
+          },
+          "title": "Error Messages",
+          "type": "array"
+        },
+        "status": {
+          "description": "The status of the triggering processing files, if succeeded, return true.",
+          "instillUIOrder": 4,
+          "instillFormat": "boolean",
+          "title": "Status",
+          "type": "boolean"
+        }
+      },
+      "required": [
       ],
       "title": "Output",
       "type": "object"

@@ -175,15 +175,11 @@ func cleanTextUsingSubstring(inputTexts []string, settings DataCleaningSetting) 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 
 	for _, job := range jobs {
-		input, err := job.Input.Read(ctx)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
 		switch e.Task {
 		case taskChunkText:
 			inputStruct := ChunkTextInput{}
-			err := base.ConvertFromStructpb(input, &inputStruct)
+
+			err := job.Input.ReadData(ctx, &inputStruct)
 			if err != nil {
 				job.Error.Error(ctx, err)
 				continue
@@ -200,12 +196,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 				job.Error.Error(ctx, err)
 				continue
 			}
-			output, err := base.ConvertToStructpb(outputStruct)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-			err = job.Output.Write(ctx, output)
+			err = job.Output.WriteData(ctx, outputStruct)
 			if err != nil {
 				job.Error.Error(ctx, err)
 				continue

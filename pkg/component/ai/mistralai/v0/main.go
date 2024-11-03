@@ -49,7 +49,7 @@ func Init(bc base.Component) *component {
 
 type execution struct {
 	base.ComponentExecution
-	execute                func(*structpb.Struct) (*structpb.Struct, error)
+	execute                func(context.Context, *base.Job) error
 	client                 MistralClient
 	usesInstillCredentials bool
 }
@@ -115,5 +115,5 @@ func (e *execution) UsesInstillCredentials() bool {
 }
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-	return base.SequentialExecutor(ctx, jobs, e.execute)
+	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }

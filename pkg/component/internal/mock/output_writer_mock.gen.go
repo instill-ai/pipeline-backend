@@ -23,6 +23,13 @@ type OutputWriterMock struct {
 	afterWriteCounter  uint64
 	beforeWriteCounter uint64
 	WriteMock          mOutputWriterMockWrite
+
+	funcWriteData          func(ctx context.Context, output any) (err error)
+	funcWriteDataOrigin    string
+	inspectFuncWriteData   func(ctx context.Context, output any)
+	afterWriteDataCounter  uint64
+	beforeWriteDataCounter uint64
+	WriteDataMock          mOutputWriterMockWriteData
 }
 
 // NewOutputWriterMock returns a mock for mm_base.OutputWriter
@@ -35,6 +42,9 @@ func NewOutputWriterMock(t minimock.Tester) *OutputWriterMock {
 
 	m.WriteMock = mOutputWriterMockWrite{mock: m}
 	m.WriteMock.callArgs = []*OutputWriterMockWriteParams{}
+
+	m.WriteDataMock = mOutputWriterMockWriteData{mock: m}
+	m.WriteDataMock.callArgs = []*OutputWriterMockWriteDataParams{}
 
 	t.Cleanup(m.MinimockFinish)
 
@@ -383,11 +393,355 @@ func (m *OutputWriterMock) MinimockWriteInspect() {
 	}
 }
 
+type mOutputWriterMockWriteData struct {
+	optional           bool
+	mock               *OutputWriterMock
+	defaultExpectation *OutputWriterMockWriteDataExpectation
+	expectations       []*OutputWriterMockWriteDataExpectation
+
+	callArgs []*OutputWriterMockWriteDataParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// OutputWriterMockWriteDataExpectation specifies expectation struct of the OutputWriter.WriteData
+type OutputWriterMockWriteDataExpectation struct {
+	mock               *OutputWriterMock
+	params             *OutputWriterMockWriteDataParams
+	paramPtrs          *OutputWriterMockWriteDataParamPtrs
+	expectationOrigins OutputWriterMockWriteDataExpectationOrigins
+	results            *OutputWriterMockWriteDataResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// OutputWriterMockWriteDataParams contains parameters of the OutputWriter.WriteData
+type OutputWriterMockWriteDataParams struct {
+	ctx    context.Context
+	output any
+}
+
+// OutputWriterMockWriteDataParamPtrs contains pointers to parameters of the OutputWriter.WriteData
+type OutputWriterMockWriteDataParamPtrs struct {
+	ctx    *context.Context
+	output *any
+}
+
+// OutputWriterMockWriteDataResults contains results of the OutputWriter.WriteData
+type OutputWriterMockWriteDataResults struct {
+	err error
+}
+
+// OutputWriterMockWriteDataOrigins contains origins of expectations of the OutputWriter.WriteData
+type OutputWriterMockWriteDataExpectationOrigins struct {
+	origin       string
+	originCtx    string
+	originOutput string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmWriteData *mOutputWriterMockWriteData) Optional() *mOutputWriterMockWriteData {
+	mmWriteData.optional = true
+	return mmWriteData
+}
+
+// Expect sets up expected params for OutputWriter.WriteData
+func (mmWriteData *mOutputWriterMockWriteData) Expect(ctx context.Context, output any) *mOutputWriterMockWriteData {
+	if mmWriteData.mock.funcWriteData != nil {
+		mmWriteData.mock.t.Fatalf("OutputWriterMock.WriteData mock is already set by Set")
+	}
+
+	if mmWriteData.defaultExpectation == nil {
+		mmWriteData.defaultExpectation = &OutputWriterMockWriteDataExpectation{}
+	}
+
+	if mmWriteData.defaultExpectation.paramPtrs != nil {
+		mmWriteData.mock.t.Fatalf("OutputWriterMock.WriteData mock is already set by ExpectParams functions")
+	}
+
+	mmWriteData.defaultExpectation.params = &OutputWriterMockWriteDataParams{ctx, output}
+	mmWriteData.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmWriteData.expectations {
+		if minimock.Equal(e.params, mmWriteData.defaultExpectation.params) {
+			mmWriteData.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmWriteData.defaultExpectation.params)
+		}
+	}
+
+	return mmWriteData
+}
+
+// ExpectCtxParam1 sets up expected param ctx for OutputWriter.WriteData
+func (mmWriteData *mOutputWriterMockWriteData) ExpectCtxParam1(ctx context.Context) *mOutputWriterMockWriteData {
+	if mmWriteData.mock.funcWriteData != nil {
+		mmWriteData.mock.t.Fatalf("OutputWriterMock.WriteData mock is already set by Set")
+	}
+
+	if mmWriteData.defaultExpectation == nil {
+		mmWriteData.defaultExpectation = &OutputWriterMockWriteDataExpectation{}
+	}
+
+	if mmWriteData.defaultExpectation.params != nil {
+		mmWriteData.mock.t.Fatalf("OutputWriterMock.WriteData mock is already set by Expect")
+	}
+
+	if mmWriteData.defaultExpectation.paramPtrs == nil {
+		mmWriteData.defaultExpectation.paramPtrs = &OutputWriterMockWriteDataParamPtrs{}
+	}
+	mmWriteData.defaultExpectation.paramPtrs.ctx = &ctx
+	mmWriteData.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmWriteData
+}
+
+// ExpectOutputParam2 sets up expected param output for OutputWriter.WriteData
+func (mmWriteData *mOutputWriterMockWriteData) ExpectOutputParam2(output any) *mOutputWriterMockWriteData {
+	if mmWriteData.mock.funcWriteData != nil {
+		mmWriteData.mock.t.Fatalf("OutputWriterMock.WriteData mock is already set by Set")
+	}
+
+	if mmWriteData.defaultExpectation == nil {
+		mmWriteData.defaultExpectation = &OutputWriterMockWriteDataExpectation{}
+	}
+
+	if mmWriteData.defaultExpectation.params != nil {
+		mmWriteData.mock.t.Fatalf("OutputWriterMock.WriteData mock is already set by Expect")
+	}
+
+	if mmWriteData.defaultExpectation.paramPtrs == nil {
+		mmWriteData.defaultExpectation.paramPtrs = &OutputWriterMockWriteDataParamPtrs{}
+	}
+	mmWriteData.defaultExpectation.paramPtrs.output = &output
+	mmWriteData.defaultExpectation.expectationOrigins.originOutput = minimock.CallerInfo(1)
+
+	return mmWriteData
+}
+
+// Inspect accepts an inspector function that has same arguments as the OutputWriter.WriteData
+func (mmWriteData *mOutputWriterMockWriteData) Inspect(f func(ctx context.Context, output any)) *mOutputWriterMockWriteData {
+	if mmWriteData.mock.inspectFuncWriteData != nil {
+		mmWriteData.mock.t.Fatalf("Inspect function is already set for OutputWriterMock.WriteData")
+	}
+
+	mmWriteData.mock.inspectFuncWriteData = f
+
+	return mmWriteData
+}
+
+// Return sets up results that will be returned by OutputWriter.WriteData
+func (mmWriteData *mOutputWriterMockWriteData) Return(err error) *OutputWriterMock {
+	if mmWriteData.mock.funcWriteData != nil {
+		mmWriteData.mock.t.Fatalf("OutputWriterMock.WriteData mock is already set by Set")
+	}
+
+	if mmWriteData.defaultExpectation == nil {
+		mmWriteData.defaultExpectation = &OutputWriterMockWriteDataExpectation{mock: mmWriteData.mock}
+	}
+	mmWriteData.defaultExpectation.results = &OutputWriterMockWriteDataResults{err}
+	mmWriteData.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmWriteData.mock
+}
+
+// Set uses given function f to mock the OutputWriter.WriteData method
+func (mmWriteData *mOutputWriterMockWriteData) Set(f func(ctx context.Context, output any) (err error)) *OutputWriterMock {
+	if mmWriteData.defaultExpectation != nil {
+		mmWriteData.mock.t.Fatalf("Default expectation is already set for the OutputWriter.WriteData method")
+	}
+
+	if len(mmWriteData.expectations) > 0 {
+		mmWriteData.mock.t.Fatalf("Some expectations are already set for the OutputWriter.WriteData method")
+	}
+
+	mmWriteData.mock.funcWriteData = f
+	mmWriteData.mock.funcWriteDataOrigin = minimock.CallerInfo(1)
+	return mmWriteData.mock
+}
+
+// When sets expectation for the OutputWriter.WriteData which will trigger the result defined by the following
+// Then helper
+func (mmWriteData *mOutputWriterMockWriteData) When(ctx context.Context, output any) *OutputWriterMockWriteDataExpectation {
+	if mmWriteData.mock.funcWriteData != nil {
+		mmWriteData.mock.t.Fatalf("OutputWriterMock.WriteData mock is already set by Set")
+	}
+
+	expectation := &OutputWriterMockWriteDataExpectation{
+		mock:               mmWriteData.mock,
+		params:             &OutputWriterMockWriteDataParams{ctx, output},
+		expectationOrigins: OutputWriterMockWriteDataExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmWriteData.expectations = append(mmWriteData.expectations, expectation)
+	return expectation
+}
+
+// Then sets up OutputWriter.WriteData return parameters for the expectation previously defined by the When method
+func (e *OutputWriterMockWriteDataExpectation) Then(err error) *OutputWriterMock {
+	e.results = &OutputWriterMockWriteDataResults{err}
+	return e.mock
+}
+
+// Times sets number of times OutputWriter.WriteData should be invoked
+func (mmWriteData *mOutputWriterMockWriteData) Times(n uint64) *mOutputWriterMockWriteData {
+	if n == 0 {
+		mmWriteData.mock.t.Fatalf("Times of OutputWriterMock.WriteData mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmWriteData.expectedInvocations, n)
+	mmWriteData.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmWriteData
+}
+
+func (mmWriteData *mOutputWriterMockWriteData) invocationsDone() bool {
+	if len(mmWriteData.expectations) == 0 && mmWriteData.defaultExpectation == nil && mmWriteData.mock.funcWriteData == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmWriteData.mock.afterWriteDataCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmWriteData.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// WriteData implements mm_base.OutputWriter
+func (mmWriteData *OutputWriterMock) WriteData(ctx context.Context, output any) (err error) {
+	mm_atomic.AddUint64(&mmWriteData.beforeWriteDataCounter, 1)
+	defer mm_atomic.AddUint64(&mmWriteData.afterWriteDataCounter, 1)
+
+	mmWriteData.t.Helper()
+
+	if mmWriteData.inspectFuncWriteData != nil {
+		mmWriteData.inspectFuncWriteData(ctx, output)
+	}
+
+	mm_params := OutputWriterMockWriteDataParams{ctx, output}
+
+	// Record call args
+	mmWriteData.WriteDataMock.mutex.Lock()
+	mmWriteData.WriteDataMock.callArgs = append(mmWriteData.WriteDataMock.callArgs, &mm_params)
+	mmWriteData.WriteDataMock.mutex.Unlock()
+
+	for _, e := range mmWriteData.WriteDataMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmWriteData.WriteDataMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmWriteData.WriteDataMock.defaultExpectation.Counter, 1)
+		mm_want := mmWriteData.WriteDataMock.defaultExpectation.params
+		mm_want_ptrs := mmWriteData.WriteDataMock.defaultExpectation.paramPtrs
+
+		mm_got := OutputWriterMockWriteDataParams{ctx, output}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmWriteData.t.Errorf("OutputWriterMock.WriteData got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmWriteData.WriteDataMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.output != nil && !minimock.Equal(*mm_want_ptrs.output, mm_got.output) {
+				mmWriteData.t.Errorf("OutputWriterMock.WriteData got unexpected parameter output, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmWriteData.WriteDataMock.defaultExpectation.expectationOrigins.originOutput, *mm_want_ptrs.output, mm_got.output, minimock.Diff(*mm_want_ptrs.output, mm_got.output))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmWriteData.t.Errorf("OutputWriterMock.WriteData got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmWriteData.WriteDataMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmWriteData.WriteDataMock.defaultExpectation.results
+		if mm_results == nil {
+			mmWriteData.t.Fatal("No results are set for the OutputWriterMock.WriteData")
+		}
+		return (*mm_results).err
+	}
+	if mmWriteData.funcWriteData != nil {
+		return mmWriteData.funcWriteData(ctx, output)
+	}
+	mmWriteData.t.Fatalf("Unexpected call to OutputWriterMock.WriteData. %v %v", ctx, output)
+	return
+}
+
+// WriteDataAfterCounter returns a count of finished OutputWriterMock.WriteData invocations
+func (mmWriteData *OutputWriterMock) WriteDataAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmWriteData.afterWriteDataCounter)
+}
+
+// WriteDataBeforeCounter returns a count of OutputWriterMock.WriteData invocations
+func (mmWriteData *OutputWriterMock) WriteDataBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmWriteData.beforeWriteDataCounter)
+}
+
+// Calls returns a list of arguments used in each call to OutputWriterMock.WriteData.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmWriteData *mOutputWriterMockWriteData) Calls() []*OutputWriterMockWriteDataParams {
+	mmWriteData.mutex.RLock()
+
+	argCopy := make([]*OutputWriterMockWriteDataParams, len(mmWriteData.callArgs))
+	copy(argCopy, mmWriteData.callArgs)
+
+	mmWriteData.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockWriteDataDone returns true if the count of the WriteData invocations corresponds
+// the number of defined expectations
+func (m *OutputWriterMock) MinimockWriteDataDone() bool {
+	if m.WriteDataMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.WriteDataMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.WriteDataMock.invocationsDone()
+}
+
+// MinimockWriteDataInspect logs each unmet expectation
+func (m *OutputWriterMock) MinimockWriteDataInspect() {
+	for _, e := range m.WriteDataMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to OutputWriterMock.WriteData at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterWriteDataCounter := mm_atomic.LoadUint64(&m.afterWriteDataCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.WriteDataMock.defaultExpectation != nil && afterWriteDataCounter < 1 {
+		if m.WriteDataMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to OutputWriterMock.WriteData at\n%s", m.WriteDataMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to OutputWriterMock.WriteData at\n%s with params: %#v", m.WriteDataMock.defaultExpectation.expectationOrigins.origin, *m.WriteDataMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcWriteData != nil && afterWriteDataCounter < 1 {
+		m.t.Errorf("Expected call to OutputWriterMock.WriteData at\n%s", m.funcWriteDataOrigin)
+	}
+
+	if !m.WriteDataMock.invocationsDone() && afterWriteDataCounter > 0 {
+		m.t.Errorf("Expected %d calls to OutputWriterMock.WriteData at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.WriteDataMock.expectedInvocations), m.WriteDataMock.expectedInvocationsOrigin, afterWriteDataCounter)
+	}
+}
+
 // MinimockFinish checks that all mocked methods have been called the expected number of times
 func (m *OutputWriterMock) MinimockFinish() {
 	m.finishOnce.Do(func() {
 		if !m.minimockDone() {
 			m.MinimockWriteInspect()
+
+			m.MinimockWriteDataInspect()
 		}
 	})
 }
@@ -411,5 +765,6 @@ func (m *OutputWriterMock) MinimockWait(timeout mm_time.Duration) {
 func (m *OutputWriterMock) minimockDone() bool {
 	done := true
 	return done &&
-		m.MinimockWriteDone()
+		m.MinimockWriteDone() &&
+		m.MinimockWriteDataDone()
 }

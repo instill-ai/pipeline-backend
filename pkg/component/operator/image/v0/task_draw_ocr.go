@@ -2,35 +2,16 @@ package image
 
 import (
 	"context"
-	"fmt"
 	"image"
 	"image/color"
 
 	"github.com/fogleman/gg"
 	"golang.org/x/image/font/opentype"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
-type ocrObject struct {
-	BoundingBox *boundingBox `json:"bounding-box"`
-	Text        string       `json:"text"`
-	Score       float64      `json:"score"`
-}
-
-type drawOCRInput struct {
-	Image     base64Image  `json:"image"`
-	Objects   []*ocrObject `json:"objects"`
-	ShowScore bool         `json:"show-score"`
-}
-
-type drawOCROutput struct {
-	Image base64Image `json:"image"`
-}
-
-func draOCRLabel(img *image.RGBA, bbox *boundingBox, text string) error {
-
+func drawOCRLabel(img *image.RGBA, bbox *boundingBox, text string) error {
 	dc := gg.NewContextForRGBA(img)
 
 	// Parse the font
@@ -69,37 +50,37 @@ func draOCRLabel(img *image.RGBA, bbox *boundingBox, text string) error {
 	return nil
 }
 
-func drawOCR(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
-
-	inputStruct := drawOCRInput{}
-
-	err := base.ConvertFromStructpb(input, &inputStruct)
-	if err != nil {
-		return nil, fmt.Errorf("error converting input to struct: %v", err)
+func drawOCR(ctx context.Context, job *base.Job) error {
+	var inputStruct drawOCRInput
+	if err := job.Input.ReadData(ctx, &inputStruct); err != nil {
+		return err
 	}
 
-	img, err := decodeBase64Image(string(inputStruct.Image))
+	img, err := decodeImage(inputStruct.Image)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding image: %v", err)
+		return err
 	}
 
 	imgRGBA := convertToRGBA(img)
 
 	for _, obj := range inputStruct.Objects {
-		bbox := obj.BoundingBox
-		if err := draOCRLabel(imgRGBA, bbox, obj.Text); err != nil {
-			return nil, err
+		if err := drawOCRLabel(imgRGBA, obj.BoundingBox, obj.Text); err != nil {
+			return err
 		}
 	}
 
-	base64Img, err := encodeBase64Image(imgRGBA)
+	imgData, err := encodeImage(imgRGBA)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	output := drawOCROutput{
-		Image: base64Image(fmt.Sprintf("data:image/png;base64,%s", base64Img)),
+	outputData := drawOCROutput{
+		Image: imgData,
 	}
 
-	return base.ConvertToStructpb(output)
+	if err := job.Output.WriteData(ctx, outputData); err != nil {
+		return err
+	}
+
+	return nil
 }

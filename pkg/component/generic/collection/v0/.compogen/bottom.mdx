@@ -69,3 +69,32 @@ output:
     title: Object
     value: ${text-object.output.data}
 ```
+
+### Use `TASK_SPLIT` to split an array of strings into groups of a specified size
+```yaml
+# This pipeline splits an array of elements into groups of a specified size.
+# Examples:
+# ["foo", "bar", "bat", "zot"], 2 -> [["foo", "bar"], ["bat", "zot"]]
+# ["foo", "bar", "bat", "zot"], 3 -> [["foo", "bar", "bat"], ["zot"]]
+variable:
+  texts:
+    instill-format: array:string
+    title: Text
+  group-size:
+    instill-format: number
+    title: Group Size
+
+component:
+  split:
+    type: collection
+    input:
+      array: ${variable.texts}
+      group-size: ${variable.group-size}
+    condition:
+    task: TASK_SPLIT
+
+output:
+  split:
+    title: Split
+    value: ${split.output}
+```

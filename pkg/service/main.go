@@ -15,13 +15,13 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
-	"github.com/instill-ai/pipeline-backend/pkg/minio"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	miniox "github.com/instill-ai/x/minio"
 )
 
 // Service interface
@@ -78,11 +78,11 @@ type Service interface {
 
 	ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRunsRequest, filter filtering.Filter) (*pb.ListPipelineRunsResponse, error)
 	ListComponentRuns(ctx context.Context, req *pb.ListComponentRunsRequest, filter filtering.Filter) (*pb.ListComponentRunsResponse, error)
-	ListPipelineRunsByRequester(ctx context.Context, req *pb.ListPipelineRunsByCreditOwnerRequest) (*pb.ListPipelineRunsByCreditOwnerResponse, error)
+	ListPipelineRunsByRequester(ctx context.Context, req *pb.ListPipelineRunsByRequesterRequest) (*pb.ListPipelineRunsByRequesterResponse, error)
 
 	GetIntegration(_ context.Context, id string, _ pb.View) (*pb.Integration, error)
 	ListIntegrations(context.Context, *pb.ListIntegrationsRequest) (*pb.ListIntegrationsResponse, error)
-	CreateNamespaceConnection(context.Context, *pb.Connection) (*pb.Connection, error)
+	CreateNamespaceConnection(context.Context, *pb.CreateNamespaceConnectionRequest) (*pb.Connection, error)
 	UpdateNamespaceConnection(context.Context, *pb.UpdateNamespaceConnectionRequest) (*pb.Connection, error)
 	DeleteNamespaceConnection(_ context.Context, namespaceID, id string) error
 	GetNamespaceConnection(context.Context, *pb.GetNamespaceConnectionRequest) (*pb.Connection, error)
@@ -104,10 +104,11 @@ type service struct {
 	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
 	aclClient                acl.ACLClientInterface
 	converter                Converter
-	minioClient              minio.MinioI
+	minioClient              miniox.MinioI
 	memory                   memory.MemoryStore
 	log                      *zap.Logger
 	workerUID                uuid.UUID
+	retentionHandler         MetadataRetentionHandler
 }
 
 // NewService initiates a service instance
@@ -118,12 +119,16 @@ func NewService(
 	acl acl.ACLClientInterface,
 	c Converter,
 	m mgmtpb.MgmtPrivateServiceClient,
-	minioClient minio.MinioI,
+	minioClient miniox.MinioI,
 	cs *componentstore.Store,
 	memory memory.MemoryStore,
 	workerUID uuid.UUID,
+	retentionHandler MetadataRetentionHandler,
 ) Service {
 	zapLogger, _ := logger.GetZapLogger(context.Background())
+	if retentionHandler == nil {
+		retentionHandler = NewRetentionHandler()
+	}
 
 	return &service{
 		repository:               r,
@@ -137,5 +142,6 @@ func NewService(
 		memory:                   memory,
 		log:                      zapLogger,
 		workerUID:                workerUID,
+		retentionHandler:         retentionHandler,
 	}
 }

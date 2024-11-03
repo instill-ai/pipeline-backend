@@ -8,6 +8,8 @@ import (
 
 // UsageHandler allows the component execution wrapper to add checks and
 // collect usage metrics around a component execution.
+// TODO: Replace structpb.Struct with Job or format.Value types to align with
+// our deprecation of structpb
 type UsageHandler interface {
 	Check(ctx context.Context, inputs []*structpb.Struct) error
 	Collect(ctx context.Context, inputs, outputs []*structpb.Struct) error

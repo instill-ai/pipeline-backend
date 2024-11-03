@@ -9,6 +9,7 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 func TestExecuteTextChat(t *testing.T) {
@@ -62,7 +63,7 @@ func TestExecuteTextChat(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			ctx := context.Background()
-			job := &base.Job{}
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 
 			input, err := structpb.NewStruct(map[string]interface{}{
 				"data": map[string]interface{}{
@@ -98,9 +99,15 @@ func TestExecuteTextChat(t *testing.T) {
 
 			c.Assert(err, qt.IsNil)
 
+			ir.ReadMock.Return(input, nil)
+			ow.WriteMock.Optional().Return(nil)
+			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
+				c.Assert(err.Error(), qt.Contains, tc.wantErrMsg)
+			})
+
 			execution := e.(*execution)
 
-			_, err = execution.executeTextChat(input, job, ctx)
+			err = execution.executeTextChat(ctx, job)
 
 			c.Assert(err.Error(), qt.Contains, tc.wantErrMsg)
 

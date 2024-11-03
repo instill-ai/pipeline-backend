@@ -10,38 +10,38 @@ import (
 )
 
 type ChunkTextInput struct {
-	Text     string   `json:"text"`
-	Strategy Strategy `json:"strategy"`
+	Text     string   `instill:"text"`
+	Strategy Strategy `instill:"strategy"`
 }
 
 type Strategy struct {
-	Setting Setting `json:"setting"`
+	Setting Setting `instill:"setting"`
 }
 
 type Setting struct {
-	ChunkMethod       string   `json:"chunk-method,omitempty"`
-	ChunkSize         int      `json:"chunk-size,omitempty"`
-	ChunkOverlap      int      `json:"chunk-overlap,omitempty"`
-	ModelName         string   `json:"model-name,omitempty"`
-	AllowedSpecial    []string `json:"allowed-special,omitempty"`
-	DisallowedSpecial []string `json:"disallowed-special,omitempty"`
-	Separators        []string `json:"separators,omitempty"`
-	KeepSeparator     bool     `json:"keep-separator,omitempty"`
-	CodeBlocks        bool     `json:"code-blocks,omitempty"`
+	ChunkMethod       string   `instill:"chunk-method"`
+	ChunkSize         int      `instill:"chunk-size"`
+	ChunkOverlap      int      `instill:"chunk-overlap"`
+	ModelName         string   `instill:"model-name"`
+	AllowedSpecial    []string `instill:"allowed-special"`
+	DisallowedSpecial []string `instill:"disallowed-special"`
+	Separators        []string `instill:"separators"`
+	KeepSeparator     bool     `instill:"keep-separator"`
+	CodeBlocks        bool     `instill:"code-blocks"`
 }
 
 type ChunkTextOutput struct {
-	ChunkNum         int         `json:"chunk-num"`
-	TextChunks       []TextChunk `json:"text-chunks"`
-	TokenCount       int         `json:"token-count"`
-	ChunksTokenCount int         `json:"chunks-token-count"`
+	ChunkNum         int         `instill:"chunk-num"`
+	TextChunks       []TextChunk `instill:"text-chunks"`
+	TokenCount       int         `instill:"token-count"`
+	ChunksTokenCount int         `instill:"chunks-token-count"`
 }
 
 type TextChunk struct {
-	Text          string `json:"text"`
-	StartPosition int    `json:"start-position"`
-	EndPosition   int    `json:"end-position"`
-	TokenCount    int    `json:"token-count"`
+	Text          string `instill:"text"`
+	StartPosition int    `instill:"start-position"`
+	EndPosition   int    `instill:"end-position"`
+	TokenCount    int    `instill:"token-count"`
 }
 
 func (s *Setting) SetDefault() {

@@ -1,5 +1,58 @@
 # Changelog
 
+## [0.45.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.45.1-beta...v0.45.2-beta) (2024-10-29)
+
+
+### Features
+
+* **collection:** add task split ([#780](https://github.com/instill-ai/pipeline-backend/issues/780)) ([1719e48](https://github.com/instill-ai/pipeline-backend/commit/1719e48fbea205ed8a8ac84c6d6c262fd89ab86e))
+
+
+### Miscellaneous Chores
+
+* release v0.45.2-beta ([777a362](https://github.com/instill-ai/pipeline-backend/commit/777a36212312797e32beedae1d9b967c3b8f04e4))
+
+## [0.45.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.45.0-beta...v0.45.1-beta) (2024-10-25)
+
+
+### Features
+
+* **component, video:** implemented fractional fps value - fps as number, and added some debugging flags for ffmpeg ([#765](https://github.com/instill-ai/pipeline-backend/issues/765)) ([8a93442](https://github.com/instill-ai/pipeline-backend/commit/8a934420a01c986181b1660d1c13178ff7e79105))
+* **component:** add support for streaming in the Anthropic and Mistral components ([#781](https://github.com/instill-ai/pipeline-backend/issues/781)) ([66f15fe](https://github.com/instill-ai/pipeline-backend/commit/66f15fe935183bb79610cd397d259b95bd253a17))
+
+
+### Miscellaneous Chores
+
+* release v0.45.1-beta ([60a58bd](https://github.com/instill-ai/pipeline-backend/commit/60a58bde6c163e50dfa53c522187441ec098d043))
+
+## [0.45.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.44.0-beta...v0.45.0-beta) (2024-10-23)
+
+
+### Features
+
+* **run:** add requester id in list pipeline run response ([#770](https://github.com/instill-ai/pipeline-backend/issues/770)) ([a89a03d](https://github.com/instill-ai/pipeline-backend/commit/a89a03d2a9f4961831da88a25d7a2f6dd3bb3f73))
+
+## [0.44.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.43.2-beta...v0.44.0-beta) (2024-10-22)
+
+
+### Features
+
+* **collection:** add concat ([#748](https://github.com/instill-ai/pipeline-backend/issues/748)) ([04d1467](https://github.com/instill-ai/pipeline-backend/commit/04d1467cef580ee423651ebed86a7a5ef6e64b64))
+* **compogen:** improve Title Case capitalization ([#757](https://github.com/instill-ai/pipeline-backend/issues/757)) ([f956ead](https://github.com/instill-ai/pipeline-backend/commit/f956ead548168e8cd2e1a20a99cf6bb0d03a057f))
+* **component:** update documentation URL to component ID ([#749](https://github.com/instill-ai/pipeline-backend/issues/749)) ([d4083c2](https://github.com/instill-ai/pipeline-backend/commit/d4083c262801f302ad705c830db2907c1273560a))
+* **instillmodel:** implement instill model embedding ([#727](https://github.com/instill-ai/pipeline-backend/issues/727)) ([17d88bc](https://github.com/instill-ai/pipeline-backend/commit/17d88bc46dbcf118dcf3e181c6886de6f309b29e))
+* **run:** run logging data list by requester API ([#730](https://github.com/instill-ai/pipeline-backend/issues/730)) ([e1e844b](https://github.com/instill-ai/pipeline-backend/commit/e1e844b4f6db226a29ba2937f0f05005a5899d49))
+* **slack:** enable OAuth 2.0 integration ([#758](https://github.com/instill-ai/pipeline-backend/issues/758)) ([8043dc5](https://github.com/instill-ai/pipeline-backend/commit/8043dc5b1d564cecd4f5227ad57b926189ab243f))
+* standardize the tag naming convention ([#767](https://github.com/instill-ai/pipeline-backend/issues/767)) ([fd0500f](https://github.com/instill-ai/pipeline-backend/commit/fd0500f56f91c006f82a3201f435c032215a4513))
+* **web:** refactor web operator ([#753](https://github.com/instill-ai/pipeline-backend/issues/753)) ([700805f](https://github.com/instill-ai/pipeline-backend/commit/700805f492652482c07472a9965ae06e1384c86c))
+
+
+### Bug Fixes
+
+* **groq:** use credential-supported model in example ([#752](https://github.com/instill-ai/pipeline-backend/issues/752)) ([fc90435](https://github.com/instill-ai/pipeline-backend/commit/fc904350c978dd5c57fbe24aaf32be8945f3b9f5))
+* **run:** not return minio error in list pipeline run ([#744](https://github.com/instill-ai/pipeline-backend/issues/744)) ([4d0afa1](https://github.com/instill-ai/pipeline-backend/commit/4d0afa16baa0ddcfe29371d8d3106eb7d066574f))
+* **whatsapp:** fix dir name ([#763](https://github.com/instill-ai/pipeline-backend/issues/763)) ([029aef9](https://github.com/instill-ai/pipeline-backend/commit/029aef91459feca4c1111372ba386d9272a1870c))
+
 ## [0.43.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.43.1-beta...v0.43.2-beta) (2024-10-16)
 
 

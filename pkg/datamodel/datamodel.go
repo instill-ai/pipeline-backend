@@ -278,6 +278,7 @@ type Variable struct {
 	InstillUIOrder     int32    `json:"instillUiOrder,omitempty" yaml:"instill-ui-order,omitempty"`
 	InstillUIMultiline bool     `json:"instillUiMultiline,omitempty" yaml:"instill-ui-multiline,omitempty"`
 	Listen             []string `json:"listen,omitempty" yaml:"listen,omitempty"`
+	Default            any      `json:"default,omitempty" yaml:"default,omitempty"`
 }
 
 type Output struct {

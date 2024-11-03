@@ -50,8 +50,6 @@ func (s *service) checkNamespacePermission(ctx context.Context, ns resource.Name
 		}
 	} else {
 		if ns.NsUID != uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)) {
-			// TODO: remove this debug print
-			fmt.Println("nsuid", ns.NsUID, constant.HeaderUserUIDKey)
 			return errdomain.ErrUnauthorized
 		}
 	}
@@ -157,7 +155,7 @@ func (s *service) convertComponentRunToPB(run datamodel.ComponentRun) (*pipeline
 	return result, nil
 }
 
-// CanViewPrivateData - only with credit owner ns could users see their input/output data
+// CanViewPrivateData - only with requester ns could users see their input/output data
 func CanViewPrivateData(namespace, requesterUID string) bool {
 	return namespace == requesterUID
 }

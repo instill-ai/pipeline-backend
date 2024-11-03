@@ -44,11 +44,25 @@ $ make latest PROFILE=exclude-pipeline # launch all the dependent services excep
 ```sh
 $ cd $MY_WORKSPACE
 $ git clone https://github.com/instill-ai/pipeline-backend && cd pipeline-backend
-$ make build && make dev
+$ make build-dev && make dev
 ```
 
 Now, you have the Go project set up in the container, in which you can compile
 and run the binaries together with the integration test in each container shell.
+
+##### Injecting component secrets
+
+Some components can be configured with global secrets. This has several
+applications:
+
+- By accepting a global API key, some components have a default setup. When
+  the `setup` block is omitted in the recipe, this API key will be used.
+- In order to connect to 3rd party vendors via OAuth, the application
+  client ID and secret must be injected.
+
+You can set the values of these global secrets in
+[`.env.component`](./.env.component) before running the Docker container in
+order to add a global configuration to your components.
 
 #### Run the server and the Temporal worker
 
@@ -90,12 +104,6 @@ API tests. If this variable is empty, the private API tests will be run.
 At the end of the tests, some SQL queries are run to clean up the data.
 `DB_HOST` points to the database host so the SQL connection can be established.
 If empty, tests will try to connect to `localhost:5432`.
-
-#### Stop the dev container
-
-```bash
-$ make stop
-```
 
 #### Remove the dev container
 

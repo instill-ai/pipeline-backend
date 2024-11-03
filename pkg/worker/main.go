@@ -11,11 +11,11 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
-	"github.com/instill-ai/pipeline-backend/pkg/minio"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
+	miniox "github.com/instill-ai/x/minio"
 )
 
 // TaskQueue is the Temporal task queue name for pipeline-backend
@@ -51,7 +51,7 @@ type worker struct {
 	redisClient         *redis.Client
 	influxDBWriteClient api.WriteAPI
 	component           *componentstore.Store
-	minioClient         minio.MinioI
+	minioClient         miniox.MinioI
 	log                 *zap.Logger
 	memoryStore         memory.MemoryStore
 	workerUID           uuid.UUID
@@ -63,7 +63,7 @@ func NewWorker(
 	rc *redis.Client,
 	i api.WriteAPI,
 	cs *componentstore.Store,
-	minioClient minio.MinioI,
+	minioClient miniox.MinioI,
 	m memory.MemoryStore,
 	workerUID uuid.UUID,
 ) Worker {

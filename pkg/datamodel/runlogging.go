@@ -63,7 +63,6 @@ func (j *JSONB) Scan(value interface{}) error {
 }
 
 // PipelineRun represents the metadata and execution details for each pipeline run.
-// todo: use type UUID for TriggeredBy and Namespace, rename Namespace --> NamespaceUID
 type PipelineRun struct {
 	PipelineTriggerUID uuid.UUID      `gorm:"primaryKey" json:"pipeline-trigger-uid"`                                        // Unique identifier for each run
 	PipelineUID        uuid.UUID      `gorm:"type:uuid;index" json:"pipeline-uid"`                                           // Pipeline unique ID used in the run
@@ -72,8 +71,8 @@ type PipelineRun struct {
 	Status             RunStatus      `gorm:"type:valid_trigger_status;index" json:"status"`                                 // Current status of the run (e.g., Running, Completed, Failed)
 	Source             RunSource      `gorm:"type:valid_trigger_source" json:"source"`                                       // Origin of the run (e.g., Web click, API)
 	TotalDuration      null.Int       `gorm:"type:bigint" json:"total-duration"`                                             // Time taken to complete the run in nanoseconds
-	TriggeredBy        string         `gorm:"type:varchar(255)" json:"triggered-by"`                                         // Identity of the user who initiated the run
-	Namespace          string         `gorm:"type:varchar(255)" json:"namespace"`                                            // Namespace used for the run, which is the credit owner
+	RunnerUID          uuid.UUID      `gorm:"type:uuid" json:"runner-uid"`                                                   // Identity of the user who initiated the run
+	RequesterUID       uuid.UUID      `gorm:"type:uuid" json:"requester-uid"`                                                // Namespace used for the run, which is the requester
 	Inputs             JSONB          `gorm:"type:jsonb" json:"inputs"`                                                      // Input files for the run
 	Outputs            JSONB          `gorm:"type:jsonb" json:"outputs"`                                                     // Output files from the run
 	RecipeSnapshot     JSONB          `gorm:"type:jsonb" json:"recipe-snapshot"`                                             // Snapshot of the pipeline recipe used for this run

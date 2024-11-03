@@ -459,6 +459,7 @@ import (
   qt "github.com/frankban/quicktest"
 
   "github.com/instill-ai/pipeline-backend/pkg/component/base"
+  "github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
   "github.com/instill-ai/x/errmsg"
 )
 
@@ -479,12 +480,14 @@ func TestOperator_Execute(t *testing.T) {
     pbIn, err := structpb.NewStruct(map[string]any{"target": "bolero-wombat"})
     c.Assert(err, qt.IsNil)
 
-    ir, ow, eh, job := base.GenerateMockJob(c)
+    ir, ow, eh, job := mock.GenerateMockJob(c)
     ir.ReadMock.Return(&pbIn, nil)
     ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
       // Check JSON in the output string.
       greeting := output.Fields["greeting"].GetStringValue()
-      c.Check(greeting, qt.Equals, "Hello, bolero-wombat!")
+      // When we use minimock, we can't use the `c.Assert` function.
+      // Instead, we use the `mock.Equal` function built in the mock package.
+      mock.Equal(greeting, "Hello, bolero-wombat!")
       return nil
     })
     eh.ErrorMock.Optional()
@@ -503,12 +506,12 @@ func TestOperator_Execute(t *testing.T) {
     pbIn, err := structpb.NewStruct(map[string]any{"target": "Voldemort"})
     c.Assert(err, qt.IsNil)
 
-    ir, ow, eh, job := base.GenerateMockJob(c)
+    ir, ow, eh, job := mock.GenerateMockJob(c)
     ir.ReadMock.Return(pbIn, nil)
     ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
       // Check JSON in the output string.
       greeting := output.Fields["greeting"].GetStringValue()
-      c.Check(greeting, qt.Equals, "Hello, bolero-wombat!")
+      mock.Equal(greeting, "Hello, Voldemort!")
       return nil
     })
     eh.ErrorMock.Optional()
@@ -536,6 +539,15 @@ func TestOperator_CreateExecution(t *testing.T) {
   })
 }
 ```
+
+
+In our testing methodology, we use two main approaches for mocking external services:
+
+1. In some components, we mock only the interface and skip testing the actual client, as with services like Slack and HubSpot.
+2. In other components, we create a fake server for test purposes, as with OpenAI integrations.
+
+Moving forward, we plan to standardize on the second approach, integrating all components to use a fake server setup for testing.
+
 
 ### Initialize the component
 

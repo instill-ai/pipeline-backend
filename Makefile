@@ -27,6 +27,7 @@ dev:							## Run dev container
 		-v $(PWD):/${SERVICE_NAME} \
 		-p ${PUBLIC_SERVICE_PORT}:${PUBLIC_SERVICE_PORT} \
 		-p ${PRIVATE_SERVICE_PORT}:${PRIVATE_SERVICE_PORT} \
+		--env-file .env.component \
 		--network instill-network \
 		--name ${SERVICE_NAME} \
 		instill/${SERVICE_NAME}:dev >/dev/null 2>&1
@@ -48,7 +49,7 @@ latest:							## Run latest container
 rm:								## Remove all running containers
 	@docker rm -f ${SERVICE_NAME} ${SERVICE_NAME}-worker >/dev/null 2>&1
 
-.PHONY: build
+.PHONY: build-dev
 build-dev:							## Build dev docker image
 	@docker build \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
@@ -75,19 +76,45 @@ dbtest-pre:
 .PHONY: coverage
 coverage:
 	@if [ "${DBTEST}" = "true" ]; then  make dbtest-pre; fi
-	@${GOTEST_FLAGS} go test -v -race ${GOTEST_TAGS} -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...
+	@docker run --rm \
+		-v $(PWD):/${SERVICE_NAME} \
+		-e GOTEST_FLAGS="${GOTEST_FLAGS}" \
+		--user $(id -u):$(id -g) \
+		--entrypoint= \
+		instill/${SERVICE_NAME}:dev \
+			go test -v -race ${GOTEST_TAGS} -coverpkg=./... -coverprofile=coverage.out -covermode=atomic -timeout 30m ./...
 	@if [ "${HTML}" = "true" ]; then  \
-		go tool cover -func=coverage.out && \
-		go tool cover -html=coverage.out && \
-		rm coverage.out; \
+		docker run --rm \
+			-v $(PWD):/${SERVICE_NAME} \
+			--user $(id -u):$(id -g) \
+			--entrypoint= \
+			instill/${SERVICE_NAME}:dev \
+				go tool cover -func=coverage.out && \
+				go tool cover -html=coverage.out && \
+				rm coverage.out; \
 	fi
 
 .PHONY: test
 test:
+# Ideally, it should be ok to run without installing tparse locally.
+# However, there may be some issues that arise from running the tests
+# in the container. If you encounter any issues, please install tparse
+# locally via `go install github.com/mfridman/tparse/cmd/tparse@latest`
+# and run the tests locally.
 	@if [ "${OCR}" = "true" ]; then \
-		make test-ocr; \
+		docker run --rm \
+			-v $(PWD):/${SERVICE_NAME} \
+			--user $(id -u):$(id -g) \
+			--entrypoint= \
+			instill/${SERVICE_NAME}:dev \
+				make test-ocr; \
 	else \
-		go test -v ./... -json | tparse --notests --all; \
+		docker run --rm \
+			-v $(PWD):/${SERVICE_NAME} \
+			--user $(id -u):$(id -g) \
+			--entrypoint= \
+			instill/${SERVICE_NAME}:dev \
+				go test -v ./... -json | tparse --notests --all;  \
 	fi
 
 .PHONY: test-ocr

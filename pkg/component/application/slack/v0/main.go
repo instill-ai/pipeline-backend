@@ -46,6 +46,7 @@ type SlackClient interface {
 
 type component struct {
 	base.Component
+	base.OAuthConnector
 }
 
 type execution struct {
@@ -137,4 +138,9 @@ func (c *component) HandleVerificationEvent(header map[string][]string, req *str
 func (c *component) ParseEvent(ctx context.Context, req *structpb.Struct, setup map[string]any) (parsed *structpb.Struct, err error) {
 	// TODO: parse and validate event
 	return req, nil
+}
+
+// SupportsOAuth checks whether the component is configured to support OAuth.
+func (c *component) SupportsOAuth() bool {
+	return c.OAuthConnector.SupportsOAuth()
 }

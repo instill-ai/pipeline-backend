@@ -2,6 +2,7 @@ package web
 
 import (
 	"io"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -63,20 +64,20 @@ func fakeScrapeSitemapCaller(url string) (ioCloser io.ReadCloser, err error) {
 	return io.NopCloser(strings.NewReader(xml)), nil
 }
 
-func TestScrapeWebpage(t *testing.T) {
+func TestScrapeWebpages(t *testing.T) {
 	c := quicktest.New(t)
 
 	c.Run("ScrapeWebpage", func(c *quicktest.C) {
 		component := Init(base.Component{})
 		e := &execution{
-			ComponentExecution:    base.ComponentExecution{Component: component, SystemVariables: nil, Setup: nil, Task: taskScrapePage},
-			getDocAfterRequestURL: fakeHTTPRequest,
+			ComponentExecution:      base.ComponentExecution{Component: component, SystemVariables: nil, Setup: nil, Task: taskScrapePages},
+			getDocsAfterRequestURLs: fakeHTTPRequests,
 		}
 
-		e.execute = e.ScrapeWebpage
+		e.execute = e.ScrapeWebpages
 
-		input := &ScrapeWebpageInput{
-			URL: "https://www.example.com",
+		input := &ScrapeWebpagesInput{
+			URLs: []string{"https://www.example.com"},
 		}
 
 		inputStruct, err := base.ConvertToStructpb(input)
@@ -85,18 +86,18 @@ func TestScrapeWebpage(t *testing.T) {
 		output, err := e.execute(inputStruct)
 		c.Assert(err, quicktest.IsNil)
 
-		var outputStruct ScrapeWebpageOutput
+		var outputStruct ScrapeWebpagesOutput
 		err = base.ConvertFromStructpb(output, &outputStruct)
 		c.Assert(err, quicktest.IsNil)
 
-		c.Assert(outputStruct.Metadata.Title, quicktest.Equals, "Test")
-		c.Assert(outputStruct.Metadata.Description, quicktest.Equals, "")
-		c.Assert(outputStruct.Metadata.SourceURL, quicktest.Equals, "https://www.example.com")
+		c.Assert(outputStruct.Pages[0].Metadata.Title, quicktest.Equals, "Test")
+		c.Assert(outputStruct.Pages[0].Metadata.Description, quicktest.Equals, "")
+		c.Assert(outputStruct.Pages[0].Metadata.SourceURL, quicktest.Equals, "https://www.example.com")
 
 	})
 }
 
-func fakeHTTPRequest(url string, timeout int) (*goquery.Document, error) {
+func fakeHTTPRequests(urls []string, timeout int, scrapeMethod string) ([]*goquery.Document, error) {
 	html := `
 	<!DOCTYPE html>
 	<html>
@@ -110,5 +111,20 @@ func fakeHTTPRequest(url string, timeout int) (*goquery.Document, error) {
 	</body>
 	</html>
 	`
-	return goquery.NewDocumentFromReader(strings.NewReader(html))
+	output := []*goquery.Document{}
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+
+	if err != nil {
+		return nil, err
+	}
+	doc.Url, err = url.Parse("https://www.example.com")
+
+	if err != nil {
+		return nil, err
+	}
+
+	output = append(output, doc)
+
+	return output, nil
 }

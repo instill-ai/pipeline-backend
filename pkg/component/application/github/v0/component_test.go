@@ -837,3 +837,35 @@ func taskTesting[inType any, outType any](testcases []TaskCase[inType, outType],
 		})
 	}
 }
+
+func TestComponent_WithOAuthConfig(t *testing.T) {
+	c := qt.New(t)
+
+	bc := base.Component{}
+
+	test := func(name string, conf map[string]any, check qt.Checker) {
+		c.Run(name, func(c *qt.C) {
+			cmp := Init(bc)
+			cmp.WithOAuthConfig(conf)
+			c.Check(cmp.SupportsOAuth(), check)
+		})
+	}
+
+	newConf := func(clientID, clientSecret string) map[string]any {
+		conf := map[string]any{}
+		if clientID != "" {
+			conf["oauthclientid"] = clientID
+		}
+
+		if clientSecret != "" {
+			conf["oauthclientsecret"] = clientSecret
+		}
+
+		return conf
+	}
+
+	test("ok - with OAuth details", newConf("foo", "bar"), qt.IsTrue)
+	test("ok - without OAuth secret", newConf("foo", ""), qt.IsFalse)
+	test("ok - without OAuth ID", newConf("", "bar"), qt.IsFalse)
+	test("ok - without OAuth ID", newConf("", ""), qt.IsFalse)
+}

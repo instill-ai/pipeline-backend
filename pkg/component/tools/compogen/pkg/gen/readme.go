@@ -481,8 +481,21 @@ func (rt *readmeTask) parseOneOfsProperties(properties map[string]property) {
 			continue
 		}
 
-		if op.Type != "object" {
+		if op.Type != "object" && op.Type != "array" {
 			continue
+		}
+
+		if op.Type == "array" {
+			if op.Items.Type != "object" {
+				continue
+			}
+
+			if op.Items.OneOf != nil {
+				rt.OneOfs = append(rt.OneOfs, map[string][]objectSchema{
+					key: op.Items.OneOf,
+				})
+			}
+
 		}
 
 		if op.OneOf != nil {
