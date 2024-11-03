@@ -1,7 +1,33 @@
 ARG GOLANG_VERSION=1.22.5
-FROM golang:${GOLANG_VERSION}-alpine3.19 AS build
+FROM golang:${GOLANG_VERSION}-bullseye AS build
 
-RUN apk add --no-cache build-base leptonica-dev tesseract-ocr-dev musl-dev
+ARG TARGETOS TARGETARCH K6_VERSION XK6_VERSION
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libleptonica-dev \
+    libtesseract-dev \
+    libsoxr-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install ONNX Runtime (latest release)
+ENV ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime
+RUN apt update && \
+    apt install -y wget jq && \
+    LATEST_VERSION=$(wget -qO- https://api.github.com/repos/microsoft/onnxruntime/releases/latest | jq -r .tag_name) && \
+    ONNX_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "aarch64" || echo "x64") && \
+    wget https://github.com/microsoft/onnxruntime/releases/download/${LATEST_VERSION}/onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz && \
+    tar -xzf onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz && \
+    mv onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v} ${ONNXRUNTIME_ROOT_PATH} && \
+    rm onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz && \
+    apt remove -y wget jq && \
+    apt autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set environment variables and create symlinks for ONNX Runtime
+ENV C_INCLUDE_PATH=${ONNXRUNTIME_ROOT_PATH}/include
+ENV LD_RUN_PATH=${ONNXRUNTIME_ROOT_PATH}/lib
+ENV LIBRARY_PATH=${ONNXRUNTIME_ROOT_PATH}/lib
 
 WORKDIR /src
 
@@ -9,51 +35,28 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 
-RUN go get github.com/otiai10/gosseract/v2
-
 ARG SERVICE_NAME TARGETOS TARGETARCH
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags=ocr,onnx -o /${SERVICE_NAME} ./cmd/main
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /${SERVICE_NAME}-worker ./cmd/worker
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /${SERVICE_NAME}-migrate ./cmd/migration
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /${SERVICE_NAME}-init ./cmd/init
 
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=1 go build -tags=ocr,musl -o /${SERVICE_NAME} ./cmd/main
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=1 go build -tags=ocr,musl -o /${SERVICE_NAME}-worker ./cmd/worker
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags=musl -o /${SERVICE_NAME}-migrate ./cmd/migration
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags=musl -o /${SERVICE_NAME}-init ./cmd/init
+FROM debian:bullseye-slim
 
-FROM alpine:3.19
+# Install Python, create virtual environment, and install pdfplumber
+RUN apt update && \
+    apt install -y curl python3 python3-venv poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice ffmpeg libsoxr-dev chromium qpdf && \
+    python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN apk add --no-cache \
-    curl \
-    poppler-utils \
-    wv \
-    tidyhtml \
-    libc6-compat \
-    tesseract-ocr \
-    python3 \
-    py3-pip \
-    build-base \
-    python3-dev \
-    libffi-dev \
-    libreoffice \
-    qpdf \
-    msttcorefonts-installer \
-    font-noto \
-    font-noto-cjk \
-    ffmpeg \
-    chromium \
-    && update-ms-fonts \
-    && fc-cache -f \
-    && python3 -m venv /opt/venv \
-    && /opt/venv/bin/pip install --upgrade pip \
-    && /opt/venv/bin/pip install pdfplumber tokenizers \
-    && rm -rf /var/cache/apk/* /var/cache/fontconfig/*
+# copy ONNX runtime from build stage
+ENV ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime
+COPY --from=build --chown=nobody:nogroup /usr/local/onnxruntime ${ONNXRUNTIME_ROOT_PATH}
 
-# Download tesseract data
-RUN curl -L https://github.com/tesseract-ocr/tessdata_best/raw/main/eng.traineddata \
-    -o /usr/share/tessdata/eng.traineddata
-
-ARG TARGETARCH
-ARG BUILDARCH
-RUN apk add unrtf --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
-
+# Set environment variables and create symlinks for ONNX Runtime
+ENV C_INCLUDE_PATH=${ONNXRUNTIME_ROOT_PATH}/include
+RUN ln -s ${ONNXRUNTIME_ROOT_PATH}/lib/libonnxruntime.so* /usr/lib/
 
 USER nobody:nogroup
 
@@ -71,3 +74,7 @@ COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-migrate ./
 COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-init ./
 COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-worker ./
 COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME} ./
+
+# Set up ONNX model and environment variable
+COPY --chown=nobody:nogroup ./pkg/component/resources/onnx/silero_vad.onnx /${SERVICE_NAME}/pkg/component/resources/onnx/silero_vad.onnx
+ENV ONNX_MODEL_FOLDER_PATH=/${SERVICE_NAME}/pkg/component/resources/onnx

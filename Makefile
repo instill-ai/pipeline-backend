@@ -7,13 +7,6 @@ include .env
 export
 
 GOTEST_FLAGS := CFG_DATABASE_HOST=${TEST_DBHOST} CFG_DATABASE_NAME=${TEST_DBNAME}
-ifeq (${DBTEST}, true)
-	GOTEST_TAGS := -tags=dbtest
-endif
-ifeq (${OCR}, true)
-	GOTEST_TAGS := -tags=ocr
-endif
-
 
 #============================================================================
 
@@ -40,10 +33,10 @@ latest:							## Run latest container
 		echo "Run latest container ${SERVICE_NAME} and ${SERVICE_NAME}-worker. To stop it, run \"make stop\"."
 	@docker run --network=instill-network \
 		--name ${SERVICE_NAME} \
-		-d ${SERVICE_NAME}:latest ./${SERVICE_NAME}
+		-d instill/${SERVICE_NAME}:latest ./${SERVICE_NAME}
 	@docker run --network=instill-network \
 		--name ${SERVICE_NAME}-worker \
-		-d ${SERVICE_NAME}:latest ./${SERVICE_NAME}-worker
+		-d instill/${SERVICE_NAME}:latest ./${SERVICE_NAME}-worker
 
 .PHONY: rm
 rm:								## Remove all running containers
@@ -60,10 +53,10 @@ build-dev:							## Build dev docker image
 
 .PHONY: build-latest
 build-latest:							## Build latest docker image
-	@docker buildx build \
+	@docker build \
 		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
-		-t pipeline-backend:latest .
+		-t instill/pipeline-backend:latest .
 
 .PHONY: go-gen
 go-gen:       					## Generate codes
@@ -94,39 +87,31 @@ coverage:
 				rm coverage.out; \
 	fi
 
+# Tests should run in container without local tparse installation.
+# If you encounter container test issues, install tparse locally:
+# go install github.com/mfridman/tparse/cmd/tparse@latest
 .PHONY: test
 test:
-# Ideally, it should be ok to run without installing tparse locally.
-# However, there may be some issues that arise from running the tests
-# in the container. If you encounter any issues, please install tparse
-# locally via `go install github.com/mfridman/tparse/cmd/tparse@latest`
-# and run the tests locally.
-	@if [ "${OCR}" = "true" ]; then \
-		docker run --rm \
-			-v $(PWD):/${SERVICE_NAME} \
-			--user $(id -u):$(id -g) \
-			--entrypoint= \
-			instill/${SERVICE_NAME}:dev \
-				make test-ocr; \
+	@TAGS=""; \
+	if [ "$${OCR}" = "true" ]; then \
+		TAGS="$$TAGS,ocr"; \
+		[ "$$(uname)" = "Darwin" ] && export TESSDATA_PREFIX=$$(dirname $$(brew list tesseract | grep share/tessdata/eng.traineddata)); \
+	fi; \
+	if [ "$${ONNX}" = "true" ]; then \
+		if [ "$$(uname)" = "Darwin" ]; then \
+			echo "ONNX Runtime test is not supported on Darwin (macOS)."; \
+		else \
+			TAGS="$$TAGS,onnx"; \
+		fi; \
+	fi; \
+	TAGS=$${TAGS#,}; \
+	if [ -n "$$TAGS" ]; then \
+		echo "Running tests with tags: $$TAGS"; \
+		go test -v -tags="$$TAGS" ./... -json | tparse --notests --all; \
 	else \
-		docker run --rm \
-			-v $(PWD):/${SERVICE_NAME} \
-			--user $(id -u):$(id -g) \
-			--entrypoint= \
-			instill/${SERVICE_NAME}:dev \
-				go test -v ./... -json | tparse --notests --all;  \
+		echo "Running standard tests"; \
+		go test -v ./... -json | tparse --notests --all; \
 	fi
-
-.PHONY: test-ocr
-test-ocr:
-# Certain component tests require additional dependencies.
-# Install tesseract via `brew install tesseract`
-# Setup `export LIBRARY_PATH="/opt/homebrew/lib"` `export CPATH="/opt/homebrew/include"`
-ifeq ($(shell uname), Darwin)
-	@TESSDATA_PREFIX=$(shell dirname $(shell brew list tesseract | grep share/tessdata/eng.traineddata)) ${GOTEST_FLAGS} go test -v ./... -json | tparse --notests --all
-else
-	@echo "This target can only be executed on Darwin (macOS)."
-endif
 
 .PHONY: integration-test
 integration-test:				## Run integration test
