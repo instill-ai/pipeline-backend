@@ -84,8 +84,16 @@ func unmarshalValue(val format.Value, field reflect.Value, structField reflect.S
 	case format.String:
 		return unmarshalString(v, field)
 	case Array:
+		if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
+			field.Set(reflect.ValueOf(v))
+			return nil
+		}
 		return unmarshalArray(v, field)
 	case Map:
+		if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
+			field.Set(reflect.ValueOf(v))
+			return nil
+		}
 		return unmarshalMap(v, field)
 	case format.Null:
 		if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
