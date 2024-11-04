@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -15,8 +17,7 @@ import (
 )
 
 const (
-	taskChunkText     string = "TASK_CHUNK_TEXT"
-	taskDataCleansing string = "TASK_CLEAN_DATA" // Ensure this matches your requirement
+	taskDataCleansing string = "TASK_CLEAN_DATA" // Use this constant for the data cleansing task
 )
 
 var (
@@ -44,14 +45,13 @@ func Init(bc base.Component) *component {
 		comp = &component{Component: bc}
 		err := comp.LoadDefinition(definitionJSON, nil, tasksJSON, nil)
 		if err != nil {
-			panic(err)
+			panic(fmt.Sprintf("failed to load component definition: %v", err))
 		}
 	})
 	return comp
 }
 
-// CreateExecution initializes a component executor that can be used in a
-// pipeline trigger.
+// CreateExecution initializes a component executor that can be used in a pipeline trigger.
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	return &execution{ComponentExecution: x}, nil
 }
@@ -77,26 +77,6 @@ type DataCleaningSetting struct {
 	CaseSensitive   bool     `json:"case-sensitive,omitempty"`
 }
 
-// FetchDefinition fetches and parses the definition JSON
-func FetchDefinition() (map[string]interface{}, error) {
-	var definition map[string]interface{}
-	err := json.Unmarshal(definitionJSON, &definition)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal definition JSON: %w", err)
-	}
-	return definition, nil
-}
-
-// FetchTasks fetches and parses the tasks JSON
-func FetchTasks() (map[string]interface{}, error) {
-	var tasks map[string]interface{}
-	err := json.Unmarshal(tasksJSON, &tasks)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal tasks JSON: %w", err)
-	}
-	return tasks, nil
-}
-
 // CleanData cleans the input texts based on the provided settings
 func CleanData(input CleanDataInput) CleanDataOutput {
 	var cleanedTexts []string
@@ -111,23 +91,41 @@ func CleanData(input CleanDataInput) CleanDataOutput {
 		cleanedTexts = input.Texts
 	}
 
-	if len(cleanedTexts) == 0 {
-		return CleanDataOutput{CleanedTexts: nil} // Return nil if there are no cleaned texts
-	}
-
 	return CleanDataOutput{CleanedTexts: cleanedTexts}
+}
+
+// CleanChunkedData cleans the input texts in chunks based on the provided settings
+func CleanChunkedData(input CleanDataInput, chunkSize int) []CleanDataOutput {
+	var outputs []CleanDataOutput
+
+	for i := 0; i < len(input.Texts); i += chunkSize {
+		end := i + chunkSize
+		if end > len(input.Texts) {
+			end = len(input.Texts)
+		}
+		chunk := CleanDataInput{
+			Texts:   input.Texts[i:end],
+			Setting: input.Setting,
+		}
+		cleanedChunk := CleanData(chunk)
+		outputs = append(outputs, cleanedChunk)
+	}
+	return outputs
 }
 
 // cleanTextUsingRegex cleans the input texts using regular expressions based on the given settings
 func cleanTextUsingRegex(inputTexts []string, settings DataCleaningSetting) []string {
 	var cleanedTexts []string
 
+	// Precompile exclusion and inclusion patterns
+	excludeRegexes := compileRegexPatterns(settings.ExcludePatterns)
+	includeRegexes := compileRegexPatterns(settings.IncludePatterns)
+
 	for _, text := range inputTexts {
 		include := true
 
 		// Exclude patterns
-		for _, pattern := range settings.ExcludePatterns {
-			re := regexp.MustCompile(pattern)
+		for _, re := range excludeRegexes {
 			if re.MatchString(text) {
 				include = false
 				break
@@ -135,10 +133,9 @@ func cleanTextUsingRegex(inputTexts []string, settings DataCleaningSetting) []st
 		}
 
 		// Include patterns
-		if include && len(settings.IncludePatterns) > 0 {
+		if include && len(includeRegexes) > 0 {
 			include = false
-			for _, pattern := range settings.IncludePatterns {
-				re := regexp.MustCompile(pattern)
+			for _, re := range includeRegexes {
 				if re.MatchString(text) {
 					include = true
 					break
@@ -196,59 +193,77 @@ func cleanTextUsingSubstring(inputTexts []string, settings DataCleaningSetting) 
 	return cleanedTexts
 }
 
-// Execute executes the derived execution
+// compileRegexPatterns compiles a list of regular expression patterns
+func compileRegexPatterns(patterns []string) []*regexp.Regexp {
+	var regexes []*regexp.Regexp
+	for _, pattern := range patterns {
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			// Handle regex compilation errors appropriately
+			continue // Skip this pattern if it fails
+		}
+		regexes = append(regexes, re)
+	}
+	return regexes
+}
+
+// FetchJSONInput reads JSON data from a file and unmarshals it into CleanDataInput
+func FetchJSONInput(filePath string) (CleanDataInput, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return CleanDataInput{}, fmt.Errorf("failed to open JSON file: %w", err)
+	}
+	defer file.Close()
+
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return CleanDataInput{}, fmt.Errorf("failed to read JSON file: %w", err)
+	}
+
+	var input CleanDataInput
+	err = json.Unmarshal(bytes, &input)
+	if err != nil {
+		return CleanDataInput{}, fmt.Errorf("failed to unmarshal JSON data: %w", err)
+	}
+
+	return input, nil
+}
+
+// Execute executes the derived execution for the data cleansing task
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	for _, job := range jobs {
-		switch e.Task {
-		case taskChunkText:
-			inputStruct := ChunkTextInput{}
-
-			err := job.Input.ReadData(ctx, &inputStruct)
+		if e.Task == taskDataCleansing {
+			// Fetch JSON input from a specified file
+			cleanDataInput, err := FetchJSONInput("path/to/your/input.json") // Replace with your actual file path
 			if err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-
-			var outputStruct ChunkTextOutput
-			if inputStruct.Strategy.Setting.ChunkMethod == "Markdown" {
-				outputStruct, err = chunkMarkdown(inputStruct)
-			} else {
-				outputStruct, err = chunkText(inputStruct)
-			}
-
-			if err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-			err = job.Output.WriteData(ctx, outputStruct)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-		case taskDataCleansing: // Use the correct task constant
-			cleanDataInput := CleanDataInput{}
-			// Read the data from job input into cleanDataInput
-			err := job.Input.ReadData(ctx, &cleanDataInput)
-			if err != nil {
-				job.Error.Error(ctx, err)
+				job.Error.Error(ctx, fmt.Errorf("failed to fetch input data for cleansing: %w", err))
 				continue
 			}
 
 			// Perform data cleansing
 			cleanedDataOutput := CleanData(cleanDataInput)
-			// Convert output to Structpb format
-			output, err := base.ConvertToStructpb(cleanedDataOutput)
+
+			// Optionally, clean the data in chunks
+			// Define a chunk size; adjust as needed based on your requirements
+			chunkSize := 100 // Example chunk size
+			chunkedOutputs := CleanChunkedData(cleanDataInput, chunkSize)
+
+			// Write the cleaned output back to the job output
+			err = job.Output.WriteData(ctx, cleanedDataOutput)
 			if err != nil {
-				job.Error.Error(ctx, err)
+				job.Error.Error(ctx, fmt.Errorf("failed to write cleaned output data: %w", err))
 				continue
 			}
-			// Write the output back to the job output
-			err = job.Output.Write(ctx, output)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				continue
+
+			// Optionally handle the chunked outputs if needed
+			for _, chunk := range chunkedOutputs {
+				err = job.Output.WriteData(ctx, chunk)
+				if err != nil {
+					job.Error.Error(ctx, fmt.Errorf("failed to write chunked cleaned output data: %w", err))
+					continue
+				}
 			}
-		default:
+		} else {
 			job.Error.Error(ctx, fmt.Errorf("not supported task: %s", e.Task))
 			continue
 		}
