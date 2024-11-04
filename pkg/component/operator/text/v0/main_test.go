@@ -133,15 +133,16 @@ func TestCleanData(t *testing.T) {
 		},
 	}
 
-for _, tc := range testcases {
-	tc := tc // capture range variable
-	c.Run(tc.name, func(c *quicktest.C) {
-		output, err := CleanData(tc.input) // Adjust this line if CleanData returns two values
-		if tc.expectedError {
-			c.Assert(err, quicktest.ErrorMatches, "unsupported cleaning method: InvalidMethod")
-		} else {
-			c.Assert(err, quicktest.IsNil)
-			c.Assert(output.CleanedTexts, quicktest.DeepEquals, tc.expected.CleanedTexts)
-		}
-	})
+	for _, tc := range testcases {
+		tc := tc // capture range variable
+		c.Run(tc.name, func(c *quicktest.C) {
+			output, err := CleanData(tc.input) // Adjust this line if CleanData returns two values
+			if tc.expectedError {
+				c.Assert(err, quicktest.ErrorMatches, "unsupported cleaning method: InvalidMethod")
+			} else {
+				c.Assert(err, quicktest.IsNil)
+				c.Assert(output.CleanedTexts, quicktest.DeepEquals, tc.expected.CleanedTexts)
+			}
+		})
+	}
 }
