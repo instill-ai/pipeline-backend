@@ -24,7 +24,7 @@ if __name__ == "__main__":
 	result = ""
 	images = []
 	separator_number = 30
-	image_idx = 0
+	image_index = 0
 	errors = []
 	all_page_images = []
 	markdowns = []
@@ -32,14 +32,14 @@ if __name__ == "__main__":
 	try:
 		times = len(pdf.raw_pages) // separator_number + 1
 		for i in range(times):
-			pdf = PDFTransformer(x=pdf_file_obj, display_image_tag=display_image_tag, image_idx=image_idx, resolution=resolution)
+			pdf = PDFTransformer(x=pdf_file_obj, display_image_tag=display_image_tag, image_index=image_index, resolution=resolution)
 			if i == times - 1:
 				pdf.pages = pdf.raw_pages[i*separator_number:]
 			else:
 				pdf.pages = pdf.raw_pages[i*separator_number:(i+1)*separator_number]
 
 			pdf.preprocess()
-			image_idx = pdf.image_index
+			image_index = pdf.image_index
 			result += pdf.execute()
 			for image in pdf.base64_images:
 				images.append(image)

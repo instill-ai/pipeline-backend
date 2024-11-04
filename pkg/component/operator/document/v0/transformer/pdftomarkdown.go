@@ -18,10 +18,11 @@ type converterOutput struct {
 	Markdowns     []string `json:"markdowns"`
 }
 
-func convertPDFToMarkdownWithPDFPlumber(base64Text string, displayImageTag bool, displayAllPage bool) (converterOutput, error) {
+func convertPDFToMarkdownWithPDFPlumber(input pdfToMarkdownInputStruct) (converterOutput, error) {
 
 	var pdfBase64 string
 	var err error
+	base64Text := input.Base64Text
 	pdfBase64WithoutMime := util.TrimBase64Mime(base64Text)
 	if RequiredToRepair(base64Text) {
 		pdfBase64, err = RepairPDF(pdfBase64WithoutMime)
@@ -34,8 +35,9 @@ func convertPDFToMarkdownWithPDFPlumber(base64Text string, displayImageTag bool,
 
 	paramsJSON, err := json.Marshal(map[string]interface{}{
 		"PDF":                    pdfBase64,
-		"display-image-tag":      displayImageTag,
-		"display-all-page-image": displayAllPage,
+		"display-image-tag":      input.DisplayImageTag,
+		"display-all-page-image": input.DisplayAllPageImage,
+		"resolution":             input.Resolution,
 	})
 	var output converterOutput
 
