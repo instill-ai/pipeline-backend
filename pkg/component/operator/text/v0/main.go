@@ -234,7 +234,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	for _, job := range jobs {
 		if e.Task == taskDataCleansing {
 			// Fetch JSON input from a specified file
-			cleanDataInput, err := FetchJSONInput("path/to/your/input.json") // Replace with your actual file path
+			cleanDataInput, err := FetchJSONInput("pkg/component/operator/text/v0/config/tasks.json") // Replace with your actual file path
 			if err != nil {
 				job.Error.Error(ctx, fmt.Errorf("failed to fetch input data for cleansing: %w", err))
 				continue
