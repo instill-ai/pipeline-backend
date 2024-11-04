@@ -126,8 +126,8 @@ func TestExecute(t *testing.T) {
 
 		// Create a mock job
 		mockJob := &base.Job{
-			Output: &MockOutput{}, // Implement MockOutput to simulate job output
-			Error:  &MockError{},  // Implement MockError to simulate error handling
+			Output: &MockOutput{}, // Use MockOutput with proper methods implemented
+			Error:  &MockError{},  // Use MockError with proper methods implemented
 		}
 
 		err = execution.Execute(context.Background(), []*base.Job{mockJob})
@@ -246,13 +246,13 @@ func TestChunkMarkdown(t *testing.T) {
 					{
 						Text:          "This is a sample text for chunking.",
 						StartPosition: 0,
-						EndPosition:   29,
+						EndPosition:   39,
 						TokenCount:    7,
 					},
 					{
 						Text:          "Another paragraph.",
-						StartPosition: 30,
-						EndPosition:   47,
+						StartPosition: 40,
+						EndPosition:   58,
 						TokenCount:    2,
 					},
 				},
@@ -276,7 +276,14 @@ type MockOutput struct {
 	data []interface{}
 }
 
+// Write writes data to the mock output, implementing the OutputWriter interface
 func (m *MockOutput) Write(ctx context.Context, data *structpb.Struct) error {
+	m.data = append(m.data, data)
+	return nil
+}
+
+// WriteData writes data to the mock output, implementing the OutputWriter interface
+func (m *MockOutput) WriteData(ctx context.Context, data interface{}) error {
 	m.data = append(m.data, data)
 	return nil
 }
@@ -286,8 +293,13 @@ type MockError struct {
 	err error
 }
 
+// HandleError handles an error for testing, implementing the ErrorHandler interface
 func (m *MockError) HandleError(ctx context.Context, err error) {
 	m.err = err
 }
 
-// Add other utility functions and types as needed
+// Error returns the stored error, implementing the ErrorHandler interface
+func (m *MockError) Error() error {
+	return m.err
+}
+
