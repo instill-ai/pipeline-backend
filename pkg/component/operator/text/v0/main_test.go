@@ -136,7 +136,7 @@ func TestCleanData(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc // capture range variable
 		c.Run(tc.name, func(c *quicktest.C) {
-			output, err := CleanData(tc.input) // Adjust this line if CleanData returns two values
+			output, err := CleanData(tc.input) // Adjust this line if CleanData returns only CleanDataOutput
 			if tc.expectedError {
 				c.Assert(err, quicktest.ErrorMatches, "unsupported cleaning method: InvalidMethod")
 			} else {
