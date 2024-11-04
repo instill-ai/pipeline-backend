@@ -113,7 +113,7 @@ func CleanChunkedData(input CleanDataInput, chunkSize int) []CleanDataOutput {
 	return outputs
 }
 
-// cleanTextUsingRegex cleans the input texts using regular expressions based on the given settings
+// cleanTextUsingRegex cleans the input texts using regular expressions based on the given settings.
 func cleanTextUsingRegex(inputTexts []string, settings DataCleaningSetting) []string {
 	var cleanedTexts []string
 
@@ -124,25 +124,26 @@ func cleanTextUsingRegex(inputTexts []string, settings DataCleaningSetting) []st
 	for _, text := range inputTexts {
 		include := true
 
-		// Exclude patterns
+		// Check for exclusion patterns
 		for _, re := range excludeRegexes {
 			if re.MatchString(text) {
 				include = false
-				break
+				break // Stop checking if one exclusion pattern matches
 			}
 		}
 
-		// Include patterns
-		if include && len(includeRegexes) > 0 {
-			include = false
+		// If there are include patterns, check them
+		if len(includeRegexes) > 0 {
+			include = false // Reset include to false for include check
 			for _, re := range includeRegexes {
 				if re.MatchString(text) {
 					include = true
-					break
+					break // Stop checking if one inclusion pattern matches
 				}
 			}
 		}
 
+		// If the text passed both checks, add it to the cleaned texts
 		if include {
 			cleanedTexts = append(cleanedTexts, text)
 		}
