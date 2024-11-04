@@ -31,12 +31,12 @@ func TestOperator(t *testing.T) {
 								Fields: map[string]*structpb.Value{
 									"chunk-method": {Kind: &structpb.Value_StringValue{StringValue: "Token"}},
 								},
-							}}}},
+							}}},
 						},
-					}}}},
+					}}},
 				},
-			},
-		,
+			}, // Corrected line (removed the comma)
+		},
 		{
 			name:  "error case",
 			task:  "FAKE_TASK",
