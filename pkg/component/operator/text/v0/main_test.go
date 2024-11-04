@@ -36,7 +36,7 @@ func TestOperator(t *testing.T) {
 					}}}},
 				},
 			},
-		},
+		,
 		{
 			name:  "error case",
 			task:  "FAKE_TASK",
