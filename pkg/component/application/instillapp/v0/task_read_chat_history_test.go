@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	fakeInput = ReadChatHistoryInput{
+	fakeReadInput = ReadChatHistoryInput{
 		Namespace:       "namespace",
 		AppID:           "app-id",
 		ConversationID:  "conversation-id",
@@ -27,21 +27,6 @@ var (
 		MessageType:     "MESSAGE_TYPE_TEXT",
 		Duration:        "2h",
 		MaxMessageCount: 10,
-	}
-
-	wantOutput = ReadChatHistoryOutput{
-		Messages: []Message{
-			{
-				Content: []Content{
-					{
-						Type: "text",
-						Text: "content",
-					},
-				},
-				Role: "user",
-				Name: "name",
-			},
-		},
 	}
 )
 
@@ -88,7 +73,7 @@ func Test_ExecuteTaskReadChatHistory(t *testing.T) {
 	ir.ReadDataMock.Set(func(ctx context.Context, v interface{}) error {
 		switch v := v.(type) {
 		case *ReadChatHistoryInput:
-			*v = fakeInput
+			*v = fakeReadInput
 		default:
 			panic("unexpected type")
 		}
