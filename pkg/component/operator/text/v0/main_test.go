@@ -134,15 +134,17 @@ func TestCleanData(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc // capture range variable
-		c.Run(tc.name, func(c *quicktest.C) {
-			output, err := CleanData(tc.input) // Adjust this line if CleanData returns only CleanDataOutput
-			if tc.expectedError {
-				c.Assert(err, quicktest.ErrorMatches, "unsupported cleaning method: InvalidMethod")
-			} else {
-				c.Assert(err, quicktest.IsNil)
-				c.Assert(output.CleanedTexts, quicktest.DeepEquals, tc.expected.CleanedTexts)
-			}
-		})
-	}
+	tc := tc // capture range variable
+	c.Run(tc.name, func(c *quicktest.C) {
+		output := CleanData(tc.input) // Call CleanData and assign the output directly
+		if tc.expectedError {
+			// Since CleanData does not return an error, this block should handle your expected error scenario
+			c.Assert(output, quicktest.IsNil) // Adjust as needed based on your logic for errors
+			c.Assert(err, quicktest.ErrorMatches, "unsupported cleaning method: InvalidMethod")
+		} else {
+			c.Assert(err, quicktest.IsNil) // No error expected here
+			c.Assert(output.CleanedTexts, quicktest.DeepEquals, tc.expected.CleanedTexts)
+		}
+	})
 }
+
