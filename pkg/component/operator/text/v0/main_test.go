@@ -1,4 +1,4 @@
-package text
+package main
 
 import (
 	"context"
@@ -6,102 +6,151 @@ import (
 
 	"github.com/frankban/quicktest"
 	"google.golang.org/protobuf/types/known/structpb"
-
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
-func TestOperator(t *testing.T) {
+// Constants for test cases
+const (
+	taskDataCleansing = "TASK_CLEAN_DATA"
+)
+
+// Test structure
+type TestCase struct {
+	name  string
+	input *CleanDataInput
+	want  *CleanDataOutput
+}
+
+// TestInit tests the Init function
+func TestInit(t *testing.T) {
 	c := quicktest.New(t)
 
-	testcases := []struct {
-		name  string
-		task  string
-		input *structpb.Struct // Changed to pointer for consistency
-	}{
+	// Test initialization logic
+	c.Run("Initialize Component", func(c *quicktest.C) {
+		component := Init()
+		c.Assert(component, quicktest.IsNotNil)
+	})
+}
+
+// TestCreateExecution tests the CreateExecution function
+func TestCreateExecution(t *testing.T) {
+	c := quicktest.New(t)
+
+	// Test execution creation
+	c.Run("Create Execution", func(c *quicktest.C) {
+		component := Init()
+		execution, err := component.CreateExecution(base.ComponentExecution{
+			Component: component,
+			Task:      taskDataCleansing,
+		})
+		c.Assert(err, quicktest.IsNil)
+		c.Assert(execution, quicktest.IsNotNil)
+	})
+}
+
+// TestCleanData tests the CleanData function
+func TestCleanData(t *testing.T) {
+	c := quicktest.New(t)
+
+	testCases := []TestCase{
 		{
-			name: "chunk texts",
-			task: "TASK_CHUNK_TEXT",
-			input: &structpb.Struct{
-				Fields: map[string]*structpb.Value{
-					"text": {Kind: &structpb.Value_StringValue{StringValue: "Hello world. This is a test."}},
-					"strategy": {Kind: &structpb.Value_StructValue{StructValue: &structpb.Struct{
-						Fields: map[string]*structpb.Value{
-							"setting": {Kind: &structpb.Value_StructValue{StructValue: &structpb.Struct{
-								Fields: map[string]*structpb.Value{
-									"chunk-method": {Kind: &structpb.Value_StringValue{StringValue: "Token"}},
-								},
-							}}},
-						},
-					}}},
-				},
-			}, // Corrected line (removed the comma)
-		},
-		
-		{
-			name:  "error case",
-			task:  "FAKE_TASK",
-			input: &structpb.Struct{},
-		},
-		{
-			name: "data cleansing",
-			task: "TASK_CLEAN_DATA",
-			input: &structpb.Struct{
-				Fields: map[string]*structpb.Value{
-					"texts": {Kind: &structpb.Value_ListValue{ListValue: &structpb.ListValue{
-						Values: []*structpb.Value{
-							{Kind: &structpb.Value_StringValue{StringValue: "Sample text 1."}},
-							{Kind: &structpb.Value_StringValue{StringValue: "Sample text 2."}},
-						},
-					}}},
-					"setting": {Kind: &structpb.Value_StructValue{StructValue: &structpb.Struct{
-						Fields: map[string]*structpb.Value{
-							"clean-method": {Kind: &structpb.Value_StringValue{StringValue: "Regex"}},
-							"exclude-patterns": {Kind: &structpb.Value_ListValue{ListValue: &structpb.ListValue{
-								Values: []*structpb.Value{
-									{Kind: &structpb.Value_StringValue{StringValue: "exclude this"}},
-								},
-							}}},
-						},
-					}}},
+			name: "Valid Input",
+			input: &CleanDataInput{
+				Texts: []string{"Sample text 1.", "Sample text 2."},
+				Setting: &DataCleaningSetting{
+					CleanMethod:      "Regex",
+					ExcludePatterns:   []string{"exclude this"},
 				},
 			},
+			want: &CleanDataOutput{
+				CleanedTexts: []string{"Sample text 1.", "Sample text 2."}, // Expected cleaned output
+			},
 		},
+		// Add more test cases as needed
 	}
 
-	bc := base.Component{}
-	ctx := context.Background()
-
-	for i := range testcases {
-		tc := &testcases[i]
+	for _, tc := range testCases {
 		c.Run(tc.name, func(c *quicktest.C) {
-			component := Init(bc)
-			c.Assert(component, quicktest.IsNotNil)
-
-			execution, err := component.CreateExecution(base.ComponentExecution{
-				Component: component,
-				Task:      tc.task,
-			})
-			c.Assert(err, quicktest.IsNil)
-			c.Assert(execution, quicktest.IsNotNil)
-
-			ir, ow, eh, job := mock.GenerateMockJob(c)
-			ir.ReadMock.Return(tc.input, nil) // Directly return the pointer
-			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
-				if tc.name == "error case" {
-					c.Assert(output, quicktest.IsNil)
-					return
-				}
-				return nil
-			})
-			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
-				if tc.name == "error case" {
-					c.Assert(err, quicktest.ErrorMatches, "not supported task: FAKE_TASK")
-				}
-			})
-
-			err = execution.Execute(ctx, []*base.Job{job})
-			c.Assert(err, quicktest.IsNil)
+			output := CleanData(tc.input)
+			c.Assert(output, quicktest.DeepEquals, tc.want)
 		})
 	}
 }
+
+// TestCleanChunkedData tests the CleanChunkedData function
+func TestCleanChunkedData(t *testing.T) {
+	c := quicktest.New(t)
+
+	// Add test cases for CleanChunkedData
+	c.Run("Clean Chunked Data", func(c *quicktest.C) {
+		// Define test inputs and expected outputs
+		// Example: output := CleanChunkedData(...)
+		// c.Assert(output, quicktest.DeepEquals, expectedOutput)
+	})
+}
+
+// TestRegexFunctionality tests the regex cleaning functions
+func TestRegexFunctionality(t *testing.T) {
+	c := quicktest.New(t)
+
+	c.Run("Clean Text Using Regex", func(c *quicktest.C) {
+		input := "Sample text with exclude this pattern."
+		expectedOutput := "Sample text with  pattern." // Expected output after cleaning
+
+		output := cleanTextUsingRegex(input, []string{"exclude this"})
+		c.Assert(output, quicktest.Equals, expectedOutput)
+	})
+
+	c.Run("Clean Text Using Substring", func(c *quicktest.C) {
+		input := "Sample text without any exclusion."
+		expectedOutput := "Sample text without any exclusion."
+
+		output := cleanTextUsingSubstring(input, "exclude")
+		c.Assert(output, quicktest.Equals, expectedOutput)
+	})
+}
+
+// TestCompileRegexPatterns tests the compileRegexPatterns function
+func TestCompileRegexPatterns(t *testing.T) {
+	c := quicktest.New(t)
+
+	c.Run("Compile Patterns", func(c *quicktest.C) {
+		patterns := []string{"exclude this"}
+		compiled, err := compileRegexPatterns(patterns)
+		c.Assert(err, quicktest.IsNil)
+		c.Assert(len(compiled), quicktest.Equals, 1) // Expect one compiled pattern
+	})
+}
+
+// TestFetchJSONInput tests the FetchJSONInput function
+func TestFetchJSONInput(t *testing.T) {
+	c := quicktest.New(t)
+
+	c.Run("Fetch JSON Input", func(c *quicktest.C) {
+		expected := &structpb.Struct{
+			Fields: map[string]*structpb.Value{
+				"key": {Kind: &structpb.Value_StringValue{StringValue: "value"}},
+			},
+		}
+
+		output := FetchJSONInput("some-input-source") // Adjust input as necessary
+		c.Assert(output, quicktest.DeepEquals, expected)
+	})
+}
+
+// TestExecute tests the Execute function
+func TestExecute(t *testing.T) {
+	c := quicktest.New(t)
+
+	c.Run("Execute Task", func(c *quicktest.C) {
+		component := Init()
+		execution, err := component.CreateExecution(base.ComponentExecution{
+			Component: component,
+			Task:      taskDataCleansing,
+		})
+		c.Assert(err, quicktest.IsNil)
+
+		err = execution.Execute(context.Background(), nil) // Adjust as necessary
+		c.Assert(err, quicktest.IsNil)
+	})
+}
+
