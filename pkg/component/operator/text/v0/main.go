@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	taskChunkText      string = "TASK_CHUNK_TEXT"
-	taskDataCleansing  string = "TASK_CLEAN_DATA" // Ensure this matches your requirement
+	taskChunkText     string = "TASK_CHUNK_TEXT"
+	taskDataCleansing string = "TASK_CLEAN_DATA" // Ensure this matches your requirement
 )
 
 var (
@@ -58,8 +58,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 
 // CleanDataInput defines the input structure for the data cleansing task
 type CleanDataInput struct {
-	Texts   []string             `json:"texts"`   // Array of text to be cleaned
-	Setting DataCleaningSetting  `json:"setting"` // Cleansing configuration
+	Texts   []string            `json:"texts"`   // Array of text to be cleaned
+	Setting DataCleaningSetting `json:"setting"` // Cleansing configuration
 }
 
 // CleanDataOutput defines the output structure for the data cleansing task
@@ -109,6 +109,10 @@ func CleanData(input CleanDataInput) CleanDataOutput {
 	default:
 		// If no valid method is provided, return the original texts
 		cleanedTexts = input.Texts
+	}
+
+	if len(cleanedTexts) == 0 {
+		return CleanDataOutput{CleanedTexts: nil} // Return nil if there are no cleaned texts
 	}
 
 	return CleanDataOutput{CleanedTexts: cleanedTexts}
