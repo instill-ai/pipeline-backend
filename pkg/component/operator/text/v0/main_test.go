@@ -101,7 +101,7 @@ func TestFetchJSONInput(t *testing.T) {
 	data, _ := json.Marshal(testData)
 	if _, err := tempFile.Write(data); err != nil {
 		t.Fatalf("failed to write to temp file: %v", err)
-	}
+	 }
 
 	// Test FetchJSONInput
 	c.Run("Fetch JSON Input", func(c *quicktest.C) {
@@ -134,8 +134,8 @@ func TestExecute(t *testing.T) {
 	})
 }
 
-// TestChunkText tests the chunkText function
-func TestChunkText(t *testing.T) {
+// TestChunkTextFunctionality tests the chunkText function
+func TestChunkTextFunctionality(t *testing.T) {
 	c := quicktest.New(t)
 
 	testCases := []struct {
@@ -253,7 +253,7 @@ func TestChunkMarkdown(t *testing.T) {
 						StartPosition: 30,
 						EndPosition:   47,
 						TokenCount:    2,
-					},
+ },
 				},
 				TokenCount:       9,
 				ChunksTokenCount: 9,
@@ -271,10 +271,12 @@ func TestChunkMarkdown(t *testing.T) {
 }
 
 // MockOutput simulates the output for testing
-type MockOutput struct{}
+type MockOutput struct {
+	data []interface{}
+}
 
-func (m *MockOutput) WriteData(ctx context.Context, data interface{}) error {
-	// Implement your output logic here
+func (m *MockOutput) Write(ctx context.Context, data interface{}) error {
+	m.data = append(m.data, data)
 	return nil
 }
 
