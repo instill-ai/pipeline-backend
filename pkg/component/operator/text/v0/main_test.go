@@ -9,11 +9,6 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-// Constants for test cases
-const (
-	taskDataCleansing = "TASK_CLEAN_DATA"
-)
-
 // Test structure
 type TestCase struct {
 	name  string
@@ -41,7 +36,7 @@ func TestCreateExecution(t *testing.T) {
 		component := Init(base.Component{}) // Pass an instance of base.Component
 		execution, err := component.CreateExecution(base.ComponentExecution{
 			Component: component,
-			Task:      taskDataCleansing,
+			Task:      taskDataCleansing, // Use the constant defined in main.go
 		})
 		c.Assert(err, quicktest.IsNil)
 		c.Assert(execution, quicktest.IsNotNil)
@@ -57,7 +52,7 @@ func TestCleanData(t *testing.T) {
 			name: "Valid Input",
 			input: &CleanDataInput{
 				Texts: []string{"Sample text 1.", "Sample text 2."},
-				Setting: &DataCleaningSetting{
+				Setting: DataCleaningSetting{ // Use the value instead of pointer
 					CleanMethod:    "Regex",
 					ExcludePatterns: []string{"exclude this"},
 				},
@@ -71,7 +66,7 @@ func TestCleanData(t *testing.T) {
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *quicktest.C) {
-			output := CleanData(tc.input) // Ensure CleanData is implemented properly
+			output := CleanData(*tc.input) // Dereference to get the value
 			c.Assert(output, quicktest.DeepEquals, tc.want)
 		})
 	}
@@ -97,7 +92,7 @@ func TestRegexFunctionality(t *testing.T) {
 		input := "Sample text with exclude this pattern."
 		expectedOutput := "Sample text with  pattern." // Expected output after cleaning
 
-		output := cleanTextUsingRegex(input, []string{"exclude this"})
+		output := cleanTextUsingRegex(input, []string{"exclude this"}) // Ensure correct parameters are passed
 		c.Assert(output, quicktest.Equals, expectedOutput)
 	})
 
@@ -105,7 +100,7 @@ func TestRegexFunctionality(t *testing.T) {
 		input := "Sample text without any exclusion."
 		expectedOutput := "Sample text without any exclusion."
 
-		output := cleanTextUsingSubstring(input, "exclude")
+		output := cleanTextUsingSubstring(input, "exclude") // Ensure correct parameters are passed
 		c.Assert(output, quicktest.Equals, expectedOutput)
 	})
 }
@@ -116,7 +111,7 @@ func TestCompileRegexPatterns(t *testing.T) {
 
 	c.Run("Compile Patterns", func(c *quicktest.C) {
 		patterns := []string{"exclude this"}
-		compiled, err := compileRegexPatterns(patterns)
+		compiled, err := compileRegexPatterns(patterns) // Ensure you're capturing all return values if needed
 		c.Assert(err, quicktest.IsNil)
 		c.Assert(len(compiled), quicktest.Equals, 1) // Expect one compiled pattern
 	})
@@ -133,7 +128,8 @@ func TestFetchJSONInput(t *testing.T) {
 			},
 		}
 
-		output := FetchJSONInput("some-input-source") // Adjust input as necessary
+		output, err := FetchJSONInput("some-input-source") // Ensure you're capturing all return values
+		c.Assert(err, quicktest.IsNil) // Check for error
 		c.Assert(output, quicktest.DeepEquals, expected)
 	})
 }
@@ -146,7 +142,7 @@ func TestExecute(t *testing.T) {
 		component := Init(base.Component{}) // Pass an instance of base.Component
 		execution, err := component.CreateExecution(base.ComponentExecution{
 			Component: component,
-			Task:      taskDataCleansing,
+			Task:      taskDataCleansing, // Use the constant defined in main.go
 		})
 		c.Assert(err, quicktest.IsNil)
 
