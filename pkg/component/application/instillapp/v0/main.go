@@ -8,8 +8,6 @@ import (
 
 	_ "embed"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
 	appPB "github.com/instill-ai/protogen-go/app/app/v1alpha"
@@ -36,7 +34,7 @@ type component struct {
 type execution struct {
 	base.ComponentExecution
 
-	execute    func(*structpb.Struct) (*structpb.Struct, error)
+	execute    func(context.Context, *base.Job) error
 	client     appPB.AppPublicServiceClient
 	connection Connection
 }
@@ -80,5 +78,5 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 }
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-	return base.SequentialExecutor(ctx, jobs, e.execute)
+	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }
