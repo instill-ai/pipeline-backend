@@ -14,7 +14,10 @@ if __name__ == "__main__":
     params     = json.loads(json_str)
     filename   = params["filename"]
     pdf_string = params["PDF"]
-    resolution = params["resolution"]
+    if "resolution" in params and params["resolution"] != 0 and params["resolution"] != None:
+        resolution = params["resolution"]
+    else:
+        resolution = 500
 
     decoded_bytes = base64.b64decode(pdf_string)
     pdf_file_obj = BytesIO(decoded_bytes)
