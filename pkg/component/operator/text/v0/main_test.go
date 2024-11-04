@@ -37,6 +37,7 @@ func TestOperator(t *testing.T) {
 				},
 			}, // Corrected line (removed the comma)
 		},
+		
 		{
 			name:  "error case",
 			task:  "FAKE_TASK",
