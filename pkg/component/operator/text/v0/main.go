@@ -3,6 +3,7 @@ package text
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -74,6 +75,26 @@ type DataCleaningSetting struct {
 	ExcludeSubstrs  []string `json:"exclude-substrings,omitempty"`
 	IncludeSubstrs  []string `json:"include-substrings,omitempty"`
 	CaseSensitive   bool     `json:"case-sensitive,omitempty"`
+}
+
+// FetchDefinition fetches and parses the definition JSON
+func FetchDefinition() (map[string]interface{}, error) {
+	var definition map[string]interface{}
+	err := json.Unmarshal(definitionJSON, &definition)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal definition JSON: %w", err)
+	}
+	return definition, nil
+}
+
+// FetchTasks fetches and parses the tasks JSON
+func FetchTasks() (map[string]interface{}, error) {
+	var tasks map[string]interface{}
+	err := json.Unmarshal(tasksJSON, &tasks)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal tasks JSON: %w", err)
+	}
+	return tasks, nil
 }
 
 // CleanData cleans the input texts based on the provided settings
@@ -227,4 +248,3 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	}
 	return nil
 }
-
