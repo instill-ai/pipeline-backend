@@ -7,10 +7,6 @@ import (
 	"github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-
-
-
-Thank you
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
