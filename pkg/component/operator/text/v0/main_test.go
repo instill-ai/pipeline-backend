@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/frankban/quicktest"
+	"github.com/instill-ai/pipeline-backend/pkg/component/base" // Ensure you import the base package
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -26,7 +27,7 @@ func TestInit(t *testing.T) {
 
 	// Test initialization logic
 	c.Run("Initialize Component", func(c *quicktest.C) {
-		component := Init()
+		component := Init(base.Component{}) // Pass an instance of base.Component
 		c.Assert(component, quicktest.IsNotNil)
 	})
 }
@@ -37,7 +38,7 @@ func TestCreateExecution(t *testing.T) {
 
 	// Test execution creation
 	c.Run("Create Execution", func(c *quicktest.C) {
-		component := Init()
+		component := Init(base.Component{}) // Pass an instance of base.Component
 		execution, err := component.CreateExecution(base.ComponentExecution{
 			Component: component,
 			Task:      taskDataCleansing,
@@ -57,8 +58,8 @@ func TestCleanData(t *testing.T) {
 			input: &CleanDataInput{
 				Texts: []string{"Sample text 1.", "Sample text 2."},
 				Setting: &DataCleaningSetting{
-					CleanMethod:      "Regex",
-					ExcludePatterns:   []string{"exclude this"},
+					CleanMethod:    "Regex",
+					ExcludePatterns: []string{"exclude this"},
 				},
 			},
 			want: &CleanDataOutput{
@@ -70,7 +71,7 @@ func TestCleanData(t *testing.T) {
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *quicktest.C) {
-			output := CleanData(tc.input)
+			output := CleanData(tc.input) // Ensure CleanData is implemented properly
 			c.Assert(output, quicktest.DeepEquals, tc.want)
 		})
 	}
@@ -142,7 +143,7 @@ func TestExecute(t *testing.T) {
 	c := quicktest.New(t)
 
 	c.Run("Execute Task", func(c *quicktest.C) {
-		component := Init()
+		component := Init(base.Component{}) // Pass an instance of base.Component
 		execution, err := component.CreateExecution(base.ComponentExecution{
 			Component: component,
 			Task:      taskDataCleansing,
@@ -153,4 +154,3 @@ func TestExecute(t *testing.T) {
 		c.Assert(err, quicktest.IsNil)
 	})
 }
-
