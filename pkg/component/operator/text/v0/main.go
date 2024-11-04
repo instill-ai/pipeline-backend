@@ -229,6 +229,16 @@ func FetchJSONInput(filePath string) (CleanDataInput, error) {
 	return input, nil
 }
 
+func CleanData(input CleanDataInput) CleanDataOutput {
+	if input.Texts == nil || len(input.Texts) == 0 {
+		return CleanDataOutput{
+			CleanedTexts: []string{}, // Return empty output for nil or empty input
+		}
+	}
+
+	// Your existing cleaning logic here...
+}
+
 // Execute executes the derived execution for the data cleansing task
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	for _, job := range jobs {
