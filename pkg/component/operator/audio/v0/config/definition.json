@@ -13,6 +13,6 @@
   "uid": "b5c75caa-9261-4757-bfbf-12e908f59f16",
   "version": "0.1.0",
   "sourceUrl": "https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/audio/v0",
-  "description": "Operate audio data.",
+  "description": "Operate audio data",
   "releaseStage": "RELEASE_STAGE_ALPHA"
 }
