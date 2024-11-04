@@ -7,6 +7,10 @@ import (
 	"github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+
+
+
+Thank you
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
@@ -73,7 +77,79 @@ func TestOperator(t *testing.T) {
 			})
 			err = execution.Execute(ctx, []*base.Job{job})
 			c.Assert(err, quicktest.IsNil)
+		})
+	}
+}
 
+// Additional tests for CleanData functionality
+func TestCleanData(t *testing.T) {
+	c := quicktest.New(t)
+
+	testcases := []struct {
+		name         string
+		input        CleanDataInput
+		expected     CleanDataOutput
+		expectedError bool
+	}{
+		{
+			name: "clean with regex",
+			input: CleanDataInput{
+				Texts: []string{"Hello World!", "This is a test.", "Goodbye!"},
+				Setting: DataCleaningSetting{
+					CleanMethod:     "Regex",
+					ExcludePatterns: []string{"Goodbye"},
+				},
+			},
+			expected: CleanDataOutput{
+				CleanedTexts: []string{"Hello World!", "This is a test."},
+			},
+			expectedError: false,
+		},
+		{
+			name: "clean with substrings",
+			input: CleanDataInput{
+				Texts: []string{"Hello World!", "This is a test.", "Goodbye!"},
+				Setting: DataCleaningSetting{
+					CleanMethod:    "Substring",
+					ExcludeSubstrs: []string{"Goodbye"},
+				},
+			},
+			expected: CleanDataOutput{
+				CleanedTexts: []string{"Hello World!", "This is a test."},
+			},
+			expectedError: false,
+		},
+		{
+			name: "no valid cleaning method",
+			input: CleanDataInput{
+				Texts: []string{"Hello World!", "This is a test."},
+				Setting: DataCleaningSetting{
+					CleanMethod: "InvalidMethod",
+				},
+			},
+			expected: CleanDataOutput{
+				CleanedTexts: []string{"Hello World!", "This is a test."},
+			},
+			expectedError: false,
+		},
+		{
+			name: "error case",
+			input: CleanDataInput{
+				Texts:   []string{},
+				Setting: DataCleaningSetting{},
+			},
+			expected:     CleanDataOutput{},
+			expectedError: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		c.Run(tc.name, func(c *quicktest.C) {
+			output := CleanData(tc.input)
+			c.Assert(output.CleanedTexts, quicktest.DeepEquals, tc.expected.CleanedTexts)
+			if tc.expectedError {
+				c.Assert(len(output.CleanedTexts), quicktest.Equals, 0)
+			}
 		})
 	}
 }
