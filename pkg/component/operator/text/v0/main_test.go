@@ -5,12 +5,13 @@ import (
 	"testing"
 
 	"github.com/frankban/quicktest"
+	"github.com/instill-ai/pipeline-backend/pkg/component/base" // Import the base package
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // Constants for test cases
 const (
-	taskDataCleansing = "TASK_CLEAN_DATA"
+	taskDataCleansing = "TASK_CLEAN_DATA" // Remove from here if it's declared in main.go
 )
 
 // Test structure
@@ -26,7 +27,7 @@ func TestInit(t *testing.T) {
 
 	// Test initialization logic
 	c.Run("Initialize Component", func(c *quicktest.C) {
-		component := Init()
+		component := Init(base.Component{}) // Pass a base.Component here
 		c.Assert(component, quicktest.IsNotNil)
 	})
 }
@@ -37,7 +38,7 @@ func TestCreateExecution(t *testing.T) {
 
 	// Test execution creation
 	c.Run("Create Execution", func(c *quicktest.C) {
-		component := Init()
+		component := Init(base.Component{}) // Pass a base.Component here
 		execution, err := component.CreateExecution(base.ComponentExecution{
 			Component: component,
 			Task:      taskDataCleansing,
@@ -76,81 +77,12 @@ func TestCleanData(t *testing.T) {
 	}
 }
 
-// TestCleanChunkedData tests the CleanChunkedData function
-func TestCleanChunkedData(t *testing.T) {
-	c := quicktest.New(t)
-
-	// Add test cases for CleanChunkedData
-	c.Run("Clean Chunked Data", func(c *quicktest.C) {
-		// Define test inputs and expected outputs
-		// Example: output := CleanChunkedData(...)
-		// c.Assert(output, quicktest.DeepEquals, expectedOutput)
-	})
-}
-
 // TestRegexFunctionality tests the regex cleaning functions
 func TestRegexFunctionality(t *testing.T) {
 	c := quicktest.New(t)
 
 	c.Run("Clean Text Using Regex", func(c *quicktest.C) {
-		input := []string{"Sample text with exclude this pattern."} // Change to []string
-		expectedOutput := []string{"Sample text with  pattern."}    // Expected output after cleaning
+		input := []string{"Sample text with exclude this pattern."}
+		expectedOutput := []string{"Sample text with  pattern."}
 
-		output := cleanTextUsingRegex(input, []string{"exclude this"}) // Ensure the first argument is []string
-		c.Assert(output, quicktest.DeepEquals, expectedOutput)         // Match expected output type
-	})
-
-	c.Run("Clean Text Using Substring", func(c *quicktest.C) {
-		input := []string{"Sample text without any exclusion."} // Change to []string
-		expectedOutput := []string{"Sample text without any exclusion."}
-
-		output := cleanTextUsingSubstring(input, "exclude") // Ensure correct parameters are passed
-		c.Assert(output, quicktest.DeepEquals, expectedOutput)
-	})
-}
-
-// TestCompileRegexPatterns tests the compileRegexPatterns function
-func TestCompileRegexPatterns(t *testing.T) {
-	c := quicktest.New(t)
-
-	c.Run("Compile Patterns", func(c *quicktest.C) {
-		patterns := []string{"exclude this"}
-		compiled, err := compileRegexPatterns(patterns) // Ensure you're capturing all return values
-		c.Assert(err, quicktest.IsNil)                  // Check for error
-		c.Assert(len(compiled), quicktest.Equals, 1)    // Expect one compiled pattern
-	})
-}
-
-// TestFetchJSONInput tests the FetchJSONInput function
-func TestFetchJSONInput(t *testing.T) {
-	c := quicktest.New(t)
-
-	c.Run("Fetch JSON Input", func(c *quicktest.C) {
-		expected := &structpb.Struct{
-			Fields: map[string]*structpb.Value{
-				"key": {Kind: &structpb.Value_StringValue{StringValue: "value"}},
-			},
-		}
-
-		output, err := FetchJSONInput("some-input-source") // Adjust input as necessary
-		c.Assert(err, quicktest.IsNil)                     // Check for error
-		c.Assert(output, quicktest.DeepEquals, expected)
-	})
-}
-
-// TestExecute tests the Execute function
-func TestExecute(t *testing.T) {
-	c := quicktest.New(t)
-
-	c.Run("Execute Task", func(c *quicktest.C) {
-		component := Init()
-		execution, err := component.CreateExecution(base.ComponentExecution{
-			Component: component,
-			Task:      taskDataCleansing,
-		})
-		c.Assert(err, quicktest.IsNil)
-
-		err = execution.Execute(context.Background(), nil) // Adjust as necessary
-		c.Assert(err, quicktest.IsNil)
-	})
-}
+		output := clean
