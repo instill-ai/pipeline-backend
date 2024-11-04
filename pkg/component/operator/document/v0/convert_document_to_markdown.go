@@ -26,6 +26,7 @@ func (e *execution) convertDocumentToMarkdown(ctx context.Context, job *base.Job
 		DisplayImageTag:     inputStruct.DisplayImageTag,
 		Filename:            inputStruct.Filename,
 		DisplayAllPageImage: inputStruct.DisplayAllPageImage,
+		Resolution:          inputStruct.Resolution,
 	}
 
 	transformerOutputStruct, err := transformer.ConvertDocumentToMarkdown(&transformerInputStruct, e.getMarkdownTransformer)

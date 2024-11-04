@@ -24,6 +24,7 @@ func (e *execution) convertDocumentToImages(ctx context.Context, job *base.Job) 
 	transformerInputStruct := transformer.ConvertDocumentToImagesTransformerInput{
 		Document: dataURI.String(),
 		Filename: inputStruct.Filename,
+		Resolution: inputStruct.Resolution,
 	}
 
 	transformerOutputStruct, err := transformer.ConvertDocumentToImage(&transformerInputStruct)
