@@ -8,6 +8,7 @@ import (
 
 	"github.com/frankban/quicktest"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // TestInit tests the Init function
@@ -101,7 +102,7 @@ func TestFetchJSONInput(t *testing.T) {
 	data, _ := json.Marshal(testData)
 	if _, err := tempFile.Write(data); err != nil {
 		t.Fatalf("failed to write to temp file: %v", err)
-	 }
+	}
 
 	// Test FetchJSONInput
 	c.Run("Fetch JSON Input", func(c *quicktest.C) {
@@ -253,7 +254,7 @@ func TestChunkMarkdown(t *testing.T) {
 						StartPosition: 30,
 						EndPosition:   47,
 						TokenCount:    2,
- },
+					},
 				},
 				TokenCount:       9,
 				ChunksTokenCount: 9,
@@ -275,14 +276,18 @@ type MockOutput struct {
 	data []interface{}
 }
 
-func (m *MockOutput) Write(ctx context.Context, data interface{}) error {
+func (m *MockOutput) Write(ctx context.Context, data *structpb.Struct) error {
 	m.data = append(m.data, data)
 	return nil
 }
 
-// MockError simulates error handling for testing
-type MockError struct{}
-
-func (m *MockError) Error(ctx context.Context, err error) {
-	// Implement your error handling logic here
+// MockError simulates an error for testing
+type MockError struct {
+	err error
 }
+
+func (m *MockError) HandleError(ctx context.Context, err error) {
+	m.err = err
+}
+
+// Add other utility functions and types as needed
