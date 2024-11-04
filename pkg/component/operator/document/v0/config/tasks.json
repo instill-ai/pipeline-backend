@@ -1,13 +1,12 @@
 {
   "$defs": {
     "resolution": {
-      "description": "Desired number pixels per inch. Defaults to 72. Maximum is 1000. Minimum is 72.",
+      "description": "Desired number pixels per inch. Defaults to 500. Minimum is 72.",
       "instillFormat": "number",
       "title": "Resolution",
       "type": "number",
       "minimum": 72,
-      "default": 72,
-      "maximum": 1000
+      "default": 500
     }
   },
   "TASK_CONVERT_TO_MARKDOWN": {

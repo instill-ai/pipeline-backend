@@ -11,7 +11,7 @@ class PageImageProcessor:
     images: list[dict]
     resolution: int
 
-    def __init__(self, page: Page, image_index: int, resolution: int = 72) -> None:
+    def __init__(self, page: Page, image_index: int, resolution: int = 500) -> None:
         self.page = page
         self.lines = page.extract_text_lines(layout=True, strip=True, return_chars=False)
         self.images = []
