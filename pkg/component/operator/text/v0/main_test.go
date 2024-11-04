@@ -74,7 +74,7 @@ func TestOperator(t *testing.T) {
 			})
 			err = execution.Execute(ctx, []*base.Job{job})
 			c.Assert(err, quicktest.IsNil)
+
 		})
 	}
 }
-
