@@ -137,11 +137,16 @@ func TestCleanData(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name: "error case",
+			name: "error case - empty input",
 			input: CleanDataInput{
 				Texts:   []string{},
-				Setting: DataCleaningSetting{},
-			},
+				 },
+			expected:      CleanDataOutput{},
+			expectedError: true,
+		},
+		{
+			name: "error case - nil input",
+			input: nil,
 			expected:      CleanDataOutput{},
 			expectedError: true,
 		},
