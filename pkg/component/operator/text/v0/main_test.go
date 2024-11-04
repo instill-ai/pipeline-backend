@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/frankban/quicktest"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
@@ -38,8 +37,8 @@ func TestOperator(t *testing.T) {
 	}
 	bc := base.Component{}
 	ctx := context.Background()
-	for i := range testcases {
-		tc := &testcases[i]
+	for _, tc := range testcases {
+		tc := tc // Create a new variable to avoid loop variable issues
 		c.Run(tc.name, func(c *quicktest.C) {
 			component := Init(bc)
 			c.Assert(component, quicktest.IsNotNil)
@@ -82,9 +81,9 @@ func TestCleanData(t *testing.T) {
 	c := quicktest.New(t)
 
 	testcases := []struct {
-		name         string
-		input        CleanDataInput
-		expected     CleanDataOutput
+		name          string
+		input         CleanDataInput
+		expected      CleanDataOutput
 		expectedError bool
 	}{
 		{
@@ -129,17 +128,20 @@ func TestCleanData(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name: "error case",
+			name: "no texts provided",
 			input: CleanDataInput{
 				Texts:   []string{},
 				Setting: DataCleaningSetting{},
 			},
-			expected:     CleanDataOutput{},
-			expectedError: true,
+			expected: CleanDataOutput{
+				CleanedTexts: nil, // Expecting nil since no texts to clean
+			},
+			expectedError: false,
 		},
 	}
 
 	for _, tc := range testcases {
+		tc := tc // Create a new variable to avoid loop variable issues
 		c.Run(tc.name, func(c *quicktest.C) {
 			output := CleanData(tc.input)
 			c.Assert(output.CleanedTexts, quicktest.DeepEquals, tc.expected.CleanedTexts)
