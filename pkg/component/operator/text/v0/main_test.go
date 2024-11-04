@@ -121,17 +121,17 @@ func TestCleanData(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name: "no valid cleaning method",
-			input: CleanDataInput{
-				Texts: []string{"Hello World!", "This is a test."},
-				Setting: DataCleaningSetting{
-					CleanMethod: "InvalidMethod",
-				},
-			},
-			expected:      CleanDataOutput{},
-			expectedError: true,
+	name: "no valid cleaning method",
+	input: CleanDataInput{
+		Texts: []string{"Hello World!", "This is a test."},
+		Setting: DataCleaningSetting{
+			CleanMethod: "InvalidMethod",
 		},
-	}
+	},
+	expected:      CleanDataOutput{},
+	expectedError: true,
+},
+
 
 	for _, tc := range testcases {
 		tc := tc // capture range variable
