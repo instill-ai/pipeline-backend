@@ -12,7 +12,7 @@ repos:
     rev: v0.5.1
     hooks:
       - id: golangci-lint
-        args: ["--build-tags", "onnx"]
+        args: ["--build-tags=onnx"]
       - id: go-mod-tidy
   - repo: https://github.com/pinglin/conventional-pre-commit
     rev: v1.1.0
