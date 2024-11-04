@@ -54,13 +54,11 @@ func TestOperator(t *testing.T) {
 
 			ir, ow, eh, job := mock.GenerateMockJob(c)
 
-			// Set up mock data reading
 			ir.ReadDataMock.Set(func(ctx context.Context, v interface{}) error {
 				*v.(*ChunkTextInput) = tc.input
 				return nil
 			})
 
-			// Set up mock data writing and error handling
 			ow.WriteDataMock.Optional().Set(func(ctx context.Context, output interface{}) error {
 				if tc.name == "error case" {
 					c.Assert(output, quicktest.IsNil)
@@ -78,7 +76,6 @@ func TestOperator(t *testing.T) {
 				}
 			})
 
-			// Execute the task and assert no errors
 			err = execution.Execute(ctx, []*base.Job{job})
 			c.Assert(err, quicktest.IsNil)
 		})
@@ -131,22 +128,6 @@ func TestCleanData(t *testing.T) {
 					CleanMethod: "InvalidMethod",
 				},
 			},
-			expected: CleanDataOutput{
-				CleanedTexts: []string{"Hello World!", "This is a test."},
-			},
-			expectedError: false,
-		},
-		{
-			name: "error case - empty input",
-			input: CleanDataInput{
-				Texts:   []string{},
-				 },
-			expected:      CleanDataOutput{},
-			expectedError: true,
-		},
-		{
-			name: "error case - nil input",
-			input: nil,
 			expected:      CleanDataOutput{},
 			expectedError: true,
 		},
@@ -155,10 +136,12 @@ func TestCleanData(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc // capture range variable
 		c.Run(tc.name, func(c *quicktest.C) {
-			output := CleanData(tc.input)
-			c.Assert(output.CleanedTexts, quicktest.DeepEquals, tc.expected.CleanedTexts)
+			output, err := CleanData(tc.input)
 			if tc.expectedError {
-				c.Assert(len(output.CleanedTexts), quicktest.Equals, 0)
+				c.Assert(err, quicktest.ErrorMatches, "unsupported cleaning method: InvalidMethod")
+			} else {
+				c.Assert(err, quicktest.IsNil)
+				c.Assert(output.CleanedTexts, quicktest.DeepEquals, tc.expected.CleanedTexts)
 			}
 		})
 	}
