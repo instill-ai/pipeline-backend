@@ -199,7 +199,6 @@ func compileRegexPatterns(patterns []string) []*regexp.Regexp {
 	for _, pattern := range patterns {
 		re, err := regexp.Compile(pattern)
 		if err != nil {
-			// Handle regex compilation errors appropriately
 			continue // Skip this pattern if it fails
 		}
 		regexes = append(regexes, re)
@@ -229,21 +228,10 @@ func FetchJSONInput(filePath string) (CleanDataInput, error) {
 	return input, nil
 }
 
-func CleanData(input CleanDataInput) CleanDataOutput {
-	if input.Texts == nil || len(input.Texts) == 0 {
-		return CleanDataOutput{
-			CleanedTexts: []string{}, // Return empty output for nil or empty input
-		}
-	}
-
-	// Your existing cleaning logic here...
-}
-
 // Execute executes the derived execution for the data cleansing task
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	for _, job := range jobs {
 		if e.Task == taskDataCleansing {
-			// Fetch JSON input from a specified file
 			cleanDataInput, err := FetchJSONInput("pkg/component/operator/text/v0/config/tasks.json") // Replace with your actual file path
 			if err != nil {
 				job.Error.Error(ctx, fmt.Errorf("failed to fetch input data for cleansing: %w", err))
@@ -253,9 +241,8 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 			// Perform data cleansing
 			cleanedDataOutput := CleanData(cleanDataInput)
 
-			// Optionally, clean the data in chunks
 			// Define a chunk size; adjust as needed based on your requirements
-			chunkSize := 100 // Example chunk size
+			chunkSize := 100
 			chunkedOutputs := CleanChunkedData(cleanDataInput, chunkSize)
 
 			// Write the cleaned output back to the job output
@@ -265,7 +252,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 				continue
 			}
 
-			// Optionally handle the chunked outputs if needed
+			// Handle the chunked outputs if needed
 			for _, chunk := range chunkedOutputs {
 				err = job.Output.WriteData(ctx, chunk)
 				if err != nil {
