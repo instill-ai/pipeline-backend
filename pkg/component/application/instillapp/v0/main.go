@@ -14,7 +14,9 @@ import (
 )
 
 const (
-	TaskReadChatHistory  string = "TASK_READ_CHAT_HISTORY"
+	// TaskReadChatHistory is the task name for reading chat history
+	TaskReadChatHistory string = "TASK_READ_CHAT_HISTORY"
+	// TaskWriteChatMessage is the task name for writing chat message
 	TaskWriteChatMessage string = "TASK_WRITE_CHAT_MESSAGE"
 )
 
@@ -39,10 +41,12 @@ type execution struct {
 	connection Connection
 }
 
+// Connection is the interface for the connection to the application server
 type Connection interface {
 	Close() error
 }
 
+// Init initializes the component
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
@@ -54,6 +58,7 @@ func Init(bc base.Component) *component {
 	return comp
 }
 
+// CreateExecution creates an execution for the component
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	e := &execution{ComponentExecution: x}
 
@@ -77,6 +82,7 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	return e, nil
 }
 
+// Execute executes the jobs concurrently
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }
