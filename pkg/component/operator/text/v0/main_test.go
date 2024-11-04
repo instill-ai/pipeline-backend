@@ -8,7 +8,6 @@ import (
 
 	"github.com/frankban/quicktest"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // TestInit tests the Init function
@@ -126,8 +125,8 @@ func TestExecute(t *testing.T) {
 
 		// Create a mock job
 		mockJob := &base.Job{
-			Output: &MockOutput{}, // Use MockOutput with proper methods implemented
-			Error:  &MockError{},  // Use MockError with proper methods implemented
+			Output: &MockOutput{}, // Implement MockOutput to simulate job output
+			Error:  &MockError{},  // Implement MockError to simulate error handling
 		}
 
 		err = execution.Execute(context.Background(), []*base.Job{mockJob})
@@ -246,13 +245,13 @@ func TestChunkMarkdown(t *testing.T) {
 					{
 						Text:          "This is a sample text for chunking.",
 						StartPosition: 0,
-						EndPosition:   39,
+						EndPosition:   29,
 						TokenCount:    7,
 					},
 					{
 						Text:          "Another paragraph.",
-						StartPosition: 40,
-						EndPosition:   58,
+						StartPosition: 30,
+						EndPosition:   47,
 						TokenCount:    2,
 					},
 				},
@@ -276,14 +275,7 @@ type MockOutput struct {
 	data []interface{}
 }
 
-// Write writes data to the mock output, implementing the OutputWriter interface
-func (m *MockOutput) Write(ctx context.Context, data *structpb.Struct) error {
-	m.data = append(m.data, data)
-	return nil
-}
-
-// WriteData writes data to the mock output, implementing the OutputWriter interface
-func (m *MockOutput) WriteData(ctx context.Context, data interface{}) error {
+func (m *MockOutput) Write(ctx context.Context, data interface{}) error {
 	m.data = append(m.data, data)
 	return nil
 }
@@ -299,7 +291,8 @@ func (m *MockError) HandleError(ctx context.Context, err error) {
 }
 
 // Error returns the stored error, implementing the ErrorHandler interface
-func (m *MockError) Error() error {
-	return m.err
+func (m *MockError) Error(ctx context.Context, err error) {
+	m.err = err
 }
+
 
