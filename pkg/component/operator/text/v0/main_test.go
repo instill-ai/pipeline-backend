@@ -8,7 +8,6 @@ import (
 
 	"github.com/frankban/quicktest"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // TestInit tests the Init function
