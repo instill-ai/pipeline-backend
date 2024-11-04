@@ -35,6 +35,7 @@ func TestOperator(t *testing.T) {
 			input: ChunkTextInput{},
 		},
 	}
+
 	bc := base.Component{}
 	ctx := context.Background()
 	for _, tc := range testcases {
@@ -60,16 +61,19 @@ func TestOperator(t *testing.T) {
 					c.Assert(output, quicktest.IsNil)
 					return nil
 				}
+				// You might want to assert specific output here for the successful case
 				return nil
 			})
+
 			if tc.name == "error case" {
-				ir.ReadDataMock.Optional()
+				ir.ReadDataMock.Optional() // Allow ReadDataMock to be optional
 			}
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				if tc.name == "error case" {
 					c.Assert(err, quicktest.ErrorMatches, "not supported task: FAKE_TASK")
 				}
 			})
+
 			err = execution.Execute(ctx, []*base.Job{job})
 			c.Assert(err, quicktest.IsNil)
 		})
@@ -145,8 +149,12 @@ func TestCleanData(t *testing.T) {
 		c.Run(tc.name, func(c *quicktest.C) {
 			output := CleanData(tc.input)
 			c.Assert(output.CleanedTexts, quicktest.DeepEquals, tc.expected.CleanedTexts)
+
+			// Check expected error condition
 			if tc.expectedError {
 				c.Assert(len(output.CleanedTexts), quicktest.Equals, 0)
+			} else {
+				c.Assert(len(output.CleanedTexts), quicktest.Not(quicktest.Equals), 0) // Assert we actually cleaned something if there was no expected error
 			}
 		})
 	}
