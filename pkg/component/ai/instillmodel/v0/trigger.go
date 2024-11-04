@@ -20,8 +20,10 @@ func (e *execution) trigger(ctx context.Context, job *base.Job) error {
 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
-	input := &structpb.Struct{}
-	err := job.Input.ReadData(ctx, input)
+	// Read() is deprecated and will be removed in a future version.
+	// However, Instill Model is still using structpb.Struct for input and output.
+	// When we move out Read(), we will need to update the Instill Model as well.
+	input, err := job.Input.Read(ctx)
 
 	if err != nil {
 		return fmt.Errorf("reading input data: %w", err)
@@ -50,7 +52,16 @@ func (e *execution) trigger(ctx context.Context, job *base.Job) error {
 		return fmt.Errorf("triggering model: get empty task outputs")
 	}
 
-	return job.Output.WriteData(ctx, res.TaskOutputs[0])
+	// Write() is deprecated and will be removed in a future version.
+	// However, Instill Model is still using structpb.Struct for input and output.
+	// When we move out Write(), we will need to update the Instill Model as well.
+	err = job.Output.Write(ctx, res.TaskOutputs[0])
+
+	if err != nil {
+		return fmt.Errorf("writing output data: %w", err)
+	}
+
+	return nil
 }
 
 func getTriggerInfo(input *structpb.Struct) (*triggerInfo, error) {
