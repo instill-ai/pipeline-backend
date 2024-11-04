@@ -26,8 +26,9 @@ class PDFTransformer:
 	page_numbers_with_images: list[int]
 	# This is the result of the markdown transformation divided by pages.
 	markdowns: list[str]
+	resolution: int = 72
 
-	def __init__(self, x: BytesIO, display_image_tag: bool = False, image_index: int = 0):
+	def __init__(self, x: BytesIO, display_image_tag: bool = False, image_index: int = 0, resolution: int = 72):
 		self.pdf = pdfplumber.open(x)
 		self.raw_pages = self.pdf.pages
 		self.metadata = self.pdf.metadata
@@ -35,6 +36,7 @@ class PDFTransformer:
 		self.image_index = image_index
 		self.errors = []
 		self.page_numbers_with_images = []
+		self.resolution = resolution
 
 	def preprocess(self):
 		self.set_heights()
@@ -61,7 +63,7 @@ class PDFTransformer:
 	def process_image(self, i: int):
 		image_index = i
 		for page in self.pages:
-			image_processor = PageImageProcessor(page=page, image_index=image_index)
+			image_processor = PageImageProcessor(page=page, image_index=image_index, resolution=self.resolution)
 			image_processor.produce_images_by_blocks()
 			processed_images = image_processor.images
 			self.images += processed_images
