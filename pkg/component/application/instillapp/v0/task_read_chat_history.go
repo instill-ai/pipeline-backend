@@ -122,33 +122,27 @@ func (e *execution) readChatHistory(ctx context.Context, job *base.Job) error {
 		return nil
 	}
 
-	res, err := appClient.ListMessages(ctx, &appPB.ListMessagesRequest{
-		NamespaceId:           inputStruct.Namespace,
-		AppId:                 inputStruct.AppID,
-		ConversationId:        inputStruct.ConversationID,
-		IncludeSystemMessages: true,
-	})
-
-	if err != nil {
-		return fmt.Errorf("list messages: %w", err)
-	}
-
-	output.filter(inputStruct, res.Messages)
-
-	for res.NextPageToken != "" || (len(output.Messages) < inputStruct.MaxMessageCount && inputStruct.MaxMessageCount > 0) {
-		res, err = appClient.ListMessages(ctx, &appPB.ListMessagesRequest{
+	var nextPageToken string
+	for {
+		res, err := appClient.ListMessages(ctx, &appPB.ListMessagesRequest{
 			NamespaceId:           inputStruct.Namespace,
 			AppId:                 inputStruct.AppID,
 			ConversationId:        inputStruct.ConversationID,
 			IncludeSystemMessages: true,
-			PageToken:             res.NextPageToken,
+			PageToken:             nextPageToken,
 		})
 
 		if err != nil {
-			return fmt.Errorf("failed to list messages: %w", err)
+			return fmt.Errorf("list messages: %w", err)
 		}
 
 		output.filter(inputStruct, res.Messages)
+
+		if res.NextPageToken == "" || (len(output.Messages) >= inputStruct.MaxMessageCount && inputStruct.MaxMessageCount > 0) {
+			break
+		}
+
+		nextPageToken = res.NextPageToken
 	}
 
 	err = job.Output.WriteData(ctx, output)
