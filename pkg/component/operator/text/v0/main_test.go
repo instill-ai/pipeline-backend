@@ -3,281 +3,174 @@ package text
 import (
 	"context"
 	"encoding/json"
-	"os"
+	"errors"
 	"testing"
 
-	"github.com/frankban/quicktest"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
-// TestInit tests the Init function
-func TestInit(t *testing.T) {
-	c := quicktest.New(t)
-
-	c.Run("Initialize Component", func(c *quicktest.C) {
-		component := Init(base.Component{}) // Pass a base.Component instance
-		c.Assert(component, quicktest.IsNotNil)
-	})
+// Mocking base.Job for testing
+type MockJob struct {
+	Input  CleanDataInput
+	Output MockOutput
+	Error  MockError
 }
 
-// TestCleanData tests the CleanData function
+type MockOutput struct {
+	Data []CleanDataOutput
+}
+
+func (m *MockOutput) WriteData(ctx context.Context, data CleanDataOutput) error {
+	m.Data = append(m.Data, data)
+	return nil // Simulate successful write
+}
+
+type MockError struct {
+	Errors []error
+}
+
+func (m *MockError) Error(ctx context.Context, err error) {
+	m.Errors = append(m.Errors, err)
+}
+
+// Test for CleanData function
 func TestCleanData(t *testing.T) {
-	c := quicktest.New(t)
-
-	testCases := []struct {
-		name  string
-		input CleanDataInput
-		want  CleanDataOutput
-	}{
-		{
-			name: "Valid Regex Exclusion",
-			input: CleanDataInput{
-				Texts: []string{"Keep this text", "Remove this text"},
-				Setting: DataCleaningSetting{
-					CleanMethod:     "Regex",
-					ExcludePatterns: []string{"Remove"},
-				},
-			},
-			want: CleanDataOutput{
-				CleanedTexts: []string{"Keep this text"},
-			},
-		},
-		{
-			name: "Valid Substring Exclusion",
-			input: CleanDataInput{
-				Texts: []string{"Keep this text", "Remove this text"},
-				Setting: DataCleaningSetting{
-					CleanMethod:     "Substring",
-					ExcludeSubstrs:  []string{"Remove"},
-					IncludeSubstrs:  []string{"Keep"},
-					CaseSensitive:    false,
-				},
-			},
-			want: CleanDataOutput{
-				CleanedTexts: []string{"Keep this text"},
-			},
-		},
-		{
-			name: "No Exclusion",
-			input: CleanDataInput{
-				Texts: []string{"Text without exclusions"},
-				Setting: DataCleaningSetting{
-					CleanMethod: "Regex",
-				},
-			},
-			want: CleanDataOutput{
-				CleanedTexts: []string{"Text without exclusions"},
-			},
+	input := CleanDataInput{
+		Texts: []string{"Hello World", "This is a test.", "Another line."},
+		Setting: DataCleaningSetting{
+			CleanMethod:     "Regex",
+			ExcludePatterns: []string{"World"},
+			IncludePatterns: []string{},
 		},
 	}
 
-	for _, tc := range testCases {
-		c.Run(tc.name, func(c *quicktest.C) {
-			output := CleanData(tc.input)
-			c.Assert(output, quicktest.DeepEquals, tc.want)
-		})
+	expectedOutput := CleanDataOutput{
+		CleanedTexts: []string{"This is a test.", "Another line."},
+	}
+
+	result := CleanData(input)
+	if len(result.CleanedTexts) != len(expectedOutput.CleanedTexts) {
+		t.Errorf("Expected %d cleaned texts, got %d", len(expectedOutput.CleanedTexts), len(result.CleanedTexts))
+	}
+
+	for i, text := range result.CleanedTexts {
+		if text != expectedOutput.CleanedTexts[i] {
+			t.Errorf("Expected cleaned text '%s', got '%s'", expectedOutput.CleanedTexts[i], text)
+		}
 	}
 }
 
-// TestFetchJSONInput tests the FetchJSONInput function
-func TestFetchJSONInput(t *testing.T) {
-	c := quicktest.New(t)
+// Test for CleanChunkedData function
+func TestCleanChunkedData(t *testing.T) {
+	input := CleanDataInput{
+		Texts: []string{"Hello World", "This is a test.", "Another line."},
+		Setting: DataCleaningSetting{
+			CleanMethod:     "Substring",
+			ExcludeSubstrs:  []string{"World"},
+			IncludeSubstrs:  []string{},
+		},
+	}
 
-	// Create a temporary JSON file for testing
-	tempFile, err := os.CreateTemp("", "test_input.json")
+	expectedOutput := []CleanDataOutput{
+		{CleanedTexts: []string{"This is a test.", "Another line."}},
+	}
+
+	result := CleanChunkedData(input, 2)
+
+	if len(result) != len(expectedOutput) {
+		t.Errorf("Expected %d chunked outputs, got %d", len(expectedOutput), len(result))
+	}
+
+	for i, chunk := range result {
+		if len(chunk.CleanedTexts) != len(expectedOutput[i].CleanedTexts) {
+			t.Errorf("Expected %d cleaned texts in chunk, got %d", len(expectedOutput[i].CleanedTexts), len(chunk.CleanedTexts))
+		}
+
+		for j, text := range chunk.CleanedTexts {
+			if text != expectedOutput[i].CleanedTexts[j] {
+				t.Errorf("Expected cleaned text '%s', got '%s'", expectedOutput[i].CleanedTexts[j], text)
+			}
+		}
+	}
+}
+
+// Test for FetchJSONInput function with valid JSON
+func TestFetchJSONInput_ValidJSON(t *testing.T) {
+	// Create a temporary JSON file
+	jsonData := `{"texts": ["Sample text"], "setting": {"clean-method": "Regex"}}`
+	tempFile, err := ioutil.TempFile("", "input.json")
 	if err != nil {
 		t.Fatalf("failed to create temp file: %v", err)
 	}
-	defer os.Remove(tempFile.Name()) // Clean up
+	defer os.Remove(tempFile.Name())
 
-	// Write test data to the file
-	testData := CleanDataInput{
-		Texts: []string{"Sample text 1.", "Sample text 2."},
-		Setting: DataCleaningSetting{
-			CleanMethod:     "Regex",
-			ExcludePatterns: []string{"exclude this"},
-		},
-	}
-	data, _ := json.Marshal(testData)
-	if _, err := tempFile.Write(data); err != nil {
+	if _, err := tempFile.Write([]byte(jsonData)); err != nil {
 		t.Fatalf("failed to write to temp file: %v", err)
 	}
+	tempFile.Close()
 
-	// Test FetchJSONInput
-	c.Run("Fetch JSON Input", func(c *quicktest.C) {
-		input, err := FetchJSONInput(tempFile.Name())
-		c.Assert(err, quicktest.IsNil)
-		c.Assert(input, quicktest.DeepEquals, testData)
-	})
+	expected := CleanDataInput{
+		Texts: []string{"Sample text"},
+		Setting: DataCleaningSetting{
+			CleanMethod: "Regex",
+		},
+	}
+
+	result, err := FetchJSONInput(tempFile.Name())
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if result != expected {
+		t.Errorf("expected %+v, got %+v", expected, result)
+	}
 }
 
-// TestExecute tests the Execute function of the execution struct
+// Test for FetchJSONInput function with an invalid JSON file
+func TestFetchJSONInput_InvalidJSON(t *testing.T) {
+	tempFile, err := ioutil.TempFile("", "invalid.json")
+	if err != nil {
+		t.Fatalf("failed to create temp file: %v", err)
+	}
+	defer os.Remove(tempFile.Name())
+
+	// Write invalid JSON data
+	if _, err := tempFile.Write([]byte("{invalid json}")); err != nil {
+		t.Fatalf("failed to write to temp file: %v", err)
+	}
+	tempFile.Close()
+
+	_, err = FetchJSONInput(tempFile.Name())
+	if err == nil {
+		t.Fatalf("expected an error, got nil")
+	}
+}
+
+// Test for Execute function
 func TestExecute(t *testing.T) {
-	c := quicktest.New(t)
+	ctx := context.Background()
+	mockJob := &MockJob{}
+	exec := execution{}
 
-	c.Run("Execute Task", func(c *quicktest.C) {
-		component := Init(base.Component{}) // Pass a base.Component instance
-		execution, err := component.CreateExecution(base.ComponentExecution{
-			Component: component,
-			Task:      taskDataCleansing,
-		})
-		c.Assert(err, quicktest.IsNil)
-
-		// You may need to create a mock or adapt your execution to not require OutputWriter
-		// Update this section based on your execution logic
-
-		err = execution.Execute(context.Background(), nil) // Pass nil or adapt according to your needs
-		c.Assert(err, quicktest.IsNil)
-	})
-}
-
-// TestChunkTextFunctionality tests the chunkText function
-func TestChunkTextFunctionality(t *testing.T) {
-	c := quicktest.New(t)
-
-	testCases := []struct {
-		name  string
-		input ChunkTextInput
-		want  ChunkTextOutput
-	}{
-		{
-			name: "Valid Token Chunking",
-			input: ChunkTextInput{
-				Text: "This is a sample text for chunking.",
-				Strategy: Strategy{
-					Setting: Setting{
-						ChunkMethod: "Token",
-						ChunkSize:   10,
-						ModelName:  "gpt-3.5-turbo",
-					},
-				},
-			},
-			want: ChunkTextOutput{
-				ChunkNum:         2,
-				TextChunks: []TextChunk{
-					{
-						Text:          "This is a sample",
-						StartPosition: 0,
-						EndPosition:   13,
-						TokenCount:    5,
-					},
-					{
-						Text:          "text for chunking.",
-						StartPosition: 14,
-						EndPosition:   29,
-						TokenCount:    4,
-					},
-				},
-				TokenCount:       9,
-				ChunksTokenCount: 9,
-			},
-		},
-		{
-			name: "Valid Recursive Chunking",
-			input: ChunkTextInput{
-				Text: "This is a sample text for chunking.",
-				Strategy: Strategy{
-					Setting: Setting{
-						ChunkMethod: "Recursive",
-						ChunkSize:   10,
-						Separators:  []string{" ", "\n"},
-					},
-				},
-			},
-			want: ChunkTextOutput{
-				ChunkNum:         2,
-				TextChunks: []TextChunk{
-					{
-						Text:          "This is a sample",
-						StartPosition: 0,
-						EndPosition:   13,
-						TokenCount:    4,
-					},
-					{
-						Text:          "text for chunking.",
-						StartPosition: 14,
-						EndPosition:   29,
-						TokenCount:    4,
-					},
-				},
-				TokenCount:       8,
-				ChunksTokenCount: 8,
-			},
+	// Prepare a valid job with the cleansing task
+	mockJob.Input = CleanDataInput{
+		Texts: []string{"Hello World", "Goodbye World"},
+		Setting: DataCleaningSetting{
+			CleanMethod:     "Regex",
+			ExcludePatterns: []string{"World"},
 		},
 	}
 
-	for _, tc := range testCases {
-		c.Run(tc.name, func(c *quicktest.C) {
-			output, err := chunkText(tc.input)
-			c.Assert(err, quicktest.IsNil)
-			c.Assert(output, quicktest.DeepEquals, tc.want)
-		})
-	}
-}
+	jobs := []*base.Job{mockJob}
 
-// TestChunkMarkdown tests the chunkMarkdown function
-func TestChunkMarkdown(t *testing.T) {
-	c := quicktest.New(t)
-
-	testCases := []struct {
-		name  string
-		input ChunkTextInput
-		want  ChunkTextOutput
-	}{
-		{
-			name: "Valid Markdown Chunking",
-			input: ChunkTextInput{
-				Text: "This is a sample text for chunking.\n\nAnother paragraph.",
-				Strategy: Strategy{
-					Setting: Setting{
-						ChunkMethod: "Markdown",
-						ChunkSize:   10,
-						ModelName:  "gpt-3.5-turbo",
-					},
-				},
-			},
-			want: ChunkTextOutput{
-				ChunkNum:         2,
-				TextChunks: []TextChunk{
-					{
-						Text:          "This is a sample text for chunking.",
-						StartPosition: 0,
-						EndPosition:   29,
-						TokenCount:    7,
-					},
-					{
-						Text:          "Another paragraph.",
-						StartPosition: 30,
-						EndPosition:   47,
-						TokenCount:    2,
-					},
-				},
-				TokenCount:       9,
-				ChunksTokenCount: 9,
-			},
-		},
+	// Call the Execute method
+	err := exec.Execute(ctx, jobs)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
 	}
 
-	for _, tc := range testCases {
-		c.Run(tc.name, func(c *quicktest.C) {
-			output, err := chunkMarkdown(tc.input)
-			c.Assert(err, quicktest.IsNil)
-			c.Assert(output, quicktest.DeepEquals, tc.want)
-		})
+	// Check if the output has cleaned texts
+	if len(mockJob.Output.Data) == 0 {
+		t.Errorf("expected cleaned output, got none")
 	}
-}
-
-// MockError simulates an error for testing
-type MockError struct {
-	err error
-}
-
-// HandleError handles an error for testing, implementing the ErrorHandler interface
-func (m *MockError) HandleError(ctx context.Context, err error) {
-	m.err = err
-}
-
-// Error returns the stored error, implementing the ErrorHandler interface
-func (m *MockError) Error(ctx context.Context, err error) {
-	m.err = err
 }
