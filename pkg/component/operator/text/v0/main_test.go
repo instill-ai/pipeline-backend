@@ -17,12 +17,12 @@ func TestOperator(t *testing.T) {
 	testcases := []struct {
 		name  string
 		task  string
-		input structpb.Struct
+		input *structpb.Struct // Changed to pointer for consistency
 	}{
 		{
 			name: "chunk texts",
 			task: "TASK_CHUNK_TEXT",
-			input: structpb.Struct{
+			input: &structpb.Struct{
 				Fields: map[string]*structpb.Value{
 					"text": {Kind: &structpb.Value_StringValue{StringValue: "Hello world. This is a test."}},
 					"strategy": {Kind: &structpb.Value_StructValue{StructValue: &structpb.Struct{
@@ -40,12 +40,12 @@ func TestOperator(t *testing.T) {
 		{
 			name:  "error case",
 			task:  "FAKE_TASK",
-			input: structpb.Struct{},
+			input: &structpb.Struct{},
 		},
 		{
 			name: "data cleansing",
 			task: "TASK_CLEAN_DATA",
-			input: structpb.Struct{
+			input: &structpb.Struct{
 				Fields: map[string]*structpb.Value{
 					"texts": {Kind: &structpb.Value_ListValue{ListValue: &structpb.ListValue{
 						Values: []*structpb.Value{
@@ -67,8 +67,10 @@ func TestOperator(t *testing.T) {
 			},
 		},
 	}
+
 	bc := base.Component{}
 	ctx := context.Background()
+
 	for i := range testcases {
 		tc := &testcases[i]
 		c.Run(tc.name, func(c *quicktest.C) {
@@ -83,7 +85,7 @@ func TestOperator(t *testing.T) {
 			c.Assert(execution, quicktest.IsNotNil)
 
 			ir, ow, eh, job := mock.GenerateMockJob(c)
-			ir.ReadMock.Return(&tc.input, nil)
+			ir.ReadMock.Return(tc.input, nil) // Directly return the pointer
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				if tc.name == "error case" {
 					c.Assert(output, quicktest.IsNil)
@@ -96,6 +98,7 @@ func TestOperator(t *testing.T) {
 					c.Assert(err, quicktest.ErrorMatches, "not supported task: FAKE_TASK")
 				}
 			})
+
 			err = execution.Execute(ctx, []*base.Job{job})
 			c.Assert(err, quicktest.IsNil)
 		})
