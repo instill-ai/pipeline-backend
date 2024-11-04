@@ -9,8 +9,9 @@ import (
 )
 
 type ConvertDocumentToImagesTransformerInput struct {
-	Document string `json:"document"`
-	Filename string `json:"filename"`
+	Document   string `json:"document"`
+	Filename   string `json:"filename"`
+	Resolution int    `json:"resolution"`
 }
 
 type ConvertDocumentToImagesTransformerOutput struct {
@@ -53,8 +54,9 @@ func ConvertDocumentToImage(inputStruct *ConvertDocumentToImagesTransformerInput
 	}
 
 	paramsJSON := map[string]interface{}{
-		"PDF":      base64PDFWithoutMime,
-		"filename": inputStruct.Filename,
+		"PDF":        base64PDFWithoutMime,
+		"filename":   inputStruct.Filename,
+		"resolution": inputStruct.Resolution,
 	}
 
 	pythonCode := imageProcessor + pdfTransformer + taskConvertToImagesExecution
