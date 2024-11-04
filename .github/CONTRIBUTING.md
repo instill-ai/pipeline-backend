@@ -85,11 +85,9 @@ will create and migrate a test database to keep these queries isolated from the
 main DB. You can set the database host and name by overriding the `TEST_DBHOST`
 and `TEST_DBNAME` values.
 
-Certain tests depend on the [`docconv`](https://github.com/sajari/docconv)
-package and aren't run by default. You can trigger them by adding the `OCR=true`
-flag to the coverage command. Make sure to install the [package
-dependencies](https://github.com/sajari/docconv?tab=readme-ov-file#dependencies)
-first.
+Certain tests depend on external packages and aren't run by default:
+- For [`docconv`](https://github.com/sajari/docconv) tests, add `OCR=true` flag and install its [dependencies](https://github.com/sajari/docconv?tab=readme-ov-file#dependencies).
+- For [`onnxruntime`](https://github.com/microsoft/onnxruntime) tests, add `ONNX=true` flag. Follow the [guideline](#set-up-onnx-runtime) to set up ONNX Runtime (Linux only).
 
 #### Run the integration tests
 
@@ -110,6 +108,22 @@ If empty, tests will try to connect to `localhost:5432`.
 ```bash
 $ make rm
 ```
+
+### Set up ONNX Runtime (Linux only)
+
+1. Download the latest [ONNX Runtime release](https://github.com/microsoft/onnxruntime/releases) for your system.
+
+2. Install ONNX Runtime:
+   ```bash
+   sudo mkdir -p /usr/local/onnxruntime
+   sudo tar -xzf onnxruntime-*-*-*.tgz -C /usr/local/onnxruntime --strip-components=1
+   export ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime  
+   export LD_RUN_PATH=$ONNXRUNTIME_ROOT_PATH/lib
+   export LIBRARY_PATH=$ONNXRUNTIME_ROOT_PATH/lib
+   export C_INCLUDE_PATH=$ONNXRUNTIME_ROOT_PATH/include
+   ```
+
+**Note:** If you don't have sudo access, extract to a user-writeable location (e.g., `~/onnxruntime`), set `ONNXRUNTIME_ROOT_PATH` accordingly, and adjust the environment variables as shown above. No need to create symlinks in this case.
 
 ## Codebase contribution
 

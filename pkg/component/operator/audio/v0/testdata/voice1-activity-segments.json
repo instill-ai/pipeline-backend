@@ -1,0 +1,24 @@
+{
+  "segments": [
+    {
+      "start-time": 1.5,
+      "end-time": 2.404
+    },
+    {
+      "start-time": 3.196,
+      "end-time": 4.068
+    },
+    {
+      "start-time": 4.604,
+      "end-time": 5.764
+    },
+    {
+      "start-time": 6.62,
+      "end-time": 14.948
+    },
+    {
+      "start-time": 15.836,
+      "end-time": 18.564
+    }
+  ]
+}
