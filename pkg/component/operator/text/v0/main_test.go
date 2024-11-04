@@ -8,6 +8,7 @@ import (
 
 	"github.com/frankban/quicktest"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // TestInit tests the Init function
@@ -272,10 +273,10 @@ func TestChunkMarkdown(t *testing.T) {
 
 // MockOutput simulates the output for testing
 type MockOutput struct {
-	data []interface{}
+	data []*structpb.Struct
 }
 
-func (m *MockOutput) Write(ctx context.Context, data interface{}) error {
+func (m *MockOutput) Write(ctx context.Context, data *structpb.Struct) error {
 	m.data = append(m.data, data)
 	return nil
 }
@@ -294,5 +295,6 @@ func (m *MockError) HandleError(ctx context.Context, err error) {
 func (m *MockError) Error(ctx context.Context, err error) {
 	m.err = err
 }
+
 
 
