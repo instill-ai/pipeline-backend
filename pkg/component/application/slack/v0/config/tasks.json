@@ -37,7 +37,7 @@
           "type": "string"
         },
         "start-to-read-date": {
-          "description": "Date (in `YYYY-MM-DD` format) from which messages will start to be fetched",
+          "description": "Date (in `YYYY-MM-DD` format) from which messages will start to be fetched. If not provided, it will be 7 days before the current date. The date will be in the UTC timezone.",
           "instillAcceptFormats": [
             "string"
           ],
