@@ -14,6 +14,10 @@ if __name__ == "__main__":
     params     = json.loads(json_str)
     filename   = params["filename"]
     pdf_string = params["PDF"]
+    if "resolution" in params and params["resolution"] != 0 and params["resolution"] != None:
+        resolution = params["resolution"]
+    else:
+        resolution = 500
 
     decoded_bytes = base64.b64decode(pdf_string)
     pdf_file_obj = BytesIO(decoded_bytes)
@@ -24,7 +28,7 @@ if __name__ == "__main__":
     images = []
 
     for i, page in enumerate(pages):
-        page_image = page.to_image(resolution=500)
+        page_image = page.to_image(resolution=resolution)
         encoded_image = PageImageProcessor.encode_image(page_image)
         images.append(encoded_image)
         filenames.append(f"{exclude_file_extension}_{i}.png")

@@ -9,8 +9,9 @@ class PageImageProcessor:
     page: Page
     errors: list[str]
     images: list[dict]
+    resolution: int
 
-    def __init__(self, page: Page, image_index: int):
+    def __init__(self, page: Page, image_index: int, resolution: int = 500) -> None:
         self.page = page
         self.lines = page.extract_text_lines(layout=True, strip=True, return_chars=False)
         self.images = []
@@ -18,6 +19,7 @@ class PageImageProcessor:
         page.flush_cache()
         page.get_textmap.cache_clear()
         self.image_index = image_index
+        self.resolution = resolution
 
     def produce_images_by_blocks(self) -> None:
         saved_blocks = []
@@ -35,7 +37,7 @@ class PageImageProcessor:
                 bbox = (0, 0, page.width, page.height)
                 img_page = page
 
-            img_obj = img_page.to_image(resolution=500)
+            img_obj = img_page.to_image(resolution=self.resolution)
             img_base64 = self.__class__.encode_image(image=img_obj)
 
             image["page_number"] = page.page_number
@@ -77,7 +79,7 @@ class PageImageProcessor:
                 self.errors.append(f"image {i} got error: {str(e)}, do not convert the images.")
                 continue
 
-            im = cropped_page.to_image(resolution=200)
+            im = cropped_page.to_image(resolution=self.resolution)
 
             if self.is_blank_pil_image(im=im):
                 continue

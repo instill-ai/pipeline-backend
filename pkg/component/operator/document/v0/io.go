@@ -7,6 +7,7 @@ type ConvertDocumentToMarkdownInput struct {
 	DisplayImageTag     bool            `instill:"display-image-tag"`
 	Filename            string          `instill:"filename"`
 	DisplayAllPageImage bool            `instill:"display-all-page-image"`
+	Resolution          int             `instill:"resolution"`
 }
 
 type ConvertDocumentToMarkdownOutput struct {
@@ -19,8 +20,9 @@ type ConvertDocumentToMarkdownOutput struct {
 }
 
 type ConvertDocumentToImagesInput struct {
-	Document format.Document `instill:"document"`
-	Filename string          `instill:"filename"`
+	Document   format.Document `instill:"document"`
+	Filename   string          `instill:"filename"`
+	Resolution int             `instill:"resolution"`
 }
 
 type ConvertDocumentToImagesOutput struct {

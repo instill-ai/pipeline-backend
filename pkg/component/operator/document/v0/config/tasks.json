@@ -1,4 +1,14 @@
 {
+  "$defs": {
+    "resolution": {
+      "description": "Desired number pixels per inch. Defaults to 500. Minimum is 72.",
+      "instillFormat": "number",
+      "title": "Resolution",
+      "type": "number",
+      "minimum": 72,
+      "default": 500
+    }
+  },
   "TASK_CONVERT_TO_MARKDOWN": {
     "instillShortDescription": "Convert document to text in Markdown format.",
     "input": {
@@ -55,6 +65,10 @@
           ],
           "title": "Display All Page Image",
           "type": "boolean"
+        },
+        "resolution": {
+          "$ref": "#/$defs/resolution",
+          "instillUIOrder": 4
         }
       },
       "required": [
@@ -256,6 +270,10 @@
           ],
           "title": "Filename",
           "type": "string"
+        },
+        "resolution": {
+          "$ref": "#/$defs/resolution",
+          "instillUIOrder": 4
         }
       },
       "required": [

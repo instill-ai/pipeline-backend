@@ -12,6 +12,7 @@ type ConvertDocumentToMarkdownTransformerInput struct {
 	DisplayImageTag     bool   `json:"display-image-tag"`
 	Filename            string `json:"filename"`
 	DisplayAllPageImage bool   `json:"display-all-page-image"`
+	Resolution          int    `json:"resolution"`
 }
 
 type ConvertDocumentToMarkdownTransformerOutput struct {
@@ -64,33 +65,44 @@ func ConvertDocumentToMarkdown(inputStruct *ConvertDocumentToMarkdownTransformer
 func GetMarkdownTransformer(fileExtension string, inputStruct *ConvertDocumentToMarkdownTransformerInput) (MarkdownTransformer, error) {
 	switch fileExtension {
 	case "pdf":
-		return PDFToMarkdownTransformer{
-			Base64EncodedText:   inputStruct.Document,
-			FileExtension:       fileExtension,
+		pdfToMarkdownStruct := pdfToMarkdownInputStruct{
+			Base64Text:          inputStruct.Document,
 			DisplayImageTag:     inputStruct.DisplayImageTag,
 			DisplayAllPageImage: inputStruct.DisplayAllPageImage,
+			Resolution:          inputStruct.Resolution,
+		}
+		return PDFToMarkdownTransformer{
+			FileExtension:       fileExtension,
+			PDFToMarkdownStruct: pdfToMarkdownStruct,
 			PDFConvertFunc:      getPDFConvertFunc("pdfplumber"),
 		}, nil
 	case "doc", "docx":
-		return DocxDocToMarkdownTransformer{
-			Base64EncodedText:   inputStruct.Document,
-			FileExtension:       fileExtension,
+		pdfToMarkdownStruct := pdfToMarkdownInputStruct{
 			DisplayImageTag:     inputStruct.DisplayImageTag,
 			DisplayAllPageImage: inputStruct.DisplayAllPageImage,
+			Resolution:          inputStruct.Resolution,
+		}
+		return DocxDocToMarkdownTransformer{
+			FileExtension:       fileExtension,
+			Base64EncodedText:   inputStruct.Document,
+			PDFToMarkdownStruct: pdfToMarkdownStruct,
 			PDFConvertFunc:      getPDFConvertFunc("pdfplumber"),
 		}, nil
 	case "ppt", "pptx":
-		return PptPptxToMarkdownTransformer{
-			Base64EncodedText:   inputStruct.Document,
-			FileExtension:       fileExtension,
+		pdfToMarkdownStruct := pdfToMarkdownInputStruct{
 			DisplayImageTag:     inputStruct.DisplayImageTag,
 			DisplayAllPageImage: inputStruct.DisplayAllPageImage,
+			Resolution:          inputStruct.Resolution,
+		}
+		return PptPptxToMarkdownTransformer{
+			FileExtension:       fileExtension,
+			Base64EncodedText:   inputStruct.Document,
+			PDFToMarkdownStruct: pdfToMarkdownStruct,
 			PDFConvertFunc:      getPDFConvertFunc("pdfplumber"),
 		}, nil
 	case "html":
 		return HTMLToMarkdownTransformer{
 			Base64EncodedText: inputStruct.Document,
-			FileExtension:     fileExtension,
 		}, nil
 	case "xlsx":
 		return XlsxToMarkdownTransformer{
@@ -109,8 +121,15 @@ func GetMarkdownTransformer(fileExtension string, inputStruct *ConvertDocumentTo
 	}
 }
 
+type pdfToMarkdownInputStruct struct {
+	Base64Text          string
+	DisplayImageTag     bool
+	DisplayAllPageImage bool
+	Resolution          int
+}
+
 // We could provide more converters in the future. For now, we only have one.
-func getPDFConvertFunc(converter string) func(string, bool, bool) (converterOutput, error) {
+func getPDFConvertFunc(converter string) func(pdfToMarkdownInputStruct) (converterOutput, error) {
 	switch converter {
 	default:
 		return convertPDFToMarkdownWithPDFPlumber
