@@ -108,11 +108,7 @@ func (e *execution) readChatHistory(ctx context.Context, job *base.Job) error {
 		ConversationId: inputStruct.ConversationID,
 	})
 
-	if err != nil {
-		return fmt.Errorf("list conversations: %w", err)
-	}
-
-	if len(conversationRes.Conversations) == 0 {
+	if err != nil || conversationRes == nil || len(conversationRes.Conversations) == 0 {
 		err = job.Output.WriteData(ctx, output)
 
 		if err != nil {
@@ -132,8 +128,9 @@ func (e *execution) readChatHistory(ctx context.Context, job *base.Job) error {
 			PageToken:             nextPageToken,
 		})
 
+		// We don't want to fail the job if there is an error.
 		if err != nil {
-			return fmt.Errorf("list messages: %w", err)
+			break
 		}
 
 		output.filter(inputStruct, res.Messages)
