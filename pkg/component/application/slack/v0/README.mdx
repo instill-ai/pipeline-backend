@@ -65,7 +65,7 @@ that app is installed.
 If you want to connect with Slack via OAuth 2.0 on **Instill Core**, you will
 need to provide your app's **client ID** and **client secret** [as environment
 variables on Instill
-Core](https://github.com/instill-ai/instill-core/blob/main/.env).
+Core](https://github.com/instill-ai/instill-core/blob/main/.env.component).
 
 
 
@@ -81,7 +81,7 @@ Get the latest message since specific date
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_MESSAGE` |
 | Channel Name (required) | `channel-name` | string | Channel name, as displayed on Slack |
-| Start to Read Date | `start-to-read-date` | string | Date (in `YYYY-MM-DD` format) from which messages will start to be fetched |
+| Start to Read Date | `start-to-read-date` | string | Date (in `YYYY-MM-DD` format) from which messages will start to be fetched. If not provided, it will be 7 days before the current date. The date will be in the UTC timezone. |
 </div>
 
 

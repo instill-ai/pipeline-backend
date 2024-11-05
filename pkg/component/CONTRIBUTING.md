@@ -220,6 +220,7 @@ This file defines the input and output schema of each task:
 - **`instillAcceptFormats`** is an array indicating the data types of acceptable
   input fields. It should be an array of [**Instill
   Format**](https://www.instill.tech/docs/vdp/instill-format).
+  - Currently, we do not support the `time` type. When the input is a `date` or `datetime`, it should be represented as a string. The `date` or `datetime` will be automatically parsed in UTC timezone by the YAML parser. Please ensure this point is noted in the documentation, specifically for the `start-to-read-date` in the Slack component.
 - **`instillUpstreamTypes`** defines how an input property can be set: as a
   direct value, a reference to another value in the pipeline, or a combination
   of both (e.g., `${variable.name}` or `my dear ${variable.name}`).

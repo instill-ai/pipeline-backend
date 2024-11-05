@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -27,6 +28,12 @@ func NewValue(in any) (val format.Value, err error) {
 	switch in := in.(type) {
 	case nil:
 		return NewNull(), nil
+	case time.Time:
+		// Now, we don't provide time format in pipeline recipe.
+		// However, in YAML, it read the time format and convert it to time.Time.
+		// So, we need to convert it back to string.
+		// In the future, we may need to provide time format in pipeline recipe.
+		return NewString(in.Format(time.DateOnly)), nil
 	case bool:
 		return NewBoolean(in), nil
 	case float64:
