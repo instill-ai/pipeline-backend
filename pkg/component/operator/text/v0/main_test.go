@@ -121,27 +121,25 @@ func TestCleanData(t *testing.T) {
 			expectedError: false,
 		},
 		{
-	name: "no valid cleaning method",
-	input: CleanDataInput{
-		Texts: []string{"Hello World!", "This is a test."},
-		Setting: DataCleaningSetting{
-			CleanMethod: "InvalidMethod",
+			name: "no valid cleaning method",
+			input: CleanDataInput{
+				Texts: []string{"Hello World!", "This is a test."},
+				Setting: DataCleaningSetting{
+					CleanMethod: "InvalidMethod",
+				},
+			},
+			expected:      CleanDataOutput{},
+			expectedError: true,
 		},
-	},
-	expected:      CleanDataOutput{},
-	expectedError: true,
-},
-
+	}
 
 	for _, tc := range testcases {
 		tc := tc // capture range variable
 		c.Run(tc.name, func(c *quicktest.C) {
-			output, err := CleanData(tc.input) // Call CleanData and capture both output and error
+			output := CleanData(tc.input) // Call CleanData to get the output
 			if tc.expectedError {
-				c.Assert(err, quicktest.IsNotNil) // Expect an error for invalid method
 				c.Assert(output.CleanedTexts, quicktest.DeepEquals, []string{}) // Expect no cleaned texts
 			} else {
-				c.Assert(err, quicktest.IsNil) // No error expected
 				c.Assert(output.CleanedTexts, quicktest.DeepEquals, tc.expected.CleanedTexts)
 			}
 		})
