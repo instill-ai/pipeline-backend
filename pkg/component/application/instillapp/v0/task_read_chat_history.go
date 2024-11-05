@@ -108,11 +108,7 @@ func (e *execution) readChatHistory(ctx context.Context, job *base.Job) error {
 		ConversationId: inputStruct.ConversationID,
 	})
 
-	if err != nil {
-		return fmt.Errorf("list conversations: %w", err)
-	}
-
-	if len(conversationRes.Conversations) == 0 {
+	if len(conversationRes.Conversations) == 0 || err != nil {
 		err = job.Output.WriteData(ctx, output)
 
 		if err != nil {
