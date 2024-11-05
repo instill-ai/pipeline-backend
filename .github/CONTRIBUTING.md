@@ -117,7 +117,7 @@ $ make rm
    ```bash
    sudo mkdir -p /usr/local/onnxruntime
    sudo tar -xzf onnxruntime-*-*-*.tgz -C /usr/local/onnxruntime --strip-components=1
-   export ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime  
+   export ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime
    export LD_RUN_PATH=$ONNXRUNTIME_ROOT_PATH/lib
    export LIBRARY_PATH=$ONNXRUNTIME_ROOT_PATH/lib
    export C_INCLUDE_PATH=$ONNXRUNTIME_ROOT_PATH/include
