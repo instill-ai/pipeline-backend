@@ -48,19 +48,19 @@ var videoGetters = map[string]func(*videoData) (format.Value, error){
 	"webm":       func(v *videoData) (format.Value, error) { return v.Convert(WEBM) },
 }
 
-func NewVideoFromBytes(b []byte, contentType, fileName string) (video *videoData, err error) {
-	return createVideoData(b, contentType, fileName)
+func NewVideoFromBytes(b []byte, contentType, filename string) (video *videoData, err error) {
+	return createVideoData(b, contentType, filename)
 }
 
 func NewVideoFromURL(url string) (video *videoData, err error) {
-	b, contentType, fileName, err := convertURLToBytes(url)
+	b, contentType, filename, err := convertURLToBytes(url)
 	if err != nil {
 		return nil, err
 	}
-	return createVideoData(b, contentType, fileName)
+	return createVideoData(b, contentType, filename)
 }
 
-func createVideoData(b []byte, contentType, fileName string) (*videoData, error) {
+func createVideoData(b []byte, contentType, filename string) (*videoData, error) {
 	if contentType != MP4 {
 		var err error
 		b, err = convertVideo(b, contentType, MP4)
@@ -69,7 +69,7 @@ func createVideoData(b []byte, contentType, fileName string) (*videoData, error)
 		}
 		contentType = MP4
 	}
-	f, err := NewFileFromBytes(b, contentType, fileName)
+	f, err := NewFileFromBytes(b, contentType, filename)
 	if err != nil {
 		return nil, err
 	}

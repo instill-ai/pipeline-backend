@@ -21,7 +21,7 @@ const (
 
 var fileGetters = map[string]func(*fileData) (format.Value, error){
 	"source-url":   func(f *fileData) (format.Value, error) { return f.SourceURL(), nil },
-	"filename":     func(f *fileData) (format.Value, error) { return f.FileName(), nil },
+	"filename":     func(f *fileData) (format.Value, error) { return f.Filename(), nil },
 	"file-size":    func(f *fileData) (format.Value, error) { return f.FileSize(), nil },
 	"content-type": func(f *fileData) (format.Value, error) { return f.ContentType(), nil },
 	"binary":       func(f *fileData) (format.Value, error) { return f.Binary() },
@@ -32,13 +32,13 @@ var fileGetters = map[string]func(*fileData) (format.Value, error){
 type fileData struct {
 	raw         []byte
 	contentType string
-	fileName    string
+	filename    string
 	sourceURL   string
 }
 
 func (fileData) IsValue() {}
 
-func NewFileFromBytes(b []byte, contentType, fileName string) (bin *fileData, err error) {
+func NewFileFromBytes(b []byte, contentType, filename string) (bin *fileData, err error) {
 	if contentType == "" {
 		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
 	}
@@ -46,13 +46,13 @@ func NewFileFromBytes(b []byte, contentType, fileName string) (bin *fileData, er
 	f := &fileData{
 		raw:         b,
 		contentType: contentType,
-		fileName:    fileName,
+		filename:    filename,
 	}
 
 	return f, nil
 }
 
-func convertURLToBytes(url string) (b []byte, contentType string, fileName string, err error) {
+func convertURLToBytes(url string) (b []byte, contentType string, filename string, err error) {
 	if strings.HasPrefix(url, "data:") {
 		return convertDataURIToBytes(url)
 	}
@@ -67,25 +67,25 @@ func convertURLToBytes(url string) (b []byte, contentType string, fileName strin
 	if headers := resp.Header().Get("Content-Type"); headers != "" {
 		contentType = headers
 	}
-	fileName = ""
+	filename = ""
 	if disposition := resp.Header().Get("Content-Disposition"); disposition != "" {
 		if strings.HasPrefix(disposition, "attachment") {
 			if _, params, err := mime.ParseMediaType(disposition); err == nil {
 				if fn, ok := params["filename"]; ok {
-					fileName = fn
+					filename = fn
 				}
 			}
 		}
 	}
-	return body, contentType, fileName, nil
+	return body, contentType, filename, nil
 }
 
 func NewFileFromURL(url string) (bin *fileData, err error) {
-	b, contentType, fileName, err := convertURLToBytes(url)
+	b, contentType, filename, err := convertURLToBytes(url)
 	if err != nil {
 		return nil, err
 	}
-	bin, err = NewFileFromBytes(b, contentType, fileName)
+	bin, err = NewFileFromBytes(b, contentType, filename)
 	if err != nil {
 		return nil, err
 	}
@@ -93,12 +93,12 @@ func NewFileFromURL(url string) (bin *fileData, err error) {
 	return bin, nil
 }
 
-func convertDataURIToBytes(url string) (b []byte, contentType string, fileName string, err error) {
-	b, contentType, fileName, err = decodeDataURI(url)
+func convertDataURIToBytes(url string) (b []byte, contentType string, filename string, err error) {
+	b, contentType, filename, err = decodeDataURI(url)
 	if err != nil {
 		return
 	}
-	return b, contentType, fileName, nil
+	return b, contentType, filename, nil
 }
 
 func (f *fileData) String() string {
@@ -147,8 +147,8 @@ func (f *fileData) ContentType() (t format.String) {
 	return NewString(f.contentType)
 }
 
-func (f *fileData) FileName() (t format.String) {
-	return NewString(f.fileName)
+func (f *fileData) Filename() (t format.String) {
+	return NewString(f.filename)
 }
 
 func (f *fileData) SourceURL() (t format.String) {
@@ -205,7 +205,7 @@ func (f *fileData) Equal(other format.Value) bool {
 		}
 		return bytes.Equal(f.raw, ba.ByteArray()) &&
 			f.contentType == other.ContentType().String() &&
-			f.fileName == other.FileName().String() &&
+			f.filename == other.Filename().String() &&
 			f.sourceURL == other.SourceURL().String()
 	}
 	return false
