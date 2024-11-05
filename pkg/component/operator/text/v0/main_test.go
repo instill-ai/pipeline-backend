@@ -136,12 +136,14 @@ func TestCleanData(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc // capture range variable
 		c.Run(tc.name, func(c *quicktest.C) {
-			output := CleanData(tc.input) // Call CleanData and assign the output directly
+			output, err := CleanData(tc.input) // Call CleanData and capture both output and error
 			if tc.expectedError {
-				c.Assert(output.CleanedTexts, quicktest.DeepEquals, []string{}) // Adjust based on your expected output for errors
+				c.Assert(err, quicktest.IsNotNil) // Expect an error for invalid method
+				c.Assert(output.CleanedTexts, quicktest.DeepEquals, []string{}) // Expect no cleaned texts
 			} else {
+				c.Assert(err, quicktest.IsNil) // No error expected
 				c.Assert(output.CleanedTexts, quicktest.DeepEquals, tc.expected.CleanedTexts)
 			}
 		})
-	} // Make sure this closing brace is present
+	}
 }
