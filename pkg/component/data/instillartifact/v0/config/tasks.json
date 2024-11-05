@@ -1183,7 +1183,7 @@
     }
   },
   "TASK_SYNC_FILES": {
-    "instillShortDescription": "This task synchronizes files from third-party storage to instill catalog. New files are uploaded, and updated files are overwritten based on third-party metadata. Files added through other channels, like the Artifact API or additional storage services, will not be removed. Currently, only Google Drive is supported as a third-party storage service.",
+    "instillShortDescription": "This task synchronizes files from third-party storage to Instill Catalog. New files are uploaded, and updated files are overwritten based on third-party metadata. Files added through other channels, like the Artifact API or additional storage services, will not be removed. Currently, only Google Drive is supported as a third-party storage service.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
