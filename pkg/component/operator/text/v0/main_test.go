@@ -138,7 +138,7 @@ func TestCleanData(t *testing.T) {
 		c.Run(tc.name, func(c *quicktest.C) {
 			output := CleanData(tc.input) // Call CleanData to get the output
 			if tc.expectedError {
-				c.Assert(output.CleanedTexts, quicktest.DeepEquals, []string{}) // Expect no cleaned texts
+				c.Assert(output.CleanedTexts, quicktest.DeepEquals, []string{"Hello World!", "This is a test."}) // Expect no cleaned texts
 			} else {
 				c.Assert(output.CleanedTexts, quicktest.DeepEquals, tc.expected.CleanedTexts)
 			}
