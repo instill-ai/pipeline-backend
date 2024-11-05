@@ -39,3 +39,7 @@ func (n *nullData) Equal(other format.Value) bool {
 	}
 	return false
 }
+
+func (n *nullData) String() string {
+	return "null"
+}

@@ -75,13 +75,13 @@ func unmarshalStruct(m Map, v reflect.Value) error {
 // unmarshalValue dispatches to type-specific unmarshal functions based on the value type.
 func unmarshalValue(val format.Value, field reflect.Value, structField reflect.StructField) error {
 	switch v := val.(type) {
-	case format.File, format.Document, format.Image, format.Video, format.Audio:
+	case *fileData, *documentData, *imageData, *videoData, *audioData:
 		return unmarshalInterface(v, field, structField)
-	case format.Boolean:
+	case *booleanData:
 		return unmarshalBoolean(v, field)
-	case format.Number:
+	case *numberData:
 		return unmarshalNumber(v, field)
-	case format.String:
+	case *stringData:
 		return unmarshalString(v, field)
 	case Array:
 		if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
@@ -95,7 +95,7 @@ func unmarshalValue(val format.Value, field reflect.Value, structField reflect.S
 			return nil
 		}
 		return unmarshalMap(v, field)
-	case format.Null:
+	case *nullData:
 		if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
 			field.Set(reflect.ValueOf(v))
 			return nil
