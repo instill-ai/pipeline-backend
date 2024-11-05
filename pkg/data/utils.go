@@ -10,7 +10,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
-func decodeDataURI(s string) (b []byte, contentType string, fileName string, err error) {
+func decodeDataURI(s string) (b []byte, contentType string, filename string, err error) {
 	slices := strings.Split(s, ",")
 	if len(slices) == 1 {
 		b, err = base64.StdEncoding.DecodeString(s)
@@ -24,7 +24,7 @@ func decodeDataURI(s string) (b []byte, contentType string, fileName string, err
 
 			key, value, _ := strings.Cut(tag, "=")
 			if key == "filename" || key == "fileName" || key == "file-name" {
-				fileName = value
+				filename = value
 			}
 		}
 	}
@@ -52,27 +52,27 @@ func StandardizePath(path string) (newPath string, err error) {
 	}
 	return newPath, err
 }
-func NewBinaryFromBytes(b []byte, contentType, fileName string) (format.Value, error) {
+func NewBinaryFromBytes(b []byte, contentType, filename string) (format.Value, error) {
 	if contentType == "" {
 		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
 	}
 
 	switch {
 	case isImageContentType(contentType):
-		return NewImageFromBytes(b, contentType, fileName)
+		return NewImageFromBytes(b, contentType, filename)
 	case isAudioContentType(contentType):
-		return NewAudioFromBytes(b, contentType, fileName)
+		return NewAudioFromBytes(b, contentType, filename)
 	case isVideoContentType(contentType):
-		return NewVideoFromBytes(b, contentType, fileName)
+		return NewVideoFromBytes(b, contentType, filename)
 	case isDocumentContentType(contentType):
-		return NewDocumentFromBytes(b, contentType, fileName)
+		return NewDocumentFromBytes(b, contentType, filename)
 	default:
-		return NewFileFromBytes(b, contentType, fileName)
+		return NewFileFromBytes(b, contentType, filename)
 	}
 }
 
 func NewBinaryFromURL(url string) (format.Value, error) {
-	b, contentType, fileName, err := convertURLToBytes(url)
+	b, contentType, filename, err := convertURLToBytes(url)
 	if err != nil {
 		return nil, err
 	}
@@ -83,15 +83,15 @@ func NewBinaryFromURL(url string) (format.Value, error) {
 
 	switch {
 	case isImageContentType(contentType):
-		return NewImageFromBytes(b, contentType, fileName)
+		return NewImageFromBytes(b, contentType, filename)
 	case isAudioContentType(contentType):
-		return NewAudioFromBytes(b, contentType, fileName)
+		return NewAudioFromBytes(b, contentType, filename)
 	case isVideoContentType(contentType):
-		return NewVideoFromBytes(b, contentType, fileName)
+		return NewVideoFromBytes(b, contentType, filename)
 	case isDocumentContentType(contentType):
-		return NewDocumentFromBytes(b, contentType, fileName)
+		return NewDocumentFromBytes(b, contentType, filename)
 	default:
-		return NewFileFromBytes(b, contentType, fileName)
+		return NewFileFromBytes(b, contentType, filename)
 	}
 }
 

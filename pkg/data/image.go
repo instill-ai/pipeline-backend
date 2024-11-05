@@ -46,27 +46,27 @@ var imageGetters = map[string]func(*imageData) (format.Value, error){
 }
 
 // NewImageFromBytes creates a new imageData from byte slice
-func NewImageFromBytes(b []byte, contentType, fileName string) (*imageData, error) {
-	return createImageData(b, contentType, fileName)
+func NewImageFromBytes(b []byte, contentType, filename string) (*imageData, error) {
+	return createImageData(b, contentType, filename)
 }
 
 // NewImageFromURL creates a new imageData from a URL
 func NewImageFromURL(url string) (*imageData, error) {
-	b, contentType, fileName, err := convertURLToBytes(url)
+	b, contentType, filename, err := convertURLToBytes(url)
 	if err != nil {
 		return nil, err
 	}
-	return createImageData(b, contentType, fileName)
+	return createImageData(b, contentType, filename)
 }
 
 // createImageData is a helper function to create imageData
-func createImageData(b []byte, contentType, fileName string) (*imageData, error) {
+func createImageData(b []byte, contentType, filename string) (*imageData, error) {
 	b, err := convertImage(b, contentType, PNG)
 	if err != nil {
 		return nil, err
 	}
 
-	f, err := NewFileFromBytes(b, PNG, fileName)
+	f, err := NewFileFromBytes(b, PNG, filename)
 	if err != nil {
 		return nil, err
 	}

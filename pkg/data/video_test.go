@@ -16,7 +16,7 @@ func TestNewVideoFromBytes(t *testing.T) {
 
 	testCases := []struct {
 		name        string
-		fileName    string
+		filename    string
 		contentType string
 		expectError bool
 	}{
@@ -28,10 +28,10 @@ func TestNewVideoFromBytes(t *testing.T) {
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *qt.C) {
-			videoBytes, err := os.ReadFile(filepath.Join("testdata", tc.fileName))
+			videoBytes, err := os.ReadFile(filepath.Join("testdata", tc.filename))
 			c.Assert(err, qt.IsNil)
 
-			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.fileName)
+			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.filename)
 
 			if tc.expectError {
 				c.Assert(err, qt.Not(qt.IsNil))
@@ -39,7 +39,7 @@ func TestNewVideoFromBytes(t *testing.T) {
 				c.Assert(err, qt.IsNil)
 				c.Assert(video, qt.Not(qt.IsNil))
 				c.Assert(video.ContentType().String(), qt.Equals, tc.contentType)
-				c.Assert(video.FileName().String(), qt.Equals, tc.fileName)
+				c.Assert(video.Filename().String(), qt.Equals, tc.filename)
 			}
 		})
 	}
@@ -47,18 +47,18 @@ func TestNewVideoFromBytes(t *testing.T) {
 	c.Run("Invalid video format", func(c *qt.C) {
 		invalidBytes := []byte("not a video")
 		contentType := "invalid/type"
-		fileName := "invalid.txt"
+		filename := "invalid.txt"
 
-		_, err := NewVideoFromBytes(invalidBytes, contentType, fileName)
+		_, err := NewVideoFromBytes(invalidBytes, contentType, filename)
 		c.Assert(err, qt.Not(qt.IsNil))
 	})
 
 	c.Run("Empty video bytes", func(c *qt.C) {
 		emptyBytes := []byte{}
 		contentType := "video/mp4"
-		fileName := "empty.mp4"
+		filename := "empty.mp4"
 
-		_, err := NewVideoFromBytes(emptyBytes, contentType, fileName)
+		_, err := NewVideoFromBytes(emptyBytes, contentType, filename)
 		c.Assert(err, qt.Not(qt.IsNil))
 	})
 }
@@ -98,7 +98,7 @@ func TestVideoProperties(t *testing.T) {
 
 	testCases := []struct {
 		name        string
-		fileName    string
+		filename    string
 		contentType string
 		width       int
 		height      int
@@ -112,14 +112,14 @@ func TestVideoProperties(t *testing.T) {
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *qt.C) {
-			videoBytes, err := os.ReadFile(filepath.Join("testdata", tc.fileName))
+			videoBytes, err := os.ReadFile(filepath.Join("testdata", tc.filename))
 			c.Assert(err, qt.IsNil)
 
-			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.fileName)
+			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.filename)
 			c.Assert(err, qt.IsNil)
 			qt.CmpEquals()
 			c.Assert(video.ContentType().String(), qt.Equals, "video/mp4")
-			c.Assert(video.FileName().String(), qt.Equals, tc.fileName)
+			c.Assert(video.Filename().String(), qt.Equals, tc.filename)
 			c.Assert(video.Width().Integer(), qt.Equals, tc.width)
 			c.Assert(video.Height().Integer(), qt.Equals, tc.height)
 			c.Assert(video.Duration().Float64(), qt.CmpEquals(cmpopts.EquateApprox(0, 0.001)), tc.duration)
@@ -135,7 +135,7 @@ func TestVideoConvert(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		fileName       string
+		filename       string
 		contentType    string
 		expectedFormat string
 	}{
@@ -146,10 +146,10 @@ func TestVideoConvert(t *testing.T) {
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *qt.C) {
-			videoBytes, err := os.ReadFile(filepath.Join("testdata", tc.fileName))
+			videoBytes, err := os.ReadFile(filepath.Join("testdata", tc.filename))
 			c.Assert(err, qt.IsNil)
 
-			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.fileName)
+			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.filename)
 			c.Assert(err, qt.IsNil)
 
 			convertedVideo, err := video.Convert(tc.expectedFormat)

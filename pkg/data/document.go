@@ -34,21 +34,21 @@ var documentGetters = map[string]func(*documentData) (format.Value, error){
 
 func (documentData) IsValue() {}
 
-func NewDocumentFromBytes(b []byte, contentType, fileName string) (*documentData, error) {
-	return createDocumentData(b, contentType, fileName)
+func NewDocumentFromBytes(b []byte, contentType, filename string) (*documentData, error) {
+	return createDocumentData(b, contentType, filename)
 }
 
 func NewDocumentFromURL(url string) (*documentData, error) {
-	b, contentType, fileName, err := convertURLToBytes(url)
+	b, contentType, filename, err := convertURLToBytes(url)
 	if err != nil {
 		return nil, err
 	}
 
-	return createDocumentData(b, contentType, fileName)
+	return createDocumentData(b, contentType, filename)
 }
 
-func createDocumentData(b []byte, contentType, fileName string) (*documentData, error) {
-	f, err := NewFileFromBytes(b, contentType, fileName)
+func createDocumentData(b []byte, contentType, filename string) (*documentData, error) {
+	f, err := NewFileFromBytes(b, contentType, filename)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (d *documentData) Text() (val format.String, err error) {
 	res, err := transformer.ConvertDocumentToMarkdown(
 		&transformer.ConvertDocumentToMarkdownTransformerInput{
 			Document: dataURI.String(),
-			Filename: d.fileName,
+			Filename: d.filename,
 		}, transformer.GetMarkdownTransformer)
 	if err != nil {
 		return nil, err
@@ -159,7 +159,7 @@ func (d *documentData) Images() (mp Array, err error) {
 	}
 	res, err := transformer.ConvertDocumentToImage(&transformer.ConvertDocumentToImagesTransformerInput{
 		Document: dataURI.String(),
-		Filename: d.fileName,
+		Filename: d.filename,
 	})
 	if err != nil {
 		return nil, err

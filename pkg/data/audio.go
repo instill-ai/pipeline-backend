@@ -46,19 +46,19 @@ var audioGetter = map[string]func(*audioData) (format.Value, error){
 	"aiff":        func(a *audioData) (format.Value, error) { return a.Convert(AIFF) },
 }
 
-func NewAudioFromBytes(b []byte, contentType, fileName string) (*audioData, error) {
-	return createAudioData(b, contentType, fileName)
+func NewAudioFromBytes(b []byte, contentType, filename string) (*audioData, error) {
+	return createAudioData(b, contentType, filename)
 }
 
 func NewAudioFromURL(url string) (*audioData, error) {
-	b, contentType, fileName, err := convertURLToBytes(url)
+	b, contentType, filename, err := convertURLToBytes(url)
 	if err != nil {
 		return nil, err
 	}
-	return createAudioData(b, contentType, fileName)
+	return createAudioData(b, contentType, filename)
 }
 
-func createAudioData(b []byte, contentType, fileName string) (*audioData, error) {
+func createAudioData(b []byte, contentType, filename string) (*audioData, error) {
 	if contentType != OGG {
 		var err error
 		b, err = convertAudio(b, contentType, OGG)
@@ -68,7 +68,7 @@ func createAudioData(b []byte, contentType, fileName string) (*audioData, error)
 		contentType = OGG
 	}
 
-	f, err := NewFileFromBytes(b, contentType, fileName)
+	f, err := NewFileFromBytes(b, contentType, filename)
 	if err != nil {
 		return nil, err
 	}

@@ -44,7 +44,7 @@ type File interface {
 	Base64() (url String, err error)
 	FileSize() (size Number)
 	ContentType() (t String)
-	FileName() (t String)
+	Filename() (t String)
 	SourceURL() (t String)
 	String() string
 }
