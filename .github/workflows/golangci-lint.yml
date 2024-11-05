@@ -33,7 +33,7 @@ jobs:
           wget https://github.com/microsoft/onnxruntime/releases/download/${LATEST_VERSION}/onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz
           tar -xzf onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz
           mv onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v} ${ONNXRUNTIME_ROOT_PATH}
-          rm onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz          
+          rm onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz
           echo "C_INCLUDE_PATH=${ONNXRUNTIME_ROOT_PATH}/include" >> $GITHUB_ENV
           echo "LD_RUN_PATH=${ONNXRUNTIME_ROOT_PATH}/lib" >> $GITHUB_ENV
           echo "LIBRARY_PATH=${ONNXRUNTIME_ROOT_PATH}/lib" >> $GITHUB_ENV

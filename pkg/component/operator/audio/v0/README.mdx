@@ -127,7 +127,7 @@ component:
     type: audio
     input:
       audio: ${variable.audio}
-      segments: ${audio-vad.output.segments}    
+      segments: ${audio-vad.output.segments}
     task: TASK_SEGMENT
 variable:
   audio:
@@ -137,6 +137,6 @@ variable:
 output:
   samples:
     title: Output audio segments
-    description: Output extracted audio segments    
-    value: ${audio-segment.output.audio-segments}  
+    description: Output extracted audio segments
+    value: ${audio-segment.output.audio-segments}
 ```
