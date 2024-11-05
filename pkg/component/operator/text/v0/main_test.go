@@ -52,9 +52,11 @@ func TestOperator(t *testing.T) {
 			c.Assert(err, quicktest.IsNil)
 			c.Assert(execution, quicktest.IsNotNil)
 
+			// Generate Mock Job
 			ir, ow, eh, job := mock.GenerateMockJob(c)
 
-			ir.ReadDataMock.Set(func(ctx context.Context, v interface{}) error {
+			// Mock ReadData behavior
+			ir.ReadDataMock.Optional().Set(func(ctx context.Context, v interface{}) error {
 				*v.(*ChunkTextInput) = tc.input
 				return nil
 			})
@@ -70,12 +72,14 @@ func TestOperator(t *testing.T) {
 				ir.ReadDataMock.Optional()
 			}
 
+			// Mock Error Handling for error case
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				if tc.name == "error case" {
 					c.Assert(err, quicktest.ErrorMatches, "not supported task: FAKE_TASK")
 				}
 			})
 
+			// Execute and verify
 			err = execution.Execute(ctx, []*base.Job{job})
 			c.Assert(err, quicktest.IsNil)
 		})
