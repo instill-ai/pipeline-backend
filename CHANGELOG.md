@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.46.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.45.2-beta...v0.46.0-beta) (2024-11-05)
+
+
+### Features
+
+* add `condition` field support for iterator ([#803](https://github.com/instill-ai/pipeline-backend/issues/803)) ([04b1252](https://github.com/instill-ai/pipeline-backend/commit/04b12529eb5a1fe5c4bc13fe89828fbdc403bc54))
+* add markdowns per pages ([#792](https://github.com/instill-ai/pipeline-backend/issues/792)) ([3ee428e](https://github.com/instill-ai/pipeline-backend/commit/3ee428ef7be4a4c0f2e2e22bfe8b795b89333a0c))
+* add resolution field ([#808](https://github.com/instill-ai/pipeline-backend/issues/808)) ([f15f6bf](https://github.com/instill-ai/pipeline-backend/commit/f15f6bf5de177f23b529a2b87c1809b9c10f4265))
+* add task sync ([#793](https://github.com/instill-ai/pipeline-backend/issues/793)) ([41a1eeb](https://github.com/instill-ai/pipeline-backend/commit/41a1eeb47e7eadcf17c6db7141418aef41affb19))
+* **component,audio:** add TASK_DETECT_ACTIVITY and TASK_SEGMENT ([#762](https://github.com/instill-ai/pipeline-backend/issues/762)) ([9e92a31](https://github.com/instill-ai/pipeline-backend/commit/9e92a311e76a4e9d937f372fa3f203d9b84ee22e))
+* **component,http:** refactor `restapi` component to `http` component ([#797](https://github.com/instill-ai/pipeline-backend/issues/797)) ([c2b1862](https://github.com/instill-ai/pipeline-backend/commit/c2b18620a38e5f69cfc4b30e61f371a8824d9cd1))
+* **component:** add error handling for missing conversation ([#806](https://github.com/instill-ai/pipeline-backend/issues/806)) ([54cc616](https://github.com/instill-ai/pipeline-backend/commit/54cc616726c2b6dd5c6ddaf3b677443de73e71c0))
+* **component:** inject global secrets as environment variables ([#786](https://github.com/instill-ai/pipeline-backend/issues/786)) ([8d842a6](https://github.com/instill-ai/pipeline-backend/commit/8d842a668c96e4557db9a63421d94f4c352be17b))
+* convert time type to string ([#809](https://github.com/instill-ai/pipeline-backend/issues/809)) ([7de8465](https://github.com/instill-ai/pipeline-backend/commit/7de84651b4019e69806c1b0ea461084a37d6fbd5))
+* **googledrive:** add the tasks for google drive ([#725](https://github.com/instill-ai/pipeline-backend/issues/725)) ([b6fe968](https://github.com/instill-ai/pipeline-backend/commit/b6fe9686c688f9c3b7de5942510e2818d893ade6))
+* **integration:** identify supported OAuth integrations through global secrets ([#791](https://github.com/instill-ai/pipeline-backend/issues/791)) ([5a96453](https://github.com/instill-ai/pipeline-backend/commit/5a964532e6cbc35eb6778626f8a5161c29dffc15))
+* **minio:** import updated minio package and add tag on file upload ([#779](https://github.com/instill-ai/pipeline-backend/issues/779)) ([ef86318](https://github.com/instill-ai/pipeline-backend/commit/ef863189a3c1617e7a47e89ba1632863f7e122ec))
+* revamp Instill Format ([#774](https://github.com/instill-ai/pipeline-backend/issues/774)) ([24153e2](https://github.com/instill-ai/pipeline-backend/commit/24153e2c57ba4ce508059a0bd1af8528b07b5ed3))
+* support `length` attribute for array data ([#810](https://github.com/instill-ai/pipeline-backend/issues/810)) ([fb4f4f7](https://github.com/instill-ai/pipeline-backend/commit/fb4f4f73064327be025999a4f9fbf31b8ac2e230))
+* **web:** refactor the web operator ([#772](https://github.com/instill-ai/pipeline-backend/issues/772)) ([ae4e3c2](https://github.com/instill-ai/pipeline-backend/commit/ae4e3c2d21951d666bbf0b0ae4c384d18446e41f))
+
+
+### Bug Fixes
+
+* **component,image:** fix missing show score draw ([#801](https://github.com/instill-ai/pipeline-backend/issues/801)) ([a405bf7](https://github.com/instill-ai/pipeline-backend/commit/a405bf70070222108a8500ae946dbf653c1ca1a0))
+* fix bug not to return error if there is no app or conversation ([#816](https://github.com/instill-ai/pipeline-backend/issues/816)) ([a946cfd](https://github.com/instill-ai/pipeline-backend/commit/a946cfd22ede65f608d79efcbb2d52e14fadc692))
+* fix iterator upstream check ([#794](https://github.com/instill-ai/pipeline-backend/issues/794)) ([671971f](https://github.com/instill-ai/pipeline-backend/commit/671971f5e1ed69f87f76ec75b2a0d96db3637e62))
+* **run:** add metadata retention handler ([#800](https://github.com/instill-ai/pipeline-backend/issues/800)) ([25ec0c2](https://github.com/instill-ai/pipeline-backend/commit/25ec0c227521cebbe79e873be9e859649341079d))
+* **run:** add namespace id in response ([#811](https://github.com/instill-ai/pipeline-backend/issues/811)) ([8d29ffb](https://github.com/instill-ai/pipeline-backend/commit/8d29ffbc813545833f9694b78bef07a31b428a22))
+* **run:** rename pipeline run columns and fix tests ([#776](https://github.com/instill-ai/pipeline-backend/issues/776)) ([98f1e00](https://github.com/instill-ai/pipeline-backend/commit/98f1e001f683c8b5ae72b553e3217f0459ac3ef8))
+* **slack:** correct link to OAuth config in documentation ([#805](https://github.com/instill-ai/pipeline-backend/issues/805)) ([aa0752d](https://github.com/instill-ai/pipeline-backend/commit/aa0752dca35ff49960c35d6082e295d3a11b16d6))
+
 ## [0.45.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.45.1-beta...v0.45.2-beta) (2024-10-29)
 
 
