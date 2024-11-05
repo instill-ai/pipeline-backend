@@ -100,6 +100,7 @@ func (s *service) convertPipelineRunToPB(run datamodel.PipelineRun) (*pipelinepb
 	result := &pipelinepb.PipelineRun{
 		PipelineUid:     run.PipelineUID.String(),
 		PipelineId:      &run.Pipeline.ID,
+		NamespaceId:     run.Pipeline.NamespaceID,
 		PipelineRunUid:  run.PipelineTriggerUID.String(),
 		PipelineVersion: run.PipelineVersion,
 		Status:          runpb.RunStatus(run.Status),
