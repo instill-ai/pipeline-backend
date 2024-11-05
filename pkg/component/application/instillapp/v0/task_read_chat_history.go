@@ -128,8 +128,9 @@ func (e *execution) readChatHistory(ctx context.Context, job *base.Job) error {
 			PageToken:             nextPageToken,
 		})
 
+		// We don't want to fail the job if there is an error.
 		if err != nil {
-			return fmt.Errorf("list messages: %w", err)
+			break
 		}
 
 		output.filter(inputStruct, res.Messages)
