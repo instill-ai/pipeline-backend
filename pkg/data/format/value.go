@@ -11,4 +11,5 @@ type Value interface {
 	ToStructValue() (v *structpb.Value, err error)
 	Get(p *path.Path) (v Value, err error)
 	Equal(other Value) bool
+	String() string
 }

@@ -214,10 +214,7 @@ func Render(ctx context.Context, template format.Value, batchIdx int, wfm memory
 				}
 				return nil, err
 			}
-
-			if s, ok := v.(format.String); ok {
-				val += s.String()
-			}
+			val += v.String()
 			s = s[endIdx+1:]
 		}
 		return data.NewString(val), nil

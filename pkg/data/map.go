@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"strings"
 
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -66,4 +67,17 @@ func (m Map) Equal(other format.Value) bool {
 		return true
 	}
 	return false
+}
+
+func (m Map) String() string {
+	segments := make([]string, 0, len(m))
+	for k, v := range m {
+		switch v := v.(type) {
+		case *stringData:
+			segments = append(segments, fmt.Sprintf("\"%s\": \"%s\"", k, v.String()))
+		default:
+			segments = append(segments, fmt.Sprintf("\"%s\": %s", k, v.String()))
+		}
+	}
+	return fmt.Sprintf("{%s}", strings.Join(segments, ", "))
 }

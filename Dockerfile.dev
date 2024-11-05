@@ -43,7 +43,7 @@ RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=typ
 
 # k6
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install go.k6.io/xk6/cmd/xk6@v${XK6_VERSION}
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH xk6 build v${K6_VERSION} --with github.com/grafana/xk6-sql --output /usr/bin/k6
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH xk6 build v${K6_VERSION} --with github.com/grafana/xk6-sql@v0.4.1 --output /usr/bin/k6
 
 # -- set up Go
 
