@@ -8,15 +8,15 @@ import (
 
 	_ "embed"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
 	appPB "github.com/instill-ai/protogen-go/app/app/v1alpha"
 )
 
 const (
-	TaskReadChatHistory  string = "TASK_READ_CHAT_HISTORY"
+	// TaskReadChatHistory is the task name for reading chat history
+	TaskReadChatHistory string = "TASK_READ_CHAT_HISTORY"
+	// TaskWriteChatMessage is the task name for writing chat message
 	TaskWriteChatMessage string = "TASK_WRITE_CHAT_MESSAGE"
 )
 
@@ -36,15 +36,17 @@ type component struct {
 type execution struct {
 	base.ComponentExecution
 
-	execute    func(*structpb.Struct) (*structpb.Struct, error)
+	execute    func(context.Context, *base.Job) error
 	client     appPB.AppPublicServiceClient
 	connection Connection
 }
 
+// Connection is the interface for the connection to the application server
 type Connection interface {
 	Close() error
 }
 
+// Init initializes the component
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
@@ -56,6 +58,7 @@ func Init(bc base.Component) *component {
 	return comp
 }
 
+// CreateExecution creates an execution for the component
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	e := &execution{ComponentExecution: x}
 
@@ -79,6 +82,7 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	return e, nil
 }
 
+// Execute executes the jobs concurrently
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-	return base.SequentialExecutor(ctx, jobs, e.execute)
+	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }
