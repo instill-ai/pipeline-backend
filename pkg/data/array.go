@@ -13,6 +13,10 @@ type Array []format.Value
 
 func (Array) IsValue() {}
 
+var arrayGetters = map[string]func(Array) (format.Value, error){
+	"length": func(a Array) (format.Value, error) { return a.Length(), nil },
+}
+
 func (a Array) Get(p *path.Path) (v format.Value, err error) {
 	if p == nil || p.IsEmpty() {
 		return a, nil
@@ -28,6 +32,12 @@ func (a Array) Get(p *path.Path) (v format.Value, err error) {
 			return nil, fmt.Errorf("path not found: %s", p)
 		}
 		return a[index].Get(remainingPath)
+	} else if firstSeg.SegmentType == path.AttributeSegment {
+		getter, exists := arrayGetters[firstSeg.Attribute]
+		if !exists {
+			return nil, fmt.Errorf("path not found: %s", p)
+		}
+		return getter(a)
 	}
 	return nil, fmt.Errorf("path not found: %s", p)
 }
@@ -63,4 +73,8 @@ func (a Array) Equal(other format.Value) bool {
 		return true
 	}
 	return false
+}
+
+func (a Array) Length() format.Number {
+	return NewNumberFromInteger(len(a))
 }
