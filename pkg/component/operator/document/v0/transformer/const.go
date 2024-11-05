@@ -22,4 +22,7 @@ var (
 
 	//go:embed execution/pdf_checker.py
 	pdfChecker string
+
+	//go:embed execution/get_page_numbers.py
+	getPageNumbersExecution string
 )
