@@ -157,12 +157,11 @@ func normalizeLineEndings(input string) string {
 	return strings.ReplaceAll(input, "\r\n", "\n")
 }
 
-// Sample test in main_test.go with existing helper functions from chunk_text_test.go
-
+// Main test function using helper functions without redeclaration
 func TestValidateChunkPositionsInMain(t *testing.T) {
 	c := quicktest.New(t)
-	
-	// Sample data - replace with actual chunk data
+
+	// Sample data - replace with actual chunk data for your test
 	chunks := []TextChunk{
 		{StartPosition: 0, EndPosition: 10, TokenCount: 5},
 		{StartPosition: 11, EndPosition: 20, TokenCount: 7},
@@ -173,6 +172,6 @@ func TestValidateChunkPositionsInMain(t *testing.T) {
 		{StartPosition: 11, EndPosition: 20, TokenCount: 7},
 	}
 
-	// Using validateChunkPositions function from chunk_text_test.go without redeclaration
+	// Assuming validateChunkPositions is already defined in chunk_text_test.go
 	validateChunkPositions(c, chunks, expectedChunks)
 }
