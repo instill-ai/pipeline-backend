@@ -151,12 +151,6 @@ func TestCleanData(t *testing.T) {
 	}
 }
 
-
-// Helper function to normalize line endings across different environments
-func normalizeLineEndings(input string) string {
-	return strings.ReplaceAll(input, "\r\n", "\n")
-}
-
 // Main test function using helper functions without redeclaration
 func TestValidateChunkPositionsInMain(t *testing.T) {
 	c := quicktest.New(t)
@@ -172,6 +166,6 @@ func TestValidateChunkPositionsInMain(t *testing.T) {
 		{StartPosition: 11, EndPosition: 20, TokenCount: 7},
 	}
 
-	// Assuming validateChunkPositions is already defined in chunk_text_test.go
+	// Call validateChunkPositions directly; normalizeLineEndings should be referenced from chunk_text_test.go
 	validateChunkPositions(c, chunks, expectedChunks)
 }
