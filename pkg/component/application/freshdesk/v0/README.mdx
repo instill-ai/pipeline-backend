@@ -132,6 +132,7 @@ Get ticket using ID
 </div>
 </details>
 
+
 ### Create Ticket
 
 Create ticket
@@ -172,6 +173,7 @@ Create ticket
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
 </div>
 
+
 ### Reply to Ticket
 
 Reply to a ticket thread.
@@ -202,6 +204,7 @@ Reply to a ticket thread.
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
 </div>
 
+
 ### Create Ticket Note
 
 Create a private/public note on a ticket thread.
@@ -231,6 +234,7 @@ Create a private/public note on a ticket thread.
 | Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket |
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
 </div>
+
 
 ### Get All Conversations
 
@@ -279,6 +283,7 @@ Get all the conversations in a ticket. (Conversations are replies and notes that
 | Incoming | `user-id` | integer | ID of the agent/contact replying to the ticket. |
 </div>
 </details>
+
 
 ### Get Contact
 
@@ -339,6 +344,7 @@ Get contact using ID
 </div>
 </details>
 
+
 ### Create Contact
 
 Create contact
@@ -380,6 +386,7 @@ Create contact
 | Created At | `created-at` | string | Timestamp that denotes when the contact was created. In UTC format. |
 </div>
 
+
 ### Get Company
 
 Get company using ID
@@ -414,6 +421,7 @@ Get company using ID
 | Custom Fields (optional) | `custom-fields` | object | Custom fields that the company have. Custom fields can be created or modified in Admin -> Customer Fields |
 </div>
 
+
 ### Create Company
 
 Create company
@@ -446,6 +454,7 @@ Create company
 | Created At | `created-at` | string | Timestamp that denotes when the company was created. In UTC format. |
 </div>
 
+
 ### Get All
 
 Task to get all the IDs of existing contacts, companies, tickets, products, agents, roles, or skills. Note: products, agents, roles, and skills require admin privileges. Some of these might not work, depending on the plan you are on.
@@ -471,6 +480,7 @@ Task to get all the IDs of existing contacts, companies, tickets, products, agen
 | IDs | `ids` | array[integer] | List of IDs |
 | ID Length | `id-length` | integer | Number of IDs |
 </div>
+
 
 ### Get Product
 
@@ -500,6 +510,7 @@ Get product using ID. This task will only work if you have admin privileges.
 | Updated At | `updated-at` | string | Timestamp that denotes when the product was last updated |
 | Default | `default` | boolean | Set to true if the product is the default product |
 </div>
+
 
 ### Get Agent
 
@@ -544,6 +555,7 @@ Get agent using ID. This task will only work if you have admin privileges. Agent
 | Updated At (optional) | `updated-at` | string | Timestamp that denotes when the agent was last updated |
 </div>
 
+
 ### Get Role
 
 Get role using ID. This task will only work if you have admin privileges. Roles allow agents/collaborators to have different privileges.
@@ -572,6 +584,7 @@ Get role using ID. This task will only work if you have admin privileges. Roles 
 | Created At | `created-at` | string | Timestamp that denotes when the role was created |
 | Updated At | `updated-at` | string | Timestamp that denotes when the role was last updated |
 </div>
+
 
 ### Get Group
 
@@ -606,6 +619,7 @@ Get group using ID. This task will only work if you have admin privileges. Agent
 | Updated At | `updated-at` | string | Timestamp that denotes when the group was last updated |
 </div>
 
+
 ### Get Skill
 
 Get skill using ID. This task will only work if you have admin privileges. Agents can be assigned skills, and it is possible for tickets to be automatically assigned to agents based on the skills they have.
@@ -634,5 +648,6 @@ Get skill using ID. This task will only work if you have admin privileges. Agent
 | Created At | `created-at` | string | Timestamp that denotes when the skill was created |
 | Updated At | `updated-at` | string | Timestamp that denotes when the skill was last updated |
 </div>
+
 
 

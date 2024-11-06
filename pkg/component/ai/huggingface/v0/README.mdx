@@ -124,6 +124,7 @@ Options for the model
 | Generated Text | `generated-text` | string | The continuated string |
 </div>
 
+
 ### Fill Mask
 
 Masked language modeling is the task of masking some of the words in a sentence and predicting which words should replace those masks. These models are useful when we want to get a statistical understanding of the language in which the model is trained in.
@@ -179,6 +180,7 @@ Options for the model
 | Token Str | `token-str` | string | The string representation of the token |
 </div>
 </details>
+
 
 ### Summarization
 
@@ -237,6 +239,7 @@ Options for the model
 | Summary Text | `summary-text` | string | The string after summarization |
 </div>
 
+
 ### Text Classification
 
 Text Classification is the task of assigning a label or class to a given text. Some use cases are sentiment analysis, natural language inference, and assessing grammatical correctness.
@@ -290,6 +293,7 @@ Options for the model
 | Score | `score` | number | A floats that represents how likely is that the text belongs the this class. |
 </div>
 </details>
+
 
 ### Token Classification
 
@@ -364,6 +368,7 @@ Options for the model
 </div>
 </details>
 
+
 ### Translation
 
 Translation is the task of converting text from one language to another.
@@ -403,6 +408,7 @@ Options for the model
 | :--- | :--- | :--- | :--- |
 | Translation Text | `translation-text` | string | The string after translation |
 </div>
+
 
 ### Zero Shot Classification
 
@@ -458,6 +464,7 @@ Options for the model
 | Sequence (optional) | `sequence` | string | The string sent as an input |
 </div>
 
+
 ### Question Answering
 
 Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a document. Some question answering models can generate answers without context!
@@ -511,6 +518,7 @@ Options for the model
 | Score (optional) | `score` | number | A float that represents how likely that the answer is correct |
 | Start (optional) | `start` | integer | The index (string wise) of the start of the answer within context. |
 </div>
+
 
 ### Table Question Answering
 
@@ -566,6 +574,7 @@ Options for the model
 | Coordinates (optional) | `coordinates` | array[array] | a list of coordinates of the cells referenced in the answer |
 </div>
 
+
 ### Sentence Similarity
 
 Sentence Similarity is the task of determining how similar two texts are. Sentence similarity models convert input texts into vectors (embeddings) that capture semantic information and calculate how close (similar) they are between them. This task is particularly useful for information retrieval and clustering/grouping.
@@ -616,6 +625,7 @@ Options for the model
 | :--- | :--- | :--- | :--- |
 | Scores | `scores` | array[number] | The associated similarity score for each of the given strings |
 </div>
+
 
 ### Conversational
 
@@ -701,6 +711,7 @@ Options for the model
 </div>
 </details>
 
+
 ### Image Classification
 
 Image classification is the task of assigning a label or class to an entire image. Images are expected to have only one class for each image. Image classification models take an image as input and return a prediction about which class the image belongs to.
@@ -739,6 +750,7 @@ Image classification is the task of assigning a label or class to an entire imag
 | Score | `score` | number | A float that represents how likely it is that the image file belongs to this class. |
 </div>
 </details>
+
 
 ### Image Segmentation
 
@@ -779,6 +791,7 @@ Image Segmentation divides an image into segments where each pixel in the image 
 | Score | `score` | number | A float that represents how likely it is that the segment belongs to the given class. |
 </div>
 </details>
+
 
 ### Object Detection
 
@@ -832,6 +845,7 @@ Object Detection models allow users to identify objects of certain defined class
 </div>
 </details>
 
+
 ### Image to Text
 
 Image to text models output a text from a given image. Image captioning or optical character recognition can be considered as the most common applications of image to text.
@@ -857,6 +871,7 @@ Image to text models output a text from a given image. Image captioning or optic
 | Text | `text` | string | Generated text |
 </div>
 
+
 ### Speech Recognition
 
 Automatic Speech Recognition (ASR), also known as Speech to Text (STT), is the task of transcribing a given audio to text. It has many applications, such as voice user interfaces.
@@ -881,6 +896,7 @@ Automatic Speech Recognition (ASR), also known as Speech to Text (STT), is the t
 | :--- | :--- | :--- | :--- |
 | Text | `text` | string | The string that was recognized within the audio file. |
 </div>
+
 
 ### Audio Classification
 
@@ -920,5 +936,6 @@ Audio classification is the task of assigning a label or class to a given audio.
 | Score | `score` | number | A float that represents how likely it is that the audio file belongs to this class. |
 </div>
 </details>
+
 
 
