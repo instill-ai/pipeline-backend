@@ -174,7 +174,7 @@ func TestTargetLink(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "exclude URLs with query parameters",
+			name: "not match URLs without query parameters",
 			link: "https://example.com/path?id=123",
 			filter: Filter{
 				IncludePatterns: []string{"^[^?]*$"},

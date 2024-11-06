@@ -116,8 +116,8 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 		}
 
 		link := e.Attr("href")
-
-		if !targetLink(link, inputStruct.Filter) {
+		absoluteURL := e.Request.AbsoluteURL(link)
+		if !targetLink(absoluteURL, inputStruct.Filter) {
 			return
 		}
 
@@ -264,8 +264,8 @@ func initColly(inputStruct CrawlWebsiteInput) *colly.Collector {
 // It ensures that we fetch enough pages to get the required number of pages.
 func getPageTimes(maxK int) int {
 	if maxK < 10 {
-		return 10
+		return 30
 	} else {
-		return 2
+		return 10
 	}
 }
