@@ -85,7 +85,17 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 
 	inputStruct.preset()
 
-	output := ScrapeWebsiteOutput{}
+	output := ScrapeWebsiteOutput{
+		Pages: []PageInfo{},
+	}
+
+	if !targetLink(inputStruct.URL, inputStruct.Filter) {
+		outputStruct, err := base.ConvertToStructpb(output)
+		if err != nil {
+			return nil, fmt.Errorf("convert output to structpb error: %v", err)
+		}
+		return outputStruct, nil
+	}
 
 	c := initColly(inputStruct)
 
