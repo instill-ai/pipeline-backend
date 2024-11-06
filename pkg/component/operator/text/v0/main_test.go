@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 	"github.com/frankban/quicktest"
-	"strings" // Ensure this import is here
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
@@ -148,34 +147,4 @@ func TestCleanData(t *testing.T) {
 			}
 		})
 	}
-}
-
-// Helper function to normalize line endings across different environments
-func normalizeLineEndings(input string) string {
-	return strings.ReplaceAll(input, "\r\n", "\n")
-}
-
-// Sample test in main_test.go with normalizeLineEndings
-func TestValidateChunkPositionsInMain(t *testing.T) {
-	c := quicktest.New(t)
-
-	// Sample data - replace with actual chunk data
-	chunks := []TextChunk{
-		{StartPosition: 0, EndPosition: 10, TokenCount: 5},
-		{StartPosition: 11, EndPosition: 20, TokenCount: 7},
-	}
-
-	expectedChunks := []TextChunk{
-		{StartPosition: 0, EndPosition: 10, TokenCount: 5},
-		{StartPosition: 11, EndPosition: 20, TokenCount: 7},
-	}
-
-	// Perform line-ending normalization on test data if necessary
-	for i := range chunks {
-		chunks[i].Text = normalizeLineEndings(chunks[i].Text)
-		expectedChunks[i].Text = normalizeLineEndings(expectedChunks[i].Text)
-	}
-
-	// Validate using validateChunkPositions or another test function
-	validateChunkPositions(c, chunks, expectedChunks)
 }
