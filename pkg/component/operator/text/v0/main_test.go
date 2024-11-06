@@ -3,7 +3,6 @@ package text
 import (
 	"context"
 	"testing"
-	"strings"       // Importing strings for normalizeLineEndings function
 
 	"github.com/frankban/quicktest"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
