@@ -44,42 +44,27 @@ This task involves systematically navigating through a website, starting from a 
 | Max Number of Pages (required) | `max-k` | integer | Max-K sets a limit on the number of pages to fetch. If Max-K is set to 0, all available pages will be fetched within the time limit of 120 seconds. If Max-K is a positive number, the fetch will return up to that many pages, but no more. |
 | Timeout | `timeout` | integer | The time to wait for a page to load in milliseconds. Min 0, Max 60000. Please notice the timeout here is set for each page rather than the whole crawl task. |
 | Max Depth | `max-depth` | integer | Max Depth specifies how deep the crawler will navigate from the root URL. If max depth is set to 1, the crawler will only scrape the root URL and will not follow any links to other pages. If max depth is set to 0, the crawler will scrape all reachable pages until the total number of scraped pages reaches max-k. If both max-k and max depth are defined, the crawler will prioritize the max-k setting when determining how many pages to scrape. |
-| [Filter](#crawl-site-filter) | `filter` | object | A way to filter the URLs to crawl. If empty, all URLs will be crawled. Refer to the [Regex](#crawl-site-regex) and [Substring](#crawl-site-substring) for more details. |
+| [Filter](#crawl-site-filter) | `filter` | object | Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). The URL will be crawled if it matches either include-patterns or not match exclude-patterns. When both include-patterns and exclude-patterns are empty, all URLs will be crawled. It will process exclude-patterns first, then include-patterns. When exclude-patterns is not empty, only URLs that do not match exclude-patterns will be crawled. When include-patterns is not empty, only URLs that match include-patterns will be crawled. |
 </div>
-
-
 
 
 <details>
-<summary>The <code>filter</code> Object </summary>
+<summary> Input Objects in Crawl Site</summary>
 
 <h4 id="crawl-site-filter">Filter</h4>
 
-`filter` must fulfill one of the following schemas:
-
-<h5 id="crawl-site-regex"><code>Regex</code></h5>
+Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). The URL will be crawled if it matches either include-patterns or not match exclude-patterns. When both include-patterns and exclude-patterns are empty, all URLs will be crawled. It will process exclude-patterns first, then include-patterns. When exclude-patterns is not empty, only URLs that do not match exclude-patterns will be crawled. When include-patterns is not empty, only URLs that match include-patterns will be crawled.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Exclude Patterns | `exclude-patterns` | array |  When the URL is matched, the URL will not be crawled.  |
-| Filter Method | `filter-method` | string |  Must be `"Regex"`   |
-| Include Patterns | `include-patterns` | array |  When the URL is matched, the URL will be crawled.  |
-</div>
-
-<h5 id="crawl-site-substring"><code>Substring</code></h5>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Case Sensitive | `case-sensitive` | boolean |  A flag indicating whether the substring matching is case-sensitive. When it is true, the matching is case-sensitive. When it is false, the matching is case-insensitive. The default value is false. For example, when it is case-sensitive, cat would only match 'cat' but not 'Cat' or 'CAT'. When cat is case-insensitive, on the other hand, would match 'cat', 'Cat', 'CAT', or any other variation of uppercase and lowercase letters.  |
-| Exclude Substring | `exclude-substrings` | array |  When the URL contains the substrings, the URL will not be crawled.  |
-| Filter Method | `filter-method` | string |  Must be `"Substring"`   |
-| Include Substring | `include-substrings` | array |  When the URL contains the substrings, the URL will be crawled.  |
+| Exclude Patterns | `exclude-patterns` | array | When the URL is matched, the URL will not be crawled.  |
+| Include Patterns | `include-patterns` | array | When the URL is matched, the URL will be crawled.  |
 </div>
 </details>
+
+
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -101,7 +86,57 @@ This task involves systematically navigating through a website, starting from a 
 | Title | `title` | string | The title of a webpage link in plain text. |
 </div>
 </details>
+#### Regex Match Sample
 
+- Match example1.com, example2.com, but not examplea.com
+    ```regex
+    example[\\d].com
+    ```
+
+- Match exampleA.com, exampleB.com, exampleC.com, but not examplea.com
+    ```regex
+    example[A|B|C].com
+    ```
+
+- Match all subdomains of example.com (blog.example.com, dev.example.com, etc.)
+    ```regex
+    .*\\.example\\.com
+    ```
+
+- Match URLs with specific file extensions (pdf, doc, docx)
+    ```regex
+    .*\\.(pdf|doc|docx)$
+    ```
+
+- Match URLs containing specific keywords in the path
+    ```regex
+    .*(blog|news|article).*
+    ```
+
+- Match URLs with specific port numbers (8080 or 8443)
+    ```regex
+    .*:(8080|8443)($|/.*)
+    ```
+
+- Match secure URLs (https only)
+    ```regex
+    ^https://.*
+    ```
+
+- Match specific country top-level domains
+    ```regex
+    .*\\.(uk|fr|de)$
+    ```
+
+- Match URLs without query parameters
+    ```regex
+    ^[^?]*$
+    ```
+
+- Match URLs with specific query parameters
+    ```regex
+    .*[?&]id=[0-9]+.*
+    ```
 ### Scrape Pages
 
 This task focuses on extracting specific data from targeted webpages by parsing its HTML structure. Unlike crawling, which navigates across multiple pages, scraping retrieves content only from the specified page. After scraping, the data can be further processed using a defined [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of `only-main-content`, `remove-tags`, and `only-include-tags`. Refer to the [jQuery Syntax Examples](#jquery-syntax-examples) for more details on how to filter and manipulate the data. To avoid a single URL failure from affecting all requests, we will not return an error when an individual URL fails. Instead, we will return all contents that are successfully scraped.

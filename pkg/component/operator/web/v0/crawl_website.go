@@ -39,6 +39,18 @@ type CrawlWebsiteInput struct {
 	Timeout int `json:"timeout"`
 	// MaxDepth: The maximum depth of the pages to scrape.
 	MaxDepth int `json:"max-depth"`
+	// Filter: The filter to filter the URLs to crawl.
+	Filter Filter `json:"filter"`
+}
+
+// Filter defines the filter of the crawl website task
+type Filter struct {
+	// ExcludePatterns: The patterns to exclude the URLs to crawl.
+	ExcludePatterns []string `json:"exclude-patterns"`
+	// IncludePatterns: The patterns to include the URLs to crawl.
+	IncludePatterns []string `json:"include-patterns"`
+	// ExcludeSubstrings: The substrings to exclude the URLs to crawl.
+	ExcludeSubstrings []string `json:"exclude-substrings"`
 }
 
 func (i *CrawlWebsiteInput) preset() {
@@ -104,6 +116,10 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 		}
 
 		link := e.Attr("href")
+
+		if !targetLink(link, inputStruct.Filter) {
+			return
+		}
 
 		if util.InSlice(pageLinks, link) {
 			return

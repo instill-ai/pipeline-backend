@@ -1,4 +1,4 @@
-//go:generate compogen readme ./config ./README.mdx --extraContents TASK_SCRAPE_PAGES=.compogen/scrape_page.mdx --extraContents bottom=.compogen/bottom.mdx
+//go:generate compogen readme ./config ./README.mdx --extraContents TASK_SCRAPE_PAGES=.compogen/scrape_page.mdx --extraContents TASK_CRAWL_SITE=.compogen/crawl_site.mdx --extraContents bottom=.compogen/bottom.mdx
 package web
 
 import (

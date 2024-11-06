@@ -108,101 +108,37 @@
           "type": "integer"
         },
         "filter": {
-          "description": "A way to filter the URLs to crawl. If empty, all URLs will be crawled. Refer to the [Regex](#crawl-site-regex) and [Substring](#crawl-site-substring) for more details.",
+          "description": "Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). The URL will be crawled if it matches either include-patterns or not match exclude-patterns. When both include-patterns and exclude-patterns are empty, all URLs will be crawled. It will process exclude-patterns first, then include-patterns. When exclude-patterns is not empty, only URLs that do not match exclude-patterns will be crawled. When include-patterns is not empty, only URLs that match include-patterns will be crawled.",
           "instillUIOrder": 5,
           "type": "object",
           "title": "Filter",
-          "oneOf": [
-            {
-              "properties": {
-                "filter-method": {
-                  "const": "Regex",
-                  "type": "string",
-                  "title": "Filter Method",
-                  "description": "Filtering based on regular expression.",
-                  "instillUIOrder": 0
-                },
-                "exclude-patterns": {
-                  "description": "When the URL is matched, the URL will not be crawled.",
-                  "instillAcceptFormats": [
-                    "array:string"
-                  ],
-                  "items": {
-                    "type": "string"
-                  },
-                  "instillUIOrder": 1,
-                  "type": "array",
-                  "title": "Exclude Patterns"
-                },
-                "include-patterns": {
-                  "description": "When the URL is matched, the URL will be crawled.",
-                  "instillAcceptFormats": [
-                    "array:string"
-                  ],
-                  "items": {
-                    "type": "string"
-                  },
-                  "instillUIOrder": 2,
-                  "type": "array",
-                  "title": "Include Patterns"
-                }
-              },
-              "required": [
-                "filter-method"
+          "properties": {
+            "exclude-patterns": {
+              "description": "When the URL is matched, the URL will not be crawled.",
+              "instillAcceptFormats": [
+                "array:string"
               ],
-              "title": "Regex",
-              "type": "object"
+              "items": {
+                "type": "string"
+              },
+              "instillUIOrder": 1,
+              "type": "array",
+              "title": "Exclude Patterns"
             },
-            {
-              "properties": {
-                "filter-method": {
-                  "const": "Substring",
-                  "type": "string",
-                  "title": "Filter Method",
-                  "description": "Filtering based on substring. Regex is more powerful than Substring. However, Substring is easier to use.",
-                  "instillUIOrder": 0
-                },
-                "exclude-substrings": {
-                  "description": "When the URL contains the substrings, the URL will not be crawled.",
-                  "instillAcceptFormats": [
-                    "array:string"
-                  ],
-                  "items": {
-                    "type": "string"
-                  },
-                  "instillUIOrder": 1,
-                  "type": "array",
-                  "title": "Exclude Substring"
-                },
-                "include-substrings": {
-                  "description": "When the URL contains the substrings, the URL will be crawled.",
-                  "instillAcceptFormats": [
-                    "array:string"
-                  ],
-                  "items": {
-                    "type": "string"
-                  },
-                  "instillUIOrder": 2,
-                  "type": "array",
-                  "title": "Include Substring"
-                },
-                "case-sensitive": {
-                  "description": "A flag indicating whether the substring matching is case-sensitive. When it is true, the matching is case-sensitive. When it is false, the matching is case-insensitive. The default value is false. For example, when it is case-sensitive, cat would only match 'cat' but not 'Cat' or 'CAT'. When cat is case-insensitive, on the other hand, would match 'cat', 'Cat', 'CAT', or any other variation of uppercase and lowercase letters.",
-                  "instillAcceptFormats": [
-                    "boolean"
-                  ],
-                  "instillUIOrder": 3,
-                  "title": "Case Sensitive",
-                  "type": "boolean"
-                }
-              },
-              "required": [
-                "filter-method"
+            "include-patterns": {
+              "description": "When the URL is matched, the URL will be crawled.",
+              "instillAcceptFormats": [
+                "array:string"
               ],
-              "title": "Substring",
-              "type": "object"
+              "items": {
+                "type": "string"
+              },
+              "instillUIOrder": 2,
+              "type": "array",
+              "title": "Include Patterns"
             }
-          ]
+          },
+          "required": []
         }
       },
       "required": [

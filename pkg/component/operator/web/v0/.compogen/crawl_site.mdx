@@ -1,0 +1,51 @@
+#### Regex Match Sample
+
+- Match example1.com, example2.com, but not examplea.com
+    ```regex
+    example[\\d].com
+    ```
+
+- Match exampleA.com, exampleB.com, exampleC.com, but not examplea.com
+    ```regex
+    example[A|B|C].com
+    ```
+
+- Match all subdomains of example.com (blog.example.com, dev.example.com, etc.)
+    ```regex
+    .*\\.example\\.com
+    ```
+
+- Match URLs with specific file extensions (pdf, doc, docx)
+    ```regex
+    .*\\.(pdf|doc|docx)$
+    ```
+
+- Match URLs containing specific keywords in the path
+    ```regex
+    .*(blog|news|article).*
+    ```
+
+- Match URLs with specific port numbers (8080 or 8443)
+    ```regex
+    .*:(8080|8443)($|/.*)
+    ```
+
+- Match secure URLs (https only)
+    ```regex
+    ^https://.*
+    ```
+
+- Match specific country top-level domains
+    ```regex
+    .*\\.(uk|fr|de)$
+    ```
+
+- Match URLs without query parameters
+    ```regex
+    ^[^?]*$
+    ```
+
+- Match URLs with specific query parameters
+    ```regex
+    .*[?&]id=[0-9]+.*
+    ```
