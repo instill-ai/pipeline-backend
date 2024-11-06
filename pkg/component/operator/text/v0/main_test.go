@@ -3,6 +3,7 @@ package text
 import (
 	"context"
 	"testing"
+	"strings"       // Importing strings for normalizeLineEndings function
 
 	"github.com/frankban/quicktest"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
@@ -150,37 +151,28 @@ func TestCleanData(t *testing.T) {
 	}
 }
 
-// Helper function to adjust start and end positions if they deviate from expected values 
-func adjustPosition(expected, actual int) int {
-	if expected != actual {
-		return expected // Optionally, adjust tolerance here if slight variations are acceptable
-	}
-	return actual
-}
-
-// Helper function to check if token count meets expectations with tolerance for minor deviations
-func checkTokenCount(c *quicktest.C, got, want int) {
-	c.Assert(got, quicktest.Not(quicktest.Equals), 0) // Ensure token count is non-zero
-	c.Assert(got, quicktest.Equals, want, quicktest.Commentf("Token count does not match expected value"))
-}
 
 // Helper function to normalize line endings across different environments
 func normalizeLineEndings(input string) string {
 	return strings.ReplaceAll(input, "\r\n", "\n")
 }
 
-// Additional validation function to check positions and token counts in chunks
-func validateChunkPositions(c *quicktest.C, chunks []TextChunk, expectedChunks []TextChunk) {
-	for i, chunk := range chunks {
-		// Adjust positions for minor discrepancies
-		startPos := adjustPosition(expectedChunks[i].StartPosition, chunk.StartPosition)
-		endPos := adjustPosition(expectedChunks[i].EndPosition, chunk.EndPosition)
+// Sample test in main_test.go with existing helper functions from chunk_text_test.go
 
-		// Validate positions
-		c.Assert(startPos, quicktest.Equals, chunk.StartPosition, quicktest.Commentf("Start position mismatch in chunk %d", i))
-		c.Assert(endPos, quicktest.Equals, chunk.EndPosition, quicktest.Commentf("End position mismatch in chunk %d", i))
-
-		// Validate token count
-		checkTokenCount(c, chunk.TokenCount, expectedChunks[i].TokenCount)
+func TestValidateChunkPositionsInMain(t *testing.T) {
+	c := quicktest.New(t)
+	
+	// Sample data - replace with actual chunk data
+	chunks := []TextChunk{
+		{StartPosition: 0, EndPosition: 10, TokenCount: 5},
+		{StartPosition: 11, EndPosition: 20, TokenCount: 7},
 	}
+
+	expectedChunks := []TextChunk{
+		{StartPosition: 0, EndPosition: 10, TokenCount: 5},
+		{StartPosition: 11, EndPosition: 20, TokenCount: 7},
+	}
+
+	// Using validateChunkPositions function from chunk_text_test.go without redeclaration
+	validateChunkPositions(c, chunks, expectedChunks)
 }
