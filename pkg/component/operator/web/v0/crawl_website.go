@@ -148,6 +148,11 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 		r.Headers.Set("User-Agent", randomString())
 	})
 
+	// colly.Wait() does not terminate the program. So, we need a system to terminate the program when there is no collector.
+	// We use a channel to notify the main goroutine that a new page has been scraped.
+	// When there is no new page for 2 seconds, we cancel the context.
+	pageUpdateCh := make(chan struct{})
+
 	c.OnResponse(func(r *colly.Response) {
 		if ctx.Err() != nil {
 			return
@@ -177,6 +182,12 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 		if len(output.Pages) < inputStruct.MaxK {
 			output.Pages = append(output.Pages, page)
 
+			// Signal that we've added a new page
+			select {
+			case pageUpdateCh <- struct{}{}:
+			default:
+			}
+
 			// If the length of output.Pages is equal to MaxK, we should stop the scraping.
 			if len(output.Pages) == inputStruct.MaxK {
 				cancel()
@@ -196,6 +207,33 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 	go func() {
 		_ = c.Visit(inputStruct.URL)
 		c.Wait()
+	}()
+
+	// To avoid to wait for 2 minutes, we use a timer to check if there is a new page.
+	// If there is no new page, we cancel the context.
+	go func() {
+		inactivityTimer := time.NewTimer(2 * time.Second)
+		defer inactivityTimer.Stop()
+
+		for {
+			select {
+			case <-pageUpdateCh:
+				// Reset the timer whenever we get a new page
+				if !inactivityTimer.Stop() {
+					select {
+					case <-inactivityTimer.C:
+					default:
+					}
+				}
+				inactivityTimer.Reset(2 * time.Second)
+			case <-inactivityTimer.C:
+				// If no new pages for 2 seconds, cancel the context
+				cancel()
+				return
+			case <-ctx.Done():
+				return
+			}
+		}
 	}()
 
 	<-ctx.Done()
@@ -266,6 +304,6 @@ func getPageTimes(maxK int) int {
 	if maxK < 10 {
 		return 30
 	} else {
-		return 10
+		return 3
 	}
 }
