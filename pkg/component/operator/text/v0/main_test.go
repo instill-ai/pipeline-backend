@@ -3,10 +3,9 @@ package text
 import (
 	"context"
 	"testing"
-	"strings" // Import strings only here to avoid redundancy in other test files
-)
-
 	"github.com/frankban/quicktest"
+	"strings" // Import the strings package here
+)
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
