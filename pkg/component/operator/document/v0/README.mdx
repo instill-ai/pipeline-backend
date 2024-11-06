@@ -43,6 +43,7 @@ Convert document to text in Markdown format.
 | Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf' |
 | Display Image Tag | `display-image-tag` | boolean | Whether to display image tag in the markdown text. Default is 'false'. It is only applicable for convert-2024-08-28 converter. And, it is only applicable for the type of PPTX/PPT/DOCX/DOC/PDF. |
 | Display All Page Image | `display-all-page-image` | boolean | Whether to respond the whole page as the images if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF. |
+| Resolution | `resolution` | number | Desired number pixels per inch. Defaults to 500. Minimum is 72. |
 </div>
 
 
@@ -59,6 +60,7 @@ Convert document to text in Markdown format.
 | Images (optional) | `images` | array[string] | Images extracted from the document |
 | Error (optional) | `error` | string | Error message if any during the conversion process |
 | All Page Images (optional) | `all-page-images` | array[string] | The image contains all the pages in the document if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF. |
+| Markdowns (optional) | `markdowns` | array[string] | Markdown text converted from the PDF document, separated by page. |
 </div>
 
 ### Convert to Text
@@ -101,6 +103,7 @@ Convert Document to images.
 | Task ID (required) | `task` | string | `TASK_CONVERT_TO_IMAGES` |
 | PDF (required) | `document` | string | Base64 encoded PDF/DOCX/DOC/PPT/PPTX to be converted to images |
 | Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf' |
+| Resolution | `resolution` | number | Desired number pixels per inch. Defaults to 500. Minimum is 72. |
 </div>
 
 

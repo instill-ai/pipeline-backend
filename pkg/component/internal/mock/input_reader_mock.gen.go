@@ -23,6 +23,13 @@ type InputReaderMock struct {
 	afterReadCounter  uint64
 	beforeReadCounter uint64
 	ReadMock          mInputReaderMockRead
+
+	funcReadData          func(ctx context.Context, input any) (err error)
+	funcReadDataOrigin    string
+	inspectFuncReadData   func(ctx context.Context, input any)
+	afterReadDataCounter  uint64
+	beforeReadDataCounter uint64
+	ReadDataMock          mInputReaderMockReadData
 }
 
 // NewInputReaderMock returns a mock for mm_base.InputReader
@@ -35,6 +42,9 @@ func NewInputReaderMock(t minimock.Tester) *InputReaderMock {
 
 	m.ReadMock = mInputReaderMockRead{mock: m}
 	m.ReadMock.callArgs = []*InputReaderMockReadParams{}
+
+	m.ReadDataMock = mInputReaderMockReadData{mock: m}
+	m.ReadDataMock.callArgs = []*InputReaderMockReadDataParams{}
 
 	t.Cleanup(m.MinimockFinish)
 
@@ -353,11 +363,355 @@ func (m *InputReaderMock) MinimockReadInspect() {
 	}
 }
 
+type mInputReaderMockReadData struct {
+	optional           bool
+	mock               *InputReaderMock
+	defaultExpectation *InputReaderMockReadDataExpectation
+	expectations       []*InputReaderMockReadDataExpectation
+
+	callArgs []*InputReaderMockReadDataParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// InputReaderMockReadDataExpectation specifies expectation struct of the InputReader.ReadData
+type InputReaderMockReadDataExpectation struct {
+	mock               *InputReaderMock
+	params             *InputReaderMockReadDataParams
+	paramPtrs          *InputReaderMockReadDataParamPtrs
+	expectationOrigins InputReaderMockReadDataExpectationOrigins
+	results            *InputReaderMockReadDataResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// InputReaderMockReadDataParams contains parameters of the InputReader.ReadData
+type InputReaderMockReadDataParams struct {
+	ctx   context.Context
+	input any
+}
+
+// InputReaderMockReadDataParamPtrs contains pointers to parameters of the InputReader.ReadData
+type InputReaderMockReadDataParamPtrs struct {
+	ctx   *context.Context
+	input *any
+}
+
+// InputReaderMockReadDataResults contains results of the InputReader.ReadData
+type InputReaderMockReadDataResults struct {
+	err error
+}
+
+// InputReaderMockReadDataOrigins contains origins of expectations of the InputReader.ReadData
+type InputReaderMockReadDataExpectationOrigins struct {
+	origin      string
+	originCtx   string
+	originInput string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmReadData *mInputReaderMockReadData) Optional() *mInputReaderMockReadData {
+	mmReadData.optional = true
+	return mmReadData
+}
+
+// Expect sets up expected params for InputReader.ReadData
+func (mmReadData *mInputReaderMockReadData) Expect(ctx context.Context, input any) *mInputReaderMockReadData {
+	if mmReadData.mock.funcReadData != nil {
+		mmReadData.mock.t.Fatalf("InputReaderMock.ReadData mock is already set by Set")
+	}
+
+	if mmReadData.defaultExpectation == nil {
+		mmReadData.defaultExpectation = &InputReaderMockReadDataExpectation{}
+	}
+
+	if mmReadData.defaultExpectation.paramPtrs != nil {
+		mmReadData.mock.t.Fatalf("InputReaderMock.ReadData mock is already set by ExpectParams functions")
+	}
+
+	mmReadData.defaultExpectation.params = &InputReaderMockReadDataParams{ctx, input}
+	mmReadData.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmReadData.expectations {
+		if minimock.Equal(e.params, mmReadData.defaultExpectation.params) {
+			mmReadData.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmReadData.defaultExpectation.params)
+		}
+	}
+
+	return mmReadData
+}
+
+// ExpectCtxParam1 sets up expected param ctx for InputReader.ReadData
+func (mmReadData *mInputReaderMockReadData) ExpectCtxParam1(ctx context.Context) *mInputReaderMockReadData {
+	if mmReadData.mock.funcReadData != nil {
+		mmReadData.mock.t.Fatalf("InputReaderMock.ReadData mock is already set by Set")
+	}
+
+	if mmReadData.defaultExpectation == nil {
+		mmReadData.defaultExpectation = &InputReaderMockReadDataExpectation{}
+	}
+
+	if mmReadData.defaultExpectation.params != nil {
+		mmReadData.mock.t.Fatalf("InputReaderMock.ReadData mock is already set by Expect")
+	}
+
+	if mmReadData.defaultExpectation.paramPtrs == nil {
+		mmReadData.defaultExpectation.paramPtrs = &InputReaderMockReadDataParamPtrs{}
+	}
+	mmReadData.defaultExpectation.paramPtrs.ctx = &ctx
+	mmReadData.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmReadData
+}
+
+// ExpectInputParam2 sets up expected param input for InputReader.ReadData
+func (mmReadData *mInputReaderMockReadData) ExpectInputParam2(input any) *mInputReaderMockReadData {
+	if mmReadData.mock.funcReadData != nil {
+		mmReadData.mock.t.Fatalf("InputReaderMock.ReadData mock is already set by Set")
+	}
+
+	if mmReadData.defaultExpectation == nil {
+		mmReadData.defaultExpectation = &InputReaderMockReadDataExpectation{}
+	}
+
+	if mmReadData.defaultExpectation.params != nil {
+		mmReadData.mock.t.Fatalf("InputReaderMock.ReadData mock is already set by Expect")
+	}
+
+	if mmReadData.defaultExpectation.paramPtrs == nil {
+		mmReadData.defaultExpectation.paramPtrs = &InputReaderMockReadDataParamPtrs{}
+	}
+	mmReadData.defaultExpectation.paramPtrs.input = &input
+	mmReadData.defaultExpectation.expectationOrigins.originInput = minimock.CallerInfo(1)
+
+	return mmReadData
+}
+
+// Inspect accepts an inspector function that has same arguments as the InputReader.ReadData
+func (mmReadData *mInputReaderMockReadData) Inspect(f func(ctx context.Context, input any)) *mInputReaderMockReadData {
+	if mmReadData.mock.inspectFuncReadData != nil {
+		mmReadData.mock.t.Fatalf("Inspect function is already set for InputReaderMock.ReadData")
+	}
+
+	mmReadData.mock.inspectFuncReadData = f
+
+	return mmReadData
+}
+
+// Return sets up results that will be returned by InputReader.ReadData
+func (mmReadData *mInputReaderMockReadData) Return(err error) *InputReaderMock {
+	if mmReadData.mock.funcReadData != nil {
+		mmReadData.mock.t.Fatalf("InputReaderMock.ReadData mock is already set by Set")
+	}
+
+	if mmReadData.defaultExpectation == nil {
+		mmReadData.defaultExpectation = &InputReaderMockReadDataExpectation{mock: mmReadData.mock}
+	}
+	mmReadData.defaultExpectation.results = &InputReaderMockReadDataResults{err}
+	mmReadData.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmReadData.mock
+}
+
+// Set uses given function f to mock the InputReader.ReadData method
+func (mmReadData *mInputReaderMockReadData) Set(f func(ctx context.Context, input any) (err error)) *InputReaderMock {
+	if mmReadData.defaultExpectation != nil {
+		mmReadData.mock.t.Fatalf("Default expectation is already set for the InputReader.ReadData method")
+	}
+
+	if len(mmReadData.expectations) > 0 {
+		mmReadData.mock.t.Fatalf("Some expectations are already set for the InputReader.ReadData method")
+	}
+
+	mmReadData.mock.funcReadData = f
+	mmReadData.mock.funcReadDataOrigin = minimock.CallerInfo(1)
+	return mmReadData.mock
+}
+
+// When sets expectation for the InputReader.ReadData which will trigger the result defined by the following
+// Then helper
+func (mmReadData *mInputReaderMockReadData) When(ctx context.Context, input any) *InputReaderMockReadDataExpectation {
+	if mmReadData.mock.funcReadData != nil {
+		mmReadData.mock.t.Fatalf("InputReaderMock.ReadData mock is already set by Set")
+	}
+
+	expectation := &InputReaderMockReadDataExpectation{
+		mock:               mmReadData.mock,
+		params:             &InputReaderMockReadDataParams{ctx, input},
+		expectationOrigins: InputReaderMockReadDataExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmReadData.expectations = append(mmReadData.expectations, expectation)
+	return expectation
+}
+
+// Then sets up InputReader.ReadData return parameters for the expectation previously defined by the When method
+func (e *InputReaderMockReadDataExpectation) Then(err error) *InputReaderMock {
+	e.results = &InputReaderMockReadDataResults{err}
+	return e.mock
+}
+
+// Times sets number of times InputReader.ReadData should be invoked
+func (mmReadData *mInputReaderMockReadData) Times(n uint64) *mInputReaderMockReadData {
+	if n == 0 {
+		mmReadData.mock.t.Fatalf("Times of InputReaderMock.ReadData mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmReadData.expectedInvocations, n)
+	mmReadData.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmReadData
+}
+
+func (mmReadData *mInputReaderMockReadData) invocationsDone() bool {
+	if len(mmReadData.expectations) == 0 && mmReadData.defaultExpectation == nil && mmReadData.mock.funcReadData == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmReadData.mock.afterReadDataCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmReadData.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ReadData implements mm_base.InputReader
+func (mmReadData *InputReaderMock) ReadData(ctx context.Context, input any) (err error) {
+	mm_atomic.AddUint64(&mmReadData.beforeReadDataCounter, 1)
+	defer mm_atomic.AddUint64(&mmReadData.afterReadDataCounter, 1)
+
+	mmReadData.t.Helper()
+
+	if mmReadData.inspectFuncReadData != nil {
+		mmReadData.inspectFuncReadData(ctx, input)
+	}
+
+	mm_params := InputReaderMockReadDataParams{ctx, input}
+
+	// Record call args
+	mmReadData.ReadDataMock.mutex.Lock()
+	mmReadData.ReadDataMock.callArgs = append(mmReadData.ReadDataMock.callArgs, &mm_params)
+	mmReadData.ReadDataMock.mutex.Unlock()
+
+	for _, e := range mmReadData.ReadDataMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmReadData.ReadDataMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmReadData.ReadDataMock.defaultExpectation.Counter, 1)
+		mm_want := mmReadData.ReadDataMock.defaultExpectation.params
+		mm_want_ptrs := mmReadData.ReadDataMock.defaultExpectation.paramPtrs
+
+		mm_got := InputReaderMockReadDataParams{ctx, input}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmReadData.t.Errorf("InputReaderMock.ReadData got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmReadData.ReadDataMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.input != nil && !minimock.Equal(*mm_want_ptrs.input, mm_got.input) {
+				mmReadData.t.Errorf("InputReaderMock.ReadData got unexpected parameter input, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmReadData.ReadDataMock.defaultExpectation.expectationOrigins.originInput, *mm_want_ptrs.input, mm_got.input, minimock.Diff(*mm_want_ptrs.input, mm_got.input))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmReadData.t.Errorf("InputReaderMock.ReadData got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmReadData.ReadDataMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmReadData.ReadDataMock.defaultExpectation.results
+		if mm_results == nil {
+			mmReadData.t.Fatal("No results are set for the InputReaderMock.ReadData")
+		}
+		return (*mm_results).err
+	}
+	if mmReadData.funcReadData != nil {
+		return mmReadData.funcReadData(ctx, input)
+	}
+	mmReadData.t.Fatalf("Unexpected call to InputReaderMock.ReadData. %v %v", ctx, input)
+	return
+}
+
+// ReadDataAfterCounter returns a count of finished InputReaderMock.ReadData invocations
+func (mmReadData *InputReaderMock) ReadDataAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmReadData.afterReadDataCounter)
+}
+
+// ReadDataBeforeCounter returns a count of InputReaderMock.ReadData invocations
+func (mmReadData *InputReaderMock) ReadDataBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmReadData.beforeReadDataCounter)
+}
+
+// Calls returns a list of arguments used in each call to InputReaderMock.ReadData.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmReadData *mInputReaderMockReadData) Calls() []*InputReaderMockReadDataParams {
+	mmReadData.mutex.RLock()
+
+	argCopy := make([]*InputReaderMockReadDataParams, len(mmReadData.callArgs))
+	copy(argCopy, mmReadData.callArgs)
+
+	mmReadData.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockReadDataDone returns true if the count of the ReadData invocations corresponds
+// the number of defined expectations
+func (m *InputReaderMock) MinimockReadDataDone() bool {
+	if m.ReadDataMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ReadDataMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ReadDataMock.invocationsDone()
+}
+
+// MinimockReadDataInspect logs each unmet expectation
+func (m *InputReaderMock) MinimockReadDataInspect() {
+	for _, e := range m.ReadDataMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to InputReaderMock.ReadData at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterReadDataCounter := mm_atomic.LoadUint64(&m.afterReadDataCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ReadDataMock.defaultExpectation != nil && afterReadDataCounter < 1 {
+		if m.ReadDataMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to InputReaderMock.ReadData at\n%s", m.ReadDataMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to InputReaderMock.ReadData at\n%s with params: %#v", m.ReadDataMock.defaultExpectation.expectationOrigins.origin, *m.ReadDataMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcReadData != nil && afterReadDataCounter < 1 {
+		m.t.Errorf("Expected call to InputReaderMock.ReadData at\n%s", m.funcReadDataOrigin)
+	}
+
+	if !m.ReadDataMock.invocationsDone() && afterReadDataCounter > 0 {
+		m.t.Errorf("Expected %d calls to InputReaderMock.ReadData at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.ReadDataMock.expectedInvocations), m.ReadDataMock.expectedInvocationsOrigin, afterReadDataCounter)
+	}
+}
+
 // MinimockFinish checks that all mocked methods have been called the expected number of times
 func (m *InputReaderMock) MinimockFinish() {
 	m.finishOnce.Do(func() {
 		if !m.minimockDone() {
 			m.MinimockReadInspect()
+
+			m.MinimockReadDataInspect()
 		}
 	})
 }
@@ -381,5 +735,6 @@ func (m *InputReaderMock) MinimockWait(timeout mm_time.Duration) {
 func (m *InputReaderMock) minimockDone() bool {
 	done := true
 	return done &&
-		m.MinimockReadDone()
+		m.MinimockReadDone() &&
+		m.MinimockReadDataDone()
 }

@@ -4,84 +4,84 @@
       "description": "A pull request object.",
       "properties": {
         "id": {
-          "description": "id of the PR",
+          "description": "ID of the PR.",
           "instillUIOrder": 1,
           "title": "PR id",
           "instillFormat": "integer",
           "type": "integer"
         },
         "number": {
-          "description": "number of the PR",
+          "description": "Number of the PR.",
           "instillFormat": "integer",
           "instillUIOrder": 2,
           "title": "PR number",
           "type": "integer"
         },
         "state": {
-          "description": "state of the PR",
+          "description": "State of the PR.",
           "instillFormat": "string",
           "instillUIOrder": 3,
           "title": "PR state",
           "type": "string"
         },
         "title": {
-          "description": "Title of the PR",
+          "description": "Title of the PR.",
           "instillFormat": "string",
           "instillUIOrder": 4,
           "title": "PR Title",
           "type": "string"
         },
         "body": {
-          "description": "Body of the PR",
+          "description": "Body of the PR.",
           "instillFormat": "string",
           "instillUIOrder": 5,
           "title": "PR body",
           "type": "string"
         },
         "diff-url": {
-          "description": "url to the diff of the PR",
+          "description": "URL to the diff of the PR.",
           "instillFormat": "string",
           "instillUIOrder": 6,
           "title": "PR diff url",
           "type": "string"
         },
         "head": {
-          "description": "head commit of the PR (in SHA value)",
+          "description": "Head commit of the PR (in SHA value).",
           "instillFormat": "string",
           "instillUIOrder": 8,
           "title": "PR head",
           "type": "string"
         },
         "base": {
-          "description": "base commit of the PR (in SHA value)",
+          "description": "Base commit of the PR (in SHA value).",
           "instillFormat": "string",
           "instillUIOrder": 9,
           "title": "PR base",
           "type": "string"
         },
         "comments-num": {
-          "description": "number of comments on the PR",
+          "description": "Number of comments on the PR.",
           "instillFormat": "integer",
           "instillUIOrder": 10,
           "title": "Number of PR comments",
           "type": "integer"
         },
         "commits-num": {
-          "description": "number of commits in the PR",
+          "description": "Number of commits in the PR.",
           "instillFormat": "integer",
           "instillUIOrder": 11,
           "title": "Number of PR commits",
           "type": "integer"
         },
         "review-comments-num": {
-          "description": "number of review comments in the PR",
+          "description": "Number of review comments in the PR.",
           "instillFormat": "integer",
           "instillUIOrder": 12,
           "title": "Number of PR review comments",
           "type": "integer"
         },
         "commits": {
-          "description": "commits in the PR",
+          "description": "Commits in the PR.",
           "instillUIOrder": 13,
           "title": "Commits",
           "instillFormat": "array:object",
@@ -108,7 +108,7 @@
           "type": "string"
         },
         "message": {
-          "description": "message of the commit",
+          "description": "Message of the commit.",
           "instillUIOrder": 2,
           "title": "Commit message",
           "instillFormat": "string",
@@ -120,7 +120,7 @@
           "required": []
         },
         "files": {
-          "description": "files in the commit",
+          "description": "Files in the commit.",
           "instillUIOrder": 4,
           "title": "Files",
           "instillFormat": "array:object",
@@ -137,25 +137,25 @@
       "type": "object"
     },
     "commitStats": {
-      "description": "stats of changes",
+      "description": "Stats of changes.",
       "instillUIOrder": 1,
       "properties": {
         "additions": {
-          "description": "number of additions in the commit",
+          "description": "Number of additions in the commit.",
           "instillUIOrder": 1,
           "title": "Additions",
           "instillFormat": "integer",
           "type": "integer"
         },
         "deletions": {
-          "description": "number of deletions in the commit",
+          "description": "Number of deletions in the commit",
           "instillUIOrder": 2,
           "title": "Deletions",
           "instillFormat": "integer",
           "type": "integer"
         },
         "changes": {
-          "description": "total number of changes in the commit",
+          "description": "Total number of changes in the commit",
           "instillUIOrder": 3,
           "title": "Total changes",
           "instillFormat": "integer",
@@ -170,7 +170,7 @@
       "description": "A commit file object.",
       "properties": {
         "filename": {
-          "description": "name of the file",
+          "description": "Name of the file.",
           "instillUIOrder": 1,
           "title": "File name",
           "instillFormat": "string",
@@ -178,7 +178,7 @@
         },
         "$ref": "#/$defs/commitStats/properties",
         "patch": {
-          "description": "patch of the file",
+          "description": "Patch of the file.",
           "instillUIOrder": 3,
           "title": "Patch",
           "instillFormat": "string",
@@ -364,7 +364,7 @@
         "number": {
           "description": "Number of the issue",
           "instillUIOrder": 2,
-          "title": "Issue number",
+          "title": "Issue Number",
           "instillFormat": "integer",
           "type": "integer"
         },
@@ -452,7 +452,7 @@
       },
       "per-page": {
         "default": 30,
-        "description": "Number of results to fetch per page. Default is 30",
+        "description": "Number of results to fetch per page. Default is 30.",
         "instillUIOrder": 101,
         "title": "Per Page",
         "instillFormat": "integer",
@@ -607,9 +607,9 @@
     }
   },
   "TASK_GET_PULL_REQUEST": {
-    "instillShortDescription": "Get a pull request from a repository, given the PR number. This will default to the latest PR if no PR number is provided",
+    "instillShortDescription": "Get a pull request from a repository, given the PR number. This will default to the latest PR if no PR number is provided.",
     "input": {
-      "description": "Please input the repository name and owner, and the PR number",
+      "description": "Please input the repository name and owner, and the PR number.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "owner",
@@ -801,7 +801,7 @@
     "instillShortDescription": "Create a review comment in pull request.",
     "description": "Create a review comment in a pull request. The comment can be a general comment or a review comment. The comment can be on a specific line or on the PR as a whole.",
     "input": {
-      "description": "Please input the repository name and owner, and the PR number",
+      "description": "Please input the repository name and owner, and the PR number.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "owner",

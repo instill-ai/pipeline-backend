@@ -44,11 +44,25 @@ $ make latest PROFILE=exclude-pipeline # launch all the dependent services excep
 ```sh
 $ cd $MY_WORKSPACE
 $ git clone https://github.com/instill-ai/pipeline-backend && cd pipeline-backend
-$ make build && make dev
+$ make build-dev && make dev
 ```
 
 Now, you have the Go project set up in the container, in which you can compile
 and run the binaries together with the integration test in each container shell.
+
+##### Injecting component secrets
+
+Some components can be configured with global secrets. This has several
+applications:
+
+- By accepting a global API key, some components have a default setup. When
+  the `setup` block is omitted in the recipe, this API key will be used.
+- In order to connect to 3rd party vendors via OAuth, the application
+  client ID and secret must be injected.
+
+You can set the values of these global secrets in
+[`.env.component`](./.env.component) before running the Docker container in
+order to add a global configuration to your components.
 
 #### Run the server and the Temporal worker
 
@@ -71,11 +85,9 @@ will create and migrate a test database to keep these queries isolated from the
 main DB. You can set the database host and name by overriding the `TEST_DBHOST`
 and `TEST_DBNAME` values.
 
-Certain tests depend on the [`docconv`](https://github.com/sajari/docconv)
-package and aren't run by default. You can trigger them by adding the `OCR=true`
-flag to the coverage command. Make sure to install the [package
-dependencies](https://github.com/sajari/docconv?tab=readme-ov-file#dependencies)
-first.
+Certain tests depend on external packages and aren't run by default:
+- For [`docconv`](https://github.com/sajari/docconv) tests, add `OCR=true` flag and install its [dependencies](https://github.com/sajari/docconv?tab=readme-ov-file#dependencies).
+- For [`onnxruntime`](https://github.com/microsoft/onnxruntime) tests, add `ONNX=true` flag. Follow the [guideline](#set-up-onnx-runtime) to set up ONNX Runtime (Linux only).
 
 #### Run the integration tests
 
@@ -91,17 +103,27 @@ At the end of the tests, some SQL queries are run to clean up the data.
 `DB_HOST` points to the database host so the SQL connection can be established.
 If empty, tests will try to connect to `localhost:5432`.
 
-#### Stop the dev container
-
-```bash
-$ make stop
-```
-
 #### Remove the dev container
 
 ```bash
 $ make rm
 ```
+
+### Set up ONNX Runtime (Linux only)
+
+1. Download the latest [ONNX Runtime release](https://github.com/microsoft/onnxruntime/releases) for your system.
+
+2. Install ONNX Runtime:
+   ```bash
+   sudo mkdir -p /usr/local/onnxruntime
+   sudo tar -xzf onnxruntime-*-*-*.tgz -C /usr/local/onnxruntime --strip-components=1
+   export ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime
+   export LD_RUN_PATH=$ONNXRUNTIME_ROOT_PATH/lib
+   export LIBRARY_PATH=$ONNXRUNTIME_ROOT_PATH/lib
+   export C_INCLUDE_PATH=$ONNXRUNTIME_ROOT_PATH/include
+   ```
+
+**Note:** If you don't have sudo access, extract to a user-writeable location (e.g., `~/onnxruntime`), set `ONNXRUNTIME_ROOT_PATH` accordingly, and adjust the environment variables as shown above. No need to create symlinks in this case.
 
 ## Codebase contribution
 

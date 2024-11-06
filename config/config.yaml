@@ -19,14 +19,14 @@ server:
   instanceid: "pipeline-backend"
   datachanbuffersize: 100
   instillcorehost: http://localhost:8080
-connector:
+component:
 database:
   username: postgres
   password: password
   host: pg-sql
   port: 5432
   name: pipeline
-  version: 32
+  version: 35
   timezone: Etc/UTC
   pool:
     idleconnections: 5

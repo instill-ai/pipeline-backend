@@ -5,10 +5,10 @@ draft: false
 description: "Learn about how to set up a VDP Audio component https://github.com/instill-ai/instill-core"
 ---
 
-The Audio component is an operator component that allows users to extract and manipulate audio from different sources.
+The Audio component is an operator component that allows users to operate audio data.
 It can carry out the following tasks:
-- [Chunk Audios](#chunk-audios)
-- [Slice Audio](#slice-audio)
+- [Detect Activity](#detect-activity)
+- [Segment](#segment)
 
 
 
@@ -29,17 +29,18 @@ The component definition and tasks are defined in the [definition.json](https://
 
 ## Supported Tasks
 
-### Chunk Audios
+### Detect Activity
 
-Split audio file into chunks
+Detect speech segments in audio data using Voice Activity Detection (VAD). This task processes the input audio to 16kHz mono format, identifies periods of human speech, and outputs time segments for each detected speech activity.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CHUNK_AUDIOS` |
-| Audio (required) | `audio` | string | Base64 encoded audio file to be split |
-| Chunk Count (required) | `chunk-count` | integer | Number of chunks to equally split the audio into |
+| Task ID (required) | `task` | string | `TASK_DETECT_ACTIVITY` |
+| Audio (required) | `audio` | string | Audio file to analyze for speech activity. |
+| Minimum Silence Duration | `min-silence-duration` | integer | Minimum duration of silence (in milliseconds) required to split speech segments. Longer values result in fewer, longer segments. |
+| Speech Pad | `speech-pad` | integer | Additional padding (in milliseconds) added to the start and end of each detected speech segment to prevent cutting off speech. |
 </div>
 
 
@@ -51,25 +52,52 @@ Split audio file into chunks
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Audios | `audios` | array[string] | A list of base64 encoded audios |
+| [Segments](#detect-activity-segments) | `segments` | array[object] | Array of time segments representing detected speech activity. Each segment contains start and end times in seconds. |
 </div>
 
-### Slice Audio
+<details>
+<summary> Output Objects in Detect Activity</summary>
 
-Specify a time range to slice an audio file
+<h4 id="detect-activity-segments">Segments</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| End Time | `end-time` | number | The number of seconds from the beginning of the audio file to the end of this segment. |
+| Start Time | `start-time` | number | The number of seconds from the beginning of the audio file to the start of this segment. |
+</div>
+</details>
+
+### Segment
+
+Segment audio data into pieces based on the provided time segments.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_SLICE_AUDIO` |
-| Audio (required) | `audio` | string | Base64 encoded audio file to be sliced |
-| Start Time (required) | `start-time` | integer | Start time of the slice in seconds |
-| End Time (required) | `end-time` | integer | End time of the slice in seconds |
+| Task ID (required) | `task` | string | `TASK_SEGMENT` |
+| Audio (required) | `audio` | string | Audio data to segment. |
+| [Segments](#segment-segments) (required) | `segments` | array[object] | A list of time segments of audio data. |
 </div>
 
 
+<details>
+<summary> Input Objects in Segment</summary>
 
+<h4 id="segment-segments">Segments</h4>
+
+A list of time segments of audio data.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| End Time | `end-time` | number | The number of seconds from the beginning of the audio file to the end of this segment.  |
+| Start Time | `start-time` | number | The number of seconds from the beginning of the audio file to the start of this segment.  |
+</div>
+</details>
 
 
 
@@ -77,7 +105,7 @@ Specify a time range to slice an audio file
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Audio | `audio` | string | Base64 encoded audio slice |
+| Audios | `audio-segments` | array[string] | A list of segmented audio data. |
 </div>
 
 
@@ -88,36 +116,27 @@ Recipe for the [Audio Transcription Generator](https://instill.tech/instill-ai/p
 ```yaml
 version: v1beta
 component:
-  audio-spliter:
+  audio-vad:
     type: audio
-    task: TASK_SLICE_AUDIO
     input:
       audio: ${variable.audio}
-      end-time: ${variable.end_time}
-      start-time: ${variable.start_time}
-  get-transcription:
-    type: openai
-    task: TASK_SPEECH_RECOGNITION
+      min-silence-duration: 300
+      speech-pad: 10
+    task: TASK_DETECT_ACTIVITY
+  audio-segment:
+    type: audio
     input:
-      audio: ${audio-spliter.output.audio}
-      model: whisper-1
-    setup:
-      api-key: ${secret.INSTILL_SECRET}
+      audio: ${variable.audio}
+      segments: ${audio-vad.output.segments}
+    task: TASK_SEGMENT
 variable:
   audio:
-    title: audio
-    description: the audio you want to get the transcription from
-    instill-format: audio/*
-  end_time:
-    title: end-time
-    description: the end time you want to extract in seconds i.e. 2 mins is 120 seconds
-    instill-format: number
-  start_time:
-    title: start-time
-    description: the start time you want to extract in seconds i.e. 2 mins is 120 seconds
-    instill-format: number
+    title: Audio to test
+    description: Audio to test VAD and extraction
+    instill-format: audio
 output:
-  result:
-    title: result
-    value: ${get-transcription.output.text}
+  samples:
+    title: Output audio segments
+    description: Output extracted audio segments
+    value: ${audio-segment.output.audio-segments}
 ```

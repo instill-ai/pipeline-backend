@@ -1,147 +1,212 @@
 package data
 
 import (
+	"bytes"
 	"fmt"
-	"io"
-	"net/http"
+	"mime"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/go-resty/resty/v2"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 )
 
-type File struct {
-	Raw         []byte
-	ContentType string
-	FileName    string
-	SourceURL   string
-	Cache       map[string][]byte
+const (
+	OCTETSTREAM = "application/octet-stream"
+)
+
+var fileGetters = map[string]func(*fileData) (format.Value, error){
+	"source-url":   func(f *fileData) (format.Value, error) { return f.SourceURL(), nil },
+	"filename":     func(f *fileData) (format.Value, error) { return f.Filename(), nil },
+	"file-size":    func(f *fileData) (format.Value, error) { return f.FileSize(), nil },
+	"content-type": func(f *fileData) (format.Value, error) { return f.ContentType(), nil },
+	"binary":       func(f *fileData) (format.Value, error) { return f.Binary() },
+	"data-uri":     func(f *fileData) (format.Value, error) { return f.DataURI() },
+	"base64":       func(f *fileData) (format.Value, error) { return f.Base64() },
 }
 
-func NewFileFromBytes(b []byte, contentType, fileName string) (bin *File, err error) {
+type fileData struct {
+	raw         []byte
+	contentType string
+	filename    string
+	sourceURL   string
+}
+
+func (fileData) IsValue() {}
+
+func NewFileFromBytes(b []byte, contentType, filename string) (bin *fileData, err error) {
 	if contentType == "" {
 		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
 	}
-	cache := map[string][]byte{}
-	cache[contentType] = b
-	return &File{
-		Raw:         b,
-		ContentType: contentType,
-		FileName:    fileName,
-		Cache:       cache,
-	}, nil
+
+	f := &fileData{
+		raw:         b,
+		contentType: contentType,
+		filename:    filename,
+	}
+
+	return f, nil
 }
 
-func NewFileFromURL(url string) (bin *File, err error) {
+func convertURLToBytes(url string) (b []byte, contentType string, filename string, err error) {
 	if strings.HasPrefix(url, "data:") {
-		return newFileFromDataURL(url)
+		return convertDataURIToBytes(url)
 	}
 
-	resp, err := http.Get(url)
+	client := resty.New().SetRetryCount(3)
+	resp, err := client.R().Get(url)
 	if err != nil {
-		return nil, err
+		return nil, "", "", err
 	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+	body := resp.Body()
+	contentType = ""
+	if headers := resp.Header().Get("Content-Type"); headers != "" {
+		contentType = headers
 	}
-	contentType := ""
-	if headers, ok := resp.Header["Content-Type"]; ok && len(headers) > 0 {
-		contentType = headers[0]
+	filename = ""
+	if disposition := resp.Header().Get("Content-Disposition"); disposition != "" {
+		if strings.HasPrefix(disposition, "attachment") {
+			if _, params, err := mime.ParseMediaType(disposition); err == nil {
+				if fn, ok := params["filename"]; ok {
+					filename = fn
+				}
+			}
+		}
 	}
+	return body, contentType, filename, nil
+}
 
-	bin, err = NewFileFromBytes(body, contentType, "")
+func NewFileFromURL(url string) (bin *fileData, err error) {
+	b, contentType, filename, err := convertURLToBytes(url)
 	if err != nil {
 		return nil, err
 	}
-	bin.SourceURL = url
+	bin, err = NewFileFromBytes(b, contentType, filename)
+	if err != nil {
+		return nil, err
+	}
+	bin.sourceURL = url
 	return bin, nil
 }
 
-func newFileFromDataURL(url string) (bin *File, err error) {
-	b, contentType, fileName, err := decodeDataURL(url)
+func convertDataURIToBytes(url string) (b []byte, contentType string, filename string, err error) {
+	b, contentType, filename, err = decodeDataURI(url)
 	if err != nil {
 		return
 	}
-	cache := map[string][]byte{}
-	cache[contentType] = b
-	return &File{
-		Raw:         b,
-		ContentType: contentType,
-		FileName:    fileName,
-		Cache:       cache,
-	}, nil
+	return b, contentType, filename, nil
 }
 
-func (f *File) GetByteArray(contentType string) (ba *ByteArray, err error) {
-	if c, ok := f.Cache[contentType]; ok {
-		return NewByteArray(c), nil
+func (f *fileData) String() string {
+	if strings.HasPrefix(f.contentType, "text/") || utf8.Valid(f.raw) {
+		return string(f.raw)
 	}
 
-	b, err := convertFile(f.Raw, f.ContentType, contentType)
+	// If the file is not a text file, convert it to a data URI
+	dataURI, err := f.DataURI()
 	if err != nil {
-		return nil, fmt.Errorf("can not convert data from %s to %s", f.ContentType, contentType)
+		return ""
 	}
-	f.Cache[contentType] = b
-	return NewByteArray(b), nil
+	return dataURI.String()
 }
 
-func (f *File) GetDataURL(contentType string) (url *String, err error) {
-	ba, err := f.GetByteArray(contentType)
+func (f *fileData) Binary() (ba format.ByteArray, err error) {
+	return NewByteArray(f.raw), nil
+}
+
+func (f *fileData) DataURI() (url format.String, err error) {
+	ba, err := f.Binary()
 	if err != nil {
 		return
 	}
-	s, err := encodeDataURL(ba.GetByteArray(), contentType, f.FileName)
+	s, err := encodeDataURI(ba.ByteArray(), f.contentType)
 	if err != nil {
 		return
 	}
 	return NewString(s), nil
 }
 
-func (f *File) GetBase64(contentType string) (b64 *String, err error) {
-	ba, err := f.GetDataURL(contentType)
+func (f *fileData) Base64() (b64 format.String, err error) {
+	ba, err := f.DataURI()
 	if err != nil {
 		return
 	}
-	_, b64str, _ := strings.Cut(ba.GetString(), ",")
+	_, b64str, _ := strings.Cut(ba.String(), ",")
 	return NewString(b64str), nil
 }
 
-func (f *File) GetFileSize() (size *Number) {
-	return NewNumberFromInteger(len(f.Raw))
+func (f *fileData) FileSize() (size format.Number) {
+	return NewNumberFromInteger(len(f.raw))
 }
 
-func (f *File) GetContentType() (t *String) {
-	return NewString(f.ContentType)
+func (f *fileData) ContentType() (t format.String) {
+	return NewString(f.contentType)
 }
 
-func (f *File) GetFileName() (t *String) {
-	return NewString(f.FileName)
+func (f *fileData) Filename() (t format.String) {
+	return NewString(f.filename)
 }
 
-func (f *File) GetSourceURL() (t *String) {
-	return NewString(f.SourceURL)
+func (f *fileData) SourceURL() (t format.String) {
+	return NewString(f.sourceURL)
 }
 
-func (f *File) Get(path string) (v Value, err error) {
-	switch {
-	case comparePath(path, ".source-url"):
-		return f.GetSourceURL(), nil
-	case comparePath(path, ".filename"):
-		return f.GetFileName(), nil
-	case comparePath(path, ".file-size"):
-		return f.GetFileSize(), nil
-	case comparePath(path, ".content-type"):
-		return f.GetContentType(), nil
+func (f *fileData) Get(p *path.Path) (v format.Value, err error) {
+	if p == nil || p.IsEmpty() {
+		return f, nil
 	}
-	return nil, fmt.Errorf("wrong path")
-}
 
-func (f File) ToStructValue() (v *structpb.Value, err error) {
-	d, err := f.GetDataURL(f.ContentType)
+	firstSeg, remainingPath, err := p.TrimFirst()
 	if err != nil {
 		return nil, err
 	}
-	return structpb.NewStringValue(d.GetString()), nil
+
+	if firstSeg.SegmentType != path.AttributeSegment {
+		return nil, fmt.Errorf("path not found: %s", p)
+	}
+
+	getter, exists := fileGetters[firstSeg.Attribute]
+	if !exists {
+		return nil, fmt.Errorf("path not found: %s", p)
+	}
+
+	result, err := getter(f)
+	if err != nil {
+		return nil, err
+	}
+
+	if remainingPath.IsEmpty() {
+		return result, nil
+	}
+
+	return result.Get(remainingPath)
+}
+
+// Deprecated: ToStructValue() is deprecated and will be removed in a future
+// version. structpb is not suitable for handling binary data and will be phased
+// out gradually.
+func (f fileData) ToStructValue() (v *structpb.Value, err error) {
+	d, err := f.DataURI()
+	if err != nil {
+		return nil, err
+	}
+	return structpb.NewStringValue(d.String()), nil
+}
+
+func (f *fileData) Equal(other format.Value) bool {
+	if other, ok := other.(format.File); ok {
+		ba, err := other.Binary()
+		if err != nil {
+			return false
+		}
+		return bytes.Equal(f.raw, ba.ByteArray()) &&
+			f.contentType == other.ContentType().String() &&
+			f.filename == other.Filename().String() &&
+			f.sourceURL == other.SourceURL().String()
+	}
+	return false
 }

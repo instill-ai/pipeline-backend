@@ -2,52 +2,47 @@ package data
 
 import (
 	"fmt"
+	"strings"
 
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 )
 
-type Map struct {
-	Fields map[string]Value
-}
+type Map map[string]format.Value
 
-func NewMap(m map[string]Value) (mp *Map) {
-	if m == nil {
-		m = map[string]Value{}
-	}
-	return &Map{
-		Fields: m,
-	}
-}
+func (Map) IsValue() {}
 
-func (Map) isValue() {}
-
-func (m *Map) Get(path string) (v Value, err error) {
-
-	if path == "" {
+func (m Map) Get(p *path.Path) (v format.Value, err error) {
+	if p == nil || p.IsEmpty() {
 		return m, nil
 	}
-	path, err = StandardizePath(path)
-	if err != nil {
-		return nil, err
-	}
-	key, remainingPath, err := trimFirstKeyFromPath(path)
+
+	firstSeg, remainingPath, err := p.TrimFirst()
 	if err != nil {
 		return nil, err
 	}
 
-	if v, ok := m.Fields[key]; !ok {
-		return nil, fmt.Errorf("path not found: %s", path)
-	} else {
-		return v.Get(remainingPath)
+	if firstSeg.SegmentType == path.KeySegment {
+		if v, ok := m[firstSeg.Key]; !ok {
+			return nil, fmt.Errorf("path not found: %s", p)
+		} else {
+			return v.Get(remainingPath)
+		}
 	}
+	return nil, fmt.Errorf("path not found: %s", p)
 }
 
+// Deprecated: ToStructValue() is deprecated and will be removed in a future
+// version. structpb is not suitable for handling binary data and will be phased
+// out gradually.
 func (m Map) ToStructValue() (v *structpb.Value, err error) {
 	mp := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
-	for k, v := range m.Fields {
+	for k, v := range m {
 		if v != nil {
 			switch v := v.(type) {
-			case *Null:
+			case *nullData:
 			default:
 				mp.Fields[k], err = v.ToStructValue()
 				if err != nil {
@@ -57,4 +52,32 @@ func (m Map) ToStructValue() (v *structpb.Value, err error) {
 		}
 	}
 	return structpb.NewStructValue(mp), nil
+}
+
+func (m Map) Equal(other format.Value) bool {
+	if other, ok := other.(Map); ok {
+		if len(m) != len(other) {
+			return false
+		}
+		for k, v := range m {
+			if !v.Equal(other[k]) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
+func (m Map) String() string {
+	segments := make([]string, 0, len(m))
+	for k, v := range m {
+		switch v := v.(type) {
+		case *stringData:
+			segments = append(segments, fmt.Sprintf("\"%s\": \"%s\"", k, v.String()))
+		default:
+			segments = append(segments, fmt.Sprintf("\"%s\": %s", k, v.String()))
+		}
+	}
+	return fmt.Sprintf("{%s}", strings.Join(segments, ", "))
 }

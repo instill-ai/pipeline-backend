@@ -8,6 +8,15 @@ App](https://api.slack.com/docs/apps). In order to read / write messages from / 
   to your workspace.
 - Add the app to the channels you want to interact with.
 
-On **Instill Cloud**, the `instill-ai` app will be used fo connect with Slack.
-On **Instill Core**, you can provide the client ID and client secret of your
-app in order to connect with your workspace.
+The Slack integration on **Instill Cloud** uses OAuth 2.0 to connect with Slack
+via the `instill-ai` app. There, [creating a
+connection](https://www.instill.tech/docs/vdp/integration#creating-a-connection)
+will simply require authenticating on Slack. Your newly created connection,
+which you can reference in your pipelines, will allow you to read messages and
+send them on behalf of your user or the `instill-ai` bot on the channels where
+that app is installed.
+
+If you want to connect with Slack via OAuth 2.0 on **Instill Core**, you will
+need to provide your app's **client ID** and **client secret** [as environment
+variables on Instill
+Core](https://github.com/instill-ai/instill-core/blob/main/.env.component).

@@ -5,36 +5,27 @@ Recipe for the [Audio Transcription Generator](https://instill.tech/instill-ai/p
 ```yaml
 version: v1beta
 component:
-  audio-spliter:
+  audio-vad:
     type: audio
-    task: TASK_SLICE_AUDIO
     input:
       audio: ${variable.audio}
-      end-time: ${variable.end_time}
-      start-time: ${variable.start_time}
-  get-transcription:
-    type: openai
-    task: TASK_SPEECH_RECOGNITION
+      min-silence-duration: 300
+      speech-pad: 10
+    task: TASK_DETECT_ACTIVITY
+  audio-segment:
+    type: audio
     input:
-      audio: ${audio-spliter.output.audio}
-      model: whisper-1
-    setup:
-      api-key: ${secret.INSTILL_SECRET}
+      audio: ${variable.audio}
+      segments: ${audio-vad.output.segments}
+    task: TASK_SEGMENT
 variable:
   audio:
-    title: audio
-    description: the audio you want to get the transcription from
-    instill-format: audio/*
-  end_time:
-    title: end-time
-    description: the end time you want to extract in seconds i.e. 2 mins is 120 seconds
-    instill-format: number
-  start_time:
-    title: start-time
-    description: the start time you want to extract in seconds i.e. 2 mins is 120 seconds
-    instill-format: number
+    title: Audio to test
+    description: Audio to test VAD and extraction
+    instill-format: audio
 output:
-  result:
-    title: result
-    value: ${get-transcription.output.text}
+  samples:
+    title: Output audio segments
+    description: Output extracted audio segments
+    value: ${audio-segment.output.audio-segments}
 ```

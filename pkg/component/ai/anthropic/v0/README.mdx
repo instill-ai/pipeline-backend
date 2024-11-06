@@ -143,13 +143,11 @@ component:
     task: TASK_TEXT_GENERATION_CHAT
     input:
       max-new-tokens: 1000
-      model-name: claude-3-5-sonnet-20240620
+      model-name: claude-3-5-sonnet-latest
       prompt: Summarise and pick the most important issues from this list ${github.output.issues}
       system-message: You are a helpful assistant.
       temperature: 0.7
       top-k: 10
-    setup:
-      api-key: ${secret.INSTILL_SECRET}
   github:
     type: github
     task: TASK_LIST_ISSUES

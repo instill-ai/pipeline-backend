@@ -16,11 +16,11 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	resourcex "github.com/instill-ai/x/resource"
 )
 
 const defaultPipelineReleaseID = "latest"
@@ -32,7 +32,7 @@ func (s *service) logPipelineRunStart(ctx context.Context, pipelineTriggerID str
 		runSource = datamodel.RunSource(userAgentValue)
 	}
 
-	requesterUID, userUID := utils.GetRequesterUIDAndUserUID(ctx)
+	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
 
 	pipelineRun := &datamodel.PipelineRun{
 		PipelineTriggerUID: uuid.FromStringOrNil(pipelineTriggerID),
@@ -40,8 +40,8 @@ func (s *service) logPipelineRunStart(ctx context.Context, pipelineTriggerID str
 		PipelineVersion:    pipelineReleaseID,
 		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
 		Source:             runSource,
-		Namespace:          requesterUID,
-		TriggeredBy:        userUID,
+		RequesterUID:       uuid.FromStringOrNil(requesterUID),
+		RunnerUID:          uuid.FromStringOrNil(userUID),
 		StartedTime:        time.Now(),
 	}
 
@@ -76,7 +76,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 		return nil, err
 	}
 
-	requesterUID, _ := utils.GetRequesterUIDAndUserUID(ctx)
+	requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 
@@ -95,7 +95,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 
 	var referenceIDs []string
 	for _, pipelineRun := range pipelineRuns {
-		if CanViewPrivateData(pipelineRun.Namespace, requesterUID) {
+		if CanViewPrivateData(pipelineRun.RequesterUID.String(), requesterUID) {
 			for _, input := range pipelineRun.Inputs {
 				referenceIDs = append(referenceIDs, input.Name)
 			}
@@ -109,7 +109,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 	}
 
 	s.log.Info("start to get files from minio", zap.String("referenceIDs", strings.Join(referenceIDs, ",")))
-	fileContents, err := s.minioClient.GetFilesByPaths(ctx, referenceIDs)
+	fileContents, err := s.minioClient.GetFilesByPaths(ctx, s.log, referenceIDs)
 	if err != nil {
 		s.log.Error("failed to get files from minio", zap.Error(err))
 	}
@@ -119,18 +119,19 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 		metadataMap[content.Name] = content.Content
 	}
 
-	requesterIDMap := make(map[string]struct{})
+	userUIDMap := make(map[string]struct{})
 	for _, pipelineRun := range pipelineRuns {
-		requesterIDMap[pipelineRun.TriggeredBy] = struct{}{}
+		userUIDMap[pipelineRun.RunnerUID.String()] = struct{}{}
+		userUIDMap[pipelineRun.RequesterUID.String()] = struct{}{}
 	}
 
-	runnerMap := make(map[string]*string)
-	for requesterID := range requesterIDMap {
-		runner, err := s.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{Uid: requesterID})
+	userIDMap := make(map[string]*string)
+	for reqUID := range userUIDMap {
+		runner, err := s.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{Uid: reqUID})
 		if err != nil {
 			return nil, err
 		}
-		runnerMap[requesterID] = &runner.Id
+		userIDMap[reqUID] = &runner.Id
 	}
 
 	// Convert datamodel.PipelineRun to pb.PipelineRun
@@ -140,9 +141,12 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert pipeline run: %w", err)
 		}
-		pbRun.RunnerId = runnerMap[run.TriggeredBy]
+		pbRun.RunnerId = userIDMap[run.RunnerUID.String()]
+		if requesterID, ok := userIDMap[run.RequesterUID.String()]; ok && requesterID != nil {
+			pbRun.RequesterId = *requesterID
+		}
 
-		if CanViewPrivateData(run.Namespace, requesterUID) {
+		if CanViewPrivateData(run.RequesterUID.String(), requesterUID) {
 			if len(run.Inputs) == 1 {
 				key := run.Inputs[0].Name
 				pbRun.Inputs, err = parseMetadataToStructArray(metadataMap, key)
@@ -185,7 +189,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRunsRequest, filter filtering.Filter) (*pb.ListComponentRunsResponse, error) {
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
-	requesterUID, _ := utils.GetRequesterUIDAndUserUID(ctx)
+	requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
 
 	orderBy, err := ordering.ParseOrderBy(req)
 	if err != nil {
@@ -203,7 +207,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 
 	isOwner := dbPipeline.OwnerUID().String() == requesterUID
 
-	if !isOwner && requesterUID != dbPipelineRun.Namespace {
+	if !isOwner && requesterUID != dbPipelineRun.RequesterUID.String() {
 		return nil, fmt.Errorf("requester is not pipeline owner/credit owner. they are not allowed to view these component runs")
 	}
 
@@ -214,7 +218,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 
 	var referenceIDs []string
 	for _, pipelineRun := range componentRuns {
-		if CanViewPrivateData(dbPipelineRun.Namespace, requesterUID) {
+		if CanViewPrivateData(dbPipelineRun.RequesterUID.String(), requesterUID) {
 			for _, input := range pipelineRun.Inputs {
 				referenceIDs = append(referenceIDs, input.Name)
 			}
@@ -225,7 +229,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 	}
 
 	s.log.Info("start to get files from minio", zap.String("referenceIDs", strings.Join(referenceIDs, ",")))
-	fileContents, err := s.minioClient.GetFilesByPaths(ctx, referenceIDs)
+	fileContents, err := s.minioClient.GetFilesByPaths(ctx, s.log, referenceIDs)
 	if err != nil {
 		s.log.Error("failed to get files from minio", zap.Error(err))
 	}
@@ -243,7 +247,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 			return nil, fmt.Errorf("failed to convert component run: %w", err)
 		}
 
-		if CanViewPrivateData(dbPipelineRun.Namespace, requesterUID) {
+		if CanViewPrivateData(dbPipelineRun.RequesterUID.String(), requesterUID) {
 			if len(run.Inputs) == 1 {
 				key := run.Inputs[0].Name
 				pbRun.Inputs, err = parseMetadataToStructArray(metadataMap, key)
@@ -273,10 +277,18 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 	}, nil
 }
 
-func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListPipelineRunsByCreditOwnerRequest) (*pb.ListPipelineRunsByCreditOwnerResponse, error) {
+func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListPipelineRunsByRequesterRequest) (*pb.ListPipelineRunsByRequesterResponse, error) {
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
-	requesterUID, _ := utils.GetRequesterUIDAndUserUID(ctx)
+
+	ns, err := s.GetRscNamespace(ctx, req.GetRequesterId())
+	if err != nil {
+		return nil, fmt.Errorf("invalid namespace: %w", err)
+	}
+
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
+		return nil, fmt.Errorf("checking namespace permissions: %w", err)
+	}
 
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
 		filtering.DeclareStandardFunctions(),
@@ -312,7 +324,7 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListP
 	}
 
 	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsByRequester(ctx, repository.GetPipelineRunsByRequesterParams{
-		RequesterUID:   requesterUID,
+		RequesterUID:   ns.NsUID.String(),
 		StartTimeBegin: startedTimeBegin,
 		StartTimeEnd:   startedTimeEnd,
 		Page:           page,
@@ -324,18 +336,19 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListP
 		return nil, fmt.Errorf("getting pipeline runs by requester: %w", err)
 	}
 
-	requesterIDMap := make(map[string]struct{})
+	userUIDMap := make(map[string]struct{})
 	for _, pipelineRun := range pipelineRuns {
-		requesterIDMap[pipelineRun.TriggeredBy] = struct{}{}
+		userUIDMap[pipelineRun.RunnerUID.String()] = struct{}{}
+		userUIDMap[pipelineRun.RequesterUID.String()] = struct{}{}
 	}
 
-	runnerMap := make(map[string]*string)
-	for requesterID := range requesterIDMap {
+	userIDMap := make(map[string]*string)
+	for requesterID := range userUIDMap {
 		runner, err := s.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{Uid: requesterID})
 		if err != nil {
 			return nil, err
 		}
-		runnerMap[requesterID] = &runner.Id
+		userIDMap[requesterID] = &runner.Id
 	}
 
 	pbPipelineRuns := make([]*pb.PipelineRun, len(pipelineRuns))
@@ -346,11 +359,15 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListP
 		if err != nil {
 			return nil, fmt.Errorf("converting pipeline run: %w", err)
 		}
-		pbRun.RunnerId = runnerMap[run.TriggeredBy]
+		pbRun.RunnerId = userIDMap[run.RunnerUID.String()]
+		if requesterID, ok := userIDMap[run.RequesterUID.String()]; ok && requesterID != nil {
+			pbRun.RequesterId = *requesterID
+		}
+
 		pbPipelineRuns[i] = pbRun
 	}
 
-	return &pb.ListPipelineRunsByCreditOwnerResponse{
+	return &pb.ListPipelineRunsByRequesterResponse{
 		PipelineRuns: pbPipelineRuns,
 		TotalSize:    int32(totalCount),
 		Page:         int32(page),

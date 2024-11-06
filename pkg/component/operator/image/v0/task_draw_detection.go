@@ -2,31 +2,13 @@ package image
 
 import (
 	"context"
-	"fmt"
 	"image"
 	"image/color"
 
 	"github.com/fogleman/gg"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
-
-type detectionObject struct {
-	BoundingBox *boundingBox `json:"bounding-box"`
-	Category    string       `json:"category"`
-	Score       float64      `json:"score"`
-}
-
-type drawDetectionInput struct {
-	Image     base64Image        `json:"image"`
-	Objects   []*detectionObject `json:"objects"`
-	ShowScore bool               `json:"show-score"`
-}
-
-type drawDetectionOutput struct {
-	Image base64Image `json:"image"`
-}
 
 func drawBoundingBox(img *image.RGBA, bbox *boundingBox, colorSeed int) error {
 	dc := gg.NewContextForRGBA(img)
@@ -39,44 +21,44 @@ func drawBoundingBox(img *image.RGBA, bbox *boundingBox, colorSeed int) error {
 	return nil
 }
 
-func drawDetection(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+func drawDetection(ctx context.Context, job *base.Job) error {
 
-	inputStruct := drawDetectionInput{}
+	var inputStruct drawDetectionInput
+	if err := job.Input.ReadData(ctx, &inputStruct); err != nil {
+		return err
+	}
 
-	err := base.ConvertFromStructpb(input, &inputStruct)
+	// Decode image
+	img, err := decodeImage(inputStruct.Image)
 	if err != nil {
-		return nil, fmt.Errorf("error converting input to struct: %v", err)
+		return err
 	}
 
 	catIdx := indexUniqueCategories(inputStruct.Objects)
-
-	img, err := decodeBase64Image(string(inputStruct.Image))
-	if err != nil {
-		return nil, fmt.Errorf("error decoding image: %v", err)
-	}
 
 	imgRGBA := convertToRGBA(img)
 
 	for _, obj := range inputStruct.Objects {
 		if err := drawBoundingBox(imgRGBA, obj.BoundingBox, catIdx[obj.Category]); err != nil {
-			return nil, err
+			return err
+		}
+		if err := drawObjectLabel(imgRGBA, obj.BoundingBox, obj.Category, obj.Score, inputStruct.ShowScore, catIdx[obj.Category]); err != nil {
+			return err
 		}
 	}
 
-	for _, obj := range inputStruct.Objects {
-		if err := drawObjectLabel(imgRGBA, obj.BoundingBox, obj.Category, false, catIdx[obj.Category]); err != nil {
-			return nil, err
-		}
-	}
-
-	base64Img, err := encodeBase64Image(imgRGBA)
+	imgData, err := encodeImage(imgRGBA)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	output := drawDetectionOutput{
-		Image: base64Image(fmt.Sprintf("data:image/png;base64,%s", base64Img)),
+	outputData := drawDetectionOutput{
+		Image: imgData,
 	}
 
-	return base.ConvertToStructpb(output)
+	if err := job.Output.WriteData(ctx, outputData); err != nil {
+		return err
+	}
+
+	return nil
 }

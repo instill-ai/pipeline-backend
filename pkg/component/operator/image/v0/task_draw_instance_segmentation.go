@@ -10,27 +10,9 @@ import (
 	"strings"
 
 	"github.com/fogleman/gg"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
-
-type instanceSegmentationObject struct {
-	BoundingBox *boundingBox `json:"bounding-box"`
-	Category    string       `json:"category"`
-	RLE         string       `json:"rle"`
-	Score       float64      `json:"score"`
-}
-
-type drawInstanceSegmentationInput struct {
-	Image     base64Image                   `json:"image"`
-	Objects   []*instanceSegmentationObject `json:"objects"`
-	ShowScore bool                          `json:"show-score"`
-}
-
-type drawInstanceSegmentationOutput struct {
-	Image base64Image `json:"image"`
-}
 
 func drawInstanceMask(img *image.RGBA, bbox *boundingBox, rle string, colorSeed int) error {
 
@@ -78,18 +60,15 @@ func drawInstanceMask(img *image.RGBA, bbox *boundingBox, rle string, colorSeed 
 	return nil
 }
 
-func drawInstanceSegmentation(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
-
-	inputStruct := drawInstanceSegmentationInput{}
-
-	err := base.ConvertFromStructpb(input, &inputStruct)
-	if err != nil {
-		return nil, fmt.Errorf("error converting input to struct: %v", err)
+func drawInstanceSegmentation(ctx context.Context, job *base.Job) error {
+	var inputStruct drawInstanceSegmentationInput
+	if err := job.Input.ReadData(ctx, &inputStruct); err != nil {
+		return err
 	}
 
-	img, err := decodeBase64Image(string(inputStruct.Image))
+	img, err := decodeImage(inputStruct.Image)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding image: %v", err)
+		return err
 	}
 
 	imgRGBA := convertToRGBA(img)
@@ -104,26 +83,30 @@ func drawInstanceSegmentation(input *structpb.Struct, job *base.Job, ctx context
 	for instIdx, obj := range inputStruct.Objects {
 		bbox := obj.BoundingBox
 		if err := drawInstanceMask(imgRGBA, bbox, obj.RLE, instIdx); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
 	for instIdx, obj := range inputStruct.Objects {
 		bbox := obj.BoundingBox
 		text := obj.Category
-		if err := drawObjectLabel(imgRGBA, bbox, text, true, instIdx); err != nil {
-			return nil, err
+		if err := drawObjectLabel(imgRGBA, bbox, text, obj.Score, inputStruct.ShowScore, instIdx); err != nil {
+			return err
 		}
 	}
 
-	base64Img, err := encodeBase64Image(imgRGBA)
+	imgData, err := encodeImage(imgRGBA)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	output := drawInstanceSegmentationOutput{
-		Image: base64Image(fmt.Sprintf("data:image/png;base64,%s", base64Img)),
+	outputData := drawInstanceSegmentationOutput{
+		Image: imgData,
 	}
 
-	return base.ConvertToStructpb(output)
+	if err := job.Output.WriteData(ctx, outputData); err != nil {
+		return err
+	}
+
+	return nil
 }

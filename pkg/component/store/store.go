@@ -36,6 +36,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/chroma/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/elasticsearch/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/googlecloudstorage/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/data/googledrive/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/instillartifact/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/milvus/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/mongodb/v0"
@@ -46,7 +47,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/weaviate/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/zilliz/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/generic/collection/v0"
-	"github.com/instill-ai/pipeline-backend/pkg/component/generic/restapi/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/generic/http/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/audio/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/base64/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0"
@@ -106,7 +107,6 @@ func Init(
 		compStore.Import(audio.Init(baseComp))
 		compStore.Import(video.Init(baseComp))
 
-		compStore.Import(github.Init(baseComp))
 		{
 			// StabilityAI
 			conn := stabilityai.Init(baseComp)
@@ -187,10 +187,27 @@ func Init(
 		compStore.Import(chroma.Init(baseComp))
 		compStore.Import(qdrant.Init(baseComp))
 		compStore.Import(instillartifact.Init(baseComp))
-		compStore.Import(restapi.Init(baseComp))
+		compStore.Import(http.Init(baseComp))
 		compStore.Import(collection.Init(baseComp))
 		compStore.Import(web.Init(baseComp))
-		compStore.Import(slack.Init(baseComp))
+		{
+			// GitHub
+			conn := github.Init(baseComp)
+			conn.WithOAuthConfig(secrets[conn.GetDefinitionID()])
+			compStore.Import(conn)
+		}
+		{
+			// Slack
+			conn := slack.Init(baseComp)
+			conn.WithOAuthConfig(secrets[conn.GetDefinitionID()])
+			compStore.Import(conn)
+		}
+		{
+			// Google Drive
+			conn := googledrive.Init(baseComp)
+			conn.WithOAuthConfig(secrets["googledrive"])
+			compStore.Import(conn)
+		}
 		compStore.Import(email.Init(baseComp))
 		compStore.Import(jira.Init(baseComp))
 		compStore.Import(ollama.Init(baseComp))
@@ -298,11 +315,25 @@ func (s *Store) ListDefinitions(sysVars map[string]any, returnTombstone bool) []
 	return defs
 }
 
+// IsSecretField checks whether a property in a component definition is a
+// secret field.
 func (s *Store) IsSecretField(defUID uuid.UUID, target string) (bool, error) {
-	if c, ok := s.componentUIDMap[defUID]; ok {
-		return c.comp.IsSecretField(target), nil
+	c, ok := s.componentUIDMap[defUID]
+	if !ok {
+		return false, ErrComponentDefinitionNotFound
 	}
-	return false, ErrComponentDefinitionNotFound
+
+	return c.comp.IsSecretField(target), nil
+}
+
+// SupportsOAuth checks whether a component supports OAuth connections.
+func (s *Store) SupportsOAuth(defUID uuid.UUID) (bool, error) {
+	c, ok := s.componentUIDMap[defUID]
+	if !ok {
+		return false, ErrComponentDefinitionNotFound
+	}
+
+	return c.comp.SupportsOAuth(), nil
 }
 
 // ErrComponentDefinitionNotFound is returned when trying to access an

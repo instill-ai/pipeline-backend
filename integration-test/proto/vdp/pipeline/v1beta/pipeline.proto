@@ -56,6 +56,20 @@ enum State {
   STATE_ERROR = 3;
 }
 
+// Endpoints describe the endpoints of a pipeline.
+message Endpoints {
+  // WebhookEndpoint describe a webhook endpoint.
+  message WebhookEndpoint {
+    // Webhook URL.
+    string url = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Description.
+    string description = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  }
+
+  // Webhook endpoints.
+  map<string, WebhookEndpoint> webhooks = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
 // A Pipeline is an end-to-end workflow that automates a sequence of components
 // to process data.
 //
@@ -152,6 +166,8 @@ message Pipeline {
   optional string license = 30 [(google.api.field_behavior) = OPTIONAL];
   // Pipeline profile image in base64 format.
   optional string profile_image = 31 [(google.api.field_behavior) = OPTIONAL];
+  // Pipeline endpoints.
+  Endpoints endpoints = 32 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // TriggerMetadata contains the traces of the pipeline inference.
@@ -232,6 +248,8 @@ message PipelineRelease {
   // Recipe in YAML format describes the components of a pipeline and how they
   // are connected.
   string raw_recipe = 15 [(google.api.field_behavior) = OPTIONAL];
+  // Pipeline endpoints.
+  Endpoints endpoints = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // ListPipelinesRequest represents a request to list pipelines.
@@ -432,18 +450,20 @@ message RenameNamespacePipelineResponse {
 message CloneNamespacePipelineRequest {
   // Namespace ID
   string namespace_id = 1 [(google.api.field_behavior) = REQUIRED];
-
   // Pipeline ID
   string pipeline_id = 2 [(google.api.field_behavior) = REQUIRED];
-  // The target pipeline. It can be under a user or an organization
-  // namespace, so the following formats are accepted:
-  // - `{user.id}/{pipeline.id}`
-  // - `{organization.id}/{pipeline.id}`
-  string target = 3 [(google.api.field_behavior) = REQUIRED];
+
+  // Deprecated `target` field
+  reserved 3;
+
   // Pipeline description.
   string description = 4 [(google.api.field_behavior) = OPTIONAL];
   // Pipeline sharing information.
   Sharing sharing = 5 [(google.api.field_behavior) = OPTIONAL];
+  // Target Namespace ID.
+  string target_namespace_id = 6 [(google.api.field_behavior) = REQUIRED];
+  // Target Pipeline ID.
+  string target_pipeline_id = 7 [(google.api.field_behavior) = REQUIRED];
 }
 
 // CloneNamespacePipelineResponse contains a cloned pipeline.
@@ -454,22 +474,22 @@ message CloneNamespacePipelineResponse {}
 message CloneNamespacePipelineReleaseRequest {
   // Namespace ID
   string namespace_id = 1 [(google.api.field_behavior) = REQUIRED];
-
   // Pipeline ID
   string pipeline_id = 2 [(google.api.field_behavior) = REQUIRED];
-
   // Release ID
   string release_id = 3 [(google.api.field_behavior) = REQUIRED];
 
-  // The target pipeline. It can be under a user or an organization
-  // namespace, so the following formats are accepted:
-  // - `{user.id}/{pipeline.id}`
-  // - `{organization.id}/{pipeline.id}`
-  string target = 4 [(google.api.field_behavior) = REQUIRED];
+  // Deprecated `target` field
+  reserved 4;
+
   // Pipeline description.
   string description = 5 [(google.api.field_behavior) = OPTIONAL];
   // Pipeline sharing information.
   Sharing sharing = 6 [(google.api.field_behavior) = OPTIONAL];
+  // Target Namespace ID.
+  string target_namespace_id = 7 [(google.api.field_behavior) = REQUIRED];
+  // Target Pipeline ID.
+  string target_pipeline_id = 8 [(google.api.field_behavior) = REQUIRED];
 }
 
 // CloneNamespacePipelineReleaseResponse contains a cloned pipeline.
@@ -938,59 +958,6 @@ message RenameUserPipelineResponse {
   // The renamed pipeline resource.
   Pipeline pipeline = 1;
 }
-
-// CloneUserPipelineRequest represents a request to clone a pipeline owned by a
-// user.
-message CloneUserPipelineRequest {
-  // The resource name of the pipeline, which allows its access by parent user
-  // and ID.
-  // - Format: `users/{user.id}/pipelines/{pipeline.id}`.
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration: {path_param_name: "user_pipeline_name"}
-    }
-  ];
-  // The target pipeline. It can be under a user or an organization
-  // namespace, so the following formats are accepted:
-  // - `{user.id}/{pipeline.id}`
-  // - `{organization.id}/{pipeline.id}`
-  string target = 2 [(google.api.field_behavior) = REQUIRED];
-  // Pipeline description.
-  string description = 3 [(google.api.field_behavior) = OPTIONAL];
-  // Pipeline sharing information.
-  Sharing sharing = 4 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// CloneUserPipelineResponse contains a cloned pipeline.
-message CloneUserPipelineResponse {}
-
-// CloneUserPipelineReleaseRequest represents a request to clone a pipeline
-// release owned by a user.
-message CloneUserPipelineReleaseRequest {
-  // The resource name of the pipeline release.
-  // - Format: `users/{user.id}/pipelines/{pipeline.id}/releases/{version}`.
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration: {path_param_name: "user_pipeline_release_name"}
-    }
-  ];
-  // The target pipeline. It can be under a user or an organization
-  // namespace, so the following formats are accepted:
-  // - `{user.id}/{pipeline.id}`
-  // - `{organization.id}/{pipeline.id}`
-  string target = 2 [(google.api.field_behavior) = REQUIRED];
-  // Pipeline description.
-  string description = 3 [(google.api.field_behavior) = OPTIONAL];
-  // Pipeline sharing information.
-  Sharing sharing = 4 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// CloneUserPipelineReleaseResponse contains a cloned pipeline.
-message CloneUserPipelineReleaseResponse {}
 
 // TriggerUserPipelineRequest represents a request to trigger a user-owned
 // pipeline synchronously.
@@ -1476,59 +1443,6 @@ message RenameOrganizationPipelineResponse {
   Pipeline pipeline = 1;
 }
 
-// CloneOrganizationPipelineRequest represents a request to clone a pipeline
-// owned by an organization.
-message CloneOrganizationPipelineRequest {
-  // The resource name of the pipeline, which allows its access by parent
-  // organization and ID.
-  // - Format: `organizations/{organization.id}/pipelines/{pipeline.id}`.
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration: {path_param_name: "org_pipeline_name"}
-    }
-  ];
-  // The target pipeline. It can be under a user or an organization
-  // namespace, so the following formats are accepted:
-  // - `{user.id}/{pipeline.id}`
-  // - `{organization.id}/{pipeline.id}`
-  string target = 2 [(google.api.field_behavior) = REQUIRED];
-  // Pipeline description.
-  string description = 3 [(google.api.field_behavior) = OPTIONAL];
-  // Pipeline sharing information.
-  Sharing sharing = 4 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// CloneOrganizationPipelineResponse contains a cloned pipeline.
-message CloneOrganizationPipelineResponse {}
-
-// CloneOrganizationPipelineReleaseRequest represents a request to clone a pipeline
-// release owned by an organization.
-message CloneOrganizationPipelineReleaseRequest {
-  // The resource name of the pipeline release
-  // - Format: `organizations/{org.id}/pipelines/{pipeline.id}/releases/{version}`.
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration: {path_param_name: "org_pipeline_release_name"}
-    }
-  ];
-  // The target pipeline. It can be under a user or an organization
-  // namespace, so the following formats are accepted:
-  // - `{user.id}/{pipeline.id}`
-  // - `{organization.id}/{pipeline.id}`
-  string target = 2 [(google.api.field_behavior) = REQUIRED];
-  // Pipeline description.
-  string description = 3 [(google.api.field_behavior) = OPTIONAL];
-  // Pipeline sharing information.
-  Sharing sharing = 4 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// CloneOrganizationPipelineReleaseResponse contains a cloned pipeline.
-message CloneOrganizationPipelineReleaseResponse {}
-
 // TriggerOrganizationPipelineRequest represents a request to trigger an
 // organization-owned pipeline synchronously.
 message TriggerOrganizationPipelineRequest {
@@ -1954,9 +1868,9 @@ message ListPipelineRunsRequest {
   // are 10 and 100, respectively.
   int32 page_size = 4 [(google.api.field_behavior) = OPTIONAL];
 
-  // View allows clients to specify the desired run view in the response.
+  // Deprecated: View allows clients to specify the desired run view in the response.
   // The basic view excludes input / output data.
-  optional Pipeline.View view = 5 [(google.api.field_behavior) = OPTIONAL];
+  reserved 5;
   // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
   // expression.
   // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
@@ -1966,13 +1880,58 @@ message ListPipelineRunsRequest {
   optional string order_by = 7 [(google.api.field_behavior) = OPTIONAL];
 }
 
+// ListPipelineRunsByRequesterRequest is the request message for ListPipelineRunsByRequester.
+message ListPipelineRunsByRequesterRequest {
+  // The page number to retrieve.
+  int32 page = 1 [(google.api.field_behavior) = OPTIONAL];
+
+  // The maximum number of items per page to return. The default and cap values
+  // are 10 and 100, respectively.
+  int32 page_size = 2 [(google.api.field_behavior) = OPTIONAL];
+
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // The following filters are supported:
+  // - `status`
+  // - `source`
+  //
+  // **Example**: `status="RUN_STATUS_COMPLETED"`.
+  optional string filter = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Order by field, with options for ordering by `id`, `create_time` or `update_time`.
+  // Format: `order_by=id` or `order_by=create_time desc`, default is `asc`.
+  optional string order_by = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Beginning of the time range from which the records will be fetched.
+  // The default value is the beginning of the current day, in UTC.
+  optional google.protobuf.Timestamp start = 5;
+  // End of the time range from which the records will be fetched.
+  // The default value is the current timestamp.
+  optional google.protobuf.Timestamp stop = 6;
+  // Requester ID.
+  string requester_id = 7 [(google.api.field_behavior) = REQUIRED];
+}
+
 // ListPipelineRunsResponse is the response message for ListPipelineRuns.
 message ListPipelineRunsResponse {
   // The list of pipeline runs.
   repeated PipelineRun pipeline_runs = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // The total number of pipeline runs matching the request.
-  int64 total_size = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 total_size = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // The current page number.
+  int32 page = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // The number of items per page.
+  int32 page_size = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// ListPipelineRunsByRequesterResponse is the response message for ListPipelineRunsByRequester.
+message ListPipelineRunsByRequesterResponse {
+  // The list of pipeline runs.
+  repeated PipelineRun pipeline_runs = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // The total number of pipeline runs matching the request.
+  int32 total_size = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // The current page number.
   int32 page = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -2011,7 +1970,7 @@ message ListComponentRunsResponse {
   repeated ComponentRun component_runs = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // The total number of component runs matching the request.
-  int64 total_size = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  int32 total_size = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // The current page number.
   int32 page = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -2064,16 +2023,18 @@ message PipelineRun {
     (google.api.field_behavior) = OPTIONAL
   ];
 
-  // Input files for the run.
-  repeated FileReference inputs_reference = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Reversed for `inputs_reference`
+  reserved 9;
+
   // Pipeline input parameters.
   repeated google.protobuf.Struct inputs = 10 [
     (google.api.field_behavior) = OUTPUT_ONLY,
     (google.api.field_behavior) = OPTIONAL
   ];
 
-  // Output files from the run.
-  repeated FileReference outputs_reference = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Reversed for `outputs_reference`
+  reserved 11;
+
   // Pipeline inference outputs.
   repeated google.protobuf.Struct outputs = 12 [
     (google.api.field_behavior) = OUTPUT_ONLY,
@@ -2104,6 +2065,16 @@ message PipelineRun {
   ];
   // Data specifications.
   DataSpecification data_specification = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // The ID of the pipeline
+  optional string pipeline_id = 19 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (google.api.field_behavior) = OPTIONAL
+  ];
+
+  // Requester ID. This field might be empty if the pipeline run belongs to a
+  // deleted namespace.
+  string requester_id = 20 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // ComponentRun represents the execution details of a single component within a pipeline run.

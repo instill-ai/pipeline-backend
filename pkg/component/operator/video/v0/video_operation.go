@@ -13,13 +13,14 @@ import (
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
 type SubsampleVideoInput struct {
-	Video     Video  `json:"video"`
-	Fps       int    `json:"fps"`
-	StartTime string `json:"start-time"`
-	Duration  string `json:"duration"`
+	Video     Video   `json:"video"`
+	Fps       float32 `json:"fps"`
+	StartTime string  `json:"start-time"`
+	Duration  string  `json:"duration"`
 }
 
 type SubsampleVideoOutput struct {
@@ -27,10 +28,10 @@ type SubsampleVideoOutput struct {
 }
 
 type SubsampleVideoFramesInput struct {
-	Video     Video  `json:"video"`
-	Fps       int    `json:"fps"`
-	StartTime string `json:"start-time"`
-	Duration  string `json:"duration"`
+	Video     Video   `json:"video"`
+	Fps       float32 `json:"fps"`
+	StartTime string  `json:"start-time"`
+	Duration  string  `json:"duration"`
 }
 
 type SubsampleVideoFramesOutput struct {
@@ -54,7 +55,7 @@ func subsampleVideo(input *structpb.Struct) (*structpb.Struct, error) {
 
 	base64Video := string(inputStruct.Video)
 
-	videoBytes, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(base64Video))
+	videoBytes, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(base64Video))
 
 	if err != nil {
 		return nil, fmt.Errorf("error in decoding for inner: %s", err)
@@ -125,7 +126,7 @@ func subsampleVideoFrames(input *structpb.Struct) (*structpb.Struct, error) {
 
 	base64Video := string(inputStruct.Video)
 
-	videoBytes, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(base64Video))
+	videoBytes, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(base64Video))
 
 	if err != nil {
 		return nil, fmt.Errorf("error in decoding for inner: %s", err)
@@ -149,9 +150,11 @@ func subsampleVideoFrames(input *structpb.Struct) (*structpb.Struct, error) {
 	// with frame number rather than uuid as suffix.
 	outputPattern := random + "_frame_%08d.jpeg"
 
+	kwArgs := getFramesKwArgs(inputStruct)
+
 	err = ffmpeg.Input(tempInputFileName).
 		Output(outputPattern,
-			getFramesKwArgs(inputStruct),
+			kwArgs,
 		).
 		Run()
 
@@ -187,7 +190,7 @@ func subsampleVideoFrames(input *structpb.Struct) (*structpb.Struct, error) {
 }
 
 func getFramesKwArgs(inputStruct SubsampleVideoFramesInput) ffmpeg.KwArgs {
-	kwArgs := ffmpeg.KwArgs{"vf": "fps=" + fmt.Sprintf("%d", inputStruct.Fps)}
+	kwArgs := ffmpeg.KwArgs{"vf": "fps=" + fmt.Sprintf("%f", inputStruct.Fps)}
 	if inputStruct.StartTime != "" {
 		kwArgs["ss"] = inputStruct.StartTime
 	}

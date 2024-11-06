@@ -1,5 +1,7 @@
 package instillartifact
 
+// TODO: Make the test against the fake server rather than mocking the client interface.
+
 import (
 	"testing"
 
@@ -10,7 +12,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 
 	artifactPB "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	timestampPB "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func Test_getFilesMetadata(t *testing.T) {
@@ -53,11 +55,11 @@ func Test_getFilesMetadata(t *testing.T) {
 						Name:    "fakeFileName",
 						Type:    artifactPB.FileType_FILE_TYPE_PDF,
 						Size:    1,
-						CreateTime: &timestamppb.Timestamp{
+						CreateTime: &timestampPB.Timestamp{
 							Seconds: 1,
 							Nanos:   1,
 						},
-						UpdateTime: &timestamppb.Timestamp{
+						UpdateTime: &timestampPB.Timestamp{
 							Seconds: 1,
 							Nanos:   1,
 						},
@@ -129,7 +131,7 @@ func Test_getChunksMetadata(t *testing.T) {
 					StartPos:    0,
 					EndPos:      1,
 					Tokens:      1,
-					CreateTime: &timestamppb.Timestamp{
+					CreateTime: &timestampPB.Timestamp{
 						Seconds: 1,
 						Nanos:   1,
 					},
@@ -201,11 +203,11 @@ func Test_getFileInMarkdown(t *testing.T) {
 			SourceFile: &artifactPB.SourceFile{
 				OriginalFileUid: "fakeFileID",
 				Content:         "fakeContent",
-				CreateTime: &timestamppb.Timestamp{
+				CreateTime: &timestampPB.Timestamp{
 					Seconds: 1,
 					Nanos:   1,
 				},
-				UpdateTime: &timestamppb.Timestamp{
+				UpdateTime: &timestampPB.Timestamp{
 					Seconds: 1,
 					Nanos:   1,
 				},

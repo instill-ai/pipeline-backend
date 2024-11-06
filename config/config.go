@@ -15,6 +15,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
+	miniox "github.com/instill-ai/x/minio"
 )
 
 // Config - Global variable to export
@@ -23,7 +24,7 @@ var Config AppConfig
 // AppConfig defines
 type AppConfig struct {
 	Server          ServerConfig          `koanf:"server"`
-	Connector       ConnectorConfig       `koanf:"connector"`
+	Component       ComponentConfig       `koanf:"component"`
 	Database        DatabaseConfig        `koanf:"database"`
 	InfluxDB        InfluxDBConfig        `koanf:"influxdb"`
 	Temporal        TemporalConfig        `koanf:"temporal"`
@@ -34,7 +35,7 @@ type AppConfig struct {
 	OpenFGA         OpenFGAConfig         `koanf:"openfga"`
 	InstillCloud    InstillCloudConfig    `koanf:"instillcloud"`
 	ArtifactBackend ArtifactBackendConfig `koanf:"artifactbackend"`
-	Minio           MinioConfig           `koanf:"minio"`
+	Minio           miniox.Config         `koanf:"minio"`
 	AppBackend      AppBackendConfig      `koanf:"appbackend"`
 }
 
@@ -82,8 +83,11 @@ type ServerConfig struct {
 	InstillCoreHost    string `koanf:"instillcorehost"`
 }
 
-// ConnectorConfig defines the connector configurations
-type ConnectorConfig struct {
+// ComponentConfig contains the configuration of different components. Global
+// secrets may be defined here by component, allowing them to have e.g. a
+// default API key when no setup is specified, or to connect with a 3rd party
+// vendor via OAuth.
+type ComponentConfig struct {
 	Secrets componentstore.ComponentSecrets
 }
 
@@ -178,16 +182,6 @@ type ArtifactBackendConfig struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}
-}
-
-// MinioConfig is the minio configuration.
-type MinioConfig struct {
-	Host       string `koanf:"host"`
-	Port       string `koanf:"port"`
-	RootUser   string `koanf:"rootuser"`
-	RootPwd    string `koanf:"rootpwd"`
-	BucketName string `koanf:"bucketname"`
-	Secure     bool   `koanf:"secure"` // Add this line for the Secure option
 }
 
 type AppBackendConfig struct {

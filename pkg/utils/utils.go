@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"context"
 	"strings"
 	"time"
 
@@ -10,7 +9,6 @@ import (
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
@@ -174,46 +172,4 @@ func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *stru
 		},
 		time.Now(),
 	)
-}
-
-func GetRequesterUIDAndUserUID(ctx context.Context) (string, string) {
-	requesterUID := resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey)
-	userUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
-	if len(strings.TrimSpace(requesterUID)) == 0 {
-		requesterUID = userUID
-	}
-	return requesterUID, userUID
-}
-
-func ConvertInstillFormat(f string) string {
-	// Note: This is a temporary conversion to make the new Instill Format
-	// compatible with the old validator.
-	switch f {
-	case "image":
-		return "image/*"
-	case "audio":
-		return "audio/*"
-	case "video":
-		return "video/*"
-	case "document":
-		return "*/*"
-	case "file":
-		return "*/*"
-	case "json":
-		return "semi-structured/json"
-	case "array:image":
-		return "array:image/*"
-	case "array:audio":
-		return "array:audio/*"
-	case "array:video":
-		return "array:video/*"
-	case "array:document":
-		return "array:*/*"
-	case "array:file":
-		return "array:*/*"
-	case "array:json":
-		return "array:semi-structured/json"
-	}
-
-	return f
 }

@@ -1995,8 +1995,7 @@ func (h *PublicHandler) ListComponentRuns(ctx context.Context, req *pb.ListCompo
 	return resp, nil
 }
 
-// todo: rename function to ListPipelineRunsByRequester in protobuf and update message names here
-func (h *PublicHandler) ListPipelineRunsByCreditOwner(ctx context.Context, req *pb.ListPipelineRunsByCreditOwnerRequest) (*pb.ListPipelineRunsByCreditOwnerResponse, error) {
+func (h *PublicHandler) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListPipelineRunsByRequesterRequest) (*pb.ListPipelineRunsByRequesterResponse, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 	logUUID, _ := uuid.NewV4()
 	logger.Info("ListPipelineRunsByRequester starts", zap.String("logUUID", logUUID.String()))

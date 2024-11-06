@@ -4,7 +4,6 @@ package openai
 import (
 	"bufio"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,12 +13,11 @@ import (
 
 	_ "embed"
 
-	"github.com/gabriel-vasile/mimetype"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/x/errmsg"
 )
 
@@ -133,17 +131,11 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		}
 	}()
 
-	input, err := job.Input.Read(ctx)
-	if err != nil {
-		job.Error.Error(ctx, err)
-		return
-	}
-
 	switch e.Task {
 	case TextGenerationTask:
 		client.SetTimeout(30 * time.Minute)
-		inputStruct := TextCompletionInput{}
-		err := base.ConvertFromStructpb(input, &inputStruct)
+		inputStruct := taskTextGenerationInput{}
+		err := job.Input.ReadData(ctx, &inputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
@@ -155,7 +147,20 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		if inputStruct.ChatHistory != nil {
 			for _, chat := range inputStruct.ChatHistory {
 				if chat.Role == "user" {
-					messages = append(messages, multiModalMessage{Role: chat.Role, Content: chat.Content})
+					cs := make([]Content, len(chat.Content))
+					for i, c := range chat.Content {
+						cs[i] = Content{
+							Type: c.Type,
+						}
+						if c.Type == "text" {
+							cs[i].Text = c.Text
+						} else {
+							cs[i].ImageURL = &ImageURL{
+								c.ImageURL.URL,
+							}
+						}
+					}
+					messages = append(messages, multiModalMessage{Role: chat.Role, Content: cs})
 				} else {
 					content := ""
 					for _, c := range chat.Content {
@@ -176,13 +181,12 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		userContents := []Content{}
 		userContents = append(userContents, Content{Type: "text", Text: &inputStruct.Prompt})
 		for _, image := range inputStruct.Images {
-			b, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(image))
+			i, err := image.DataURI()
 			if err != nil {
 				job.Error.Error(ctx, err)
 				return
 			}
-			url := fmt.Sprintf("data:%s;base64,%s", mimetype.Detect(b).String(), base.TrimBase64Mime(image))
-			userContents = append(userContents, Content{Type: "image_url", ImageURL: &ImageURL{URL: url}})
+			userContents = append(userContents, Content{Type: "image_url", ImageURL: &ImageURL{URL: i.String()}})
 		}
 		messages = append(messages, multiModalMessage{Role: "user", Content: userContents})
 
@@ -206,7 +210,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 				return
 			}
 
-			outputStruct := TextCompletionOutput{
+			outputStruct := taskTextGenerationOutput{
 				Texts: []string{},
 				Usage: usage(resp.Usage),
 			}
@@ -214,18 +218,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 				outputStruct.Texts = append(outputStruct.Texts, c.Message.Content)
 			}
 
-			outputJSON, err := json.Marshal(outputStruct)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				return
-			}
-			output := &structpb.Struct{}
-			err = protojson.Unmarshal(outputJSON, output)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				return
-			}
-			err = job.Output.Write(ctx, output)
+			err = job.Output.WriteData(ctx, outputStruct)
 			if err != nil {
 				job.Error.Error(ctx, err)
 				return
@@ -294,7 +287,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			}
 			scanner := bufio.NewScanner(restyResp.RawResponse.Body)
 
-			outputStruct := TextCompletionOutput{}
+			outputStruct := taskTextGenerationOutput{}
 
 			u := usage{}
 			count := 0
@@ -310,19 +303,8 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 				// Note: Since we haven’t provided delta updates for the
 				// messages, we’re reducing the number of event streams by
 				// returning the response every ten iterations.
-				if count == 10 || res == "[DONE]" {
-					outputJSON, inErr := json.Marshal(outputStruct)
-					if inErr != nil {
-						job.Error.Error(ctx, inErr)
-						return
-					}
-					output := &structpb.Struct{}
-					inErr = protojson.Unmarshal(outputJSON, output)
-					if inErr != nil {
-						job.Error.Error(ctx, inErr)
-						return
-					}
-					err = job.Output.Write(ctx, output)
+				if count == 3 || res == "[DONE]" {
+					err = job.Output.WriteData(ctx, outputStruct)
 					if err != nil {
 						job.Error.Error(ctx, err)
 						return
@@ -362,18 +344,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			}
 
 			outputStruct.Usage = u
-			outputJSON, err := json.Marshal(outputStruct)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				return
-			}
-			output := &structpb.Struct{}
-			err = protojson.Unmarshal(outputJSON, output)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				return
-			}
-			err = job.Output.Write(ctx, output)
+			err = job.Output.WriteData(ctx, outputStruct)
 			if err != nil {
 				job.Error.Error(ctx, err)
 				return
@@ -381,22 +352,22 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		}
 
 	case SpeechRecognitionTask:
-		inputStruct := AudioTranscriptionInput{}
-		err := base.ConvertFromStructpb(input, &inputStruct)
+
+		inputStruct := taskSpeechRecognitionInput{}
+		err := job.Input.ReadData(ctx, &inputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
-
 			return
 		}
 
-		audioBytes, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(inputStruct.Audio))
+		audioBytes, err := inputStruct.Audio.Binary()
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
 		}
 
 		data, ct, err := getBytes(AudioTranscriptionReq{
-			File:        audioBytes,
+			File:        audioBytes.ByteArray(),
 			Model:       inputStruct.Model,
 			Prompt:      inputStruct.Prompt,
 			Language:    inputStruct.Language,
@@ -417,20 +388,18 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			return
 		}
 
-		output, err := base.ConvertToStructpb(resp)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			return
+		outputStruct := taskSpeechRecognitionOutput{
+			Text: resp.Text,
 		}
-		err = job.Output.Write(ctx, output)
+		err = job.Output.WriteData(ctx, outputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
 		}
 
 	case TextToSpeechTask:
-		inputStruct := TextToSpeechInput{}
-		err := base.ConvertFromStructpb(input, &inputStruct)
+		inputStruct := taskTextToSpeechInput{}
+		err := job.Input.ReadData(ctx, &inputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
@@ -450,17 +419,17 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			return
 		}
 
-		audio := base64.StdEncoding.EncodeToString(resp.Body())
-		outputStruct := TextToSpeechOutput{
-			Audio: fmt.Sprintf("data:audio/wav;base64,%s", audio),
-		}
-
-		output, err := base.ConvertToStructpb(outputStruct)
+		audio, err := data.NewAudioFromBytes(resp.Body(), "audio/wav", "")
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
 		}
-		err = job.Output.Write(ctx, output)
+
+		outputStruct := taskTextToSpeechOutput{
+			Audio: audio,
+		}
+
+		err = job.Output.WriteData(ctx, outputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
@@ -468,8 +437,8 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 
 	case TextToImageTask:
 
-		inputStruct := ImagesGenerationInput{}
-		err := base.ConvertFromStructpb(input, &inputStruct)
+		inputStruct := taskTextToImageInput{}
+		err := job.Input.ReadData(ctx, &inputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
@@ -491,23 +460,23 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			return
 		}
 
-		results := []ImageGenerationsOutputResult{}
-		for _, data := range resp.Data {
-			results = append(results, ImageGenerationsOutputResult{
-				Image:         fmt.Sprintf("data:image/webp;base64,%s", data.Image),
-				RevisedPrompt: data.RevisedPrompt,
+		results := []imageGenerationsOutputResult{}
+		for _, d := range resp.Data {
+			img, err := data.NewImageFromURL(fmt.Sprintf("data:image/webp;base64,%s", d.Image))
+			if err != nil {
+				job.Error.Error(ctx, err)
+				return
+			}
+			results = append(results, imageGenerationsOutputResult{
+				Image:         img,
+				RevisedPrompt: d.RevisedPrompt,
 			})
 		}
-		outputStruct := ImageGenerationsOutput{
+		outputStruct := taskTextToImageOutput{
 			Results: results,
 		}
 
-		output, err := base.ConvertToStructpb(outputStruct)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			return
-		}
-		err = job.Output.Write(ctx, output)
+		err = job.Output.WriteData(ctx, outputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
@@ -535,13 +504,8 @@ func (e *execution) executeEmbedding(ctx context.Context, client *httpclient.Cli
 	dimensions := 0
 	model := ""
 	for idx, job := range jobs {
-		input, err := job.Input.Read(ctx)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			return
-		}
-		inputStruct := TextEmbeddingsInput{}
-		err = base.ConvertFromStructpb(input, &inputStruct)
+		inputStruct := taskTextEmbeddingsInput{}
+		err := job.Input.ReadData(ctx, &inputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
@@ -583,15 +547,10 @@ func (e *execution) executeEmbedding(ctx context.Context, client *httpclient.Cli
 	}
 
 	for idx, job := range jobs {
-		outputStruct := TextEmbeddingsOutput{
+		outputStruct := taskTextEmbeddingsOutput{
 			Embedding: resp.Data[idx].Embedding,
 		}
-		output, err := base.ConvertToStructpb(outputStruct)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			return
-		}
-		err = job.Output.Write(ctx, output)
+		err := job.Output.WriteData(ctx, outputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return

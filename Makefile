@@ -7,13 +7,6 @@ include .env
 export
 
 GOTEST_FLAGS := CFG_DATABASE_HOST=${TEST_DBHOST} CFG_DATABASE_NAME=${TEST_DBNAME}
-ifeq (${DBTEST}, true)
-	GOTEST_TAGS := -tags=dbtest
-endif
-ifeq (${OCR}, true)
-	GOTEST_TAGS := -tags=ocr
-endif
-
 
 #============================================================================
 
@@ -27,6 +20,7 @@ dev:							## Run dev container
 		-v $(PWD):/${SERVICE_NAME} \
 		-p ${PUBLIC_SERVICE_PORT}:${PUBLIC_SERVICE_PORT} \
 		-p ${PRIVATE_SERVICE_PORT}:${PRIVATE_SERVICE_PORT} \
+		--env-file .env.component \
 		--network instill-network \
 		--name ${SERVICE_NAME} \
 		instill/${SERVICE_NAME}:dev >/dev/null 2>&1
@@ -39,16 +33,16 @@ latest:							## Run latest container
 		echo "Run latest container ${SERVICE_NAME} and ${SERVICE_NAME}-worker. To stop it, run \"make stop\"."
 	@docker run --network=instill-network \
 		--name ${SERVICE_NAME} \
-		-d ${SERVICE_NAME}:latest ./${SERVICE_NAME}
+		-d instill/${SERVICE_NAME}:latest ./${SERVICE_NAME}
 	@docker run --network=instill-network \
 		--name ${SERVICE_NAME}-worker \
-		-d ${SERVICE_NAME}:latest ./${SERVICE_NAME}-worker
+		-d instill/${SERVICE_NAME}:latest ./${SERVICE_NAME}-worker
 
 .PHONY: rm
 rm:								## Remove all running containers
 	@docker rm -f ${SERVICE_NAME} ${SERVICE_NAME}-worker >/dev/null 2>&1
 
-.PHONY: build
+.PHONY: build-dev
 build-dev:							## Build dev docker image
 	@docker build \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
@@ -59,10 +53,10 @@ build-dev:							## Build dev docker image
 
 .PHONY: build-latest
 build-latest:							## Build latest docker image
-	@docker buildx build \
+	@docker build \
 		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
-		-t pipeline-backend:latest .
+		-t instill/pipeline-backend:latest .
 
 .PHONY: go-gen
 go-gen:       					## Generate codes
@@ -75,31 +69,49 @@ dbtest-pre:
 .PHONY: coverage
 coverage:
 	@if [ "${DBTEST}" = "true" ]; then  make dbtest-pre; fi
-	@${GOTEST_FLAGS} go test -v -race ${GOTEST_TAGS} -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...
+	@docker run --rm \
+		-v $(PWD):/${SERVICE_NAME} \
+		-e GOTEST_FLAGS="${GOTEST_FLAGS}" \
+		--user $(id -u):$(id -g) \
+		--entrypoint= \
+		instill/${SERVICE_NAME}:dev \
+			go test -v -race ${GOTEST_TAGS} -coverpkg=./... -coverprofile=coverage.out -covermode=atomic -timeout 30m ./...
 	@if [ "${HTML}" = "true" ]; then  \
-		go tool cover -func=coverage.out && \
-		go tool cover -html=coverage.out && \
-		rm coverage.out; \
+		docker run --rm \
+			-v $(PWD):/${SERVICE_NAME} \
+			--user $(id -u):$(id -g) \
+			--entrypoint= \
+			instill/${SERVICE_NAME}:dev \
+				go tool cover -func=coverage.out && \
+				go tool cover -html=coverage.out && \
+				rm coverage.out; \
 	fi
 
+# Tests should run in container without local tparse installation.
+# If you encounter container test issues, install tparse locally:
+# go install github.com/mfridman/tparse/cmd/tparse@latest
 .PHONY: test
 test:
-	@if [ "${OCR}" = "true" ]; then \
-		make test-ocr; \
+	@TAGS=""; \
+	if [ "$${OCR}" = "true" ]; then \
+		TAGS="$$TAGS,ocr"; \
+		[ "$$(uname)" = "Darwin" ] && export TESSDATA_PREFIX=$$(dirname $$(brew list tesseract | grep share/tessdata/eng.traineddata)); \
+	fi; \
+	if [ "$${ONNX}" = "true" ]; then \
+		if [ "$$(uname)" = "Darwin" ]; then \
+			echo "ONNX Runtime test is not supported on Darwin (macOS)."; \
+		else \
+			TAGS="$$TAGS,onnx"; \
+		fi; \
+	fi; \
+	TAGS=$${TAGS#,}; \
+	if [ -n "$$TAGS" ]; then \
+		echo "Running tests with tags: $$TAGS"; \
+		go test -v -tags="$$TAGS" ./... -json | tparse --notests --all; \
 	else \
+		echo "Running standard tests"; \
 		go test -v ./... -json | tparse --notests --all; \
 	fi
-
-.PHONY: test-ocr
-test-ocr:
-# Certain component tests require additional dependencies.
-# Install tesseract via `brew install tesseract`
-# Setup `export LIBRARY_PATH="/opt/homebrew/lib"` `export CPATH="/opt/homebrew/include"`
-ifeq ($(shell uname), Darwin)
-	@TESSDATA_PREFIX=$(shell dirname $(shell brew list tesseract | grep share/tessdata/eng.traineddata)) ${GOTEST_FLAGS} go test -v ./... -json | tparse --notests --all
-else
-	@echo "This target can only be executed on Darwin (macOS)."
-endif
 
 .PHONY: integration-test
 integration-test:				## Run integration test

@@ -1,73 +1,20 @@
 package mistralai
 
 import (
+	"context"
 	"fmt"
-
-	"google.golang.org/protobuf/types/known/structpb"
 
 	mistralSDK "github.com/gage-technologies/mistral-go"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
-type ChatMessage struct {
-	Role    string              `json:"role"`
-	Content []MultiModalContent `json:"content"`
-}
-type URL struct {
-	URL string `json:"url"`
-}
-
-type MultiModalContent struct {
-	ImageURL URL    `json:"image-url"`
-	Text     string `json:"text"`
-	Type     string `json:"type"`
-}
-
-type TextGenerationInput struct {
-	ChatHistory  []ChatMessage `json:"chat-history"`
-	MaxNewTokens int           `json:"max-new-tokens"`
-	ModelName    string        `json:"model-name"`
-	Prompt       string        `json:"prompt"`
-	PromptImages []string      `json:"prompt-images"`
-	Seed         int           `json:"seed"`
-	SystemMsg    string        `json:"system-message"`
-	Temperature  float64       `json:"temperature"`
-	TopK         int           `json:"top-k"`
-	TopP         float64       `json:"top-p"`
-	Safe         bool          `json:"safe"`
-}
-
-type chatUsage struct {
-	InputTokens  int `json:"input-tokens"`
-	OutputTokens int `json:"output-tokens"`
-}
-
-type TextGenerationOutput struct {
-	Text  string    `json:"text"`
-	Usage chatUsage `json:"usage"`
-}
-
-type TextEmbeddingInput struct {
-	Text      string `json:"text"`
-	ModelName string `json:"model-name"`
-}
-
-type textEmbeddingUsage struct {
-	Tokens int `json:"tokens"`
-}
-
-type TextEmbeddingOutput struct {
-	Embedding []float64          `json:"embedding"`
-	Usage     textEmbeddingUsage `json:"usage"`
-}
-
-func (e *execution) taskTextGeneration(in *structpb.Struct) (*structpb.Struct, error) {
+func (e *execution) taskTextGeneration(ctx context.Context, job *base.Job) error {
 
 	inputStruct := TextGenerationInput{}
-	err := base.ConvertFromStructpb(in, &inputStruct)
+	err := job.Input.ReadData(ctx, &inputStruct)
 	if err != nil {
-		return nil, fmt.Errorf("error generating input struct: %v", err)
+		return fmt.Errorf("error generating input struct: %v", err)
 	}
 
 	messages := []mistralSDK.ChatMessage{}
@@ -109,40 +56,47 @@ func (e *execution) taskTextGeneration(in *structpb.Struct) (*structpb.Struct, e
 		SafePrompt:  inputStruct.Safe,
 	}
 
-	resp, err := e.client.sdkClient.Chat(
+	respStream, err := e.client.sdkClient.ChatStream(
 		inputStruct.ModelName,
 		messages,
 		&params,
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("error calling Chat: %v", err)
+		return fmt.Errorf("error calling Chat: %v", err)
 	}
 
 	outputStruct := TextGenerationOutput{}
+	outputStruct.Text = ""
 
-	outputStruct.Text = resp.Choices[0].Message.Content
-	outputStruct.Usage = chatUsage{
-		InputTokens:  resp.Usage.PromptTokens,
-		OutputTokens: resp.Usage.CompletionTokens,
+	for resp := range respStream {
+
+		outputStruct.Text += resp.Choices[0].Delta.Content
+		outputStruct.Usage = chatUsage{
+			InputTokens:  resp.Usage.PromptTokens,
+			OutputTokens: resp.Usage.CompletionTokens,
+		}
+		err = job.Output.WriteData(ctx, outputStruct)
+		if err != nil {
+			job.Error.Error(ctx, err)
+			return err
+		}
 	}
-	output, err := base.ConvertToStructpb(outputStruct)
-	if err != nil {
-		return nil, err
-	}
-	return output, nil
+
+	return nil
 }
 
-func (e *execution) taskTextEmbedding(in *structpb.Struct) (*structpb.Struct, error) {
+func (e *execution) taskTextEmbedding(ctx context.Context, job *base.Job) error {
+
 	inputStruct := TextEmbeddingInput{}
-	err := base.ConvertFromStructpb(in, &inputStruct)
+	err := job.Input.ReadData(ctx, &inputStruct)
 	if err != nil {
-		return nil, fmt.Errorf("error generating input struct: %v", err)
+		return fmt.Errorf("error generating input struct: %v", err)
 	}
 
 	resp, err := e.client.sdkClient.Embeddings(inputStruct.ModelName, []string{inputStruct.Text})
 	if err != nil {
-		return nil, fmt.Errorf("error calling Embeddings: %v", err)
+		return fmt.Errorf("error calling Embeddings: %v", err)
 	}
 	outputStruct := TextEmbeddingOutput{
 		Embedding: resp.Data[0].Embedding,
@@ -150,10 +104,10 @@ func (e *execution) taskTextEmbedding(in *structpb.Struct) (*structpb.Struct, er
 			Tokens: resp.Usage.TotalTokens,
 		},
 	}
-	output, err := base.ConvertToStructpb(outputStruct)
+	err = job.Output.WriteData(ctx, outputStruct)
 	if err != nil {
-		return nil, err
+		job.Error.Error(ctx, err)
+		return err
 	}
-	return output, nil
-
+	return nil
 }

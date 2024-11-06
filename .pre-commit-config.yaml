@@ -11,7 +11,18 @@ repos:
   - repo: https://github.com/dnephin/pre-commit-golang
     rev: v0.5.1
     hooks:
+      # To make the golangci-lint hook work with ONNX:
+      # 1. Install ONNX runtime locally:
+      #    - Mac: `brew install onnxruntime`
+      #    - Linux: Follow https://github.com/streamer45/silero-vad-go
+      # 2. For Mac OS with Homebrew:
+      #    a. Get install path: `brew info onnxruntime`
+      #    b. Set environment variables:
+      #       export LIBRARY_PATH=/opt/homebrew/Cellar/onnxruntime/1.17.1/lib
+      #       export C_INCLUDE_PATH=/opt/homebrew/Cellar/onnxruntime/1.17.1/include/onnxruntime
+      #    c. Run: sudo update_dyld_shared_cache
       - id: golangci-lint
+        args: ["--build-tags", "onnx"]
       - id: go-mod-tidy
   - repo: https://github.com/pinglin/conventional-pre-commit
     rev: v1.1.0

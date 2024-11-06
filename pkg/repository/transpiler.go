@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/iancoleman/strcase"
@@ -218,7 +219,7 @@ func (t *transpiler) transpileComparisonCallExpr(e *expr.Expr, op interface{}) (
 			vars = append(vars, con.Vars...)
 		case "tag":
 			sql = "tag.tag_name = ?"
-			vars = append(vars, con.Vars...)
+			vars = append(vars, strings.ToLower(con.Vars[0].(string)))
 		default:
 			sql = fmt.Sprintf("%s = ?", ident.SQL)
 			vars = append(vars, con.Vars...)

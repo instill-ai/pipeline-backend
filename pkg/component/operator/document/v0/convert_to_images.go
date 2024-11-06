@@ -1,100 +1,47 @@
 package document
 
 import (
-	"encoding/json"
-	"fmt"
-	"strings"
-
-	"google.golang.org/protobuf/types/known/structpb"
+	"context"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
+	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0/transformer"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
-type ConvertDocumentToImagesInput struct {
-	Document string `json:"document"`
-	Filename string `json:"filename"`
-}
-
-type ConvertDocumentToImagesOutput struct {
-	Images    []string `json:"images"`
-	Filenames []string `json:"filenames"`
-}
-
-func ConvertDocumentToImage(inputStruct *ConvertDocumentToImagesInput) (*ConvertDocumentToImagesOutput, error) {
-
-	contentType, err := util.GetContentTypeFromBase64(inputStruct.Document)
-	if err != nil {
-		return nil, err
-	}
-
-	fileExtension := util.TransformContentTypeToFileExtension(contentType)
-
-	if fileExtension == "" {
-		return nil, fmt.Errorf("unsupported file type")
-	}
-
-	var base64PDF string
-	if fileExtension != "pdf" {
-		base64PDF, err = ConvertToPDF(inputStruct.Document, fileExtension)
-
-		if err != nil {
-			return nil, fmt.Errorf("failed to encode file to base64: %w", err)
-		}
-	} else {
-		base64PDF = strings.Split(inputStruct.Document, ",")[1]
-	}
-
-	var base64PDFWithoutMime string
-	if RequiredToRepair(base64PDF) {
-		base64PDFWithoutMime, err = RepairPDF(base64PDF)
-		if err != nil {
-			return nil, fmt.Errorf("failed to repair PDF: %w", err)
-		}
-	} else {
-		base64PDFWithoutMime = base.TrimBase64Mime(base64PDF)
-	}
-
-	paramsJSON := map[string]interface{}{
-		"PDF":      base64PDFWithoutMime,
-		"filename": inputStruct.Filename,
-	}
-
-	pythonCode := imageProcessor + pdfTransformer + taskConvertToImagesExecution
-
-	outputBytes, err := util.ExecutePythonCode(pythonCode, paramsJSON)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to run python script: %w", err)
-	}
-
-	output := ConvertDocumentToImagesOutput{}
-
-	err = json.Unmarshal(outputBytes, &output)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal output: %w", err)
-	}
-
-	if len(output.Filenames) == 0 {
-		output.Filenames = []string{}
-	}
-	return &output, nil
-}
-
-func (e *execution) convertDocumentToImages(input *structpb.Struct) (*structpb.Struct, error) {
+func (e *execution) convertDocumentToImages(ctx context.Context, job *base.Job) error {
 
 	inputStruct := ConvertDocumentToImagesInput{}
-	err := base.ConvertFromStructpb(input, &inputStruct)
+	err := job.Input.ReadData(ctx, &inputStruct)
 	if err != nil {
-		return nil, fmt.Errorf("failed to convert input struct: %w", err)
+		return err
+	}
+	dataURI, err := inputStruct.Document.DataURI()
+	if err != nil {
+		return err
 	}
 
-	outputStruct, err := ConvertDocumentToImage(&inputStruct)
-	if err != nil {
-		return nil, err
+	transformerInputStruct := transformer.ConvertDocumentToImagesTransformerInput{
+		Document: dataURI.String(),
+		Filename: inputStruct.Filename,
+		Resolution: inputStruct.Resolution,
 	}
 
-	return base.ConvertToStructpb(outputStruct)
+	transformerOutputStruct, err := transformer.ConvertDocumentToImage(&transformerInputStruct)
+	if err != nil {
+		return err
+	}
+	outputStruct := ConvertDocumentToImagesOutput{
+		Images: func() []format.Image {
+			images := make([]format.Image, len(transformerOutputStruct.Images))
+			for i, image := range transformerOutputStruct.Images {
+				images[i], _ = data.NewImageFromURL(image)
+			}
+			return images
+		}(),
+		Filenames: transformerOutputStruct.Filenames,
+	}
+
+	return job.Output.WriteData(ctx, outputStruct)
 
 }

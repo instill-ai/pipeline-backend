@@ -135,45 +135,57 @@ func (s *service) componentDefinitionToIntegration(
 		View:        view,
 	}
 
-	if view == pb.View_VIEW_FULL {
-		integration.SetupSchema = setup.GetStructValue()
-		schemaFields := integration.SetupSchema.GetFields()
-
-		if oAuthConfig, supportsOAuth := schemaFields["instillOAuthConfig"]; supportsOAuth {
-			// We extract the OAuth configuration to a dedicated proto field to
-			// have a structured contract with the clients.
-			j, err := oAuthConfig.GetStructValue().MarshalJSON()
-			if err != nil {
-				return nil, fmt.Errorf("marshalling OAuth config: %w", err)
-			}
-
-			integration.OAuthConfig = new(pb.Integration_OAuthConfig)
-			if err := protojson.Unmarshal(j, integration.OAuthConfig); err != nil {
-				return nil, fmt.Errorf("unmarshalling OAuth config: %w", err)
-			}
-
-			// We remove the information from the setup so it isn't duplicated
-			// in the response.
-			delete(schemaFields, "instillOAuthConfig")
-		}
-
-		//nolint:staticcheck
-		// This is deprecated and only maintained for backwards compatibility.
-		// TODO jvallesm: remove when Integration Milestone 2 (OAuth) is rolled
-		// // out.
-		integration.Schemas = []*pb.Integration_SetupSchema{
-			{
-				Method: pb.Connection_METHOD_DICTIONARY,
-				Schema: setup.GetStructValue(),
-			},
-		}
+	if view != pb.View_VIEW_FULL {
+		return integration, nil
 	}
 
+	integration.SetupSchema = setup.GetStructValue()
+	schemaFields := integration.SetupSchema.GetFields()
+
+	//nolint:staticcheck
+	// This is deprecated and only maintained for backwards compatibility.
+	// TODO jvallesm: remove when Integration Milestone 2 (OAuth) is rolled
+	// out.
+	integration.Schemas = []*pb.Integration_SetupSchema{
+		{
+			Method: pb.Connection_METHOD_DICTIONARY,
+			Schema: setup.GetStructValue(),
+		},
+	}
+
+	supportsOAuth, err := s.component.SupportsOAuth(uuid.FromStringOrNil(integration.Uid))
+	if err != nil {
+		return nil, fmt.Errorf("checking OAuth support: %w", err)
+	}
+
+	oAuthConfig, hasOAuthConfig := schemaFields["instillOAuthConfig"]
+	if !(supportsOAuth && hasOAuthConfig) {
+		return integration, nil
+	}
+
+	// We extract the OAuth configuration to a dedicated proto field to
+	// have a structured contract with the clients.
+	j, err := oAuthConfig.GetStructValue().MarshalJSON()
+	if err != nil {
+		return nil, fmt.Errorf("marshalling OAuth config: %w", err)
+	}
+
+	integration.OAuthConfig = new(pb.Integration_OAuthConfig)
+	if err := protojson.Unmarshal(j, integration.OAuthConfig); err != nil {
+		return nil, fmt.Errorf("unmarshalling OAuth config: %w", err)
+	}
+
+	// We remove the information from the setup so it isn't duplicated
+	// in the response.
+	delete(schemaFields, "instillOAuthConfig")
+
 	return integration, nil
+
 }
 
 var outputOnlyConnectionFields = []string{
 	"uid",
+	"namespace_id",
 	"integration_title",
 	"create_time",
 	"update_time",
@@ -204,10 +216,13 @@ func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integr
 			return errmsg.AddMessage(err, "OAuth access details only apply to OAuth connections.")
 		}
 		if conn.Identity != nil {
-			return errmsg.AddMessage(err, "Identity only applies OAuth connections.")
+			return errmsg.AddMessage(err, "Identity only applies to OAuth connections.")
 		}
 	case pb.Connection_METHOD_OAUTH:
 		err := fmt.Errorf("%w: invalid payload in OAuth connection", errdomain.ErrInvalidArgument)
+		if integration.GetOAuthConfig() == nil {
+			return errmsg.AddMessage(err, integration.GetTitle()+" connection doesn't accept METHOD_OAUTH.")
+		}
 		if conn.GetIdentity() == "" {
 			return errmsg.AddMessage(err, "Identity must be provided in OAuth connections.")
 		}
@@ -259,7 +274,6 @@ func (s *service) validateConnectionCreation(conn *pb.Connection, integration *p
 	// Check REQUIRED fields are provided in the request.
 	requiredFields := []string{
 		"id",
-		"namespace_id",
 		"integration_id",
 		"method",
 		"setup",
@@ -320,7 +334,7 @@ func (s *service) validateConnectionUpdate(
 	}
 
 	// Return error if IMMUTABLE fields are intentionally changed.
-	immutableFields := []string{"namespace_id", "integration_id"}
+	immutableFields := []string{"integration_id"}
 	if err := checkfield.CheckUpdateImmutableFields(updateReq, destConn, immutableFields); err != nil {
 		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
 	}
@@ -334,8 +348,8 @@ func (s *service) validateConnectionUpdate(
 	return s.validateConnection(destConn, integration)
 }
 
-func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connection) (*pb.Connection, error) {
-	ns, err := s.GetRscNamespace(ctx, conn.GetNamespaceId())
+func (s *service) CreateNamespaceConnection(ctx context.Context, req *pb.CreateNamespaceConnectionRequest) (*pb.Connection, error) {
+	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
 	}
@@ -344,6 +358,7 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connec
 		return nil, fmt.Errorf("checking namespace permissions: %w", err)
 	}
 
+	conn := req.GetConnection()
 	integration, err := s.GetIntegration(ctx, conn.GetIntegrationId(), pb.View_VIEW_FULL)
 	if err != nil {
 		if errors.Is(err, errIntegrationNotFound) {
@@ -394,7 +409,7 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connec
 }
 
 func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pb.UpdateNamespaceConnectionRequest) (*pb.Connection, error) {
-	ns, err := s.GetRscNamespace(ctx, req.GetConnection().GetNamespaceId())
+	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
 	}

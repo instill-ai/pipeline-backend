@@ -4,24 +4,42 @@ import (
 	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 )
 
-type Null struct {
+type nullData struct {
 }
 
-func NewNull() *Null {
-	return &Null{}
+func NewNull() *nullData {
+	return &nullData{}
 }
 
-func (Null) isValue() {}
+func (nullData) IsValue()   {}
+func (nullData) Omittable() {}
 
-func (n *Null) Get(path string) (v Value, err error) {
-	if path == "" {
+func (n *nullData) Get(p *path.Path) (v format.Value, err error) {
+	if p == nil || p.IsEmpty() {
 		return n, nil
 	}
-	return nil, fmt.Errorf("wrong path %s for Null", path)
+	return nil, fmt.Errorf("path not found: %s", p)
 }
 
-func (n Null) ToStructValue() (v *structpb.Value, err error) {
+// Deprecated: ToStructValue() is deprecated and will be removed in a future
+// version. structpb is not suitable for handling binary data and will be phased
+// out gradually.
+func (n nullData) ToStructValue() (v *structpb.Value, err error) {
 	return structpb.NewNullValue(), nil
+}
+
+func (n *nullData) Equal(other format.Value) bool {
+	if _, ok := other.(*nullData); ok {
+		return true
+	}
+	return false
+}
+
+func (n *nullData) String() string {
+	return "null"
 }
