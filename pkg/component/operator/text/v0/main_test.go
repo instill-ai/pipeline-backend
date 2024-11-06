@@ -6,8 +6,6 @@ import (
 	"github.com/frankban/quicktest"
 	"strings" // Import the strings package here
 )
-	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
-)
 
 // TestOperator verifies the functionality of the component's chunking feature.
 func TestOperator(t *testing.T) {
