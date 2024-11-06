@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 	"github.com/frankban/quicktest"
-	"strings" // Ensure this import is here
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
