@@ -3,10 +3,11 @@ package text
 import (
 	"context"
 	"testing"
+	"strings"       // Importing strings for normalizeLineEndings function
+
 	"github.com/frankban/quicktest"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
-	"strings" // Import strings here for the function
 )
 
 // TestOperator verifies the functionality of the component's chunking feature.
@@ -148,9 +149,4 @@ func TestCleanData(t *testing.T) {
 			}
 		})
 	}
-}
-
-// Rename the function to avoid conflict with chunk_text_test.go
-func normalizeLineEndingsInMainTest(input string) string {
-	return strings.ReplaceAll(input, "\r\n", "\n")
 }
