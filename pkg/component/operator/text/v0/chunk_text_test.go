@@ -246,38 +246,6 @@ func Test_ChunkPositions(t *testing.T) {
 	}
 }
 
-// Helper function to adjust start and end positions if they deviate from expected values
-func adjustPosition(expected, actual int) int {
-	if expected != actual {
-		return expected // Optionally, adjust tolerance here if slight variations are acceptable
-	}
-	return actual
-}
 
-// Helper function to check if token count meets expectations with tolerance for minor deviations
-func checkTokenCount(c *quicktest.C, got, want int) {
-	c.Assert(got, quicktest.Not(quicktest.Equals), 0) // Ensure token count is non-zero
-	c.Assert(got, quicktest.Equals, want, quicktest.Commentf("Token count does not match expected value"))
-}
 
-// Helper function to normalize line endings across different environments
-func normalizeLineEndings(input string) string {
-	return strings.ReplaceAll(input, "\r\n", "\n")
-}
-
-// Additional validation function to check positions and token counts in chunks
-func validateChunkPositions(c *quicktest.C, chunks []TextChunk, expectedChunks []TextChunk) {
-	for i, chunk := range chunks {
-		// Adjust positions for minor discrepancies
-		startPos := adjustPosition(expectedChunks[i].StartPosition, chunk.StartPosition)
-		endPos := adjustPosition(expectedChunks[i].EndPosition, chunk.EndPosition)
-
-		// Validate positions
-		c.Assert(startPos, quicktest.Equals, chunk.StartPosition)
-		c.Assert(endPos, quicktest.Equals, chunk.EndPosition)
-
-		// Validate token count
-		checkTokenCount(c, chunk.TokenCount, expectedChunks[i].TokenCount)
-	}
-}
 
