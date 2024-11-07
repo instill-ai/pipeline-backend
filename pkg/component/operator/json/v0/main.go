@@ -29,7 +29,7 @@ var (
 	definitionJSON []byte
 	//go:embed config/tasks.json
 	tasksJSON []byte
-	//go:embed config/schema.json
+	//go:embed config/tasks.json
 	schemaJSON []byte
 
 	once   sync.Once
@@ -238,8 +238,14 @@ func (e *execution) renameFields(in *structpb.Struct) (*structpb.Struct, error) 
 		return nil, errmsg.AddMessage(err, "Validation failed for renamed JSON object.")
 	}
 
+	// Properly handle struct creation error before passing to NewStructValue
+	structValue, err := structpb.NewStruct(jsonValue.(map[string]interface{}))
+	if err != nil {
+		return nil, errmsg.AddMessage(err, "Failed to create structpb.Struct for output.")
+	}
+
 	out.Fields = map[string]*structpb.Value{
-		"json": structpb.NewStructValue(structpb.NewStruct(jsonValue.(map[string]interface{}))),
+		"json": structpb.NewStructValue(structValue),
 	}
 
 	return out, nil
