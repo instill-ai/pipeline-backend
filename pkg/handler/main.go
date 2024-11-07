@@ -9,6 +9,7 @@ import (
 	"go.opentelemetry.io/otel"
 
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/instill-ai/x/version"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	healthcheckpb "github.com/instill-ai/protogen-go/common/healthcheck/v1beta"
@@ -61,7 +62,8 @@ func (h *PublicHandler) SetReadiness(r bool) {
 func (h *PublicHandler) Liveness(ctx context.Context, req *pipelinepb.LivenessRequest) (*pipelinepb.LivenessResponse, error) {
 	return &pipelinepb.LivenessResponse{
 		HealthCheckResponse: &healthcheckpb.HealthCheckResponse{
-			Status: healthcheckpb.HealthCheckResponse_SERVING_STATUS_SERVING,
+			Status:    healthcheckpb.HealthCheckResponse_SERVING_STATUS_SERVING,
+			GitCommit: version.Commit,
 		},
 	}, nil
 }
@@ -70,7 +72,8 @@ func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinepb.Readiness
 	if h.ready {
 		return &pipelinepb.ReadinessResponse{
 			HealthCheckResponse: &healthcheckpb.HealthCheckResponse{
-				Status: healthcheckpb.HealthCheckResponse_SERVING_STATUS_SERVING,
+				Status:    healthcheckpb.HealthCheckResponse_SERVING_STATUS_SERVING,
+				GitCommit: version.Commit,
 			},
 		}, nil
 	} else {
