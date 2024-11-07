@@ -14,7 +14,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/gojuno/minimock/v3"
 	"go.einride.tech/aip/filtering"
-	"go.temporal.io/sdk/client"
 	"google.golang.org/grpc/metadata"
 	"gopkg.in/guregu/null.v4"
 	"gorm.io/gorm"
@@ -156,11 +155,6 @@ func TestService_ListPipelineRuns(t *testing.T) {
 
 	redisClient, _ := redismock.NewClientMock()
 
-	var temporalClient client.Client
-
-	aclClient := mock.NewACLClientInterfaceMock(mc)
-
-	mockConverter := mock.NewConverterMock(mc)
 	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
 	mgmtPrivateClient.CheckNamespaceAdminMock.Return(&mgmtpb.CheckNamespaceAdminResponse{
 		Type: mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_USER,
@@ -185,15 +179,16 @@ func TestService_ListPipelineRuns(t *testing.T) {
 
 			svc := NewService(
 				repo,
-				redisClient,
-				temporalClient,
-				aclClient,
-				mockConverter,
+				nil,
+				nil,
+				nil,
+				nil,
 				mgmtPrivateClient,
 				mockMinio,
 				nil,
 				nil,
 				uuid.UUID{},
+				nil,
 			)
 
 			ctx := context.Background()
@@ -225,7 +220,6 @@ func TestService_ListPipelineRuns(t *testing.T) {
 				RequesterUID:       testCase.runNamespace,
 				StartedTime:        time.Now(),
 				TotalDuration:      null.IntFrom(42),
-				Components:         nil,
 			}
 
 			err = repo.UpsertPipelineRun(ctx, pipelineRun)
@@ -381,11 +375,6 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 
 	redisClient, _ := redismock.NewClientMock()
 
-	var temporalClient client.Client
-
-	aclClient := mock.NewACLClientInterfaceMock(mc)
-
-	mockConverter := mock.NewConverterMock(mc)
 	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
 	mgmtPrivateClient.CheckNamespaceAdminMock.Return(&mgmtpb.CheckNamespaceAdminResponse{
 		Type: mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_ORGANIZATION,
@@ -411,14 +400,15 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			svc := NewService(
 				repo,
 				redisClient,
-				temporalClient,
-				aclClient,
-				mockConverter,
+				nil,
+				nil,
+				nil,
 				mgmtPrivateClient,
 				mockMinio,
 				nil,
 				nil,
 				uuid.UUID{},
+				nil,
 			)
 
 			ctx := context.Background()
@@ -481,4 +471,117 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestService_ListPipelineRunsByRequester(t *testing.T) {
+	c := qt.New(t)
+	mc := minimock.NewController(t)
+	ownerUID := uuid.Must(uuid.NewV4())
+	pipelineUID := uuid.Must(uuid.NewV4())
+	ownerNamespace := uuid.Must(uuid.NewV4())
+
+	t0 := time.Now()
+	ownerPermalink := "users/" + ownerUID.String()
+	pipelineID := "pipelineID-test"
+
+	redisClient, _ := redismock.NewClientMock()
+
+	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
+	mgmtPrivateClient.CheckNamespaceAdminMock.Return(&mgmtpb.CheckNamespaceAdminResponse{
+		Type: mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_USER,
+		Uid:  ownerNamespace.String(),
+	}, nil)
+	mgmtPrivateClient.CheckNamespaceByUIDAdminMock.Return(&mgmtpb.CheckNamespaceByUIDAdminResponse{
+		Type:  0,
+		Id:    "test-user",
+		Owner: nil,
+	}, nil)
+
+	mockMinio := mockx.NewMinioIMock(mc)
+
+	tx := db.Begin()
+	c.Cleanup(func() { tx.Rollback() })
+
+	repo := repository.NewRepository(tx, redisClient)
+
+	svc := NewService(
+		repo,
+		nil,
+		nil,
+		nil,
+		nil,
+		mgmtPrivateClient,
+		mockMinio,
+		nil,
+		nil,
+		uuid.UUID{},
+		nil,
+	)
+
+	ctx := context.Background()
+
+	p := &datamodel.Pipeline{
+		Owner: ownerPermalink,
+		ID:    pipelineID,
+		BaseDynamic: datamodel.BaseDynamic{
+			UID:        pipelineUID,
+			CreateTime: t0,
+			UpdateTime: t0,
+		},
+	}
+	err := repo.CreateNamespacePipeline(ctx, p)
+	c.Assert(err, qt.IsNil)
+
+	got, err := repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID, true, false)
+	c.Assert(err, qt.IsNil)
+
+	pipelineRun := &datamodel.PipelineRun{
+		PipelineTriggerUID: uuid.Must(uuid.NewV4()),
+		PipelineUID:        pipelineUID,
+		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
+		Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
+		RunnerUID:          ownerUID,
+		RequesterUID:       ownerNamespace,
+		StartedTime:        time.Now(),
+		TotalDuration:      null.IntFrom(42),
+		Components:         nil,
+	}
+
+	err = repo.UpsertPipelineRun(ctx, pipelineRun)
+	c.Assert(err, qt.IsNil)
+
+	m := make(map[string]string)
+	m[constant.HeaderUserUIDKey] = ownerNamespace.String()
+
+	ctxWithHeader := metadata.NewIncomingContext(ctx, metadata.New(m))
+	resp, err := svc.ListPipelineRunsByRequester(ctxWithHeader, &pb.ListPipelineRunsByRequesterRequest{
+		RequesterId: "test-user",
+	})
+	c.Assert(err, qt.IsNil)
+	c.Check(resp.TotalSize, qt.Equals, int32(1))
+	c.Check(resp.GetPipelineRuns(), qt.HasLen, 1)
+	c.Check(resp.GetPipelineRuns()[0].GetPipelineRunUid(), qt.Equals, pipelineRun.PipelineTriggerUID.String())
+	c.Check(resp.GetPipelineRuns()[0].GetNamespaceId(), qt.Equals, got.NamespaceID)
+
+	pipelineRun = &datamodel.PipelineRun{
+		PipelineTriggerUID: uuid.Must(uuid.NewV4()),
+		PipelineUID:        pipelineUID,
+		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
+		Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
+		RunnerUID:          ownerUID,
+		RequesterUID:       uuid.Must(uuid.NewV4()),
+		StartedTime:        time.Now(),
+		TotalDuration:      null.IntFrom(42),
+		Components:         nil,
+	}
+
+	err = repo.UpsertPipelineRun(ctx, pipelineRun)
+	c.Assert(err, qt.IsNil)
+
+	resp, err = svc.ListPipelineRunsByRequester(ctxWithHeader, &pb.ListPipelineRunsByRequesterRequest{
+		RequesterId: "test-user",
+	})
+	c.Assert(err, qt.IsNil)
+	c.Check(resp.TotalSize, qt.Equals, int32(1))
+	c.Check(resp.GetPipelineRuns(), qt.HasLen, 1)
 }
