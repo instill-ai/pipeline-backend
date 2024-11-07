@@ -3,6 +3,7 @@ package json
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -47,7 +48,6 @@ type execution struct {
 	execute func(*structpb.Struct) (*structpb.Struct, error)
 }
 
-// Init initializes the JSON schema and returns a component instance.
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
@@ -56,7 +56,6 @@ func Init(bc base.Component) *component {
 			panic(err)
 		}
 
-		// Load the JSON schema
 		schemaLoader := gojsonschema.NewStringLoader(string(schemaJSON))
 		schema, err = gojsonschema.NewSchema(schemaLoader)
 		if err != nil {
@@ -66,7 +65,6 @@ func Init(bc base.Component) *component {
 	return comp
 }
 
-// CreateExecution initializes a component executor that can be used in a pipeline trigger.
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	e := &execution{ComponentExecution: x}
 
@@ -88,7 +86,6 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	return e, nil
 }
 
-// validateJSON validates input JSON against the schema.
 func validateJSON(input any) error {
 	documentLoader := gojsonschema.NewGoLoader(input)
 	result, err := schema.Validate(documentLoader)
@@ -100,7 +97,7 @@ func validateJSON(input any) error {
 		for _, desc := range result.Errors() {
 			errMsg += fmt.Sprintf("%s; ", desc)
 		}
-		return fmt.Errorf(errMsg)
+		return errors.New(errMsg)
 	}
 	return nil
 }
@@ -193,7 +190,6 @@ func (e *execution) jq(in *structpb.Struct) (*structpb.Struct, error) {
 	return out, nil
 }
 
-// renameFields renames fields in a JSON object according to the provided mapping.
 func (e *execution) renameFields(in *structpb.Struct) (*structpb.Struct, error) {
 	out := new(structpb.Struct)
 
@@ -201,12 +197,10 @@ func (e *execution) renameFields(in *structpb.Struct) (*structpb.Struct, error) 
 	fields := in.Fields["fields"].GetListValue().Values
 	conflictResolution := in.Fields["conflict-resolution"].GetStringValue()
 
-	// Check for the required fields
 	if jsonValue == nil || len(fields) == 0 {
 		return nil, errmsg.AddMessage(fmt.Errorf("missing required fields: json and fields"), "JSON and fields are required.")
 	}
 
-	// Perform renaming
 	for _, field := range fields {
 		from := field.GetStructValue().Fields["from"].GetStringValue()
 		to := field.GetStructValue().Fields["to"].GetStringValue()
@@ -233,12 +227,10 @@ func (e *execution) renameFields(in *structpb.Struct) (*structpb.Struct, error) 
 		}
 	}
 
-	// Validate the output JSON against the schema
 	if err := validateJSON(jsonValue); err != nil {
 		return nil, errmsg.AddMessage(err, "Validation failed for renamed JSON object.")
 	}
 
-	// Properly handle struct creation error before passing to NewStructValue
 	structValue, err := structpb.NewStruct(jsonValue.(map[string]interface{}))
 	if err != nil {
 		return nil, errmsg.AddMessage(err, "Failed to create structpb.Struct for output.")
