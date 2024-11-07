@@ -35,71 +35,58 @@ func TestOperator_Execute(t *testing.T) {
 		want    map[string]any
 		wantErr string
 
-		// The marshal task will return a string with a valid JSON in the
-		// output. However, the format of the JSON may vary (e.g. spaces), so
-		// this field will be used to do a JSON comparison instead of a value
-		// one.
 		wantJSON json.RawMessage
 	}{
 		{
-			name: "ok - marshal object",
-
+			name:     "ok - marshal object",
 			task:     taskMarshal,
 			in:       map[string]any{"json": asMap},
 			wantJSON: json.RawMessage(asJSON),
 		},
 		{
-			name: "ok - marshal string",
-
+			name:     "ok - marshal string",
 			task:     taskMarshal,
 			in:       map[string]any{"json": "dos"},
 			wantJSON: json.RawMessage(`"dos"`),
 		},
 		{
-			name: "ok - marshal array",
-
+			name:     "ok - marshal array",
 			task:     taskMarshal,
 			in:       map[string]any{"json": []any{false, true, "dos", 3}},
 			wantJSON: json.RawMessage(`[false, true, "dos", 3]`),
 		},
 		{
-			name: "nok - marshal",
-
+			name:    "nok - marshal",
 			task:    taskMarshal,
 			in:      map[string]any{},
 			wantErr: "Couldn't convert the provided object to JSON.",
 		},
 		{
 			name: "ok - unmarshal",
-
 			task: taskUnmarshal,
 			in:   map[string]any{"string": asJSON},
 			want: map[string]any{"json": asMap},
 		},
 		{
 			name: "ok - unmarshal array",
-
 			task: taskUnmarshal,
 			in:   map[string]any{"string": `[false, true, "dos", 3]`},
 			want: map[string]any{"json": []any{false, true, "dos", 3}},
 		},
 		{
 			name: "ok - unmarshal string",
-
 			task: taskUnmarshal,
 			in:   map[string]any{"string": `"foo"`},
 			want: map[string]any{"json": "foo"},
 		},
 		{
-			name: "nok - unmarshal",
-
+			name:    "nok - unmarshal",
 			task:    taskUnmarshal,
 			in:      map[string]any{"string": `{`},
 			wantErr: "Couldn't parse the JSON string. Please check the syntax is correct.",
 		},
 		{
 			name: "ok - jq from string",
-
 			task: taskJQ,
 			in: map[string]any{
 				"json-string": `{"a": {"b": 42}}`,
@@ -111,7 +98,6 @@ func TestOperator_Execute(t *testing.T) {
 		},
 		{
 			name: "nok - jq invalid JSON string",
-
 			task: taskJQ,
 			in: map[string]any{
 				"json-string": "{",
@@ -121,7 +107,6 @@ func TestOperator_Execute(t *testing.T) {
 		},
 		{
 			name: "ok - string value",
-
 			task: taskJQ,
 			in: map[string]any{
 				"json-value": "foo",
@@ -133,7 +118,6 @@ func TestOperator_Execute(t *testing.T) {
 		},
 		{
 			name: "ok - from array",
-
 			task: taskJQ,
 			in: map[string]any{
 				"json-value": []any{2, 3, 23},
@@ -145,7 +129,6 @@ func TestOperator_Execute(t *testing.T) {
 		},
 		{
 			name: "ok - jq create object",
-
 			task: taskJQ,
 			in: map[string]any{
 				"json-value": map[string]any{
@@ -162,13 +145,69 @@ func TestOperator_Execute(t *testing.T) {
 		},
 		{
 			name: "nok - jq invalid filter",
-
 			task: taskJQ,
 			in: map[string]any{
 				"json-string": asJSON,
 				"jq-filter":   ".foo & .bar",
 			},
 			wantErr: `Couldn't parse the jq filter: unexpected token "&". Please check the syntax is correct.`,
+		},
+		{
+			name: "ok - rename fields with overwrite conflict resolution",
+			task: taskRenameFields,
+			in: map[string]any{
+				"json": map[string]any{"oldField": "value1", "otherField": "value2"},
+				"fields": []any{
+					map[string]any{"from": "oldField", "to": "newField"},
+				},
+				"conflict-resolution": "overwrite",
+			},
+			want: map[string]any{"json": map[string]any{"newField": "value1", "otherField": "value2"}},
+		},
+		{
+			name: "ok - rename fields with skip conflict resolution",
+			task: taskRenameFields,
+			in: map[string]any{
+				"json": map[string]any{"oldField": "value1", "newField": "value2"},
+				"fields": []any{
+					map[string]any{"from": "oldField", "to": "newField"},
+				},
+				"conflict-resolution": "skip",
+			},
+			want: map[string]any{"json": map[string]any{"newField": "value2"}},
+		},
+		{
+			name: "nok - rename fields with error conflict resolution",
+			task: taskRenameFields,
+			in: map[string]any{
+				"json": map[string]any{"oldField": "value1", "newField": "value2"},
+				"fields": []any{
+					map[string]any{"from": "oldField", "to": "newField"},
+				},
+				"conflict-resolution": "error",
+			},
+			wantErr: "Field conflict.",
+		},
+		{
+			name: "nok - rename fields with missing required fields",
+			task: taskRenameFields,
+			in: map[string]any{
+				"json":                map[string]any{"oldField": "value1"},
+				"conflict-resolution": "overwrite",
+			},
+			wantErr: "JSON and fields are required.",
+		},
+		{
+			name: "nok - rename fields with invalid conflict resolution",
+			task: taskRenameFields,
+			in: map[string]any{
+				"json": map[string]any{"oldField": "value1"},
+				"fields": []any{
+					map[string]any{"from": "oldField", "to": "newField"},
+				},
+				"conflict-resolution": "invalid",
+			},
+			wantErr: "Conflict resolution strategy is invalid.",
 		},
 	}
 
@@ -191,7 +230,6 @@ func TestOperator_Execute(t *testing.T) {
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 
 				if tc.wantJSON != nil {
-					// Check JSON in the output string.
 					b := output.Fields["string"].GetStringValue()
 					c.Check([]byte(b), qt.JSONEquals, tc.wantJSON)
 					return
@@ -210,7 +248,6 @@ func TestOperator_Execute(t *testing.T) {
 
 			err = exec.Execute(ctx, []*base.Job{job})
 			c.Check(err, qt.IsNil)
-
 		})
 	}
 }
