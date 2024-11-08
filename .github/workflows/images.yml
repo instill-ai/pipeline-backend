@@ -9,6 +9,16 @@ jobs:
   docker-hub:
     runs-on: ubuntu-latest
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          overprovision-lvm: "true"
+          remove-dotnet: "true"
+          build-mount-path: "/var/lib/docker/"
+
+      - name: Restart docker
+        run: sudo service docker restart
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
