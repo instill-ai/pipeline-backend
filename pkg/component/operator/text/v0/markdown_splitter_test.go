@@ -1,6 +1,7 @@
 package text
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -98,17 +99,20 @@ func Test_PositionChecker(t *testing.T) {
 			fileName: "testdata/list_position_test.md",
 			outputChunks: []ContentChunk{
 				{
-					Chunk:                "# Progress Notes\n\nLUTS  \n=> **LUTS:Lower Urinary Tract Symptoms，表示有下泌尿道感染**",
+					PrependHeader:        "# Progress Notes\n",
+					Chunk:                "LUTS  \n=> **LUTS:Lower Urinary Tract Symptoms，表示有下泌尿道感染**",
 					ContentStartPosition: 17,
 					ContentEndPosition:   73,
 				},
 				{
-					Chunk:                "# 護理\n\n主訴有困難解尿情形，有尿液感但都解不出來   \n=> **符合有症狀的泌尿道感染之徵象或症狀:解尿困難或疼痛(dysuria)**",
+					PrependHeader:        "# 護理\n",
+					Chunk:                "主訴有困難解尿情形，有尿液感但都解不出來   \n=> **符合有症狀的泌尿道感染之徵象或症狀:解尿困難或疼痛(dysuria)**",
 					ContentStartPosition: 82,
 					ContentEndPosition:   146,
 				},
 				{
-					Chunk:                "# 個案泌尿道感染判定\n\n\n1. 沒有導尿管或導尿管留置未超過2天\n2. 病患有UTI感染症狀:解尿困難或疼痛(dysuria)、Lower Urinary Tract Symptoms  \n=> **判斷為:非導尿管相關泌尿道感染(Non-CAUTI)**\n\n",
+					PrependHeader:        "# 個案泌尿道感染判定\n",
+					Chunk:                "1. 沒有導尿管或導尿管留置未超過2天\n2. 病患有UTI感染症狀:解尿困難或疼痛(dysuria)、Lower Urinary Tract Symptoms  \n=> **判斷為:非導尿管相關泌尿道感染(Non-CAUTI)**\n\n",
 					ContentStartPosition: 160,
 					ContentEndPosition:   275,
 				},
@@ -140,7 +144,12 @@ func Test_PositionChecker(t *testing.T) {
 
 			c.Assert(err, quicktest.IsNil)
 
+			for i := range chunks {
+				fmt.Println(chunks[i])
+			}
+
 			for i, chunk := range chunks {
+				c.Assert(chunk.PrependHeader, quicktest.Equals, testCase.outputChunks[i].PrependHeader)
 				c.Assert(chunk.Chunk, quicktest.Equals, testCase.outputChunks[i].Chunk)
 				c.Assert(chunk.ContentStartPosition, quicktest.Equals, testCase.outputChunks[i].ContentStartPosition)
 				c.Assert(chunk.ContentEndPosition, quicktest.Equals, testCase.outputChunks[i].ContentEndPosition)

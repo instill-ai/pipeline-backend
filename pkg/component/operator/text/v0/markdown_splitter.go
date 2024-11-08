@@ -84,9 +84,14 @@ func appendUniqueChunksMap(chunks *[]ContentChunk, newChunks []ContentChunk, chu
 }
 
 type ContentChunk struct {
-	Chunk                string
+	// PrependHeader is the header text that is prepended to the chunk
+	PrependHeader string
+	// Chunk is the content of the chunk that does not include the prepend header
+	Chunk string
+	// ContentStartPosition is the start position of the content in the raw text
 	ContentStartPosition int
-	ContentEndPosition   int
+	// ContentEndPosition is the end position of the content in the raw text
+	ContentEndPosition int
 }
 
 func (sp MarkdownTextSplitter) chunkTable(content Content, headers []Header) ([]ContentChunk, error) {
@@ -128,7 +133,7 @@ func (sp MarkdownTextSplitter) chunkTable(content Content, headers []Header) ([]
 
 	var endPosition int
 	for i := 0; i < len(rows); i++ {
-		chunk := headerString
+		chunk := ""
 
 		if i > 0 && sizeOfString(rows[i-1]) < chunkOverlap {
 			chunk += rows[i-1] + "\n"
@@ -148,6 +153,7 @@ func (sp MarkdownTextSplitter) chunkTable(content Content, headers []Header) ([]
 		}
 
 		chunks = append(chunks, ContentChunk{
+			PrependHeader:        headerString,
 			Chunk:                chunk,
 			ContentStartPosition: startPosition,
 			ContentEndPosition:   endPosition,
@@ -190,8 +196,9 @@ func (sp MarkdownTextSplitter) processChunks(lists []List) []ContentChunk {
 		list := lists[i]
 
 		// Add the title
+		var headerString string
 		if addListCount == 1 && sizeOfString(currentChunk)+sizeOfString(list.HeaderText) < sp.ChunkSize {
-			currentChunk = list.HeaderText + "\n" + currentChunk
+			headerString = list.HeaderText
 			currentChunkSize += sizeOfString(list.Text) + 1
 		}
 
@@ -199,6 +206,7 @@ func (sp MarkdownTextSplitter) processChunks(lists []List) []ContentChunk {
 
 			if len(currentChunk) > 0 {
 				previousChunk := ContentChunk{
+					PrependHeader:        headerString,
 					Chunk:                currentChunk,
 					ContentStartPosition: currentStartPosition,
 					ContentEndPosition:   currentEndPosition,
@@ -207,6 +215,7 @@ func (sp MarkdownTextSplitter) processChunks(lists []List) []ContentChunk {
 				currentChunkSize = 0
 				contentChunks = append(contentChunks, previousChunk)
 				isPrepended = false
+				headerString = ""
 			}
 
 			prependList := &list
@@ -227,7 +236,7 @@ func (sp MarkdownTextSplitter) processChunks(lists []List) []ContentChunk {
 
 			if len(prependString) > 0 {
 				for i := range smallerChunks {
-					smallerChunks[i].Chunk = prependString + smallerChunks[i].Chunk
+					smallerChunks[i].PrependHeader = prependString
 				}
 			}
 
@@ -235,10 +244,9 @@ func (sp MarkdownTextSplitter) processChunks(lists []List) []ContentChunk {
 			addListCount = 0
 
 		} else {
+			var prependString string
 			if !isPrepended {
 				prependList := &list
-				var prependString string
-
 				for prependList.PreviousLevelList != nil {
 					prependList = prependList.PreviousLevelList
 					if len(prependList.Text) > 0 &&
@@ -247,7 +255,6 @@ func (sp MarkdownTextSplitter) processChunks(lists []List) []ContentChunk {
 					}
 				}
 				isPrepended = true
-				currentChunk += prependString + "\n"
 				if shouldOverlapPreviousList {
 					currentChunk += list.PreviousList.Text + "\n"
 					shouldOverlapPreviousList = false
@@ -265,11 +272,13 @@ func (sp MarkdownTextSplitter) processChunks(lists []List) []ContentChunk {
 
 			} else {
 				contentChunks = append(contentChunks, ContentChunk{
+					PrependHeader:        prependString,
 					Chunk:                currentChunk,
 					ContentStartPosition: currentStartPosition,
 					ContentEndPosition:   currentEndPosition,
 				})
 				isPrepended = false
+				prependString = ""
 				currentChunk = ""
 				currentChunkSize = 0
 				currentStartPosition = 0 // To be set in !isPrepended Block
@@ -299,11 +308,13 @@ func (sp MarkdownTextSplitter) processChunks(lists []List) []ContentChunk {
 	if currentChunkSize > 0 {
 		// prepend header text if there is space in the chunk
 		list := lists[0]
+		var headerString string
 		if !strings.Contains(currentChunk, list.HeaderText) && currentChunkSize+sizeOfString(list.HeaderText) < sp.ChunkSize {
-			currentChunk = list.HeaderText + "\n" + currentChunk
+			headerString = list.HeaderText
 		}
 
 		contentChunks = append(contentChunks, ContentChunk{
+			PrependHeader:        headerString,
 			Chunk:                currentChunk,
 			ContentStartPosition: currentStartPosition,
 			ContentEndPosition:   currentEndPosition,
@@ -459,7 +470,8 @@ func (sp MarkdownTextSplitter) chunkPlainText(content Content, headers []Header)
 		}
 
 		contentChunks = append(contentChunks, ContentChunk{
-			Chunk:                prependHeader + "\n" + chunk,
+			PrependHeader:        prependHeader,
+			Chunk:                chunk,
 			ContentStartPosition: startPosition,
 			ContentEndPosition:   endPosition,
 		})
