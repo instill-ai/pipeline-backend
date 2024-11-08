@@ -3,6 +3,7 @@ package text
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/tmc/langchaingo/textsplitter"
 
@@ -184,18 +185,29 @@ func chunkMarkdown(input ChunkTextInput) (ChunkTextOutput, error) {
 
 	tkm, err := tiktoken.EncodingForModel(setting.ModelName)
 
+	mergedChunks := mergeChunks(chunks, input, tkm)
 	if err != nil {
 		return output, fmt.Errorf("failed to get encoding for model: %w", err)
 	}
 
 	totalTokenCount := 0
-	for _, chunk := range chunks {
-		token := tkm.Encode(chunk.Chunk, setting.AllowedSpecial, setting.DisallowedSpecial)
+	for _, mergedChunk := range mergedChunks {
+		token := tkm.Encode(mergedChunk.Chunk, setting.AllowedSpecial, setting.DisallowedSpecial)
+
+		// Now, it will be over the chunk size when the table row is too long, and it mainly comes from the limitation of LLM.
+		// So, we decide to fix it temporarily by deleting the over part of the chunk.
+		if len(token) > setting.ChunkSize {
+			token = token[:setting.ChunkSize]
+			// Decode the token to string could get the invalid utf8 string, so we need to convert it to valid utf8 string.
+			decodedChunk := tkm.Decode(token)
+			utf8ValidString := strings.ToValidUTF8(decodedChunk, "")
+			mergedChunk.Chunk = utf8ValidString
+		}
 
 		output.TextChunks = append(output.TextChunks, TextChunk{
-			Text:          chunk.Chunk,
-			StartPosition: chunk.ContentStartPosition,
-			EndPosition:   chunk.ContentEndPosition,
+			Text:          mergedChunk.Chunk,
+			StartPosition: mergedChunk.ContentStartPosition,
+			EndPosition:   mergedChunk.ContentEndPosition,
 			TokenCount:    len(token),
 		})
 		totalTokenCount += len(token)
