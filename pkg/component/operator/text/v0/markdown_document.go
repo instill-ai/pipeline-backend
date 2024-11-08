@@ -234,6 +234,7 @@ func readLine(rawRunes []rune, currentPosition *int) string {
 // Helper function to determine if a block is a table
 func isTable(block string) bool {
 	lines := strings.Split(block, "\n")
+	rowCount := 0
 	for _, line := range lines {
 		trimmedLine := strings.TrimSpace(line)
 		if len(trimmedLine) == 0 {
@@ -242,8 +243,9 @@ func isTable(block string) bool {
 		if !isRow(line) {
 			return false
 		}
+		rowCount++
 	}
-	return true
+	return rowCount > 1
 }
 
 // Helper function to determine if a line starts a table
@@ -411,7 +413,15 @@ func countIndent(line string) int {
 // Helper function to determine if a line starts a list
 func isListStart(line string) bool {
 	trimmedLine := strings.TrimSpace(line)
-	return len(trimmedLine) > 0 && (strings.Contains(ListStarters, string(trimmedLine[0])) || isNumericList(trimmedLine))
+	if len(trimmedLine) == 0 {
+		return false
+	}
+	// If the start with 2 ListStarters in a row, it's not a list
+	// e.g. ** 1, ++ 1, -- 1 are not lists
+	if strings.HasPrefix(trimmedLine, "**") || strings.HasPrefix(trimmedLine, "++") || strings.HasPrefix(trimmedLine, "--") {
+		return false
+	}
+	return strings.Contains(ListStarters, string(trimmedLine[0])) || isNumericList(trimmedLine)
 }
 
 // Helper function to determine if a line starts a numeric list (e.g., "1. Item")
