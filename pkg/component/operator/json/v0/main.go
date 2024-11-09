@@ -193,45 +193,57 @@ func (e *execution) jq(in *structpb.Struct) (*structpb.Struct, error) {
 func (e *execution) renameFields(in *structpb.Struct) (*structpb.Struct, error) {
 	out := new(structpb.Struct)
 
-	jsonValue := in.Fields["json"].AsInterface()
-	fields := in.Fields["fields"].GetListValue().Values
-	conflictResolution := in.Fields["conflict-resolution"].GetStringValue()
+	// Validate presence of required fields: "json" and "fields"
+	jsonField, ok := in.Fields["json"]
+	if !ok || jsonField == nil {
+		return nil, errmsg.AddMessage(fmt.Errorf("missing required field: json"), "JSON and fields are required.")
+	}
+	jsonValue := jsonField.AsInterface().(map[string]any)
 
-	if jsonValue == nil || len(fields) == 0 {
-		return nil, errmsg.AddMessage(fmt.Errorf("missing required fields: json and fields"), "JSON and fields are required.")
+	fieldsValue, ok := in.Fields["fields"]
+	if !ok || fieldsValue == nil || len(fieldsValue.GetListValue().Values) == 0 {
+		return nil, errmsg.AddMessage(fmt.Errorf("missing required field: fields"), "JSON and fields are required.")
+	}
+	fields := fieldsValue.GetListValue().Values
+
+	// Conflict resolution strategy validation
+	conflictResolution := in.Fields["conflict-resolution"].GetStringValue()
+	if conflictResolution != "overwrite" && conflictResolution != "skip" && conflictResolution != "error" {
+		return nil, errmsg.AddMessage(fmt.Errorf("invalid conflict resolution strategy"), "Conflict resolution strategy is invalid.")
 	}
 
+	// Process renaming fields with conflict resolution
 	for _, field := range fields {
 		from := field.GetStructValue().Fields["from"].GetStringValue()
 		to := field.GetStructValue().Fields["to"].GetStringValue()
 
-		if val, ok := jsonValue.(map[string]interface{})[from]; ok {
+		if val, ok := jsonValue[from]; ok {
 			switch conflictResolution {
 			case "overwrite":
-				delete(jsonValue.(map[string]interface{}), from)
-				jsonValue.(map[string]interface{})[to] = val
+				delete(jsonValue, from)
+				jsonValue[to] = val
 			case "skip":
-				if _, exists := jsonValue.(map[string]interface{})[to]; !exists {
-					delete(jsonValue.(map[string]interface{}), from)
-					jsonValue.(map[string]interface{})[to] = val
+				if _, exists := jsonValue[to]; !exists {
+					jsonValue[to] = val
 				}
+				delete(jsonValue, from)
 			case "error":
-				if _, exists := jsonValue.(map[string]interface{})[to]; exists {
+				if _, exists := jsonValue[to]; exists {
 					return nil, errmsg.AddMessage(fmt.Errorf("field conflict: '%s' already exists", to), "Field conflict.")
 				}
-				delete(jsonValue.(map[string]interface{}), from)
-				jsonValue.(map[string]interface{})[to] = val
-			default:
-				return nil, errmsg.AddMessage(fmt.Errorf("invalid conflict resolution strategy"), "Conflict resolution strategy is invalid.")
+				delete(jsonValue, from)
+				jsonValue[to] = val
 			}
 		}
 	}
 
+	// Validate the final JSON structure
 	if err := validateJSON(jsonValue); err != nil {
 		return nil, errmsg.AddMessage(err, "Validation failed for renamed JSON object.")
 	}
 
-	structValue, err := structpb.NewStruct(jsonValue.(map[string]interface{}))
+	// Convert to structpb.Struct and assign to output
+	structValue, err := structpb.NewStruct(jsonValue)
 	if err != nil {
 		return nil, errmsg.AddMessage(err, "Failed to create structpb.Struct for output.")
 	}
