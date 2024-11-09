@@ -3,16 +3,16 @@ name: Compogen test
 on:
   pull_request:
     paths:
-      - 'pkg/component/tools/compogen/**'
+      - "pkg/component/tools/compogen/**"
   push:
     branches:
       - main
     paths:
-      - 'pkg/component/tools/compogen/**'
+      - "pkg/component/tools/compogen/**"
 
 jobs:
   test-compogen:
-    name: test-compogen
+    name: Test Compogen
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

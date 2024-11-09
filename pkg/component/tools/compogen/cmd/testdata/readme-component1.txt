@@ -22,7 +22,7 @@ cmp pkg/dummy/README.mdx want-readme.mdx
   "id": "dummy",
   "title": "Dummy",
   "vendor": "Dummy Inc.",
-  "description": "Perform an action",
+  "description": "Perform an action.",
   "prerequisites": "An account at [dummy.io](https://dummy.io) is required.",
   "type": "COMPONENT_TYPE_DATA",
   "releaseStage": "RELEASE_STAGE_COMING_SOON",

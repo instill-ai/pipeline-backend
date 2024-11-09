@@ -37,7 +37,7 @@ cmp pkg/dummy/README.mdx want-readme.mdx
   "id": "dummy",
   "title": "Dummy",
   "type": "COMPONENT_TYPE_OPERATOR",
-  "description": "Perform an action",
+  "description": "Perform an action.",
   "releaseStage": "RELEASE_STAGE_BETA",
   "sourceUrl": "https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/dummy/v0"
 }
