@@ -364,10 +364,12 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, ownerPer
 				if success {
 					s := &structpb.Struct{Fields: map[string]*structpb.Value{}}
 					s.Fields["type"] = structpb.NewStringValue("array")
-					if f := walk.GetStructValue().Fields["instillFormat"].GetStringValue(); f != "" {
-						// Limitation: console can not support more then three levels of array.
-						if strings.Count(f, "array:") < 2 {
-							s.Fields["instillFormat"] = structpb.NewStringValue("array:" + f)
+					if walk.GetStructValue() != nil && walk.GetStructValue().Fields["instillFormat"] != nil {
+						if f := walk.GetStructValue().Fields["instillFormat"].GetStringValue(); f != "" {
+							// Limitation: console can not support more then three levels of array.
+							if strings.Count(f, "array:") < 2 {
+								s.Fields["instillFormat"] = structpb.NewStringValue("array:" + f)
+							}
 						}
 					}
 					s.Fields["items"] = structpb.NewStructValue(walk.GetStructValue())
