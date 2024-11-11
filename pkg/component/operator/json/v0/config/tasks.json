@@ -200,7 +200,7 @@
     }
   },
   "TASK_RENAME_FIELDS": {
-    "instillShortDescription": "Rename fields in a JSON object.",
+    "instillShortDescription": "Rename fields in a JSON object with a conflict resolution strategy. If the new field already exists, it will be overwritten by default.",
     "title": "Rename Fields",
     "input": {
       "description": "Input",
@@ -265,7 +265,7 @@
           "type": "array"
         },
         "conflict-resolution": {
-          "description": "Defines how conflicts are handled when the newField already exists in the data.",
+          "description": "Defines how conflicts are handled when the new field already exists in the data. If the new field already exists, it will be overwritten by default. If the new field does not exist, it will be created. When set to 'error', the component will throw an error if the new field already exists. When set to 'skip', the new field will be skipped if it already exists.",
           "instillShortDescription": "Conflict resolution strategy.",
           "instillUIOrder": 2,
           "title": "Conflict Resolution",
