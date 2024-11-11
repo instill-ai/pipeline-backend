@@ -2,11 +2,15 @@
 package worker
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"go/parser"
+	"io"
+	"log"
+	"net/http"
 	"strings"
 	"time"
 
@@ -17,6 +21,7 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
 	"gopkg.in/guregu/null.v4"
 
@@ -35,6 +40,7 @@ import (
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
@@ -44,6 +50,7 @@ type TriggerPipelineWorkflowParam struct {
 	Mode            mgmtpb.Mode
 	TriggerFromAPI  bool
 	WorkerUID       uuid.UUID
+	Namespace       resource.Namespace
 }
 
 type SchedulePipelineWorkflowParam struct {
@@ -76,6 +83,7 @@ type ComponentActivityParam struct {
 	Task            string
 	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 	Streaming       bool
+	Namespace       resource.Namespace
 }
 
 type PreIteratorActivityParam struct {
@@ -423,7 +431,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	if param.TriggerFromAPI {
 		if err := workflow.ExecuteActivity(ctx, w.OutputActivity, &ComponentActivityParam{
-			WorkflowID: workflowID,
+			WorkflowID:      workflowID,
+			Namespace:       param.Namespace,
+			SystemVariables: param.SystemVariables,
 		}).Get(ctx, nil); err != nil {
 			return err
 		}
@@ -645,13 +655,142 @@ func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityPar
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
-		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutput, output)
+
+		updatedOutput := w.uploadFileAndReplaceURL(ctx, param, &output)
+
+		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutput, updatedOutput)
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
 	}
 
 	logger.Info("OutputActivity completed")
+	return nil
+}
+func (w *worker) uploadFileAndReplaceURL(ctx context.Context, param *ComponentActivityParam, value *format.Value) format.Value {
+	logger, _ := logger.GetZapLogger(ctx)
+	if value == nil {
+		return nil
+	}
+	switch v := (*value).(type) {
+	case format.File:
+		downloadURL, err := w.uploadBlobDataAndGetDownloadURL(ctx, param, &v)
+		if err != nil || downloadURL == "" {
+			logger.Warn("uploading blob data", zap.Error(err))
+			return v
+		}
+		return data.NewString(downloadURL)
+	case data.Array:
+		newArray := make(data.Array, len(v))
+		for i, item := range v {
+			newArray[i] = w.uploadFileAndReplaceURL(ctx, param, &item)
+		}
+		return newArray
+	case data.Map:
+		newMap := make(data.Map)
+		for k, v := range v {
+			newMap[k] = w.uploadFileAndReplaceURL(ctx, param, &v)
+		}
+		return newMap
+	default:
+		return v
+	}
+}
+
+func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *ComponentActivityParam, value *format.File) (string, error) {
+	artifactClient := w.artifactPublicServiceClient
+	ns := param.Namespace
+
+	jsonBytes, err := json.Marshal(param.SystemVariables)
+	if err != nil {
+		return "", fmt.Errorf("marshal system variables: %w", err)
+	}
+
+	var sysVarJSON map[string]interface{}
+	if err := json.Unmarshal(jsonBytes, &sysVarJSON); err != nil {
+		return "", fmt.Errorf("unmarshal system variables: %w", err)
+	}
+
+	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(sysVarJSON))
+
+	objectName := fmt.Sprintf("%s/%s", ns.NsID, uuid.Must(uuid.NewV4()).String())
+	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
+		NamespaceId: ns.NsID,
+		ObjectName:  objectName,
+		// We will need to deal with retention policy for the artifact with the subscription later.
+		// Before we deal with it, the blob data will not be deleted automatically.
+		ObjectExpireDays: 0,
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("get upload url: %w", err)
+	}
+
+	uploadURL := resp.GetUploadUrl()
+
+	err = uploadBlobData(ctx, uploadURL, value)
+	if err != nil {
+		return "", fmt.Errorf("upload blob data: %w", err)
+	}
+
+	respDownloadURL, err := artifactClient.GetObjectDownloadURL(ctx, &artifactpb.GetObjectDownloadURLRequest{
+		NamespaceId: ns.NsID,
+		ObjectUid:   resp.GetObject().GetUid(),
+	})
+	if err != nil {
+		return "", fmt.Errorf("get object download url: %w", err)
+	}
+
+	return respDownloadURL.GetDownloadUrl(), nil
+}
+
+// TODO: move this to x repository
+func uploadBlobData(ctx context.Context, uploadURL string, value *format.File) error {
+	if uploadURL == "" {
+		return fmt.Errorf("empty upload URL provided")
+	}
+
+	fullURL := fmt.Sprintf("%s:%d%s", config.Config.APIGateway.Host, config.Config.APIGateway.PublicPort, uploadURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, fullURL, nil)
+
+	if err != nil {
+		return fmt.Errorf("creating request: %w", err)
+	}
+
+	var body io.Reader
+	var contentLength int64
+	switch v := (*value).(type) {
+	case format.File:
+		fileBytes, err := v.Binary()
+		if err != nil {
+			return fmt.Errorf("getting file binary: %w", err)
+		}
+		byteArray := fileBytes.ByteArray()
+		body = bytes.NewReader(byteArray)
+		contentLength = int64(len(byteArray))
+	default:
+		return fmt.Errorf("unsupported value type for blob upload: %T", v)
+	}
+	req.Body = io.NopCloser(body)
+	req.Header = metadataToHTTPHeaders(ctx)
+
+	req.ContentLength = contentLength
+	req.Header.Set("Content-Type", "application/octet-stream")
+	req.Header.Del("Authorization")
+	log.Println("== req.Header ==", req.Header)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("uploading blob: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("upload failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
 	return nil
 }
 
@@ -1273,6 +1412,7 @@ func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActi
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline memory", postTriggerActivityErrorType, err)
 		}
+
 		b, err := protojson.Marshal(outputStruct)
 		if err != nil {
 			return err

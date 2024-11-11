@@ -37,6 +37,13 @@ type AppConfig struct {
 	ArtifactBackend ArtifactBackendConfig `koanf:"artifactbackend"`
 	Minio           miniox.Config         `koanf:"minio"`
 	AppBackend      AppBackendConfig      `koanf:"appbackend"`
+	APIGateway      APIGatewayConfig      `koanf:"apigateway"`
+}
+
+// APIGateway config
+type APIGatewayConfig struct {
+	Host       string `koanf:"host"`
+	PublicPort int    `koanf:"publicport"`
 }
 
 // InstillCloud config
@@ -176,9 +183,10 @@ type ModelBackendConfig struct {
 }
 
 type ArtifactBackendConfig struct {
-	Host       string `koanf:"host"`
-	PublicPort int    `koanf:"publicport"`
-	HTTPS      struct {
+	Host        string `koanf:"host"`
+	PublicPort  int    `koanf:"publicport"`
+	PrivatePort int    `koanf:"privateport"`
+	HTTPS       struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}

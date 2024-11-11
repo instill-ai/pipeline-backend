@@ -56,6 +56,7 @@ func convertURLToBytes(url string) (b []byte, contentType string, filename strin
 	if strings.HasPrefix(url, "data:") {
 		return convertDataURIToBytes(url)
 	}
+	// TODO: judge URL and read data from minio, read data implementation will be in x repo.
 
 	client := resty.New().SetRetryCount(3)
 	resp, err := client.R().Get(url)
