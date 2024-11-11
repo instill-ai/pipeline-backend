@@ -1,3 +1,4 @@
+//go:generate compogen readme ./config ./README.mdx --extraContents TASK_JQ=.compogen/extra-jq.mdx --extraContents bottom=.compogen/bottom.mdx
 package json
 
 import (
