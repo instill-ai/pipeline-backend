@@ -3,14 +3,12 @@ package json
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"sync"
 
 	_ "embed"
 
 	"github.com/itchyny/gojq"
-	"github.com/xeipuuv/gojsonschema"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -30,12 +28,9 @@ var (
 	definitionJSON []byte
 	//go:embed config/tasks.json
 	tasksJSON []byte
-	//go:embed config/tasks.json
-	schemaJSON []byte
 
-	once   sync.Once
-	comp   *component
-	schema *gojsonschema.Schema
+	once sync.Once
+	comp *component
 )
 
 type component struct {
@@ -54,12 +49,6 @@ func Init(bc base.Component) *component {
 		err := comp.LoadDefinition(definitionJSON, nil, tasksJSON, nil)
 		if err != nil {
 			panic(err)
-		}
-
-		schemaLoader := gojsonschema.NewStringLoader(string(schemaJSON))
-		schema, err = gojsonschema.NewSchema(schemaLoader)
-		if err != nil {
-			panic(fmt.Sprintf("Failed to load JSON schema: %v", err))
 		}
 	})
 	return comp
@@ -86,29 +75,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	return e, nil
 }
 
-func validateJSON(input any) error {
-	documentLoader := gojsonschema.NewGoLoader(input)
-	result, err := schema.Validate(documentLoader)
-	if err != nil {
-		return fmt.Errorf("validation error: %v", err)
-	}
-	if !result.Valid() {
-		errMsg := "JSON does not conform to the schema: "
-		for _, desc := range result.Errors() {
-			errMsg += fmt.Sprintf("%s; ", desc)
-		}
-		return errors.New(errMsg)
-	}
-	return nil
-}
-
 func (e *execution) marshal(in *structpb.Struct) (*structpb.Struct, error) {
 	out := new(structpb.Struct)
-
-	input := in.AsMap()
-	if err := validateJSON(input); err != nil {
-		return nil, errmsg.AddMessage(err, "Validation failed for marshal task.")
-	}
 
 	b, err := protojson.Marshal(in.Fields["json"])
 	if err != nil {
@@ -131,10 +99,6 @@ func (e *execution) unmarshal(in *structpb.Struct) (*structpb.Struct, error) {
 		return nil, errmsg.AddMessage(err, "Couldn't parse the JSON string. Please check the syntax is correct.")
 	}
 
-	if err := validateJSON(obj.AsInterface()); err != nil {
-		return nil, errmsg.AddMessage(err, "Validation failed for unmarshal task.")
-	}
-
 	out.Fields = map[string]*structpb.Value{"json": obj}
 
 	return out, nil
@@ -149,10 +113,6 @@ func (e *execution) jq(in *structpb.Struct) (*structpb.Struct, error) {
 		if err := json.Unmarshal(b, &input); err != nil {
 			return nil, errmsg.AddMessage(err, "Couldn't parse the JSON input. Please check the syntax is correct.")
 		}
-	}
-
-	if err := validateJSON(input); err != nil {
-		return nil, errmsg.AddMessage(err, "Validation failed for jq task.")
 	}
 
 	queryStr := in.Fields["jq-filter"].GetStringValue()
@@ -193,7 +153,6 @@ func (e *execution) jq(in *structpb.Struct) (*structpb.Struct, error) {
 func (e *execution) renameFields(in *structpb.Struct) (*structpb.Struct, error) {
 	out := new(structpb.Struct)
 
-	// Validate presence of required fields: "json" and "fields"
 	jsonField, ok := in.Fields["json"]
 	if !ok || jsonField == nil {
 		return nil, errmsg.AddMessage(fmt.Errorf("missing required field: json"), "JSON and fields are required.")
@@ -235,11 +194,6 @@ func (e *execution) renameFields(in *structpb.Struct) (*structpb.Struct, error) 
 				jsonValue[to] = val
 			}
 		}
-	}
-
-	// Validate the final JSON structure
-	if err := validateJSON(jsonValue); err != nil {
-		return nil, errmsg.AddMessage(err, "Validation failed for renamed JSON object.")
 	}
 
 	// Convert to structpb.Struct and assign to output

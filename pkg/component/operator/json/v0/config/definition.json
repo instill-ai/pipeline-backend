@@ -2,7 +2,8 @@
   "availableTasks": [
     "TASK_MARSHAL",
     "TASK_UNMARSHAL",
-    "TASK_JQ"
+    "TASK_JQ",
+    "TASK_RENAME_FIELDS"
   ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/operator/json",
