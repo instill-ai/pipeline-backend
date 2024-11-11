@@ -1,12 +1,13 @@
 {
   "availableTasks": [
-    "TASK_ASSIGN",
     "TASK_APPEND",
-    "TASK_UNION",
-    "TASK_INTERSECTION",
-    "TASK_DIFFERENCE",
+    "TASK_ASSIGN",
     "TASK_CONCAT",
-    "TASK_SPLIT"
+    "TASK_DIFFERENCE",
+    "TASK_INTERSECTION",
+    "TASK_SPLIT",
+    "TASK_SYMMETRIC_DIFFERENCE",
+    "TASK_UNION"
   ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/generic/collection",

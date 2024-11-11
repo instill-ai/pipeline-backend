@@ -1,100 +1,373 @@
 ## Example Recipes
 
-### Combine 2 arrays using `TASK_UNION` and `TASK_CONCAT`
+### Append
 
 ```yaml
-variable:
-  texts:
-    format: array:string
-    title: Text
-  texts-2:
-    format: array:string
-    title: Text
-
 component:
-
-# This component combines two arrays of strings in a union, ensuring that no duplicates are included.
-# Examples:
-# ["foo", "bar"], ["foo", "bat"] -> ["foo", "bar", "bat"]
-  union:
+  # input.data: "a"
+  # input.value: "b"
+  # output.data: ["a", "b"]
+  append-primitives:
     type: collection
+    task: TASK_APPEND
     input:
-      sets:
-        - ${variable.texts}
-        - ${variable.texts-2}
-    condition:
-    task: TASK_UNION
+      data: a
+      value: b
 
-# This component concatenates two arrays of strings.
-# Examples:
-# ["foo", "bar"], ["zot", "bat"] -> ["foo", "bar", "zot", "bat"]
-  concat:
+  # input.data: ["a", "b"]
+  # input.value: 0
+  # output.data: ["a", "b", 0]
+  append-a-primitive-to-an-array:
     type: collection
-    input:
-      arrays:
-        - ${variable.texts}
-        - ${variable.texts-2}
-    condition:
-    task: TASK_CONCAT
-
-output:
-  union-result:
-    title: Union Result
-    value: ${union.output.set}
-  concat-result:
-    title: Concat Result
-    value: ${concat.output.array}
-```
-
-
-### Use `TASK_ASSIGN` to create an object with `type` and `text` keys
-```yaml
-variable:
-  text:
-    format: string
-    title: Text
-
-component:
-  text-object:
-    type: collection
+    task: TASK_APPEND
     input:
       data:
-        type: text
-        text: ${variable.text}
-    condition:
-    task: TASK_ASSIGN
+        - a
+        - b
+      value: 0
+
+  # input.data: ["a", "b"]
+  # input.value: {"foo": "c"}
+  # output.data: ["a", "b", {"foo": "c"}]
+  append-an-object-to-an-array:
+    type: collection
+    task: TASK_APPEND
+    input:
+      data:
+        - a
+        - b
+      value:
+        foo: c
+
+  # input.data: {"foo": "a", "bar": "b"}
+  # input.value: "c"
+  # output.data: [{"foo": "a", "bar": "b"}, "c"]
+  append-a-primitive-to-an-object:
+    type: collection
+    task: TASK_APPEND
+    input:
+      data:
+        foo: a
+        bar: b
+      value: c
+
+  # input.data: {"foo": "a", "bar": "b"}
+  # input.value: {"baz": "c"}
+  # output.data: {"foo": "a", "bar": "b", "baz": "c"}
+  append-an-object-to-an-object:
+    type: collection
+    task: TASK_APPEND
+    input:
+      data:
+        foo: a
+        bar: b
+      value:
+        baz: c
 
 output:
-  result:
-    title: Object
-    value: ${text-object.output.data}
+  append-primitives:
+    title: Append primitives
+    value: ${append-primitives.output.data}
+  append-a-primitive-to-an-array:
+    title: Append a primitive to an array
+    value: ${append-a-primitive-to-an-array.output.data}
+  append-an-object-to-an-array:
+    title: Append an object to an array
+    value: ${append-an-object-to-an-array.output.data}
+  append-a-primitive-to-an-object:
+    title: Append a primitive to an object
+    value: ${append-a-primitive-to-an-object.output.data}
+  append-an-object-to-an-object:
+    title: Append an object to an object
+    value: ${append-an-object-to-an-object.output.data}
 ```
 
-### Use `TASK_SPLIT` to split an array of strings into groups of a specified size
-```yaml
-# This pipeline splits an array of elements into groups of a specified size.
-# Examples:
-# ["foo", "bar", "bat", "zot"], 2 -> [["foo", "bar"], ["bat", "zot"]]
-# ["foo", "bar", "bat", "zot"], 3 -> [["foo", "bar", "bat"], ["zot"]]
-variable:
-  texts:
-    format: array:string
-    title: Text
-  group-size:
-    format: number
-    title: Group Size
+### Assign
 
+```yaml
 component:
-  split:
+  # input.data: [1, 2, 3]
+  # input.path: ".[1]"
+  # input.value: 10
+  # output.data: [1, 10, 3]
+  assign-array-element:
     type: collection
+    task: TASK_ASSIGN
     input:
-      array: ${variable.texts}
-      group-size: ${variable.group-size}
-    condition:
-    task: TASK_SPLIT
+      data: [1, 2, 3]
+      path: ".[1]"
+      value: 10
+
+  # input.data: {"name": "John", "age": 30}
+  # input.path: "name"
+  # input.value: "Jane"
+  # output.data: {"name": "Jane", "age": 30}
+  assign-object-key:
+    type: collection
+    task: TASK_ASSIGN
+    input:
+      data:
+        name: John
+        age: 30
+      path: name
+      value: Jane
+
+  # input.data: {"users": [{"metadata": {"tags": ["tag1", "tag2"]}}]}
+  # input.path: "users.[0].metadata.tags.[1]"
+  # input.value: "new-tag"
+  # output.data: {"users": [{"metadata": {"tags": ["tag1", "new-tag"]}}]}
+  assign-nested-path:
+    type: collection
+    task: TASK_ASSIGN
+    input:
+      data:
+        users:
+          - metadata:
+              tags: ["tag1", "tag2"]
+      path: "users.[0].metadata.tags.[1]"
+      value: "new-tag"
+
+  # input.data: null
+  # input.path: ""
+  # input.value: "hello"
+  # output.data: "hello"
+  create-primitive:
+    type: collection
+    task: TASK_ASSIGN
+    input:
+      data: null
+      path: ""
+      value: hello
+
+  # input.data: null
+  # input.path: "users.[0].name"
+  # input.value: "John"
+  # output.data: {"users": [{"name": "John"}]}
+  create-nested-structure:
+    type: collection
+    task: TASK_ASSIGN
+    input:
+      data: null
+      path: "users.[0].name"
+      value: "John"
 
 output:
-  split:
-    title: Split
-    value: ${split.output}
+  assign-array-element:
+    title: Assign an array element
+    value: ${assign-array-element.output.data}
+  assign-object-key:
+    title: Assign an object key
+    value: ${assign-object-key.output.data}
+  assign-nested-path:
+    title: Assign using nested path
+    value: ${assign-nested-path.output.data}
+  create-primitive:
+    title: Create and assign a primitive value
+    value: ${create-primitive.output.data}
+  create-nested-structure:
+    title: Create and assign nested structure
+    value: ${create-nested-structure.output.data}
+```
+
+### Concat
+
+```yaml
+component:
+  # input.data: [[1, 2], [3, 4]]
+  # output.data: [1, 2, 3, 4]
+  concat-arrays:
+    type: collection
+    task: TASK_CONCAT
+    input:
+      data:
+        - [1, 2]
+        - [3, 4]
+
+  # input.data: [{"a": 1, "b": 2}, {"c": 3, "d": 4}]
+  # output.data: {"a": 1, "b": 2, "c": 3, "d": 4}
+  concat-objects:
+    type: collection
+    task: TASK_CONCAT
+    input:
+      data:
+        - {"a": 1, "b": 2}
+        - {"c": 3, "d": 4}
+
+output:
+  concat-arrays:
+    title: Concatenated Arrays
+    value: ${concat-arrays.output.data}
+  concat-objects:
+    title: Concatenated Objects
+    value: ${concat-objects.output.data}
+```
+
+### Difference
+
+```yaml
+component:
+  # input.data: [[1, 2, 3], [2, 3, 4]]
+  # output.data: [1]
+  difference-arrays:
+    type: collection
+    task: TASK_DIFFERENCE
+    input:
+      data:
+        - [1, 2, 3]
+        - [2, 3, 4]
+
+  # input.data: [{"a": 1, "b": 2}, {"b": 2, "c": 3}]
+  # output.data: {"a": 1}
+  difference-objects:
+    type: collection
+    task: TASK_DIFFERENCE
+    input:
+      data:
+        - {"a": 1, "b": 2}
+        - {"b": 2, "c": 3}
+
+output:
+  difference-arrays:
+    title: Difference of Arrays
+    value: ${difference-arrays.output.data}
+  difference-objects:
+    title: Difference of Objects
+    value: ${difference-objects.output.data}
+```
+
+### Intersection
+
+```yaml
+component:
+  # input.data: [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
+  # output.data: [3]
+  intersection-arrays:
+    type: collection
+    task: TASK_INTERSECTION
+    input:
+      data:
+        - [1, 2, 3]
+        - [2, 3, 4]
+        - [3, 4, 5]
+
+  # input.data: [{"a": 1, "b": 2}, {"b": 2, "c": 3}]
+  # output.data: {"b": 2}
+  intersection-objects:
+    type: collection
+    task: TASK_INTERSECTION
+    input:
+      data:
+        - {"a": 1, "b": 2}
+        - {"b": 2, "c": 3}
+
+output:
+  intersection-arrays:
+    title: Intersection of Arrays
+    value: ${intersection-arrays.output.data}
+  intersection-objects:
+    title: Intersection of Objects
+    value: ${intersection-objects.output.data}
+```
+
+### Split
+
+```yaml
+component:
+  # input.data: [1, 2, 3, 4, 5]
+  # input.size: 2
+  # output.data: [[1, 2], [3, 4], [5]]
+  split-array:
+    type: collection
+    task: TASK_SPLIT
+    input:
+      data: [1, 2, 3, 4, 5]
+      size: 2
+
+  # input.data: {"a": 1, "b": 2, "c": 3, "d": 4}
+  # input.size: 2
+  # output.data: [{"a": 1, "b": 2}, {"c": 3, "d": 4}]
+  split-object:
+    type: collection
+    task: TASK_SPLIT
+    input:
+      data:
+        a: 1
+        b: 2
+        c: 3
+        d: 4
+      size: 2
+
+output:
+  split-array:
+    title: Split Array
+    value: ${split-array.output.data}
+  split-object:
+    title: Split Object
+    value: ${split-object.output.data}
+```
+
+### Symmetric Difference
+
+```yaml
+component:
+  # input.data: [[1, 2], [2, 3]]
+  # output.data: [1, 3]
+  symmetric-difference-arrays:
+    type: collection
+    task: TASK_SYMMETRIC_DIFFERENCE
+    input:
+      data:
+        - [1, 2]
+        - [2, 3]
+
+  # input.data: [{"a": 1, "b": 2}, {"b": 2, "c": 3}]
+  # output.data: {"a": 1, "c": 3}
+  symmetric-difference-objects:
+    type: collection
+    task: TASK_SYMMETRIC_DIFFERENCE
+    input:
+      data:
+        - {"a": 1, "b": 2}
+        - {"b": 2, "c": 3}
+
+output:
+  symmetric-difference-arrays:
+    title: Symmetric Difference of Arrays
+    value: ${symmetric-difference-arrays.output.data}
+  symmetric-difference-objects:
+    title: Symmetric Difference of Objects
+    value: ${symmetric-difference-objects.output.data}
+```
+
+### Union
+
+```yaml
+component:
+  # input.data: [[1, 2], [2, 3]]
+  # output.data: [1, 2, 3]
+  union-arrays:
+    type: collection
+    task: TASK_UNION
+    input:
+      data:
+        - [1, 2]
+        - [2, 3]
+
+  # input.data: [{"a": 1, "b": 2}, {"b": 3, "c": 3}]
+  # output.data: {"a": 1, "b": 3, "c": 3}
+  union-objects:
+    type: collection
+    task: TASK_UNION
+    input:
+      data:
+        - {"a": 1, "b": 2}
+        - {"b": 3, "c": 3}
+
+output:
+  union-arrays:
+    title: Union of Arrays
+    value: ${union-arrays.output.data}
+  union-objects:
+    title: Union of Objects
+    value: ${union-objects.output.data}
 ```
