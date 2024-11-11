@@ -74,6 +74,7 @@ modelbackend:
 artifactbackend:
   host: artifact-backend
   publicport: 8082
+  privateport: 3082
   https:
     cert:
     key:
@@ -96,3 +97,6 @@ appbackend:
   https:
     cert:
     key:
+apigateway:
+  host: http://api-gateway
+  publicport: 8080

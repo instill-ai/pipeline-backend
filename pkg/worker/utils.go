@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
+	"google.golang.org/grpc/metadata"
 )
 
 func (w *worker) writeNewDataPoint(ctx context.Context, data utils.PipelineUsageMetricData) error {
@@ -82,4 +84,47 @@ func setIteratorIndex(v format.Value, identifier string, index int) format.Value
 	default:
 		return v
 	}
+}
+
+// They are same logic in the some components like Instill Artifact, Instill Model.
+// We can extract this logic to the shared package.
+func getRequestMetadata(vars map[string]any) metadata.MD {
+	md := metadata.Pairs(
+		"Authorization", getHeaderAuthorization(vars),
+		"Instill-User-Uid", getInstillUserUID(vars),
+		"Instill-Auth-Type", "user",
+	)
+
+	if requester := getInstillRequesterUID(vars); requester != "" {
+		md.Set("Instill-Requester-Uid", requester)
+	}
+	return md
+}
+
+func getHeaderAuthorization(vars map[string]any) string {
+	if v, ok := vars["__PIPELINE_HEADER_AUTHORIZATION"]; ok {
+		return v.(string)
+	}
+	return ""
+}
+func getInstillUserUID(vars map[string]any) string {
+	return vars["__PIPELINE_USER_UID"].(string)
+}
+
+func getInstillRequesterUID(vars map[string]any) string {
+	return vars["__PIPELINE_REQUESTER_UID"].(string)
+}
+
+func metadataToHTTPHeaders(ctx context.Context) http.Header {
+	headers := http.Header{}
+	md, ok := metadata.FromOutgoingContext(ctx)
+	if !ok {
+		return headers
+	}
+	for key, values := range md {
+		for _, value := range values {
+			headers.Add(key, value)
+		}
+	}
+	return headers
 }
