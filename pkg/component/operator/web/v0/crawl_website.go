@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -40,17 +41,37 @@ type CrawlWebsiteInput struct {
 	// MaxDepth: The maximum depth of the pages to scrape.
 	MaxDepth int `json:"max-depth"`
 	// Filter: The filter to filter the URLs to crawl.
-	Filter Filter `json:"filter"`
+	Filter filter `json:"filter"`
 }
 
-// Filter defines the filter of the crawl website task
-type Filter struct {
-	// ExcludePatterns: The patterns to exclude the URLs to crawl.
-	ExcludePatterns []string `json:"exclude-patterns"`
-	// IncludePatterns: The patterns to include the URLs to crawl.
-	IncludePatterns []string `json:"include-patterns"`
-	// ExcludeSubstrings: The substrings to exclude the URLs to crawl.
-	ExcludeSubstrings []string `json:"exclude-substrings"`
+// filter defines the filter of the crawl website task
+type filter struct {
+	// ExcludePattern: The pattern to exclude the URLs to crawl.
+	ExcludePattern string `json:"exclude-pattern"`
+	// IncludePattern: The pattern to include the URLs to crawl.
+	IncludePattern string `json:"include-pattern"`
+
+	// excludeRegex: The compiled exclude pattern.
+	excludeRegex *regexp.Regexp
+	// includeRegex: The compiled include pattern.
+	includeRegex *regexp.Regexp
+}
+
+func (f *filter) compile() error {
+	var err error
+	if f.ExcludePattern != "" {
+		f.excludeRegex, err = regexp.Compile(f.ExcludePattern)
+		if err != nil {
+			return fmt.Errorf("compiling exclude pattern: %v", err)
+		}
+	}
+	if f.IncludePattern != "" {
+		f.includeRegex, err = regexp.Compile(f.IncludePattern)
+		if err != nil {
+			return fmt.Errorf("compiling include pattern: %v", err)
+		}
+	}
+	return nil
 }
 
 func (i *CrawlWebsiteInput) preset() {
@@ -84,6 +105,11 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 	}
 
 	inputStruct.preset()
+
+	err = inputStruct.Filter.compile()
+	if err != nil {
+		return nil, fmt.Errorf("compiling filter: %v", err)
+	}
 
 	output := ScrapeWebsiteOutput{
 		Pages: []PageInfo{},
@@ -193,10 +219,7 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 			output.Pages = append(output.Pages, page)
 
 			// Signal that we've added a new page
-			select {
-			case pageUpdateCh <- struct{}{}:
-			default:
-			}
+			pageUpdateCh <- struct{}{}
 
 			// If the length of output.Pages is equal to MaxK, we should stop the scraping.
 			if len(output.Pages) == inputStruct.MaxK {
@@ -228,24 +251,17 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 		for {
 			select {
 			case <-pageUpdateCh:
-				// Reset the timer whenever we get a new page
-				if !inactivityTimer.Stop() {
-					select {
-					case <-inactivityTimer.C:
-					default:
-					}
-				}
 				inactivityTimer.Reset(2 * time.Second)
+			// If no new pages for 2 seconds, cancel the context
 			case <-inactivityTimer.C:
-				// If no new pages for 2 seconds, cancel the context
 				cancel()
 				return
+			// If the context is done, we should return
 			case <-ctx.Done():
 				return
 			}
 		}
 	}()
-
 	<-ctx.Done()
 
 	outputStruct, err := base.ConvertToStructpb(output)

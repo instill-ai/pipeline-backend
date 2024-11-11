@@ -108,34 +108,28 @@
           "type": "integer"
         },
         "filter": {
-          "description": "Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). The URL will be crawled if it matches either include-patterns or not match exclude-patterns. When both include-patterns and exclude-patterns are empty, all URLs will be crawled. It will process exclude-patterns first, then include-patterns. When exclude-patterns is not empty, only URLs that do not match exclude-patterns will be crawled. When include-patterns is not empty, only URLs that match include-patterns will be crawled.",
+          "description": "Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). The URL will be crawled if it matches either include-pattern or not match exclude-pattern. When both include-pattern and exclude-pattern are empty, all URLs will be crawled. It will process exclude-pattern first, then include-pattern. When exclude-pattern is not empty, only URLs that do not match exclude-pattern will be crawled. When include-pattern is not empty, only URLs that match include-pattern will be crawled.",
           "instillUIOrder": 5,
           "type": "object",
           "title": "Filter",
           "properties": {
-            "exclude-patterns": {
+            "exclude-pattern": {
               "description": "When the URL is matched, the URL will not be crawled.",
               "instillAcceptFormats": [
-                "array:string"
+                "string"
               ],
-              "items": {
-                "type": "string"
-              },
               "instillUIOrder": 1,
-              "type": "array",
-              "title": "Exclude Patterns"
+              "type": "string",
+              "title": "Exclude Pattern"
             },
-            "include-patterns": {
+            "include-pattern": {
               "description": "When the URL is matched, the URL will be crawled.",
               "instillAcceptFormats": [
-                "array:string"
+                "string"
               ],
-              "items": {
-                "type": "string"
-              },
               "instillUIOrder": 2,
-              "type": "array",
-              "title": "Include Patterns"
+              "title": "Include Pattern",
+              "type": "string"
             }
           },
           "required": []

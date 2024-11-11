@@ -3,7 +3,6 @@ package web
 import (
 	"fmt"
 	"log"
-	"regexp"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -68,27 +67,12 @@ func getRemovedTagsHTML[T scrapeInput](doc *goquery.Document, input T) string {
 }
 
 // targetLink filters the URL based on the filter
-func targetLink(link string, filter Filter) bool {
-
-	if len(filter.ExcludePatterns) == 0 && len(filter.IncludePatterns) == 0 {
-		return true
+func targetLink(link string, f filter) bool {
+	if f.excludeRegex != nil && f.excludeRegex.MatchString(link) {
+		return false
 	}
-
-	for _, pattern := range filter.ExcludePatterns {
-		if match, _ := regexp.MatchString(pattern, link); match {
-			return false
-		}
+	if f.includeRegex != nil && !f.includeRegex.MatchString(link) {
+		return false
 	}
-
-	if len(filter.IncludePatterns) == 0 {
-		return true
-	}
-
-	for _, pattern := range filter.IncludePatterns {
-		if match, _ := regexp.MatchString(pattern, link); match {
-			return true
-		}
-	}
-
-	return false
+	return true
 }
