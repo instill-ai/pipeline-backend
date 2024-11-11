@@ -18,9 +18,10 @@ import (
 )
 
 const (
-	taskMarshal   = "TASK_MARSHAL"
-	taskUnmarshal = "TASK_UNMARSHAL"
-	taskJQ        = "TASK_JQ"
+	taskMarshal      = "TASK_MARSHAL"
+	taskUnmarshal    = "TASK_UNMARSHAL"
+	taskJQ           = "TASK_JQ"
+	taskRenameFields = "TASK_RENAME_FIELDS"
 )
 
 var (
@@ -67,6 +68,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 		e.execute = e.unmarshal
 	case taskJQ:
 		e.execute = e.jq
+	case taskRenameFields:
+		e.execute = e.renameFields
 	default:
 		return nil, errmsg.AddMessage(
 			fmt.Errorf("not supported task: %s", x.Task),
@@ -147,6 +150,65 @@ func (e *execution) jq(in *structpb.Struct) (*structpb.Struct, error) {
 
 	out.Fields = map[string]*structpb.Value{
 		"results": structpb.NewListValue(list),
+	}
+
+	return out, nil
+}
+
+func (e *execution) renameFields(in *structpb.Struct) (*structpb.Struct, error) {
+	out := new(structpb.Struct)
+
+	jsonField, ok := in.Fields["json"]
+	if !ok || jsonField == nil {
+		return nil, errmsg.AddMessage(fmt.Errorf("missing required field: json"), "JSON and fields are required.")
+	}
+	jsonValue := jsonField.AsInterface().(map[string]any)
+
+	fieldsValue, ok := in.Fields["fields"]
+	if !ok || fieldsValue == nil || len(fieldsValue.GetListValue().Values) == 0 {
+		return nil, errmsg.AddMessage(fmt.Errorf("missing required field: fields"), "JSON and fields are required.")
+	}
+	fields := fieldsValue.GetListValue().Values
+
+	// Conflict resolution strategy validation
+	conflictResolution := in.Fields["conflict-resolution"].GetStringValue()
+	if conflictResolution != "overwrite" && conflictResolution != "skip" && conflictResolution != "error" {
+		return nil, errmsg.AddMessage(fmt.Errorf("invalid conflict resolution strategy"), "Conflict resolution strategy is invalid.")
+	}
+
+	// Process renaming fields with conflict resolution
+	for _, field := range fields {
+		from := field.GetStructValue().Fields["from"].GetStringValue()
+		to := field.GetStructValue().Fields["to"].GetStringValue()
+
+		if val, ok := jsonValue[from]; ok {
+			switch conflictResolution {
+			case "overwrite":
+				delete(jsonValue, from)
+				jsonValue[to] = val
+			case "skip":
+				if _, exists := jsonValue[to]; !exists {
+					jsonValue[to] = val
+				}
+				delete(jsonValue, from)
+			case "error":
+				if _, exists := jsonValue[to]; exists {
+					return nil, errmsg.AddMessage(fmt.Errorf("field conflict: '%s' already exists", to), "Field conflict.")
+				}
+				delete(jsonValue, from)
+				jsonValue[to] = val
+			}
+		}
+	}
+
+	// Convert to structpb.Struct and assign to output
+	structValue, err := structpb.NewStruct(jsonValue)
+	if err != nil {
+		return nil, errmsg.AddMessage(err, "Failed to create structpb.Struct for output.")
+	}
+
+	out.Fields = map[string]*structpb.Value{
+		"json": structpb.NewStructValue(structValue),
 	}
 
 	return out, nil

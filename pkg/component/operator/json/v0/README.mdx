@@ -10,6 +10,7 @@ It can carry out the following tasks:
 - [Marshal](#marshal)
 - [Unmarshal](#unmarshal)
 - [jq](#jq)
+- [Rename Fields](#rename-fields)
 
 
 
@@ -125,6 +126,46 @@ to access such fields in a `jq` filter is by wrapping the key in double quotes:
 | Input JSON | `jq` filter | Output |
 | :--- | :--- | :--- |
 | `[{"key-a": "value1"}, {"key-a": "value2"}]` | `.[] \| ."key-a"` | `["value1", "value2"]` |
+
+### Rename Fields
+
+Rename fields in a JSON object with a conflict resolution strategy. If the new field already exists, it will be overwritten by default.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_RENAME_FIELDS` |
+| JSON (required) | `json` | any | JSON object to be edited. It can be any valid JSON datatype (e.g. number, string, hash, array). |
+| [Fields](#rename-fields-fields) (required) | `fields` | array[object] | An array of objects specifying the fields to be renamed. |
+| Conflict Resolution | `conflict-resolution` | string | Defines how conflicts are handled when the new field already exists in the data. If the new field already exists, it will be overwritten by default. If the new field does not exist, it will be created. When set to 'error', the component will throw an error if the new field already exists. When set to 'skip', the new field will be skipped if it already exists. |
+</div>
+
+
+<details>
+<summary> Input Objects in Rename Fields</summary>
+
+<h4 id="rename-fields-fields">Fields</h4>
+
+An array of objects specifying the fields to be renamed.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| From | `from` | string | The field in the original data that needs to be renamed.  |
+| To | `to` | string | The new name for the field.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| JSON | `json` | any | JSON object with the renamed fields. |
+</div>
 
 
 ## Example Recipes
