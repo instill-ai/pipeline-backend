@@ -44,6 +44,7 @@ type execution struct {
 	execute func(*structpb.Struct) (*structpb.Struct, error)
 }
 
+// Init returns an implementation of IOperator that processes JSON objects.
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
@@ -55,6 +56,8 @@ func Init(bc base.Component) *component {
 	return comp
 }
 
+// CreateExecution initializes a component executor that can be used in a
+// pipeline trigger.
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	e := &execution{ComponentExecution: x}
 
@@ -119,6 +122,7 @@ func (e *execution) jq(in *structpb.Struct) (*structpb.Struct, error) {
 	queryStr := in.Fields["jq-filter"].GetStringValue()
 	q, err := gojq.Parse(queryStr)
 	if err != nil {
+		// Error messages from gojq are human-friendly enough.
 		msg := fmt.Sprintf("Couldn't parse the jq filter: %s. Please check the syntax is correct.", err.Error())
 		return nil, errmsg.AddMessage(err, msg)
 	}
