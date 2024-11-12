@@ -577,7 +577,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 			return nil, err
 		}
 		if dbPipeline.Recipe.On != nil {
-			for w := range dbPipeline.Recipe.On.Event {
+			for w := range dbPipeline.Recipe.On {
 				webhooks[w] = &pb.Endpoints_WebhookEndpoint{
 					Url: fmt.Sprintf(
 						"%s/v1beta/namespaces/%s/pipelines/%s/events?event=%s&code=%s",
@@ -803,7 +803,7 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 			return nil, err
 		}
 		if dbPipelineRelease.Recipe.On != nil {
-			for w := range dbPipelineRelease.Recipe.On.Event {
+			for w := range dbPipelineRelease.Recipe.On {
 				webhooks[w] = &pb.Endpoints_WebhookEndpoint{
 					Url: fmt.Sprintf(
 						"%s/v1beta/namespaces/%s/pipelines/%s/releases/%s/events?event=%s&code=%s",
