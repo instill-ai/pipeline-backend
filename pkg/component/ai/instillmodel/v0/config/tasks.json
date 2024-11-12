@@ -1,0 +1,2563 @@
+{
+  "TASK_EMBEDDING": {
+    "title": "Embedding",
+    "instillShortDescription": "This task refers to the process of generating vector embeddings from input data, which can be text or images. This transformation converts the data into a dense, fixed-length numerical representation that captures the essential features of the original input. These embeddings are typically used in machine learning tasks to represent complex data in a more structured, simplified form.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Embedding Input",
+      "description": "Input schema of the embedding task.",
+      "instillShortDescription": "Input schema of the embedding task.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "Input data.",
+          "instillShortDescription": "Input data.",
+          "type": "object",
+          "properties": {
+            "model": {
+              "description": "The model to be used for generating embeddings. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+              "instillShortDescription": "The model to be used.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIOrder": 0,
+              "title": "Model",
+              "type": "string"
+            },
+            "embeddings": {
+              "title": "Input Embeddings",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "title": "Text Content",
+                        "description": "When the input is text, the raw text is tokenized and processed into a dense, fixed-length vector that captures semantic information such as word meanings and relationships. These text embeddings enable tasks like sentiment analysis, search, or classification.",
+                        "instillShortDescription": "Text content.",
+                        "instillAcceptFormats": [
+                          "string"
+                        ],
+                        "type": "string",
+                        "instillUIOrder": 1
+                      },
+                      "type": {
+                        "title": "Text",
+                        "description": "Text input content type.",
+                        "instillShortDescription": "Text input content type.",
+                        "instillAcceptFormats": [
+                          "string"
+                        ],
+                        "type": "string",
+                        "const": "text",
+                        "instillUIOrder": 0
+                      }
+                    },
+                    "title": "Text",
+                    "required": [
+                      "text",
+                      "type"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "image-url": {
+                        "title": "Image URL",
+                        "description": "When the input is an image from a URL, the image is first fetched from the URL and then decoded into its original format. It is then processed into a fixed-length vector representing essential visual features like shapes and colors. These image embeddings are useful for tasks like image classification or similarity search, providing structured numerical data for complex visual inputs.",
+                        "instillShortDescription": "Image content URL.",
+                        "instillAcceptFormats": [
+                          "string"
+                        ],
+                        "type": "string",
+                        "instillUIOrder": 1
+                      },
+                      "type": {
+                        "title": "Image URL",
+                        "description": "Image URL input content type",
+                        "instillShortDescription": "Image URL input content type",
+                        "instillAcceptFormats": [
+                          "string"
+                        ],
+                        "type": "string",
+                        "const": "image-url",
+                        "instillUIOrder": 0
+                      }
+                    },
+                    "title": "Image URL",
+                    "required": [
+                      "image-url",
+                      "type"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "image-base64": {
+                        "title": "Image File",
+                        "description": "When the input is an image in base64 format, the base64-encoded data is first decoded into its original image form. The image is then processed and transformed into a dense, fixed-length numerical vector, capturing key visual features like shapes, colors, or textures.",
+                        "instillShortDescription": "Image file input.",
+                        "instillAcceptFormats": [
+                          "image/*"
+                        ],
+                        "type": "string",
+                        "instillUIOrder": 1
+                      },
+                      "type": {
+                        "title": "Image File",
+                        "description": "Image file input content type.",
+                        "instillShortDescription": "Image file input content type.",
+                        "instillAcceptFormats": [
+                          "string"
+                        ],
+                        "type": "string",
+                        "const": "image-base64",
+                        "instillUIOrder": 0
+                      }
+                    },
+                    "title": "Image Base64",
+                    "required": [
+                      "image-base64",
+                      "type"
+                    ]
+                  }
+                ],
+                "title": "Embedding",
+                "description": "Input data to be embedded.",
+                "instillUIOrder": 0,
+                "required": [
+                  "type"
+                ]
+              },
+              "description": "List of input data to be embedded.",
+              "instillUIOrder": 1
+            }
+          },
+          "required": [
+            "model",
+            "embeddings"
+          ],
+          "instillUIOrder": 0,
+          "title": "Data"
+        },
+        "parameter": {
+          "description": "Input parameter.",
+          "instillShortDescription": "Input parameter.",
+          "type": "object",
+          "properties": {
+            "format": {
+              "title": "Data Format",
+              "type": "string",
+              "description": "The data format of the embeddings. Defaults to float.",
+              "instillShortDescription": "Data format",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "enum": [
+                "float",
+                "base64"
+              ],
+              "default": "float",
+              "instillUIOrder": 0
+            },
+            "dimensions": {
+              "title": "Dimensions",
+              "type": "integer",
+              "description": "Number of dimensions in the output embedding vectors.",
+              "instillShortDescription": "Number of dimensions",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "default": 512,
+              "instillUIOrder": 1
+            },
+            "input-type": {
+              "title": "Input Type",
+              "type": "string",
+              "description": "The type of input data to be embedded (e.g., query, document).",
+              "instillShortDescription": "Type of input data",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIOrder": 2
+            },
+            "truncate": {
+              "title": "Truncate",
+              "type": "string",
+              "description": "How to handle inputs longer than the max token length. Defaults to 'End'.",
+              "instillShortDescription": "Truncation handling",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "enum": [
+                "None",
+                "End",
+                "Start"
+              ],
+              "default": "End",
+              "instillUIOrder": 3
+            }
+          },
+          "title": "Parameter",
+          "instillUIOrder": 1,
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Embedding Output",
+      "description": "Output schema of the embedding task.",
+      "instillShortDescription": "Output schema of the embedding task.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "Output data.",
+          "instillShortDescription": "Output data.",
+          "type": "object",
+          "properties": {
+            "embeddings": {
+              "title": "Output Embeddings",
+              "type": "array",
+              "description": "List of generated embeddings.",
+              "instillShortDescription": "List of embeddings.",
+              "instillFormat": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "index": {
+                    "title": "Index",
+                    "type": "integer",
+                    "description": "The index of the embedding vector in the array.",
+                    "instillShortDescription": "Index in the array",
+                    "instillFormat": "integer",
+                    "instillUIOrder": 0
+                  },
+                  "vector": {
+                    "title": "Embedding Vector",
+                    "type": "array",
+                    "description": "The embedding vector.",
+                    "instillShortDescription": "Embedding vector.",
+                    "instillFormat": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "instillUIOrder": 1
+                  },
+                  "created": {
+                    "title": "Created",
+                    "type": "integer",
+                    "description": "The Unix timestamp (in seconds) of when the embedding was created.",
+                    "instillShortDescription": "Timestamp of creation",
+                    "instillFormat": "integer",
+                    "instillUIOrder": 2
+                  }
+                },
+                "required": [
+                  "index",
+                  "vector",
+                  "created"
+                ]
+              },
+              "instillUIOrder": 0
+            }
+          },
+          "required": [
+            "embeddings"
+          ],
+          "instillUIOrder": 0,
+          "title": "Data"
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  "TASK_CHAT": {
+    "title": "Chat",
+    "instillShortDescription": "This task involves generating contextually relevant text responses based on input data, such as user queries or prompts. The generated responses include metadata like token usage, which can help track and calculate the cost of the operation. This metadata can also be useful for performance monitoring and analysis.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Chat Input",
+      "description": "This is the schema for the input required to perform the chat task. It defines the structure of the data that must be provided, including the types of messages, roles, and optional parameters that guide the model's response generation.",
+      "instillShortDescription": "Input schema for the chat task, defining data format and necessary attributes.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Chat Data",
+          "description": "The data that will be passed to the chat model. This typically includes the messages exchanged between the user and the assistant, alongside any additional information to guide the conversation.",
+          "instillShortDescription": "The main input data for the chat task, such as the conversation content.",
+          "type": "object",
+          "properties": {
+            "model": {
+              "description": "The model to be used for generating chat responses. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+              "instillShortDescription": "The model to be used for generating chat responses.",
+              "instillUIOrder": 0,
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "title": "Model Name",
+              "type": "string"
+            },
+            "messages": {
+              "description": "A collection of individual messages exchanged during the chat session. Each message includes content and other attributes like role and optional participant name.",
+              "instillShortDescription": "The messages that make up the conversation. Each message has content and a role, such as 'user', 'assistant', or 'system'.",
+              "title": "Chat Messages",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "description": "The actual content of the message. It can be a text message, an image URL, or a base64 encoded image.",
+                    "instillShortDescription": "The main content of the message, which can be text or image-based, and defines what the user or assistant is saying.",
+                    "title": "Content",
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "title": "Text Message",
+                              "description": "A text-based message, which is the most common format for chat communication.",
+                              "instillShortDescription": "Plain text content of the message.",
+                              "instillAcceptFormats": [
+                                "string"
+                              ],
+                              "type": "string",
+                              "instillUIOrder": 1
+                            },
+                            "type": {
+                              "title": "Text",
+                              "description": "Type of the message content. In this case, it is text.",
+                              "instillShortDescription": "Type of the message content. In this case, it is text.",
+                              "instillAcceptFormats": [
+                                "string"
+                              ],
+                              "type": "string",
+                              "const": "text",
+                              "instillUIOrder": 0
+                            }
+                          },
+                          "required": [
+                            "text",
+                            "type"
+                          ],
+                          "title": "Text"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "image-url": {
+                              "title": "Image URL",
+                              "description": "A URL that links to an image that is being shared in the chat.",
+                              "instillShortDescription": "A message that shares an image through a URL link.",
+                              "instillAcceptFormats": [
+                                "string"
+                              ],
+                              "type": "string",
+                              "instillUIOrder": 1
+                            },
+                            "type": {
+                              "title": "Image URL",
+                              "description": "Type of the message content. In this case, it is an image URL.",
+                              "instillShortDescription": "Type of the message content. In this case, it is an image URL.",
+                              "instillAcceptFormats": [
+                                "string"
+                              ],
+                              "type": "string",
+                              "const": "image-url",
+                              "instillUIOrder": 0
+                            }
+                          },
+                          "required": [
+                            "image-url",
+                            "type"
+                          ],
+                          "title": "Image URL"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "image-base64": {
+                              "title": "Image Base64",
+                              "description": "An image encoded as a base64 string, allowing for the direct transfer of image data in the message.",
+                              "instillShortDescription": "A base64-encoded image message for directly embedding image content.",
+                              "instillAcceptFormats": [
+                                "image/*"
+                              ],
+                              "type": "string",
+                              "instillUIOrder": 1
+                            },
+                            "type": {
+                              "title": "Image File",
+                              "description": "Type of the message content. In this case, it is an image file.",
+                              "instillShortDescription": "Type of the message content. In this case, it is an image file.",
+                              "instillAcceptFormats": [
+                                "string"
+                              ],
+                              "type": "string",
+                              "const": "image-base64",
+                              "instillUIOrder": 0
+                            }
+                          },
+                          "required": [
+                            "image-base64",
+                            "type"
+                          ],
+                          "title": "Image Base64"
+                        }
+                      ],
+                      "required": []
+                    },
+                    "instillUIOrder": 0
+                  },
+                  "role": {
+                    "description": "Indicates the role of the message sender, such as 'user', 'assistant', or 'system'. This helps the model understand the context in which the message was sent.",
+                    "instillShortDescription": "The role of the message sender, such as 'user', 'assistant', or 'system'.",
+                    "instillAcceptFormats": [
+                      "string"
+                    ],
+                    "title": "Role",
+                    "type": "string",
+                    "enum": [
+                      "system",
+                      "user",
+                      "assistant"
+                    ],
+                    "instillUIOrder": 1
+                  },
+                  "name": {
+                    "description": "An optional name for the participant sending the message. This can be used to distinguish between different users or assistants if there are multiple participants with the same role.",
+                    "instillShortDescription": "An optional name for the participant sending the message.",
+                    "instillAcceptFormats": [
+                      "string"
+                    ],
+                    "title": "Name",
+                    "type": "string",
+                    "instillUIOrder": 2
+                  }
+                },
+                "required": [
+                  "content",
+                  "role"
+                ]
+              },
+              "instillUIOrder": 1
+            }
+          },
+          "required": [
+            "messages"
+          ],
+          "instillUIOrder": 0
+        },
+        "parameter": {
+          "description": "The parameters used to control how the model generates responses. These include settings for token limits, randomness, and the number of response choices.",
+          "instillShortDescription": "Parameters that control the model's response generation, such as token limits and randomness settings.",
+          "type": "object",
+          "properties": {
+            "max-tokens": {
+              "title": "Max New Tokens",
+              "type": "integer",
+              "description": "Defines the maximum number of tokens that the model can generate in response to a given input.",
+              "instillShortDescription": "The maximum number of tokens the model can generate in response to a single input message.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "default": 50,
+              "instillUIOrder": 0
+            },
+            "seed": {
+              "title": "Seed",
+              "type": "integer",
+              "description": "A random seed used for controlling the randomness of the model's output. Setting a seed can make the model's responses deterministic and reproducible.",
+              "instillShortDescription": "A random seed used to control the model's output randomness.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "default": 0,
+              "instillUIOrder": 1
+            },
+            "n": {
+              "title": "Number of Choices",
+              "type": "integer",
+              "description": "Determines how many different response options the model should generate for a single input. This allows the user to choose between multiple potential responses.",
+              "instillShortDescription": "The number of response choices the model should generate for a single input.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "default": 1,
+              "instillUIOrder": 2
+            },
+            "temperature": {
+              "title": "Temperature",
+              "type": "number",
+              "description": "A parameter that controls how random or creative the model's responses are. Higher values make the responses more diverse and creative, while lower values make them more focused and deterministic. The default value is 0.7.",
+              "instillShortDescription": "A parameter that controls the randomness of the model's responses. Higher values make the responses more diverse and creative.",
+              "instillAcceptFormats": [
+                "number"
+              ],
+              "default": 0.7,
+              "instillUIOrder": 3
+            },
+            "top-p": {
+              "title": "Top P",
+              "type": "number",
+              "description": "An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered. We generally recommend altering this or temperature but not both.",
+              "instillShortDescription": "An alternative to temperature sampling, where the model considers the top_p probability mass of tokens.",
+              "instillAcceptFormats": [
+                "number"
+              ],
+              "default": 1,
+              "instillUIOrder": 4
+            },
+            "stream": {
+              "title": "Stream",
+              "type": "boolean",
+              "description": "If set to true, the model will send tokens as they are generated in a streaming manner, rather than waiting for the entire response to be ready.",
+              "instillShortDescription": "If set to true, the model will send tokens as they are generated in a streaming manner.",
+              "instillAcceptFormats": [
+                "boolean"
+              ],
+              "default": false,
+              "instillUIOrder": 5
+            }
+          },
+          "required": [],
+          "instillUIOrder": 1,
+          "title": "Input Parameter"
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Chat output",
+      "description": "This defines the structure of the output returned by the model after processing the input. It includes the generated chat messages, metadata such as token usage, and other information about the response.",
+      "instillShortDescription": "This defines the structure of the output returned by the model after processing the input.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "This section defines the structure of the output data returned by the chat task. The output includes chat completion choices generated by the model along with metadata such as the reason for finishing, message content, and creation timestamp. Each generated response is structured as a choice that includes details about the model’s reasoning for ending the response generation, the message content, and the role of the message's author.",
+          "instillShortDescription": "This section defines the structure of the output data returned by the chat task.",
+          "type": "object",
+          "properties": {
+            "choices": {
+              "title": "Choices",
+              "type": "array",
+              "description": "This is a list of all the possible chat completion choices generated by the model for a given input. Each choice represents a potential response the model can provide based on the input message.",
+              "instillShortDescription": "A list of all the possible chat completion choices generated by the model for a given input.",
+              "instillFormat": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "finish-reason": {
+                    "title": "Finish Reason",
+                    "type": "string",
+                    "description": "The reason why the model stopped generating tokens for this particular response. It could indicate that the model finished the response naturally, or there could be another stopping criterion.",
+                    "instillShortDescription": "The reason why the model stopped generating tokens for this particular response.",
+                    "instillFormat": "string",
+                    "instillUIOrder": 0
+                  },
+                  "index": {
+                    "title": "Index",
+                    "type": "integer",
+                    "description": "The index or position of this choice in the list of possible responses. This helps to identify which option is being referred to in a set of choices.",
+                    "instillShortDescription": "The index or position of this choice in the list of possible responses.",
+                    "instillFormat": "integer",
+                    "instillUIOrder": 1
+                  },
+                  "message": {
+                    "title": "Message",
+                    "type": "object",
+                    "description": "The chat message generated by the model as a response to the input. This includes the text content and the role of the message sender (e.g., user, system, assistant).",
+                    "instillShortDescription": "The chat message generated by the model as a response to the input.",
+                    "properties": {
+                      "content": {
+                        "title": "Content",
+                        "type": "string",
+                        "description": "The actual text content of the generated message. This is what the model suggests as the response based on the given input.",
+                        "instillShortDescription": "The actual text content of the generated message.",
+                        "instillFormat": "string",
+                        "instillUIOrder": 0
+                      },
+                      "role": {
+                        "title": "Role",
+                        "type": "string",
+                        "description": "The role of the entity that generated the message, such as 'system, 'user', or 'assistant'. This allows differentiation between who is sending the message.",
+                        "instillShortDescription": "The role of the entity that generated the message.",
+                        "instillFormat": "string",
+                        "instillUIOrder": 1
+                      }
+                    },
+                    "required": [],
+                    "instillUIOrder": 2
+                  },
+                  "created": {
+                    "title": "Created",
+                    "type": "integer",
+                    "description": "The Unix timestamp (in seconds) indicating when the chat completion was generated. This timestamp can be used to track when the response was created.",
+                    "instillShortDescription": "The Unix timestamp indicating when the chat completion was generated.",
+                    "instillFormat": "integer",
+                    "instillUIOrder": 3
+                  }
+                },
+                "required": [
+                  "finish-reason",
+                  "index",
+                  "message",
+                  "created"
+                ]
+              },
+              "instillUIOrder": 0
+            }
+          },
+          "required": [
+            "choices"
+          ],
+          "instillUIOrder": 0,
+          "title": "Output Data"
+        },
+        "metadata": {
+          "description": "This section provides metadata about the task completion, including statistics on the usage of tokens. The metadata helps track how many tokens were used in generating the response and how many tokens were included in the input prompt.",
+          "instillShortDescription": "This section provides metadata about the task completion, including statistics on the usage of tokens.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "description": "Provides information about the number of tokens involved in the request and the completion process. It includes prompt tokens, completion tokens, and the total number of tokens used.",
+              "instillShortDescription": "Information about the number of tokens involved in the request and the completion process.",
+              "type": "object",
+              "properties": {
+                "completion-tokens": {
+                  "title": "Completion Tokens",
+                  "type": "integer",
+                  "description": "The number of tokens generated in the response. This indicates how many tokens were used in the model's reply.",
+                  "instillShortDescription": "The number of tokens generated in the response.",
+                  "instillFormat": "integer",
+                  "instillUIOrder": 0
+                },
+                "prompt-tokens": {
+                  "title": "Prompt Tokens",
+                  "type": "integer",
+                  "description": "The number of tokens that were in the input prompt. This counts how many tokens were consumed in processing the initial user query or input.",
+                  "instillShortDescription": "The number of tokens in the input prompt.",
+                  "instillFormat": "integer",
+                  "instillUIOrder": 1
+                },
+                "total-tokens": {
+                  "title": "Total Tokens",
+                  "type": "integer",
+                  "description": "The total number of tokens used in the entire request, which is the sum of prompt tokens and completion tokens.",
+                  "instillShortDescription": "The total number of tokens used in the entire request, which is the sum of prompt tokens and completion tokens.",
+                  "instillFormat": "integer",
+                  "instillUIOrder": 2
+                }
+              },
+              "required": [
+                "completion-tokens",
+                "prompt-tokens",
+                "total-tokens"
+              ],
+              "instillUIOrder": 0,
+              "title": "Usage"
+            }
+          },
+          "required": [],
+          "title": "Output Metadata",
+          "instillUIOrder": 1
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  "TASK_COMPLETION": {
+    "title": "Completion",
+    "instillShortDescription": "This task generates natural language responses based on a given input prompt. It uses a specified model to predict and create the most appropriate text, such as completing a sentence or generating an entire passage. Users can control the output by setting parameters like maximum tokens (length of the generated text), temperature (creativity level), top-p (nucleus sampling), and number of choices (how many responses to generate). The task supports dynamic input, including system messages that influence the tone or style of the completion, making it versatile for a wide range of applications, from casual text generation to structured outputs like technical documentation or creative writing.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Completion Input",
+      "description": "Input schema for the completion task, providing necessary information such as the model and the prompt.",
+      "instillShortDescription": "Input schema of the completion task.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Input Data",
+          "instillUIOrder": 0,
+          "description": "Contains the model name and the prompt for generating a response. This section defines the input prompt and guides the model's behavior using the specified system message.",
+          "instillShortDescription": "Input data specifying the model and prompt used for completion generation.",
+          "type": "object",
+          "properties": {
+            "model": {
+              "description": "Name of the model that generates the text response. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+              "instillShortDescription": "Specifies the model for text generation.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIOrder": 0,
+              "title": "Model Name",
+              "type": "string"
+            },
+            "system-message": {
+              "title": "System Message",
+              "type": "string",
+              "description": "A message sent by the system to guide the model's behavior, affecting tone, style, or other attributes.",
+              "instillShortDescription": "Message guiding the model’s behavior.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIOrder": 1
+            },
+            "prompt": {
+              "title": "Input Prompt",
+              "type": "string",
+              "description": "The input text or query for which the model will generate a response.",
+              "instillShortDescription": "Text prompt for model response.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIOrder": 2
+            }
+          },
+          "required": [
+            "model",
+            "prompt"
+          ]
+        },
+        "parameter": {
+          "description": "Optional settings to control the model’s behavior, including token limit, randomness, and response length.",
+          "instillShortDescription": "Optional parameters for model configuration.",
+          "type": "object",
+          "title": "Parameter",
+          "instillUIOrder": 1,
+          "properties": {
+            "max-tokens": {
+              "title": "Max New okens",
+              "type": "integer",
+              "description": "Specifies the maximum number of tokens the model is allowed to generate for the response.",
+              "instillShortDescription": "Limits the maximum number of tokens generated by the model.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 0,
+              "default": 50
+            },
+            "seed": {
+              "title": "Seed",
+              "type": "integer",
+              "description": "A random seed value used to influence the output. Default is 0, ensuring consistent behavior.",
+              "instillShortDescription": "The seed used for randomization in generating output.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 1,
+              "default": 0
+            },
+            "n": {
+              "title": "Number of Choices",
+              "type": "integer",
+              "description": "Defines how many response choices the model should generate for each input prompt.",
+              "instillShortDescription": "Specifies the number of generated choices for each input.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 2,
+              "default": 1
+            },
+            "temperature": {
+              "title": "Temperature",
+              "type": "number",
+              "description": "Controls the randomness of the output. Higher values (closer to 1) make responses more diverse.",
+              "instillShortDescription": "Adjusts response creativity by setting randomness in token selection.",
+              "instillAcceptFormats": [
+                "number"
+              ],
+              "instillUIOrder": 3,
+              "default": 0.7
+            },
+            "top-p": {
+              "title": "Top P",
+              "type": "number",
+              "description": "Nucleus sampling parameter. It considers only tokens within the cumulative top-p probability mass.",
+              "instillShortDescription": "Limits token selection to the top-p probability distribution for more focused outputs.",
+              "instillAcceptFormats": [
+                "number"
+              ],
+              "instillUIOrder": 4,
+              "default": 1
+            },
+            "stream": {
+              "title": "Stream",
+              "type": "boolean",
+              "description": "When true, sends partial token data as it’s generated, instead of waiting for the entire response.",
+              "instillShortDescription": "Enables streaming of token deltas as they are generated.",
+              "instillAcceptFormats": [
+                "boolean"
+              ],
+              "instillUIOrder": 5,
+              "default": false
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Chat output",
+      "description": "Output schema for the completion task, including generated messages and usage statistics.",
+      "instillShortDescription": "Output schema for the completion task",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Output Data",
+          "instillUIOrder": 0,
+          "description": "Contains the generated responses and details like why the model stopped and when the response was generated.",
+          "instillShortDescription": "Contains the generated response choices for the completion task.",
+          "type": "object",
+          "properties": {
+            "choices": {
+              "title": "Choices",
+              "type": "array",
+              "description": "List of generated text responses, each with a reason for completion, index, content, and timestamp.",
+              "instillShortDescription": "List of possible completions for the prompt.",
+              "instillFormat": "array",
+              "instillUIOrder": 0,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "finish-reason": {
+                    "title": "Finish Reason",
+                    "type": "string",
+                    "description": "Describes why the model stopped generating tokens, such as reaching the limit or completing naturally.",
+                    "instillShortDescription": "Explains why token generation ended (e.g., reached limit, or completed).",
+                    "instillFormat": "string",
+                    "enum": [
+                      "stop",
+                      "length"
+                    ],
+                    "instillUIOrder": 0
+                  },
+                  "index": {
+                    "title": "Index",
+                    "type": "integer",
+                    "description": "Indicates the position of this choice in the list of generated responses.",
+                    "instillShortDescription": "The position of the response in the list of generated choices.",
+                    "instillFormat": "integer",
+                    "instillUIOrder": 1
+                  },
+                  "content": {
+                    "title": "Content",
+                    "type": "string",
+                    "description": "The text output generated by the model as the response.",
+                    "instillShortDescription": "The generated text content from the model's response.",
+                    "instillFormat": "string",
+                    "instillUIOrder": 2
+                  },
+                  "created": {
+                    "title": "Created",
+                    "type": "integer",
+                    "description": "Unix timestamp (in seconds) representing when the response was generated.",
+                    "instillShortDescription": "Time when the model generated the response, represented as a Unix timestamp.",
+                    "instillFormat": "integer",
+                    "instillUIOrder": 3
+                  }
+                },
+                "required": [
+                  "finish-reason",
+                  "index",
+                  "content",
+                  "created"
+                ]
+              }
+            }
+          },
+          "required": [
+            "choices"
+          ]
+        },
+        "metadata": {
+          "description": "Provides information on how many tokens were used in both the input prompt and the generated response.",
+          "instillShortDescription": "Reports token usage for both the input and the response.",
+          "title": "Metadata",
+          "instillUIOrder": 1,
+          "type": "object",
+          "properties": {
+            "usage": {
+              "description": "Provides information on how many tokens were used in both the input prompt and the generated response.",
+              "instillShortDescription": "Reports token usage for both the input and the response.",
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "type": "object",
+              "properties": {
+                "completion-tokens": {
+                  "title": "Completion Tokens",
+                  "type": "integer",
+                  "description": "The number of tokens used in generating the model's completion.",
+                  "instillShortDescription": "Tokens used in generating the response.",
+                  "instillFormat": "integer",
+                  "instillUIOrder": 0
+                },
+                "prompt-tokens": {
+                  "title": "Prompt Tokens",
+                  "type": "integer",
+                  "description": "The number of tokens in the original input prompt provided to the model.",
+                  "instillShortDescription": "Tokens used in the input prompt for generation.",
+                  "instillFormat": "integer",
+                  "instillUIOrder": 1
+                },
+                "total-tokens": {
+                  "title": "Total tokens",
+                  "type": "integer",
+                  "description": "The total number of tokens used, combining the prompt and the response.",
+                  "instillShortDescription": "Sum of tokens used in both the input and response.",
+                  "instillFormat": "integer",
+                  "instillUIOrder": 2
+                }
+              },
+              "required": [
+                "completion-tokens",
+                "prompt-tokens",
+                "total-tokens"
+              ]
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  "TASK_TEXT_TO_IMAGE": {
+    "title": "Text To Image",
+    "instillShortDescription": "This task allows users to generate detailed images based on textual descriptions. By providing a well-constructed prompt, users can influence various aspects of the generated image, such as composition, colors, and subjects. The model processes the input text to create an image that matches the description as closely as possible. Additional settings, such as controlling the aspect ratio, limiting unwanted elements via negative prompts, and specifying a seed for repeatability, provide flexibility in generating diverse results. This feature is ideal for visual content creation, creative brainstorming, and conceptual design, offering users the ability to convert ideas into visual representations quickly and efficiently. Whether for art, marketing, or prototyping, this task is a powerful tool for transforming words into visuals.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Text to Image Input",
+      "description": "The input schema defines the structure for providing data to this task. It includes the model and prompt to generate the image and optional parameters like aspect ratio, negative prompts, and more.",
+      "instillShortDescription": "The input schema defines the required model, prompt, and optional settings for generating an image.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Input Data",
+          "instillUIOrder": 0,
+          "description": "This object contains the necessary data for generating the image. It includes the selected model and the prompt describing the desired elements of the output image.",
+          "instillShortDescription": "The required data for generating an image, including the model and a detailed prompt.",
+          "type": "object",
+          "properties": {
+            "model": {
+              "description": "The model to be used for generating the image. Specify a model that fits your requirements for image generation. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+              "instillShortDescription": "The model used for image generation.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIOrder": 0,
+              "title": "Model Name",
+              "type": "string"
+            },
+            "prompt": {
+              "title": "Input Prompt",
+              "type": "string",
+              "description": "The textual description that will guide the image generation. A strong and detailed prompt leads to better results, clearly specifying subjects, colors, and other visual aspects.",
+              "instillShortDescription": "Descriptive text prompt for image generation.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIOrder": 1
+            }
+          },
+          "required": [
+            "model",
+            "prompt"
+          ]
+        },
+        "parameter": {
+          "title": "Parameter",
+          "description": "This section defines optional parameters that modify the behavior of the image generation, such as aspect ratio, negative prompts, and the number of generated choices.",
+          "instillShortDescription": "Optional parameters that adjust the image generation process.",
+          "instillUIOrder": 1,
+          "type": "object",
+          "properties": {
+            "aspect-ratio": {
+              "title": "Aspect Ratio",
+              "type": "string",
+              "description": "Sets the aspect ratio for the generated image. Defaults to 1:1, but you can choose from other options like 16:9, 4:5, etc.",
+              "instillShortDescription": "Defines the image aspect ratio, defaulting to 1:1.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "default": "1:1",
+              "enum": [
+                "16:9",
+                "1:1",
+                "21:9",
+                "2:3",
+                "3:2",
+                "4:5",
+                "5:4",
+                "9:16",
+                "9:21"
+              ],
+              "instillUIOrder": 0
+            },
+            "negative-prompt": {
+              "title": "Negative Prompt",
+              "type": "string",
+              "description": "Keywords representing elements you do not want in the generated image, helping to refine the output.",
+              "instillShortDescription": "Keywords specifying what to exclude from the image.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIOrder": 1,
+              "default": ""
+            },
+            "n": {
+              "title": "Number of Choices",
+              "type": "integer",
+              "description": "The number of image samples to generate for each input prompt. Set the number based on the desired variety of outputs.",
+              "instillShortDescription": "Specifies how many image samples to generate for each prompt.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 2,
+              "default": 1
+            },
+            "seed": {
+              "title": "Seed",
+              "type": "integer",
+              "description": "A seed value controls the randomness of the output. Using the same seed will produce consistent results. The default value is 0.",
+              "instillShortDescription": "Controls the randomization of results. Default seed is 0.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 3,
+              "default": 0
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Chat Output",
+      "description": "The output schema defines the structure of the result, including the generated images and metadata such as usage statistics and reasons for stopping.",
+      "instillShortDescription": "Defines the output format, including generated images and metadata.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Output Data",
+          "instillUIOrder": 0,
+          "description": "The data section contains the core output of the image generation task. It includes all relevant information generated by the model, such as the list of created images and their associated metadata, providing a comprehensive result for each input prompt.",
+          "instillShortDescription": "Core output containing generated images and related metadata.",
+          "type": "object",
+          "properties": {
+            "choices": {
+              "title": "Choices",
+              "type": "array",
+              "description": "A list containing the generated image samples. Each object in the array includes the image (Base64 encoded) and the reason the generation stopped.",
+              "instillShortDescription": "List of generated images and reasons for stopping.",
+              "instillFormat": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "finish-reason": {
+                    "title": "Finish Reason",
+                    "type": "string",
+                    "description": "Indicates why the model stopped generating tokens, such as reaching success or filtering out inappropriate content.",
+                    "instillShortDescription": "Reason why the generation process stopped.",
+                    "instillFormat": "string",
+                    "enum": [
+                      "content_filtered",
+                      "success"
+                    ],
+                    "instillUIOrder": 0
+                  },
+                  "image": {
+                    "title": "Image",
+                    "type": "string",
+                    "description": "The generated image in Base64 format, ready for use or further processing.",
+                    "instillShortDescription": "The generated image encoded in Base64.",
+                    "instillFormat": "image/*",
+                    "instillUIOrder": 1
+                  }
+                },
+                "required": [
+                  "finish-reason",
+                  "image"
+                ]
+              },
+              "instillUIOrder": 0
+            }
+          },
+          "required": [
+            "choices"
+          ]
+        },
+        "metadata": {
+          "title": "Metadata",
+          "instillUIOrder": 1,
+          "description": "Provides additional details about the image generation request, such as usage statistics and resource consumption.",
+          "instillShortDescription": "Additional information about the request, including usage data.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "Tracks how resources were utilized during the request, offering insights into the performance and efficiency of the task.",
+              "instillShortDescription": "Details about resource usage during the image generation process.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  "TASK_CLASSIFICATION": {
+    "title": "Classification",
+    "instillShortDescription": "This task focuses on analyzing and categorizing images into predefined groups based on their content. Utilizing advanced machine learning models, this task processes input images and assigns them to specific classes, helping users quickly identify and sort visual data. This capability is particularly valuable in various applications, such as organizing image databases, automating content moderation, or improving search functionalities within image repositories. By leveraging robust algorithms, the Classification task enhances efficiency and accuracy in identifying visual elements, patterns, and anomalies. Users can expect reliable results that streamline workflows and support decision-making processes. With a straightforward input format, this task allows for easy integration into existing systems, empowering users to harness the power of image classification in their projects. Whether for academic research, business intelligence, or creative endeavors, the Classification task serves as a vital tool for transforming images into actionable insights.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Classification Input",
+      "instillUIOrder": 0,
+      "description": "Defines the structure for submitting data to the classification task. It requires a data object containing the image or visual input to be classified. Optional parameters can be included to customize the classification process. This schema ensures that all necessary information is provided for accurate image categorization, facilitating efficient processing and reliable results.",
+      "instillShortDescription": "Schema for submitting images and parameters for classification tasks.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Input Data",
+          "instillUIOrder": 0,
+          "description": "Contains the input image or visual data for classification. It specifies the image format, either via a URL or as a base64 encoded string. This section ensures that the classification model receives the appropriate input, enhancing the accuracy and efficiency of the classification task.",
+          "instillShortDescription": "Input image or visual data for classification tasks via URL or base64.",
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.",
+              "title": "Image URL",
+              "properties": {
+                "model": {
+                  "description": "Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+                  "instillShortDescription": "Name of the model used for classification.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "instillUIOrder": 0,
+                  "type": "string"
+                },
+                "image-url": {
+                  "title": "Input Image URL",
+                  "description": "Contains the URL of the input image to be classified. This URL must point to a valid image resource for processing.",
+                  "instillShortDescription": "URL of the image for classification.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUIOrder": 2,
+                  "type": "string"
+                },
+                "type": {
+                  "title": "URL",
+                  "description": "Indicates the type of input being submitted, set to `image-url` for this option. This field is essential for the classification model to understand the format of the input data.",
+                  "instillShortDescription": "Type identifier for URL input.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "instillUIOrder": 1,
+                  "const": "image-url"
+                }
+              },
+              "required": [
+                "model",
+                "image-url",
+                "type"
+              ]
+            },
+            {
+              "type": "object",
+              "description": "Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.",
+              "title": "Image Base64",
+              "properties": {
+                "model": {
+                  "description": "Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+                  "instillShortDescription": "Name of the model used for classification.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "instillUIOrder": 0,
+                  "type": "string"
+                },
+                "image-base64": {
+                  "title": "Input Image File",
+                  "description": "Contains the base64-encoded string of the input image file to be classified. This format allows for direct submission of image data without requiring an external URL.",
+                  "instillShortDescription": "Base64-encoded image file for classification.",
+                  "instillAcceptFormats": [
+                    "image/*"
+                  ],
+                  "instillUIOrder": 2,
+                  "type": "string"
+                },
+                "type": {
+                  "title": "File",
+                  "description": "Indicates the type of input being submitted, set to `image-base64` for this option. This field helps the classification model to identify the format of the input data.",
+                  "instillShortDescription": "Type identifier for base64 input.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUIOrder": 1,
+                  "type": "string",
+                  "const": "image-base64"
+                }
+              },
+              "required": [
+                "model",
+                "image-base64",
+                "type"
+              ]
+            }
+          ],
+          "type": "object",
+          "required": [
+            "model"
+          ]
+        },
+        "parameter": {
+          "title": "Parameter",
+          "instillUIOrder": 1,
+          "description": "The parameter property allows for the inclusion of optional settings or configurations that may influence the classification process. While no specific properties are defined, this field enables users to customize the classification task as needed.",
+          "instillShortDescription": "Optional parameters for customizing the classification task.",
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Classification Output",
+      "description": "Describes the structure of the results returned after processing the classification task. It includes a data object that contains the classification results, such as the assigned categories or labels for the input images. Additionally, it provides metadata containing usage statistics related to the request, offering insights into the processing of the classification task. This schema ensures users receive clear and structured outputs for effective decision-making.",
+      "instillShortDescription": "Structure of classification results and associated usage statistics.",
+      "instillUIOrder": 1,
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Output Data",
+          "instillUIOrder": 0,
+          "description": "Contains the results of the classification task, including the predicted category and its associated confidence score. This structured output allows users to understand the model's classification decision and assess its reliability based on the score provided.",
+          "instillShortDescription": "Results of the classification, including predicted category and score.",
+          "type": "object",
+          "properties": {
+            "category": {
+              "description": "Represents the predicted category assigned to the input image. This field provides the model's classification result, helping users identify how the input is categorized.",
+              "instillShortDescription": "Predicted category for the input image.",
+              "instillFormat": "string",
+              "title": "Category",
+              "instillUIOrder": 0,
+              "type": "string"
+            },
+            "score": {
+              "description": "Indicates the confidence score associated with the predicted category, reflecting how certain the model is about its classification. A higher score signifies greater confidence in the assigned category.",
+              "instillShortDescription": "Confidence score of the predicted category.",
+              "instillFormat": "number",
+              "title": "Score",
+              "instillUIOrder": 1,
+              "type": "number"
+            }
+          },
+          "required": [
+            "category",
+            "score"
+          ]
+        },
+        "metadata": {
+          "title": "Metadata",
+          "instillUIOrder": 1,
+          "description": "Contains additional information about the request, including usage statistics. This data provides context and insights regarding the classification process, helping users evaluate performance and resource consumption during the classification task.",
+          "instillShortDescription": "Additional information and usage statistics for the classification request.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "Contains statistics related to the usage of the classification request. This field can provide insights into how resources were utilized during processing, although no specific properties are defined within it.",
+              "instillShortDescription": "Statistics on resource usage for the classification request.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  "TASK_DETECTION": {
+    "title": "Detection",
+    "instillShortDescription": "This task focuses on identifying and localizing multiple objects within images, offering essential capabilities for various applications, from autonomous vehicles to surveillance systems. This task employs advanced algorithms to analyze visual data, accurately pinpointing the positions of objects and providing bounding boxes for each detected item. Users can leverage this functionality to enhance object recognition, improve inventory management, and facilitate real-time analysis in diverse environments. By accurately detecting and classifying objects, the system enables more informed decision-making and operational efficiency across industries. Whether it's distinguishing between pedestrians and vehicles or recognizing items on store shelves, the Detection task plays a critical role in computer vision applications, ensuring that machines can interpret and interact with their surroundings effectively. This capability not only optimizes workflows but also contributes to the development of smarter, safer systems in various sectors, including retail, transportation, and robotics.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Detection Input",
+      "description": "The schema for inputs required for the detection task. It defines the structure for both image URLs and base64-encoded images, ensuring accurate detection using a specified model.",
+      "instillShortDescription": "Schema defining inputs for the detection task, including image URLs and base64 images.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "Contains the data required for the detection process. It can include either an image URL or a base64-encoded image representation for detection.",
+          "instillShortDescription": "Contains input data for detection, either via URL or base64.",
+          "type": "object",
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes.",
+              "title": "Image URL",
+              "properties": {
+                "model": {
+                  "description": "Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+                  "instillShortDescription": "Name of the model used for detection.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "instillUIOrder": 0,
+                  "type": "string"
+                },
+                "image-url": {
+                  "title": "Input Image URL",
+                  "description": "Contains the URL of the input image to be classified. This URL must point to a valid image resource for processing.",
+                  "instillShortDescription": "URL of the image for detection.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUIOrder": 2,
+                  "type": "string"
+                },
+                "type": {
+                  "title": "URL",
+                  "description": "Indicates the type of input being submitted, set to `image-url` for this option. This field is essential for the detection model to understand the format of the input data.",
+                  "instillShortDescription": "Type identifier for URL input.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "instillUIOrder": 1,
+                  "const": "image-url"
+                }
+              },
+              "required": [
+                "model",
+                "image-url",
+                "type"
+              ]
+            },
+            {
+              "type": "object",
+              "description": "Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes.",
+              "title": "Image Base64",
+              "properties": {
+                "model": {
+                  "description": "Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+                  "instillShortDescription": "Name of the model used for detection.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "instillUIOrder": 0,
+                  "type": "string"
+                },
+                "image-base64": {
+                  "title": "Input Image File",
+                  "description": "Contains the base64-encoded string of the input image file to be classified. This format allows for direct submission of image data without requiring an external URL.",
+                  "instillShortDescription": "Base64-encoded image file for detection.",
+                  "instillAcceptFormats": [
+                    "image/*"
+                  ],
+                  "instillUIOrder": 2,
+                  "type": "string"
+                },
+                "type": {
+                  "title": "File",
+                  "description": "Indicates the type of input being submitted, set to `image-base64` for this option. This field helps the detection model to identify the format of the input data.",
+                  "instillShortDescription": "Type identifier for base64 input.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUIOrder": 1,
+                  "type": "string",
+                  "const": "image-base64"
+                }
+              },
+              "required": [
+                "model",
+                "image-base64",
+                "type"
+              ]
+            }
+          ],
+          "required": [
+            "model"
+          ],
+          "title": "Input Data",
+          "instillUIOrder": 0
+        },
+        "parameter": {
+          "description": "An object representing any additional parameters for the detection task. This section is currently empty but can be extended for future needs.",
+          "instillShortDescription": "Object for additional parameters related to the detection task.",
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "title": "Parameter",
+          "instillUIOrder": 1
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Detection Output",
+      "description": "Contains the results generated by the detection task, including a list of objects detected in the input image along with their details.",
+      "instillShortDescription": "Object containing results of the detection task, including detected objects.",
+      "type": "object",
+      "instillUIOrder": 1,
+      "properties": {
+        "data": {
+          "title": "Output Data",
+          "instillUIOrder": 0,
+          "description": "Contains the results generated by the detection task, including a list of objects detected in the input image along with their details.",
+          "instillShortDescription": "Object containing results of the detection task, including detected objects.",
+          "type": "object",
+          "properties": {
+            "objects": {
+              "description": "A list of objects detected in the input image, each with a bounding box, category, and confidence score indicating prediction accuracy.",
+              "instillShortDescription": "List of objects detected in the input image with bounding boxes and scores.",
+              "instillFormat": "array:structured/detection-object",
+              "items": {
+                "additionalProperties": false,
+                "instillFormat": "structured/detection-object",
+                "properties": {
+                  "bounding-box": {
+                    "title": "Bounding box",
+                    "description": "Defines the coordinates of the detected object in the format (left, top, width, height). This information specifies the location and size of the detected object.",
+                    "instillShortDescription": "Coordinates of the detected object's bounding box.",
+                    "instillFormat": "structured/bounding-box",
+                    "properties": {
+                      "height": {
+                        "description": "The height dimension of the detected bounding box, representing its vertical size within the image.",
+                        "instillShortDescription": "Vertical height of the bounding box.",
+                        "instillFormat": "number",
+                        "title": "Height",
+                        "instillUIOrder": 0,
+                        "type": "number"
+                      },
+                      "left": {
+                        "description": "The x-axis coordinate representing the left boundary of the bounding box in the image.",
+                        "instillShortDescription": "Left boundary x-axis coordinate of the bounding box.",
+                        "instillFormat": "number",
+                        "title": "Left",
+                        "instillUIOrder": 1,
+                        "type": "number"
+                      },
+                      "top": {
+                        "description": "The y-axis coordinate representing the top boundary of the bounding box in the image.",
+                        "instillShortDescription": "Top boundary y-axis coordinate of the bounding box.",
+                        "instillFormat": "number",
+                        "title": "Top",
+                        "instillUIOrder": 2,
+                        "type": "number"
+                      },
+                      "width": {
+                        "description": "The width dimension of the detected bounding box, representing its horizontal size within the image.",
+                        "instillShortDescription": "Horizontal width of the bounding box.",
+                        "instillFormat": "number",
+                        "title": "Width",
+                        "instillUIOrder": 3,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "left",
+                      "top",
+                      "width",
+                      "height"
+                    ],
+                    "instillUIOrder": 0,
+                    "type": "object"
+                  },
+                  "category": {
+                    "description": "Represents the predicted category assigned to the detected object, providing context about what the object is classified as.",
+                    "instillShortDescription": "Predicted category of the detected object.",
+                    "instillFormat": "string",
+                    "title": "Category",
+                    "instillUIOrder": 1,
+                    "type": "string"
+                  },
+                  "score": {
+                    "description": "The confidence score associated with the predicted category for the detected object, indicating the model's certainty about the classification.",
+                    "instillShortDescription": "Confidence score of the predicted category for the detected object.",
+                    "instillFormat": "number",
+                    "title": "Score",
+                    "instillUIOrder": 2,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "bounding-box",
+                  "category",
+                  "score"
+                ],
+                "title": "Object",
+                "type": "object"
+              },
+              "instillUIOrder": 0,
+              "title": "Objects",
+              "type": "array"
+            }
+          },
+          "required": [
+            "objects"
+          ]
+        },
+        "metadata": {
+          "description": "Contains metadata related to the detection task's output, providing insights into the request's processing and any relevant statistics.",
+          "instillShortDescription": "Metadata associated with the detection task's output.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "A section includes statistics on the resource usage for the request.",
+              "instillShortDescription": "Statistics regarding resource usage for the request.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": [],
+          "instillUIOrder": 1,
+          "title": "Metadata"
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  "TASK_KEYPOINT": {
+    "title": "Keypoint",
+    "instillShortDescription": "Detects and localizes multiple keypoints within objects in images, providing precise coordinates for each keypoint. This task is essential for applications like pose estimation, where key features such as joints or specific object parts need to be identified. By mapping these points, This task enables tracking and analysis of object structure, movement, or posture, making it valuable in fields like human-computer interaction, sports analytics, and robotics. It supports accurate feature extraction, contributing to detailed analysis and improved interaction between systems and visual data.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Keypoint Input",
+      "description": "Defines the input schema for the keypoint task, specifying data formats and model information required to process an image. Input can be provided as either a URL or a base64-encoded image file, with an associated model to perform keypoint localization. This schema helps standardize the input, ensuring accurate processing.",
+      "instillShortDescription": "Specifies input schema for keypoint, supporting URL or base64 image formats with model information.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "description": "Contains input data options, allowing for an image URL or a base64-encoded image file for keypoint detection. Each input type requires model selection for processing.",
+          "instillShortDescription": "Input data, supporting either image URL or base64 encoding with model selection.",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "Image URL",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+                  "instillShortDescription": "Model used for keypoint detection.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-url": {
+                  "title": "Input Image URL",
+                  "instillUIOrder": 2,
+                  "description": "URL of the input image for keypoint detection. The image must be accessible online and compatible with the selected model.",
+                  "instillShortDescription": "URL of the image for keypoint detection.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "title": "URL",
+                  "instillUIOrder": 1,
+                  "description": "Identifies the input type as an image URL, indicating the format for the keypoint detection model.",
+                  "instillShortDescription": "Specifies image URL as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-url"
+                }
+              },
+              "required": [
+                "model",
+                "image-url",
+                "type"
+              ]
+            },
+            {
+              "type": "object",
+              "title": "Image Base64",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+                  "instillShortDescription": "Model used for keypoint detection.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-base64": {
+                  "instillUIOrder": 2,
+                  "title": "Input Image File",
+                  "description": "Base64-encoded string of the image file for keypoint detection. This format allows direct image data input.",
+                  "instillShortDescription": "Base64-encoded image file for keypoint detection.",
+                  "instillAcceptFormats": [
+                    "image/*"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "instillUIOrder": 1,
+                  "title": "Image File",
+                  "description": "Identifies the input type as a base64-encoded image file, indicating the format for the keypoint detection model.",
+                  "instillShortDescription": "Specifies base64 image as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-base64"
+                }
+              },
+              "required": [
+                "model",
+                "image-base64",
+                "type"
+              ]
+            }
+          ],
+          "required": [
+            "model"
+          ],
+          "title": "Input Data",
+          "instillUIOrder": 0
+        },
+        "parameter": {
+          "description": "Optional parameters for the keypoint detection task, allowing for adjustments in processing.",
+          "instillShortDescription": "Optional parameters for keypoint detection.",
+          "type": "object",
+          "properties": {},
+          "instillUIOrder": 1,
+          "required": [],
+          "title": "Parameter"
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Keypoint Output",
+      "description": "Defines the output schema for keypoint detection, detailing the structure and data formats for results, including detected objects and related metadata, such as bounding boxes, keypoints, and confidence scores.",
+      "instillShortDescription": "Schema for keypoint detection output, including detected objects and metadata.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Output Data",
+          "instillUIOrder": 0,
+          "description": "Contains detected objects and associated keypoints for keypoint detection output. Each object includes its bounding box, keypoints, and confidence score.",
+          "instillShortDescription": "Output data for detected objects, including bounding boxes, keypoints, and scores.",
+          "type": "object",
+          "properties": {
+            "objects": {
+              "description": "List of detected objects, each containing a bounding box, keypoints list, and a confidence score.",
+              "instillShortDescription": "List of detected objects with bounding boxes, keypoints, and scores.",
+              "instillFormat": "array:structured/keypoint-object",
+              "items": {
+                "instillFormat": "structured/keypoint-object",
+                "properties": {
+                  "bounding-box": {
+                    "description": "The bounding box defining the outer limits of a detected object, including coordinates for spatial positioning.",
+                    "instillShortDescription": "Bounding box specifying detected object position.",
+                    "instillFormat": "structured/bounding-box",
+                    "properties": {
+                      "height": {
+                        "description": "Specifies the vertical dimension of the bounding box, representing its height in units of measurement.",
+                        "instillShortDescription": "Vertical height of the bounding box.",
+                        "instillUIOrder": 0,
+                        "instillFormat": "number",
+                        "title": "Height",
+                        "type": "number"
+                      },
+                      "left": {
+                        "description": "X-axis coordinate of the left edge of the bounding box, indicating its horizontal starting position.",
+                        "instillShortDescription": "X-axis coordinate of the left edge of the bounding box.",
+                        "instillFormat": "number",
+                        "instillUIOrder": 1,
+                        "title": "Left",
+                        "type": "number"
+                      },
+                      "top": {
+                        "description": "Y-axis coordinate of the top edge of the bounding box, representing its vertical starting position.",
+                        "instillShortDescription": "Y-axis position of the bounding box's top edge.",
+                        "instillUIOrder": 2,
+                        "instillFormat": "number",
+                        "title": "Top",
+                        "type": "number"
+                      },
+                      "width": {
+                        "description": "Horizontal dimension of the bounding box, indicating its width in units of measurement.",
+                        "instillShortDescription": "Horizontal width of the bounding box.",
+                        "instillUIOrder": 3,
+                        "instillFormat": "number",
+                        "title": "Width",
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "left",
+                      "top",
+                      "width",
+                      "height"
+                    ],
+                    "title": "Bounding Box",
+                    "instillUIOrder": 0,
+                    "type": "object"
+                  },
+                  "keypoints": {
+                    "description": "A list of predefined keypoints for a detected object, including each point’s x and y coordinates and visibility score.",
+                    "instillShortDescription": "List of keypoints with coordinates and visibility score.",
+                    "items": {
+                      "properties": {
+                        "v": {
+                          "title": "Visibility",
+                          "instillUIOrder": 0,
+                          "description": "Visibility score indicating the likelihood of keypoint presence in the detected object.",
+                          "instillShortDescription": "Visibility score of keypoint.",
+                          "instillFormat": "number",
+                          "type": "number"
+                        },
+                        "x": {
+                          "title": "X Coordinate",
+                          "instillUIOrder": 1,
+                          "description": "X-axis coordinate of the keypoint within the detected object’s bounding box.",
+                          "instillShortDescription": "X coordinate of the keypoint.",
+                          "instillFormat": "number",
+                          "type": "number"
+                        },
+                        "y": {
+                          "title": "Y Coordinate",
+                          "instillUIOrder": 2,
+                          "description": "Y-axis coordinate of the keypoint within the detected object’s bounding box.",
+                          "instillShortDescription": "Y coordinate of the keypoint.",
+                          "instillFormat": "number",
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "v"
+                      ],
+                      "title": "Keypoints",
+                      "type": "object"
+                    },
+                    "title": "Keypoints",
+                    "instillUIOrder": 1,
+                    "type": "array"
+                  },
+                  "score": {
+                    "description": "Confidence score indicating the accuracy of the detected object prediction.",
+                    "instillShortDescription": "Confidence score of the detected object.",
+                    "instillFormat": "number",
+                    "title": "Score",
+                    "instillUIOrder": 2,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "keypoints",
+                  "score",
+                  "bounding-box"
+                ],
+                "title": "Object",
+                "type": "object"
+              },
+              "title": "Objects",
+              "instillUIOrder": 0,
+              "type": "array"
+            }
+          },
+          "required": [
+            "objects"
+          ]
+        },
+        "metadata": {
+          "title": "Metadata",
+          "instillUIOrder": 1,
+          "description": "Contains additional metadata for the keypoint detection task output, including request-specific usage information.",
+          "instillShortDescription": "Metadata for output, including request usage details.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "Statistics detailing resource usage for the keypoint detection request, aiding in tracking and monitoring.",
+              "instillShortDescription": "Usage statistics for the detection request.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  "TASK_OCR": {
+    "title": "OCR",
+    "instillShortDescription": "Optical Character Recognition (OCR) is a process that detects and extracts text from images, transforming it into machine-readable data. This task analyzes visual information to locate and recognize text within various image types, such as scanned documents, photographs, or screenshots. OCR is valuable for digitizing printed or handwritten materials, enabling text searching, editing, and archiving. The task efficiently handles multiple languages and various font styles, ensuring accuracy across different formats. OCR applications include document management, data extraction, and accessibility enhancements, making it a key technology in automating text-based workflows.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OCR Input",
+      "description": "Defines data requirements for performing text extraction from images. This schema supports two input formats: an accessible image URL or a base64-encoded image file. Each format requires specifying a model that determines the OCR processing method and accuracy. Using an image URL enables easy access to web-hosted images, while base64 encoding allows for direct file input. Both options ensure flexible integration with various data sources, supporting OCR workflows effectively.",
+      "instillShortDescription": "Defines the input schema for OCR, supporting image URLs or base64-encoded images with model selection to configure processing.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "description": "Contains input data options, allowing for an image URL or a base64-encoded image file for OCR. Each input type requires model selection for processing.",
+          "instillShortDescription": "Input data, supporting either image URL or base64 encoding with model selection.",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "Image URL",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for OCR. This model determines the approach and accuracy of the OCR task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+                  "instillShortDescription": "Model used for OCR.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-url": {
+                  "title": "Input Image URL",
+                  "instillUIOrder": 2,
+                  "description": "URL of the input image for OCR. The image must be accessible online and compatible with the selected model.",
+                  "instillShortDescription": "URL of the image for OCR.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "title": "URL",
+                  "instillUIOrder": 1,
+                  "description": "Identifies the input type as an image URL, indicating the format for the OCR model.",
+                  "instillShortDescription": "Specifies image URL as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-url"
+                }
+              },
+              "required": [
+                "model",
+                "image-url",
+                "type"
+              ]
+            },
+            {
+              "type": "object",
+              "title": "Image Base64",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for OCR. This model determines the approach and accuracy of the OCR task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+                  "instillShortDescription": "Model used for OCR.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-base64": {
+                  "instillUIOrder": 2,
+                  "title": "Input Image File",
+                  "description": "Base64-encoded string of the image file for OCR. This format allows direct image data input.",
+                  "instillShortDescription": "Base64-encoded image file for OCR.",
+                  "instillAcceptFormats": [
+                    "image/*"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "instillUIOrder": 1,
+                  "title": "Image File",
+                  "description": "Identifies the input type as a base64-encoded image file, indicating the format for the OCR model.",
+                  "instillShortDescription": "Specifies base64 image as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-base64"
+                }
+              },
+              "required": [
+                "model",
+                "image-base64",
+                "type"
+              ]
+            }
+          ],
+          "required": [
+            "model"
+          ],
+          "title": "Input Data",
+          "instillUIOrder": 0
+        },
+        "parameter": {
+          "title": "Parameter",
+          "instillUIOrder": 1,
+          "description": "The parameter field is an optional object that allows you to provide specific configurations for the OCR task. Although empty by default, it can be populated with parameters that fine-tune processing or control the model’s behavior. These configurations can help adjust the output according to specific OCR requirements or performance optimizations.",
+          "instillShortDescription": "Optional settings for adjusting OCR task configurations.",
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OCR Output",
+      "description": "Defines the output structure of the OCR task, which includes detailed results about recognized text, confidence scores, and additional metadata regarding the processing of the task.",
+      "instillShortDescription": "Schema detailing the output results of the OCR task.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Output Data",
+          "instillUIOrder": 0,
+          "description": "Contains the structured output data of the OCR task, presenting a list of detected objects, each represented by a bounding box, recognized text, and associated confidence scores.",
+          "instillShortDescription": "Structured OCR output with recognized text and bounding boxes.",
+          "type": "object",
+          "properties": {
+            "objects": {
+              "instillUIOrder": 0,
+              "description": "A list of detected OCR objects, each specified by a bounding box, recognized text, and a confidence score.",
+              "instillShortDescription": "List of detected OCR objects with text and bounding boxes.",
+              "instillFormat": "array:structured/ocr-object",
+              "items": {
+                "instillFormat": "structured/ocr-object",
+                "properties": {
+                  "bounding-box": {
+                    "description": "The bounding box defining the outer limits of a detected object, including coordinates for spatial positioning.",
+                    "instillShortDescription": "Bounding box specifying detected object position.",
+                    "instillFormat": "structured/bounding-box",
+                    "properties": {
+                      "height": {
+                        "description": "Specifies the vertical dimension of the bounding box, representing its height in units of measurement.",
+                        "instillShortDescription": "Vertical height of the bounding box.",
+                        "instillUIOrder": 0,
+                        "instillFormat": "number",
+                        "title": "Height",
+                        "type": "number"
+                      },
+                      "left": {
+                        "description": "X-axis coordinate of the left edge of the bounding box, indicating its horizontal starting position.",
+                        "instillShortDescription": "X-axis coordinate of the left edge of the bounding box.",
+                        "instillFormat": "number",
+                        "instillUIOrder": 1,
+                        "title": "Left",
+                        "type": "number"
+                      },
+                      "top": {
+                        "description": "Y-axis coordinate of the top edge of the bounding box, representing its vertical starting position.",
+                        "instillShortDescription": "Y-axis position of the bounding box's top edge.",
+                        "instillUIOrder": 2,
+                        "instillFormat": "number",
+                        "title": "Top",
+                        "type": "number"
+                      },
+                      "width": {
+                        "description": "Horizontal dimension of the bounding box, indicating its width in units of measurement.",
+                        "instillShortDescription": "Horizontal width of the bounding box.",
+                        "instillUIOrder": 3,
+                        "instillFormat": "number",
+                        "title": "Width",
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "left",
+                      "top",
+                      "width",
+                      "height"
+                    ],
+                    "title": "Bounding Box",
+                    "instillUIOrder": 0,
+                    "type": "object"
+                  },
+                  "score": {
+                    "description": "Indicates the confidence level of the detected text, scored by the model to reflect recognition accuracy.",
+                    "instillShortDescription": "Confidence level of the recognized text.",
+                    "instillUIOrder": 2,
+                    "instillFormat": "number",
+                    "title": "Score",
+                    "type": "number"
+                  },
+                  "text": {
+                    "description": "The recognized text within each detected bounding box.",
+                    "instillShortDescription": "Recognized text within the bounding box.",
+                    "instillUIOrder": 1,
+                    "instillFormat": "string",
+                    "title": "Text",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "bounding-box",
+                  "text",
+                  "score"
+                ],
+                "title": "Object",
+                "type": "object"
+              },
+              "title": "Objects",
+              "type": "array"
+            }
+          },
+          "required": [
+            "objects"
+          ]
+        },
+        "metadata": {
+          "title": "Metadata",
+          "instillUIOrder": 1,
+          "description": "Contains additional information on the OCR task, including performance metrics and system usage statistics for the request.",
+          "instillShortDescription": "Contains OCR task metadata and performance data.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "Provides details on resource consumption, such as processing time and model-specific metrics for the OCR request.",
+              "instillShortDescription": "Resource usage statistics for the OCR task.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  "TASK_SEMANTIC_SEGMENTATION": {
+    "title": "Semantic Segmentation",
+    "instillShortDescription": "This task involves classifying each pixel in an image into specific, predefined categories. This process enables detailed image analysis, allowing systems to differentiate between various elements within the visual data, such as objects, backgrounds, and other relevant features. Semantic segmentation is widely used in applications like autonomous driving, medical imaging, and image editing, where precise localization and identification of objects are essential. By providing pixel-level classification, this task enhances the understanding of image content, facilitating better decision-making in various AI-driven systems and technologies. It plays a crucial role in computer vision and machine learning applications.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Semantic Segmentation Input",
+      "description": "Defines the requirements for the semantic segmentation task, specifying how to provide input images, either through a direct URL or as a base64-encoded string. It includes necessary model information to ensure accurate processing.",
+      "instillShortDescription": "Defines requirements for providing input images for semantic segmentation.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "description": "Contains input data options, allowing for an image URL or a base64-encoded image file for semantic segmentation. Each input type requires model selection for processing.",
+          "instillShortDescription": "Input data, supporting either image URL or base64 encoding with model selection.",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "Image URL",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+                  "instillShortDescription": "Model used for semantic segmentation.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-url": {
+                  "title": "Input Image URL",
+                  "instillUIOrder": 2,
+                  "description": "URL of the input image for semantic segmentation. The image must be accessible online and compatible with the selected model.",
+                  "instillShortDescription": "URL of the image for semantic segmentation.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "title": "URL",
+                  "instillUIOrder": 1,
+                  "description": "Identifies the input type as an image URL, indicating the format for the semantic segmentation model.",
+                  "instillShortDescription": "Specifies image URL as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-url"
+                }
+              },
+              "required": [
+                "model",
+                "image-url",
+                "type"
+              ]
+            },
+            {
+              "type": "object",
+              "title": "Image Base64",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+                  "instillShortDescription": "Model used for semantic segmentation.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-base64": {
+                  "instillUIOrder": 2,
+                  "title": "Input Image File",
+                  "description": "Base64-encoded string of the image file for semantic segmentation. This format allows direct image data input.",
+                  "instillShortDescription": "Base64-encoded image file for semantic segmentation.",
+                  "instillAcceptFormats": [
+                    "image/*"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "instillUIOrder": 1,
+                  "title": "Image File",
+                  "description": "Identifies the input type as a base64-encoded image file, indicating the format for the semantic segmentation model.",
+                  "instillShortDescription": "Specifies base64 image as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-base64"
+                }
+              },
+              "required": [
+                "model",
+                "image-base64",
+                "type"
+              ]
+            }
+          ],
+          "required": [
+            "model"
+          ],
+          "title": "Input Data",
+          "instillUIOrder": 0
+        },
+        "parameter": {
+          "description": "This object contains configuration options that allow customization of the semantic segmentation task, such as adjusting thresholds or model settings.",
+          "instillShortDescription": "Configuration options for semantic segmentation.",
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "title": "Parameter",
+          "instillUIOrder": 1
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Semantic Segmentation Output",
+      "description": "Defines the results of the semantic segmentation task, including the segmented data and metadata. It contains information about segmented areas of an image, represented as RLE masks, along with their corresponding categories and usage statistics for the request.",
+      "instillShortDescription": "Schema for the results and metadata of the semantic segmentation task.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Output Data",
+          "instillUIOrder": 0,
+          "description": "Contains the output data of the semantic segmentation task, detailing the segmented areas through RLE masks. Each segment corresponds to a specific category, providing essential data for analyzing the results.",
+          "instillShortDescription": "Contains output data, including RLE masks and their categories.",
+          "type": "object",
+          "properties": {
+            "stuffs": {
+              "instillUIOrder": 0,
+              "description": "An list of RLE binary masks that represent different segments of the image. Each mask is linked to a category, enabling detailed analysis and understanding of the segmented regions.",
+              "instillShortDescription": "List of RLE binary masks representing segmented areas.",
+              "instillFormat": "array:structured/semantic-segmentation-stuff",
+              "items": {
+                "instillFormat": "structured/semantic-segmentation-stuff",
+                "properties": {
+                  "category": {
+                    "description": "A text string representing the category associated with each RLE mask. This provides context for the segmentation, allowing identification of the object type within the image.",
+                    "instillShortDescription": "Category associated with the RLE mask.",
+                    "instillUIOrder": 0,
+                    "instillFormat": "string",
+                    "title": "Category",
+                    "type": "string"
+                  },
+                  "rle": {
+                    "description": "The Run Length Encoding (RLE) string that represents each segmented area within the image. RLE efficiently compresses the mask data, making it suitable for storage and transmission.",
+                    "instillShortDescription": "Run Length Encoding (RLE) mask for the segmented area.",
+                    "instillUIOrder": 1,
+                    "instillFormat": "string",
+                    "title": "RLE",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "rle",
+                  "category"
+                ],
+                "title": "Object",
+                "type": "object"
+              },
+              "title": "Stuffs",
+              "type": "array"
+            }
+          },
+          "required": [
+            "stuffs"
+          ]
+        },
+        "metadata": {
+          "title": "Metadata",
+          "instillUIOrder": 1,
+          "description": "Contains additional information about the output, including statistics regarding the usage of the segmentation request. It helps track the performance and efficiency of the task.",
+          "instillShortDescription": "Metadata about the segmentation output.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "Provides statistics related to the usage of the segmentation request. This information can be useful for monitoring and analyzing system performance and resource utilization.",
+              "instillShortDescription": "Usage statistics for the request.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  "TASK_INSTANCE_SEGMENTATION": {
+    "title": "Instance Segmentation",
+    "instillShortDescription": "This task is a computer vision task that identifies and distinguishes multiple objects within an image. Unlike semantic segmentation, which groups pixels by category, instance segmentation outlines each object instance individually, even if objects belong to the same class. This provides detailed information on object locations, shapes, and boundaries, facilitating precise visual analysis and tracking for complex scenes.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Instance Segmentation Input",
+      "description": "Defines options for providing input as an image URL or base64-encoded file. Both options require model selection to process the image accurately.",
+      "instillShortDescription": "Input schema for instance segmentation, supporting image URL or base64 encoding with model selection.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "description": "Contains input data options, allowing for an image URL or a base64-encoded image file for instance segmentation. Each input type requires model selection for processing.",
+          "instillShortDescription": "Input data, supporting either image URL or base64 encoding with model selection.",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "Image URL",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+                  "instillShortDescription": "Model used for instance segmentation.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-url": {
+                  "title": "Input Image URL",
+                  "instillUIOrder": 2,
+                  "description": "URL of the input image for instance segmentation. The image must be accessible online and compatible with the selected model.",
+                  "instillShortDescription": "URL of the image for instance segmentation.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "title": "URL",
+                  "instillUIOrder": 1,
+                  "description": "Identifies the input type as an image URL, indicating the format for the instance segmentation model.",
+                  "instillShortDescription": "Specifies image URL as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-url"
+                }
+              },
+              "required": [
+                "model",
+                "image-url",
+                "type"
+              ]
+            },
+            {
+              "type": "object",
+              "title": "Image Base64",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
+                  "instillShortDescription": "Model used for instance segmentation.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-base64": {
+                  "instillUIOrder": 2,
+                  "title": "Input Image File",
+                  "description": "Base64-encoded string of the image file for instance segmentation. This format allows direct image data input.",
+                  "instillShortDescription": "Base64-encoded image file for instance segmentation.",
+                  "instillAcceptFormats": [
+                    "image/*"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "instillUIOrder": 1,
+                  "title": "Image File",
+                  "description": "Identifies the input type as a base64-encoded image file, indicating the format for the instance segmentation model.",
+                  "instillShortDescription": "Specifies base64 image as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-base64"
+                }
+              },
+              "required": [
+                "model",
+                "image-base64",
+                "type"
+              ]
+            }
+          ],
+          "required": [
+            "model"
+          ],
+          "title": "Input Data",
+          "instillUIOrder": 0
+        },
+        "parameter": {
+          "title": "Parameter",
+          "instillUIOrder": 1,
+          "description": "Placeholder for additional input parameters, providing flexibility for task customization.",
+          "instillShortDescription": "Additional input parameter for customization.",
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Instance Segmentation Output",
+      "description": "Schema for the instance segmentation output, detailing detected objects and metadata associated with each processed image.",
+      "instillShortDescription": "Schema for instance segmentation output, including detected objects and metadata.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Output Data",
+          "instillUIOrder": 0,
+          "description": "Contains segmented instance data, including each detected object and its corresponding segmentation information.",
+          "instillShortDescription": "Segmentation data for each detected instance in the image.",
+          "type": "object",
+          "properties": {
+            "objects": {
+              "description": "List of detected instances in the image, with details on each object’s segmentation, category, and confidence score.",
+              "instillShortDescription": "List of detected instances with category and confidence data.",
+              "instillFormat": "array:structured/instance-segmentation-object",
+              "items": {
+                "instillFormat": "structured/instance-segmentation-object",
+                "properties": {
+                  "bounding-box": {
+                    "description": "The bounding box defining the outer limits of a detected object, including coordinates for spatial positioning.",
+                    "instillShortDescription": "Bounding box specifying detected object position.",
+                    "instillFormat": "structured/bounding-box",
+                    "properties": {
+                      "height": {
+                        "description": "Specifies the vertical dimension of the bounding box, representing its height in units of measurement.",
+                        "instillShortDescription": "Vertical height of the bounding box.",
+                        "instillUIOrder": 0,
+                        "instillFormat": "number",
+                        "title": "Height",
+                        "type": "number"
+                      },
+                      "left": {
+                        "description": "X-axis coordinate of the left edge of the bounding box, indicating its horizontal starting position.",
+                        "instillShortDescription": "X-axis coordinate of the left edge of the bounding box.",
+                        "instillFormat": "number",
+                        "instillUIOrder": 1,
+                        "title": "Left",
+                        "type": "number"
+                      },
+                      "top": {
+                        "description": "Y-axis coordinate of the top edge of the bounding box, representing its vertical starting position.",
+                        "instillShortDescription": "Y-axis position of the bounding box's top edge.",
+                        "instillUIOrder": 2,
+                        "instillFormat": "number",
+                        "title": "Top",
+                        "type": "number"
+                      },
+                      "width": {
+                        "description": "Horizontal dimension of the bounding box, indicating its width in units of measurement.",
+                        "instillShortDescription": "Horizontal width of the bounding box.",
+                        "instillUIOrder": 3,
+                        "instillFormat": "number",
+                        "title": "Width",
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "left",
+                      "top",
+                      "width",
+                      "height"
+                    ],
+                    "title": "Bounding Box",
+                    "instillUIOrder": 0,
+                    "type": "object"
+                  },
+                  "category": {
+                    "description": "Predicted category label for the detected instance, indicating the type of object recognized in the image.",
+                    "instillShortDescription": "Predicted category of the detected object.",
+                    "instillUIOrder": 1,
+                    "instillFormat": "string",
+                    "title": "Category",
+                    "type": "string"
+                  },
+                  "rle": {
+                    "description": "Run Length Encoding (RLE) format for the instance mask within the bounding box, used to store segmentation data efficiently.",
+                    "instillShortDescription": "RLE mask for the instance segmentation.",
+                    "instillUIOrder": 2,
+                    "instillFormat": "string",
+                    "title": "RLE",
+                    "type": "string"
+                  },
+                  "score": {
+                    "description": "Confidence score for the predicted object, indicating the model's certainty in identifying the instance.",
+                    "instillShortDescription": "Confidence score of the detected object.",
+                    "instillUIOrder": 3,
+                    "instillFormat": "number",
+                    "title": "Score",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "rle",
+                  "bounding-box",
+                  "category",
+                  "score"
+                ],
+                "title": "Object",
+                "type": "object"
+              },
+              "instillUIOrder": 0,
+              "title": "Objects",
+              "type": "array"
+            }
+          },
+          "required": [
+            "objects"
+          ]
+        },
+        "metadata": {
+          "title": "Metadata",
+          "instillUIOrder": 1,
+          "description": "Metadata accompanying the output, providing additional context like usage statistics for the segmentation request.",
+          "instillShortDescription": "Metadata and usage statistics for the segmentation task.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "Data on the resource usage for the request, including processing time and resource allocation.",
+              "instillShortDescription": "Usage statistics for the request.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  }
+}

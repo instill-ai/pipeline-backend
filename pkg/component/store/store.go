@@ -14,7 +14,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/fireworksai/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/groq/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/huggingface/v0"
-	"github.com/instill-ai/pipeline-backend/pkg/component/ai/instill/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/ai/instillmodel/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/mistralai/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/ollama/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/openai/v0"
@@ -116,7 +116,7 @@ func Init(
 			compStore.Import(conn)
 		}
 
-		compStore.Import(instill.Init(baseComp))
+		compStore.Import(instillmodel.Init(baseComp))
 		compStore.Import(huggingface.Init(baseComp))
 
 		{

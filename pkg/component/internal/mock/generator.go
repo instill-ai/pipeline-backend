@@ -1,5 +1,7 @@
 package mock
 
+
+//go:generate minimock -g -i github.com/instill-ai/protogen-go/model/model/v1alpha.ModelPublicServiceServer -o ./ -s "_mock.gen.go"
 //go:generate minimock -g -i github.com/instill-ai/pipeline-backend/pkg/component/base.UsageHandler -o ./ -s "_mock.gen.go"
 //go:generate minimock -g -i github.com/instill-ai/pipeline-backend/pkg/component/base.InputReader -o ./ -s "_mock.gen.go"
 //go:generate minimock -g -i github.com/instill-ai/pipeline-backend/pkg/component/base.OutputWriter -o ./ -s "_mock.gen.go"
