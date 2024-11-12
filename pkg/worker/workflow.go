@@ -796,11 +796,19 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 			if err != nil {
 				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 			}
+			connection, err := wfm.Get(ctx, originalIdx, constant.SegConnection)
+			if err != nil {
+				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+			}
 			err = childWFM.SetPipelineData(ctx, e, memory.PipelineVariable, variable)
 			if err != nil {
 				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 			}
 			err = childWFM.SetPipelineData(ctx, e, memory.PipelineSecret, secret)
+			if err != nil {
+				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+			}
+			err = childWFM.SetPipelineData(ctx, e, memory.PipelineConnection, connection)
 			if err != nil {
 				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 			}
@@ -1024,6 +1032,46 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 			}
 
 			connections[connID] = setupVal
+		}
+		if comp.Type == datamodel.Iterator {
+			for _, nestedComp := range comp.Component {
+				if connRef, ok := nestedComp.Setup.(string); ok {
+					connID, err := recipe.ConnectionIDFromReference(connRef)
+					if err != nil {
+						return preTriggerErr(fmt.Errorf("resolving connection reference: %w", err))
+					}
+
+					if _, connAlreadyLoaded := connections[connID]; connAlreadyLoaded {
+						continue
+					}
+
+					nsUID, err := resource.GetRscPermalinkUID(ownerPermalink)
+					if err != nil {
+						return preTriggerErr(fmt.Errorf("extracting owner UID: %w", err))
+					}
+
+					conn, err := w.repository.GetNamespaceConnectionByID(ctx, nsUID, connID)
+					if err != nil {
+						if errors.Is(err, errdomain.ErrNotFound) {
+							err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
+						}
+
+						return preTriggerErr(fmt.Errorf("fetching connection: %w", err))
+					}
+
+					var setup map[string]any
+					if err := json.Unmarshal(conn.Setup, &setup); err != nil {
+						return preTriggerErr(fmt.Errorf("unmarshalling setup: %w", err))
+					}
+
+					setupVal, err := data.NewValue(setup)
+					if err != nil {
+						return preTriggerErr(fmt.Errorf("transforming connection setup to value: %w", err))
+					}
+
+					connections[connID] = setupVal
+				}
+			}
 		}
 	}
 
