@@ -331,7 +331,7 @@ func (s *service) setSchedulePipeline(ctx context.Context, ns resource.Namespace
 			// TODO: Introduce Schedule Component to define structured schema
 			// for schedule setup configuration
 			if v.Type == "schedule" {
-				crons = append(crons, v.Setup["cron"].(string))
+				crons = append(crons, v.Config["cron"].(string))
 			}
 		}
 	}

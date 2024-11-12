@@ -289,9 +289,10 @@ type Output struct {
 }
 
 type Event struct {
-	Type  string         `json:"type,omitempty" yaml:"type,omitempty"`
-	Event string         `json:"event,omitempty" yaml:"event,omitempty"`
-	Setup map[string]any `json:"setup,omitempty" yaml:"setup,omitempty"`
+	Type   string         `json:"type,omitempty" yaml:"type,omitempty"`
+	Event  string         `json:"event,omitempty" yaml:"event,omitempty"`
+	Config map[string]any `json:"config,omitempty" yaml:"config,omitempty"`
+	Setup  any            `json:"setup,omitempty" yaml:"setup,omitempty"`
 }
 
 type Schedule struct {
