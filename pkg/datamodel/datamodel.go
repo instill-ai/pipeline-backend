@@ -149,7 +149,7 @@ type ComponentMap map[string]*Component
 // Recipe is the data model of the pipeline recipe
 type Recipe struct {
 	Version   string               `json:"version,omitempty" yaml:"version,omitempty"`
-	On        *On                  `json:"on,omitempty" yaml:"on,omitempty"`
+	On        map[string]*Event    `json:"on,omitempty" yaml:"on,omitempty"`
 	Component ComponentMap         `json:"component,omitempty" yaml:"component,omitempty"`
 	Variable  map[string]*Variable `json:"variable,omitempty" yaml:"variable,omitempty"`
 	Secret    map[string]string    `json:"secret,omitempty" yaml:"secret,omitempty"`
@@ -288,15 +288,11 @@ type Output struct {
 	InstillUIOrder int32  `json:"instillUiOrder,omitempty" yaml:"instill-ui-order,omitempty"`
 }
 
-type On struct {
-	Event    map[string]*Event    `json:"event,omitempty" yaml:"event,omitempty"`
-	Schedule map[string]*Schedule `json:"schedule,omitempty" yaml:"schedule,omitempty"`
-}
-
 type Event struct {
-	Type  string         `json:"type,omitempty" yaml:"type,omitempty"`
-	Event string         `json:"event,omitempty" yaml:"event,omitempty"`
-	Setup map[string]any `json:"setup,omitempty" yaml:"setup,omitempty"`
+	Type   string         `json:"type,omitempty" yaml:"type,omitempty"`
+	Event  string         `json:"event,omitempty" yaml:"event,omitempty"`
+	Config map[string]any `json:"config,omitempty" yaml:"config,omitempty"`
+	Setup  any            `json:"setup,omitempty" yaml:"setup,omitempty"`
 }
 
 type Schedule struct {

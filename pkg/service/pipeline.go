@@ -326,9 +326,13 @@ func (s *service) setSchedulePipeline(ctx context.Context, ns resource.Namespace
 	}
 
 	crons := []string{}
-	if recipe != nil && recipe.On != nil && recipe.On.Schedule != nil {
-		for _, v := range recipe.On.Schedule {
-			crons = append(crons, v.Cron)
+	if recipe != nil && recipe.On != nil {
+		for _, v := range recipe.On {
+			// TODO: Introduce Schedule Component to define structured schema
+			// for schedule setup configuration
+			if v.Type == "schedule" {
+				crons = append(crons, v.Config["cron"].(string))
+			}
 		}
 	}
 
@@ -1654,8 +1658,7 @@ func (s *service) HandleNamespacePipelineEventByID(ctx context.Context, ns resou
 		}
 	}()
 
-	if e, ok := dbPipeline.Recipe.On.Event[eventID]; ok {
-
+	if e, ok := dbPipeline.Recipe.On[eventID]; ok {
 		targetType = e.Type
 	} else {
 		return nil, fmt.Errorf("eventID not correct")
