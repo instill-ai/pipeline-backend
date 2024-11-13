@@ -32,6 +32,7 @@ func TestComponent_ListComponentDefinitions(t *testing.T) {
 		componentDefJSON,
 		componentConfigJSON,
 		componentTasksJSON,
+		nil,
 		map[string][]byte{"additional.json": componentAdditionalJSON})
 	c.Assert(err, qt.IsNil)
 

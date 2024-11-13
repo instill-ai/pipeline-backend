@@ -71,10 +71,6 @@ type Service interface {
 	GetRscNamespace(ctx context.Context, namespaceID string) (resource.Namespace, error)
 
 	ListComponentDefinitions(context.Context, *pb.ListComponentDefinitionsRequest) (*pb.ListComponentDefinitionsResponse, error)
-	ListOperatorDefinitions(context.Context, *pb.ListOperatorDefinitionsRequest) (*pb.ListOperatorDefinitionsResponse, error)
-	GetOperatorDefinitionByID(ctx context.Context, defID string) (*pb.OperatorDefinition, error)
-	ListConnectorDefinitions(context.Context, *pb.ListConnectorDefinitionsRequest) (*pb.ListConnectorDefinitionsResponse, error)
-	GetConnectorDefinitionByID(ctx context.Context, id string) (*pb.ConnectorDefinition, error)
 
 	ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRunsRequest, filter filtering.Filter) (*pb.ListPipelineRunsResponse, error)
 	ListComponentRuns(ctx context.Context, req *pb.ListComponentRunsRequest, filter filtering.Filter) (*pb.ListComponentRunsResponse, error)

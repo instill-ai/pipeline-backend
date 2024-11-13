@@ -83,7 +83,7 @@ type ESBulk func(body io.Reader, o ...func(*esapi.BulkRequest)) (*esapi.Response
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, nil)
+		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, nil, nil)
 		if err != nil {
 			panic(err)
 		}

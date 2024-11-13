@@ -27,6 +27,8 @@ var (
 	setupJSON []byte
 	//go:embed config/tasks.json
 	tasksJSON []byte
+	//go:embed config/event.json
+	eventJSON []byte
 
 	once sync.Once
 	comp *component
@@ -69,7 +71,7 @@ func (e *execution) userToken() string {
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, nil)
+		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, eventJSON, nil)
 		if err != nil {
 			panic(err)
 		}
