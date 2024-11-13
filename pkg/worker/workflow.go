@@ -374,7 +374,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					}
 				}
 			}
-
 		}
 
 		for idx := range futures {
@@ -383,18 +382,11 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				componentRunFailed = true
 				componentRunErrors = append(componentRunErrors, fmt.Sprintf("component(ID: %s) run failed", futureArgs[idx].ID))
 				errs = append(errs, err)
+
 				continue
 			}
-
-			// ComponentActivity is responsible for returning a temporal
-			// application error with the relevant information. Wrapping
-			// the error here prevents the client from accessing the error
-			// message from the activity.
-			// return err
 			componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(minioCtx, w.UploadComponentOutputsActivity, futureArgs[idx]))
-
 		}
-
 	}
 
 	duration := time.Since(startTime)
@@ -450,6 +442,11 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		},
 	}
 	if componentRunFailed {
+		// If a component has failed, we consider the whole pipeline as failed.
+		// TODO jvallesm: this is a simplistic approach we might want to
+		// challenge in the future. E.g., a pipeline might be designed so a
+		// component runs when another one fails. We need to provide a
+		// mechanism to consider this scenario as a completed trigger.
 		updatePipelineRunArgs.PipelineRun.Status = datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_FAILED)
 		updatePipelineRunArgs.PipelineRun.Error = null.StringFrom(strings.Join(componentRunErrors, " / "))
 	}
@@ -524,52 +521,77 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	if err != nil {
 		return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
 	}
-	if len(conditionMap) > 0 {
-		setups, err := NewSetupReader(wfm, param.ID, conditionMap).Read(ctx)
+
+	if len(conditionMap) == 0 {
+		return nil
+	}
+
+	setups, err := NewSetupReader(wfm, param.ID, conditionMap).Read(ctx)
+	if err != nil {
+		return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
+	}
+	sysVars, err := recipe.GenerateSystemVariables(ctx, param.SystemVariables)
+	if err != nil {
+		return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
+	}
+	executionParams := componentstore.ExecutionParams{
+		ComponentID:           param.ID,
+		ComponentDefinitionID: param.Type,
+		SystemVariables:       sysVars,
+
+		// Note: currently, we assume that setup in the batch are all the same
+		Setup: setups[0],
+		Task:  param.Task,
+	}
+
+	execution, err := w.component.CreateExecution(executionParams)
+	if err != nil {
+		return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
+	}
+
+	jobs := make([]*componentbase.Job, len(conditionMap))
+	for idx, originalIdx := range conditionMap {
+		jobs[idx] = &componentbase.Job{
+			Input:  NewInputReader(wfm, param.ID, originalIdx),
+			Output: NewOutputWriter(wfm, param.ID, originalIdx, wfm.IsStreaming()),
+			Error:  NewErrorHandler(wfm, param.ID, originalIdx),
+		}
+	}
+	err = execution.Execute(
+		ctx,
+		jobs,
+	)
+	if err != nil {
+		return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
+	}
+
+	isFailedExecution := false
+	for _, idx := range conditionMap {
+		isFailedExecution, err = wfm.GetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusErrored)
 		if err != nil {
+			err = fmt.Errorf("checking component execution error: %w", err)
 			return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
 		}
-		sysVars, err := recipe.GenerateSystemVariables(ctx, param.SystemVariables)
-		if err != nil {
-			return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
-		}
-		executionParams := componentstore.ExecutionParams{
-			ComponentID:           param.ID,
-			ComponentDefinitionID: param.Type,
-			SystemVariables:       sysVars,
 
-			// Note: currently, we assume that setup in the batch are all the same
-			Setup: setups[0],
-			Task:  param.Task,
-		}
-
-		execution, err := w.component.CreateExecution(executionParams)
-		if err != nil {
-			return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
-		}
-
-		jobs := make([]*componentbase.Job, len(conditionMap))
-		for idx, originalIdx := range conditionMap {
-			jobs[idx] = &componentbase.Job{
-				Input:  NewInputReader(wfm, param.ID, originalIdx),
-				Output: NewOutputWriter(wfm, param.ID, originalIdx, wfm.IsStreaming()),
-				Error:  NewErrorHandler(wfm, param.ID, originalIdx),
+		// If any of the jobs failed, we consider the component failed to
+		// execute and return an error.
+		// TODO jvallesm: in the future we might not want to break the
+		// execution and detect only if an element in the batch has failed.
+		if isFailedExecution {
+			// The batch element will contain an error message in memory. We
+			// use it as the component activity error.
+			var msg string
+			msg, err = wfm.GetComponentErrorMessage(ctx, idx, param.ID)
+			if err != nil {
+				err = fmt.Errorf("extracting component execution error: %w", err)
+				return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
 			}
-		}
-		err = execution.Execute(
-			ctx,
-			jobs,
-		)
-		if err != nil {
-			return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
+
+			return componentActivityError(ctx, wfm, errors.New(msg), componentActivityErrorType, param.ID)
 		}
 
-		for _, idx := range conditionMap {
-			if e, err := wfm.GetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusErrored); err == nil && !e {
-				if err = wfm.SetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusCompleted, true); err != nil {
-					return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
-				}
-			}
+		if err = wfm.SetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusCompleted, true); err != nil {
+			return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
 		}
 	}
 
@@ -1225,13 +1247,12 @@ func (w *worker) IncreasePipelineTriggerCountActivity(ctx context.Context, sv re
 	return nil
 }
 
-func (w *worker) processCondition(ctx context.Context, wfm memory.WorkflowMemory, id string, UpstreamIDs []string, condition string) (map[int]int, error) {
+func (w *worker) processCondition(ctx context.Context, wfm memory.WorkflowMemory, id string, upstreamIDs []string, condition string) (map[int]int, error) {
 	conditionMap := map[int]int{}
 
 	ptr := 0
 	for idx := range wfm.GetBatchSize() {
-
-		for _, upstreamID := range UpstreamIDs {
+		for _, upstreamID := range upstreamIDs {
 			if s, err := wfm.GetComponentStatus(ctx, idx, upstreamID, memory.ComponentStatusSkipped); err == nil && s {
 				if err = wfm.SetComponentStatus(ctx, idx, id, memory.ComponentStatusSkipped, true); err != nil {
 					return nil, err
@@ -1315,7 +1336,6 @@ func (w *worker) writeErrorDataPoint(ctx context.Context, errs []error, span tra
 // message into a Temporal application error. Temporal clients can extract the
 // message and propagate it to the end user.
 func componentActivityError(ctx context.Context, wfm memory.WorkflowMemory, err error, errType, componentID string) error {
-
 	if wfm == nil {
 		return fmt.Errorf("workflow memory is empty")
 	}
