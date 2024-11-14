@@ -677,7 +677,8 @@ func (c *Component) GetTaskOutputSchemas() map[string]string {
 	return c.taskOutputSchemas
 }
 
-// LoadDefinition loads the component definitions from json files
+// LoadDefinition loads the component definition, setup, tasks, events and additional JSON files.
+// The definition files are currently loaded together but could be refactored to load separately.
 func (c *Component) LoadDefinition(definitionJSONBytes, setupJSONBytes, tasksJSONBytes []byte, eventJSONBytes []byte, additionalJSONBytes map[string][]byte) error {
 	var err error
 	var definitionJSON any
