@@ -93,6 +93,10 @@ type TriggerResult struct {
 	Metadata *pb.TriggerMetadata
 }
 
+
+// Now, we don't need the artifact service client in the service layer.
+// However, we keep it here for now because we may need it in the future.
+// service is the implementation of the Service interface
 type service struct {
 	repository                   repository.Repository
 	redisClient                  *redis.Client

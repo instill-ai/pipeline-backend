@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/instill-ai/pipeline-backend/config"
@@ -88,6 +87,7 @@ func setIteratorIndex(v format.Value, identifier string, index int) format.Value
 
 // They are same logic in the some components like Instill Artifact, Instill Model.
 // We can extract this logic to the shared package.
+// But for now, we keep it here because we want to avoid that the components depend on pipeline shared package.
 func getRequestMetadata(vars map[string]any) metadata.MD {
 	md := metadata.Pairs(
 		"Authorization", getHeaderAuthorization(vars),
@@ -113,18 +113,4 @@ func getInstillUserUID(vars map[string]any) string {
 
 func getInstillRequesterUID(vars map[string]any) string {
 	return vars["__PIPELINE_REQUESTER_UID"].(string)
-}
-
-func metadataToHTTPHeaders(ctx context.Context) http.Header {
-	headers := http.Header{}
-	md, ok := metadata.FromOutgoingContext(ctx)
-	if !ok {
-		return headers
-	}
-	for key, values := range md {
-		for _, value := range values {
-			headers.Add(key, value)
-		}
-	}
-	return headers
 }

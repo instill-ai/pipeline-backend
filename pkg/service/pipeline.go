@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"slices"
 	"strings"
 	"sync"
@@ -868,7 +867,6 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					}
 					variable[k] = array
 				}
-			// Need to inject minio client here.
 			case "image", "image/*":
 				if v == nil {
 					variable[k], err = data.NewImageFromURL(defaultValueMap[k].(string))
@@ -1745,81 +1743,7 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 	if err != nil {
 		return nil, nil, err
 	}
-
-	outputs, err = s.uploadBlobData(ctx, outputs, ns)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	return outputs, triggerMetadata, nil
-}
-
-// Need to update the outputs from blob data to URL for the frontend to display.
-// When the output is data:image/*, data:video/*, data:audio/*, data:application/*, data:text/*,
-// we need to upload the blob data into blob storage and return the URL.
-// In the service, we need to check the users' tier to determine the expiration time of the blob.
-func (s *service) uploadBlobData(ctx context.Context, outputs []*structpb.Struct, ns resource.Namespace) ([]*structpb.Struct, error) {
-
-	// Check the user's tier
-	objectExpireDays, err := s.getObjectExpireDays(ctx, ns)
-	if err != nil {
-		return nil, fmt.Errorf("getting object expire days: %w", err)
-	}
-	// Check the data in outputs, if it is a blob data, we need to upload it to blob storage and replace the data with the download URL
-	nsID := ns.NsID
-
-	log.Println("objectExpireDays", objectExpireDays)
-	log.Println("nsID", nsID)
-	// loop through the outputs, if the data is a blob data, we need to upload it to blob storage and replace the data with the download URL
-	for _, output := range outputs {
-		if data, ok := output.Fields["data"]; ok {
-			log.Println("data", data)
-		}
-	}
-
-	return outputs, nil
-}
-
-// Get the object expire days for the user or organization
-func (s *service) getObjectExpireDays(ctx context.Context, ns resource.Namespace) (*int32, error) {
-	mgmtClient := s.mgmtPrivateServiceClient
-	var objectExpireDays int32
-	if ns.NsType == resource.User {
-		userTier, err := mgmtClient.GetUserSubscriptionAdmin(ctx, &mgmtpb.GetUserSubscriptionAdminRequest{
-			UserId: ns.NsUID.String(),
-		})
-		if err != nil {
-			return nil, fmt.Errorf("getting user subscription: %w", err)
-		}
-		if userTier.Subscription.Plan == mgmtpb.UserSubscription_PLAN_PRO {
-			objectExpireDays = 7
-		} else {
-			// If it is not specified or free tier, we set it to 3
-			objectExpireDays = 3
-		}
-
-	} else if ns.NsType == resource.Organization {
-		orgTier, err := mgmtClient.GetOrganizationSubscriptionAdmin(ctx, &mgmtpb.GetOrganizationSubscriptionAdminRequest{
-			OrganizationId: ns.NsUID.String(),
-		})
-		if err != nil {
-			return nil, fmt.Errorf("getting organization subscription: %w", err)
-		}
-		if orgTier.Subscription.Plan == mgmtpb.OrganizationSubscription_PLAN_FREE {
-			objectExpireDays = 3
-		} else if orgTier.Subscription.Plan == mgmtpb.OrganizationSubscription_PLAN_TEAM {
-			objectExpireDays = 30
-		} else if orgTier.Subscription.Plan == mgmtpb.OrganizationSubscription_PLAN_ENTERPRISE {
-			// It means unlimited
-			objectExpireDays = 0
-		} else {
-			// If it is not specified, we set it to 3 as a free tier
-			objectExpireDays = 3
-		}
-	} else {
-		return nil, fmt.Errorf("invalid namespace type: %v", ns.NsType)
-	}
-	return &objectExpireDays, nil
 }
 
 func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, data []*pipelinepb.TriggerData, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {

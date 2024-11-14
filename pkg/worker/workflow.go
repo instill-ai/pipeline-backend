@@ -2,15 +2,12 @@
 package worker
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"go/parser"
-	"io"
-	"log"
-	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -35,6 +32,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
+	"github.com/instill-ai/x/blobstorage"
 	"github.com/instill-ai/x/errmsg"
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
@@ -50,7 +48,8 @@ type TriggerPipelineWorkflowParam struct {
 	Mode            mgmtpb.Mode
 	TriggerFromAPI  bool
 	WorkerUID       uuid.UUID
-	Namespace       resource.Namespace
+	// Namespace is the namespace of the requester of the pipeline.
+	Namespace resource.Namespace
 }
 
 type SchedulePipelineWorkflowParam struct {
@@ -83,7 +82,8 @@ type ComponentActivityParam struct {
 	Task            string
 	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 	Streaming       bool
-	Namespace       resource.Namespace
+	// Namespace is the namespace of the requester of the pipeline.
+	Namespace resource.Namespace
 }
 
 type PreIteratorActivityParam struct {
@@ -665,10 +665,8 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 
 	objectName := fmt.Sprintf("%s/%s", ns.NsID, uuid.Must(uuid.NewV4()).String())
 	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
-		NamespaceId: ns.NsID,
-		ObjectName:  objectName,
-		// We will need to deal with retention policy for the artifact with the subscription later.
-		// Before we deal with it, the blob data will not be deleted automatically.
+		NamespaceId:      ns.NsID,
+		ObjectName:       objectName,
 		ObjectExpireDays: 0,
 	})
 
@@ -694,51 +692,29 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 	return respDownloadURL.GetDownloadUrl(), nil
 }
 
-// TODO: move this to x repository
 func uploadBlobData(ctx context.Context, uploadURL string, value *format.File) error {
 	if uploadURL == "" {
 		return fmt.Errorf("empty upload URL provided")
 	}
 
-	fullURL := fmt.Sprintf("%s:%d%s", config.Config.APIGateway.Host, config.Config.APIGateway.PublicPort, uploadURL)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPut, fullURL, nil)
+	parsedURL, err := url.Parse(uploadURL)
+	if err != nil {
+		return fmt.Errorf("parsing upload URL: %w", err)
+	}
+	parsedURL.Scheme = "http"
+	parsedURL.Host = fmt.Sprintf("%s:%d", config.Config.APIGateway.Host, config.Config.APIGateway.PublicPort)
+	fullURL := parsedURL.String()
+	contentType := (*value).ContentType().String()
+	fileBytes, err := (*value).Binary()
 
 	if err != nil {
-		return fmt.Errorf("creating request: %w", err)
+		return fmt.Errorf("getting file bytes: %w", err)
 	}
 
-	var body io.Reader
-	var contentLength int64
-	switch v := (*value).(type) {
-	case format.File:
-		fileBytes, err := v.Binary()
-		if err != nil {
-			return fmt.Errorf("getting file binary: %w", err)
-		}
-		byteArray := fileBytes.ByteArray()
-		body = bytes.NewReader(byteArray)
-		contentLength = int64(len(byteArray))
-	default:
-		return fmt.Errorf("unsupported value type for blob upload: %T", v)
-	}
-	req.Body = io.NopCloser(body)
-	req.Header = metadataToHTTPHeaders(ctx)
+	err = blobstorage.UploadFile(ctx, fullURL, fileBytes.ByteArray(), contentType)
 
-	req.ContentLength = contentLength
-	req.Header.Set("Content-Type", "application/octet-stream")
-	req.Header.Del("Authorization")
-	log.Println("== req.Header ==", req.Header)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("uploading blob: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("upload failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
 	return nil
@@ -1312,7 +1288,6 @@ func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActi
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline memory", postTriggerActivityErrorType, err)
 		}
-
 		b, err := protojson.Marshal(outputStruct)
 		if err != nil {
 			return err
