@@ -239,30 +239,29 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 
 	go func() {
 		_ = c.Visit(inputStruct.URL)
+		// We can only finish the c.Wait() by r.Abort() or cancel the context.
 		c.Wait()
 	}()
 
 	// To avoid to wait for 2 minutes, we use a timer to check if there is a new page.
 	// If there is no new page, we cancel the context.
-	go func() {
-		inactivityTimer := time.NewTimer(2 * time.Second)
-		defer inactivityTimer.Stop()
+	inactivityTimer := time.NewTimer(2 * time.Second)
+	defer inactivityTimer.Stop()
 
-		for {
-			select {
-			case <-pageUpdateCh:
-				inactivityTimer.Reset(2 * time.Second)
-			// If no new pages for 2 seconds, cancel the context
-			case <-inactivityTimer.C:
-				cancel()
-				return
-			// If the context is done, we should return
-			case <-ctx.Done():
-				return
-			}
+	crawling := true
+	for crawling {
+		select {
+		case <-pageUpdateCh:
+			inactivityTimer.Reset(2 * time.Second)
+		// If no new pages for 2 seconds, cancel the context
+		case <-inactivityTimer.C:
+			cancel()
+			crawling = false
+		// If the context is done, we should return
+		case <-ctx.Done():
+			crawling = false
 		}
-	}()
-	<-ctx.Done()
+	}
 
 	outputStruct, err := base.ConvertToStructpb(output)
 	if err != nil {
