@@ -71,7 +71,7 @@ type IComponent interface {
 	GetTaskInputSchemas() map[string]string
 	GetTaskOutputSchemas() map[string]string
 
-	LoadDefinition(definitionJSON, setupJSON, tasksJSON []byte, additionalJSONBytes map[string][]byte) error
+	LoadDefinition(definitionJSON, setupJSON, tasksJSON []byte, eventJSONBytes []byte, additionalJSONBytes map[string][]byte) error
 
 	// Note: Some content in the definition JSON schema needs to be generated
 	// by sysVars or component setting.
@@ -458,6 +458,53 @@ func formatDataSpec(dataSpec *structpb.Struct) (*structpb.Struct, error) {
 	return compSpec, nil
 }
 
+type EventJSON map[string]Event
+type Event struct {
+	MessageSchema   any   `json:"messageSchema"`
+	SetupSchema     any   `json:"setupSchema"`
+	MessageExamples []any `json:"messageExamples"`
+}
+
+func generateEventSpecs(eventJSONBytes []byte) (map[string]*pb.EventSpecification, error) {
+
+	specs := map[string]*pb.EventSpecification{}
+	var j EventJSON
+	err := json.Unmarshal(eventJSONBytes, &j)
+	if err != nil {
+		return nil, err
+	}
+	for t, e := range j {
+		s, err := json.Marshal(e.MessageSchema)
+		if err != nil {
+			return nil, err
+		}
+
+		pbMessageSchema := &structpb.Struct{}
+		err = protojson.Unmarshal(s, pbMessageSchema)
+		if err != nil {
+			return nil, err
+		}
+		pbMessageExamples := make([]*structpb.Struct, 0, len(e.MessageExamples))
+		for _, ex := range e.MessageExamples {
+			pbMessageExample := &structpb.Struct{}
+			exs, err := json.Marshal(ex)
+			if err != nil {
+				return nil, err
+			}
+			err = protojson.Unmarshal(exs, pbMessageExample)
+			if err != nil {
+				return nil, err
+			}
+			pbMessageExamples = append(pbMessageExamples, pbMessageExample)
+		}
+		specs[t] = &pb.EventSpecification{
+			MessageSchema:   pbMessageSchema,
+			MessageExamples: pbMessageExamples,
+		}
+	}
+	return specs, nil
+}
+
 func generateDataSpecs(tasks map[string]*structpb.Struct) (map[string]*pb.DataSpecification, error) {
 
 	specs := map[string]*pb.DataSpecification{}
@@ -630,8 +677,9 @@ func (c *Component) GetTaskOutputSchemas() map[string]string {
 	return c.taskOutputSchemas
 }
 
-// LoadDefinition loads the component definitions from json files
-func (c *Component) LoadDefinition(definitionJSONBytes, setupJSONBytes, tasksJSONBytes []byte, additionalJSONBytes map[string][]byte) error {
+// LoadDefinition loads the component definition, setup, tasks, events and additional JSON files.
+// The definition files are currently loaded together but could be refactored to load separately.
+func (c *Component) LoadDefinition(definitionJSONBytes, setupJSONBytes, tasksJSONBytes []byte, eventJSONBytes []byte, additionalJSONBytes map[string][]byte) error {
 	var err error
 	var definitionJSON any
 
@@ -710,6 +758,13 @@ func (c *Component) LoadDefinition(definitionJSONBytes, setupJSONBytes, tasksJSO
 		configPropStruct.Fields["setup"] = structpb.NewStructValue(setup)
 		c.definition.Spec.ComponentSpecification.Fields["properties"] = structpb.NewStructValue(configPropStruct)
 
+	}
+
+	if eventJSONBytes != nil {
+		c.definition.Spec.EventSpecifications, err = generateEventSpecs(eventJSONBytes)
+		if err != nil {
+			return err
+		}
 	}
 
 	c.definition.Spec.DataSpecifications, err = generateDataSpecs(taskStructs)

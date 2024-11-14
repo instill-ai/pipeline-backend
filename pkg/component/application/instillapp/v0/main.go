@@ -50,7 +50,7 @@ type Connection interface {
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionJSON, nil, tasksJSON, nil)
+		err := comp.LoadDefinition(definitionJSON, nil, tasksJSON, nil, nil)
 		if err != nil {
 			panic(err)
 		}

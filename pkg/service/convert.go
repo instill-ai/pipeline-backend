@@ -508,14 +508,6 @@ func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespa
 	}, nil
 }
 
-// ConnectorTypeToComponentType ...
-var ConnectorTypeToComponentType = map[pb.ConnectorType]pb.ComponentType{
-	pb.ConnectorType_CONNECTOR_TYPE_AI:          pb.ComponentType_COMPONENT_TYPE_AI,
-	pb.ConnectorType_CONNECTOR_TYPE_APPLICATION: pb.ComponentType_COMPONENT_TYPE_APPLICATION,
-	pb.ConnectorType_CONNECTOR_TYPE_DATA:        pb.ComponentType_COMPONENT_TYPE_DATA,
-	pb.ConnectorType_CONNECTOR_TYPE_GENERIC:     pb.ComponentType_COMPONENT_TYPE_GENERIC,
-}
-
 // ConvertPipelineToPB converts db data model to protobuf data model
 func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool, useDynamicDef bool) (*pb.Pipeline, error) {
 
