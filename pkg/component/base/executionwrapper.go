@@ -3,10 +3,13 @@ package base
 import (
 	"context"
 	"fmt"
+	"log"
+	"runtime"
 	"sync"
 
-	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 )
 
 var _ IExecution = &ExecutionWrapper{}
@@ -200,7 +203,13 @@ func ConcurrentExecutor(ctx context.Context, jobs []*Job, execute func(context.C
 
 func recoverJobError(ctx context.Context, job *Job) {
 	if r := recover(); r != nil {
-		fmt.Printf("panic: %+v", r)
+		// For better debugging process for developers, we log the panic and the stack trace
+		buf := make([]byte, 2048)
+		n := runtime.Stack(buf, false)
+		stackTrace := string(buf[:n])
+		log.Printf("panic: %+v\n", r)
+		log.Printf("stack trace: %s\n", stackTrace)
+
 		job.Error.Error(ctx, fmt.Errorf("panic: %+v", r))
 		return
 	}

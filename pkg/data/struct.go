@@ -187,6 +187,8 @@ func unmarshalNumber(v format.Number, field reflect.Value) error {
 		field.SetFloat(v.Float64())
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		field.SetInt(int64(v.Integer()))
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		field.SetUint(uint64(v.Integer()))
 	case reflect.Ptr:
 		if field.IsNil() {
 			field.Set(reflect.New(field.Type().Elem()))
@@ -277,7 +279,7 @@ func unmarshalToStruct(v Map, field reflect.Value) error {
 }
 
 // unmarshalNull handles unmarshaling of Null values.
-func unmarshalNull(v format.Null, field reflect.Value) error {
+func unmarshalNull(_ format.Null, field reflect.Value) error {
 	if field.Kind() == reflect.Ptr {
 		field.Set(reflect.Zero(field.Type()))
 		return nil
@@ -401,6 +403,8 @@ func marshalValue(v reflect.Value) (format.Value, error) {
 		return NewNumberFromFloat(v.Float()), nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return NewNumberFromInteger(int(v.Int())), nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return NewNumberFromInteger(int(v.Uint())), nil
 	case reflect.Bool:
 		return NewBoolean(v.Bool()), nil
 	case reflect.String:
