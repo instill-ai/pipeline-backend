@@ -1,6 +1,7 @@
-package convert000035
+package convert000036
 
 import (
+	"bytes"
 	"fmt"
 
 	"go.uber.org/zap"
@@ -59,11 +60,15 @@ func (c *RenameInstillFormat) migratePipeline() error {
 			}
 
 			if isRecipeUpdated {
-				recipeYAML, err := yaml.Marshal(&node.Content[0])
+				buf := bytes.Buffer{}
+				encoder := yaml.NewEncoder(&buf)
+				encoder.SetIndent(2)
+				err := encoder.Encode(&node.Content[0])
 				if err != nil {
 					return fmt.Errorf("marshalling recipe: %w", err)
 				}
-				result := tx.Model(p).Where("uid = ?", p.UID).Update("recipe_yaml", string(recipeYAML))
+				recipeYAML := buf.String()
+				result := tx.Model(p).Where("uid = ?", p.UID).Update("recipe_yaml", recipeYAML)
 				if result.Error != nil {
 					l.Error("Failed to update pipeline release.")
 					return fmt.Errorf("updating pipeline recipe: %w", result.Error)
@@ -109,11 +114,15 @@ func (c *RenameInstillFormat) migratePipelineRelease() error {
 			}
 
 			if isRecipeUpdated {
-				recipeYAML, err := yaml.Marshal(&node.Content[0])
+				buf := bytes.Buffer{}
+				encoder := yaml.NewEncoder(&buf)
+				encoder.SetIndent(2)
+				err := encoder.Encode(&node.Content[0])
 				if err != nil {
 					return fmt.Errorf("marshalling recipe: %w", err)
 				}
-				result := tx.Model(p).Where("uid = ?", p.UID).Update("recipe_yaml", string(recipeYAML))
+				recipeYAML := buf.String()
+				result := tx.Model(p).Where("uid = ?", p.UID).Update("recipe_yaml", recipeYAML)
 				if result.Error != nil {
 					l.Error("Failed to update pipeline release.")
 					return fmt.Errorf("updating pipeline recipe: %w", result.Error)
