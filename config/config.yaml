@@ -98,5 +98,5 @@ appbackend:
     cert:
     key:
 apigateway:
-  host: http://api-gateway
+  host: api-gateway
   publicport: 8080

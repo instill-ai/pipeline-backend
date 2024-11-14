@@ -14,7 +14,6 @@ import (
 	"github.com/knadh/koanf/providers/file"
 	"github.com/redis/go-redis/v9"
 
-	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	miniox "github.com/instill-ai/x/minio"
 )
 
@@ -95,8 +94,14 @@ type ServerConfig struct {
 // default API key when no setup is specified, or to connect with a 3rd party
 // vendor via OAuth.
 type ComponentConfig struct {
-	Secrets componentstore.ComponentSecrets
+	Secrets ComponentSecrets
 }
+
+// ComponentSecrets contains the global config secrets of each
+// implemented component (referenced by ID). Components may use these secrets
+// to skip the component configuration step and have a ready-to-run
+// config.
+type ComponentSecrets map[string]map[string]any
 
 // DatabaseConfig related to database
 type DatabaseConfig struct {
