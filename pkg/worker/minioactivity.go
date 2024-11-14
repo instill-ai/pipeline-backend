@@ -77,6 +77,11 @@ func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadR
 		return err
 	}
 
+	recipe := wfm.GetRecipe()
+	if recipe == nil {
+		return fmt.Errorf("recipe not loaded in memory")
+	}
+
 	recipeForUpload := &datamodel.Recipe{
 		Version:   wfm.GetRecipe().Version,
 		On:        wfm.GetRecipe().On,
