@@ -330,7 +330,7 @@ export function CheckConnections(data) {
 version: v1beta
 variable:
   recipients:
-    instill-format: array:string
+    format: array:string
 output:
   resp:
     title: Response
