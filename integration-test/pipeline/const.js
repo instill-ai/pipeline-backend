@@ -86,7 +86,7 @@ export const simplePipelineWithJSONRecipe = {
     variable: {
       input: {
         title: "Input",
-        instillFormat: "string"
+        format: "string"
       }
     },
     output: {
