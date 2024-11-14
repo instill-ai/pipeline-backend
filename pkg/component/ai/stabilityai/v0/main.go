@@ -47,7 +47,7 @@ type component struct {
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, map[string][]byte{"stabilityai.json": stabilityaiJSON})
+		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, nil, map[string][]byte{"stabilityai.json": stabilityaiJSON})
 		if err != nil {
 			panic(err)
 		}

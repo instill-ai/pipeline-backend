@@ -54,7 +54,7 @@ type execution struct {
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, nil)
+		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, nil, nil)
 		if err != nil {
 			panic(err)
 		}
