@@ -933,9 +933,8 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 		b, _ := json.Marshal(v)
 		p := &structpb.Struct{}
 		_ = protojson.Unmarshal(b, p)
-		if _, ok := p.Fields["format"]; ok {
-			p.Fields["format"] = structpb.NewStringValue(checkFormat(p.Fields["format"].GetStringValue()))
-
+		if _, ok := p.Fields["instillFormat"]; ok {
+			p.Fields["instillFormat"] = structpb.NewStringValue(checkFormat(p.Fields["instillFormat"].GetStringValue()))
 		}
 		dataInput.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(p)
 	}
@@ -1043,20 +1042,20 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 						walk = walk.GetStructValue().Fields["items"]
 					} else {
 						walk, _ = structpb.NewValue(map[string]interface{}{
-							"title":       v.Title,
-							"description": v.Description,
-							"format":      "json",
+							"title":         v.Title,
+							"description":   v.Description,
+							"instillFormat": "json",
 						})
 					}
 
 				}
 				if walk.GetStructValue() != nil && walk.GetStructValue().Fields != nil {
-					format := walk.GetStructValue().Fields["format"].GetStringValue()
+					instillFormat := walk.GetStructValue().Fields["instillFormat"].GetStringValue()
 					m, err = structpb.NewValue(map[string]interface{}{
-						"title":       v.Title,
-						"description": v.Description,
-						"type":        walk.GetStructValue().Fields["type"].GetStringValue(),
-						"format":      checkFormat(format),
+						"title":         v.Title,
+						"description":   v.Description,
+						"type":          walk.GetStructValue().Fields["type"].GetStringValue(),
+						"instillFormat": checkFormat(instillFormat),
 					})
 					if err != nil {
 						return nil, err
