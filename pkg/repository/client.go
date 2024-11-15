@@ -1,4 +1,4 @@
-package client
+package repository
 
 import (
 	"context"
@@ -12,10 +12,6 @@ import (
 
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	miniox "github.com/instill-ai/x/minio"
-)
-
-var (
-	instance *Clients
 )
 
 // BlobStorage is an interface for fetching files from blob storage
@@ -34,6 +30,14 @@ type Clients struct {
 	BlobStorageClient BlobStorage
 }
 
+// Close closes all connections held by the clients
+func (c *Clients) Close() error {
+	if c.GRPCConn != nil {
+		return c.GRPCConn.Close()
+	}
+	return nil
+}
+
 // GetClients returns an instance of Clients
 func GetClients(ctx context.Context, logger *zap.Logger) (*Clients, error) {
 	clients := Clients{}
@@ -49,7 +53,6 @@ func GetClients(ctx context.Context, logger *zap.Logger) (*Clients, error) {
 		return nil, err
 	}
 	clients.BlobStorageClient = minioClient
-	instance = &clients
 
-	return instance, nil
+	return &clients, nil
 }

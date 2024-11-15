@@ -270,19 +270,17 @@ func main() {
 
 	service := service.NewService(
 		service.ServiceConfig{
-			Repository:                   repo,
-			RedisClient:                  redisClient,
-			TemporalClient:               temporalClient,
-			ACLClient:                    &aclClient,
-			Converter:                    service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repo, config.Config.Server.InstillCoreHost),
-			MgmtPrivateServiceClient:     mgmtPrivateServiceClient,
-			MinioClient:                  minioClient,
-			ComponentStore:               compStore,
-			Memory:                       ms,
-			WorkerUID:                    workerUID,
-			RetentionHandler:             nil,
-			ArtifactPublicServiceClient:  artifactPublicServiceClient,
-			ArtifactPrivateServiceClient: artifactPrivateServiceClient,
+			Repository:               repo,
+			RedisClient:              redisClient,
+			TemporalClient:           temporalClient,
+			ACLClient:                &aclClient,
+			Converter:                service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repo, config.Config.Server.InstillCoreHost),
+			MgmtPrivateServiceClient: mgmtPrivateServiceClient,
+			MinioClient:              minioClient,
+			ComponentStore:           compStore,
+			Memory:                   ms,
+			WorkerUID:                workerUID,
+			RetentionHandler:         nil,
 		},
 	)
 

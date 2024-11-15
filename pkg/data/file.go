@@ -14,10 +14,10 @@ import (
 	"github.com/gofrs/uuid"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/pipeline-backend/pkg/data/client"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 )
@@ -78,11 +78,11 @@ func convertURLToBytes(url string) (b []byte, contentType string, filename strin
 func fetchFileFromBlobStorage(urlUID uuid.UUID) (b []byte, contentType string, filename string, err error) {
 	ctx := context.Background()
 	logger, _ := logger.GetZapLogger(ctx)
-	clients, err := client.GetClients(ctx, logger)
+	clients, err := repository.GetClients(ctx, logger)
 	if err != nil {
 		return nil, "", "", err
 	}
-	defer clients.GRPCConn.Close()
+	defer clients.Close()
 
 	artifactClient := clients.ArtifactPrivateServiceClient
 	objectURLRes, err := artifactClient.GetObjectURL(ctx, &artifactpb.GetObjectURLRequest{
