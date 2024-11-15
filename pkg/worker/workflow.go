@@ -250,26 +250,23 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}).Get(ctx, nil); err != nil {
 			return err
 		}
-	}
 
-	err := workflow.ExecuteActivity(minioCtx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
-		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
-		ExpiryRuleTag:     param.SystemVariables.ExpiryRuleTag,
-	}).Get(ctx, nil)
-	if err != nil {
-		logger.Error("Failed to upload pipeline run input", zap.Error(err))
-	}
+		err := workflow.ExecuteActivity(minioCtx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
+			PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
+			ExpiryRuleTag:     param.SystemVariables.ExpiryRuleTag,
+		}).Get(ctx, nil)
+		if err != nil {
+			logger.Error("Failed to upload pipeline run input", zap.Error(err))
+		}
 
-	err = workflow.ExecuteActivity(minioCtx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
-		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
-		ExpiryRuleTag:     param.SystemVariables.ExpiryRuleTag,
-	}).Get(ctx, nil)
-	if err != nil {
-		logger.Error("Failed to upload pipeline run recipe", zap.Error(err))
-	}
+		err = workflow.ExecuteActivity(minioCtx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
+			PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
+			ExpiryRuleTag:     param.SystemVariables.ExpiryRuleTag,
+		}).Get(ctx, nil)
+		if err != nil {
+			logger.Error("Failed to upload pipeline run recipe", zap.Error(err))
+		}
 
-	// TODO group everything under condition
-	if param.TriggerFromAPI {
 		if err := workflow.ExecuteActivity(ctx, w.InitComponentsActivity, &InitComponentsActivityParam{
 			WorkflowID:      workflowID,
 			SystemVariables: param.SystemVariables,
@@ -283,7 +280,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	dagData := &LoadDAGDataActivityResult{}
-	err = workflow.ExecuteActivity(ctx, w.LoadDAGDataActivity, workflowID).Get(ctx, dagData)
+	err := workflow.ExecuteActivity(ctx, w.LoadDAGDataActivity, workflowID).Get(ctx, dagData)
 	if err != nil {
 		logger.Error("Failed to load DAG", zap.Error(err))
 	}
