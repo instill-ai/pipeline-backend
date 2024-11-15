@@ -8,7 +8,7 @@
   "id": "email",
   "public": true,
   "title": "Email",
-  "description": "Get and send email from Mail Protocol",
+  "description": "Get and send email from Mail Protocol.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_APPLICATION",
   "uid": "ee8edff7-443f-459d-8db1-a99ea71db233",

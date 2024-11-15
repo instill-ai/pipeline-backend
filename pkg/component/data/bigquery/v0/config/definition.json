@@ -10,7 +10,7 @@
   "id": "bigquery",
   "public": true,
   "title": "BigQuery",
-  "description": "Insert data to BigQuery tables",
+  "description": "Insert data to BigQuery tables.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_DATA",
   "uid": "e2ffe076-ab2c-4e5e-9587-a613a6b1c146",

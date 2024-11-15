@@ -9,7 +9,7 @@
   "id": "cohere",
   "public": true,
   "title": "Cohere",
-  "description": "Connect the AI models served on the Cohere Platform",
+  "description": "Connect the AI models served on the Cohere Platform.",
   "type": "COMPONENT_TYPE_AI",
   "uid": "11550338-de54-4338-a4ca-4a21c4757817",
   "vendor": "Cohere",

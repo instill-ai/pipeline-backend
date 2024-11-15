@@ -11,7 +11,7 @@
   "public": true,
   "title": "Asana",
   "vendor": "Asana",
-  "description": "Do anything available on Asana",
+  "description": "Do anything available on Asana.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_APPLICATION",
   "uid": "7c83cda3-50a9-46fc-992f-c4e8b949bbec",

@@ -8,7 +8,7 @@
   "id": "ollama",
   "public": true,
   "title": "Ollama",
-  "description": "Connect the AI models served with the Ollama library",
+  "description": "Connect the AI models served with the Ollama library.",
   "type": "COMPONENT_TYPE_AI",
   "uid": "5f6dcfc4-efd0-45a1-aae9-c9b4beb68a32",
   "vendor": "Ollama",

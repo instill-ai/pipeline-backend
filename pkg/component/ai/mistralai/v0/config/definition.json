@@ -9,7 +9,7 @@
   "id": "mistral-ai",
   "public": true,
   "title": "Mistral AI",
-  "description": "Connect the AI models served on the Mistral AI Platform",
+  "description": "Connect the AI models served on the Mistral AI Platform.",
   "type": "COMPONENT_TYPE_AI",
   "uid": "5e349d27-b00d-4961-86a3-249c30c06073",
   "vendor": "Mistral AI",

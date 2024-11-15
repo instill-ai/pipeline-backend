@@ -16,7 +16,7 @@
   "id": "milvus",
   "public": true,
   "title": "Milvus",
-  "description": "Build and search vector datasets",
+  "description": "Build and search vector datasets.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_DATA",
   "uid": "51a5246e-2f2c-4597-bbca-4baaa0dc8994",

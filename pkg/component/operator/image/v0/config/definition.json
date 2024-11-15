@@ -22,6 +22,6 @@
   "uid": "e9eb8fc8-f249-4e11-ad50-5035d79ffc18",
   "version": "0.1.0",
   "sourceUrl": "https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/image/v0",
-  "description": "Manipulate image files",
+  "description": "Manipulate image files.",
   "releaseStage": "RELEASE_STAGE_ALPHA"
 }

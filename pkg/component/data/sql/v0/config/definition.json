@@ -13,7 +13,7 @@
   "id": "sql",
   "public": true,
   "title": "SQL",
-  "description": "Access the SQL database of your choice",
+  "description": "Access the SQL database of your choice.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_DATA",
   "uid": "5861fc8f-1a07-42f6-a6b8-0e5a2664de00",

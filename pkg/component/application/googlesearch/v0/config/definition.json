@@ -9,7 +9,7 @@
   "id": "google-search",
   "public": true,
   "title": "Google Search",
-  "description": "Leverage the Google Search engine",
+  "description": "Leverage the Google Search engine.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_APPLICATION",
   "uid": "2b1da686-878a-462c-b2c6-a9690199939c",

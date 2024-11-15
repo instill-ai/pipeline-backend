@@ -9,7 +9,7 @@
   "id": "fireworks-ai",
   "public": true,
   "title": "Fireworks AI",
-  "description": "Connect the AI models served on the Fireworks AI Platform",
+  "description": "Connect the AI models served on the Fireworks AI Platform.",
   "type": "COMPONENT_TYPE_AI",
   "uid": "09258316-dad7-4b84-be50-41eb76ba9cf0",
   "vendor": "Fireworks AI",

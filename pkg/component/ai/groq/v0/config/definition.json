@@ -7,7 +7,7 @@
   "id": "groq",
   "public": true,
   "title": "Groq",
-  "description": "Connect the AI models served on GroqCloud",
+  "description": "Connect the AI models served on GroqCloud.",
   "type": "COMPONENT_TYPE_AI",
   "uid": "d5e64e5c-2dd2-4358-82dd-0e3a035c2157",
   "vendor": "Groq",
