@@ -6,7 +6,7 @@
       "properties": {
         "include-system-message": {
           "default": true,
-          "description": "Include system message in the retrieved conversation turns if exists",
+          "description": "Include system message in the retrieved conversation turns if exists.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -34,7 +34,7 @@
           "type": "integer"
         },
         "session-id": {
-          "description": "A unique identifier for the chat session",
+          "description": "A unique identifier for the chat session.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -59,7 +59,7 @@
       "properties": {
         "messages": {
           "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/chat-messages",
-          "description": "Messages",
+          "description": "Messages.",
           "instillUIOrder": 0
         }
       },
@@ -76,7 +76,7 @@
       "instillUIOrder": 0,
       "properties": {
         "content": {
-          "description": "The message content",
+          "description": "The message content.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -92,14 +92,14 @@
         },
         "metadata": {
           "additionalProperties": true,
-          "description": "The message metadata",
+          "description": "The message metadata.",
           "instillUIOrder": 3,
           "required": [],
           "title": "Metadata",
           "type": "object"
         },
         "role": {
-          "description": "The message role, i.e. 'system', 'user' or 'assistant'",
+          "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -113,7 +113,7 @@
           "type": "string"
         },
         "session-id": {
-          "description": "A unique identifier for the chat session",
+          "description": "A unique identifier for the chat session.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -139,7 +139,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "The status of the write operation",
+          "description": "The status of the write operation.",
           "instillFormat": "boolean",
           "instillUIOrder": 0,
           "title": "Status",
@@ -160,7 +160,7 @@
       "properties": {
         "content": {
           "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/multi-modal-content",
-          "description": "The multi-modal message content",
+          "description": "The multi-modal message content.",
           "instillAcceptFormats": [
             "structured/multi-modal-content"
           ],
@@ -173,14 +173,14 @@
         },
         "metadata": {
           "additionalProperties": true,
-          "description": "The message metadata",
+          "description": "The message metadata.",
           "instillUIOrder": 3,
           "required": [],
           "title": "Metadata",
           "type": "object"
         },
         "role": {
-          "description": "The message role, i.e. 'system', 'user' or 'assistant'",
+          "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -194,7 +194,7 @@
           "type": "string"
         },
         "session-id": {
-          "description": "A unique identifier for the chat session",
+          "description": "A unique identifier for the chat session.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -220,7 +220,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "The status of the write operation",
+          "description": "The status of the write operation.",
           "instillFormat": "boolean",
           "instillUIOrder": 0,
           "title": "Status",

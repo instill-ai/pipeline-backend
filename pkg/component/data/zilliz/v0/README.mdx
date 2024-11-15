@@ -64,16 +64,16 @@ Perform a vector search on a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to perform vector search on |
-| Partition Name | `partition-name` | string | The name of the partition to vector search the data from |
-| Vector (required) | `vector` | array[number] | An array of dimensions for the vector search |
-| Vector Field (required) | `vector-field` | string | The name of the field to perform vector search on |
-| Fields | `fields` | array[string] | The fields to return in the data. If empty then all fields will be returned |
-| Limit (required) | `limit` | integer | The limit of the data to return |
-| Filter | `filter` | string | The properties filter to be applied to the data with zilliz scalar filter, please refer to [filtered-search](https://docs.zilliz.com/docs/single-vector-search?_highlight=filter/docs/single-vector-search#filtered-search) |
-| Offset | `offset` | integer | The offset of the data to return |
-| Grouping Field | `grouping-field` | string | The name of the field to group the data by, please refer to [grouping-search](https://docs.zilliz.com/docs/release-notes-290?_highlight=grouping&_highlight=field/docs/release-notes-290#grouping-search) |
-| Search Parameters | `search-params` | object | The search parameters to be applied to the data with zilliz search parameters, please refer to [search-parameters](https://docs.zilliz.com/docs/single-vector-search?_highlight=search&_highlight=params/docs/single-vector-search#search-parameters) |
+| Collection Name (required) | `collection-name` | string | The name of the collection to perform vector search on. |
+| Partition Name | `partition-name` | string | The name of the partition to vector search the data from. |
+| Vector (required) | `vector` | array[number] | An array of dimensions for the vector search. |
+| Vector Field (required) | `vector-field` | string | The name of the field to perform vector search on. |
+| Fields | `fields` | array[string] | The fields to return in the data. If empty then all fields will be returned. |
+| Limit (required) | `limit` | integer | The limit of the data to return. |
+| Filter | `filter` | string | The properties filter to be applied to the data with zilliz scalar filter, please refer to [filtered-search](https://docs.zilliz.com/docs/single-vector-search?_highlight=filter/docs/single-vector-search#filtered-search). |
+| Offset | `offset` | integer | The offset of the data to return. |
+| Grouping Field | `grouping-field` | string | The name of the field to group the data by, please refer to [grouping-search](https://docs.zilliz.com/docs/release-notes-290?_highlight=grouping&_highlight=field/docs/release-notes-290#grouping-search). |
+| Search Parameters | `search-params` | object | The search parameters to be applied to the data with zilliz search parameters, please refer to [search-parameters](https://docs.zilliz.com/docs/single-vector-search?_highlight=search&_highlight=params/docs/single-vector-search#search-parameters). |
 </div>
 
 
@@ -85,8 +85,8 @@ Perform a vector search on a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Result](#vector-search-result) | `result` | object | Result of the vector search operation |
-| Status | `status` | string | Vector search status |
+| [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
+| Status | `status` | string | Vector search status. |
 </div>
 
 <details>
@@ -98,10 +98,10 @@ Perform a vector search on a collection
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Data](#vector-search-data) | `data` | array | The points returned from the vector search operation |
-| IDs | `ids` | array | The ids returned from the vector search operation |
-| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation |
-| Vectors | `vectors` | array | The vectors returned from the vector search operation |
+| [Data](#vector-search-data) | `data` | array | The points returned from the vector search operation. |
+| IDs | `ids` | array | The ids returned from the vector search operation. |
+| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
+| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
 </div>
 </details>
 
@@ -114,9 +114,9 @@ Insert a vector data into a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPSERT` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into |
-| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used |
-| Data (required) | `data` | object | The data |
+| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into. |
+| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used. |
+| Data (required) | `data` | object | The data. |
 </div>
 
 
@@ -128,7 +128,7 @@ Insert a vector data into a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Upsert status |
+| Status | `status` | string | Upsert status. |
 </div>
 
 ### Batch Upsert
@@ -140,9 +140,9 @@ Insert a batch of vector data into a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into |
-| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used |
-| [Array Data](#batch-upsert-array-data) (required) | `array-data` | array[object] | The data |
+| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into. |
+| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used. |
+| [Array Data](#batch-upsert-array-data) (required) | `array-data` | array[object] | The data. |
 </div>
 
 
@@ -154,7 +154,7 @@ Insert a batch of vector data into a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Batch upsert status |
+| Status | `status` | string | Batch upsert status. |
 </div>
 
 ### Delete
@@ -166,9 +166,9 @@ Delete vector data from a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to delete the data from |
-| Partition Name | `partition-name` | string | The name of the partition to delete the data from. If empty then default partition will be used |
-| Filter | `filter` | string | The properties filter to be applied to the data with zilliz scalar filter, please refer to [filtered-search](https://docs.zilliz.com/docs/single-vector-search?_highlight=filter/docs/single-vector-search#filtered-search) |
+| Collection Name (required) | `collection-name` | string | The name of the collection to delete the data from. |
+| Partition Name | `partition-name` | string | The name of the partition to delete the data from. If empty then default partition will be used. |
+| Filter | `filter` | string | The properties filter to be applied to the data with zilliz scalar filter, please refer to [filtered-search](https://docs.zilliz.com/docs/single-vector-search?_highlight=filter/docs/single-vector-search#filtered-search). |
 </div>
 
 
@@ -180,7 +180,7 @@ Delete vector data from a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete status |
+| Status | `status` | string | Delete status. |
 </div>
 
 ### Create Collection
@@ -192,14 +192,14 @@ Create a collection, please refer to [create-collection-v2](https://docs.zilliz.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_COLLECTION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to create |
-| Dimension (required) | `dimension` | integer | The dimension of the collection |
-| ID Type | `id-type` | string | The type of the id |
-| Schema | `schema` | object | The schema of the collection |
-| Auto ID | `auto-id` | boolean | Whether to auto generate id |
-| Metric Type | `metric-type` | string | The metric type of the collection |
-| Index Parameters | `index-params` | object | The index parameters to be applied to the collection with zilliz index parameters, please refer to [index-parameter](https://zilliz.io/docs/single-vector-search.md#Index-parameters) |
-| Parameters | `params` | object | The parameters to be applied to the collection with zilliz parameters, please refer to [parameters](https://zilliz.io/docs/single-vector-search.md#Parameters) |
+| Collection Name (required) | `collection-name` | string | The name of the collection to create. |
+| Dimension (required) | `dimension` | integer | The dimension of the collection. |
+| ID Type | `id-type` | string | The type of the id. |
+| Schema | `schema` | object | The schema of the collection. |
+| Auto ID | `auto-id` | boolean | Whether to auto generate id. |
+| Metric Type | `metric-type` | string | The metric type of the collection. |
+| Index Parameters | `index-params` | object | The index parameters to be applied to the collection with zilliz index parameters, please refer to [index-parameter](https://zilliz.io/docs/single-vector-search.md#Index-parameters). |
+| Parameters | `params` | object | The parameters to be applied to the collection with zilliz parameters, please refer to [parameters](https://zilliz.io/docs/single-vector-search.md#Parameters). |
 </div>
 
 
@@ -211,7 +211,7 @@ Create a collection, please refer to [create-collection-v2](https://docs.zilliz.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create collection status |
+| Status | `status` | string | Create collection status. |
 </div>
 
 ### Drop Collection
@@ -223,7 +223,7 @@ Drop a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_COLLECTION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to drop |
+| Collection Name (required) | `collection-name` | string | The name of the collection to drop. |
 </div>
 
 
@@ -235,7 +235,7 @@ Drop a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Drop collection status |
+| Status | `status` | string | Drop collection status. |
 </div>
 
 ### Create Partition
@@ -247,8 +247,8 @@ Create a partition in a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_PARTITION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to create the partition in |
-| Partition Name (required) | `partition-name` | string | The name of the partition to create |
+| Collection Name (required) | `collection-name` | string | The name of the collection to create the partition in. |
+| Partition Name (required) | `partition-name` | string | The name of the partition to create. |
 </div>
 
 
@@ -260,7 +260,7 @@ Create a partition in a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create partition status |
+| Status | `status` | string | Create partition status. |
 </div>
 
 ### Drop Partition
@@ -272,8 +272,8 @@ Drop a partition from a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_PARTITION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to drop the partition from |
-| Partition Name (required) | `partition-name` | string | The name of the partition to drop |
+| Collection Name (required) | `collection-name` | string | The name of the collection to drop the partition from. |
+| Partition Name (required) | `partition-name` | string | The name of the partition to drop. |
 </div>
 
 
@@ -285,7 +285,7 @@ Drop a partition from a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Drop partition status |
+| Status | `status` | string | Drop partition status. |
 </div>
 
 

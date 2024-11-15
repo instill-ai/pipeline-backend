@@ -5,7 +5,7 @@
       "instillUIOrder": 0,
       "properties": {
         "table-name": {
-          "description": "The table name in the database to insert data into",
+          "description": "The table name in the database to insert data into.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -20,7 +20,7 @@
           "type": "string"
         },
         "data": {
-          "description": "The data to be inserted",
+          "description": "The data to be inserted.",
           "instillAcceptFormats": [
             "semi-structured/*",
             "object"
@@ -51,7 +51,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Insert status",
+          "description": "Insert status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,
@@ -72,7 +72,7 @@
       "instillUIOrder": 0,
       "properties": {
         "table-name": {
-          "description": "The table name in the database to insert data into",
+          "description": "The table name in the database to insert data into.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -87,7 +87,7 @@
           "type": "string"
         },
         "array-data": {
-          "description": "The array data to be inserted",
+          "description": "The array data to be inserted.",
           "instillAcceptFormats": [
             "array:semi-structured/*",
             "array:semi-structured/json",
@@ -103,7 +103,7 @@
           "title": "Data",
           "type": "array",
           "items": {
-            "description": "The data to be inserted",
+            "description": "The data to be inserted.",
             "title": "Data",
             "type": "object",
             "required": []
@@ -122,7 +122,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Insert many status",
+          "description": "Insert many status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,
@@ -143,7 +143,7 @@
       "instillUIOrder": 0,
       "properties": {
         "table-name": {
-          "description": "The table name in the database to update data into",
+          "description": "The table name in the database to update data into.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -159,7 +159,7 @@
         },
         "filter": {
           "instillShortDescription": "The filter to be applied to the data",
-          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause",
+          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause.",
           "instillUIOrder": 1,
           "instillUpstreamTypes": [
             "reference",
@@ -173,7 +173,7 @@
           "type": "string"
         },
         "update-data": {
-          "description": "The new data to be updated to",
+          "description": "The new data to be updated to.",
           "instillAcceptFormats": [
             "semi-structured/*",
             "object"
@@ -205,7 +205,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Update status",
+          "description": "Update status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,
@@ -226,7 +226,7 @@
       "instillUIOrder": 0,
       "properties": {
         "table-name": {
-          "description": "The table name in the database to be selected",
+          "description": "The table name in the database to be selected.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -242,7 +242,7 @@
         },
         "filter": {
           "instillShortDescription": "The filter to be applied to the data. If empty, then all rows will be updated",
-          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for all rows",
+          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for all rows.",
           "instillUIOrder": 1,
           "instillUpstreamTypes": [
             "reference",
@@ -256,7 +256,7 @@
           "type": "string"
         },
         "limit": {
-          "description": "The limit of rows to be selected, empty for all rows",
+          "description": "The limit of rows to be selected, empty for all rows.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -271,7 +271,7 @@
           "type": "integer"
         },
         "columns": {
-          "description": "The columns to return in the rows. If empty then all columns will be returned",
+          "description": "The columns to return in the rows. If empty then all columns will be returned.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -302,14 +302,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "json"
       ],
       "instillUIOrder": 0,
       "properties": {
         "rows": {
-          "description": "The rows returned from the select operation",
+          "description": "The rows returned from the select operation.",
           "instillEditOnNodeFields": [],
           "instillUIOrder": 0,
           "required": [],
@@ -324,7 +324,7 @@
           }
         },
         "status": {
-          "description": "Select status",
+          "description": "Select status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,
@@ -346,7 +346,7 @@
       "instillUIOrder": 0,
       "properties": {
         "table-name": {
-          "description": "The table name in the database to be deleted",
+          "description": "The table name in the database to be deleted.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -362,7 +362,7 @@
         },
         "filter": {
           "instillShortDescription": "The filter to be applied to the data",
-          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause",
+          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause.",
           "instillUIOrder": 1,
           "instillUpstreamTypes": [
             "reference",
@@ -387,7 +387,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Delete status",
+          "description": "Delete status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,
@@ -408,7 +408,7 @@
       "instillUIOrder": 0,
       "properties": {
         "table-name": {
-          "description": "The table name in the database to be created",
+          "description": "The table name in the database to be created.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -423,7 +423,7 @@
           "type": "string"
         },
         "columns-structure": {
-          "description": "The columns structure to be created in the table, json with value string, e.g {\"name\": \"VARCHAR(255)\", \"age\": \"INT not null\"}",
+          "description": "The columns structure to be created in the table, json with value string, e.g {\"name\": \"VARCHAR(255)\", \"age\": \"INT not null\"}.",
           "instillAcceptFormats": [
             "semi-structured/*",
             "object"
@@ -451,7 +451,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Create table status",
+          "description": "Create table status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,
@@ -472,7 +472,7 @@
       "instillUIOrder": 0,
       "properties": {
         "table-name": {
-          "description": "The table name in the database to be dropped",
+          "description": "The table name in the database to be dropped.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -497,7 +497,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Drop table status",
+          "description": "Drop table status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,

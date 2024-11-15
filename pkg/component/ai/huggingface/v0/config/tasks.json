@@ -1,7 +1,7 @@
 {
   "$defs": {
     "model": {
-      "description": "The Hugging Face model to be used",
+      "description": "The Hugging Face model to be used.",
       "instillAcceptFormats": [
         "string"
       ],
@@ -45,12 +45,12 @@
         }
       },
       "required": [],
-      "description": "Options for the model",
+      "description": "Options for the model.",
       "title": "Options",
       "type": "object"
     },
     "string-input": {
-      "description": "String input",
+      "description": "String input.",
       "instillAcceptFormats": [
         "string"
       ],
@@ -71,7 +71,7 @@
       "instillUIOrder": 0,
       "properties": {
         "audio": {
-          "description": "The audio file",
+          "description": "The audio file.",
           "instillAcceptFormats": [
             "audio/*"
           ],
@@ -102,7 +102,7 @@
           "items": {
             "properties": {
               "label": {
-                "description": "The label for the class (model specific)",
+                "description": "The label for the class (model specific).",
                 "instillFormat": "string",
                 "instillUIOrder": 0,
                 "title": "Label",
@@ -120,11 +120,11 @@
               "label",
               "score"
             ],
-            "description": "Class",
+            "description": "Class.",
             "title": "Class",
             "type": "object"
           },
-          "description": "Classes",
+          "description": "Classes.",
           "title": "Classes",
           "type": "array"
         }
@@ -138,7 +138,7 @@
   },
   "TASK_CONVERSATIONAL": {
     "instillShortDescription": "Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgable given a prompt.",
-    "description": "Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgable given a prompt. These models have applications in chatbots, and as a part of voice assistants",
+    "description": "Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgable given a prompt. These models have applications in chatbots, and as a part of voice assistants.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
@@ -157,7 +157,7 @@
               ],
               "items": {
                 "instillUIMultiline": true,
-                "description": "Items",
+                "description": "Items.",
                 "type": "string"
               },
               "title": "Generated Responses",
@@ -176,7 +176,7 @@
               ],
               "items": {
                 "instillUIMultiline": true,
-                "description": "Items",
+                "description": "Items.",
                 "type": "string"
               },
               "title": "Past User Inputs",
@@ -201,7 +201,7 @@
           "required": [
             "text"
           ],
-          "description": "Inputs",
+          "description": "Inputs.",
           "title": "Inputs",
           "type": "object"
         },
@@ -323,7 +323,7 @@
             }
           },
           "required": [],
-          "description": "Parameters",
+          "description": "Parameters.",
           "title": "Parameters",
           "type": "object"
         }
@@ -350,7 +350,7 @@
                 "title": "Generated Response",
                 "instillFormat": "string",
                 "instillUIMultiline": true,
-                "description": "Generated Response",
+                "description": "Generated Response.",
                 "type": "string"
               },
               "title": "Generated Responses",
@@ -364,7 +364,7 @@
                 "instillFormat": "string",
                 "instillUIMultiline": true,
                 "title": "Past User Input",
-                "description": "Past User Input",
+                "description": "Past User Input.",
                 "type": "string"
               },
               "title": "Past User Inputs",
@@ -379,7 +379,7 @@
           "type": "object"
         },
         "generated-text": {
-          "description": "The answer of the bot",
+          "description": "The answer of the bot.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 1,
@@ -402,7 +402,7 @@
       "properties": {
         "inputs": {
           "$ref": "#/$defs/string-input",
-          "description": "a string to be filled from, must contain the [MASK] token (check model card for exact name of the mask)",
+          "description": "a string to be filled from, must contain the [MASK] token (check model card for exact name of the mask).",
           "instillUIOrder": 1
         },
         "model": {
@@ -436,7 +436,7 @@
                 "type": "number"
               },
               "sequence": {
-                "description": "The actual sequence of tokens that ran against the model (may contain special tokens)",
+                "description": "The actual sequence of tokens that ran against the model (may contain special tokens).",
                 "instillFormat": "string",
                 "instillUIMultiline": true,
                 "instillUIOrder": 1,
@@ -444,26 +444,26 @@
                 "type": "string"
               },
               "token": {
-                "description": "The id of the token",
+                "description": "The id of the token.",
                 "instillFormat": "integer",
                 "instillUIOrder": 2,
                 "title": "Token",
                 "type": "integer"
               },
               "token-str": {
-                "description": "The string representation of the token",
+                "description": "The string representation of the token.",
                 "instillFormat": "string",
                 "instillUIOrder": 3,
                 "title": "Token Str",
                 "type": "string"
               }
             },
-            "description": "Result",
+            "description": "Result.",
             "title": "Result",
             "required": [],
             "type": "object"
           },
-          "description": "Results",
+          "description": "Results.",
           "title": "Results",
           "type": "array"
         }
@@ -482,7 +482,7 @@
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "The image file",
+          "description": "The image file.",
           "instillAcceptFormats": [
             "image/*"
           ],
@@ -513,7 +513,7 @@
           "items": {
             "properties": {
               "label": {
-                "description": "The label for the class (model specific)",
+                "description": "The label for the class (model specific).",
                 "instillFormat": "string",
                 "instillUIOrder": 0,
                 "title": "Label",
@@ -531,11 +531,11 @@
               "label",
               "score"
             ],
-            "description": "Class",
+            "description": "Class.",
             "title": "Class",
             "type": "object"
           },
-          "description": "Classes",
+          "description": "Classes.",
           "title": "Classes",
           "type": "array"
         }
@@ -554,7 +554,7 @@
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "The image file",
+          "description": "The image file.",
           "instillAcceptFormats": [
             "image/*"
           ],
@@ -611,11 +611,11 @@
               "mask",
               "score"
             ],
-            "description": "Segment",
+            "description": "Segment.",
             "title": "Segment",
             "type": "object"
           },
-          "description": "Segments",
+          "description": "Segments.",
           "title": "Segments",
           "type": "array"
         }
@@ -634,7 +634,7 @@
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "The image file",
+          "description": "The image file.",
           "instillAcceptFormats": [
             "image/*"
           ],
@@ -661,7 +661,7 @@
       "instillUIOrder": 0,
       "properties": {
         "text": {
-          "description": "Generated text",
+          "description": "Generated text.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 0,
@@ -683,7 +683,7 @@
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "The image file",
+          "description": "The image file.",
           "instillAcceptFormats": [
             "image/*"
           ],
@@ -718,28 +718,28 @@
                 "instillUIOrder": 0,
                 "properties": {
                   "xmax": {
-                    "description": "X max",
+                    "description": "X max.",
                     "instillFormat": "number",
                     "instillUIOrder": 0,
                     "title": "X Max",
                     "type": "number"
                   },
                   "xmin": {
-                    "description": "X min",
+                    "description": "X min.",
                     "instillFormat": "number",
                     "instillUIOrder": 1,
                     "title": "X Min",
                     "type": "number"
                   },
                   "ymax": {
-                    "description": "Y Max",
+                    "description": "Y Max.",
                     "instillFormat": "number",
                     "instillUIOrder": 2,
                     "title": "Y Max",
                     "type": "number"
                   },
                   "ymin": {
-                    "description": "Y min",
+                    "description": "Y min.",
                     "instillFormat": "number",
                     "instillUIOrder": 3,
                     "title": "Y min",
@@ -775,11 +775,11 @@
               "label",
               "score"
             ],
-            "description": "Object",
+            "description": "Object.",
             "title": "Object",
             "type": "object"
           },
-          "description": "Objects",
+          "description": "Objects.",
           "title": "Objects",
           "type": "array"
         }
@@ -793,7 +793,7 @@
   },
   "TASK_QUESTION_ANSWERING": {
     "instillShortDescription": "Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a document.",
-    "description": "Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a document. Some question answering models can generate answers without context!",
+    "description": "Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a document. Some question answering models can generate answers without context!.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
@@ -816,7 +816,7 @@
               "type": "string"
             },
             "question": {
-              "description": "The question",
+              "description": "The question.",
               "instillAcceptFormats": [
                 "string"
               ],
@@ -835,7 +835,7 @@
             "question",
             "context"
           ],
-          "description": "Inputs",
+          "description": "Inputs.",
           "title": "Inputs",
           "type": "object"
         },
@@ -867,7 +867,7 @@
           "type": "string"
         },
         "score": {
-          "description": "A float that represents how likely that the answer is correct",
+          "description": "A float that represents how likely that the answer is correct.",
           "instillFormat": "number",
           "instillUIOrder": 2,
           "title": "Score",
@@ -915,7 +915,7 @@
                 "reference"
               ],
               "items": {
-                "description": "Items",
+                "description": "Items.",
                 "instillUIMultiline": true,
                 "type": "string"
               },
@@ -942,7 +942,7 @@
             "source-sentence",
             "sentences"
           ],
-          "description": "Inputs",
+          "description": "Inputs.",
           "title": "Inputs",
           "type": "object"
         },
@@ -966,12 +966,12 @@
       "instillUIOrder": 0,
       "properties": {
         "scores": {
-          "description": "The associated similarity score for each of the given strings",
+          "description": "The associated similarity score for each of the given strings.",
           "instillUIOrder": 0,
           "instillFormat": "array:number",
           "items": {
             "instillFormat": "number",
-            "description": "The associated similarity score for of the given string",
+            "description": "The associated similarity score for of the given string.",
             "title": "Score",
             "type": "number"
           },
@@ -993,7 +993,7 @@
       "instillUIOrder": 0,
       "properties": {
         "audio": {
-          "description": "The audio file",
+          "description": "The audio file.",
           "instillAcceptFormats": [
             "audio/*"
           ],
@@ -1162,7 +1162,7 @@
             }
           },
           "required": [],
-          "description": "Parameters",
+          "description": "Parameters.",
           "title": "Parameters",
           "type": "object"
         }
@@ -1178,7 +1178,7 @@
       "instillUIOrder": 0,
       "properties": {
         "summary-text": {
-          "description": "The string after summarization",
+          "description": "The string after summarization.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 0,
@@ -1202,7 +1202,7 @@
           "instillUIOrder": 1,
           "properties": {
             "query": {
-              "description": "The query in plain text that you want to ask the table",
+              "description": "The query in plain text that you want to ask the table.",
               "instillAcceptFormats": [
                 "string"
               ],
@@ -1234,7 +1234,7 @@
             "query",
             "table"
           ],
-          "description": "Inputs",
+          "description": "Inputs.",
           "title": "Inputs",
           "type": "object"
         },
@@ -1258,14 +1258,14 @@
       "instillUIOrder": 0,
       "properties": {
         "aggregator": {
-          "description": "The aggregator used to get the answer",
+          "description": "The aggregator used to get the answer.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Aggregator",
           "type": "string"
         },
         "answer": {
-          "description": "The plaintext answer",
+          "description": "The plaintext answer.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 1,
@@ -1273,11 +1273,11 @@
           "type": "string"
         },
         "cells": {
-          "description": "a list of coordinates of the cells contents",
+          "description": "a list of coordinates of the cells contents.",
           "instillUIOrder": 2,
           "instillFormat": "array:string",
           "items": {
-            "description": "coordinate of the cell content",
+            "description": "coordinate of the cell content.",
             "instillFormat": "string",
             "instillUIMultiline": true,
             "title": "Cell",
@@ -1287,12 +1287,12 @@
           "type": "array"
         },
         "coordinates": {
-          "description": "a list of coordinates of the cells referenced in the answer",
+          "description": "a list of coordinates of the cells referenced in the answer.",
           "instillUIOrder": 3,
           "items": {
             "items": {
               "instillFormat": "integer",
-              "description": "coordinate of the cell referenced in the answer",
+              "description": "coordinate of the cell referenced in the answer.",
               "title": "Coordinate",
               "type": "integer"
             },
@@ -1344,7 +1344,7 @@
           "items": {
             "properties": {
               "label": {
-                "description": "The label for the class (model specific)",
+                "description": "The label for the class (model specific).",
                 "instillFormat": "string",
                 "instillUIOrder": 0,
                 "title": "Label",
@@ -1362,11 +1362,11 @@
               "label",
               "score"
             ],
-            "description": "Result",
+            "description": "Result.",
             "title": "Result",
             "type": "object"
           },
-          "description": "Results",
+          "description": "Results.",
           "title": "Results",
           "type": "array"
         }
@@ -1526,7 +1526,7 @@
             }
           },
           "required": [],
-          "description": "Parameters",
+          "description": "Parameters.",
           "title": "Parameters",
           "type": "object"
         }
@@ -1542,7 +1542,7 @@
       "instillUIOrder": 0,
       "properties": {
         "generated-text": {
-          "description": "The continuated string",
+          "description": "The continuated string.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 1,
@@ -1579,7 +1579,7 @@
           "instillUIOrder": 2,
           "properties": {
             "guidance-scale": {
-              "description": "Guidance scale",
+              "description": "Guidance scale.",
               "instillAcceptFormats": [
                 "number",
                 "integer"
@@ -1593,7 +1593,7 @@
               "type": "number"
             },
             "height": {
-              "description": "Image Height",
+              "description": "Image Height.",
               "instillAcceptFormats": [
                 "integer"
               ],
@@ -1606,7 +1606,7 @@
               "type": "integer"
             },
             "negative-prompt": {
-              "description": "Negative prompt for generating the image",
+              "description": "Negative prompt for generating the image.",
               "instillAcceptFormats": [
                 "string"
               ],
@@ -1621,7 +1621,7 @@
               "type": "string"
             },
             "num-inference-steps": {
-              "description": "Number of inference steps",
+              "description": "Number of inference steps.",
               "instillAcceptFormats": [
                 "integer"
               ],
@@ -1634,7 +1634,7 @@
               "type": "integer"
             },
             "width": {
-              "description": "Image width",
+              "description": "Image width.",
               "instillAcceptFormats": [
                 "integer"
               ],
@@ -1648,7 +1648,7 @@
             }
           },
           "required": [],
-          "description": "Parameters",
+          "description": "Parameters.",
           "title": "Parameters",
           "type": "object"
         }
@@ -1666,7 +1666,7 @@
         "image": {
           "instillFormat": "image/jpeg",
           "instillUIOrder": 0,
-          "description": "Image",
+          "description": "Image.",
           "title": "Image",
           "type": "string"
         }
@@ -1716,7 +1716,7 @@
             }
           },
           "required": [],
-          "description": "Parameters",
+          "description": "Parameters.",
           "title": "Parameters",
           "type": "object"
         }
@@ -1764,7 +1764,7 @@
                 "type": "integer"
               },
               "word": {
-                "description": "The string that was captured",
+                "description": "The string that was captured.",
                 "instillFormat": "string",
                 "instillUIMultiline": true,
                 "instillUIOrder": 4,
@@ -1776,7 +1776,7 @@
             "title": "Result",
             "type": "object"
           },
-          "description": "Results",
+          "description": "Results.",
           "title": "Results",
           "type": "array"
         }
@@ -1817,7 +1817,7 @@
       "instillUIOrder": 0,
       "properties": {
         "translation-text": {
-          "description": "The string after translation",
+          "description": "The string after translation.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 0,
@@ -1853,7 +1853,7 @@
           "instillUIOrder": 2,
           "properties": {
             "candidate-labels": {
-              "description": "a list of strings that are potential classes for inputs. (max 10 candidate-labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate-labels anyway. If you want to keep the exact same, you can simply run multi-label=True and do the scaling on your end. )",
+              "description": "a list of strings that are potential classes for inputs. (max 10 candidate-labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate-labels anyway. If you want to keep the exact same, you can simply run multi-label=True and do the scaling on your end. ).",
               "instillShortDescription": "a list of strings that are potential classes for inputs.",
               "instillUIOrder": 0,
               "instillUpstreamTypes": [
@@ -1869,7 +1869,7 @@
               "type": "array"
             },
             "multi-label": {
-              "description": "Boolean that is set to True if classes can overlap",
+              "description": "Boolean that is set to True if classes can overlap.",
               "instillAcceptFormats": [
                 "boolean"
               ],
@@ -1885,7 +1885,7 @@
           "required": [
             "candidate-labels"
           ],
-          "description": "Parameters",
+          "description": "Parameters.",
           "title": "Parameters",
           "type": "object"
         }
@@ -1901,12 +1901,12 @@
       "instillUIOrder": 0,
       "properties": {
         "labels": {
-          "description": "The list of strings for labels that you sent (in order)",
+          "description": "The list of strings for labels that you sent (in order).",
           "instillUIOrder": 1,
           "instillFormat": "array:string",
           "items": {
             "instillFormat": "string",
-            "description": "The string for label that you sent (in order)",
+            "description": "The string for label that you sent (in order).",
             "title": "Label",
             "type": "string"
           },
@@ -1927,7 +1927,7 @@
           "type": "array"
         },
         "sequence": {
-          "description": "The string sent as an input",
+          "description": "The string sent as an input.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 1,

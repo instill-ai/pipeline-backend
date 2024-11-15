@@ -43,7 +43,7 @@
   "TASK_READ_CHAT_HISTORY": {
     "instillShortDescription": "Retrieve the chat history from the conversation.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "namespace": {
@@ -175,7 +175,7 @@
                         },
                         "type": {
                           "title": "Image URL",
-                          "description": "Image URL content type",
+                          "description": "Image URL content type.",
                           "instillShortDescription": "Image URL content type",
                           "type": "string",
                           "const": "image-url",
@@ -242,7 +242,7 @@
             ]
           },
           "instillUIOrder": 0,
-          "description": "List of chat messages"
+          "description": "List of chat messages."
         }
       },
       "required": [
@@ -255,7 +255,7 @@
   "TASK_WRITE_CHAT_MESSAGE": {
     "instillShortDescription": "Write the chat message into the conversation in catalog.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "namespace": {
@@ -325,14 +325,14 @@
           "type": "string"
         },
         "create-time": {
-          "description": "The creation time of the message in ISO 8601 format",
+          "description": "The creation time of the message in ISO 8601 format.",
           "instillFormat": "string",
           "instillUIOrder": 1,
           "title": "Create Time",
           "type": "string"
         },
         "update-time": {
-          "description": "The update time of the message in ISO 8601 format",
+          "description": "The update time of the message in ISO 8601 format.",
           "instillFormat": "string",
           "instillUIOrder": 2,
           "title": "Update Time",

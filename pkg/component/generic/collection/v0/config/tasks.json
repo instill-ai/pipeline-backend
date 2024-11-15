@@ -2,7 +2,7 @@
   "TASK_ASSIGN": {
     "instillShortDescription": "Assign the data.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "data"
       ],
@@ -31,7 +31,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "data"
       ],
@@ -56,7 +56,7 @@
   "TASK_APPEND": {
     "instillShortDescription": "Add data to the end of an array.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "array",
         "element"
@@ -104,7 +104,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "array"
       ],
@@ -130,7 +130,7 @@
   "TASK_UNION": {
     "instillShortDescription": "Find the union of the sets",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "sets"
       ],
@@ -161,7 +161,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "set"
       ],
@@ -187,7 +187,7 @@
   "TASK_INTERSECTION": {
     "instillShortDescription": "Find the intersection of the sets",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "sets"
       ],
@@ -218,7 +218,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "set"
       ],
@@ -244,7 +244,7 @@
   "TASK_DIFFERENCE": {
     "instillShortDescription": "Find the difference between the two sets, i.e. `set-a` \\ `set-b`, identifying the elements that are in `set-a` but not in `set-b`.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "set-a",
         "set-b"
@@ -294,7 +294,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "set"
       ],
@@ -320,7 +320,7 @@
   "TASK_CONCAT": {
     "instillShortDescription": "Concatenate the arrays. i.e. `[1, 2] + [3, 4] = [1, 2, 3, 4]`",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "arrays"
       ],
@@ -351,7 +351,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "array"
       ],
@@ -377,7 +377,7 @@
   "TASK_SPLIT": {
     "instillShortDescription": "Split the array into an array of arrays with group size. i.e. `[1, 2, 3, 4, 5, 6]` with group size 2 = `[[1, 2], [3, 4], [5, 6]]`. If the array length is not divisible by the group size, the last group will have fewer elements.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "array": {
@@ -419,7 +419,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 1,
       "properties": {
         "arrays": {

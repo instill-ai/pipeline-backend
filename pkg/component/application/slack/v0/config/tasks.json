@@ -1,14 +1,14 @@
 {
   "$defs": {
     "user-id": {
-      "description": "unique id from Slack",
+      "description": "unique id from Slack.",
       "instillFormat": "string",
       "instillUIOrder": 0,
       "title": "User UID",
       "type": "string"
     },
     "user-name": {
-      "description": "user name in Slack",
+      "description": "user name in Slack.",
       "instillFormat": "string",
       "instillUIOrder": 1,
       "title": "User Name",
@@ -18,11 +18,11 @@
   "TASK_READ_MESSAGE": {
     "instillShortDescription": "Get the latest message since specific date",
     "input": {
-      "description": "Please input the channel name and the date that we want to start to read",
+      "description": "Please input the channel name and the date that we want to start to read.",
       "instillUIOrder": 0,
       "properties": {
         "channel-name": {
-          "description": "Channel name, as displayed on Slack",
+          "description": "Channel name, as displayed on Slack.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -59,11 +59,11 @@
       "type": "object"
     },
     "output": {
-      "description": "All messages in Slack channel",
+      "description": "All messages in Slack channel.",
       "instillUIOrder": 0,
       "properties": {
         "conversations": {
-          "description": "An array of conversations with thread messages",
+          "description": "An array of conversations with thread messages.",
           "instillUIOrder": 0,
           "title": "Conversations",
           "type": "array",
@@ -78,14 +78,14 @@
                 "$ref": "#/$defs/user-name"
               },
               "message": {
-                "description": "message to start a conversation",
+                "description": "message to start a conversation.",
                 "instillFormat": "string",
                 "instillUIOrder": 2,
                 "title": "Start Conversation Message",
                 "type": "string"
               },
               "start-date": {
-                "description": "when a conversation starts",
+                "description": "when a conversation starts.",
                 "instillFormat": "string",
                 "instillUIOrder": 3,
                 "required": [],
@@ -93,7 +93,7 @@
                 "type": "string"
               },
               "last-date": {
-                "description": "Date of the last message",
+                "description": "Date of the last message.",
                 "instillFormat": "string",
                 "instillUIOrder": 4,
                 "required": [],
@@ -101,7 +101,7 @@
                 "type": "string"
               },
               "thread-reply-messages": {
-                "description": "replies in a conversation",
+                "description": "replies in a conversation.",
                 "instillFormat": "array",
                 "instillUIOrder": 5,
                 "title": "Replied messages",
@@ -117,14 +117,14 @@
                       "$ref": "#/$defs/user-name"
                     },
                     "datetime": {
-                      "description": "replied datetime",
+                      "description": "replied datetime.",
                       "instillFormat": "string",
                       "instillUIOrder": 2,
                       "title": "Replied Time",
                       "type": "string"
                     },
                     "message": {
-                      "description": "message to reply a conversation",
+                      "description": "message to reply a conversation.",
                       "instillFormat": "string",
                       "instillUIOrder": 3,
                       "title": "Replied Message",
@@ -158,11 +158,11 @@
     "instillShortDescription": "send message to a specific channel",
     "title": "Send Message",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "channel-name": {
-          "description": "Channel name, as displayed on Slack",
+          "description": "Channel name, as displayed on Slack.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -177,7 +177,7 @@
           "type": "string"
         },
         "message": {
-          "description": "The message to be sent to the target channel",
+          "description": "The message to be sent to the target channel.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -193,7 +193,7 @@
         },
         "as-user": {
           "default": false,
-          "description": "Send the message on behalf of the user identified by the <code>setup.user-token</code> field",
+          "description": "Send the message on behalf of the user identified by the <code>setup.user-token</code> field.",
           "instillUIOrder": 2,
           "title": "Send As User",
           "instillFormat": "boolean",
@@ -210,11 +210,11 @@
       "type": "object"
     },
     "output": {
-      "description": "The greeting sentence",
+      "description": "The greeting sentence.",
       "instillUIOrder": 0,
       "properties": {
         "result": {
-          "description": "Result of the message delivery",
+          "description": "Result of the message delivery.",
           "instillEditOnNodeFields": [],
           "instillUIOrder": 0,
           "required": [],

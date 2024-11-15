@@ -248,7 +248,7 @@
   "TASK_UPLOAD_FILE": {
     "instillShortDescription": "Upload and process the files into chunks into Catalog.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "options": {
@@ -461,7 +461,7 @@
   "TASK_UPLOAD_FILES": {
     "instillShortDescription": "Upload and process the files into chunks into Catalog.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "options": {
@@ -1009,7 +1009,7 @@
       "instillUIOrder": 1,
       "properties": {
         "chunks": {
-          "description": "Chunks data from smart search",
+          "description": "Chunks data from smart search.",
           "instillUIOrder": 0,
           "items": {
             "$ref": "#/$defs/chunk-item"

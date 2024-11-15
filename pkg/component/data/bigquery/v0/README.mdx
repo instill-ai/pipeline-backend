@@ -60,7 +60,7 @@ Insert data to BigQuery.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT` |
-| Data | `data` | object | The data to be inserted to BigQuery |
+| Data | `data` | object | The data to be inserted to BigQuery. |
 </div>
 
 
@@ -72,7 +72,7 @@ Insert data to BigQuery.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Status of the upload operation |
+| Status | `status` | string | Status of the upload operation. |
 </div>
 
 ### Read
@@ -84,7 +84,7 @@ Read data from BigQuery.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ` |
-| Filtering | `filtering` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause |
+| Filtering | `filtering` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
 </div>
 
 
@@ -96,7 +96,7 @@ Read data from BigQuery.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Data](#read-data) | `data` | array[object] | The data to be read from BigQuery |
+| [Data](#read-data) | `data` | array[object] | The data to be read from BigQuery. |
 </div>
 
 

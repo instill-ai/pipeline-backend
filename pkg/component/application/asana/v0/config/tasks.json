@@ -1,9 +1,9 @@
 {
   "TASK_CRUD_GOAL": {
-    "description": "Create, Update, Delete, Read and Duplicate goal in Asana",
+    "description": "Create, Update, Delete, Read and Duplicate goal in Asana.",
     "instillShortDescription": "Goal Related Task, including get, update, delete, create, duplicate",
     "input": {
-      "description": "Goal Related Task, including get, update, delete, create, duplicate",
+      "description": "Goal Related Task, including get, update, delete, create, duplicate.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "action"
@@ -11,7 +11,7 @@
       "properties": {
         "action": {
           "title": "Action",
-          "description": "action",
+          "description": "action.",
           "instillUIOrder": 1,
           "additionalProperties": true,
           "instillFormat": "object",
@@ -26,7 +26,7 @@
                   "title": "Action",
                   "const": "get",
                   "type": "string",
-                  "description": "Get Goal",
+                  "description": "Get Goal.",
                   "instillUIOrder": 0
                 },
                 "goal-gid": {
@@ -56,7 +56,7 @@
               ],
               "instillFormat": "object",
               "title": "Get",
-              "description": "Get Goal",
+              "description": "Get Goal.",
               "instillUIOrder": 0,
               "type": "object"
             },
@@ -66,7 +66,7 @@
                   "title": "Action",
                   "const": "update",
                   "type": "string",
-                  "description": "Update Goal",
+                  "description": "Update Goal.",
                   "instillUIOrder": 0
                 },
                 "goal-gid": {
@@ -206,7 +206,7 @@
               ],
               "instillFormat": "object",
               "title": "Update",
-              "description": "Update Goal",
+              "description": "Update Goal.",
               "instillUIOrder": 0,
               "type": "object"
             },
@@ -340,7 +340,7 @@
                   "type": "boolean"
                 },
                 "workspace": {
-                  "description": "GID of the workspace.  You can find one by filling the access token in the <a href=\"https://developers.asana.com/reference/getworkspaces\">Asana API Playground</a>",
+                  "description": "GID of the workspace.  You can find one by filling the access token in the <a href=\"https://developers.asana.com/reference/getworkspaces\">Asana API Playground</a>.",
                   "instillShortDescription": "GID of the workspace",
                   "instillUIOrder": 5,
                   "title": "Workspace",
@@ -356,7 +356,7 @@
                   "type": "string"
                 },
                 "time-period": {
-                  "description": "GID of the time period. You can find one by filling the workspace id in the <a href=\"https://developers.asana.com/reference/gettimeperiods\">Asana API Playground</a>",
+                  "description": "GID of the time period. You can find one by filling the workspace id in the <a href=\"https://developers.asana.com/reference/gettimeperiods\">Asana API Playground</a>.",
                   "instillShortDescription": "Time Period",
                   "instillUIOrder": 6,
                   "title": "Time Period",
@@ -372,7 +372,7 @@
                   "type": "string"
                 },
                 "owner": {
-                  "description": "User GID of the Owner. You can find one by filling the workspace id in the <a href=\"https://developers.asana.com/reference/getusers\">Asana API Playground</a>",
+                  "description": "User GID of the Owner. You can find one by filling the workspace id in the <a href=\"https://developers.asana.com/reference/getusers\">Asana API Playground</a>.",
                   "instillShortDescription": "Owner",
                   "instillUIOrder": 7,
                   "title": "Owner",
@@ -402,7 +402,7 @@
                 "liked"
               ],
               "title": "Create",
-              "description": "Create Goal",
+              "description": "Create Goal.",
               "instillUIOrder": 0,
               "instillFormat": "object",
               "type": "object"
@@ -415,7 +415,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Goal",
+      "description": "Goal.",
       "instillUIOrder": 0,
       "properties": {
         "gid": {
@@ -553,10 +553,10 @@
     }
   },
   "TASK_CRUD_TASK": {
-    "description": "Create, Update, Delete, Read and Duplicate Task in Asana",
+    "description": "Create, Update, Delete, Read and Duplicate Task in Asana.",
     "instillShortDescription": "Task Related Task, including get, update, delete, create, duplicate",
     "input": {
-      "description": "Task Related Task, including get, update, delete, create, duplicate",
+      "description": "Task Related Task, including get, update, delete, create, duplicate.",
       "instillShortDescription": "Task Related Task, including get, update, delete, create, duplicate",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
@@ -565,7 +565,7 @@
       "properties": {
         "action": {
           "title": "Action",
-          "description": "Action",
+          "description": "Action.",
           "instillUIOrder": 1,
           "additionalProperties": true,
           "instillFormat": "object",
@@ -580,7 +580,7 @@
                   "title": "Action",
                   "const": "get",
                   "type": "string",
-                  "description": "Get Task",
+                  "description": "Get Task.",
                   "instillUIOrder": 0
                 },
                 "task-gid": {
@@ -609,7 +609,7 @@
                 "task-gid"
               ],
               "title": "Get",
-              "description": "Get Task",
+              "description": "Get Task.",
               "instillUIOrder": 0,
               "instillFormat": "object",
               "type": "object"
@@ -620,7 +620,7 @@
                   "title": "Action",
                   "const": "update",
                   "type": "string",
-                  "description": "Update Task",
+                  "description": "Update Task.",
                   "instillUIOrder": 0
                 },
                 "task-gid": {
@@ -788,7 +788,7 @@
                 "assignee",
                 "parent"
               ],
-              "description": "Update Task",
+              "description": "Update Task.",
               "instillUIOrder": 0,
               "title": "Update",
               "instillFormat": "object",
@@ -800,7 +800,7 @@
                   "title": "Action",
                   "const": "delete",
                   "type": "string",
-                  "description": "Delete Task",
+                  "description": "Delete Task.",
                   "instillUIOrder": 0
                 },
                 "task-gid": {
@@ -828,7 +828,7 @@
                 "action",
                 "task-gid"
               ],
-              "description": "Delete Task",
+              "description": "Delete Task.",
               "instillUIOrder": 0,
               "title": "Delete",
               "instillFormat": "object",
@@ -840,7 +840,7 @@
                   "title": "Action",
                   "const": "create",
                   "type": "string",
-                  "description": "Create Task",
+                  "description": "Create Task.",
                   "instillUIOrder": 0
                 },
                 "name": {
@@ -1010,7 +1010,7 @@
                   "type": "string"
                 },
                 "workspace": {
-                  "description": "GID of the workspace.  You can find one by filling the access token in the <a href=\"https://developers.asana.com/reference/getworkspaces\">Asana API Playground</a>",
+                  "description": "GID of the workspace.  You can find one by filling the access token in the <a href=\"https://developers.asana.com/reference/getworkspaces\">Asana API Playground</a>.",
                   "instillShortDescription": "GID of the workspace",
                   "instillUIOrder": 11,
                   "title": "Workspace",
@@ -1045,7 +1045,7 @@
                 "start-at",
                 "due-at"
               ],
-              "description": "Create Task",
+              "description": "Create Task.",
               "instillUIOrder": 0,
               "title": "Create",
               "instillFormat": "object",
@@ -1057,7 +1057,7 @@
                   "title": "Action",
                   "const": "duplicate",
                   "type": "string",
-                  "description": "Duplicate Task",
+                  "description": "Duplicate Task.",
                   "instillUIOrder": 0
                 },
                 "task-gid": {
@@ -1103,7 +1103,7 @@
                 "task-gid",
                 "name"
               ],
-              "description": "Duplicate Task",
+              "description": "Duplicate Task.",
               "instillUIOrder": 0,
               "title": "Duplicate",
               "instillFormat": "object",
@@ -1115,7 +1115,7 @@
                   "title": "Action",
                   "const": "set parent",
                   "type": "string",
-                  "description": "Set Parent Task",
+                  "description": "Set Parent Task.",
                   "instillUIOrder": 0
                 },
                 "task-gid": {
@@ -1161,7 +1161,7 @@
                 "task-gid",
                 "parent"
               ],
-              "description": "Set Parent Task",
+              "description": "Set Parent Task.",
               "instillUIOrder": 0,
               "title": "Set Parent",
               "instillFormat": "object",
@@ -1173,7 +1173,7 @@
                   "title": "Action",
                   "const": "edit tag",
                   "type": "string",
-                  "description": "Edit Tag",
+                  "description": "Edit Tag.",
                   "instillUIOrder": 0
                 },
                 "task-gid": {
@@ -1240,7 +1240,7 @@
                 "tag-gid",
                 "edit-option"
               ],
-              "description": "Edit Tag",
+              "description": "Edit Tag.",
               "instillUIOrder": 0,
               "title": "Edit Tag",
               "instillFormat": "object",
@@ -1319,7 +1319,7 @@
                 "follower-gid",
                 "edit-option"
               ],
-              "description": "Edit Follower",
+              "description": "Edit Follower.",
               "instillUIOrder": 0,
               "title": "Edit Follower",
               "instillFormat": "object",
@@ -1398,7 +1398,7 @@
                 "project-gid",
                 "edit-option"
               ],
-              "description": "Edit Project",
+              "description": "Edit Project.",
               "instillUIOrder": 0,
               "title": "Edit Project",
               "instillFormat": "object",
@@ -1412,7 +1412,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Task",
+      "description": "Task.",
       "instillUIOrder": 0,
       "properties": {
         "gid": {
@@ -1593,10 +1593,10 @@
     }
   },
   "TASK_CRUD_PROJECT": {
-    "description": "Create, Update, Delete, Read and Duplicate project in Asana",
+    "description": "Create, Update, Delete, Read and Duplicate project in Asana.",
     "instillShortDescription": "Project Related Task, including get, update, delete, create, duplicate",
     "input": {
-      "description": "Project Related Task, including get, update, delete, create, duplicate",
+      "description": "Project Related Task, including get, update, delete, create, duplicate.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "action"
@@ -1604,7 +1604,7 @@
       "properties": {
         "action": {
           "title": "Action",
-          "description": "action",
+          "description": "action.",
           "instillUIOrder": 1,
           "additionalProperties": true,
           "instillFormat": "object",
@@ -1619,7 +1619,7 @@
                   "title": "Action",
                   "const": "get",
                   "type": "string",
-                  "description": "Get Project",
+                  "description": "Get Project.",
                   "instillUIOrder": 0
                 },
                 "project-gid": {
@@ -1828,7 +1828,7 @@
                 "privacy-setting",
                 "archived"
               ],
-              "description": "Update Project",
+              "description": "Update Project.",
               "instillUIOrder": 0,
               "title": "Update",
               "instillFormat": "object",
@@ -1868,7 +1868,7 @@
                 "action",
                 "project-gid"
               ],
-              "description": "Delete Project",
+              "description": "Delete Project.",
               "instillUIOrder": 0,
               "title": "Delete",
               "instillFormat": "object",
@@ -2003,7 +2003,7 @@
                   "type": "string"
                 },
                 "workspace": {
-                  "description": "Globally unique identifier (GID) for the workspace. You can find one by filling the access token in the <a href=\"https://developers.asana.com/reference/getworkspaces\">Asana API Playground</a>",
+                  "description": "Globally unique identifier (GID) for the workspace. You can find one by filling the access token in the <a href=\"https://developers.asana.com/reference/getworkspaces\">Asana API Playground</a>.",
                   "instillShortDescription": "Workspace ID",
                   "instillUIOrder": 7,
                   "title": "Workspace ID",
@@ -2048,7 +2048,7 @@
                 "color",
                 "privacy-setting"
               ],
-              "description": "Create Project",
+              "description": "Create Project.",
               "instillUIOrder": 0,
               "title": "Create",
               "instillFormat": "object",
@@ -2170,7 +2170,7 @@
                 "due-on",
                 "start-on"
               ],
-              "description": "Duplicate Project",
+              "description": "Duplicate Project.",
               "instillUIOrder": 0,
               "title": "Duplicate",
               "instillFormat": "object",
@@ -2184,7 +2184,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Project",
+      "description": "Project.",
       "instillUIOrder": 0,
       "properties": {
         "gid": {
@@ -2387,10 +2387,10 @@
     }
   },
   "TASK_CRUD_PORTFOLIO": {
-    "description": "Create, Update, Delete and Read portfolio in Asana",
+    "description": "Create, Update, Delete and Read portfolio in Asana.",
     "instillShortDescription": "Portfolio Related Task, including get, update, delete, create",
     "input": {
-      "description": "Portfolio Related Task, including get, update, delete, create",
+      "description": "Portfolio Related Task, including get, update, delete, create.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "action"
@@ -2398,7 +2398,7 @@
       "properties": {
         "action": {
           "title": "Action",
-          "description": "action",
+          "description": "action.",
           "instillUIOrder": 1,
           "additionalProperties": true,
           "instillFormat": "object",
@@ -2441,7 +2441,7 @@
                 "action",
                 "portfolio-gid"
               ],
-              "description": "Get Portfolio",
+              "description": "Get Portfolio.",
               "instillUIOrder": 0,
               "title": "Get",
               "instillFormat": "object",
@@ -2567,7 +2567,7 @@
                 "public",
                 "workspace"
               ],
-              "description": "Update Portfolio",
+              "description": "Update Portfolio.",
               "instillUIOrder": 0,
               "title": "Update",
               "instillFormat": "object",
@@ -2607,7 +2607,7 @@
                 "action",
                 "portfolio-gid"
               ],
-              "description": "Delete Portfolio",
+              "description": "Delete Portfolio.",
               "instillUIOrder": 0,
               "title": "Delete",
               "instillFormat": "object",
@@ -2719,7 +2719,7 @@
                 "public",
                 "workspace"
               ],
-              "description": "Create Portfolio",
+              "description": "Create Portfolio.",
               "instillUIOrder": 0,
               "title": "Create",
               "instillFormat": "object",
@@ -2733,7 +2733,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Portfolio",
+      "description": "Portfolio.",
       "instillUIOrder": 0,
       "properties": {
         "gid": {

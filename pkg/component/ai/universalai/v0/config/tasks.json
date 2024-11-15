@@ -5,13 +5,13 @@
     "input": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Chat input",
-      "description": "Input schema of the chat task",
+      "description": "Input schema of the chat task.",
       "instillShortDescription": "Input schema of the chat task",
       "type": "object",
       "properties": {
         "data": {
           "title": "Chat Data",
-          "description": "Input data",
+          "description": "Input data.",
           "instillShortDescription": "Input data",
           "type": "object",
           "properties": {
@@ -22,7 +22,7 @@
                 "type": "object",
                 "properties": {
                   "content": {
-                    "description": "The message content",
+                    "description": "The message content.",
                     "instillShortDescription": "The message content",
                     "title": "Content",
                     "type": "array",
@@ -75,7 +75,7 @@
                             },
                             "type": {
                               "title": "Image URL",
-                              "description": "Image URL content type",
+                              "description": "Image URL content type.",
                               "instillShortDescription": "Image URL content type",
                               "instillAcceptFormats": [
                                 "string"
@@ -106,7 +106,7 @@
                             },
                             "type": {
                               "title": "Image File",
-                              "description": "Image file input content type",
+                              "description": "Image file input content type.",
                               "instillShortDescription": "Image file input content type",
                               "instillAcceptFormats": [
                                 "string"
@@ -128,7 +128,7 @@
                     "instillUIOrder": 0
                   },
                   "role": {
-                    "description": "The message role, i.e. 'system', 'user' or 'assistant'",
+                    "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
                     "instillShortDescription": "The message role, i.e. 'system', 'user' or 'assistant'",
                     "instillAcceptFormats": [
                       "string"
@@ -159,7 +159,7 @@
                 ]
               },
               "instillUIOrder": 0,
-              "description": "List of chat messages"
+              "description": "List of chat messages."
             }
           },
           "required": [
@@ -168,14 +168,14 @@
           "instillUIOrder": 0
         },
         "parameter": {
-          "description": "Input parameter",
+          "description": "Input parameter.",
           "instillShortDescription": "Input parameter",
           "type": "object",
           "properties": {
             "max-tokens": {
               "title": "Max New Tokens",
               "type": "integer",
-              "description": "The maximum number of tokens for model to generate",
+              "description": "The maximum number of tokens for model to generate.",
               "instillShortDescription": "The maximum number of tokens for model to generate",
               "instillAcceptFormats": [
                 "integer"
@@ -186,7 +186,7 @@
             "seed": {
               "title": "Seed",
               "type": "integer",
-              "description": "The seed, default is 0",
+              "description": "The seed, default is 0.",
               "instillShortDescription": "The seed, default is 0",
               "instillAcceptFormats": [
                 "integer"
@@ -208,7 +208,7 @@
             "temperature": {
               "title": "Temperature",
               "type": "number",
-              "description": "The temperature for sampling",
+              "description": "The temperature for sampling.",
               "instillShortDescription": "The temperature for sampling",
               "instillAcceptFormats": [
                 "number"
@@ -251,19 +251,19 @@
     "output": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Chat output",
-      "description": "Output schema of the chat task",
+      "description": "Output schema of the chat task.",
       "instillShortDescription": "Output schema of the chat task",
       "type": "object",
       "properties": {
         "data": {
-          "description": "Output data",
+          "description": "Output data.",
           "instillShortDescription": "Output data",
           "type": "object",
           "properties": {
             "choices": {
               "title": "Choices",
               "type": "array",
-              "description": "List of chat completion choices",
+              "description": "List of chat completion choices.",
               "instillShortDescription": "List of chat completion choices",
               "instillFormat": "array",
               "items": {
@@ -337,7 +337,7 @@
           "title": "Output Data"
         },
         "metadata": {
-          "description": "Output metadata",
+          "description": "Output metadata.",
           "instillShortDescription": "Output metadata",
           "type": "object",
           "properties": {

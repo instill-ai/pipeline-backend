@@ -7,7 +7,7 @@
         "data": {
           "additionalProperties": true,
           "instillShortDescription": "The data to be inserted to BigQuery",
-          "description": "The data to be inserted to BigQuery",
+          "description": "The data to be inserted to BigQuery.",
           "instillUIOrder": 0,
           "required": [],
           "title": "Data",
@@ -22,7 +22,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Status of the upload operation",
+          "description": "Status of the upload operation.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -43,7 +43,7 @@
       "properties": {
         "filtering": {
           "instillShortDescription": "The filter to be applied to the data",
-          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause",
+          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause.",
           "instillUIOrder": 0,
           "required": [],
           "title": "Filtering",
@@ -56,10 +56,10 @@
     },
     "output": {
       "instillUIOrder": 0,
-      "description": "The data to be read from BigQuery",
+      "description": "The data to be read from BigQuery.",
       "properties": {
         "data": {
-          "description": "The data to be read from BigQuery",
+          "description": "The data to be read from BigQuery.",
           "instillUIOrder": 0,
           "title": "Data",
           "type": "array",

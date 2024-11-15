@@ -88,11 +88,11 @@ Send an email to recipients
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEND_EMAIL` |
-| Recipient (required) | `recipients` | array[string] | The email addresses of the recipients |
-| CC | `cc` | array[string] | The email addresses for Carbon Copy |
-| BCC | `bcc` | array[string] | The email addresses for Blind Carbon Copy |
-| Subject | `subject` | string | The subject of the email |
-| Message (required) | `message` | string | The message to be sent |
+| Recipient (required) | `recipients` | array[string] | The email addresses of the recipients. |
+| CC | `cc` | array[string] | The email addresses for Carbon Copy. |
+| BCC | `bcc` | array[string] | The email addresses for Blind Carbon Copy. |
+| Subject | `subject` | string | The subject of the email. |
+| Message (required) | `message` | string | The message to be sent. |
 </div>
 
 
@@ -104,7 +104,7 @@ Send an email to recipients
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Result | `result` | string | The result of sending the email |
+| Result | `result` | string | The result of sending the email. |
 </div>
 
 ### Read Emails
@@ -116,7 +116,7 @@ Read emails from a mailbox
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_EMAILS` |
-| [Search](#read-emails-search) | `search` | object | The search criteria for the emails |
+| [Search](#read-emails-search) | `search` | object | The search criteria for the emails. |
 </div>
 
 
@@ -125,19 +125,19 @@ Read emails from a mailbox
 
 <h4 id="read-emails-search">Search</h4>
 
-The search criteria for the emails
+The search criteria for the emails.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Search Date | `date` | string | Search for emails with the date the email was sent  |
-| Limit | `limit` | integer | The maximum number of emails to search for  |
-| Mailbox | `mailbox` | string | The mailbox to search for emails  |
-| Search Message | `search-email-message` | string | Search for emails with a specific message  |
-| Search From | `search-from` | string | Search for emails from a specific email address  |
-| Search Subject | `search-subject` | string | Search for emails with a specific subject  |
-| Search To | `search-to` | string | Search for emails to a specific email address  |
+| Search Date | `date` | string | Search for emails with the date the email was sent.  |
+| Limit | `limit` | integer | The maximum number of emails to search for.  |
+| Mailbox | `mailbox` | string | The mailbox to search for emails.  |
+| Search Message | `search-email-message` | string | Search for emails with a specific message.  |
+| Search From | `search-from` | string | Search for emails from a specific email address.  |
+| Search Subject | `search-subject` | string | Search for emails with a specific subject.  |
+| Search To | `search-to` | string | Search for emails to a specific email address.  |
 </div>
 </details>
 
@@ -147,7 +147,7 @@ The search criteria for the emails
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Emails](#read-emails-emails) | `emails` | array[object] | The emails that match the search criteria |
+| [Emails](#read-emails-emails) | `emails` | array[object] | The emails that match the search criteria. |
 </div>
 
 <details>
@@ -159,11 +159,11 @@ The search criteria for the emails
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Date | `date` | string | The date the email was sent |
-| From | `from` | string | The email address of the sender |
-| Message | `message` | string | The message of the email |
-| Subject | `subject` | string | The subject of the email |
-| To | `to` | array | The email addresses of the recipient |
+| Date | `date` | string | The date the email was sent. |
+| From | `from` | string | The email address of the sender. |
+| Message | `message` | string | The message of the email. |
+| Subject | `subject` | string | The subject of the email. |
+| To | `to` | array | The email addresses of the recipient. |
 </div>
 </details>
 #### Mailbox

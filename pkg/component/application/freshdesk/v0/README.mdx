@@ -71,7 +71,7 @@ Get ticket using ID
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_TICKET` |
-| Ticket ID (required) | `ticket-id` | integer | The ID of the ticket |
+| Ticket ID (required) | `ticket-id` | integer | The ID of the ticket. |
 </div>
 
 
@@ -83,38 +83,38 @@ Get ticket using ID
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Subject | `subject` | string | Subject of the ticket |
-| Description Text | `description-text` | string | Content of the ticket |
-| Source | `source` | string | Source of the ticket. Eg: Email |
-| Status | `status` | string | Status of the ticket. Eg: Pending |
-| Priority | `priority` | string | Priority of the ticket. Eg: Medium |
-| Ticket Type (optional) | `ticket-type` | string | Used to categorize the ticket. To check the possible types a ticket can have, please go to Admin -> Ticket Fields |
-| Association Type (optional) | `association-type` | string | Used to determine whether a ticket is a parent, child, tracker or related ticket |
-| Associated Ticket List (optional) | `associated-ticket-list` | array[integer] | List of associated ticket IDs |
+| Subject | `subject` | string | Subject of the ticket. |
+| Description Text | `description-text` | string | Content of the ticket. |
+| Source | `source` | string | Source of the ticket. Eg: Email. |
+| Status | `status` | string | Status of the ticket. Eg: Pending. |
+| Priority | `priority` | string | Priority of the ticket. Eg: Medium. |
+| Ticket Type (optional) | `ticket-type` | string | Used to categorize the ticket. To check the possible types a ticket can have, please go to Admin -> Ticket Fields. |
+| Association Type (optional) | `association-type` | string | Used to determine whether a ticket is a parent, child, tracker or related ticket. |
+| Associated Ticket List (optional) | `associated-ticket-list` | array[integer] | List of associated ticket IDs. |
 | Tags (optional) | `tags` | array[string] | Tags associated with the ticket. |
-| CC Emails (optional) | `cc-emails` | array[string] | Email addresses added in the 'cc' field of the incoming ticket email |
-| Forward Emails (optional) | `forward-emails` | array[string] | Email addresses added while forwarding a ticket |
-| Reply CC Emails (optional) | `reply-cc-emails` | array[string] | Email addresses added while replying to a ticket |
-| Requester ID | `requester-id` | integer | ID of the requester |
-| Responder ID (optional) | `responder-id` | integer | ID of the agent to whom the ticket has been assigned. List of agents can be found in Admin -> Agents |
-| Company ID (optional) | `company-id` | integer | ID of the company to which this ticket belongs |
-| Group ID (optional) | `group-id` | integer | ID of the group to which the ticket has been assigned. List of groups can be found in Admin -> Groups |
-| Product ID (optional) | `product-id` | integer | ID of the product to which the ticket is associated. List of products can be found in Admin -> Multiple Products |
+| CC Emails (optional) | `cc-emails` | array[string] | Email addresses added in the 'cc' field of the incoming ticket email. |
+| Forward Emails (optional) | `forward-emails` | array[string] | Email addresses added while forwarding a ticket. |
+| Reply CC Emails (optional) | `reply-cc-emails` | array[string] | Email addresses added while replying to a ticket. |
+| Requester ID | `requester-id` | integer | ID of the requester. |
+| Responder ID (optional) | `responder-id` | integer | ID of the agent to whom the ticket has been assigned. List of agents can be found in Admin -> Agents. |
+| Company ID (optional) | `company-id` | integer | ID of the company to which this ticket belongs. |
+| Group ID (optional) | `group-id` | integer | ID of the group to which the ticket has been assigned. List of groups can be found in Admin -> Groups. |
+| Product ID (optional) | `product-id` | integer | ID of the product to which the ticket is associated. List of products can be found in Admin -> Multiple Products. |
 | Support Email (optional) | `support-email` | string | Support email address. You can find it in Admin -> Email (under channel). |
-| To Emails (optional) | `to-emails` | array[string] | Email addresses to which the ticket was originally sent |
-| Spam (optional) | `spam` | boolean | Set to true if the ticket is marked as spam |
+| To Emails (optional) | `to-emails` | array[string] | Email addresses to which the ticket was originally sent. |
+| Spam (optional) | `spam` | boolean | Set to true if the ticket is marked as spam. |
 | Due By (optional) | `due-by` | string | Timestamp that denotes when the ticket is due to be resolved. In UTC format. |
-| Is Escalated (optional) | `is-escalated` | boolean | Set to true if the ticket has been escalated |
+| Is Escalated (optional) | `is-escalated` | boolean | Set to true if the ticket has been escalated. |
 | First Response Due By (optional) | `first-response-due-by` | string | Timestamp that denotes when the first response is due. In UTC format. You can adjust this by going to Admin -> SLA policy (under Workflows). |
-| First Response Escalated (optional) | `first-response-escalated` | boolean | Set to true if the ticket has been escalated as the result of first response time being breached |
+| First Response Escalated (optional) | `first-response-escalated` | boolean | Set to true if the ticket has been escalated as the result of first response time being breached. |
 | Next Response Due By (optional) | `next-response-due-by` | string | Timestamp that denotes when the next response is due. In UTC format. You can adjust this by going to Admin -> SLA policy (under Workflows). |
-| Next Response Escalated (optional) | `next-response-escalated` | boolean | Set to true if the ticket has been escalated as the result of next response time being breached |
+| Next Response Escalated (optional) | `next-response-escalated` | boolean | Set to true if the ticket has been escalated as the result of next response time being breached. |
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
 | Updated At | `updated-at` | string | Timestamp that denotes when the ticket was last updated. In UTC format. |
-| [Attachments](#get-ticket-attachments) (optional) | `attachments` | array[object] | Ticket attachments (cannot be more than 20MB) |
+| [Attachments](#get-ticket-attachments) (optional) | `attachments` | array[object] | Ticket attachments (cannot be more than 20MB). |
 | Sentiment Score (optional) | `sentiment-score` | integer | Freshdesk uses AI to assess the emotional tone and attitude expressed in customer interaction. |
-| Initial Sentiment Score (optional) | `initial-sentiment-score` | integer | The initial sentiment score of the ticket |
-| Custom Fields (optional) | `custom-fields` | object | Custom fields that the ticket have. Custom fields can be created or modified in Admin -> Ticket Fields |
+| Initial Sentiment Score (optional) | `initial-sentiment-score` | integer | The initial sentiment score of the ticket. |
+| Custom Fields (optional) | `custom-fields` | object | Custom fields that the ticket have. Custom fields can be created or modified in Admin -> Ticket Fields. |
 </div>
 
 <details>
@@ -126,8 +126,8 @@ Get ticket using ID
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Attachment Content Type | `content-type` | string | The type of the file |
-| Attachment Name | `name` | string | The name of the file |
+| Attachment Content Type | `content-type` | string | The type of the file. |
+| Attachment Name | `name` | string | The name of the file. |
 | Attachment URL | `url` | string | The URL to the attachment. |
 </div>
 </details>
@@ -143,18 +143,18 @@ Create ticket
 | Task ID (required) | `task` | string | `TASK_CREATE_TICKET` |
 | Requester ID | `requester-id` | integer | ID of the requester. Must be an existing contact. If you fill in this field, you don't need to fill in the email field. Only one of the two fields is required. |
 | Email | `email` | string | Email address of the requester. If you fill in the Requester ID above, it will be ignored. Only one of the two fields is required. If no contact exists with this email address in Freshdesk, it will be added as a new contact. |
-| Subject (required) | `subject` | string | Subject of the ticket |
+| Subject (required) | `subject` | string | Subject of the ticket. |
 | Description (required) | `description` | string | Content of the ticket. You can use HTML tags in the content. |
-| Source (required) | `source` | string | Source of the ticket. Eg: Email |
-| Status (required) | `status` | string | Status of the ticket. Eg: Pending |
-| Priority (required) | `priority` | string | Priority of the ticket. Eg: Medium |
-| Ticket Type | `ticket-type` | string | Used to categorize the ticket. To check the possible types a ticket can have, please go to Admin -> Ticket Fields |
-| Company ID | `company-id` | integer | ID of the company to which this ticket belongs |
-| Product ID | `product-id` | integer | ID of the product to which the ticket is associated. List of products can be found in Admin -> Multiple Products |
-| Group ID | `group-id` | integer | ID of the group to which the ticket has been assigned. List of groups can be found in Admin -> Groups |
-| Responder ID | `responder-id` | integer | ID of the agent to whom the ticket has been assigned. List of agents can be found in Admin -> Agents |
+| Source (required) | `source` | string | Source of the ticket. Eg: Email. |
+| Status (required) | `status` | string | Status of the ticket. Eg: Pending. |
+| Priority (required) | `priority` | string | Priority of the ticket. Eg: Medium. |
+| Ticket Type | `ticket-type` | string | Used to categorize the ticket. To check the possible types a ticket can have, please go to Admin -> Ticket Fields. |
+| Company ID | `company-id` | integer | ID of the company to which this ticket belongs. |
+| Product ID | `product-id` | integer | ID of the product to which the ticket is associated. List of products can be found in Admin -> Multiple Products. |
+| Group ID | `group-id` | integer | ID of the group to which the ticket has been assigned. List of groups can be found in Admin -> Groups. |
+| Responder ID | `responder-id` | integer | ID of the agent to whom the ticket has been assigned. List of agents can be found in Admin -> Agents. |
 | Tags | `tags` | array[string] | Tags associated with the ticket. |
-| CC Emails | `cc-emails` | array[string] | Email addresses added in the 'cc' field of the incoming ticket email |
+| CC Emails | `cc-emails` | array[string] | Email addresses added in the 'cc' field of the incoming ticket email. |
 | Parent ID | `parent-id` | integer | ID of the parent ticket. Need to be filled out if you want to create a child ticket. |
 | Related Ticket IDs | `related-ticket-ids` | array[integer] | List of related ticket IDs. Need to be filled out if you want to create a tracker ticket. |
 </div>
@@ -168,7 +168,7 @@ Create ticket
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Ticket ID | `ticket-id` | integer | The ID of the ticket |
+| Ticket ID | `ticket-id` | integer | The ID of the ticket. |
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
 </div>
 
@@ -182,7 +182,7 @@ Reply to a ticket thread.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_REPLY_TO_TICKET` |
 | Body (required) | `body` | string | Content of the reply. Can be in HTML format. |
-| Ticket ID (required) | `ticket-id` | integer | The ID of the ticket |
+| Ticket ID (required) | `ticket-id` | integer | The ID of the ticket. |
 | From Email | `from-email` | string | Email address that is replying to the ticket. You need to have this email address registered in Freshdesk by going to Admin -> Emails. If you leave this field empty, the global support email will be used. |
 | User ID | `user-id` | integer | ID of the agent/contact replying to the ticket. If you fill this field using a contact ID, there will be no email sent to the requester. |
 | CC Emails | `cc-emails` | array[string] | Email addresses added in the 'cc' field of the outgoing ticket email. |
@@ -198,7 +198,7 @@ Reply to a ticket thread.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket |
+| Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket. |
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
 </div>
 
@@ -211,11 +211,11 @@ Create a private/public note on a ticket thread.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_TICKET_NOTE` |
-| Ticket ID (required) | `ticket-id` | integer | The ID of the ticket |
+| Ticket ID (required) | `ticket-id` | integer | The ID of the ticket. |
 | Body (required) | `body` | string | Content of the note. Can be in HTML format. |
 | Notify Emails | `notify-emails` | array[string] | Email addresses of agents/users who need to be notified about this note. The emails need to exist in Freshdesk agent. Agent list can be seen in Admin -> Agents. |
 | User ID | `user-id` | integer | ID of the agent/contact who is adding the note. |
-| Private | `private` | boolean | Set to true if the note is private |
+| Private | `private` | boolean | Set to true if the note is private. |
 | Incoming | `incoming` | boolean | Set to true if a particular note should appear as being created from outside (i.e., not through web portal). |
 </div>
 
@@ -228,7 +228,7 @@ Create a private/public note on a ticket thread.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket |
+| Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket. |
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
 </div>
 
@@ -241,7 +241,7 @@ Get all the conversations in a ticket. (Conversations are replies and notes that
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ALL_CONVERSATIONS` |
-| Ticket ID (required) | `ticket-id` | integer | Ticket ID |
+| Ticket ID (required) | `ticket-id` | integer | Ticket ID. |
 </div>
 
 
@@ -253,8 +253,8 @@ Get all the conversations in a ticket. (Conversations are replies and notes that
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Conversations](#get-all-conversations-conversations) | `conversations` | array[object] | An array of conversations |
-| Conversations Length | `conversations-length` | integer | Number of conversations |
+| [Conversations](#get-all-conversations-conversations) | `conversations` | array[object] | An array of conversations. |
+| Conversations Length | `conversations-length` | integer | Number of conversations. |
 </div>
 
 <details>
@@ -266,16 +266,16 @@ Get all the conversations in a ticket. (Conversations are replies and notes that
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| BCC Emails | `bcc-emails` | array | Email addresses added in the 'bcc' field of the incoming ticket email |
-| Body Text | `body-text` | string | Content of the conversation |
-| CC Emails | `cc-emails` | array | Email addresses added in the 'cc' field of the incoming ticket email |
-| Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket |
+| BCC Emails | `bcc-emails` | array | Email addresses added in the 'bcc' field of the incoming ticket email. |
+| Body Text | `body-text` | string | Content of the conversation. |
+| CC Emails | `cc-emails` | array | Email addresses added in the 'cc' field of the incoming ticket email. |
+| Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket. |
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
 | From Email | `from-email` | string | Email address that is replying to the ticket or adding the note. |
-| Incoming | `incoming` | boolean | Set to true if a particular conversation should appear as being created from outside |
+| Incoming | `incoming` | boolean | Set to true if a particular conversation should appear as being created from outside. |
 | Incoming | `private` | boolean | Set to true if a note is private. Can be set only for notes. |
 | Support Email | `support-email` | string | Support email address. You can find it in Admin -> Email (under channel). |
-| To Emails | `to-emails` | array | Email addresses of agents/users who need to be notified about this conversation |
+| To Emails | `to-emails` | array | Email addresses of agents/users who need to be notified about this conversation. |
 | Incoming | `user-id` | integer | ID of the agent/contact replying to the ticket. |
 </div>
 </details>
@@ -289,7 +289,7 @@ Get contact using ID
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_CONTACT` |
-| Contact ID (required) | `contact-id` | integer | ID of the contact |
+| Contact ID (required) | `contact-id` | integer | ID of the contact. |
 </div>
 
 
@@ -301,28 +301,28 @@ Get contact using ID
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Name | `name` | string | Name of the contact |
-| Email (optional) | `email` | string | The primary email address of the contact |
-| Phone (optional) | `phone` | string | Telephone number of the contact |
-| Mobile (optional) | `mobile` | string | Mobile number of the contact |
-| Description (optional) | `description` | string | Description of the contact |
-| Address (optional) | `address` | string | Address of the contact |
-| Job Title (optional) | `job-title` | string | Job title of the contact |
-| Tags (optional) | `tags` | array[string] | Tags associated with the contact |
-| Language (optional) | `language` | string | Language of the contact |
-| Time Zone (optional) | `time-zone` | string | Time zone of the contact |
-| Company ID (optional) | `company-id` | integer | ID of the primary company to which the contact belongs |
-| Unique External ID (optional) | `unique-external-id` | string | Unique external ID of the contact which be assigned by the user(agent) |
-| Twitter ID (optional) | `twitter-id` | string | Twitter ID of the contact |
+| Name | `name` | string | Name of the contact. |
+| Email (optional) | `email` | string | The primary email address of the contact. |
+| Phone (optional) | `phone` | string | Telephone number of the contact. |
+| Mobile (optional) | `mobile` | string | Mobile number of the contact. |
+| Description (optional) | `description` | string | Description of the contact. |
+| Address (optional) | `address` | string | Address of the contact. |
+| Job Title (optional) | `job-title` | string | Job title of the contact. |
+| Tags (optional) | `tags` | array[string] | Tags associated with the contact. |
+| Language (optional) | `language` | string | Language of the contact. |
+| Time Zone (optional) | `time-zone` | string | Time zone of the contact. |
+| Company ID (optional) | `company-id` | integer | ID of the primary company to which the contact belongs. |
+| Unique External ID (optional) | `unique-external-id` | string | Unique external ID of the contact which be assigned by the user(agent). |
+| Twitter ID (optional) | `twitter-id` | string | Twitter ID of the contact. |
 | View All Tickets (optional) | `view-all-tickets` | boolean | Set to true if the contact can see all the tickets that are associated with the primary company. |
-| Deleted (optional) | `deleted` | boolean | Set to true if the contact is deleted |
-| Active (optional) | `active` | boolean | Set to true if the contact has been verified |
-| Other Emails (optional) | `other-emails` | array[string] | List of other email addresses of the contact |
-| [Other Companies](#get-contact-other-companies) (optional) | `other-companies` | array[object] | List of other companies to which the contact belongs |
-| Other Phone Numbers (optional) | `other-phone-numbers` | array[string] | List of other phone numbers of the contact |
+| Deleted (optional) | `deleted` | boolean | Set to true if the contact is deleted. |
+| Active (optional) | `active` | boolean | Set to true if the contact has been verified. |
+| Other Emails (optional) | `other-emails` | array[string] | List of other email addresses of the contact. |
+| [Other Companies](#get-contact-other-companies) (optional) | `other-companies` | array[object] | List of other companies to which the contact belongs. |
+| Other Phone Numbers (optional) | `other-phone-numbers` | array[string] | List of other phone numbers of the contact. |
 | Created At (optional) | `created-at` | string | Timestamp that denotes when the contact was created. In UTC format. |
 | Updated At (optional) | `updated-at` | string | Timestamp that denotes when the contact was last updated. In UTC format. |
-| Custom Fields (optional) | `custom-fields` | object | Custom fields that the contact have. Custom fields can be created or modified in Admin -> Customer Fields |
+| Custom Fields (optional) | `custom-fields` | object | Custom fields that the contact have. Custom fields can be created or modified in Admin -> Customer Fields. |
 </div>
 
 <details>
@@ -334,7 +334,7 @@ Get contact using ID
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Company ID | `company-id` | integer | ID of the company |
+| Company ID | `company-id` | integer | ID of the company. |
 | View All Tickets | `view-all-tickets` | boolean | Set to true if the contact can see all the tickets that are associated with the company. |
 </div>
 </details>
@@ -348,23 +348,23 @@ Create contact
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_CONTACT` |
-| Name (required) | `name` | string | Name of the contact |
-| Email | `email` | string | The primary email address of the contact |
-| Phone | `phone` | string | Telephone number of the contact |
-| Mobile | `mobile` | string | Mobile number of the contact |
-| Description | `description` | string | Description of the contact |
-| Address | `address` | string | Address of the contact |
-| Job Title | `job-title` | string | Job title of the contact |
-| Tags | `tags` | array[string] | Tags associated with the contact |
-| Language | `language` | string | Language of the contact |
-| Time Zone | `time-zone` | string | Time zone of the contact |
-| Company ID | `company-id` | integer | ID of the primary company to which the contact belongs |
-| Unique External ID | `unique-external-id` | string | Unique external ID of the contact which be assigned by the user(agent) |
-| Twitter ID | `twitter-id` | string | Twitter ID of the contact |
+| Name (required) | `name` | string | Name of the contact. |
+| Email | `email` | string | The primary email address of the contact. |
+| Phone | `phone` | string | Telephone number of the contact. |
+| Mobile | `mobile` | string | Mobile number of the contact. |
+| Description | `description` | string | Description of the contact. |
+| Address | `address` | string | Address of the contact. |
+| Job Title | `job-title` | string | Job title of the contact. |
+| Tags | `tags` | array[string] | Tags associated with the contact. |
+| Language | `language` | string | Language of the contact. |
+| Time Zone | `time-zone` | string | Time zone of the contact. |
+| Company ID | `company-id` | integer | ID of the primary company to which the contact belongs. |
+| Unique External ID | `unique-external-id` | string | Unique external ID of the contact which be assigned by the user(agent). |
+| Twitter ID | `twitter-id` | string | Twitter ID of the contact. |
 | View All Tickets | `view-all-tickets` | boolean | Used to determine if the contact can see all the tickets that are associated with the primary company. Note: this property will be ignored if the Company ID is not provided. |
-| Other Emails | `other-emails` | array[string] | List of other email addresses of the contact |
-| Other Companies | `other-companies` | array[string] | List of other companies to which the contact belongs. Each company should be in the format of company-id;view-all-tickets(boolean "true"/"false") Example: 123;true |
-| Other Phone Numbers | `other-phone-numbers` | array[string] | List of other phone numbers of the contact |
+| Other Emails | `other-emails` | array[string] | List of other email addresses of the contact. |
+| Other Companies | `other-companies` | array[string] | List of other companies to which the contact belongs. Each company should be in the format of company-id;view-all-tickets(boolean "true"/"false") Example: 123;true. |
+| Other Phone Numbers | `other-phone-numbers` | array[string] | List of other phone numbers of the contact. |
 </div>
 
 
@@ -376,7 +376,7 @@ Create contact
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Contact ID | `contact-id` | integer | ID of the contact |
+| Contact ID | `contact-id` | integer | ID of the contact. |
 | Created At | `created-at` | string | Timestamp that denotes when the contact was created. In UTC format. |
 </div>
 
@@ -389,7 +389,7 @@ Get company using ID
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_COMPANY` |
-| Company ID (required) | `company-id` | integer | ID of the primary company to which the contact belongs |
+| Company ID (required) | `company-id` | integer | ID of the primary company to which the contact belongs. |
 </div>
 
 
@@ -401,17 +401,17 @@ Get company using ID
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Name | `name` | string | Name of the company |
-| Description (optional) | `description` | string | Description of the company |
-| Note (optional) | `note` | string | Note about the company |
-| Domains (optional) | `domains` | array[string] | Domains of the company |
-| Health Score (optional) | `health-score` | string | The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "At risk", "Doing okay", "Happy" |
-| Account Tier (optional) | `account-tier` | string | Classification based on how much value the company brings to your business. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "Basic", "Premium", "Enterprise" |
-| Renewal Date (optional) | `renewal-date` | string | Date when your contract or relationship with the company is due for renewal |
+| Name | `name` | string | Name of the company. |
+| Description (optional) | `description` | string | Description of the company. |
+| Note (optional) | `note` | string | Note about the company. |
+| Domains (optional) | `domains` | array[string] | Domains of the company. |
+| Health Score (optional) | `health-score` | string | The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "At risk", "Doing okay", "Happy". |
+| Account Tier (optional) | `account-tier` | string | Classification based on how much value the company brings to your business. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "Basic", "Premium", "Enterprise". |
+| Renewal Date (optional) | `renewal-date` | string | Date when your contract or relationship with the company is due for renewal. |
 | Industry (optional) | `industry` | string | The industry in which the company operates. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. |
 | Created At | `created-at` | string | Timestamp that denotes when the company was created. In UTC format. |
 | Updated At | `updated-at` | string | Timestamp that denotes when the company was last updated. In UTC format. |
-| Custom Fields (optional) | `custom-fields` | object | Custom fields that the company have. Custom fields can be created or modified in Admin -> Customer Fields |
+| Custom Fields (optional) | `custom-fields` | object | Custom fields that the company have. Custom fields can be created or modified in Admin -> Customer Fields. |
 </div>
 
 ### Create Company
@@ -423,12 +423,12 @@ Create company
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_COMPANY` |
-| Name (required) | `name` | string | Name of the company |
-| Description | `description` | string | Description of the company |
-| Note | `note` | string | Note about the company |
-| Domains | `domains` | array[string] | Domains of the company |
-| Health Score | `health-score` | string | The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "At risk", "Doing okay", "Happy" |
-| Account Tier | `account-tier` | string | Classification based on how much value the company brings to your business. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "Basic", "Premium", "Enterprise" |
+| Name (required) | `name` | string | Name of the company. |
+| Description | `description` | string | Description of the company. |
+| Note | `note` | string | Note about the company. |
+| Domains | `domains` | array[string] | Domains of the company. |
+| Health Score | `health-score` | string | The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "At risk", "Doing okay", "Happy". |
+| Account Tier | `account-tier` | string | Classification based on how much value the company brings to your business. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "Basic", "Premium", "Enterprise". |
 | Renewal Date | `renewal-date` | string | Date when your contract or relationship with the company is due for renewal. Enter in the format YYYY-MM-DD. |
 | Industry | `industry` | string | The industry in which the company operates. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. |
 </div>
@@ -442,7 +442,7 @@ Create company
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Company ID | `company-id` | integer | ID of the company |
+| Company ID | `company-id` | integer | ID of the company. |
 | Created At | `created-at` | string | Timestamp that denotes when the company was created. In UTC format. |
 </div>
 
@@ -455,7 +455,7 @@ Task to get all the IDs of existing contacts, companies, tickets, products, agen
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ALL` |
-| Object Type (required) | `object-type` | string | Type of object to get IDs for |
+| Object Type (required) | `object-type` | string | Type of object to get IDs for. |
 | Length (required) | `length` | integer | The maximum number of IDs allowed is 500. The most recent IDs will be retrieved. |
 </div>
 
@@ -468,8 +468,8 @@ Task to get all the IDs of existing contacts, companies, tickets, products, agen
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| IDs | `ids` | array[integer] | List of IDs |
-| ID Length | `id-length` | integer | Number of IDs |
+| IDs | `ids` | array[integer] | List of IDs. |
+| ID Length | `id-length` | integer | Number of IDs. |
 </div>
 
 ### Get Product
@@ -481,7 +481,7 @@ Get product using ID. This task will only work if you have admin privileges.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_PRODUCT` |
-| Product ID (required) | `product-id` | integer | Product ID |
+| Product ID (required) | `product-id` | integer | Product ID. |
 </div>
 
 
@@ -493,12 +493,12 @@ Get product using ID. This task will only work if you have admin privileges.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Name | `name` | string | Name of the product |
-| Description | `description` | string | Description of the product |
-| Primary Email | `primary-email` | string | Primary email of the product |
-| Created At | `created-at` | string | Timestamp that denotes when the product was created |
-| Updated At | `updated-at` | string | Timestamp that denotes when the product was last updated |
-| Default | `default` | boolean | Set to true if the product is the default product |
+| Name | `name` | string | Name of the product. |
+| Description | `description` | string | Description of the product. |
+| Primary Email | `primary-email` | string | Primary email of the product. |
+| Created At | `created-at` | string | Timestamp that denotes when the product was created. |
+| Updated At | `updated-at` | string | Timestamp that denotes when the product was last updated. |
+| Default | `default` | boolean | Set to true if the product is the default product. |
 </div>
 
 ### Get Agent
@@ -510,7 +510,7 @@ Get agent using ID. This task will only work if you have admin privileges. Agent
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_AGENT` |
-| Agent ID (required) | `agent-id` | integer | Agent ID |
+| Agent ID (required) | `agent-id` | integer | Agent ID. |
 </div>
 
 
@@ -522,26 +522,26 @@ Get agent using ID. This task will only work if you have admin privileges. Agent
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Name (optional) | `name` | string | Name of the agent |
-| Active (optional) | `active` | boolean | Set to true if the agent is verified |
-| Email | `email` | string | Email of the agent |
-| Job Title (optional) | `job-title` | string | Job title of the agent |
-| Language (optional) | `language` | string | Language of the agent |
-| Mobile (optional) | `mobile` | string | Mobile number of the agent |
-| Phone (optional) | `phone` | string | Telephone number of the agent |
-| Time Zone (optional) | `time-zone` | string | Time zone of the agent |
-| Type | `type` | string | Type of the agent. Can be "Support Agent", "Field Agent" or "Collaborator" |
-| Ticket Scope | `ticket-scope` | string | Ticket permission of the agent. Can be "Global Access", "Group Access" or "Restricted Access" |
-| Available (optional) | `available` | boolean | Set to true if the agent is in a group that has enabled "Automatic Ticket Assignment" |
-| Group IDs (optional) | `group-ids` | array[integer] | Group IDs of the agent |
-| Role IDs (optional) | `role-ids` | array[integer] | Role IDs of the agent |
-| Skill IDs (optional) | `skill-ids` | array[integer] | Skill IDs of the agent |
-| Occasional | `occasional` | boolean | Set to true if the agent is not working full-time |
-| Signature (optional) | `signature` | string | Signature of the agent in HTML format |
-| Focus Mode (optional) | `focus-mode` | boolean | Set to true if the agent is in focus mode |
-| Deactivated (optional) | `deactivated` | boolean | Set to true if the agent is deactivated |
-| Created At (optional) | `created-at` | string | Timestamp that denotes when the agent was created |
-| Updated At (optional) | `updated-at` | string | Timestamp that denotes when the agent was last updated |
+| Name (optional) | `name` | string | Name of the agent. |
+| Active (optional) | `active` | boolean | Set to true if the agent is verified. |
+| Email | `email` | string | Email of the agent. |
+| Job Title (optional) | `job-title` | string | Job title of the agent. |
+| Language (optional) | `language` | string | Language of the agent. |
+| Mobile (optional) | `mobile` | string | Mobile number of the agent. |
+| Phone (optional) | `phone` | string | Telephone number of the agent. |
+| Time Zone (optional) | `time-zone` | string | Time zone of the agent. |
+| Type | `type` | string | Type of the agent. Can be "Support Agent", "Field Agent" or "Collaborator". |
+| Ticket Scope | `ticket-scope` | string | Ticket permission of the agent. Can be "Global Access", "Group Access" or "Restricted Access". |
+| Available (optional) | `available` | boolean | Set to true if the agent is in a group that has enabled "Automatic Ticket Assignment". |
+| Group IDs (optional) | `group-ids` | array[integer] | Group IDs of the agent. |
+| Role IDs (optional) | `role-ids` | array[integer] | Role IDs of the agent. |
+| Skill IDs (optional) | `skill-ids` | array[integer] | Skill IDs of the agent. |
+| Occasional | `occasional` | boolean | Set to true if the agent is not working full-time. |
+| Signature (optional) | `signature` | string | Signature of the agent in HTML format. |
+| Focus Mode (optional) | `focus-mode` | boolean | Set to true if the agent is in focus mode. |
+| Deactivated (optional) | `deactivated` | boolean | Set to true if the agent is deactivated. |
+| Created At (optional) | `created-at` | string | Timestamp that denotes when the agent was created. |
+| Updated At (optional) | `updated-at` | string | Timestamp that denotes when the agent was last updated. |
 </div>
 
 ### Get Role
@@ -553,7 +553,7 @@ Get role using ID. This task will only work if you have admin privileges. Roles 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ROLE` |
-| Role ID (required) | `role-id` | integer | Role ID |
+| Role ID (required) | `role-id` | integer | Role ID. |
 </div>
 
 
@@ -565,12 +565,12 @@ Get role using ID. This task will only work if you have admin privileges. Roles 
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Name | `name` | string | Name of the role |
-| Description | `description` | string | Description of the role |
-| Default | `default` | boolean | Set to true if the role is the default role |
-| Agent Type | `agent-type` | string | Type of the agent. Can be "Support Agent", "Field Agent" or "Collaborator" |
-| Created At | `created-at` | string | Timestamp that denotes when the role was created |
-| Updated At | `updated-at` | string | Timestamp that denotes when the role was last updated |
+| Name | `name` | string | Name of the role. |
+| Description | `description` | string | Description of the role. |
+| Default | `default` | boolean | Set to true if the role is the default role. |
+| Agent Type | `agent-type` | string | Type of the agent. Can be "Support Agent", "Field Agent" or "Collaborator". |
+| Created At | `created-at` | string | Timestamp that denotes when the role was created. |
+| Updated At | `updated-at` | string | Timestamp that denotes when the role was last updated. |
 </div>
 
 ### Get Group
@@ -582,7 +582,7 @@ Get group using ID. This task will only work if you have admin privileges. Agent
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_GROUP` |
-| Group ID (required) | `group-id` | integer | Group ID |
+| Group ID (required) | `group-id` | integer | Group ID. |
 </div>
 
 
@@ -594,16 +594,16 @@ Get group using ID. This task will only work if you have admin privileges. Agent
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Name | `name` | string | Name of the group |
-| Description | `description` | string | Description of the group |
-| Agent IDs (optional) | `agent-ids` | array[integer] | Agent IDs of the group |
+| Name | `name` | string | Name of the group. |
+| Description | `description` | string | Description of the group. |
+| Agent IDs (optional) | `agent-ids` | array[integer] | Agent IDs of the group. |
 | Auto Ticket Assign | `auto-ticket-assign` | string | The type of automatic ticket assignment set for the group. |
 | Escalate To (optional) | `escalate-to` | integer | The ID of the user to whom an escalation email is sent if a ticket is unassigned. |
 | Unassigned Duration (optional) | `unassigned-duration` | string | The duration for which a ticket is unassigned before it is escalated. |
-| Group Type (optional) | `group-type` | string | Group type. Can be "support_agent_group" or "field_agent_group" |
+| Group Type (optional) | `group-type` | string | Group type. Can be "support_agent_group" or "field_agent_group". |
 | Agent Availability Status (optional) | `agent-availability-status` | boolean | The availability status of the agent in the group. Automatically set to true if the group has enabled "Automatic Ticket Assignment". |
-| Created At | `created-at` | string | Timestamp that denotes when the group was created |
-| Updated At | `updated-at` | string | Timestamp that denotes when the group was last updated |
+| Created At | `created-at` | string | Timestamp that denotes when the group was created. |
+| Updated At | `updated-at` | string | Timestamp that denotes when the group was last updated. |
 </div>
 
 ### Get Skill
@@ -615,7 +615,7 @@ Get skill using ID. This task will only work if you have admin privileges. Agent
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_SKILL` |
-| Skill ID (required) | `skill-id` | integer | Skill ID |
+| Skill ID (required) | `skill-id` | integer | Skill ID. |
 </div>
 
 
@@ -627,12 +627,12 @@ Get skill using ID. This task will only work if you have admin privileges. Agent
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Name | `name` | string | Name of the skill |
-| Rank | `rank` | integer | Rank of the skill |
-| Condition Match Type | `condition-match-type` | string | Type of condition match. Can be "all" or "any" |
-| Conditions | `conditions` | array | Conditions for the skill |
-| Created At | `created-at` | string | Timestamp that denotes when the skill was created |
-| Updated At | `updated-at` | string | Timestamp that denotes when the skill was last updated |
+| Name | `name` | string | Name of the skill. |
+| Rank | `rank` | integer | Rank of the skill. |
+| Condition Match Type | `condition-match-type` | string | Type of condition match. Can be "all" or "any". |
+| Conditions | `conditions` | array | Conditions for the skill. |
+| Created At | `created-at` | string | Timestamp that denotes when the skill was created. |
+| Updated At | `updated-at` | string | Timestamp that denotes when the skill was last updated. |
 </div>
 
 

@@ -4,12 +4,12 @@
       "properties": {
         "content": {
           "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/multi-modal-content",
-          "description": "The message content",
+          "description": "The message content.",
           "instillUIOrder": 1,
           "title": "Content"
         },
         "role": {
-          "description": "The message role, i.e. 'system', 'user' or 'assistant'",
+          "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Role",
@@ -30,7 +30,7 @@
       "instillUIOrder": 0,
       "properties": {
         "audio": {
-          "description": "The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm.\n",
+          "description": "The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm.\n.",
           "format": "binary",
           "type": "string",
           "instillAcceptFormats": [
@@ -43,7 +43,7 @@
           "title": "Audio"
         },
         "language": {
-          "description": "The language of the input audio. Supplying the input language in <a href=\"https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes\">ISO-639-1</a> format will improve accuracy and latency.\n",
+          "description": "The language of the input audio. Supplying the input language in <a href=\"https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes\">ISO-639-1</a> format will improve accuracy and latency.\n.",
           "type": "string",
           "instillAcceptFormats": [
             "string"
@@ -58,7 +58,7 @@
           "title": "Language"
         },
         "model": {
-          "description": "ID of the model to use. Only `whisper-1` is currently available.\n",
+          "description": "ID of the model to use. Only `whisper-1` is currently available.\n.",
           "enum": [
             "whisper-1"
           ],
@@ -85,7 +85,7 @@
           "title": "Model"
         },
         "prompt": {
-          "description": "An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.\n",
+          "description": "An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.\n.",
           "type": "string",
           "instillAcceptFormats": [
             "string"
@@ -102,7 +102,7 @@
         },
         "temperature": {
           "default": 0,
-          "description": "The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. If set to 0, the model will use <a href=\"https://en.wikipedia.org/wiki/Log_probability\">log probability</a> to automatically increase the temperature until certain thresholds are hit.\n",
+          "description": "The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. If set to 0, the model will use <a href=\"https://en.wikipedia.org/wiki/Log_probability\">log probability</a> to automatically increase the temperature until certain thresholds are hit.\n.",
           "type": "number",
           "instillAcceptFormats": [
             "number",
@@ -129,7 +129,7 @@
       "properties": {
         "text": {
           "type": "string",
-          "description": "Generated text",
+          "description": "Generated text.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Text"
@@ -178,7 +178,7 @@
           "title": "Model"
         },
         "text": {
-          "description": "The text",
+          "description": "The text.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -218,7 +218,7 @@
       "properties": {
         "embedding": {
           "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/embedding",
-          "description": "Embedding of the input text",
+          "description": "Embedding of the input text.",
           "instillUIOrder": 0,
           "title": "Embedding"
         }
@@ -274,7 +274,7 @@
           "title": "Frequency Penalty"
         },
         "images": {
-          "description": "The images",
+          "description": "The images.",
           "instillAcceptFormats": [
             "array:image/*"
           ],
@@ -402,7 +402,7 @@
           "title": "Presence Penalty"
         },
         "prompt": {
-          "description": "The prompt text",
+          "description": "The prompt text.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -431,7 +431,7 @@
                   "type": "string",
                   "const": "text",
                   "title": "Type",
-                  "description": "Text",
+                  "description": "Text.",
                   "instillUIOrder": 0
                 }
               },
@@ -447,7 +447,7 @@
                   "type": "string",
                   "const": "json_object",
                   "title": "Type",
-                  "description": "JSON Object",
+                  "description": "JSON Object.",
                   "instillUIOrder": 0
                 }
               },
@@ -463,7 +463,7 @@
                   "type": "string",
                   "const": "json_schema",
                   "title": "Type",
-                  "description": "JSON Schema",
+                  "description": "JSON Schema.",
                   "instillUIOrder": 0
                 },
                 "json-schema": {
@@ -494,7 +494,7 @@
         },
         "system-message": {
           "default": "You are a helpful assistant.",
-          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model\u2019s behavior is using a generic message as \"You are a helpful assistant.\"",
+          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model\u2019s behavior is using a generic message as \"You are a helpful assistant.\".",
           "instillAcceptFormats": [
             "string"
           ],
@@ -511,7 +511,7 @@
         },
         "temperature": {
           "default": 1,
-          "description": "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.\n\nWe generally recommend altering this or `top-p` but not both.\n",
+          "description": "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.\n\nWe generally recommend altering this or `top-p` but not both.\n.",
           "example": 1,
           "maximum": 2,
           "minimum": 0,
@@ -531,7 +531,7 @@
         },
         "top-p": {
           "default": 1,
-          "description": "An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.\n\nWe generally recommend altering this or `temperature` but not both.\n",
+          "description": "An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.\n\nWe generally recommend altering this or `temperature` but not both.\n.",
           "example": 1,
           "maximum": 1,
           "minimum": 0,
@@ -574,31 +574,31 @@
             "title": "Text",
             "type": "string"
           },
-          "description": "Texts",
+          "description": "Texts.",
           "title": "Texts",
           "type": "array"
         },
         "usage": {
-          "description": "Usage statistics related to the query",
+          "description": "Usage statistics related to the query.",
           "instillUIOrder": 1,
           "properties": {
             "total-tokens": {
               "title": "Total tokens",
-              "description": "Total number of tokens used (prompt + completion)",
+              "description": "Total number of tokens used (prompt + completion).",
               "instillFormat": "integer",
               "instillUIOrder": 0,
               "type": "integer"
             },
             "completion-tokens": {
               "title": "Completion tokens",
-              "description": "Total number of tokens used (completion)",
+              "description": "Total number of tokens used (completion).",
               "instillFormat": "integer",
               "instillUIOrder": 1,
               "type": "integer"
             },
             "prompt-tokens": {
               "title": "Prompt tokens",
-              "description": "Total number of tokens used (prompt)",
+              "description": "Total number of tokens used (prompt).",
               "instillFormat": "integer",
               "instillUIOrder": 2,
               "type": "integer"
@@ -765,21 +765,21 @@
       "instillUIOrder": 0,
       "properties": {
         "results": {
-          "description": "Generated results",
+          "description": "Generated results.",
           "instillUIOrder": 0,
           "items": {
-            "description": "Generated result",
+            "description": "Generated result.",
             "properties": {
               "image": {
                 "title": "Generated Image",
-                "description": "Generated image",
+                "description": "Generated image.",
                 "instillFormat": "image/webp",
                 "instillUIOrder": 0,
                 "type": "string"
               },
               "revised-prompt": {
                 "title": "Revised Prompt",
-                "description": "Revised prompt",
+                "description": "Revised prompt.",
                 "instillFormat": "string",
                 "instillUIMultiline": true,
                 "instillUIOrder": 1,
@@ -810,7 +810,7 @@
       "instillUIOrder": 0,
       "properties": {
         "model": {
-          "description": "One of the available TTS models: `tts-1` or `tts-1-hd`\n",
+          "description": "One of the available TTS models: `tts-1` or `tts-1-hd`\n.",
           "default": "tts-1",
           "enum": [
             "tts-1",
@@ -929,7 +929,7 @@
       "instillUIOrder": 0,
       "properties": {
         "audio": {
-          "description": "AI generated audio",
+          "description": "AI generated audio.",
           "instillFormat": "audio/wav",
           "instillUIOrder": 0,
           "title": "Audio",

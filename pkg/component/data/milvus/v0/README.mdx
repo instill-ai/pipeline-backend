@@ -67,16 +67,16 @@ Perform a vector search on a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to perform vector search on |
-| Partition Name | `partition-name` | string | The name of the partition to vector search the data from |
-| Vector (required) | `vector` | array[number] | An array of dimensions for the vector search |
-| Vector Field (required) | `vector-field` | string | The name of the field to perform vector search on |
-| Fields | `fields` | array[string] | The fields to return in the data. If empty then all fields will be returned |
-| Limit (required) | `limit` | integer | The limit of the data to return |
-| Filter | `filter` | string | The properties filter to be applied to the data with milvus scalar filter, please refer to [filter-search](https://milvus.io/docs/single-vector-search.md#Filtered-search) |
-| Offset | `offset` | integer | The offset of the data to return |
-| Grouping Field | `grouping-field` | string | The name of the field to group the data by, please refer to [Grouping-search](https://milvus.io/docs/single-vector-search.md#Grouping-search) |
-| Search Parameters | `search-params` | object | The search parameters to be applied to the data with milvus search parameters, please refer to [Search-parameters](https://milvus.io/docs/single-vector-search.md#Search-parameters) |
+| Collection Name (required) | `collection-name` | string | The name of the collection to perform vector search on. |
+| Partition Name | `partition-name` | string | The name of the partition to vector search the data from. |
+| Vector (required) | `vector` | array[number] | An array of dimensions for the vector search. |
+| Vector Field (required) | `vector-field` | string | The name of the field to perform vector search on. |
+| Fields | `fields` | array[string] | The fields to return in the data. If empty then all fields will be returned. |
+| Limit (required) | `limit` | integer | The limit of the data to return. |
+| Filter | `filter` | string | The properties filter to be applied to the data with milvus scalar filter, please refer to [filter-search](https://milvus.io/docs/single-vector-search.md#Filtered-search). |
+| Offset | `offset` | integer | The offset of the data to return. |
+| Grouping Field | `grouping-field` | string | The name of the field to group the data by, please refer to [Grouping-search](https://milvus.io/docs/single-vector-search.md#Grouping-search). |
+| Search Parameters | `search-params` | object | The search parameters to be applied to the data with milvus search parameters, please refer to [Search-parameters](https://milvus.io/docs/single-vector-search.md#Search-parameters). |
 </div>
 
 
@@ -88,8 +88,8 @@ Perform a vector search on a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Result](#vector-search-result) | `result` | object | Result of the vector search operation |
-| Status | `status` | string | Vector search status |
+| [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
+| Status | `status` | string | Vector search status. |
 </div>
 
 <details>
@@ -101,10 +101,10 @@ Perform a vector search on a collection
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Data](#vector-search-data) | `data` | array | The points returned from the vector search operation |
-| IDs | `ids` | array | The ids returned from the vector search operation |
-| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation |
-| Vectors | `vectors` | array | The vectors returned from the vector search operation |
+| [Data](#vector-search-data) | `data` | array | The points returned from the vector search operation. |
+| IDs | `ids` | array | The ids returned from the vector search operation. |
+| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
+| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
 </div>
 </details>
 
@@ -117,9 +117,9 @@ Insert a vector data into a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPSERT` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into |
-| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used |
-| Data (required) | `data` | object | The data |
+| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into. |
+| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used. |
+| Data (required) | `data` | object | The data. |
 </div>
 
 
@@ -131,7 +131,7 @@ Insert a vector data into a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Upsert status |
+| Status | `status` | string | Upsert status. |
 </div>
 
 ### Batch Upsert
@@ -143,9 +143,9 @@ Insert a batch of vector data into a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into |
-| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used |
-| [Array Data](#batch-upsert-array-data) (required) | `array-data` | array[object] | The data |
+| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into. |
+| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used. |
+| [Array Data](#batch-upsert-array-data) (required) | `array-data` | array[object] | The data. |
 </div>
 
 
@@ -157,7 +157,7 @@ Insert a batch of vector data into a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Batch upsert status |
+| Status | `status` | string | Batch upsert status. |
 </div>
 
 ### Delete
@@ -169,9 +169,9 @@ Delete vector data from a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to delete the data from |
-| Partition Name | `partition-name` | string | The name of the partition to delete the data from. If empty then default partition will be used |
-| Filter | `filter` | string | The properties filter to be applied to the data with milvus scalar filter, please refer to [Filtered-search](https://milvus.io/docs/single-vector-search.md#Filtered-search) |
+| Collection Name (required) | `collection-name` | string | The name of the collection to delete the data from. |
+| Partition Name | `partition-name` | string | The name of the partition to delete the data from. If empty then default partition will be used. |
+| Filter | `filter` | string | The properties filter to be applied to the data with milvus scalar filter, please refer to [Filtered-search](https://milvus.io/docs/single-vector-search.md#Filtered-search). |
 </div>
 
 
@@ -183,7 +183,7 @@ Delete vector data from a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete status |
+| Status | `status` | string | Delete status. |
 </div>
 
 ### Create Collection
@@ -195,14 +195,14 @@ Create a collectio, please refer to [Create-Collection](https://milvus.io/docs/m
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_COLLECTION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to create |
-| Dimension (required) | `dimension` | integer | The dimension of the collection |
-| ID Type | `id-type` | string | The type of the id |
-| Schema | `schema` | object | The schema of the collection |
-| Auto ID | `auto-id` | boolean | Whether to auto generate id |
-| Metric Type | `metric-type` | string | The metric type of the collection |
-| [Index Parameters](#create-collection-index-parameters) | `index-params` | array[object] | The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Collection%20(v2)/Create.md) |
-| Parameters | `params` | object | The parameters to be applied to the collection with milvus parameters, please refer to [Parameters](https://milvus.io/docs/single-vector-search.md#Parameters) |
+| Collection Name (required) | `collection-name` | string | The name of the collection to create. |
+| Dimension (required) | `dimension` | integer | The dimension of the collection. |
+| ID Type | `id-type` | string | The type of the id. |
+| Schema | `schema` | object | The schema of the collection. |
+| Auto ID | `auto-id` | boolean | Whether to auto generate id. |
+| Metric Type | `metric-type` | string | The metric type of the collection. |
+| [Index Parameters](#create-collection-index-parameters) | `index-params` | array[object] | The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Collection%20(v2)/Create.md). |
+| Parameters | `params` | object | The parameters to be applied to the collection with milvus parameters, please refer to [Parameters](https://milvus.io/docs/single-vector-search.md#Parameters). |
 </div>
 
 
@@ -214,7 +214,7 @@ Create a collectio, please refer to [Create-Collection](https://milvus.io/docs/m
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create collection status |
+| Status | `status` | string | Create collection status. |
 </div>
 
 ### Drop Collection
@@ -226,7 +226,7 @@ Drop a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_COLLECTION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to drop |
+| Collection Name (required) | `collection-name` | string | The name of the collection to drop. |
 </div>
 
 
@@ -238,7 +238,7 @@ Drop a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Drop collection status |
+| Status | `status` | string | Drop collection status. |
 </div>
 
 ### Create Partition
@@ -250,8 +250,8 @@ Create a partition in a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_PARTITION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to create the partition in |
-| Partition Name (required) | `partition-name` | string | The name of the partition to create |
+| Collection Name (required) | `collection-name` | string | The name of the collection to create the partition in. |
+| Partition Name (required) | `partition-name` | string | The name of the partition to create. |
 </div>
 
 
@@ -263,7 +263,7 @@ Create a partition in a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create partition status |
+| Status | `status` | string | Create partition status. |
 </div>
 
 ### Drop Partition
@@ -275,8 +275,8 @@ Drop a partition from a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_PARTITION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to drop the partition from |
-| Partition Name (required) | `partition-name` | string | The name of the partition to drop |
+| Collection Name (required) | `collection-name` | string | The name of the collection to drop the partition from. |
+| Partition Name (required) | `partition-name` | string | The name of the partition to drop. |
 </div>
 
 
@@ -288,7 +288,7 @@ Drop a partition from a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Drop partition status |
+| Status | `status` | string | Drop partition status. |
 </div>
 
 ### Create Index
@@ -300,8 +300,8 @@ Create an index in a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_INDEX` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to create the index in |
-| Index Parameters (required) | `index-params` | object | The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Index%20(v2)/Create.md) |
+| Collection Name (required) | `collection-name` | string | The name of the collection to create the index in. |
+| Index Parameters (required) | `index-params` | object | The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Index%20(v2)/Create.md). |
 </div>
 
 
@@ -313,7 +313,7 @@ Create an index in a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create index status |
+| Status | `status` | string | Create index status. |
 </div>
 
 ### Drop Index
@@ -325,8 +325,8 @@ Drop an index from a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_INDEX` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to drop the index from |
-| Index Name (required) | `index-name` | string | The name of the index to drop |
+| Collection Name (required) | `collection-name` | string | The name of the collection to drop the index from. |
+| Index Name (required) | `index-name` | string | The name of the index to drop. |
 </div>
 
 
@@ -338,7 +338,7 @@ Drop an index from a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Drop index status |
+| Status | `status` | string | Drop index status. |
 </div>
 
 

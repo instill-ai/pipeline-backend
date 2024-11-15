@@ -64,14 +64,14 @@ Search for documents in Elasticsearch, support full text search
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEARCH` |
-| Index Name (required) | `index-name` | string | Name of the Elasticsearch index |
-| ID | `id` | string | The ID of the document |
-| Query | `query` | string | Full text search query for search task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected |
+| Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
+| ID | `id` | string | The ID of the document. |
+| Query | `query` | string | Full text search query for search task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected. |
 | Filter | `filter` | object | The query dsl filter which starts with "query" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html). |
-| Filter SQL | `filter-sql` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter |
-| Size | `size` | integer | Number of documents to return. If empty then all documents will be returned |
-| Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned |
-| Minimum Score | `min-score` | number | Minimum score to consider for search results. If empty then no minimum score will be considered |
+| Filter SQL | `filter-sql` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter. |
+| Size | `size` | integer | Number of documents to return. If empty then all documents will be returned. |
+| Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned. |
+| Minimum Score | `min-score` | number | Minimum score to consider for search results. If empty then no minimum score will be considered. |
 </div>
 
 
@@ -83,8 +83,8 @@ Search for documents in Elasticsearch, support full text search
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Search operation status |
-| [Result](#search-result) | `result` | object | Result of the search operation |
+| Status | `status` | string | Search operation status. |
+| [Result](#search-result) | `result` | object | Result of the search operation. |
 </div>
 
 <details>
@@ -96,9 +96,9 @@ Search for documents in Elasticsearch, support full text search
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Data](#search-data) | `data` | array | The data returned from the search operation |
-| [Documents](#search-documents) | `documents` | array | The documents returned from the search operation |
-| IDs | `ids` | array | The ids returned from the search operation |
+| [Data](#search-data) | `data` | array | The data returned from the search operation. |
+| [Documents](#search-documents) | `documents` | array | The documents returned from the search operation. |
+| IDs | `ids` | array | The ids returned from the search operation. |
 </div>
 </details>
 
@@ -111,15 +111,15 @@ Search for vector similarity search in Elasticsearch
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
-| Index Name (required) | `index-name` | string | Name of the Elasticsearch index |
-| Field (required) | `field` | string | Field name of the vector to search for similar vectors |
-| Query Vector | `query-vector` | array[number] | Query vector to search for similar vectors |
-| K | `k` | integer | K of documents to do kNN vector search |
-| Num Candidates | `num-candidates` | integer | Number of candidates to be considered for kNN vector search. Default to 2 times of k |
+| Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
+| Field (required) | `field` | string | Field name of the vector to search for similar vectors. |
+| Query Vector | `query-vector` | array[number] | Query vector to search for similar vectors. |
+| K | `k` | integer | K of documents to do kNN vector search. |
+| Num Candidates | `num-candidates` | integer | Number of candidates to be considered for kNN vector search. Default to 2 times of k. |
 | Filter | `filter` | object | The query dsl filter which starts with "filter" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/knn-search.html#knn-search-filter-example). |
-| Filter SQL | `filter-sql` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter |
-| Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned |
-| Minimum Score | `min-score` | number | Minimum score to consider for search results. If empty then no minimum score will be considered |
+| Filter SQL | `filter-sql` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter. |
+| Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned. |
+| Minimum Score | `min-score` | number | Minimum score to consider for search results. If empty then no minimum score will be considered. |
 </div>
 
 
@@ -131,8 +131,8 @@ Search for vector similarity search in Elasticsearch
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Search operation status |
-| [Result](#vector-search-result) | `result` | object | Result of the vector search operation |
+| Status | `status` | string | Search operation status. |
+| [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
 </div>
 
 <details>
@@ -144,10 +144,10 @@ Search for vector similarity search in Elasticsearch
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Documents](#vector-search-documents) | `documents` | array | The documents returned from the vector search operation |
-| IDs | `ids` | array | The ids returned from the vector search operation |
-| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation |
-| Vectors | `vectors` | array | The vectors returned from the vector search operation |
+| [Documents](#vector-search-documents) | `documents` | array | The documents returned from the vector search operation. |
+| IDs | `ids` | array | The ids returned from the vector search operation. |
+| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
+| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
 </div>
 </details>
 
@@ -160,9 +160,9 @@ Index a document into Elasticsearch
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INDEX` |
-| Index Name (required) | `index-name` | string | Name of the Elasticsearch index |
-| ID | `id` | string | The ID of the document |
-| Data (required) | `data` | object | Data to be indexed |
+| Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
+| ID | `id` | string | The ID of the document. |
+| Data (required) | `data` | object | Data to be indexed. |
 </div>
 
 
@@ -174,7 +174,7 @@ Index a document into Elasticsearch
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Index operation status |
+| Status | `status` | string | Index operation status. |
 </div>
 
 ### Multi Index
@@ -186,9 +186,9 @@ Index multiple documents into Elasticsearch with bulk API
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_MULTI_INDEX` |
-| Index Name (required) | `index-name` | string | Name of the Elasticsearch index |
-| Array ID | `array-id` | array[string] | The array of id |
-| [Array Data](#multi-index-array-data) (required) | `array-data` | array[object] | Array data to be indexed |
+| Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
+| Array ID | `array-id` | array[string] | The array of id. |
+| [Array Data](#multi-index-array-data) (required) | `array-data` | array[object] | Array data to be indexed. |
 </div>
 
 
@@ -200,7 +200,7 @@ Index multiple documents into Elasticsearch with bulk API
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Index operation status |
+| Status | `status` | string | Index operation status. |
 </div>
 
 ### Update
@@ -212,12 +212,12 @@ Update a document in Elasticsearch
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE` |
-| Index Name (required) | `index-name` | string | Name of the Elasticsearch index |
-| ID | `id` | string | The ID of the document |
-| Query | `query` | string | Full text search query for update task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected |
+| Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
+| ID | `id` | string | The ID of the document. |
+| Query | `query` | string | Full text search query for update task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected. |
 | Filter | `filter` | object | The query dsl filter which starts with "query" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html). |
-| Filter SQL | `filter-sql` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter |
-| Update (required) | `update-data` | object | Update data |
+| Filter SQL | `filter-sql` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter. |
+| Update (required) | `update-data` | object | Update data. |
 </div>
 
 
@@ -229,7 +229,7 @@ Update a document in Elasticsearch
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Update operation status |
+| Status | `status` | string | Update operation status. |
 </div>
 
 ### Delete
@@ -241,11 +241,11 @@ Delete documents from Elasticsearch
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
-| Index Name (required) | `index-name` | string | Name of the Elasticsearch index |
-| ID | `id` | string | The ID of the document |
-| Query | `query` | string | Full text search query for delete task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected |
+| Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
+| ID | `id` | string | The ID of the document. |
+| Query | `query` | string | Full text search query for delete task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected. |
 | Filter | `filter` | object | The query dsl filter which starts with "query" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html). |
-| Filter SQL | `filter-sql` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter |
+| Filter SQL | `filter-sql` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter. |
 </div>
 
 
@@ -257,7 +257,7 @@ Delete documents from Elasticsearch
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete operation status |
+| Status | `status` | string | Delete operation status. |
 </div>
 
 ### Create Index
@@ -269,7 +269,7 @@ Create an index in Elasticsearch
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_INDEX` |
-| Index Name (required) | `index-name` | string | Name of the Elasticsearch index |
+| Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
 | Mappings | `mappings` | object | Index mappings which starts with \{"mappings":\{"properties"\}\} field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html) for vector search and [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html) for other mappings. |
 </div>
 
@@ -282,7 +282,7 @@ Create an index in Elasticsearch
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create index operation status |
+| Status | `status` | string | Create index operation status. |
 </div>
 
 ### Delete Index
@@ -294,7 +294,7 @@ Delete an index in Elasticsearch
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE_INDEX` |
-| Index Name (required) | `index-name` | string | Name of the Elasticsearch index |
+| Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
 </div>
 
 
@@ -306,7 +306,7 @@ Delete an index in Elasticsearch
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete index operation status |
+| Status | `status` | string | Delete index operation status. |
 </div>
 
 

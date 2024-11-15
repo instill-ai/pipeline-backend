@@ -2,14 +2,14 @@
   "TASK_DECODE": {
     "instillShortDescription": "Decode the base64 string.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "data"
       ],
       "instillUIOrder": 0,
       "properties": {
         "data": {
-          "description": "Base64 string to be decoded",
+          "description": "Base64 string to be decoded.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -30,14 +30,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "data"
       ],
       "instillUIOrder": 0,
       "properties": {
         "data": {
-          "description": "Data",
+          "description": "Data.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 0,
@@ -55,14 +55,14 @@
   "TASK_ENCODE": {
     "instillShortDescription": "Encode data into base64 string",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "data"
       ],
       "instillUIOrder": 0,
       "properties": {
         "data": {
-          "description": "Data to be encoded",
+          "description": "Data to be encoded.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -83,14 +83,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "data"
       ],
       "instillUIOrder": 0,
       "properties": {
         "data": {
-          "description": "Data",
+          "description": "Data.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 0,

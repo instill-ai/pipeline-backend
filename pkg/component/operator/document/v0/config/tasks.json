@@ -12,14 +12,14 @@
   "TASK_CONVERT_TO_MARKDOWN": {
     "instillShortDescription": "Convert document to text in Markdown format.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "document"
       ],
       "instillUIOrder": 0,
       "properties": {
         "document": {
-          "description": "Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML/XLSX/XLS/CSV to be converted to text in Markdown format",
+          "description": "Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML/XLSX/XLS/CSV to be converted to text in Markdown format.",
           "instillAcceptFormats": [
             "*/*"
           ],
@@ -32,7 +32,7 @@
           "type": "string"
         },
         "filename": {
-          "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+          "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -78,11 +78,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "properties": {
         "body": {
-          "description": "Markdown text converted from the PDF document",
+          "description": "Markdown text converted from the PDF document.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 0,
@@ -90,14 +90,14 @@
           "type": "string"
         },
         "filename": {
-          "description": "The name of the file",
+          "description": "The name of the file.",
           "instillFormat": "string",
           "instillUIOrder": 1,
           "title": "Filename",
           "type": "string"
         },
         "images": {
-          "description": "Images extracted from the document",
+          "description": "Images extracted from the document.",
           "instillFormat": "array:image/*",
           "instillUIOrder": 2,
           "items": {
@@ -107,7 +107,7 @@
           "type": "array"
         },
         "error": {
-          "description": "Error message if any during the conversion process",
+          "description": "Error message if any during the conversion process.",
           "instillFormat": "string",
           "instillUIOrder": 3,
           "title": "Error",
@@ -144,14 +144,14 @@
   "TASK_CONVERT_TO_TEXT": {
     "instillShortDescription": "Convert document to text.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "document"
       ],
       "instillUIOrder": 0,
       "properties": {
         "document": {
-          "description": "Base64 encoded PDF/DOC/DOCX/XML/HTML/RTF/MD/PPTX/ODT/TIF/CSV/TXT/PNG document to be converted to plain text",
+          "description": "Base64 encoded PDF/DOC/DOCX/XML/HTML/RTF/MD/PPTX/ODT/TIF/CSV/TXT/PNG document to be converted to plain text.",
           "instillAcceptFormats": [
             "*/*"
           ],
@@ -164,7 +164,7 @@
           "type": "string"
         },
         "filename": {
-          "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+          "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -184,11 +184,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "properties": {
         "body": {
-          "description": "Plain text converted from the document",
+          "description": "Plain text converted from the document.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 0,
@@ -196,7 +196,7 @@
           "type": "string"
         },
         "error": {
-          "description": "Error message if any during the conversion process",
+          "description": "Error message if any during the conversion process.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 3,
@@ -204,7 +204,7 @@
           "type": "string"
         },
         "meta": {
-          "description": "Metadata extracted from the document",
+          "description": "Metadata extracted from the document.",
           "instillFormat": "semi-structured/object",
           "instillUIOrder": 1,
           "required": [],
@@ -212,14 +212,14 @@
           "type": "object"
         },
         "msecs": {
-          "description": "Time taken to convert the document",
+          "description": "Time taken to convert the document.",
           "instillFormat": "number",
           "instillUIOrder": 2,
           "title": "Milliseconds",
           "type": "number"
         },
         "filename": {
-          "description": "The name of the file",
+          "description": "The name of the file.",
           "instillFormat": "string",
           "instillUIOrder": 1,
           "title": "Filename",
@@ -239,14 +239,14 @@
   "TASK_CONVERT_TO_IMAGES": {
     "instillShortDescription": "Convert Document to images.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "document"
       ],
       "instillUIOrder": 0,
       "properties": {
         "document": {
-          "description": "Base64 encoded PDF/DOCX/DOC/PPT/PPTX to be converted to images",
+          "description": "Base64 encoded PDF/DOCX/DOC/PPT/PPTX to be converted to images.",
           "instillAcceptFormats": [
             "*/*"
           ],
@@ -259,7 +259,7 @@
           "type": "string"
         },
         "filename": {
-          "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+          "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -283,11 +283,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "properties": {
         "images": {
-          "description": "Images converted from the document",
+          "description": "Images converted from the document.",
           "instillFormat": "array:image/*",
           "instillUIOrder": 0,
           "items": {
@@ -297,7 +297,7 @@
           "type": "array"
         },
         "filenames": {
-          "description": "The filenames of the images. The filenames will be appended with the page number. e.g. 'example-1.jpg'",
+          "description": "The filenames of the images. The filenames will be appended with the page number. e.g. 'example-1.jpg'.",
           "instillFormat": "array:string",
           "instillUIOrder": 1,
           "items": {

@@ -106,8 +106,8 @@ Perform insert operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT` |
-| Table Name (required) | `table-name` | string | The table name in the database to insert data into |
-| Data (required) | `data` | object | The data to be inserted |
+| Table Name (required) | `table-name` | string | The table name in the database to insert data into. |
+| Data (required) | `data` | object | The data to be inserted. |
 </div>
 
 
@@ -119,7 +119,7 @@ Perform insert operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Insert status |
+| Status | `status` | string | Insert status. |
 </div>
 
 ### Insert Many
@@ -131,8 +131,8 @@ Perform insert operation with multiple rows
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT_MANY` |
-| Table Name (required) | `table-name` | string | The table name in the database to insert data into |
-| [Data](#insert-many-data) (required) | `array-data` | array[object] | The array data to be inserted |
+| Table Name (required) | `table-name` | string | The table name in the database to insert data into. |
+| [Data](#insert-many-data) (required) | `array-data` | array[object] | The array data to be inserted. |
 </div>
 
 
@@ -144,7 +144,7 @@ Perform insert operation with multiple rows
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Insert many status |
+| Status | `status` | string | Insert many status. |
 </div>
 
 ### Update
@@ -156,9 +156,9 @@ Perform update operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE` |
-| Table Name (required) | `table-name` | string | The table name in the database to update data into |
-| Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause |
-| Update (required) | `update-data` | object | The new data to be updated to |
+| Table Name (required) | `table-name` | string | The table name in the database to update data into. |
+| Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
+| Update (required) | `update-data` | object | The new data to be updated to. |
 </div>
 
 
@@ -170,7 +170,7 @@ Perform update operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Update status |
+| Status | `status` | string | Update status. |
 </div>
 
 ### Select
@@ -182,10 +182,10 @@ Perform select operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SELECT` |
-| Table Name (required) | `table-name` | string | The table name in the database to be selected |
-| Filter | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for all rows |
-| Limit | `limit` | integer | The limit of rows to be selected, empty for all rows |
-| Columns | `columns` | array[string] | The columns to return in the rows. If empty then all columns will be returned |
+| Table Name (required) | `table-name` | string | The table name in the database to be selected. |
+| Filter | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for all rows. |
+| Limit | `limit` | integer | The limit of rows to be selected, empty for all rows. |
+| Columns | `columns` | array[string] | The columns to return in the rows. If empty then all columns will be returned. |
 </div>
 
 
@@ -197,8 +197,8 @@ Perform select operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Rows](#select-rows) | `rows` | array[object] | The rows returned from the select operation |
-| Status | `status` | string | Select status |
+| [Rows](#select-rows) | `rows` | array[object] | The rows returned from the select operation. |
+| Status | `status` | string | Select status. |
 </div>
 
 ### Delete
@@ -210,8 +210,8 @@ Perform delete operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
-| Table Name (required) | `table-name` | string | The table name in the database to be deleted |
-| Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause |
+| Table Name (required) | `table-name` | string | The table name in the database to be deleted. |
+| Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
 </div>
 
 
@@ -223,7 +223,7 @@ Perform delete operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete status |
+| Status | `status` | string | Delete status. |
 </div>
 
 ### Create Table
@@ -235,8 +235,8 @@ Create a table in the database
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_TABLE` |
-| Table Name (required) | `table-name` | string | The table name in the database to be created |
-| Columns (required) | `columns-structure` | object | The columns structure to be created in the table, json with value string, e.g \{"name": "VARCHAR(255)", "age": "INT not null"\} |
+| Table Name (required) | `table-name` | string | The table name in the database to be created. |
+| Columns (required) | `columns-structure` | object | The columns structure to be created in the table, json with value string, e.g \{"name": "VARCHAR(255)", "age": "INT not null"\}. |
 </div>
 
 
@@ -248,7 +248,7 @@ Create a table in the database
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create table status |
+| Status | `status` | string | Create table status. |
 </div>
 
 ### Drop Table
@@ -260,7 +260,7 @@ Drop a table in the database
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_TABLE` |
-| Table Name (required) | `table-name` | string | The table name in the database to be dropped |
+| Table Name (required) | `table-name` | string | The table name in the database to be dropped. |
 </div>
 
 
@@ -272,7 +272,7 @@ Drop a table in the database
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Drop table status |
+| Status | `status` | string | Drop table status. |
 </div>
 
 

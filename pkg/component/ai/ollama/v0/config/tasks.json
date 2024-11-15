@@ -17,7 +17,7 @@
               "url"
             ],
             "title": "Image URL",
-            "description": "The image URL",
+            "description": "The image URL.",
             "instillUIOrder": 0,
             "type": "object"
           },
@@ -51,12 +51,12 @@
       "properties": {
         "content": {
           "$ref": "#/$defs/multi-modal-content",
-          "description": "The message content",
+          "description": "The message content.",
           "instillUIOrder": 1,
           "title": "Content"
         },
         "role": {
-          "description": "The message role, i.e. 'system', 'user' or 'assistant'",
+          "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Role",
@@ -75,7 +75,7 @@
     "instillShortDescription": "Provide text outputs in response to text/image inputs.",
     "description": "Open-source large language models (OSS LLMs) are artificial intelligence models with publicly accessible code and architecture, allowing for free use, modification, and distribution. These models can provide performance comparable to proprietary alternatives. Ollama is a tool that enables you to run and interact with OSS LLMs using limited computational resources. You can install Ollama from: [here](https://ollama.com).",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "prompt",
         "model"
@@ -100,7 +100,7 @@
         },
         "max-new-tokens": {
           "default": 50,
-          "description": "The maximum number of tokens for model to generate",
+          "description": "The maximum number of tokens for model to generate.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -114,7 +114,7 @@
         },
         "model": {
           "example": "moondream",
-          "description": "The OSS model to be used, check [here](https://ollama.com/library) for list of models available",
+          "description": "The OSS model to be used, check [here](https://ollama.com/library) for list of models available.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -128,7 +128,7 @@
           "type": "string"
         },
         "prompt": {
-          "description": "The prompt text",
+          "description": "The prompt text.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -143,7 +143,7 @@
           "type": "string"
         },
         "prompt-images": {
-          "description": "The prompt images",
+          "description": "The prompt images.",
           "instillAcceptFormats": [
             "array:image/*"
           ],
@@ -158,7 +158,7 @@
           "type": "array"
         },
         "seed": {
-          "description": "The seed",
+          "description": "The seed.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -172,7 +172,7 @@
         },
         "system-message": {
           "default": "You are a helpful assistant.",
-          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model\u2019s behavior is set using a generic message as \"You are a helpful assistant.\"",
+          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model\u2019s behavior is set using a generic message as \"You are a helpful assistant.\".",
           "instillAcceptFormats": [
             "string"
           ],
@@ -189,7 +189,7 @@
         },
         "temperature": {
           "default": 0.7,
-          "description": "The temperature for sampling",
+          "description": "The temperature for sampling.",
           "instillAcceptFormats": [
             "number"
           ],
@@ -203,7 +203,7 @@
         },
         "top-k": {
           "default": 10,
-          "description": "Top k for sampling",
+          "description": "Top k for sampling.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -224,11 +224,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "properties": {
         "text": {
-          "description": "Model Output",
+          "description": "Model Output.",
           "instillUIOrder": 0,
           "instillFormat": "string",
           "instillUIMultiline": true,
@@ -251,7 +251,7 @@
       "properties": {
         "model": {
           "example": "snowflake-arctic-embed:22m",
-          "description": "The OSS model to be used, check [here](https://ollama.com/library) for list of models available",
+          "description": "The OSS model to be used, check [here](https://ollama.com/library) for list of models available.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -265,7 +265,7 @@
           "type": "string"
         },
         "text": {
-          "description": "The text",
+          "description": "The text.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -301,7 +301,7 @@
             "type": "number"
           },
           "type": "array",
-          "description": "Embedding of the input text",
+          "description": "Embedding of the input text.",
           "instillUIOrder": 0,
           "title": "Embedding"
         }

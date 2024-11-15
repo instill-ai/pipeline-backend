@@ -57,10 +57,10 @@ Search data via Google Search Engine.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEARCH` |
-| Query (required) | `query` | string | The search query for Google |
-| Top K | `top-k` | integer | The number of results to return for each query |
-| Include Link Text | `include-link-text` | boolean | Indicate whether to scrape the link and include the text of the link associated with this search result in the 'link-text' field |
-| Include Link HTML | `include-link-html` | boolean | Indicate whether to scrape the link and include the raw HTML of the link associated with this search result in the 'link-html' field |
+| Query (required) | `query` | string | The search query for Google. |
+| Top K | `top-k` | integer | The number of results to return for each query. |
+| Include Link Text | `include-link-text` | boolean | Indicate whether to scrape the link and include the text of the link associated with this search result in the 'link-text' field. |
+| Include Link HTML | `include-link-html` | boolean | Indicate whether to scrape the link and include the raw HTML of the link associated with this search result in the 'link-html' field. |
 </div>
 
 
@@ -72,7 +72,7 @@ Search data via Google Search Engine.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Results](#search-results) | `results` | array[object] | The returned search results from Google |
+| [Results](#search-results) | `results` | array[object] | The returned search results from Google. |
 </div>
 
 <details>
@@ -85,10 +85,10 @@ Search data via Google Search Engine.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Link | `link` | string | The full URL to which the search result is pointing, e.g., http://www.example.com/foo/bar. |
-| Link HTML | `link-html` | string | The scraped raw html of the link associated with this search result |
-| Link Text | `link-text` | string | The scraped text of the link associated with this search result, in plain text |
-| Snippet | `snippet` | string | The snippet from the page associated with this search result, in plain text |
-| Title | `title` | string | The title of a search result, in plain text |
+| Link HTML | `link-html` | string | The scraped raw html of the link associated with this search result. |
+| Link Text | `link-text` | string | The scraped text of the link associated with this search result, in plain text. |
+| Snippet | `snippet` | string | The snippet from the page associated with this search result, in plain text. |
+| Title | `title` | string | The title of a search result, in plain text. |
 </div>
 </details>
 

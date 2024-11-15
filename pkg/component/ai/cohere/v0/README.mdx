@@ -58,16 +58,16 @@ Cohere's text generation models (often called generative pre-trained transformer
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
-| Model Name (required) | `model-name` | string | The Cohere command model to be used |
-| Prompt (required) | `prompt` | string | The prompt text |
-| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant." |
+| Model Name (required) | `model-name` | string | The Cohere command model to be used. |
+| Prompt (required) | `prompt` | string | The prompt text. |
+| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant.". |
 | Documents | `documents` | array[string] | The documents to be used for the model, for optimal performance, the length of each document should be less than 300 words. |
-| Prompt Images | `prompt-images` | array[string] | The prompt images (Note: As for 2024-06-24 Cohere models are not multimodal, so images will be ignored.) |
+| Prompt Images | `prompt-images` | array[string] | The prompt images (Note: As for 2024-06-24 Cohere models are not multimodal, so images will be ignored.). |
 | [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Each message should adhere to the format: : \{"role": "The message role, i.e. 'USER' or 'CHATBOT'", "content": "message content"\}. |
-| Seed | `seed` | integer | The seed (default=42) |
-| Temperature | `temperature` | number | The temperature for sampling (default=0.7) |
-| Top K | `top-k` | integer | Top k for sampling (default=10) |
-| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate (default=50) |
+| Seed | `seed` | integer | The seed (default=42). |
+| Temperature | `temperature` | number | The temperature for sampling (default=0.7). |
+| Top K | `top-k` | integer | Top k for sampling (default=10). |
+| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate (default=50). |
 </div>
 
 
@@ -82,24 +82,24 @@ Incorporate external chat history, specifically previous messages within the con
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#text-generation-chat-content) | `content` | array | The message content  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'  |
+| [Content](#text-generation-chat-content) | `content` | array | The message content.  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
 </div>
 <h4 id="text-generation-chat-content">Content</h4>
 
-The message content
+The message content.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL  |
+| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL.  |
 | Text | `text` | string | The text content.  |
 | Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details>  |
 </div>
 <h4 id="text-generation-chat-image-url">Image URL</h4>
 
-The image URL
+The image URL.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -115,9 +115,9 @@ The image URL
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Text | `text` | string | Model Output |
-| [Citations](#text-generation-chat-citations) (optional) | `citations` | array[object] | Citations |
-| [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Token Usage on the Cohere Platform Command Models |
+| Text | `text` | string | Model Output. |
+| [Citations](#text-generation-chat-citations) (optional) | `citations` | array[object] | Citations. |
+| [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Token Usage on the Cohere Platform Command Models. |
 </div>
 
 <details>
@@ -129,9 +129,9 @@ The image URL
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| End | `end` | integer | The end position of the citation |
-| Start | `start` | integer | The start position of the citation |
-| Text | `text` | string | The text body of the citation |
+| End | `end` | integer | The end position of the citation. |
+| Start | `start` | integer | The start position of the citation. |
+| Text | `text` | string | The text body of the citation. |
 </div>
 
 <h4 id="text-generation-chat-usage">Usage</h4>
@@ -140,8 +140,8 @@ The image URL
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Input Tokens | `input-tokens` | number | The input tokens used by Cohere Models |
-| Output Tokens | `output-tokens` | number | The output tokens generated by Cohere Models |
+| Input Tokens | `input-tokens` | number | The input tokens used by Cohere Models. |
+| Output Tokens | `output-tokens` | number | The output tokens generated by Cohere Models. |
 </div>
 </details>
 
@@ -155,9 +155,9 @@ An embedding is a list of floating point numbers that captures semantic informat
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
 | Embedding Type (required) | `embedding-type` | string | Specifies the return type of embedding, Note that 'binary'/'ubinary' options means the component will return packed unsigned binary embeddings. The length of each binary embedding is 1/8 the length of the float embeddings of the provided model. |
-| Input Type (required) | `input-type` | string | Specifies the type of input passed to the model |
-| Model Name (required) | `model-name` | string | The Cohere embed model to be used |
-| Text (required) | `text` | string | The text |
+| Input Type (required) | `input-type` | string | Specifies the type of input passed to the model. |
+| Model Name (required) | `model-name` | string | The Cohere embed model to be used. |
+| Text (required) | `text` | string | The text. |
 </div>
 
 
@@ -169,8 +169,8 @@ An embedding is a list of floating point numbers that captures semantic informat
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Embedding | `embedding` | array[number] | Embedding of the input text |
-| [Usage](#text-embeddings-usage) (optional) | `usage` | object | Token usage on the Cohere platform embed models |
+| Embedding | `embedding` | array[number] | Embedding of the input text. |
+| [Usage](#text-embeddings-usage) (optional) | `usage` | object | Token usage on the Cohere platform embed models. |
 </div>
 
 <details>
@@ -182,7 +182,7 @@ An embedding is a list of floating point numbers that captures semantic informat
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Token Count | `tokens` | number | The token count used by Cohere Models |
+| Token Count | `tokens` | number | The token count used by Cohere Models. |
 </div>
 </details>
 
@@ -195,11 +195,11 @@ Rerank models sort text inputs by semantic relevance to a specified query. They 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_RERANKING` |
-| Model Name (required) | `model-name` | string | The Cohere rerank model to be used |
-| Query (required) | `query` | string | The query |
-| Documents (required) | `documents` | array[string] | The documents to be used for reranking |
-| Top N | `top-n` | integer | The number of most relevant documents or indices to return. Defaults to the length of the documents (default=3) |
-| Maximum Number of Chunks per Document | `max-chunks-per-doc` | integer | The maximum number of chunks to produce internally from a document (default=10) |
+| Model Name (required) | `model-name` | string | The Cohere rerank model to be used. |
+| Query (required) | `query` | string | The query. |
+| Documents (required) | `documents` | array[string] | The documents to be used for reranking. |
+| Top N | `top-n` | integer | The number of most relevant documents or indices to return. Defaults to the length of the documents (default=3). |
+| Maximum Number of Chunks per Document | `max-chunks-per-doc` | integer | The maximum number of chunks to produce internally from a document (default=10). |
 </div>
 
 
@@ -211,9 +211,9 @@ Rerank models sort text inputs by semantic relevance to a specified query. They 
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Reranked Documents | `ranking` | array[string] | Reranked documents |
-| Reranked Documents Relevance (optional) | `relevance` | array[number] | The relevance scores of the reranked documents |
-| [Usage](#text-reranking-usage) (optional) | `usage` | object | Search Usage on the Cohere Platform Rerank Models |
+| Reranked Documents | `ranking` | array[string] | Reranked documents. |
+| Reranked Documents Relevance (optional) | `relevance` | array[number] | The relevance scores of the reranked documents. |
+| [Usage](#text-reranking-usage) (optional) | `usage` | object | Search Usage on the Cohere Platform Rerank Models. |
 </div>
 
 <details>
@@ -225,7 +225,7 @@ Rerank models sort text inputs by semantic relevance to a specified query. They 
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Search Counts | `search-counts` | number | The search count used by Cohere Models |
+| Search Counts | `search-counts` | number | The search count used by Cohere Models. |
 </div>
 </details>
 

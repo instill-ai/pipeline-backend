@@ -2,25 +2,25 @@
   "$defs": {
     "common": {
       "owner-id": {
-        "description": "The user who is assigned to the object",
+        "description": "The user who is assigned to the object.",
         "title": "Owner ID",
         "instillUIOrder": 0,
         "type": "string"
       },
       "associated-contact-ids": {
-        "description": "Contact IDs associated with the object",
+        "description": "Contact IDs associated with the object.",
         "title": "Associated Contact IDs",
         "type": "array",
         "instillFormat": "array:string",
         "items": {
           "title": "Associated Contact ID",
           "type": "string",
-          "description": "Contact ID associated with the object",
+          "description": "Contact ID associated with the object.",
           "instillFormat": "string"
         }
       },
       "create-contacts-association": {
-        "description": "Existing contact IDs to be associated with the object",
+        "description": "Existing contact IDs to be associated with the object.",
         "title": "Create Object -> Contact Association using contact IDs",
         "type": "array",
         "instillAcceptFormats": [
@@ -35,7 +35,7 @@
         ]
       },
       "create-deals-association": {
-        "description": "Existing deal IDs to be associated with the object",
+        "description": "Existing deal IDs to be associated with the object.",
         "title": "Create Object -> Deal Association using deal IDs",
         "type": "array",
         "instillAcceptFormats": [
@@ -50,7 +50,7 @@
         ]
       },
       "create-companies-association": {
-        "description": "Existing company IDs to be associated with the object",
+        "description": "Existing company IDs to be associated with the object.",
         "title": "Create Object -> Company Association using company IDs",
         "type": "array",
         "instillAcceptFormats": [
@@ -65,7 +65,7 @@
         ]
       },
       "create-tickets-association": {
-        "description": "Existing ticket IDs to be associated with the object",
+        "description": "Existing ticket IDs to be associated with the object.",
         "title": "Create Object -> Ticket Association using ticket IDs",
         "type": "array",
         "instillAcceptFormats": [
@@ -82,37 +82,37 @@
     },
     "contact": {
       "email": {
-        "description": "Email address",
+        "description": "Email address.",
         "instillUIOrder": 1,
         "title": "Email Address",
         "type": "string"
       },
       "first-name": {
-        "description": "First name",
+        "description": "First name.",
         "instillUIOrder": 2,
         "title": "First Name",
         "type": "string"
       },
       "last-name": {
-        "description": "Last name",
+        "description": "Last name.",
         "instillUIOrder": 3,
         "title": "Last Name",
         "type": "string"
       },
       "phone-number": {
-        "description": "Phone number. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example: +886xxxxxxxxx",
+        "description": "Phone number. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example: +886xxxxxxxxx.",
         "instillUIOrder": 4,
         "title": "Phone Number",
         "type": "string"
       },
       "company": {
-        "description": "Company",
+        "description": "Company.",
         "instillUIOrder": 5,
         "title": "Company",
         "type": "string"
       },
       "job-title": {
-        "description": "Job title",
+        "description": "Job title.",
         "instillUIOrder": 6,
         "title": "Job Title",
         "type": "string"
@@ -132,13 +132,13 @@
     },
     "deal": {
       "deal-name": {
-        "description": "Deal name",
+        "description": "Deal name.",
         "instillUIOrder": 1,
         "title": "Deal Name",
         "type": "string"
       },
       "pipeline": {
-        "description": "A pipeline is the place where you document and manage how your prospects move through the steps of your sales process. HubSpot uses interval value rather than the name displayed in the view",
+        "description": "A pipeline is the place where you document and manage how your prospects move through the steps of your sales process. HubSpot uses interval value rather than the name displayed in the view.",
         "instillUIOrder": 2,
         "title": "Pipeline",
         "type": "string"
@@ -150,7 +150,7 @@
         "type": "string"
       },
       "amount": {
-        "description": "The total amount of the deal",
+        "description": "The total amount of the deal.",
         "instillUIOrder": 4,
         "title": "Amount",
         "type": "number"
@@ -162,13 +162,13 @@
         "type": "string"
       },
       "close-date": {
-        "description": "Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z",
+        "description": "Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.",
         "instillUIOrder": 6,
         "title": "Close Date",
         "type": "string"
       },
       "create-date": {
-        "description": "Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z",
+        "description": "Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.",
         "instillUIOrder": 7,
         "title": "Create Date",
         "type": "string"
@@ -176,85 +176,85 @@
     },
     "company": {
       "company-name": {
-        "description": "Company name",
+        "description": "Company name.",
         "instillUIOrder": 1,
         "title": "Company Name",
         "type": "string"
       },
       "company-domain": {
-        "description": "The domain name of the company",
+        "description": "The domain name of the company.",
         "instillUIOrder": 2,
         "title": "Company Domain",
         "type": "string"
       },
       "description": {
-        "description": "Description of the company",
+        "description": "Description of the company.",
         "instillUIOrder": 3,
         "title": "Description",
         "type": "string"
       },
       "phone-number": {
-        "description": "Phone number of the company. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example: +886xxxxxxxxx",
+        "description": "Phone number of the company. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example: +886xxxxxxxxx.",
         "instillUIOrder": 4,
         "title": "Phone Number",
         "type": "string"
       },
       "industry": {
-        "description": "The industry the company belongs to. Default format is in capital letters, with _ as space. Example: BROADCAST_MEDIA",
+        "description": "The industry the company belongs to. Default format is in capital letters, with _ as space. Example: BROADCAST_MEDIA.",
         "instillUIOrder": 5,
         "title": "Industry",
         "type": "string"
       },
       "company-type": {
-        "description": "Type of company. Default format is capital letter. Example: RESELLER",
+        "description": "Type of company. Default format is capital letter. Example: RESELLER.",
         "instillUIOrder": 6,
         "title": "Company Type",
         "type": "string"
       },
       "city": {
-        "description": "City",
+        "description": "City.",
         "instillUIOrder": 7,
         "title": "City",
         "type": "string"
       },
       "state": {
-        "description": "State",
+        "description": "State.",
         "instillUIOrder": 8,
         "title": "State",
         "type": "string"
       },
       "country": {
-        "description": "Country",
+        "description": "Country.",
         "instillUIOrder": 9,
         "title": "Country",
         "type": "string"
       },
       "postal-code": {
-        "description": "Postal code",
+        "description": "Postal code.",
         "instillUIOrder": 10,
         "title": "Postal Code",
         "type": "string"
       },
       "time-zone": {
-        "description": "Time zone",
+        "description": "Time zone.",
         "instillUIOrder": 11,
         "title": "Time Zone",
         "type": "string"
       },
       "annual-revenue": {
-        "description": "Annual revenue",
+        "description": "Annual revenue.",
         "instillUIOrder": 12,
         "title": "Annual Revenue",
         "type": "number"
       },
       "total-revenue": {
-        "description": "Total revenue. Calculated automatically by HubSpot",
+        "description": "Total revenue. Calculated automatically by HubSpot.",
         "instillUIOrder": 13,
         "title": "Total Revenue",
         "type": "number"
       },
       "linkedin-page": {
-        "description": "Linkedin page of the company",
+        "description": "Linkedin page of the company.",
         "instillUIOrder": 14,
         "title": "Linkedin Page",
         "type": "string"
@@ -262,7 +262,7 @@
     },
     "ticket": {
       "ticket-name": {
-        "description": "Ticket name",
+        "description": "Ticket name.",
         "instillUIOrder": 1,
         "title": "Ticket Name",
         "type": "string"
@@ -274,7 +274,7 @@
         "type": "string"
       },
       "pipeline": {
-        "description": "A pipeline organizes and tracks the progression of tickets through various stages of resolution within your support process. HubSpot uses interval value rather than the name displayed in the view",
+        "description": "A pipeline organizes and tracks the progression of tickets through various stages of resolution within your support process. HubSpot uses interval value rather than the name displayed in the view.",
         "instillUIOrder": 3,
         "title": "Pipeline",
         "type": "string"
@@ -292,7 +292,7 @@
         "type": "string"
       },
       "source": {
-        "description": "Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL",
+        "description": "Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL.",
         "instillUIOrder": 6,
         "title": "Source",
         "type": "string"
@@ -304,13 +304,13 @@
         "type": "string"
       },
       "create-date": {
-        "description": "Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z",
+        "description": "Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.",
         "instillUIOrder": 8,
         "title": "Create Date",
         "type": "string"
       },
       "last-modified-date": {
-        "description": "Last modified date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z",
+        "description": "Last modified date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.",
         "instillUIOrder": 9,
         "title": "Last Modified Date",
         "type": "string"
@@ -320,14 +320,14 @@
   "TASK_GET_CONTACT": {
     "instillShortDescription": "Get contact information using contact ID or Email",
     "input": {
-      "description": "Input contact ID or email",
+      "description": "Input contact ID or email.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "contact-id-or-email"
       ],
       "properties": {
         "contact-id-or-email": {
-          "description": "Input contact ID or email. If the input has @, it will search the contact using email",
+          "description": "Input contact ID or email. If the input has @, it will search the contact using email.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -349,7 +349,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Contact information",
+      "description": "Contact information.",
       "instillUIOrder": 0,
       "properties": {
         "owner-id": {
@@ -398,7 +398,7 @@
           "required": []
         },
         "contact-id": {
-          "description": "Contact ID",
+          "description": "Contact ID.",
           "instillUIOrder": 9,
           "required": [],
           "title": "Contact ID",
@@ -416,7 +416,7 @@
   "TASK_CREATE_CONTACT": {
     "instillShortDescription": "Create new contact",
     "input": {
-      "description": "Contact information",
+      "description": "Contact information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "email",
@@ -553,11 +553,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Obtain contact ID",
+      "description": "Obtain contact ID.",
       "instillUIOrder": 0,
       "properties": {
         "contact-id": {
-          "description": "Contact ID",
+          "description": "Contact ID.",
           "instillUIOrder": 0,
           "required": [],
           "title": "Contact ID",
@@ -575,14 +575,14 @@
   "TASK_GET_DEAL": {
     "instillShortDescription": "Get deal information using deal ID",
     "input": {
-      "description": "Input deal ID",
+      "description": "Input deal ID.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "deal-id"
       ],
       "properties": {
         "deal-id": {
-          "description": "Input deal ID",
+          "description": "Input deal ID.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -604,7 +604,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Deal information",
+      "description": "Deal information.",
       "instillUIOrder": 0,
       "properties": {
         "owner-id": {
@@ -664,7 +664,7 @@
   "TASK_CREATE_DEAL": {
     "instillShortDescription": "Create new deal",
     "input": {
-      "description": "Deal information",
+      "description": "Deal information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "deal-name",
@@ -770,11 +770,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Obtain deal ID",
+      "description": "Obtain deal ID.",
       "instillUIOrder": 0,
       "properties": {
         "deal-id": {
-          "description": "Deal ID",
+          "description": "Deal ID.",
           "instillUIOrder": 0,
           "required": [],
           "title": "Deal ID",
@@ -792,7 +792,7 @@
   "TASK_UPDATE_DEAL": {
     "instillShortDescription": "Update existing deal",
     "input": {
-      "description": "Deal information",
+      "description": "Deal information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "deal-id",
@@ -802,7 +802,7 @@
       ],
       "properties": {
         "deal-id": {
-          "description": "Input deal ID",
+          "description": "Input deal ID.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -916,7 +916,7 @@
       "instillUIOrder": 0,
       "properties": {
         "updated-by-user-id": {
-          "description": "User ID that updated the deal",
+          "description": "User ID that updated the deal.",
           "instillUIOrder": 0,
           "required": [],
           "title": "Updated By User ID",
@@ -924,7 +924,7 @@
           "instillFormat": "string"
         },
         "updated-at": {
-          "description": "The time when the deal was updated",
+          "description": "The time when the deal was updated.",
           "instillUIOrder": 1,
           "required": [],
           "title": "Updated At",
@@ -943,14 +943,14 @@
   "TASK_GET_COMPANY": {
     "instillShortDescription": "Get company information using company ID",
     "input": {
-      "description": "Input company ID",
+      "description": "Input company ID.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "company-id"
       ],
       "properties": {
         "company-id": {
-          "description": "Input company ID",
+          "description": "Input company ID.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -972,7 +972,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Company information",
+      "description": "Company information.",
       "instillUIOrder": 0,
       "properties": {
         "owner-id": {
@@ -1063,7 +1063,7 @@
   "TASK_CREATE_COMPANY": {
     "instillShortDescription": "Create new company",
     "input": {
-      "description": "Company information",
+      "description": "Company information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "company-name",
@@ -1252,11 +1252,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Obtain company ID",
+      "description": "Obtain company ID.",
       "instillUIOrder": 0,
       "properties": {
         "company-id": {
-          "description": "Company ID",
+          "description": "Company ID.",
           "instillUIOrder": 0,
           "required": [],
           "title": "Company ID",
@@ -1274,14 +1274,14 @@
   "TASK_GET_TICKET": {
     "instillShortDescription": "Get ticket information using ticket ID",
     "input": {
-      "description": "Input ticket ID",
+      "description": "Input ticket ID.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "ticket-id"
       ],
       "properties": {
         "ticket-id": {
-          "description": "Input ticket ID",
+          "description": "Input ticket ID.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -1303,7 +1303,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Ticket information",
+      "description": "Ticket information.",
       "instillUIOrder": 0,
       "properties": {
         "owner-id": {
@@ -1332,7 +1332,7 @@
           "items": {
             "title": "Category Value",
             "type": "string",
-            "description": "Category value",
+            "description": "Category value.",
             "instillFormat": "string"
           }
         },
@@ -1378,7 +1378,7 @@
   "TASK_CREATE_TICKET": {
     "instillShortDescription": "Create new ticket",
     "input": {
-      "description": "Ticket information",
+      "description": "Ticket information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "ticket-name",
@@ -1485,11 +1485,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Obtain ticket ID",
+      "description": "Obtain ticket ID.",
       "instillUIOrder": 0,
       "properties": {
         "ticket-id": {
-          "description": "Ticket ID",
+          "description": "Ticket ID.",
           "instillUIOrder": 0,
           "required": [],
           "title": "Ticket ID",
@@ -1507,7 +1507,7 @@
   "TASK_UPDATE_TICKET": {
     "instillShortDescription": "Update existing ticket",
     "input": {
-      "description": "Ticket information",
+      "description": "Ticket information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "ticket-id",
@@ -1517,7 +1517,7 @@
       ],
       "properties": {
         "ticket-id": {
-          "description": "Input ticket ID",
+          "description": "Input ticket ID.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -1628,11 +1628,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Update time",
+      "description": "Update time.",
       "instillUIOrder": 0,
       "properties": {
         "updated-at": {
-          "description": "The time when the ticket was updated",
+          "description": "The time when the ticket was updated.",
           "instillUIOrder": 0,
           "required": [],
           "title": "Updated At",
@@ -1650,14 +1650,14 @@
   "TASK_GET_THREAD": {
     "instillShortDescription": "Retrieve all the messages inside a thread (conversation inbox). The messages will be sorted from most recent to least recent. Note: This task uses Conversation API from HubSpot, which is still in BETA.",
     "input": {
-      "description": "Input thread ID",
+      "description": "Input thread ID.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "thread-id"
       ],
       "properties": {
         "thread-id": {
-          "description": "Input thread ID",
+          "description": "Input thread ID.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -1679,11 +1679,11 @@
       "type": "object"
     },
     "output": {
-      "description": "All messages in the thread",
+      "description": "All messages in the thread.",
       "instillUIOrder": 0,
       "properties": {
         "results": {
-          "description": "An array of messages",
+          "description": "An array of messages.",
           "instillUIOrder": 0,
           "title": "Messages",
           "type": "array",
@@ -1692,42 +1692,42 @@
             "type": "object",
             "properties": {
               "created-at": {
-                "description": "message to start a conversation",
+                "description": "message to start a conversation.",
                 "instillFormat": "string",
                 "instillUIOrder": 0,
                 "title": "Start Conversation Message",
                 "type": "string"
               },
               "sender": {
-                "description": "Sender's information",
+                "description": "Sender's information.",
                 "instillUIOrder": 1,
                 "title": "Sender",
                 "type": "object",
                 "instillFormat": "object",
                 "properties": {
                   "sender-name": {
-                    "description": "The name of the sender",
+                    "description": "The name of the sender.",
                     "instillFormat": "string",
                     "instillUIOrder": 0,
                     "title": "Name",
                     "type": "string"
                   },
                   "sender-type": {
-                    "description": "Specify the category of sender information",
+                    "description": "Specify the category of sender information.",
                     "instillFormat": "string",
                     "instillUIOrder": 1,
                     "title": "Type",
                     "type": "string"
                   },
                   "sender-value": {
-                    "description": "Contains the actual sender information (e.g.: email address)",
+                    "description": "Contains the actual sender information (e.g.: email address).",
                     "instillFormat": "string",
                     "instillUIOrder": 2,
                     "title": "Value",
                     "type": "string"
                   },
                   "sender-actor-id": {
-                    "description": "The actor ID of the sender",
+                    "description": "The actor ID of the sender.",
                     "instillFormat": "string",
                     "instillUIOrder": 3,
                     "title": "Actor ID",
@@ -1739,7 +1739,7 @@
                 ]
               },
               "recipients": {
-                "description": "Recipients' information",
+                "description": "Recipients' information.",
                 "instillFormat": "array",
                 "instillUIOrder": 2,
                 "title": "Recipients",
@@ -1749,21 +1749,21 @@
                   "type": "object",
                   "properties": {
                     "name": {
-                      "description": "The name of the recipient",
+                      "description": "The name of the recipient.",
                       "instillFormat": "string",
                       "instillUIOrder": 0,
                       "title": "Name",
                       "type": "string"
                     },
                     "type": {
-                      "description": "Specify the category of recipient information",
+                      "description": "Specify the category of recipient information.",
                       "instillFormat": "string",
                       "instillUIOrder": 1,
                       "title": "Type",
                       "type": "string"
                     },
                     "value": {
-                      "description": "Contains the actual recipient information (e.g.: email address)",
+                      "description": "Contains the actual recipient information (e.g.: email address).",
                       "instillFormat": "string",
                       "instillUIOrder": 2,
                       "title": "Value",
@@ -1774,7 +1774,7 @@
                 }
               },
               "text": {
-                "description": "The content of the message",
+                "description": "The content of the message.",
                 "instillFormat": "string",
                 "instillUIOrder": 3,
                 "required": [],
@@ -1782,7 +1782,7 @@
                 "type": "string"
               },
               "subject": {
-                "description": "The subject of the message",
+                "description": "The subject of the message.",
                 "instillFormat": "string",
                 "instillUIOrder": 4,
                 "required": [],
@@ -1815,7 +1815,7 @@
           }
         },
         "no-of-messages": {
-          "description": "The number of messages in a thread",
+          "description": "The number of messages in a thread.",
           "instillUIOrder": 1,
           "required": [],
           "title": "Number of Messages",
@@ -1834,7 +1834,7 @@
   "TASK_INSERT_MESSAGE": {
     "instillShortDescription": "Insert message into a thread (only support email thread)",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "thread-id",
@@ -1846,7 +1846,7 @@
       ],
       "properties": {
         "thread-id": {
-          "description": "Input thread ID",
+          "description": "Input thread ID.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -1861,7 +1861,7 @@
           "type": "string"
         },
         "sender-actor-id": {
-          "description": "Input sender actor id. Example: A-12345678. To obtain this, it is recommended to use and copy the 'Get Thread task' sender output. For [more information](https://developers.hubspot.com/beta-docs/guides/api/conversations/inbox-and-messages#get-actors) about actor id",
+          "description": "Input sender actor id. Example: A-12345678. To obtain this, it is recommended to use and copy the 'Get Thread task' sender output. For [more information](https://developers.hubspot.com/beta-docs/guides/api/conversations/inbox-and-messages#get-actors) about actor id.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -1876,7 +1876,7 @@
           "type": "string"
         },
         "recipients": {
-          "description": "Recipients of the message",
+          "description": "Recipients of the message.",
           "title": "Recipients",
           "type": "array",
           "instillAcceptFormats": [
@@ -1907,7 +1907,7 @@
           "type": "string"
         },
         "subject": {
-          "description": "The subject of the message",
+          "description": "The subject of the message.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -1922,7 +1922,7 @@
           "type": "string"
         },
         "text": {
-          "description": "The body of the message",
+          "description": "The body of the message.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -1949,11 +1949,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Status of the message",
+      "description": "Status of the message.",
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "The message status",
+          "description": "The message status.",
           "instillUIOrder": 0,
           "required": [],
           "title": "Status",
@@ -1971,7 +1971,7 @@
   "TASK_RETRIEVE_ASSOCIATION": {
     "instillShortDescription": "Get the object IDs associated with contact ID (contact->objects). If you are trying to do the opposite (object->contacts), it is possible using the other tasks. Example: Go to get deal task to obtain deal->contacts. Remember to check that the contact ID you input exists, because there won't be an error message if the contact ID doesn't exist.",
     "input": {
-      "description": "Contact ID and object type (CRM objects or Thread)",
+      "description": "Contact ID and object type (CRM objects or Thread).",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "contact-id",
@@ -1979,7 +1979,7 @@
       ],
       "properties": {
         "contact-id": {
-          "description": "Input contact ID",
+          "description": "Input contact ID.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -2001,7 +2001,7 @@
             "Threads"
           ],
           "example": "Deals",
-          "description": "Input object type (CRM objects or 'Threads'). Note: CRM objects include 'Deals', 'Companies', 'Tickets', etc",
+          "description": "Input object type (CRM objects or 'Threads'). Note: CRM objects include 'Deals', 'Companies', 'Tickets', etc.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -2023,11 +2023,11 @@
       "type": "object"
     },
     "output": {
-      "description": "All object IDs",
+      "description": "All object IDs.",
       "instillUIOrder": 0,
       "properties": {
         "object-ids": {
-          "description": "An array of object ID associated with the contact",
+          "description": "An array of object ID associated with the contact.",
           "instillUIOrder": 0,
           "instillFormat": "array:string",
           "title": "Object ID Array ",
@@ -2035,11 +2035,11 @@
           "items": {
             "title": "Object ID",
             "type": "string",
-            "description": "The object ID associated with the contact"
+            "description": "The object ID associated with the contact."
           }
         },
         "object-ids-length": {
-          "description": "The number of object IDs",
+          "description": "The number of object IDs.",
           "instillUIOrder": 1,
           "required": [],
           "title": "Object IDs Length",
@@ -2058,7 +2058,7 @@
   "TASK_GET_OWNER": {
     "instillShortDescription": "Get information about HubSpot owner using either owner ID or user ID. For more information about owner, please go to [here](https://developers.hubspot.com/docs/api/crm/owners)",
     "input": {
-      "description": "Owner information and type",
+      "description": "Owner information and type.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "id-type",
@@ -2108,11 +2108,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Owner's detailed information",
+      "description": "Owner's detailed information.",
       "instillUIOrder": 0,
       "properties": {
         "first-name": {
-          "description": "First name",
+          "description": "First name.",
           "instillUIOrder": 0,
           "required": [],
           "title": "First Name",
@@ -2120,7 +2120,7 @@
           "instillFormat": "string"
         },
         "last-name": {
-          "description": "Last name",
+          "description": "Last name.",
           "instillUIOrder": 1,
           "required": [],
           "title": "Last Name",
@@ -2128,7 +2128,7 @@
           "instillFormat": "string"
         },
         "email": {
-          "description": "Email",
+          "description": "Email.",
           "instillUIOrder": 2,
           "required": [],
           "title": "Email",
@@ -2152,7 +2152,7 @@
           "instillFormat": "string"
         },
         "teams": {
-          "description": "The owner's teams information",
+          "description": "The owner's teams information.",
           "instillFormat": "array",
           "instillUIOrder": 5,
           "title": "Teams",
@@ -2162,21 +2162,21 @@
             "type": "object",
             "properties": {
               "team-name": {
-                "description": "The name of the team",
+                "description": "The name of the team.",
                 "instillFormat": "string",
                 "instillUIOrder": 0,
                 "title": "Team Name",
                 "type": "string"
               },
               "team-id": {
-                "description": "The ID of the team",
+                "description": "The ID of the team.",
                 "instillFormat": "string",
                 "instillUIOrder": 1,
                 "title": "Team ID",
                 "type": "string"
               },
               "team-primary": {
-                "description": "Indicate whether this team is the primary team of the owner",
+                "description": "Indicate whether this team is the primary team of the owner.",
                 "instillFormat": "boolean",
                 "instillUIOrder": 2,
                 "title": "Team Primary",
@@ -2191,7 +2191,7 @@
           }
         },
         "created-at": {
-          "description": "Created at",
+          "description": "Created at.",
           "instillUIOrder": 6,
           "required": [],
           "title": "Created At",
@@ -2199,7 +2199,7 @@
           "instillFormat": "string"
         },
         "updated-at": {
-          "description": "Updated at",
+          "description": "Updated at.",
           "instillUIOrder": 7,
           "required": [],
           "title": "Updated At",
@@ -2207,7 +2207,7 @@
           "instillFormat": "string"
         },
         "archived": {
-          "description": "Archived",
+          "description": "Archived.",
           "instillUIOrder": 8,
           "required": [],
           "title": "Archived",
@@ -2232,7 +2232,7 @@
   "TASK_GET_ALL": {
     "instillShortDescription": "Get all the IDs for a specific object (e.g. all contact IDs)",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "object-type"
@@ -2248,7 +2248,7 @@
             "Owners"
           ],
           "example": "Contacts",
-          "description": "The object which you want to get all IDs for",
+          "description": "The object which you want to get all IDs for.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -2269,11 +2269,11 @@
       "type": "object"
     },
     "output": {
-      "description": "All the IDs of the object",
+      "description": "All the IDs of the object.",
       "instillUIOrder": 0,
       "properties": {
         "object-ids": {
-          "description": "An array of object ID",
+          "description": "An array of object ID.",
           "instillUIOrder": 0,
           "instillFormat": "array:string",
           "title": "Object ID Array ",
@@ -2281,11 +2281,11 @@
           "items": {
             "title": "Object ID",
             "type": "string",
-            "description": "Object ID"
+            "description": "Object ID."
           }
         },
         "object-ids-length": {
-          "description": "The number of object IDs",
+          "description": "The number of object IDs.",
           "instillUIOrder": 1,
           "required": [],
           "title": "Object IDs Length",

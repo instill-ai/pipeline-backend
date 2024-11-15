@@ -65,10 +65,10 @@ Perform an insert operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT` |
-| Database Name (required) | `database-name` | string | The name of the database in MongoDB |
-| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB |
-| ID | `id` | string | The ID of the document |
-| Data (required) | `data` | object | The data to be inserted |
+| Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
+| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
+| ID | `id` | string | The ID of the document. |
+| Data (required) | `data` | object | The data to be inserted. |
 </div>
 
 
@@ -80,7 +80,7 @@ Perform an insert operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Insert status |
+| Status | `status` | string | Insert status. |
 </div>
 
 ### Insert Many
@@ -92,10 +92,10 @@ Perform an insert many operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT_MANY` |
-| Database Name (required) | `database-name` | string | The name of the database in MongoDB |
-| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB |
-| Array ID | `array-id` | array[string] | The array of id |
-| [Data](#insert-many-data) (required) | `array-data` | array[object] | The array data to be inserted |
+| Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
+| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
+| Array ID | `array-id` | array[string] | The array of id. |
+| [Data](#insert-many-data) (required) | `array-data` | array[object] | The array data to be inserted. |
 </div>
 
 
@@ -107,7 +107,7 @@ Perform an insert many operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Insert many status |
+| Status | `status` | string | Insert many status. |
 </div>
 
 ### Find
@@ -119,12 +119,12 @@ Perform a find operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_FIND` |
-| Database Name (required) | `database-name` | string | The name of the database in MongoDB |
-| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB |
-| ID | `id` | string | The ID of the document |
-| Filter | `filter` | object | The filter to find documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned |
-| Limit | `limit` | integer | The number of documents to return. If empty then all documents will be returned |
-| Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned |
+| Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
+| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
+| ID | `id` | string | The ID of the document. |
+| Filter | `filter` | object | The filter to find documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned. |
+| Limit | `limit` | integer | The number of documents to return. If empty then all documents will be returned. |
+| Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned. |
 </div>
 
 
@@ -136,8 +136,8 @@ Perform a find operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Result](#find-result) | `result` | object | Result of the find operation |
-| Status | `status` | string | Find status |
+| [Result](#find-result) | `result` | object | Result of the find operation. |
+| Status | `status` | string | Find status. |
 </div>
 
 <details>
@@ -149,9 +149,9 @@ Perform a find operation
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Metadata](#find-metadata) | `data` | array | The data returned from the find operation |
-| [Documents](#find-documents) | `documents` | array | The documents returned from the find operation |
-| IDs | `ids` | array | The ids returned from the find operation |
+| [Metadata](#find-metadata) | `data` | array | The data returned from the find operation. |
+| [Documents](#find-documents) | `documents` | array | The documents returned from the find operation. |
+| IDs | `ids` | array | The ids returned from the find operation. |
 </div>
 </details>
 
@@ -164,11 +164,11 @@ Perform an update operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE` |
-| Database Name (required) | `database-name` | string | The name of the database in MongoDB |
-| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB |
-| ID | `id` | string | The ID of the document |
-| Filter | `filter` | object | The filter to update documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned |
-| Update (required) | `update-data` | object | The updated data to be applied to the documents |
+| Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
+| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
+| ID | `id` | string | The ID of the document. |
+| Filter | `filter` | object | The filter to update documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned. |
+| Update (required) | `update-data` | object | The updated data to be applied to the documents. |
 </div>
 
 
@@ -180,7 +180,7 @@ Perform an update operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Update status |
+| Status | `status` | string | Update status. |
 </div>
 
 ### Delete
@@ -192,10 +192,10 @@ Perform a delete operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
-| Database Name (required) | `database-name` | string | The name of the database in MongoDB |
-| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB |
-| ID | `id` | string | The ID of the document |
-| Filter | `filter` | object | The filter to delete documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned |
+| Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
+| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
+| ID | `id` | string | The ID of the document. |
+| Filter | `filter` | object | The filter to delete documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned. |
 </div>
 
 
@@ -207,7 +207,7 @@ Perform a delete operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete status |
+| Status | `status` | string | Delete status. |
 </div>
 
 ### Drop Collection
@@ -219,8 +219,8 @@ Delete the collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_COLLECTION` |
-| Database Name (required) | `database-name` | string | The name of the database in MongoDB |
-| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB |
+| Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
+| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
 </div>
 
 
@@ -232,7 +232,7 @@ Delete the collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete collection status |
+| Status | `status` | string | Delete collection status. |
 </div>
 
 ### Drop Database
@@ -244,7 +244,7 @@ Delete the database
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_DATABASE` |
-| Database Name (required) | `database-name` | string | The name of the database in MongoDB |
+| Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
 </div>
 
 
@@ -256,7 +256,7 @@ Delete the database
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete database status |
+| Status | `status` | string | Delete database status. |
 </div>
 
 ### Create Search Index
@@ -268,11 +268,11 @@ Create a search index, only works for M10 or larger clusters
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_SEARCH_INDEX` |
-| Database Name (required) | `database-name` | string | The name of the database in MongoDB |
-| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB |
-| Index Name (required) | `index-name` | string | The name of the index to be created |
-| Index Type (required) | `index-type` | string | The type of the index to be created |
-| Syntax (required) | `syntax` | object | The syntax structure of the search index, please refer to the MongoDB documentation for more information. search [here](https://www.mongodb.com/docs/atlas/atlas-search/create-index/). vectorSearch [here](https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-type/) |
+| Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
+| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
+| Index Name (required) | `index-name` | string | The name of the index to be created. |
+| Index Type (required) | `index-type` | string | The type of the index to be created. |
+| Syntax (required) | `syntax` | object | The syntax structure of the search index, please refer to the MongoDB documentation for more information. search [here](https://www.mongodb.com/docs/atlas/atlas-search/create-index/). vectorSearch [here](https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-type/). |
 </div>
 
 
@@ -284,7 +284,7 @@ Create a search index, only works for M10 or larger clusters
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create index status |
+| Status | `status` | string | Create index status. |
 </div>
 
 ### Drop Search Index
@@ -296,9 +296,9 @@ Drop a search index, only works for M10 or larger clusters
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_SEARCH_INDEX` |
-| Database Name (required) | `database-name` | string | The name of the database in MongoDB |
-| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB |
-| Index Name (required) | `index-name` | string | The name of the index to be dropped |
+| Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
+| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
+| Index Name (required) | `index-name` | string | The name of the index to be dropped. |
 </div>
 
 
@@ -310,7 +310,7 @@ Drop a search index, only works for M10 or larger clusters
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete index status |
+| Status | `status` | string | Delete index status. |
 </div>
 
 ### Vector Search
@@ -322,16 +322,16 @@ Perform a vector search operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
-| Database Name (required) | `database-name` | string | The name of the database in MongoDB |
-| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB |
-| Index Name (required) | `index-name` | string | The name of the index to be used for vector search |
-| Query Vector (required) | `query-vector` | array[number] | The query vector to be used for vector search |
-| Exact | `exact` | boolean | The exact value for vector search. If true, then ENN search will be performed, otherwise ANN search will be performed. Default to false |
-| Limit (required) | `limit` | integer | Limit the documents to be returned |
-| Number of Candidates | `num-candidates` | integer | The number of candidates to the field to be used for vector search. Default to 3 times limit |
-| Path (required) | `path` | string | The path to the field to be used for vector search |
-| Filter | `filter` | object | The filter to be used for vector search, need to first create filter vectorSearch search index, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned to be used for vector search |
-| Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned |
+| Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
+| Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
+| Index Name (required) | `index-name` | string | The name of the index to be used for vector search. |
+| Query Vector (required) | `query-vector` | array[number] | The query vector to be used for vector search. |
+| Exact | `exact` | boolean | The exact value for vector search. If true, then ENN search will be performed, otherwise ANN search will be performed. Default to false. |
+| Limit (required) | `limit` | integer | Limit the documents to be returned. |
+| Number of Candidates | `num-candidates` | integer | The number of candidates to the field to be used for vector search. Default to 3 times limit. |
+| Path (required) | `path` | string | The path to the field to be used for vector search. |
+| Filter | `filter` | object | The filter to be used for vector search, need to first create filter vectorSearch search index, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned to be used for vector search. |
+| Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned. |
 </div>
 
 
@@ -343,8 +343,8 @@ Perform a vector search operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Result](#vector-search-result) | `result` | object | Result of the vector search operation |
-| Status | `status` | string | Vector search status |
+| [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
+| Status | `status` | string | Vector search status. |
 </div>
 
 <details>
@@ -356,10 +356,10 @@ Perform a vector search operation
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Documents](#vector-search-documents) | `documents` | array | The documents returned from the vector search operation |
-| IDs | `ids` | array | The ids returned from the vector search operation |
-| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation |
-| Vectors | `vectors` | array | The vectors returned from the vector search operation |
+| [Documents](#vector-search-documents) | `documents` | array | The documents returned from the vector search operation. |
+| IDs | `ids` | array | The ids returned from the vector search operation. |
+| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
+| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
 </div>
 </details>
 

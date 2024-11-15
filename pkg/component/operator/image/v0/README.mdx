@@ -45,7 +45,7 @@ Concatenate images horizontally or vertically. All images must have the same wid
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONCAT` |
-| Images (required) | `images` | array | Input images |
+| Images (required) | `images` | array | Input images. |
 | Grid Width | `grid-width` | integer | Grid width. If `grid-width` is provided, `grid-height` will be ignored. |
 | Grid Height | `grid-height` | integer | Grid height. If `grid-height` is provided, `grid-width` will be ignored. |
 | Padding | `padding` | integer | Padding between images. If `padding` is provided, it will be applied to all four sides of the image. |
@@ -60,7 +60,7 @@ Concatenate images horizontally or vertically. All images must have the same wid
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Image | `image` | string | Output image |
+| Image | `image` | string | Output image. |
 </div>
 
 ### Crop
@@ -72,13 +72,13 @@ Crop image to the specified size.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CROP` |
-| Image (required) | `image` | string | Input image |
+| Image (required) | `image` | string | Input image. |
 | Corner Radius | `corner-radius` | integer | Radius from the corner of the image to crop the image. If `corner-radius` is provided, `circle-radius` will be ignored. If the `corner-radius` is larger than half of min(width, height), the min(width, height) will be applied to `corner-radius` . |
 | Circle Radius | `circle-radius` | integer | Radius from the center of the circle to crop the image. If `circle-radius` is provided, `corner-radius` will be ignored. If the `circle-radius` is larger than half of min(width, height), the min(width, height) will be applied to `circle-radius`. |
-| Top Offset | `top-offset` | integer | Top offset of the crop |
-| Right Offset | `right-offset` | integer | Right offset of the crop |
-| Bottom Offset | `bottom-offset` | integer | Bottom offset of the crop |
-| Left Offset | `left-offset` | integer | Left offset of the crop |
+| Top Offset | `top-offset` | integer | Top offset of the crop. |
+| Right Offset | `right-offset` | integer | Right offset of the crop. |
+| Bottom Offset | `bottom-offset` | integer | Bottom offset of the crop. |
+| Left Offset | `left-offset` | integer | Left offset of the crop. |
 </div>
 
 
@@ -90,7 +90,7 @@ Crop image to the specified size.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Image | `image` | string | Output image |
+| Image | `image` | string | Output image. |
 </div>
 
 ### Resize
@@ -102,7 +102,7 @@ Resize image to the specified size.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_RESIZE` |
-| Image (required) | `image` | string | Input image |
+| Image (required) | `image` | string | Input image. |
 | Ratio | `ratio` | number | Resize ratio (e.g., 0.5 for half size, 2 for double size) to resize the image. If ratio is provided, width and height will be ignored. |
 | Width | `width` | integer | Width of the output image. |
 | Height | `height` | integer | Height of the output image. |
@@ -117,7 +117,7 @@ Resize image to the specified size.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Image | `image` | string | Output image |
+| Image | `image` | string | Output image. |
 </div>
 
 ### Draw Classification
@@ -130,8 +130,8 @@ Draw classification result on the image.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DRAW_CLASSIFICATION` |
 | Category (required) | `category` | string | The predicted category of the input. |
-| Image (required) | `image` | string | Input image |
-| Show Score | `show-score` | boolean | Show model confidence score on each instance |
+| Image (required) | `image` | string | Input image. |
+| Show Score | `show-score` | boolean | Show model confidence score on each instance. |
 | Score (required) | `score` | number | The confidence score of the predicted category of the input. |
 </div>
 
@@ -144,7 +144,7 @@ Draw classification result on the image.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Image | `image` | string | Output image |
+| Image | `image` | string | Output image. |
 </div>
 
 ### Draw Detection
@@ -156,9 +156,9 @@ Draw detection result on the image.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DRAW_DETECTION` |
-| Image (required) | `image` | string | Input image |
+| Image (required) | `image` | string | Input image. |
 | [Objects](#draw-detection-objects) (required) | `objects` | array[object] | A list of detected objects. |
-| Show Score | `show-score` | boolean | Show model confidence score on each instance |
+| Show Score | `show-score` | boolean | Show model confidence score on each instance. |
 </div>
 
 
@@ -198,7 +198,7 @@ The detected bounding box in (left, top, width, height) format.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Image | `image` | string | Output image |
+| Image | `image` | string | Output image. |
 </div>
 
 ### Draw Keypoint
@@ -210,9 +210,9 @@ Draw keypoint result on the image.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DRAW_KEYPOINT` |
-| Image (required) | `image` | string | Input image |
+| Image (required) | `image` | string | Input image. |
 | [Objects](#draw-keypoint-objects) (required) | `objects` | array[object] | A list of keypoint objects, a keypoint object includes all the pre-defined keypoints of a detected object. |
-| Show Score | `show-score` | boolean | Show model confidence score on each instance |
+| Show Score | `show-score` | boolean | Show model confidence score on each instance. |
 </div>
 
 
@@ -264,7 +264,7 @@ The detected bounding box in (left, top, width, height) format.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Image | `image` | string | Output image |
+| Image | `image` | string | Output image. |
 </div>
 
 ### Draw OCR
@@ -276,9 +276,9 @@ Draw OCR result on the image.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DRAW_OCR` |
-| Image (required) | `image` | string | Input image |
+| Image (required) | `image` | string | Input image. |
 | [Objects](#draw-ocr-objects) (required) | `objects` | array[object] | A list of detected bounding boxes. |
-| Show Score | `show-score` | boolean | Show model confidence score on each instance |
+| Show Score | `show-score` | boolean | Show model confidence score on each instance. |
 </div>
 
 
@@ -318,7 +318,7 @@ The detected bounding box in (left, top, width, height) format.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Image | `image` | string | Output image |
+| Image | `image` | string | Output image. |
 </div>
 
 ### Draw Instance Segmentation
@@ -330,9 +330,9 @@ Draw instance segmentation result on the image.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DRAW_INSTANCE_SEGMENTATION` |
-| Image (required) | `image` | string | Input image |
+| Image (required) | `image` | string | Input image. |
 | [Objects](#draw-instance-segmentation-objects) (required) | `objects` | array[object] | A list of detected instance bounding boxes. |
-| Show Score | `show-score` | boolean | Show model confidence score on each instance |
+| Show Score | `show-score` | boolean | Show model confidence score on each instance. |
 </div>
 
 
@@ -373,7 +373,7 @@ The detected bounding box in (left, top, width, height) format.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Image | `image` | string | Output image |
+| Image | `image` | string | Output image. |
 </div>
 
 ### Draw Semantic Segmentation
@@ -385,7 +385,7 @@ Draw semantic segmentation result on the image.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DRAW_SEMANTIC_SEGMENTATION` |
-| Image (required) | `image` | string | Input image |
+| Image (required) | `image` | string | Input image. |
 | [Stuffs](#draw-semantic-segmentation-stuffs) (required) | `stuffs` | array[object] | A list of RLE binary masks. |
 </div>
 
@@ -412,7 +412,7 @@ A list of RLE binary masks.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Image | `image` | string | Output image |
+| Image | `image` | string | Output image. |
 </div>
 
 

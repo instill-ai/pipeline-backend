@@ -60,12 +60,12 @@ Retrieve the ids of the most similar items in a namespace, along with their simi
 | Task ID (required) | `task` | string | `TASK_QUERY` |
 | ID | `id` | string | The unique ID of the vector to be used as a query vector. If present, the vector parameter will be ignored. |
 | Vector (required) | `vector` | array[number] | An array of dimensions for the query vector. |
-| Top K (required) | `top-k` | integer | The number of results to return for each query |
-| Namespace | `namespace` | string | The namespace to query |
+| Top K (required) | `top-k` | integer | The number of results to return for each query. |
+| Namespace | `namespace` | string | The namespace to query. |
 | Filter | `filter` | object | The filter to apply. You can use vector metadata to limit your search. See more details <a href="https://www.pinecone.io/docs/metadata-filtering/">here</a>. |
-| Minimum Score | `min-score` | number | Exclude results whose score is below this value |
-| Include Metadata | `include-metadata` | boolean | Indicates whether metadata is included in the response as well as the IDs |
-| Include Values | `include-values` | boolean | Indicates whether vector values are included in the response |
+| Minimum Score | `min-score` | number | Exclude results whose score is below this value. |
+| Include Metadata | `include-metadata` | boolean | Indicates whether metadata is included in the response as well as the IDs. |
+| Include Values | `include-values` | boolean | Indicates whether vector values are included in the response. |
 </div>
 
 
@@ -77,8 +77,8 @@ Retrieve the ids of the most similar items in a namespace, along with their simi
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Namespace | `namespace` | string | The namespace of the query |
-| [Matches](#query-matches) | `matches` | array[object] | The matches returned for the query |
+| Namespace | `namespace` | string | The namespace of the query. |
+| [Matches](#query-matches) | `matches` | array[object] | The matches returned for the query. |
 </div>
 
 <details>
@@ -90,10 +90,10 @@ Retrieve the ids of the most similar items in a namespace, along with their simi
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| ID | `id` | string | The ID of the matched vector |
-| Metadata | `metadata` | object | Metadata |
+| ID | `id` | string | The ID of the matched vector. |
+| Metadata | `metadata` | object | Metadata. |
 | Score | `score` | number | A measure of similarity between this vector and the query vector. The higher the score, the more similar they are. |
-| Values | `values` | array | Vector data values |
+| Values | `values` | array | Vector data values. |
 </div>
 </details>
 
@@ -106,10 +106,10 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPSERT` |
-| ID (required) | `id` | string | This is the vector's unique id |
-| Values (required) | `values` | array[number] | An array of dimensions for the vector to be saved |
-| Namespace | `namespace` | string | The namespace to query |
-| Metadata | `metadata` | object | The vector metadata |
+| ID (required) | `id` | string | This is the vector's unique id. |
+| Values (required) | `values` | array[number] | An array of dimensions for the vector to be saved. |
+| Namespace | `namespace` | string | The namespace to query. |
+| Metadata | `metadata` | object | The vector metadata. |
 </div>
 
 
@@ -121,7 +121,7 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Upserted Count | `upserted-count` | integer | Number of records modified or added |
+| Upserted Count | `upserted-count` | integer | Number of records modified or added. |
 </div>
 
 
