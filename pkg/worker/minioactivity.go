@@ -70,11 +70,16 @@ func (w *worker) UploadInputsToMinioActivity(ctx context.Context, param *UploadI
 
 func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadRecipeToMinioActivityParam) error {
 	log := w.log.With(zap.String("PipelineTriggerUID", param.PipelineTriggerID))
-	log.Info("UploadReceiptToMinioActivity started")
+	log.Info("UploadRecipeToMinioActivity started")
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.PipelineTriggerID)
 	if err != nil {
 		return err
+	}
+
+	recipe := wfm.GetRecipe()
+	if recipe == nil {
+		return fmt.Errorf("recipe not loaded in memory")
 	}
 
 	recipeForUpload := &datamodel.Recipe{
@@ -111,7 +116,7 @@ func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadR
 		return err
 	}
 
-	log.Info("UploadReceiptToMinioActivity finished")
+	log.Info("UploadRecipeToMinioActivity finished")
 	return nil
 }
 

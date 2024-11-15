@@ -63,22 +63,23 @@ type MemoryStore interface {
 }
 
 type WorkflowMemory interface {
-	Set(ctx context.Context, batchIdx int, key string, value format.Value) (err error)
-	Get(ctx context.Context, batchIdx int, path string) (value format.Value, err error)
+	Set(_ context.Context, batchIdx int, key string, value format.Value) error
+	Get(_ context.Context, batchIdx int, path string) (format.Value, error)
 
-	InitComponent(ctx context.Context, batchIdx int, componentID string)
-	SetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType, value format.Value) (err error)
-	GetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType) (value format.Value, err error)
-	SetComponentStatus(ctx context.Context, batchIdx int, componentID string, t ComponentStatusType, value bool) (err error)
-	GetComponentStatus(ctx context.Context, batchIdx int, componentID string, t ComponentStatusType) (value bool, err error)
-	SetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType, value format.Value) (err error)
-	GetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType) (value format.Value, err error)
-	SetComponentErrorMessage(ctx context.Context, batchIdx int, componentID string, msg string) (err error)
+	InitComponent(_ context.Context, batchIdx int, componentID string)
+	SetComponentData(_ context.Context, batchIdx int, componentID string, t ComponentDataType, value format.Value) error
+	GetComponentData(_ context.Context, batchIdx int, componentID string, t ComponentDataType) (format.Value, error)
+	SetComponentStatus(_ context.Context, batchIdx int, componentID string, t ComponentStatusType, value bool) error
+	GetComponentStatus(_ context.Context, batchIdx int, componentID string, t ComponentStatusType) (bool, error)
+	SetPipelineData(_ context.Context, batchIdx int, t PipelineDataType, value format.Value) error
+	GetPipelineData(_ context.Context, batchIdx int, t PipelineDataType) (format.Value, error)
+	SetComponentErrorMessage(_ context.Context, batchIdx int, componentID string, msg string) error
+	GetComponentErrorMessage(_ context.Context, batchIdx int, componentID string) (string, error)
 
 	EnableStreaming()
 	IsStreaming() bool
-	SendEvent(ctx context.Context, event *Event)
-	ListenEvent(ctx context.Context) chan *Event
+	SendEvent(_ context.Context, event *Event)
+	ListenEvent(_ context.Context) chan *Event
 
 	GetBatchSize() int
 	SetRecipe(*datamodel.Recipe)
@@ -333,6 +334,21 @@ func (wfm *workflowMemory) SetComponentErrorMessage(ctx context.Context, batchId
 
 	return nil
 }
+
+func (wfm *workflowMemory) GetComponentErrorMessage(ctx context.Context, batchIdx int, componentID string) (string, error) {
+	v, err := wfm.GetComponentData(ctx, batchIdx, componentID, ComponentDataError)
+	if err != nil {
+		return "", fmt.Errorf("fetching component data: %w", err)
+	}
+
+	asStruct, err := v.ToStructValue()
+	if err != nil {
+		return "", fmt.Errorf("converting error data to struct: %w", err)
+	}
+
+	return asStruct.GetStructValue().AsMap()["message"].(string), nil
+}
+
 func (wfm *workflowMemory) GetComponentStatus(ctx context.Context, batchIdx int, componentID string, t ComponentStatusType) (v bool, err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()

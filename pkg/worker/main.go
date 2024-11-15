@@ -23,26 +23,28 @@ const TaskQueue = "pipeline-backend"
 
 // Worker interface
 type Worker interface {
-	TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error
-	SchedulePipelineWorkflow(ctx workflow.Context, param *SchedulePipelineWorkflowParam) error
+	TriggerPipelineWorkflow(workflow.Context, *TriggerPipelineWorkflowParam) error
+	SchedulePipelineWorkflow(workflow.Context, *SchedulePipelineWorkflowParam) error
 
-	ComponentActivity(ctx context.Context, param *ComponentActivityParam) error
-	OutputActivity(ctx context.Context, param *ComponentActivityParam) error
-	PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
-	LoadDAGDataActivity(ctx context.Context, param *LoadDAGDataActivityParam) (*LoadDAGDataActivityResult, error)
-	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
-	PreTriggerActivity(ctx context.Context, param *PreTriggerActivityParam) error
-	PostTriggerActivity(ctx context.Context, param *PostTriggerActivityParam) error
-	ClosePipelineActivity(ctx context.Context, workflowID string) error
+	ComponentActivity(context.Context, *ComponentActivityParam) error
+	OutputActivity(context.Context, *ComponentActivityParam) error
+	PreIteratorActivity(context.Context, *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
+	LoadDAGDataActivity(_ context.Context, workflowID string) (*LoadDAGDataActivityResult, error)
+	PostIteratorActivity(context.Context, *PostIteratorActivityParam) error
+	LoadRecipeActivity(context.Context, *LoadRecipeActivityParam) error
+	InitComponentsActivity(context.Context, *InitComponentsActivityParam) error
+	SendStartedEventActivity(_ context.Context, workflowID string) error
+	PostTriggerActivity(context.Context, *PostTriggerActivityParam) error
+	ClosePipelineActivity(_ context.Context, workflowID string) error
 	IncreasePipelineTriggerCountActivity(context.Context, recipe.SystemVariables) error
 
-	UpdatePipelineRunActivity(ctx context.Context, param *UpdatePipelineRunActivityParam) error
-	UpsertComponentRunActivity(ctx context.Context, param *UpsertComponentRunActivityParam) error
-	UploadInputsToMinioActivity(ctx context.Context, param *UploadInputsToMinioActivityParam) error
-	UploadOutputsToMinioActivity(ctx context.Context, param *UploadOutputsToMinioActivityParam) error
-	UploadRecipeToMinioActivity(ctx context.Context, param *UploadRecipeToMinioActivityParam) error
-	UploadComponentInputsActivity(ctx context.Context, param *ComponentActivityParam) error
-	UploadComponentOutputsActivity(ctx context.Context, param *ComponentActivityParam) error
+	UpdatePipelineRunActivity(context.Context, *UpdatePipelineRunActivityParam) error
+	UpsertComponentRunActivity(context.Context, *UpsertComponentRunActivityParam) error
+	UploadInputsToMinioActivity(context.Context, *UploadInputsToMinioActivityParam) error
+	UploadOutputsToMinioActivity(context.Context, *UploadOutputsToMinioActivityParam) error
+	UploadRecipeToMinioActivity(context.Context, *UploadRecipeToMinioActivityParam) error
+	UploadComponentInputsActivity(context.Context, *ComponentActivityParam) error
+	UploadComponentOutputsActivity(context.Context, *ComponentActivityParam) error
 }
 
 // worker represents resources required to run Temporal workflow and activity
