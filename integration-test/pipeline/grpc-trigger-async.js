@@ -22,7 +22,7 @@ export function CheckTrigger(data) {
           id: randomString(10),
           description: randomString(50),
         },
-        constant.simplePipelineWithJSONRecipe
+        constant.simplePipelineWithYAMLRecipe
       );
 
       check(

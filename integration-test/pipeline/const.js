@@ -80,32 +80,6 @@ export const paramsHTTPWithJwt = {
 };
 
 
-export const simplePipelineWithJSONRecipe = {
-  recipe: {
-    version:  "v1beta",
-    variable: {
-      input: {
-        title: "Input",
-        format: "string"
-      }
-    },
-    output: {
-      answer: {
-        title: "Answer",
-        value: "${b01.output.data}"
-      }
-    },
-    component: {
-      b01: {
-        type: "base64",
-        task: "TASK_ENCODE",
-        input: {
-          data: "${variable.input}"
-        }
-      }
-    },
-  },
-};
 
 const yamlRecipe = `
 version: v1beta
