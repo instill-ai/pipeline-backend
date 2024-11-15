@@ -8,14 +8,14 @@ import (
 
 	_ "embed"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
 const (
-	taskSubsampleVideo       string = "TASK_SUBSAMPLE_VIDEO"
-	taskSubsampleVideoFrames string = "TASK_SUBSAMPLE_VIDEO_FRAMES"
+	taskSegment       = "TASK_SEGMENT"
+	taskSubsample     = "TASK_SUBSAMPLE"
+	taskExtractAudio  = "TASK_EXTRACT_AUDIO"
+	taskExtractFrames = "TASK_EXTRACT_FRAMES"
 )
 
 var (
@@ -33,8 +33,7 @@ type component struct {
 
 type execution struct {
 	base.ComponentExecution
-
-	execute func(*structpb.Struct) (*structpb.Struct, error)
+	execute func(context.Context, *base.Job) error
 }
 
 func Init(bc base.Component) *component {
@@ -54,10 +53,14 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	e := &execution{ComponentExecution: x}
 
 	switch x.Task {
-	case taskSubsampleVideo:
-		e.execute = subsampleVideo
-	case taskSubsampleVideoFrames:
-		e.execute = subsampleVideoFrames
+	case taskSegment:
+		e.execute = segment
+	case taskSubsample:
+		e.execute = subsample
+	case taskExtractAudio:
+		e.execute = extractAudio
+	case taskExtractFrames:
+		e.execute = extractFrames
 	default:
 		return nil, fmt.Errorf("%s task is not supported", x.Task)
 	}
@@ -66,5 +69,5 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 }
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-	return base.SequentialExecutor(ctx, jobs, e.execute)
+	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }

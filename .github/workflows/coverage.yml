@@ -22,7 +22,6 @@ jobs:
         ports:
           - 5432:5432
     steps:
-
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -37,6 +36,11 @@ jobs:
           go-version: ${{ env.GOLANG_VERSION }}
 
       - uses: actions/checkout@v3
+
+      - uses: FedericoCarboni/setup-ffmpeg@v3
+        id: setup-ffmpeg
+        with:
+          ffmpeg-version: 7.0.2
 
       - name: Install onnxruntime library and headers
         run: |

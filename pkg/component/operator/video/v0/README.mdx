@@ -5,10 +5,12 @@ draft: false
 description: "Learn about how to set up a VDP Video component https://github.com/instill-ai/instill-core"
 ---
 
-The Video component is an operator component that allows users to extract and manipulate video from different sources.
+The Video component is an operator component that allows users to operate video data.
 It can carry out the following tasks:
-- [Subsample Video](#subsample-video)
-- [Subsample Video Frames](#subsample-video-frames)
+- [Segment](#segment)
+- [Subsample](#subsample)
+- [Extract Audio](#extract-audio)
+- [Extract Frames](#extract-frames)
 
 
 
@@ -29,19 +31,60 @@ The component definition and tasks are defined in the [definition.json](https://
 
 ## Supported Tasks
 
-### Subsample Video
+### Segment
 
-Subsample video into a new video
+Split a video into multiple shorter clips based on user-defined time segments. This task takes a video input and an optional list of time ranges, then produces an array of video segments corresponding to those ranges. Each segment becomes a separate video clip, enabling precise extraction of specific portions from the original content for targeted use or analysis.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_SUBSAMPLE_VIDEO` |
-| Video (required) | `video` | string | Base64 encoded video |
-| FPS (required) | `fps` | number | Frames per second |
-| Start Time | `start-time` | string | Start time in seconds, format is hh:mm:ss |
-| Duration | `duration` | string | Duration in seconds, format is hh:mm:ss |
+| Task ID (required) | `task` | string | `TASK_SEGMENT` |
+| Video (required) | `video` | string | The source video file to be segmented. This video will be split into multiple clips based on the specified time segments. |
+| [Segments](#segment-segments) | `segments` | array[object] | An array of time segments defining the portions of the video to be extracted. Each segment specifies a start and end time, and the task will create separate video clips for each of these segments. If not provided, the entire video will be treated as a single segment. |
+</div>
+
+
+<details>
+<summary> Input Objects in Segment</summary>
+
+<h4 id="segment-segments">Segments</h4>
+
+An array of time segments defining the portions of the video to be extracted. Each segment specifies a start and end time, and the task will create separate video clips for each of these segments. If not provided, the entire video will be treated as a single segment.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| End Time | `end-time` | number | The number of seconds from the beginning of the audio file to the end of this segment.  |
+| Start Time | `start-time` | number | The number of seconds from the beginning of the audio file to the start of this segment.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Videos | `video-segments` | array[string] | An array of video clips resulting from the segmentation process. Each element in this array corresponds to one of the input segments and contains the video data for that specific time range from the original video. |
+</div>
+
+### Subsample
+
+Reduce video file size by adjusting frame rate, bitrate, and dimensions while maintaining visual content. This task optimizes storage and bandwidth requirements with minimal quality loss.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SUBSAMPLE` |
+| Video (required) | `video` | string | The source video file to be subsampled. |
+| FPS | `fps` | number | The target frame rate for the subsampled video, in frames per second. Determines the number of frames in the output video. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height. |
+| Video Bitrate | `video-bitrate` | number | The target video bitrate for the subsampled video, in bits per second. Controls the output video's data rate, affecting file size and quality. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height. |
+| Width | `width` | integer | The width of the subsampled video, in pixels. Controls the output video's horizontal resolution. If only width is provided, height is auto-calculated to maintain aspect ratio. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height. |
+| Audio Bitrate | `audio-bitrate` | number | The target audio bitrate for the subsampled video, in bits per second. Controls the output video's audio data rate, affecting file size and quality. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height. |
+| Height | `height` | integer | The height of the subsampled video, in pixels. Controls the output video's vertical resolution. If only height is provided, width is auto-calculated to maintain aspect ratio. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height. |
 </div>
 
 
@@ -53,22 +96,19 @@ Subsample video into a new video
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Video | `video` | string | Base64 encoded sub-sampled video |
+| Video | `video` | string | The subsampled video data, processed according to the specified input parameters. Maintains the content of the original video with potentially reduced file size due to changes in frame rate, bitrate, or dimensions. |
 </div>
 
-### Subsample Video Frames
+### Extract Audio
 
-Subsample video into frames
+Extract the audio track from a video file, creating a standalone audio output. This task takes a video input and isolates its sound component, removing all visual elements. The resulting audio data is provided as a single output, suitable for further audio processing, analysis, or use in audio-only applications.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_SUBSAMPLE_VIDEO_FRAMES` |
-| Video (required) | `video` | string | Base64 encoded video |
-| FPS (required) | `fps` | number | Frames per second |
-| Start Time | `start-time` | string | Start time in seconds, format is hh:mm:ss |
-| Duration | `duration` | string | Duration in seconds, format is hh:mm:ss |
+| Task ID (required) | `task` | string | `TASK_EXTRACT_AUDIO` |
+| Video (required) | `video` | string | The source video file from which the audio will be extracted. The video's visual content will be discarded, and only the audio track will be processed. |
 </div>
 
 
@@ -80,7 +120,33 @@ Subsample video into frames
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Frames | `frames` | array[string] | Base64 encoded sub-sampled frames |
+| Audio | `audio` | string | The extracted audio data from the input video. This is a standalone audio file containing only the sound component of the original video, with all visual elements removed. The audio format may vary depending on the original video's audio codec and the extraction process. |
+</div>
+
+### Extract Frames
+
+Extract image frames from a video at regular intervals or specified timestamps. This task takes a video input and either an interval value or a list of timestamps. It then produces an array of image frames corresponding to these specifications, allowing for precise capture of key moments or creation of a sequence of still images from the video content.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_EXTRACT_FRAMES` |
+| Video (required) | `video` | string | The source video file from which frames will be extracted. |
+| Interval | `interval` | number | The time interval between extracted frames, in seconds. If specified, frames will be extracted at regular intervals throughout the video. This parameter is mutually exclusive with `timestamps`. |
+| Timestamps | `timestamps` | array | An array of specific timestamps (in seconds) at which to extract frames from the video. If provided, frames will be extracted only at these exact times. This parameter is mutually exclusive with `interval`. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Frames | `frames` | array[string] | Extracted video frames |
 </div>
 
 

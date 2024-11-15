@@ -1,0 +1,28 @@
+{
+  "segments": [
+    {
+      "start-time": 0,
+      "end-time": 10
+    },
+    {
+      "start-time": 10,
+      "end-time": 20
+    },
+    {
+      "start-time": 20,
+      "end-time": 30
+    },
+    {
+      "start-time": 30,
+      "end-time": 40
+    },
+    {
+      "start-time": 40,
+      "end-time": 50
+    },
+    {
+      "start-time": 50,
+      "end-time": 60
+    }
+  ]
+}
