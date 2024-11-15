@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "properties": {
     "api-key": {
-      "description": "Fill in the API key for the Elasticsearch instance (please use encoded one)",
+      "description": "Fill in the API key for the Elasticsearch instance (please use encoded one).",
       "instillUpstreamTypes": [
         "reference"
       ],
@@ -16,7 +16,7 @@
       "type": "string"
     },
     "cloud-id": {
-      "description": "Fill in the Cloud ID for the Elasticsearch instance",
+      "description": "Fill in the Cloud ID for the Elasticsearch instance.",
       "instillUpstreamTypes": [
         "reference"
       ],

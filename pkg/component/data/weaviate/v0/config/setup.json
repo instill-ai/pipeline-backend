@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "properties": {
     "api-key": {
-      "description": "Fill in your Weaviate API key. Please refer to clusters in Weaviate Console",
+      "description": "Fill in your Weaviate API key. Please refer to clusters in Weaviate Console.",
       "instillUpstreamTypes": [
         "reference"
       ],
@@ -16,7 +16,7 @@
       "type": "string"
     },
     "url": {
-      "description": "Fill in your Weaviate base URL without https:// or http://. Please refer to clusters in Weaviate Console",
+      "description": "Fill in your Weaviate base URL without https:// or http://. Please refer to clusters in Weaviate Console.",
       "instillUpstreamTypes": [
         "value"
       ],

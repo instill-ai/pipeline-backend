@@ -25,7 +25,7 @@
       "type": "string"
     },
     "username": {
-      "description": "Fill in your account username",
+      "description": "Fill in your account username.",
       "instillUpstreamTypes": [
         "value",
         "reference"
@@ -38,7 +38,7 @@
       "type": "string"
     },
     "password": {
-      "description": "Fill in your account password",
+      "description": "Fill in your account password.",
       "instillUpstreamTypes": [
         "reference"
       ],
@@ -51,7 +51,7 @@
       "type": "string"
     },
     "database-name": {
-      "description": "Fill in the name of your database",
+      "description": "Fill in the name of your database.",
       "instillUpstreamTypes": [
         "value",
         "reference"
@@ -64,7 +64,7 @@
       "type": "string"
     },
     "host": {
-      "description": "Fill in the host of your database",
+      "description": "Fill in the host of your database.",
       "instillUpstreamTypes": [
         "value",
         "reference"
@@ -77,7 +77,7 @@
       "type": "string"
     },
     "port": {
-      "description": "Fill in the port of your database",
+      "description": "Fill in the port of your database.",
       "instillUpstreamTypes": [
         "value",
         "reference"
@@ -91,14 +91,14 @@
       "type": "number"
     },
     "ssl-tls": {
-      "description": "Enable SSL / TLS",
+      "description": "Enable SSL / TLS.",
       "instillUIOrder": 6,
       "oneOf": [
         {
           "properties": {
             "ssl-tls-type": {
               "const": "NO TLS",
-              "description": "Choose the type of SSL / TLS",
+              "description": "Choose the type of SSL / TLS.",
               "instillUIOrder": 0,
               "order": 0,
               "title": "SSL / TLS Type",
@@ -114,14 +114,14 @@
           "properties": {
             "ssl-tls-type": {
               "const": "TLS",
-              "description": "Choose the type of SSL / TLS",
+              "description": "Choose the type of SSL / TLS.",
               "instillUIOrder": 0,
               "order": 0,
               "title": "SSL / TLS Type",
               "type": "string"
             },
             "ssl-tls-ca": {
-              "description": "Base64 encoded CA certificate file",
+              "description": "Base64 encoded CA certificate file.",
               "instillShortDescription": "Base64 encoded CA certificate file",
               "instillUpstreamTypes": [
                 "reference"
@@ -145,14 +145,14 @@
           "properties": {
             "ssl-tls-type": {
               "const": "mTLS",
-              "description": "Choose the type of SSL / TLS",
+              "description": "Choose the type of SSL / TLS.",
               "instillUIOrder": 0,
               "order": 0,
               "title": "SSL / TLS Type",
               "type": "string"
             },
             "ssl-tls-ca": {
-              "description": "Base64 encoded CA certificate file",
+              "description": "Base64 encoded CA certificate file.",
               "instillShortDescription": "Base64 encoded CA certificate file",
               "instillUpstreamTypes": [
                 "reference"
@@ -166,7 +166,7 @@
               "type": "string"
             },
             "ssl-tls-cert": {
-              "description": "Base64 encoded client certificate file",
+              "description": "Base64 encoded client certificate file.",
               "instillShortDescription": "Base64 encoded client certificate file",
               "instillUpstreamTypes": [
                 "reference"
@@ -180,7 +180,7 @@
               "type": "string"
             },
             "ssl-tls-key": {
-              "description": "Base64 encoded client key file",
+              "description": "Base64 encoded client key file.",
               "instillShortDescription": "Base64 encoded client key file",
               "instillUpstreamTypes": [
                 "reference"

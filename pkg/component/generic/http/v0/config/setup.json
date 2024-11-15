@@ -3,14 +3,14 @@
   "additionalProperties": false,
   "properties": {
     "authentication": {
-      "description": "Authentication method to use for the REST API",
+      "description": "Authentication method to use for the REST API.",
       "instillUIOrder": 0,
       "oneOf": [
         {
           "properties": {
             "auth-type": {
               "const": "NO_AUTH",
-              "description": "No Authentication",
+              "description": "No Authentication.",
               "instillUIOrder": 0,
               "order": 0,
               "title": "Auth Type",
@@ -26,14 +26,14 @@
           "properties": {
             "auth-type": {
               "const": "BASIC_AUTH",
-              "description": "Basic auth",
+              "description": "Basic auth.",
               "instillUIOrder": 0,
               "order": 0,
               "title": "Auth Type",
               "type": "string"
             },
             "password": {
-              "description": "Password for Basic auth",
+              "description": "Password for Basic auth.",
               "instillUpstreamTypes": [
                 "reference"
               ],
@@ -47,7 +47,7 @@
               "type": "string"
             },
             "username": {
-              "description": "Username for Basic Auth",
+              "description": "Username for Basic Auth.",
               "instillUpstreamTypes": [
                 "value"
               ],
@@ -89,7 +89,7 @@
             },
             "auth-type": {
               "const": "API_KEY",
-              "description": "API key authentication",
+              "description": "API key authentication.",
               "instillUIOrder": 0,
               "order": 0,
               "type": "string",
@@ -97,7 +97,7 @@
             },
             "key": {
               "default": "X-API-Key",
-              "description": "Key name for API key authentication",
+              "description": "Key name for API key authentication.",
               "instillUpstreamTypes": [
                 "value"
               ],
@@ -110,7 +110,7 @@
               "type": "string"
             },
             "value": {
-              "description": "Key value for API key authentication",
+              "description": "Key value for API key authentication.",
               "instillUpstreamTypes": [
                 "reference"
               ],
@@ -136,14 +136,14 @@
           "properties": {
             "auth-type": {
               "const": "BEARER_TOKEN",
-              "description": "Bearer token authentication",
+              "description": "Bearer token authentication.",
               "instillUIOrder": 0,
               "order": 0,
               "title": "Auth Type",
               "type": "string"
             },
             "token": {
-              "description": "Bearer token",
+              "description": "Bearer token.",
               "instillUpstreamTypes": [
                 "reference"
               ],

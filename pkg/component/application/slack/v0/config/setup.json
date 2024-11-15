@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "properties": {
     "bot-token": {
-      "description": "Token associated to the application bot",
+      "description": "Token associated to the application bot.",
       "instillUpstreamTypes": [
         "reference"
       ],
@@ -16,7 +16,7 @@
       "type": "string"
     },
     "user-token": {
-      "description": "Token to act on behalf of a Slack user",
+      "description": "Token to act on behalf of a Slack user.",
       "instillUpstreamTypes": [
         "reference"
       ],

@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "properties": {
     "api-key": {
-      "description": "Fill in your Chroma API key",
+      "description": "Fill in your Chroma API key.",
       "instillUpstreamTypes": [
         "reference"
       ],
@@ -16,7 +16,7 @@
       "type": "string"
     },
     "url": {
-      "description": "Fill in your Chroma hosted public URL endpoint with port, e.g http://1.2.3:8000",
+      "description": "Fill in your Chroma hosted public URL endpoint with port, e.g http://1.2.3:8000.",
       "instillUpstreamTypes": [
         "value"
       ],

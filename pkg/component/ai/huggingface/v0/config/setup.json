@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "properties": {
     "api-key": {
-      "description": "Fill in your Hugging face API token. To find your token, visit <a href=\"https://huggingface.co/settings/tokens\">here</a>",
+      "description": "Fill in your Hugging face API token. To find your token, visit <a href=\"https://huggingface.co/settings/tokens\">here</a>.",
       "instillUpstreamTypes": [
         "reference"
       ],

@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "properties": {
     "token": {
-      "description": "Fill in your HubSpot private app access token. Go here for [more information](https://developers.hubspot.com/docs/api/private-apps)",
+      "description": "Fill in your HubSpot private app access token. Go here for [more information](https://developers.hubspot.com/docs/api/private-apps).",
       "instillUpstreamTypes": [
         "reference"
       ],

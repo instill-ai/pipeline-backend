@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "properties": {
     "api-key": {
-      "description": "Fill in your Qdrant API key. Please refer to clusters in Qdrant data access control",
+      "description": "Fill in your Qdrant API key. Please refer to clusters in Qdrant data access control.",
       "instillUpstreamTypes": [
         "reference"
       ],
@@ -16,7 +16,7 @@
       "type": "string"
     },
     "url": {
-      "description": "Fill in your Qdrant URL endpoint. Please refer to clusters in Qdrant cluster details",
+      "description": "Fill in your Qdrant URL endpoint. Please refer to clusters in Qdrant cluster details.",
       "instillUpstreamTypes": [
         "value"
       ],
