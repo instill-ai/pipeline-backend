@@ -48,8 +48,6 @@ type TriggerPipelineWorkflowParam struct {
 	Mode            mgmtpb.Mode
 	TriggerFromAPI  bool
 	WorkerUID       uuid.UUID
-	// Namespace is the namespace of the requester of the pipeline.
-	Namespace resource.Namespace
 }
 
 type SchedulePipelineWorkflowParam struct {
@@ -82,8 +80,6 @@ type ComponentActivityParam struct {
 	Task            string
 	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 	Streaming       bool
-	// Namespace is the namespace of the requester of the pipeline.
-	Namespace resource.Namespace
 }
 
 type PreIteratorActivityParam struct {
@@ -217,7 +213,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	var ownerType mgmtpb.OwnerType
-	switch param.SystemVariables.PipelineOwnerType {
+	switch param.SystemVariables.PipelineNamespace.NsType {
 	case resource.Organization:
 		ownerType = mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION
 	case resource.User:
@@ -227,7 +223,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	dataPoint := utils.PipelineUsageMetricData{
-		OwnerUID:           param.SystemVariables.PipelineOwnerUID.String(),
+		OwnerUID:           param.SystemVariables.PipelineNamespace.NsUID.String(),
 		OwnerType:          ownerType,
 		UserUID:            param.SystemVariables.PipelineUserUID.String(),
 		UserType:           mgmtpb.OwnerType_OWNER_TYPE_USER,
@@ -432,7 +428,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	if param.TriggerFromAPI {
 		if err := workflow.ExecuteActivity(ctx, w.OutputActivity, &ComponentActivityParam{
 			WorkflowID:      workflowID,
-			Namespace:       param.Namespace,
 			SystemVariables: param.SystemVariables,
 		}).Get(ctx, nil); err != nil {
 			return err
@@ -699,7 +694,7 @@ func (w *worker) uploadFileAndReplaceWithURL(ctx context.Context, param *Compone
 
 func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *ComponentActivityParam, value *format.File) (string, error) {
 	artifactClient := w.artifactPublicServiceClient
-	ns := param.Namespace
+	ns := param.SystemVariables.PipelineNamespace
 
 	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
 
@@ -1163,7 +1158,7 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 	// Load secrets and connections
 	pt := ""
 	var nsSecrets []*datamodel.Secret
-	ownerPermalink := fmt.Sprintf("%s/%s", param.SystemVariables.PipelineOwnerType, param.SystemVariables.PipelineOwnerUID)
+	ownerPermalink := fmt.Sprintf("%s/%s", param.SystemVariables.PipelineNamespace.NsType, param.SystemVariables.PipelineNamespace.NsUID)
 	for {
 		var secrets []*datamodel.Secret
 		secrets, _, pt, err = w.repository.ListNamespaceSecrets(ctx, ownerPermalink, 100, pt, filtering.Filter{})
@@ -1578,8 +1573,6 @@ func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *Schedul
 			PipelineUID:          param.PipelineUID,
 			PipelineReleaseID:    param.PipelineReleaseID,
 			PipelineReleaseUID:   param.PipelineReleaseUID,
-			PipelineOwnerType:    param.Namespace.NsType,
-			PipelineOwnerUID:     param.Namespace.NsUID,
 			PipelineUserUID:      param.Namespace.NsUID,
 			PipelineRequesterUID: param.Namespace.NsUID,
 			ExpiryRuleTag:        param.ExpiryRuleTag,

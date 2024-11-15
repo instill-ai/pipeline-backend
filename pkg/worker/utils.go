@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
@@ -108,9 +109,9 @@ func getHeaderAuthorization(vars map[string]any) string {
 	return ""
 }
 func getInstillUserUID(vars map[string]any) string {
-	return vars["__PIPELINE_USER_UID"].(string)
+	return vars["__PIPELINE_USER_UID"].(uuid.UUID).String()
 }
 
 func getInstillRequesterUID(vars map[string]any) string {
-	return vars["__PIPELINE_REQUESTER_UID"].(string)
+	return vars["__PIPELINE_REQUESTER_UID"].(uuid.UUID).String()
 }

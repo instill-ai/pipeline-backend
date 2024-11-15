@@ -14,14 +14,15 @@ import (
 
 // SystemVariables contain information about a pipeline trigger.
 type SystemVariables struct {
-	PipelineTriggerID  string                 `json:"__PIPELINE_TRIGGER_ID"`
-	PipelineID         string                 `json:"__PIPELINE_ID"`
-	PipelineUID        uuid.UUID              `json:"__PIPELINE_UID"`
-	PipelineReleaseID  string                 `json:"__PIPELINE_RELEASE_ID"`
-	PipelineReleaseUID uuid.UUID              `json:"__PIPELINE_RELEASE_UID"`
-	PipelineOwnerType  resource.NamespaceType `json:"__PIPELINE_OWNER_TYPE"`
-	PipelineOwnerUID   uuid.UUID              `json:"__PIPELINE_OWNER_UID"`
-	ExpiryRuleTag      string                 `json:"__EXPIRY_RULE_TAG"`
+	PipelineTriggerID  string    `json:"__PIPELINE_TRIGGER_ID"`
+	PipelineID         string    `json:"__PIPELINE_ID"`
+	PipelineUID        uuid.UUID `json:"__PIPELINE_UID"`
+	PipelineReleaseID  string    `json:"__PIPELINE_RELEASE_ID"`
+	PipelineReleaseUID uuid.UUID `json:"__PIPELINE_RELEASE_UID"`
+	ExpiryRuleTag      string    `json:"__EXPIRY_RULE_TAG"`
+
+	// PipelineNamespace is the namespace of the requester of the pipeline.
+	PipelineNamespace resource.Namespace `json:"__PIPELINE_NAMESPACE"`
 
 	// PipelineUserUID is the authenticated user executing a pipeline.
 	PipelineUserUID uuid.UUID `json:"__PIPELINE_USER_UID"`

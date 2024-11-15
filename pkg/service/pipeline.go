@@ -1375,16 +1375,14 @@ func (s *service) triggerPipeline(
 				PipelineUID:          pipelineUID,
 				PipelineReleaseID:    pipelineReleaseID,
 				PipelineReleaseUID:   pipelineReleaseUID,
-				PipelineOwnerType:    ns.NsType,
-				PipelineOwnerUID:     ns.NsUID,
 				PipelineUserUID:      uuid.FromStringOrNil(userUID),
 				PipelineRequesterUID: uuid.FromStringOrNil(requesterUID),
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 				ExpiryRuleTag:        expiryRuleTag,
+				PipelineNamespace:    ns,
 			},
 			Mode:      mgmtpb.Mode_MODE_SYNC,
 			WorkerUID: s.workerUID,
-			Namespace: ns,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1462,17 +1460,15 @@ func (s *service) triggerAsyncPipeline(
 				PipelineUID:          pipelineUID,
 				PipelineReleaseID:    pipelineReleaseID,
 				PipelineReleaseUID:   pipelineReleaseUID,
-				PipelineOwnerType:    ns.NsType,
-				PipelineOwnerUID:     ns.NsUID,
 				PipelineUserUID:      uuid.FromStringOrNil(userUID),
 				PipelineRequesterUID: uuid.FromStringOrNil(requesterUID),
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 				ExpiryRuleTag:        expiryRuleTag,
+				PipelineNamespace:    ns,
 			},
 			Mode:           mgmtpb.Mode_MODE_ASYNC,
 			TriggerFromAPI: true,
 			WorkerUID:      s.workerUID,
-			Namespace:      ns,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
