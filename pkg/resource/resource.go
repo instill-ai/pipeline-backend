@@ -60,9 +60,9 @@ const (
 // doesn't matter whether the namespace belongs to a user or organization. This
 // refactor should be completed by August 2024.
 type Namespace struct {
-	NsType NamespaceType
-	NsID   string
-	NsUID  uuid.UUID
+	NsType NamespaceType `json:"__NamespaceType"`
+	NsID   string        `json:"__NamespaceID"`
+	NsUID  uuid.UUID     `json:"__NamespaceUID"`
 }
 
 func (ns Namespace) Name() string {
