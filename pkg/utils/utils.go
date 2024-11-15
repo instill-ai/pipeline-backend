@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"reflect"
 	"strings"
 	"time"
 
@@ -172,4 +173,19 @@ func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *stru
 		},
 		time.Now(),
 	)
+}
+
+func StructToMap(s interface{}, tag string) map[string]interface{} {
+	out := make(map[string]interface{})
+	v := reflect.ValueOf(s)
+	t := v.Type()
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		value := v.Field(i).Interface()
+		if jsonTag := field.Tag.Get(tag); jsonTag != "" {
+			out[jsonTag] = value
+		}
+	}
+	return out
 }

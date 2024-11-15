@@ -656,7 +656,7 @@ func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityPar
 			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
 
-		updatedOutput := w.uploadFileAndReplaceURL(ctx, param, &output)
+		updatedOutput := w.uploadFileAndReplaceWithURL(ctx, param, &output)
 
 		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutput, updatedOutput)
 		if err != nil {
@@ -667,7 +667,7 @@ func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityPar
 	logger.Info("OutputActivity completed")
 	return nil
 }
-func (w *worker) uploadFileAndReplaceURL(ctx context.Context, param *ComponentActivityParam, value *format.Value) format.Value {
+func (w *worker) uploadFileAndReplaceWithURL(ctx context.Context, param *ComponentActivityParam, value *format.Value) format.Value {
 	logger, _ := logger.GetZapLogger(ctx)
 	if value == nil {
 		return nil
@@ -683,13 +683,13 @@ func (w *worker) uploadFileAndReplaceURL(ctx context.Context, param *ComponentAc
 	case data.Array:
 		newArray := make(data.Array, len(v))
 		for i, item := range v {
-			newArray[i] = w.uploadFileAndReplaceURL(ctx, param, &item)
+			newArray[i] = w.uploadFileAndReplaceWithURL(ctx, param, &item)
 		}
 		return newArray
 	case data.Map:
 		newMap := make(data.Map)
 		for k, v := range v {
-			newMap[k] = w.uploadFileAndReplaceURL(ctx, param, &v)
+			newMap[k] = w.uploadFileAndReplaceWithURL(ctx, param, &v)
 		}
 		return newMap
 	default:
@@ -701,15 +701,7 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 	artifactClient := w.artifactPublicServiceClient
 	ns := param.Namespace
 
-	jsonBytes, err := json.Marshal(param.SystemVariables)
-	if err != nil {
-		return "", fmt.Errorf("marshal system variables: %w", err)
-	}
-
-	var sysVarJSON map[string]interface{}
-	if err := json.Unmarshal(jsonBytes, &sysVarJSON); err != nil {
-		return "", fmt.Errorf("unmarshal system variables: %w", err)
-	}
+	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(sysVarJSON))
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-resty/resty/v2"
+	"github.com/gofrs/uuid"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data/client"
@@ -35,8 +36,8 @@ var fileGetters = map[string]func(*fileData) (format.Value, error){
 	"base64":       func(f *fileData) (format.Value, error) { return f.Base64() },
 }
 
-// Pattern matches: v1alpha/namespaces/{namespace}/blob-urls/{uid}
-var minioURLPattern = regexp.MustCompile(`/v1alpha/namespaces/([^/]+)/blob-urls/([^/]+)$`)
+// Pattern matches: https://{domain}/v1alpha/namespaces/{namespace}/blob-urls/{uid}
+var minioURLPattern = regexp.MustCompile(`https?://[^/]+/v1alpha/namespaces/[^/]+/blob-urls/([^/]+)$`)
 
 type fileData struct {
 	raw         []byte
@@ -66,15 +67,15 @@ func convertURLToBytes(url string) (b []byte, contentType string, filename strin
 		return convertDataURIToBytes(url)
 	}
 	if matches := minioURLPattern.FindStringSubmatch(url); matches != nil {
-		if len(matches) < 3 {
+		if len(matches) < 2 {
 			return nil, "", "", fmt.Errorf("invalid blob storage url: %s", url)
 		}
-		return fetchFileFromBlobStorage(matches[2])
+		return fetchFileFromBlobStorage(uuid.FromStringOrNil(matches[1]))
 	}
 	return fetchExternalURL(url)
 }
 
-func fetchFileFromBlobStorage(urlUID string) (b []byte, contentType string, filename string, err error) {
+func fetchFileFromBlobStorage(urlUID uuid.UUID) (b []byte, contentType string, filename string, err error) {
 	ctx := context.Background()
 	logger, _ := logger.GetZapLogger(ctx)
 	clients, err := client.GetClients(ctx, logger)
@@ -85,7 +86,7 @@ func fetchFileFromBlobStorage(urlUID string) (b []byte, contentType string, file
 
 	artifactClient := clients.ArtifactPrivateServiceClient
 	objectURLRes, err := artifactClient.GetObjectURL(ctx, &artifactpb.GetObjectURLRequest{
-		Uid: urlUID,
+		Uid: urlUID.String(),
 	})
 	if err != nil {
 		return nil, "", "", err
