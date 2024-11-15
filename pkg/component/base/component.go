@@ -460,9 +460,11 @@ func formatDataSpec(dataSpec *structpb.Struct) (*structpb.Struct, error) {
 
 type EventJSON map[string]Event
 type Event struct {
-	MessageSchema   any   `json:"messageSchema"`
-	SetupSchema     any   `json:"setupSchema"`
-	MessageExamples []any `json:"messageExamples"`
+	Title           string `json:"title"`
+	Description     string `json:"description"`
+	ConfigSchema    any    `json:"configSchema"`
+	MessageSchema   any    `json:"messageSchema"`
+	MessageExamples []any  `json:"messageExamples"`
 }
 
 func generateEventSpecs(eventJSONBytes []byte) (map[string]*pb.EventSpecification, error) {
@@ -474,13 +476,22 @@ func generateEventSpecs(eventJSONBytes []byte) (map[string]*pb.EventSpecificatio
 		return nil, err
 	}
 	for t, e := range j {
-		s, err := json.Marshal(e.MessageSchema)
+		c, err := json.Marshal(e.ConfigSchema)
+		if err != nil {
+			return nil, err
+		}
+		pbConfigSchema := &structpb.Struct{}
+		err = protojson.Unmarshal(c, pbConfigSchema)
 		if err != nil {
 			return nil, err
 		}
 
+		m, err := json.Marshal(e.MessageSchema)
+		if err != nil {
+			return nil, err
+		}
 		pbMessageSchema := &structpb.Struct{}
-		err = protojson.Unmarshal(s, pbMessageSchema)
+		err = protojson.Unmarshal(m, pbMessageSchema)
 		if err != nil {
 			return nil, err
 		}
@@ -498,6 +509,9 @@ func generateEventSpecs(eventJSONBytes []byte) (map[string]*pb.EventSpecificatio
 			pbMessageExamples = append(pbMessageExamples, pbMessageExample)
 		}
 		specs[t] = &pb.EventSpecification{
+			Title:           e.Title,
+			Description:     e.Description,
+			ConfigSchema:    pbConfigSchema,
 			MessageSchema:   pbMessageSchema,
 			MessageExamples: pbMessageExamples,
 		}
