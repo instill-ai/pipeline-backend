@@ -274,7 +274,7 @@ func (p *PipelineRelease) AfterFind(tx *gorm.DB) (err error) {
 type Variable struct {
 	Title       string   `json:"title,omitempty" yaml:"title,omitempty"`
 	Description string   `json:"description,omitempty" yaml:"description,omitempty"`
-	Format      string   `json:"format,omitempty" yaml:"format,omitempty"`
+	Format      string   `json:"instillFormat,omitempty" yaml:"format,omitempty"`
 	Listen      []string `json:"listen,omitempty" yaml:"listen,omitempty"`
 	Default     any      `json:"default,omitempty" yaml:"default,omitempty"`
 }
