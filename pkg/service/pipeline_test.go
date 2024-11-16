@@ -67,17 +67,19 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 
 	workerUID, _ := uuid.NewV4()
 	service := NewService(
-		repo,
-		redisClient,
-		temporalClient,
-		aclClient,
-		converter,
-		mgmtPrivateClient,
-		nil,
-		compStore,
-		memory.NewMemoryStore(),
-		workerUID,
-		nil,
+		ServiceConfig{
+			Repository:               repo,
+			RedisClient:              redisClient,
+			TemporalClient:           temporalClient,
+			ACLClient:                aclClient,
+			Converter:                converter,
+			MgmtPrivateServiceClient: mgmtPrivateClient,
+			MinioClient:              nil,
+			ComponentStore:           compStore,
+			Memory:                   memory.NewMemoryStore(),
+			WorkerUID:                workerUID,
+			RetentionHandler:         nil,
+		},
 	)
 
 	aclClient.CheckPermissionMock.Return(true, nil)

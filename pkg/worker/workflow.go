@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"go/parser"
+	"net/url"
 	"strings"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
 	"gopkg.in/guregu/null.v4"
 
@@ -30,11 +32,13 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
+	"github.com/instill-ai/x/blobstorage"
 	"github.com/instill-ai/x/errmsg"
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
@@ -209,7 +213,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	var ownerType mgmtpb.OwnerType
-	switch param.SystemVariables.PipelineOwnerType {
+	switch param.SystemVariables.PipelineNamespace.NsType {
 	case resource.Organization:
 		ownerType = mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION
 	case resource.User:
@@ -219,7 +223,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	dataPoint := utils.PipelineUsageMetricData{
-		OwnerUID:           param.SystemVariables.PipelineOwnerUID.String(),
+		OwnerUID:           param.SystemVariables.PipelineNamespace.NsUID.String(),
 		OwnerType:          ownerType,
 		UserUID:            param.SystemVariables.PipelineUserUID.String(),
 		UserType:           mgmtpb.OwnerType_OWNER_TYPE_USER,
@@ -423,7 +427,8 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	if param.TriggerFromAPI {
 		if err := workflow.ExecuteActivity(ctx, w.OutputActivity, &ComponentActivityParam{
-			WorkflowID: workflowID,
+			WorkflowID:      workflowID,
+			SystemVariables: param.SystemVariables,
 		}).Get(ctx, nil); err != nil {
 			return err
 		}
@@ -645,13 +650,110 @@ func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityPar
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
-		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutput, output)
+
+		updatedOutput := w.uploadFileAndReplaceWithURL(ctx, param, &output)
+
+		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutput, updatedOutput)
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
 	}
 
 	logger.Info("OutputActivity completed")
+	return nil
+}
+func (w *worker) uploadFileAndReplaceWithURL(ctx context.Context, param *ComponentActivityParam, value *format.Value) format.Value {
+	logger, _ := logger.GetZapLogger(ctx)
+	if value == nil {
+		return nil
+	}
+	switch v := (*value).(type) {
+	case format.File:
+		downloadURL, err := w.uploadBlobDataAndGetDownloadURL(ctx, param, &v)
+		if err != nil || downloadURL == "" {
+			logger.Warn("uploading blob data", zap.Error(err))
+			return v
+		}
+		return data.NewString(downloadURL)
+	case data.Array:
+		newArray := make(data.Array, len(v))
+		for i, item := range v {
+			newArray[i] = w.uploadFileAndReplaceWithURL(ctx, param, &item)
+		}
+		return newArray
+	case data.Map:
+		newMap := make(data.Map)
+		for k, v := range v {
+			newMap[k] = w.uploadFileAndReplaceWithURL(ctx, param, &v)
+		}
+		return newMap
+	default:
+		return v
+	}
+}
+
+func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *ComponentActivityParam, value *format.File) (string, error) {
+	artifactClient := w.artifactPublicServiceClient
+	ns := param.SystemVariables.PipelineNamespace
+
+	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
+
+	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(sysVarJSON))
+
+	objectName := fmt.Sprintf("%s/%s", ns.NsID, uuid.Must(uuid.NewV4()).String())
+	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
+		NamespaceId:      ns.NsID,
+		ObjectName:       objectName,
+		ObjectExpireDays: 0,
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("get upload url: %w", err)
+	}
+
+	uploadURL := resp.GetUploadUrl()
+
+	err = uploadBlobData(ctx, uploadURL, value)
+	if err != nil {
+		return "", fmt.Errorf("upload blob data: %w", err)
+	}
+
+	respDownloadURL, err := artifactClient.GetObjectDownloadURL(ctx, &artifactpb.GetObjectDownloadURLRequest{
+		NamespaceId: ns.NsID,
+		ObjectUid:   resp.GetObject().GetUid(),
+	})
+	if err != nil {
+		return "", fmt.Errorf("get object download url: %w", err)
+	}
+
+	return respDownloadURL.GetDownloadUrl(), nil
+}
+
+func uploadBlobData(ctx context.Context, uploadURL string, value *format.File) error {
+	if uploadURL == "" {
+		return fmt.Errorf("empty upload URL provided")
+	}
+
+	parsedURL, err := url.Parse(uploadURL)
+	if err != nil {
+		return fmt.Errorf("parsing upload URL: %w", err)
+	}
+	parsedURL.Scheme = "http"
+	parsedURL.Host = fmt.Sprintf("%s:%d", config.Config.APIGateway.Host, config.Config.APIGateway.PublicPort)
+	fullURL := parsedURL.String()
+	contentType := (*value).ContentType().String()
+	fileBytes, err := (*value).Binary()
+
+	if err != nil {
+		return fmt.Errorf("getting file bytes: %w", err)
+	}
+
+	err = blobstorage.UploadFile(ctx, fullURL, fileBytes.ByteArray(), contentType)
+
+	if err != nil {
+		return fmt.Errorf("uploading blob: %w", err)
+	}
+
 	return nil
 }
 
@@ -1056,7 +1158,7 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 	// Load secrets and connections
 	pt := ""
 	var nsSecrets []*datamodel.Secret
-	ownerPermalink := fmt.Sprintf("%s/%s", param.SystemVariables.PipelineOwnerType, param.SystemVariables.PipelineOwnerUID)
+	ownerPermalink := fmt.Sprintf("%s/%s", param.SystemVariables.PipelineNamespace.NsType, param.SystemVariables.PipelineNamespace.NsUID)
 	for {
 		var secrets []*datamodel.Secret
 		secrets, _, pt, err = w.repository.ListNamespaceSecrets(ctx, ownerPermalink, 100, pt, filtering.Filter{})
@@ -1471,8 +1573,6 @@ func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *Schedul
 			PipelineUID:          param.PipelineUID,
 			PipelineReleaseID:    param.PipelineReleaseID,
 			PipelineReleaseUID:   param.PipelineReleaseUID,
-			PipelineOwnerType:    param.Namespace.NsType,
-			PipelineOwnerUID:     param.Namespace.NsUID,
 			PipelineUserUID:      param.Namespace.NsUID,
 			PipelineRequesterUID: param.Namespace.NsUID,
 			ExpiryRuleTag:        param.ExpiryRuleTag,

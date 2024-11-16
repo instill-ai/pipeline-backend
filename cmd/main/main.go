@@ -258,17 +258,30 @@ func main() {
 	workerUID, _ := uuid.NewV4()
 	compStore := componentstore.Init(logger, config.Config.Component.Secrets, nil)
 
+	artifactPublicServiceClient, artifactPublicServiceClientConn := external.InitArtifactPublicServiceClient(ctx)
+	if artifactPublicServiceClientConn != nil {
+		defer artifactPublicServiceClientConn.Close()
+	}
+
+	artifactPrivateServiceClient, artifactPrivateServiceClientConn := external.InitArtifactPrivateServiceClient(ctx)
+	if artifactPrivateServiceClientConn != nil {
+		defer artifactPrivateServiceClientConn.Close()
+	}
+
 	service := service.NewService(
-		repo,
-		redisClient,
-		temporalClient,
-		&aclClient,
-		service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repo, config.Config.Server.InstillCoreHost),
-		mgmtPrivateServiceClient,
-		minioClient,
-		compStore,
-		ms,
-		workerUID, nil,
+		service.ServiceConfig{
+			Repository:               repo,
+			RedisClient:              redisClient,
+			TemporalClient:           temporalClient,
+			ACLClient:                &aclClient,
+			Converter:                service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repo, config.Config.Server.InstillCoreHost),
+			MgmtPrivateServiceClient: mgmtPrivateServiceClient,
+			MinioClient:              minioClient,
+			ComponentStore:           compStore,
+			Memory:                   ms,
+			WorkerUID:                workerUID,
+			RetentionHandler:         nil,
+		},
 	)
 
 	privateGrpcS := grpc.NewServer(grpcServerOpts...)
@@ -425,13 +438,17 @@ func main() {
 	defer timeseries.Close()
 
 	cw := pipelineworker.NewWorker(
-		repo,
-		redisClient,
-		timeseries.WriteAPI(),
-		compStore,
-		minioClient,
-		ms,
-		workerUID,
+		pipelineworker.WorkerConfig{
+			Repository:                   repo,
+			RedisClient:                  redisClient,
+			InfluxDBWriteClient:          timeseries.WriteAPI(),
+			Component:                    compStore,
+			MinioClient:                  minioClient,
+			MemoryStore:                  ms,
+			WorkerUID:                    workerUID,
+			ArtifactPublicServiceClient:  artifactPublicServiceClient,
+			ArtifactPrivateServiceClient: artifactPrivateServiceClient,
+		},
 	)
 
 	w := worker.New(temporalClient, pipelineworker.TaskQueue, worker.Options{

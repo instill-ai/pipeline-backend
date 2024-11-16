@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/anthropic/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/cohere/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/fireworksai/v0"
@@ -76,17 +77,11 @@ type component struct {
 	comp base.IComponent
 }
 
-// ComponentSecrets contains the global config secrets of each
-// implemented component (referenced by ID). Components may use these secrets
-// to skip the component configuration step and have a ready-to-run
-// config.
-type ComponentSecrets map[string]map[string]any
-
 // Init initializes the components implemented in this repository and loads
 // their information to memory.
 func Init(
 	logger *zap.Logger,
-	secrets ComponentSecrets,
+	secrets config.ComponentSecrets,
 	usageHandlerCreator base.UsageHandlerCreator,
 ) *Store {
 	baseComp := base.Component{

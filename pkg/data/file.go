@@ -2,17 +2,24 @@ package data
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"mime"
+	"regexp"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-resty/resty/v2"
+	"github.com/gofrs/uuid"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/repository"
+
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 )
 
 const (
@@ -28,6 +35,9 @@ var fileGetters = map[string]func(*fileData) (format.Value, error){
 	"data-uri":     func(f *fileData) (format.Value, error) { return f.DataURI() },
 	"base64":       func(f *fileData) (format.Value, error) { return f.Base64() },
 }
+
+// Pattern matches: https://{domain}/v1alpha/namespaces/{namespace}/blob-urls/{uid}
+var minioURLPattern = regexp.MustCompile(`https?://[^/]+/v1alpha/namespaces/[^/]+/blob-urls/([^/]+)$`)
 
 type fileData struct {
 	raw         []byte
@@ -56,7 +66,55 @@ func convertURLToBytes(url string) (b []byte, contentType string, filename strin
 	if strings.HasPrefix(url, "data:") {
 		return convertDataURIToBytes(url)
 	}
+	if matches := minioURLPattern.FindStringSubmatch(url); matches != nil {
+		if len(matches) < 2 {
+			return nil, "", "", fmt.Errorf("invalid blob storage url: %s", url)
+		}
+		return fetchFileFromBlobStorage(uuid.FromStringOrNil(matches[1]))
+	}
+	return fetchExternalURL(url)
+}
 
+func fetchFileFromBlobStorage(urlUID uuid.UUID) (b []byte, contentType string, filename string, err error) {
+	ctx := context.Background()
+	logger, _ := logger.GetZapLogger(ctx)
+	clients, err := repository.GetClients(ctx, logger)
+	if err != nil {
+		return nil, "", "", err
+	}
+	defer clients.Close()
+
+	artifactClient := clients.ArtifactPrivateServiceClient
+	objectURLRes, err := artifactClient.GetObjectURL(ctx, &artifactpb.GetObjectURLRequest{
+		Uid: urlUID.String(),
+	})
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	objectUID := objectURLRes.ObjectUrl.ObjectUid
+
+	objectRes, err := artifactClient.GetObject(ctx, &artifactpb.GetObjectRequest{
+		Uid: objectUID,
+	})
+
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	// TODO: we have agreed on to add the bucket name in pb.Object
+	// After the contract is updated, we have to replace it
+	bucketName := "instill-ai-blob"
+	objectPath := *objectRes.Object.Path
+	blobStorageClient := clients.BlobStorageClient
+	b, contentType, err = blobStorageClient.GetFile(ctx, bucketName, objectPath)
+	if err != nil {
+		return nil, "", "", err
+	}
+	return b, contentType, objectRes.Object.Name, nil
+}
+
+func fetchExternalURL(url string) (b []byte, contentType string, filename string, err error) {
 	client := resty.New().SetRetryCount(3)
 	resp, err := client.R().Get(url)
 	if err != nil {

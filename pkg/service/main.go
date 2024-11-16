@@ -92,6 +92,9 @@ type TriggerResult struct {
 	Metadata *pb.TriggerMetadata
 }
 
+// Now, we don't need the artifact service client in the service layer.
+// However, we keep it here for now because we may need it in the future.
+// service is the implementation of the Service interface
 type service struct {
 	repository               repository.Repository
 	redisClient              *redis.Client
@@ -107,37 +110,42 @@ type service struct {
 	retentionHandler         MetadataRetentionHandler
 }
 
+// ServiceConfig is the configuration for the service
+type ServiceConfig struct {
+	Repository               repository.Repository
+	RedisClient              *redis.Client
+	TemporalClient           client.Client
+	ACLClient                acl.ACLClientInterface
+	Converter                Converter
+	MgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
+	MinioClient              miniox.MinioI
+	ComponentStore           *componentstore.Store
+	Memory                   memory.MemoryStore
+	WorkerUID                uuid.UUID
+	RetentionHandler         MetadataRetentionHandler
+}
+
 // NewService initiates a service instance
 func NewService(
-	r repository.Repository,
-	rc *redis.Client,
-	t client.Client,
-	acl acl.ACLClientInterface,
-	c Converter,
-	m mgmtpb.MgmtPrivateServiceClient,
-	minioClient miniox.MinioI,
-	cs *componentstore.Store,
-	memory memory.MemoryStore,
-	workerUID uuid.UUID,
-	retentionHandler MetadataRetentionHandler,
+	cfg ServiceConfig,
 ) Service {
 	zapLogger, _ := logger.GetZapLogger(context.Background())
-	if retentionHandler == nil {
-		retentionHandler = NewRetentionHandler()
+	if cfg.RetentionHandler == nil {
+		cfg.RetentionHandler = NewRetentionHandler()
 	}
 
 	return &service{
-		repository:               r,
-		redisClient:              rc,
-		temporalClient:           t,
-		mgmtPrivateServiceClient: m,
-		component:                cs,
-		aclClient:                acl,
-		converter:                c,
-		minioClient:              minioClient,
-		memory:                   memory,
+		repository:               cfg.Repository,
+		redisClient:              cfg.RedisClient,
+		temporalClient:           cfg.TemporalClient,
+		mgmtPrivateServiceClient: cfg.MgmtPrivateServiceClient,
+		component:                cfg.ComponentStore,
+		aclClient:                cfg.ACLClient,
+		converter:                cfg.Converter,
+		minioClient:              cfg.MinioClient,
+		memory:                   cfg.Memory,
 		log:                      zapLogger,
-		workerUID:                workerUID,
-		retentionHandler:         retentionHandler,
+		workerUID:                cfg.WorkerUID,
+		retentionHandler:         cfg.RetentionHandler,
 	}
 }

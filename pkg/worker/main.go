@@ -15,6 +15,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	miniox "github.com/instill-ai/x/minio"
 )
 
@@ -47,37 +48,48 @@ type Worker interface {
 	UploadComponentOutputsActivity(context.Context, *ComponentActivityParam) error
 }
 
+// WorkerConfig is the configuration for the worker
+type WorkerConfig struct {
+	Repository                   repository.Repository
+	RedisClient                  *redis.Client
+	InfluxDBWriteClient          api.WriteAPI
+	Component                    *componentstore.Store
+	MinioClient                  miniox.MinioI
+	MemoryStore                  memory.MemoryStore
+	WorkerUID                    uuid.UUID
+	ArtifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
+	ArtifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
+}
+
 // worker represents resources required to run Temporal workflow and activity
 type worker struct {
-	repository          repository.Repository
-	redisClient         *redis.Client
-	influxDBWriteClient api.WriteAPI
-	component           *componentstore.Store
-	minioClient         miniox.MinioI
-	log                 *zap.Logger
-	memoryStore         memory.MemoryStore
-	workerUID           uuid.UUID
+	repository                   repository.Repository
+	redisClient                  *redis.Client
+	influxDBWriteClient          api.WriteAPI
+	component                    *componentstore.Store
+	minioClient                  miniox.MinioI
+	log                          *zap.Logger
+	memoryStore                  memory.MemoryStore
+	workerUID                    uuid.UUID
+	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
+	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
 func NewWorker(
-	r repository.Repository,
-	rc *redis.Client,
-	i api.WriteAPI,
-	cs *componentstore.Store,
-	minioClient miniox.MinioI,
-	m memory.MemoryStore,
-	workerUID uuid.UUID,
+	workerConfig WorkerConfig,
 ) Worker {
 	logger, _ := logger.GetZapLogger(context.Background())
 	return &worker{
-		repository:          r,
-		redisClient:         rc,
-		memoryStore:         m,
-		influxDBWriteClient: i,
-		component:           cs,
-		minioClient:         minioClient,
-		log:                 logger,
-		workerUID:           workerUID,
+		repository:                   workerConfig.Repository,
+		redisClient:                  workerConfig.RedisClient,
+		memoryStore:                  workerConfig.MemoryStore,
+		influxDBWriteClient:          workerConfig.InfluxDBWriteClient,
+		component:                    workerConfig.Component,
+		minioClient:                  workerConfig.MinioClient,
+		log:                          logger,
+		workerUID:                    workerConfig.WorkerUID,
+		artifactPublicServiceClient:  workerConfig.ArtifactPublicServiceClient,
+		artifactPrivateServiceClient: workerConfig.ArtifactPrivateServiceClient,
 	}
 }
