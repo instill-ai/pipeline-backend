@@ -2,8 +2,6 @@ package document
 
 import (
 	"context"
-	"encoding/base64"
-	"fmt"
 	"os"
 	"testing"
 
@@ -44,8 +42,6 @@ func Test_ConvertDocumentToImages(t *testing.T) {
 	fileContent, err := os.ReadFile(test.filepath)
 	c.Assert(err, qt.IsNil)
 
-	base64DataURI := fmt.Sprintf("data:%s;base64,%s", mimeTypeByExtension(test.filepath), base64.StdEncoding.EncodeToString(fileContent))
-
 	ir, ow, eh, job := mock.GenerateMockJob(c)
 
 	ir.ReadDataMock.Times(1).Set(func(ctx context.Context, input any) error {
@@ -53,7 +49,7 @@ func Test_ConvertDocumentToImages(t *testing.T) {
 		case *ConvertDocumentToImagesInput:
 			*input = ConvertDocumentToImagesInput{
 				Document: func() format.Document {
-					doc, err := data.NewDocumentFromURL(base64DataURI)
+					doc, err := data.NewDocumentFromBytes(fileContent, mimeTypeByExtension(test.filepath), "")
 					if err != nil {
 						return nil
 					}

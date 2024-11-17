@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -8,6 +9,8 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	qt "github.com/frankban/quicktest"
+
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 func TestNewVideoFromBytes(t *testing.T) {
@@ -67,10 +70,12 @@ func TestNewVideoFromURL(t *testing.T) {
 	t.Parallel()
 	c := qt.New(t)
 
+	ctx := context.Background()
+	binaryFetcher := external.NewBinaryFetcher()
 	c.Run("Valid video URL", func(c *qt.C) {
 		url := "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample_640_360.mp4"
 
-		video, err := NewVideoFromURL(url)
+		video, err := NewVideoFromURL(ctx, binaryFetcher, url)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(video, qt.Not(qt.IsNil))
@@ -80,14 +85,14 @@ func TestNewVideoFromURL(t *testing.T) {
 	c.Run("Invalid URL", func(c *qt.C) {
 		invalidURL := "not-a-url"
 
-		_, err := NewVideoFromURL(invalidURL)
+		_, err := NewVideoFromURL(ctx, binaryFetcher, invalidURL)
 		c.Assert(err, qt.Not(qt.IsNil))
 	})
 
 	c.Run("Non-existent URL", func(c *qt.C) {
 		nonExistentURL := "https://filesamples.com/non-existent-video.mp4"
 
-		_, err := NewVideoFromURL(nonExistentURL)
+		_, err := NewVideoFromURL(ctx, binaryFetcher, nonExistentURL)
 		c.Assert(err, qt.Not(qt.IsNil))
 	})
 }

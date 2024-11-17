@@ -4,6 +4,7 @@ package openai
 import (
 	"bufio"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -462,7 +463,12 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 
 		results := []imageGenerationsOutputResult{}
 		for _, d := range resp.Data {
-			img, err := data.NewImageFromURL(fmt.Sprintf("data:image/webp;base64,%s", d.Image))
+			b, err := base64.StdEncoding.DecodeString(d.Image)
+			if err != nil {
+				job.Error.Error(ctx, err)
+				return
+			}
+			img, err := data.NewImageFromBytes(b, data.WEBP, "")
 			if err != nil {
 				job.Error.Error(ctx, err)
 				return

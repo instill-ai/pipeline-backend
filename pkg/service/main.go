@@ -13,6 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
@@ -108,6 +109,7 @@ type service struct {
 	log                      *zap.Logger
 	workerUID                uuid.UUID
 	retentionHandler         MetadataRetentionHandler
+	binaryFetcher            external.BinaryFetcher
 }
 
 // ServiceConfig is the configuration for the service
@@ -123,6 +125,7 @@ type ServiceConfig struct {
 	Memory                   memory.MemoryStore
 	WorkerUID                uuid.UUID
 	RetentionHandler         MetadataRetentionHandler
+	BinaryFetcher            external.BinaryFetcher
 }
 
 // NewService initiates a service instance
@@ -147,5 +150,6 @@ func NewService(
 		log:                      zapLogger,
 		workerUID:                cfg.WorkerUID,
 		retentionHandler:         cfg.RetentionHandler,
+		binaryFetcher:            cfg.BinaryFetcher,
 	}
 }

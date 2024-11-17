@@ -62,7 +62,8 @@ func NewOutputWriter(ow OutputWriter, schema string) *outputWriter {
 	}
 }
 func (ow *outputWriter) WriteData(ctx context.Context, output any) (err error) {
-	outputMap, err := data.Marshal(output)
+	marshaler := data.NewMarshaler()
+	outputMap, err := marshaler.Marshal(output)
 	if err != nil {
 		return err
 	}

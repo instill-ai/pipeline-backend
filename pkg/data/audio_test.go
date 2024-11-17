@@ -1,12 +1,15 @@
 package data
 
 import (
+	"context"
 	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	qt "github.com/frankban/quicktest"
+
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 func TestNewAudioFromBytes(t *testing.T) {
@@ -54,7 +57,9 @@ func TestNewAudioFromBytes(t *testing.T) {
 func TestNewAudioFromURL(t *testing.T) {
 	t.Parallel()
 	c := qt.New(t)
+	ctx := context.Background()
 
+	binaryFetcher := external.NewBinaryFetcher()
 	testCases := []struct {
 		name string
 		url  string
@@ -66,7 +71,7 @@ func TestNewAudioFromURL(t *testing.T) {
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *qt.C) {
-			audio, err := NewAudioFromURL(tc.url)
+			audio, err := NewAudioFromURL(ctx, binaryFetcher, tc.url)
 
 			if tc.name == "Valid audio URL" {
 				c.Assert(err, qt.IsNil)

@@ -1,12 +1,15 @@
 package data
 
 import (
+	"context"
+	"encoding/base64"
 	"fmt"
 	"strings"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0/transformer"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 type documentData struct {
@@ -38,12 +41,11 @@ func NewDocumentFromBytes(b []byte, contentType, filename string) (*documentData
 	return createDocumentData(b, contentType, filename)
 }
 
-func NewDocumentFromURL(url string) (*documentData, error) {
-	b, contentType, filename, err := convertURLToBytes(url)
+func NewDocumentFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string) (*documentData, error) {
+	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, url)
 	if err != nil {
 		return nil, err
 	}
-
 	return createDocumentData(b, contentType, filename)
 }
 
@@ -143,7 +145,12 @@ func (d *documentData) PDF() (val format.Document, err error) {
 		return nil, err
 	}
 
-	return NewDocumentFromURL(fmt.Sprintf("data:application/pdf;base64,%s", s))
+	b, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewDocumentFromBytes(b, PDF, d.filename)
 }
 
 func (d *documentData) Images() (mp Array, err error) {
@@ -168,8 +175,11 @@ func (d *documentData) Images() (mp Array, err error) {
 	images := make([]format.Value, len(res.Images))
 
 	for idx := range res.Images {
-		// img := strings.Split(res.Images[idx], ",")[1]
-		images[idx], err = NewImageFromURL(res.Images[idx])
+		b, err := base64.StdEncoding.DecodeString(res.Images[idx])
+		if err != nil {
+			return nil, err
+		}
+		images[idx], err = NewImageFromBytes(b, PNG, d.filename)
 		if err != nil {
 			return nil, fmt.Errorf("NewImageFromBytes: %w", err)
 		}

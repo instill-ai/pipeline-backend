@@ -12,6 +12,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 func TestSegment(t *testing.T) {
@@ -67,7 +68,9 @@ func TestSegment(t *testing.T) {
 			jsonValue, err := data.NewJSONValue(segmentsMap)
 			c.Assert(err, qt.IsNil)
 
-			c.Assert(data.Unmarshal(jsonValue, &segmentsStruct), qt.IsNil)
+			binaryFetcher := external.NewBinaryFetcher()
+			unmarshaler := data.NewUnmarshaler(context.Background(), binaryFetcher)
+			c.Assert(unmarshaler.Unmarshal(jsonValue, &segmentsStruct), qt.IsNil)
 			segments := segmentsStruct.Segments
 
 			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {

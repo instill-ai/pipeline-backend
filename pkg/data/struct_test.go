@@ -1,17 +1,22 @@
 package data
 
 import (
+	"context"
 	"os"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 func TestUnmarshal(t *testing.T) {
 	t.Parallel()
 	c := qt.New(t)
+
+	binaryFetcher := external.NewBinaryFetcher()
+	unmarshaler := NewUnmarshaler(context.Background(), binaryFetcher)
 
 	c.Run("Basic types", func(c *qt.C) {
 		type TestStruct struct {
@@ -32,7 +37,7 @@ func TestUnmarshal(t *testing.T) {
 		}
 
 		var result TestStruct
-		err := Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(result.StringField.String(), qt.Equals, "test")
@@ -64,7 +69,7 @@ func TestUnmarshal(t *testing.T) {
 		}
 
 		var result TestStruct
-		err := Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(result.TopField.String(), qt.Equals, "top")
@@ -86,7 +91,7 @@ func TestUnmarshal(t *testing.T) {
 		}
 
 		var result TestStruct
-		err := Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(len(result.ArrayField), qt.Equals, 3)
@@ -129,7 +134,7 @@ func TestUnmarshal(t *testing.T) {
 		}
 
 		var result TestStruct
-		err := Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(len(result.MapField), qt.Equals, 2)
@@ -165,7 +170,7 @@ func TestUnmarshal(t *testing.T) {
 
 		// Unmarshal the input into the TestStruct, since we set the format to be image/jpeg, the result will be a JPEG image.
 		var result TestStruct
-		err = Unmarshal(input, &result)
+		err = unmarshaler.Unmarshal(input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(result.Image.ContentType().String(), qt.Equals, "image/bmp")
@@ -183,7 +188,7 @@ func TestUnmarshal(t *testing.T) {
 		}
 
 		var result TestStruct
-		err := Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(result.NullField, qt.IsNil)
@@ -192,19 +197,19 @@ func TestUnmarshal(t *testing.T) {
 	c.Run("Error cases", func(c *qt.C) {
 		c.Run("Non-pointer input", func(c *qt.C) {
 			var s struct{}
-			err := Unmarshal(Map{}, s)
+			err := unmarshaler.Unmarshal(Map{}, s)
 			c.Assert(err, qt.ErrorMatches, "input must be a pointer to a struct")
 		})
 
 		c.Run("Non-struct input", func(c *qt.C) {
 			var i int
-			err := Unmarshal(Map{}, &i)
+			err := unmarshaler.Unmarshal(Map{}, &i)
 			c.Assert(err, qt.ErrorMatches, "input must be a pointer to a struct")
 		})
 
 		c.Run("Non-Map input", func(c *qt.C) {
 			var s struct{}
-			err := Unmarshal(NewString("not a map"), &s)
+			err := unmarshaler.Unmarshal(NewString("not a map"), &s)
 			c.Assert(err, qt.ErrorMatches, "input value must be a Map")
 		})
 
@@ -216,7 +221,7 @@ func TestUnmarshal(t *testing.T) {
 				"field": NewString("not a number"),
 			}
 			var result InvalidStruct
-			err := Unmarshal(input, &result)
+			err := unmarshaler.Unmarshal(input, &result)
 			c.Assert(err, qt.ErrorMatches, "error unmarshaling field field:.*")
 		})
 
@@ -228,7 +233,7 @@ func TestUnmarshal(t *testing.T) {
 				"numbers": Array{NewString("not a number")},
 			}
 			var result ArrayStruct
-			err := Unmarshal(input, &result)
+			err := unmarshaler.Unmarshal(input, &result)
 			c.Assert(err, qt.ErrorMatches, "error unmarshaling field numbers:.*")
 		})
 
@@ -242,7 +247,7 @@ func TestUnmarshal(t *testing.T) {
 				},
 			}
 			var result MapStruct
-			err := Unmarshal(input, &result)
+			err := unmarshaler.Unmarshal(input, &result)
 			c.Assert(err, qt.ErrorMatches, "error unmarshaling field values:.*")
 		})
 	})
@@ -255,7 +260,7 @@ func TestUnmarshal(t *testing.T) {
 
 		input := Map{}
 		var result TestStruct
-		err := Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(result.RequiredPtr, qt.IsNil)
@@ -276,7 +281,7 @@ func TestUnmarshal(t *testing.T) {
 		}
 
 		var result TestStruct
-		err := Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(len(result.MixedArray), qt.Equals, 4)
@@ -296,7 +301,7 @@ func TestUnmarshal(t *testing.T) {
 			"value": NewString("test"),
 		}
 		var stringResult TestStruct
-		err := Unmarshal(stringInput, &stringResult)
+		err := unmarshaler.Unmarshal(stringInput, &stringResult)
 		c.Assert(err, qt.IsNil)
 		c.Assert(stringResult.Value.(format.String).String(), qt.Equals, "test")
 
@@ -305,7 +310,7 @@ func TestUnmarshal(t *testing.T) {
 			"value": NewNumberFromFloat(42.5),
 		}
 		var numberResult TestStruct
-		err = Unmarshal(numberInput, &numberResult)
+		err = unmarshaler.Unmarshal(numberInput, &numberResult)
 		c.Assert(err, qt.IsNil)
 		c.Assert(numberResult.Value.(format.Number).Float64(), qt.Equals, 42.5)
 
@@ -314,51 +319,17 @@ func TestUnmarshal(t *testing.T) {
 			"value": NewBoolean(true),
 		}
 		var boolResult TestStruct
-		err = Unmarshal(boolInput, &boolResult)
+		err = unmarshaler.Unmarshal(boolInput, &boolResult)
 		c.Assert(err, qt.IsNil)
 		c.Assert(boolResult.Value.(format.Boolean).Boolean(), qt.Equals, true)
-
-	})
-
-	c.Run("Undetermined type", func(c *qt.C) {
-
-		type TestStruct struct {
-			Value format.Value `instill:"value"`
-		}
-
-		// Test string value
-		stringInput := Map{
-			"value": NewString("test"),
-		}
-		var stringResult TestStruct
-		err := Unmarshal(stringInput, &stringResult)
-		c.Assert(err, qt.IsNil)
-		c.Assert(stringResult.Value.(format.String).String(), qt.Equals, "test")
-
-		// Test number value
-		numberInput := Map{
-			"value": NewNumberFromFloat(42.5),
-		}
-		var numberResult TestStruct
-		err = Unmarshal(numberInput, &numberResult)
-		c.Assert(err, qt.IsNil)
-		c.Assert(numberResult.Value.(format.Number).Float64(), qt.Equals, 42.5)
-
-		// Test boolean value
-		boolInput := Map{
-			"value": NewBoolean(true),
-		}
-		var boolResult TestStruct
-		err = Unmarshal(boolInput, &boolResult)
-		c.Assert(err, qt.IsNil)
-		c.Assert(boolResult.Value.(format.Boolean).Boolean(), qt.Equals, true)
-
 	})
 }
 
 func TestMarshal(t *testing.T) {
 	t.Parallel()
 	c := qt.New(t)
+
+	marshaler := NewMarshaler()
 
 	c.Run("Basic types", func(c *qt.C) {
 		input := struct {
@@ -371,7 +342,7 @@ func TestMarshal(t *testing.T) {
 			BooleanField: NewBoolean(true),
 		}
 
-		result, err := Marshal(input)
+		result, err := marshaler.Marshal(input)
 
 		c.Assert(err, qt.IsNil)
 		m, ok := result.(Map)
@@ -396,7 +367,7 @@ func TestMarshal(t *testing.T) {
 			},
 		}
 
-		result, err := Marshal(input)
+		result, err := marshaler.Marshal(input)
 
 		c.Assert(err, qt.IsNil)
 		m, ok := result.(Map)
@@ -414,7 +385,7 @@ func TestMarshal(t *testing.T) {
 			ArrayField: Array{NewString("one"), NewString("two"), NewString("three")},
 		}
 
-		result, err := Marshal(input)
+		result, err := marshaler.Marshal(input)
 
 		c.Assert(err, qt.IsNil)
 		m, ok := result.(Map)
@@ -437,7 +408,7 @@ func TestMarshal(t *testing.T) {
 			},
 		}
 
-		result, err := Marshal(input)
+		result, err := marshaler.Marshal(input)
 
 		c.Assert(err, qt.IsNil)
 		m, ok := result.(Map)
@@ -462,7 +433,7 @@ func TestMarshal(t *testing.T) {
 			Image: img,
 		}
 
-		result, err := Marshal(input)
+		result, err := marshaler.Marshal(input)
 		c.Assert(err, qt.IsNil)
 		m, ok := result.(Map)
 		c.Assert(ok, qt.IsTrue)
@@ -480,7 +451,7 @@ func TestMarshal(t *testing.T) {
 			NullField: nil,
 		}
 
-		result, err := Marshal(input)
+		result, err := marshaler.Marshal(input)
 
 		c.Assert(err, qt.IsNil)
 		m, ok := result.(Map)
@@ -498,7 +469,7 @@ func TestMarshal(t *testing.T) {
 			StringPtr: NewString("pointer string"),
 		}
 
-		result, err := Marshal(input)
+		result, err := marshaler.Marshal(input)
 
 		c.Assert(err, qt.IsNil)
 		m, ok := result.(Map)
@@ -529,7 +500,7 @@ func TestMarshal(t *testing.T) {
 			},
 		}
 
-		result, err := Marshal(input)
+		result, err := marshaler.Marshal(input)
 
 		c.Assert(err, qt.IsNil)
 		m, ok := result.(Map)
@@ -562,7 +533,7 @@ func TestMarshal(t *testing.T) {
 		stringInput := TestStruct{
 			Value: NewString("test"),
 		}
-		stringResult, err := Marshal(stringInput)
+		stringResult, err := marshaler.Marshal(stringInput)
 		c.Assert(err, qt.IsNil)
 		stringMap, ok := stringResult.(Map)
 		c.Assert(ok, qt.IsTrue)
@@ -572,7 +543,7 @@ func TestMarshal(t *testing.T) {
 		numberInput := TestStruct{
 			Value: NewNumberFromFloat(42.5),
 		}
-		numberResult, err := Marshal(numberInput)
+		numberResult, err := marshaler.Marshal(numberInput)
 		c.Assert(err, qt.IsNil)
 		numberMap, ok := numberResult.(Map)
 		c.Assert(ok, qt.IsTrue)
@@ -582,7 +553,7 @@ func TestMarshal(t *testing.T) {
 		boolInput := TestStruct{
 			Value: NewBoolean(true),
 		}
-		boolResult, err := Marshal(boolInput)
+		boolResult, err := marshaler.Marshal(boolInput)
 		c.Assert(err, qt.IsNil)
 		boolMap, ok := boolResult.(Map)
 		c.Assert(ok, qt.IsTrue)
@@ -596,13 +567,13 @@ func TestMarshal(t *testing.T) {
 			}{
 				InvalidField: make(chan int),
 			}
-			_, err := Marshal(input)
+			_, err := marshaler.Marshal(input)
 			c.Assert(err, qt.ErrorMatches, "error marshaling field invalid: unsupported type: chan")
 		})
 
 		c.Run("Nil interface", func(c *qt.C) {
 			var input interface{}
-			_, err := Marshal(input)
+			_, err := marshaler.Marshal(input)
 			c.Assert(err, qt.ErrorMatches, "input must not be nil")
 		})
 
@@ -612,18 +583,17 @@ func TestMarshal(t *testing.T) {
 			}{
 				InvalidMap: map[int]string{1: "value"},
 			}
-			_, err := Marshal(input)
+			_, err := marshaler.Marshal(input)
 			c.Assert(err, qt.ErrorMatches, "error marshaling field invalid-map: map key must be string type")
 		})
 	})
 
 	c.Run("Empty struct", func(c *qt.C) {
 		input := struct{}{}
-		result, err := Marshal(input)
+		result, err := marshaler.Marshal(input)
 		c.Assert(err, qt.IsNil)
 		m, ok := result.(Map)
 		c.Assert(ok, qt.IsTrue)
 		c.Assert(len(m), qt.Equals, 0)
 	})
-
 }

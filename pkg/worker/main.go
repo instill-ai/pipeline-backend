@@ -9,6 +9,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 	"go.uber.org/zap"
 
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
@@ -59,6 +60,7 @@ type WorkerConfig struct {
 	WorkerUID                    uuid.UUID
 	ArtifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	ArtifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
+	BinaryFetcher                external.BinaryFetcher
 }
 
 // worker represents resources required to run Temporal workflow and activity
@@ -73,6 +75,7 @@ type worker struct {
 	workerUID                    uuid.UUID
 	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
+	binaryFetcher                external.BinaryFetcher
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
@@ -91,5 +94,6 @@ func NewWorker(
 		workerUID:                    workerConfig.WorkerUID,
 		artifactPublicServiceClient:  workerConfig.ArtifactPublicServiceClient,
 		artifactPrivateServiceClient: workerConfig.ArtifactPrivateServiceClient,
+		binaryFetcher:                workerConfig.BinaryFetcher,
 	}
 }

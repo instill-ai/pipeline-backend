@@ -1,10 +1,13 @@
 package data
 
 import (
+	"context"
 	"os"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
+
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 func TestNewDocumentFromBytes(t *testing.T) {
@@ -48,7 +51,8 @@ func TestNewDocumentFromBytes(t *testing.T) {
 func TestNewDocumentFromURL(t *testing.T) {
 	t.Parallel()
 	c := qt.New(t)
-
+	ctx := context.Background()
+	binaryFetcher := external.NewBinaryFetcher()
 	testCases := []struct {
 		name string
 		url  string
@@ -61,7 +65,7 @@ func TestNewDocumentFromURL(t *testing.T) {
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *qt.C) {
-			document, err := NewDocumentFromURL(tc.url)
+			document, err := NewDocumentFromURL(ctx, binaryFetcher, tc.url)
 
 			if tc.name == "Valid PDF URL" || tc.name == "Valid TXT URL" || tc.name == "Valid DOCX URL" {
 				c.Assert(err, qt.IsNil)
