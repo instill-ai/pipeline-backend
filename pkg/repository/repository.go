@@ -1610,7 +1610,12 @@ type PipelineRunList struct {
 func (r *repository) CreatePipelineRunOn(ctx context.Context, pipelineRunOn *datamodel.PipelineRunOn) error {
 	r.PinUser(ctx, "pipeline_run_on")
 	db := r.CheckPinnedUser(ctx, r.db, "pipeline_run_on")
-	return db.Model(&datamodel.PipelineRunOn{}).Create(pipelineRunOn).Error
+	err := db.Model(&datamodel.PipelineRunOn{}).Create(pipelineRunOn).Error
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" || errors.Is(err, gorm.ErrDuplicatedKey) {
+		return nil
+	}
+	return err
 }
 
 func (r *repository) GetPipelineRunOn(ctx context.Context, pipelineUID, releaseUID uuid.UUID) (*datamodel.PipelineRunOn, error) {
@@ -1626,7 +1631,7 @@ func (r *repository) GetPipelineRunOn(ctx context.Context, pipelineUID, releaseU
 func (r *repository) DeletePipelineRunOn(ctx context.Context, pipelineUID, releaseUID uuid.UUID) error {
 	r.PinUser(ctx, "pipeline_run_on")
 	db := r.CheckPinnedUser(ctx, r.db, "pipeline_run_on")
-	return db.Debug().Model(&datamodel.PipelineRunOn{}).
+	return db.Model(&datamodel.PipelineRunOn{}).
 		Where("pipeline_uid = ? AND release_uid = ?", pipelineUID, releaseUID).
 		Delete(&datamodel.PipelineRunOn{}).Error
 }
@@ -1654,7 +1659,7 @@ func (r *repository) ListPipelineRunOnsByIdentifier(ctx context.Context, compone
 		return PipelineRunList{}, err
 	}
 
-	err = db.Debug().Model(&datamodel.PipelineRunOn{}).
+	err = db.Model(&datamodel.PipelineRunOn{}).
 		Where("run_on_type = ? AND identifier = ?", componentType, string(identifierJSON)).
 		Find(&runOns).Error
 	if err != nil {

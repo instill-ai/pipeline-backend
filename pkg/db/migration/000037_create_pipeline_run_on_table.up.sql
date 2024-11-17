@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE TABLE IF NOT EXISTS public.pipeline_run_on (
   uid UUID NOT NULL,
   pipeline_uid UUID NOT NULL,
@@ -13,3 +15,6 @@ CREATE TABLE IF NOT EXISTS public.pipeline_run_on (
 
 CREATE INDEX pipeline_run_on_pipeline_uid_release_uid_create_time_pagination ON public.pipeline_run_on (pipeline_uid, release_uid, create_time);
 CREATE INDEX pipeline_run_on_run_on_type_identifier_pagination ON public.pipeline_run_on (run_on_type, identifier) WHERE delete_time IS NULL;
+CREATE UNIQUE INDEX pipeline_run_on_pipeline_uid_release_uid_event_id_run_on_type ON public.pipeline_run_on (pipeline_uid, release_uid, event_id, run_on_type, identifier) WHERE delete_time IS NULL;
+
+COMMIT;

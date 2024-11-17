@@ -1,0 +1,6 @@
+BEGIN;
+DROP INDEX IF EXISTS pipeline_run_on_pipeline_uid_release_uid_event_id_run_on_type;
+DROP INDEX IF EXISTS pipeline_run_on_run_on_type_identifier_pagination;
+DROP INDEX IF EXISTS pipeline_run_on_pipeline_uid_release_uid_create_time_pagination;
+DROP TABLE IF EXISTS public.pipeline_run_on;
+COMMIT;
