@@ -1,10 +1,13 @@
 package data
 
 import (
+	"context"
 	"os"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
+
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 func TestNewImageFromBytes(t *testing.T) {
@@ -54,6 +57,8 @@ func TestNewImageFromURL(t *testing.T) {
 	t.Parallel()
 	c := qt.New(t)
 
+	ctx := context.Background()
+	binaryFetcher := external.NewBinaryFetcher()
 	testCases := []struct {
 		name string
 		url  string
@@ -65,7 +70,7 @@ func TestNewImageFromURL(t *testing.T) {
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *qt.C) {
-			image, err := NewImageFromURL(tc.url)
+			image, err := NewImageFromURL(ctx, binaryFetcher, tc.url)
 
 			if tc.name == "Valid image URL" {
 				c.Assert(err, qt.IsNil)

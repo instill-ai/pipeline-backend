@@ -869,12 +869,12 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				}
 			case "image", "image/*":
 				if v == nil {
-					variable[k], err = data.NewImageFromURL(defaultValueMap[k].(string))
+					variable[k], err = data.NewImageFromURL(ctx, s.binaryFetcher, defaultValueMap[k].(string))
 					if err != nil {
 						return err
 					}
 				} else {
-					variable[k], err = data.NewImageFromURL(v.GetStringValue())
+					variable[k], err = data.NewImageFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
 						return err
 					}
@@ -883,7 +883,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
-						array[idx], err = data.NewImageFromURL(val.(string))
+						array[idx], err = data.NewImageFromURL(ctx, s.binaryFetcher, val.(string))
 						if err != nil {
 							return err
 						}
@@ -892,7 +892,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
-						array[idx], err = data.NewImageFromURL(val.GetStringValue())
+						array[idx], err = data.NewImageFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
 							return err
 						}
@@ -901,12 +901,12 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				}
 			case "audio", "audio/*":
 				if v == nil {
-					variable[k], err = data.NewAudioFromURL(defaultValueMap[k].(string))
+					variable[k], err = data.NewAudioFromURL(ctx, s.binaryFetcher, defaultValueMap[k].(string))
 					if err != nil {
 						return err
 					}
 				} else {
-					variable[k], err = data.NewAudioFromURL(v.GetStringValue())
+					variable[k], err = data.NewAudioFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
 						return err
 					}
@@ -915,7 +915,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
-						array[idx], err = data.NewAudioFromURL(val.(string))
+						array[idx], err = data.NewAudioFromURL(ctx, s.binaryFetcher, val.(string))
 						if err != nil {
 							return err
 						}
@@ -924,7 +924,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
-						array[idx], err = data.NewAudioFromURL(val.GetStringValue())
+						array[idx], err = data.NewAudioFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
 							return err
 						}
@@ -933,12 +933,12 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				}
 			case "video", "video/*":
 				if v == nil {
-					variable[k], err = data.NewVideoFromURL(defaultValueMap[k].(string))
+					variable[k], err = data.NewVideoFromURL(ctx, s.binaryFetcher, defaultValueMap[k].(string))
 					if err != nil {
 						return err
 					}
 				} else {
-					variable[k], err = data.NewVideoFromURL(v.GetStringValue())
+					variable[k], err = data.NewVideoFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
 						return err
 					}
@@ -947,7 +947,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
-						array[idx], err = data.NewVideoFromURL(val.(string))
+						array[idx], err = data.NewVideoFromURL(ctx, s.binaryFetcher, val.(string))
 						if err != nil {
 							return err
 						}
@@ -956,7 +956,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
-						array[idx], err = data.NewVideoFromURL(val.GetStringValue())
+						array[idx], err = data.NewVideoFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
 							return err
 						}
@@ -966,12 +966,12 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 
 			case "document":
 				if v == nil {
-					variable[k], err = data.NewDocumentFromURL(defaultValueMap[k].(string))
+					variable[k], err = data.NewDocumentFromURL(ctx, s.binaryFetcher, defaultValueMap[k].(string))
 					if err != nil {
 						return err
 					}
 				} else {
-					variable[k], err = data.NewDocumentFromURL(v.GetStringValue())
+					variable[k], err = data.NewDocumentFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
 						return err
 					}
@@ -980,7 +980,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
-						array[idx], err = data.NewDocumentFromURL(val.(string))
+						array[idx], err = data.NewDocumentFromURL(ctx, s.binaryFetcher, val.(string))
 						if err != nil {
 							return err
 						}
@@ -989,7 +989,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
-						array[idx], err = data.NewDocumentFromURL(val.GetStringValue())
+						array[idx], err = data.NewDocumentFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
 							return err
 						}
@@ -998,12 +998,12 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				}
 			case "file", "*/*":
 				if v == nil {
-					variable[k], err = data.NewBinaryFromURL(defaultValueMap[k].(string))
+					variable[k], err = data.NewBinaryFromURL(ctx, s.binaryFetcher, defaultValueMap[k].(string))
 					if err != nil {
 						return err
 					}
 				} else {
-					variable[k], err = data.NewBinaryFromURL(v.GetStringValue())
+					variable[k], err = data.NewBinaryFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
 						return err
 					}
@@ -1012,7 +1012,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
-						array[idx], err = data.NewBinaryFromURL(val.(string))
+						array[idx], err = data.NewBinaryFromURL(ctx, s.binaryFetcher, val.(string))
 						if err != nil {
 							return err
 						}
@@ -1021,7 +1021,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
-						array[idx], err = data.NewBinaryFromURL(val.GetStringValue())
+						array[idx], err = data.NewBinaryFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
 							return err
 						}

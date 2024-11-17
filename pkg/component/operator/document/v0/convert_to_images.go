@@ -2,6 +2,7 @@ package document
 
 import (
 	"context"
+	"encoding/base64"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0/transformer"
@@ -22,8 +23,8 @@ func (e *execution) convertDocumentToImages(ctx context.Context, job *base.Job) 
 	}
 
 	transformerInputStruct := transformer.ConvertDocumentToImagesTransformerInput{
-		Document: dataURI.String(),
-		Filename: inputStruct.Filename,
+		Document:   dataURI.String(),
+		Filename:   inputStruct.Filename,
 		Resolution: inputStruct.Resolution,
 	}
 
@@ -35,7 +36,9 @@ func (e *execution) convertDocumentToImages(ctx context.Context, job *base.Job) 
 		Images: func() []format.Image {
 			images := make([]format.Image, len(transformerOutputStruct.Images))
 			for i, image := range transformerOutputStruct.Images {
-				images[i], _ = data.NewImageFromURL(image)
+				b, _ := base64.StdEncoding.DecodeString(image)
+				images[i], _ = data.NewImageFromBytes(b, data.PNG, "")
+				// TODO: handle error
 			}
 			return images
 		}(),

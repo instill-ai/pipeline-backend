@@ -2,8 +2,6 @@ package document
 
 import (
 	"context"
-	"encoding/base64"
-	"fmt"
 	"os"
 	"testing"
 
@@ -109,15 +107,13 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 			fileContent, err := os.ReadFile(test.filepath)
 			c.Assert(err, qt.IsNil)
 
-			base64DataURI := fmt.Sprintf("data:%s;base64,%s", mimeTypeByExtension(test.filepath), base64.StdEncoding.EncodeToString(fileContent))
-
 			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
 				switch input := input.(type) {
 				case *ConvertDocumentToMarkdownInput:
 					*input = ConvertDocumentToMarkdownInput{
 						Document: func() format.Document {
-							doc, err := data.NewDocumentFromURL(base64DataURI)
+							doc, err := data.NewDocumentFromBytes(fileContent, mimeTypeByExtension(test.filepath), "")
 							if err != nil {
 								return nil
 							}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/x/errmsg"
@@ -47,16 +48,18 @@ func (i *setupReader) Read(ctx context.Context) (setups []*structpb.Struct, err 
 }
 
 type inputReader struct {
-	compID      string
-	wfm         memory.WorkflowMemory
-	originalIdx int
+	compID        string
+	wfm           memory.WorkflowMemory
+	originalIdx   int
+	binaryFetcher external.BinaryFetcher
 }
 
-func NewInputReader(wfm memory.WorkflowMemory, compID string, originalIdx int) *inputReader {
+func NewInputReader(wfm memory.WorkflowMemory, compID string, originalIdx int, binaryFetcher external.BinaryFetcher) *inputReader {
 	return &inputReader{
-		compID:      compID,
-		wfm:         wfm,
-		originalIdx: originalIdx,
+		compID:        compID,
+		wfm:           wfm,
+		originalIdx:   originalIdx,
+		binaryFetcher: binaryFetcher,
 	}
 }
 
@@ -103,7 +106,8 @@ func (i *inputReader) ReadData(ctx context.Context, input any) (err error) {
 	if err != nil {
 		return err
 	}
-	return data.Unmarshal(inputVal, input)
+	unmarshaler := data.NewUnmarshaler(i.binaryFetcher)
+	return unmarshaler.Unmarshal(ctx, inputVal, input)
 }
 
 type outputWriter struct {
@@ -123,8 +127,8 @@ func NewOutputWriter(wfm memory.WorkflowMemory, compID string, originalIdx int, 
 }
 
 func (o *outputWriter) WriteData(ctx context.Context, output any) (err error) {
-
-	val, err := data.Marshal(output)
+	marshaler := data.NewMarshaler()
+	val, err := marshaler.Marshal(output)
 	if err != nil {
 		return err
 	}

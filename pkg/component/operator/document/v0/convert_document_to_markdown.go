@@ -2,6 +2,7 @@ package document
 
 import (
 	"context"
+	"encoding/base64"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0/transformer"
@@ -40,7 +41,8 @@ func (e *execution) convertDocumentToMarkdown(ctx context.Context, job *base.Job
 		Images: func() []format.Image {
 			images := make([]format.Image, len(transformerOutputStruct.Images))
 			for i, image := range transformerOutputStruct.Images {
-				images[i], _ = data.NewImageFromURL(image)
+				b, _ := base64.StdEncoding.DecodeString(image)
+				images[i], _ = data.NewImageFromBytes(b, data.PNG, "")
 				// TODO: handle error
 			}
 			return images
@@ -49,7 +51,8 @@ func (e *execution) convertDocumentToMarkdown(ctx context.Context, job *base.Job
 		AllPageImages: func() []format.Image {
 			images := make([]format.Image, len(transformerOutputStruct.AllPageImages))
 			for i, image := range transformerOutputStruct.AllPageImages {
-				images[i], _ = data.NewImageFromURL(image)
+				b, _ := base64.StdEncoding.DecodeString(image)
+				images[i], _ = data.NewImageFromBytes(b, data.PNG, "")
 				// TODO: handle error
 			}
 			return images

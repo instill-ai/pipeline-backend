@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"strings"
@@ -8,29 +9,8 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
-
-func decodeDataURI(s string) (b []byte, contentType string, filename string, err error) {
-	slices := strings.Split(s, ",")
-	if len(slices) == 1 {
-		b, err = base64.StdEncoding.DecodeString(s)
-		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
-	} else {
-		mime := strings.Split(slices[0], ":")
-		tags := ""
-		contentType, tags, _ = strings.Cut(mime[1], ";")
-		b, err = base64.StdEncoding.DecodeString(slices[1])
-		for _, tag := range strings.Split(tags, ";") {
-
-			key, value, _ := strings.Cut(tag, "=")
-			if key == "filename" || key == "fileName" || key == "file-name" {
-				filename = value
-			}
-		}
-	}
-
-	return
-}
 
 func encodeDataURI(b []byte, contentType string) (s string, err error) {
 	s = fmt.Sprintf("data:%s;base64,%s", contentType, base64.StdEncoding.EncodeToString(b))
@@ -71,8 +51,8 @@ func NewBinaryFromBytes(b []byte, contentType, filename string) (format.Value, e
 	}
 }
 
-func NewBinaryFromURL(url string) (format.Value, error) {
-	b, contentType, filename, err := convertURLToBytes(url)
+func NewBinaryFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string) (format.Value, error) {
+	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, url)
 	if err != nil {
 		return nil, err
 	}

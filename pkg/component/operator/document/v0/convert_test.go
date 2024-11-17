@@ -2,8 +2,6 @@ package document
 
 import (
 	"context"
-	"encoding/base64"
-	"fmt"
 	"os"
 	"testing"
 
@@ -65,8 +63,6 @@ func TestConvertToText(t *testing.T) {
 			fileContent, err := os.ReadFile(test.filepath)
 			c.Assert(err, qt.IsNil)
 
-			base64DataURI := fmt.Sprintf("data:%s;base64,%s", mimeTypeByExtension(test.filepath), base64.StdEncoding.EncodeToString(fileContent))
-
 			execution, err := component.CreateExecution(base.ComponentExecution{
 				Component: component,
 				Task:      "TASK_CONVERT_TO_TEXT",
@@ -79,7 +75,7 @@ func TestConvertToText(t *testing.T) {
 				case *ConvertToTextInput:
 					*input = ConvertToTextInput{
 						Document: func() format.Document {
-							doc, err := data.NewDocumentFromURL(base64DataURI)
+							doc, err := data.NewDocumentFromBytes(fileContent, mimeTypeByExtension(test.filepath), "")
 							if err != nil {
 								return nil
 							}

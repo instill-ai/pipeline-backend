@@ -1,12 +1,14 @@
 package data
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
 	"strings"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 // Package data provides functionality for marshaling and unmarshaling between
@@ -38,8 +40,23 @@ import (
 //   - For Audio: "audio/mpeg", "audio/wav", etc
 //   - For Document: "application/pdf", "text/plain", etc
 
+type Marshaler struct {
+}
+
+type Unmarshaler struct {
+	binaryFetcher external.BinaryFetcher
+}
+
+func NewMarshaler() *Marshaler {
+	return &Marshaler{}
+}
+
+func NewUnmarshaler(binaryFetcher external.BinaryFetcher) *Unmarshaler {
+	return &Unmarshaler{binaryFetcher}
+}
+
 // Unmarshal converts a Map value into the provided struct s using `instill` tags.
-func Unmarshal(d format.Value, s any) error {
+func (u *Unmarshaler) Unmarshal(ctx context.Context, d format.Value, s any) error {
 	v := reflect.ValueOf(s)
 	if v.Kind() != reflect.Ptr || v.Elem().Kind() != reflect.Struct {
 		return errors.New("input must be a pointer to a struct")
@@ -48,11 +65,11 @@ func Unmarshal(d format.Value, s any) error {
 	if !ok {
 		return errors.New("input value must be a Map")
 	}
-	return unmarshalStruct(m, v.Elem())
+	return u.unmarshalStruct(ctx, m, v.Elem())
 }
 
 // unmarshalStruct iterates through struct fields and unmarshals corresponding values.
-func unmarshalStruct(m Map, v reflect.Value) error {
+func (u *Unmarshaler) unmarshalStruct(ctx context.Context, m Map, v reflect.Value) error {
 	t := v.Type()
 	for i := 0; i < v.NumField(); i++ {
 		field := t.Field(i)
@@ -60,12 +77,12 @@ func unmarshalStruct(m Map, v reflect.Value) error {
 		if !fieldValue.CanSet() {
 			continue
 		}
-		fieldName := getFieldName(field)
+		fieldName := u.getFieldName(field)
 		val, ok := m[fieldName]
 		if !ok {
 			continue
 		}
-		if err := unmarshalValue(val, fieldValue, field); err != nil {
+		if err := u.unmarshalValue(ctx, val, fieldValue, field); err != nil {
 			return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
 		}
 	}
@@ -73,41 +90,41 @@ func unmarshalStruct(m Map, v reflect.Value) error {
 }
 
 // unmarshalValue dispatches to type-specific unmarshal functions based on the value type.
-func unmarshalValue(val format.Value, field reflect.Value, structField reflect.StructField) error {
+func (u *Unmarshaler) unmarshalValue(ctx context.Context, val format.Value, field reflect.Value, structField reflect.StructField) error {
 	switch v := val.(type) {
 	case *fileData, *documentData, *imageData, *videoData, *audioData:
-		return unmarshalInterface(v, field, structField)
+		return u.unmarshalInterface(v, field, structField)
 	case *booleanData:
-		return unmarshalBoolean(v, field)
+		return u.unmarshalBoolean(v, field)
 	case *numberData:
-		return unmarshalNumber(v, field)
+		return u.unmarshalNumber(v, field)
 	case *stringData:
-		return unmarshalString(v, field)
+		return u.unmarshalString(ctx, v, field)
 	case Array:
 		if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
 			field.Set(reflect.ValueOf(v))
 			return nil
 		}
-		return unmarshalArray(v, field)
+		return u.unmarshalArray(ctx, v, field)
 	case Map:
 		if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
 			field.Set(reflect.ValueOf(v))
 			return nil
 		}
-		return unmarshalMap(v, field)
+		return u.unmarshalMap(ctx, v, field)
 	case *nullData:
 		if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
 			field.Set(reflect.ValueOf(v))
 			return nil
 		}
-		return unmarshalNull(v, field)
+		return u.unmarshalNull(v, field)
 	default:
 		return fmt.Errorf("unsupported type: %T", val)
 	}
 }
 
 // unmarshalString handles unmarshaling of String values.
-func unmarshalString(v format.String, field reflect.Value) error {
+func (u *Unmarshaler) unmarshalString(ctx context.Context, v format.String, field reflect.Value) error {
 	switch field.Kind() {
 	case reflect.String:
 		field.SetString(v.String())
@@ -115,7 +132,7 @@ func unmarshalString(v format.String, field reflect.Value) error {
 		if field.IsNil() {
 			field.Set(reflect.New(field.Type().Elem()))
 		}
-		return unmarshalString(v, field.Elem())
+		return u.unmarshalString(ctx, v, field.Elem())
 	default:
 		switch field.Type() {
 
@@ -125,7 +142,7 @@ func unmarshalString(v format.String, field reflect.Value) error {
 			reflect.TypeOf((*format.Video)(nil)).Elem(),
 			reflect.TypeOf((*format.Document)(nil)).Elem(),
 			reflect.TypeOf((*format.File)(nil)).Elem():
-			f, err := createFileFromURL(field.Type(), v.String())
+			f, err := u.createFileFromURL(ctx, field.Type(), v.String())
 			if err == nil {
 				field.Set(reflect.ValueOf(f))
 				return nil
@@ -141,24 +158,24 @@ func unmarshalString(v format.String, field reflect.Value) error {
 	return nil
 }
 
-func createFileFromURL(t reflect.Type, url string) (format.Value, error) {
+func (u *Unmarshaler) createFileFromURL(ctx context.Context, t reflect.Type, url string) (format.Value, error) {
 	switch t {
 	case reflect.TypeOf((*format.Image)(nil)).Elem():
-		return NewImageFromURL(url)
+		return NewImageFromURL(ctx, u.binaryFetcher, url)
 	case reflect.TypeOf((*format.Audio)(nil)).Elem():
-		return NewAudioFromURL(url)
+		return NewAudioFromURL(ctx, u.binaryFetcher, url)
 	case reflect.TypeOf((*format.Video)(nil)).Elem():
-		return NewVideoFromURL(url)
+		return NewVideoFromURL(ctx, u.binaryFetcher, url)
 	case reflect.TypeOf((*format.Document)(nil)).Elem():
-		return NewDocumentFromURL(url)
+		return NewDocumentFromURL(ctx, u.binaryFetcher, url)
 	case reflect.TypeOf((*format.File)(nil)).Elem():
-		return NewBinaryFromURL(url)
+		return NewBinaryFromURL(ctx, u.binaryFetcher, url)
 	}
 	return nil, fmt.Errorf("unsupported type: %v", t)
 }
 
 // unmarshalBoolean handles unmarshaling of Boolean values.
-func unmarshalBoolean(v format.Boolean, field reflect.Value) error {
+func (u *Unmarshaler) unmarshalBoolean(v format.Boolean, field reflect.Value) error {
 	switch field.Kind() {
 	case reflect.Bool:
 		field.SetBool(v.Boolean())
@@ -166,7 +183,7 @@ func unmarshalBoolean(v format.Boolean, field reflect.Value) error {
 		if field.IsNil() {
 			field.Set(reflect.New(field.Type().Elem()))
 		}
-		return unmarshalBoolean(v, field.Elem())
+		return u.unmarshalBoolean(v, field.Elem())
 	default:
 		switch field.Type() {
 		case reflect.TypeOf(v), reflect.TypeOf((*format.Boolean)(nil)).Elem():
@@ -181,7 +198,7 @@ func unmarshalBoolean(v format.Boolean, field reflect.Value) error {
 }
 
 // unmarshalNumber handles unmarshaling of Number values.
-func unmarshalNumber(v format.Number, field reflect.Value) error {
+func (u *Unmarshaler) unmarshalNumber(v format.Number, field reflect.Value) error {
 	switch field.Kind() {
 	case reflect.Float32, reflect.Float64:
 		field.SetFloat(v.Float64())
@@ -193,7 +210,7 @@ func unmarshalNumber(v format.Number, field reflect.Value) error {
 		if field.IsNil() {
 			field.Set(reflect.New(field.Type().Elem()))
 		}
-		return unmarshalNumber(v, field.Elem())
+		return u.unmarshalNumber(v, field.Elem())
 	default:
 		switch field.Type() {
 		case reflect.TypeOf(v), reflect.TypeOf((*format.Number)(nil)).Elem():
@@ -208,14 +225,14 @@ func unmarshalNumber(v format.Number, field reflect.Value) error {
 }
 
 // unmarshalArray handles unmarshaling of Array values.
-func unmarshalArray(v Array, field reflect.Value) error {
+func (u *Unmarshaler) unmarshalArray(ctx context.Context, v Array, field reflect.Value) error {
 	if field.Kind() != reflect.Slice {
 		return fmt.Errorf("cannot unmarshal Array into %v", field.Type())
 	}
 	slice := reflect.MakeSlice(field.Type(), len(v), len(v))
 	for i, elem := range v {
 		elemValue := slice.Index(i)
-		if err := unmarshalValue(elem, elemValue, reflect.StructField{}); err != nil {
+		if err := u.unmarshalValue(ctx, elem, elemValue, reflect.StructField{}); err != nil {
 			return fmt.Errorf("error unmarshaling array element %d: %w", i, err)
 		}
 	}
@@ -224,31 +241,31 @@ func unmarshalArray(v Array, field reflect.Value) error {
 }
 
 // unmarshalMap handles unmarshaling of Map values.
-func unmarshalMap(v Map, field reflect.Value) error {
+func (u *Unmarshaler) unmarshalMap(ctx context.Context, v Map, field reflect.Value) error {
 	switch field.Kind() {
 	case reflect.Map:
-		return unmarshalToReflectMap(v, field)
+		return u.unmarshalToReflectMap(ctx, v, field)
 	case reflect.Struct:
-		return unmarshalToStruct(v, field)
+		return u.unmarshalToStruct(ctx, v, field)
 	case reflect.Ptr:
 		if field.IsNil() {
 			field.Set(reflect.New(field.Type().Elem()))
 		}
-		return unmarshalMap(v, field.Elem())
+		return u.unmarshalMap(ctx, v, field.Elem())
 	default:
 		return fmt.Errorf("cannot unmarshal Map into %v", field.Type())
 	}
 }
 
 // unmarshalToReflectMap handles unmarshaling of Map values into reflect.Map.
-func unmarshalToReflectMap(v Map, field reflect.Value) error {
+func (u *Unmarshaler) unmarshalToReflectMap(ctx context.Context, v Map, field reflect.Value) error {
 	mapValue := reflect.MakeMap(field.Type())
 	for k, val := range v {
 		keyValue := reflect.ValueOf(k)
 		elemType := field.Type().Elem()
 		elemValue := reflect.New(elemType).Elem()
 
-		if err := unmarshalValue(val, elemValue, reflect.StructField{}); err != nil {
+		if err := u.unmarshalValue(ctx, val, elemValue, reflect.StructField{}); err != nil {
 			return fmt.Errorf("error unmarshaling map value for key %s: %w", k, err)
 		}
 
@@ -259,19 +276,19 @@ func unmarshalToReflectMap(v Map, field reflect.Value) error {
 }
 
 // unmarshalToStruct handles unmarshaling of Map values into struct.
-func unmarshalToStruct(v Map, field reflect.Value) error {
+func (u *Unmarshaler) unmarshalToStruct(ctx context.Context, v Map, field reflect.Value) error {
 	for i := 0; i < field.NumField(); i++ {
 		structField := field.Type().Field(i)
 		fieldValue := field.Field(i)
 		if !fieldValue.CanSet() {
 			continue
 		}
-		fieldName := getFieldName(structField)
+		fieldName := u.getFieldName(structField)
 		val, ok := v[fieldName]
 		if !ok {
 			continue
 		}
-		if err := unmarshalValue(val, fieldValue, structField); err != nil {
+		if err := u.unmarshalValue(ctx, val, fieldValue, structField); err != nil {
 			return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
 		}
 	}
@@ -279,7 +296,7 @@ func unmarshalToStruct(v Map, field reflect.Value) error {
 }
 
 // unmarshalNull handles unmarshaling of Null values.
-func unmarshalNull(_ format.Null, field reflect.Value) error {
+func (u *Unmarshaler) unmarshalNull(_ format.Null, field reflect.Value) error {
 	if field.Kind() == reflect.Ptr {
 		field.Set(reflect.Zero(field.Type()))
 		return nil
@@ -288,7 +305,7 @@ func unmarshalNull(_ format.Null, field reflect.Value) error {
 }
 
 // unmarshalInterface handles unmarshaling of interface values.
-func unmarshalInterface(v format.Value, field reflect.Value, structField reflect.StructField) error {
+func (u *Unmarshaler) unmarshalInterface(v format.Value, field reflect.Value, structField reflect.StructField) error {
 	if field.Kind() == reflect.String {
 		field.SetString(v.(format.String).String())
 		return nil
@@ -351,7 +368,7 @@ func unmarshalInterface(v format.Value, field reflect.Value, structField reflect
 }
 
 // getFieldName returns the field name from the struct tag or the field name itself.
-func getFieldName(field reflect.StructField) string {
+func (u *Unmarshaler) getFieldName(field reflect.StructField) string {
 	tag := field.Tag.Get("instill")
 	if tag == "" {
 		return field.Name
@@ -361,16 +378,16 @@ func getFieldName(field reflect.StructField) string {
 }
 
 // Marshal converts a struct into a Map that represents the struct fields as values.
-func Marshal(val any) (format.Value, error) {
+func (m *Marshaler) Marshal(val any) (format.Value, error) {
 	if val == nil {
 		return nil, fmt.Errorf("input must not be nil")
 	}
 	v := reflect.ValueOf(val)
-	return marshalValue(v)
+	return m.marshalValue(v)
 }
 
 // marshalValue handles marshaling of different value types.
-func marshalValue(v reflect.Value) (format.Value, error) {
+func (m *Marshaler) marshalValue(v reflect.Value) (format.Value, error) {
 	if !v.IsValid() {
 		return NewNull(), nil
 	}
@@ -391,14 +408,14 @@ func marshalValue(v reflect.Value) (format.Value, error) {
 
 	switch v.Kind() {
 	case reflect.Struct:
-		return marshalStruct(v)
+		return m.marshalStruct(v)
 	case reflect.Map:
 		if v.Type().Key().Kind() != reflect.String {
 			return nil, fmt.Errorf("map key must be string type")
 		}
-		return marshalMap(v)
+		return m.marshalMap(v)
 	case reflect.Slice, reflect.Array:
-		return marshalSlice(v)
+		return m.marshalSlice(v)
 	case reflect.Float32, reflect.Float64:
 		return NewNumberFromFloat(v.Float()), nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -415,9 +432,9 @@ func marshalValue(v reflect.Value) (format.Value, error) {
 }
 
 // marshalStruct handles marshaling of struct values.
-func marshalStruct(v reflect.Value) (Map, error) {
+func (m *Marshaler) marshalStruct(v reflect.Value) (Map, error) {
 	t := v.Type()
-	m := Map{}
+	mp := Map{}
 
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
@@ -482,38 +499,38 @@ func marshalStruct(v reflect.Value) (Map, error) {
 			}
 		}
 
-		marshaledValue, err := marshalValue(fieldValue)
+		marshaledValue, err := m.marshalValue(fieldValue)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling field %s: %w", fieldName, err)
 		}
 
-		m[fieldName] = marshaledValue
+		mp[fieldName] = marshaledValue
 	}
 
-	return m, nil
+	return mp, nil
 }
 
 // marshalMap handles marshaling of map values.
-func marshalMap(v reflect.Value) (Map, error) {
-	m := Map{}
+func (m *Marshaler) marshalMap(v reflect.Value) (Map, error) {
+	mp := Map{}
 	for _, key := range v.MapKeys() {
 		keyStr := key.String()
 
-		marshaledValue, err := marshalValue(v.MapIndex(key))
+		marshaledValue, err := m.marshalValue(v.MapIndex(key))
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling map value: %w", err)
 		}
 
-		m[keyStr] = marshaledValue
+		mp[keyStr] = marshaledValue
 	}
-	return m, nil
+	return mp, nil
 }
 
 // marshalSlice handles marshaling of slice values.
-func marshalSlice(v reflect.Value) (Array, error) {
+func (m *Marshaler) marshalSlice(v reflect.Value) (Array, error) {
 	arr := make(Array, v.Len())
 	for i := 0; i < v.Len(); i++ {
-		marshaledValue, err := marshalValue(v.Index(i))
+		marshaledValue, err := m.marshalValue(v.Index(i))
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling slice element %d: %w", i, err)
 		}

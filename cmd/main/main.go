@@ -268,6 +268,12 @@ func main() {
 		defer artifactPrivateServiceClientConn.Close()
 	}
 
+	minioxClientWrapper, err := miniox.NewMinioClient(ctx, &config.Config.Minio, logger)
+	if err != nil {
+		logger.Fatal("failed to create miniox client wrapper", zap.Error(err))
+	}
+
+	binaryFetcher := external.NewArtifactBinaryFetcher(artifactPrivateServiceClient, minioxClientWrapper)
 	service := service.NewService(
 		service.ServiceConfig{
 			Repository:               repo,
@@ -281,6 +287,7 @@ func main() {
 			Memory:                   ms,
 			WorkerUID:                workerUID,
 			RetentionHandler:         nil,
+			BinaryFetcher:            binaryFetcher,
 		},
 	)
 
@@ -448,6 +455,7 @@ func main() {
 			WorkerUID:                    workerUID,
 			ArtifactPublicServiceClient:  artifactPublicServiceClient,
 			ArtifactPrivateServiceClient: artifactPrivateServiceClient,
+			BinaryFetcher:                binaryFetcher,
 		},
 	)
 
