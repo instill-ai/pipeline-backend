@@ -40,8 +40,6 @@ import (
 //   - For Audio: "audio/mpeg", "audio/wav", etc
 //   - For Document: "application/pdf", "text/plain", etc
 
-type FetchFromURL func(url string) (b []byte, contentType string, filename string, err error)
-
 type Marshaler struct {
 }
 
