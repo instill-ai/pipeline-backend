@@ -8,6 +8,31 @@ import (
 	"github.com/slack-go/slack"
 )
 
+func (c *component) identifyEventMessage(ctx context.Context, rawEvent *base.RawEvent) (identifierResult *base.IdentifierResult, err error) {
+	var raw rawSlackMessage
+	unmarshaler := data.NewUnmarshaler(c.BinaryFetcher)
+	err = unmarshaler.Unmarshal(ctx, rawEvent.Message, &raw)
+	if err != nil {
+		return nil, err
+	}
+	var rawMessage rawSlackMessageEvent
+	err = unmarshaler.Unmarshal(ctx, raw.Event, &rawMessage)
+	if err != nil {
+		return nil, err
+	}
+	identifiers := []base.Identifier{}
+	for _, authorization := range raw.Authorizations {
+		identifier := map[string]any{
+			"user-id":    authorization.UserID,
+			"channel-id": rawMessage.Channel,
+		}
+		identifiers = append(identifiers, identifier)
+	}
+	return &base.IdentifierResult{
+		Identifiers: identifiers,
+	}, nil
+}
+
 func (c *component) handleEventMessage(ctx context.Context, client slackClient, rawEvent *base.RawEvent) (parsedEvent *base.ParsedEvent, err error) {
 	var raw rawSlackMessage
 	unmarshaler := data.NewUnmarshaler(c.BinaryFetcher)
@@ -66,15 +91,6 @@ func (c *component) handleEventMessage(ctx context.Context, client slackClient, 
 		return nil, err
 	}
 
-	identifiers := []base.Identifier{}
-	for _, authorization := range raw.Authorizations {
-		identifier := map[string]any{
-			"user-id":    authorization.UserID,
-			"channel-id": rawMessage.Channel,
-		}
-		identifiers = append(identifiers, identifier)
-	}
-
 	marshaler := data.NewMarshaler()
 	parsed, err := marshaler.Marshal(slackEventMessageStruct)
 	if err != nil {
@@ -84,6 +100,5 @@ func (c *component) handleEventMessage(ctx context.Context, client slackClient, 
 	return &base.ParsedEvent{
 		Response:      data.Map{},
 		ParsedMessage: parsed,
-		Identifiers:   identifiers,
 	}, nil
 }

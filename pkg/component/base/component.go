@@ -104,11 +104,13 @@ type IComponent interface {
 	// UnregisterEvent unregisters an event handler for the component.
 	UnregisterEvent(ctx context.Context, settings *UnregisterEventSettings, identifier []Identifier) error
 
+	// IdentifyEvent identifies the event and returns the identifiers.
+	IdentifyEvent(ctx context.Context, rawEvent *RawEvent) (identifierResult *IdentifierResult, err error)
+
 	// ParseEvent parses the raw event and returns a parsed event.
 	// The parsed event contains:
 	// - parsed message: the processed event data
 	// - webhook response: any response that should be sent back to the webhook caller
-	// - identifiers: used to match the event with its corresponding pipeline
 	ParseEvent(ctx context.Context, rawEvent *RawEvent) (parsedEvent *ParsedEvent, err error)
 
 	UsageHandlerCreator() UsageHandlerCreator
@@ -139,10 +141,14 @@ type RawEvent struct {
 }
 
 type ParsedEvent struct {
-	SkipTrigger   bool
 	ParsedMessage format.Value
 	Response      format.Value
-	Identifiers   []Identifier
+}
+
+type IdentifierResult struct {
+	SkipTrigger bool
+	Identifiers []Identifier
+	Response    format.Value
 }
 
 // Component implements the common component methods.
@@ -161,7 +167,11 @@ type Component struct {
 	BinaryFetcher external.BinaryFetcher
 }
 
-func (c *Component) ParseEvent(context.Context, *RawEvent) (*ParsedEvent, error) {
+func (c *Component) IdentifyEvent(ctx context.Context, rawEvent *RawEvent) (identifierResult *IdentifierResult, err error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (c *Component) ParseEvent(ctx context.Context, rawEvent *RawEvent) (*ParsedEvent, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 

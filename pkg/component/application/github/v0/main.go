@@ -10,7 +10,6 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/x/errmsg"
 )
 
@@ -130,21 +129,6 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	}
 
 	return nil
-}
-
-func (c *component) ParseEvent(_ context.Context, rawEvent *base.RawEvent) (parsedEvent *base.ParsedEvent, err error) {
-
-	if len(rawEvent.Header["x-github-event"]) > 0 && rawEvent.Header["x-github-event"][0] == "ping" {
-		return &base.ParsedEvent{
-			SkipTrigger:   true,
-			ParsedMessage: rawEvent.Message,
-			Response:      data.Map{},
-		}, nil
-	}
-	return &base.ParsedEvent{
-		ParsedMessage: rawEvent.Message,
-		Response:      data.Map{},
-	}, nil
 }
 
 // SupportsOAuth checks whether the component is configured to support OAuth.

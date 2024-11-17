@@ -142,15 +142,6 @@ func (c *component) ParseEvent(ctx context.Context, rawEvent *base.RawEvent) (pa
 	client := newClient(setupStruct.BotToken)
 
 	switch event := slackEvent.Type; event {
-	case "url_verification":
-		resp := data.Map{
-			"challenge": data.NewString(rawEvent.Message.(data.Map)["challenge"].String()),
-		}
-		return &base.ParsedEvent{
-			SkipTrigger:   true,
-			ParsedMessage: rawEvent.Message,
-			Response:      resp,
-		}, nil
 	case "event_callback":
 		var slackEventType rawSlackEventType
 		unmarshaler := data.NewUnmarshaler(c.BinaryFetcher)
@@ -165,6 +156,40 @@ func (c *component) ParseEvent(ctx context.Context, rawEvent *base.RawEvent) (pa
 		}
 	}
 	return nil, nil
+}
+
+func (c *component) IdentifyEvent(ctx context.Context, rawEvent *base.RawEvent) (identifierResult *base.IdentifierResult, err error) {
+
+	var slackEvent rawSlackMessage
+	unmarshaler := data.NewUnmarshaler(c.BinaryFetcher)
+	err = unmarshaler.Unmarshal(ctx, rawEvent.Message, &slackEvent)
+	if err != nil {
+		return nil, err
+	}
+	switch event := slackEvent.Type; event {
+	case "url_verification":
+		resp := data.Map{
+			"challenge": data.NewString(rawEvent.Message.(data.Map)["challenge"].String()),
+		}
+		return &base.IdentifierResult{
+			SkipTrigger: true,
+			Response:    resp,
+		}, nil
+	case "event_callback":
+		var slackEventType rawSlackEventType
+		unmarshaler := data.NewUnmarshaler(c.BinaryFetcher)
+		err = unmarshaler.Unmarshal(ctx, slackEvent.Event, &slackEventType)
+		if err != nil {
+			return nil, err
+		}
+
+		switch slackEventType.Type {
+		case "message":
+			return c.identifyEventMessage(ctx, rawEvent)
+		}
+	}
+	return nil, nil
+
 }
 
 func (c *component) RegisterEvent(ctx context.Context, settings *base.RegisterEventSettings) ([]base.Identifier, error) {

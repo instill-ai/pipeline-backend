@@ -268,6 +268,13 @@ func (s *Store) CreateExecution(p ExecutionParams) (*base.ExecutionWrapper, erro
 	return &base.ExecutionWrapper{IExecution: x}, nil
 }
 
+func (s *Store) IdentifyEvent(ctx context.Context, defID string, rawEvent *base.RawEvent) (identifierResult *base.IdentifierResult, err error) {
+	if c, ok := s.componentIDMap[defID]; ok {
+		return c.comp.IdentifyEvent(ctx, rawEvent)
+	}
+	return nil, fmt.Errorf("component definition not found")
+}
+
 func (s *Store) ParseEvent(ctx context.Context, defID string, rawEvent *base.RawEvent) (parsedEvent *base.ParsedEvent, err error) {
 	if c, ok := s.componentIDMap[defID]; ok {
 		return c.comp.ParseEvent(ctx, rawEvent)
