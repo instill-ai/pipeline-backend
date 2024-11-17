@@ -18,6 +18,8 @@ import (
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/jsonref"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -86,12 +88,61 @@ type IComponent interface {
 	IsSecretField(target string) bool
 	SupportsOAuth() bool
 
-	// Note: These two functions are for the pipeline run-on-event feature,
+	// Note: These functions are for the pipeline run-on-event feature,
 	// which is still experimental and may change at any time.
-	HandleVerificationEvent(header map[string][]string, req *structpb.Struct, setup map[string]any) (isVerification bool, resp *structpb.Struct, err error)
-	ParseEvent(ctx context.Context, req *structpb.Struct, setup map[string]any) (parsed *structpb.Struct, err error)
+
+	// RegisterEvent registers an event handler for the component. It performs
+	// two main tasks:
+	// 1. Registers a webhook URL with the vendor service if required
+	// 2. Generates a identifier for the event registration that will be used to
+	//    route incoming events to the correct pipeline
+	//
+	// The identifier returned by this method will be stored in backend and used
+	// later to match incoming webhook events with their corresponding pipeline.
+	RegisterEvent(ctx context.Context, settings *RegisterEventSettings) (identifier []Identifier, err error)
+
+	// UnregisterEvent unregisters an event handler for the component.
+	UnregisterEvent(ctx context.Context, settings *UnregisterEventSettings, identifier []Identifier) error
+
+	// ParseEvent parses the raw event and returns a parsed event.
+	// The parsed event contains:
+	// - parsed message: the processed event data
+	// - webhook response: any response that should be sent back to the webhook caller
+	// - identifiers: used to match the event with its corresponding pipeline
+	ParseEvent(ctx context.Context, rawEvent *RawEvent) (parsedEvent *ParsedEvent, err error)
 
 	UsageHandlerCreator() UsageHandlerCreator
+}
+
+type Identifier map[string]any
+type EventSettings struct {
+	// TODO: The Config field represents the component configuration settings
+	// while Setup contains initialization parameters. Consider renaming to
+	// a more explicit name for clarity.
+	Config format.Value
+	Setup  format.Value
+}
+
+type RegisterEventSettings struct {
+	EventSettings
+	WebhookURL string
+}
+
+type UnregisterEventSettings struct {
+	EventSettings
+}
+
+type RawEvent struct {
+	EventSettings
+	Header  map[string][]string
+	Message format.Value
+}
+
+type ParsedEvent struct {
+	SkipTrigger   bool
+	ParsedMessage format.Value
+	Response      format.Value
+	Identifiers   []Identifier
 }
 
 // Component implements the common component methods.
@@ -106,14 +157,20 @@ type Component struct {
 	secretFields             []string
 	inputAcceptFormatsFields map[string]map[string][]string
 	outputFormatsFields      map[string]map[string]string
+
+	BinaryFetcher external.BinaryFetcher
 }
 
-func (c *Component) HandleVerificationEvent(header map[string][]string, req *structpb.Struct, setup map[string]any) (isVerification bool, resp *structpb.Struct, err error) {
-	return false, nil, nil
+func (c *Component) ParseEvent(context.Context, *RawEvent) (*ParsedEvent, error) {
+	return nil, fmt.Errorf("not implemented")
 }
 
-func (c *Component) ParseEvent(ctx context.Context, req *structpb.Struct, setup map[string]any) (parsed *structpb.Struct, err error) {
-	return req, nil
+func (c *Component) RegisterEvent(context.Context, *RegisterEventSettings) ([]Identifier, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (c *Component) UnregisterEvent(context.Context, *UnregisterEventSettings, []Identifier) error {
+	return fmt.Errorf("not implemented")
 }
 
 func convertDataSpecToCompSpec(dataSpec *structpb.Struct) (*structpb.Struct, error) {
@@ -693,7 +750,7 @@ func (c *Component) GetTaskOutputSchemas() map[string]string {
 
 // LoadDefinition loads the component definition, setup, tasks, events and additional JSON files.
 // The definition files are currently loaded together but could be refactored to load separately.
-func (c *Component) LoadDefinition(definitionJSONBytes, setupJSONBytes, tasksJSONBytes []byte, eventJSONBytes []byte, additionalJSONBytes map[string][]byte) error {
+func (c *Component) LoadDefinition(definitionJSONBytes, setupJSONBytes, tasksJSONBytes []byte, eventsJSONBytes []byte, additionalJSONBytes map[string][]byte) error {
 	var err error
 	var definitionJSON any
 
@@ -774,8 +831,8 @@ func (c *Component) LoadDefinition(definitionJSONBytes, setupJSONBytes, tasksJSO
 
 	}
 
-	if eventJSONBytes != nil {
-		c.definition.Spec.EventSpecifications, err = generateEventSpecs(eventJSONBytes)
+	if eventsJSONBytes != nil {
+		c.definition.Spec.EventSpecifications, err = generateEventSpecs(eventsJSONBytes)
 		if err != nil {
 			return err
 		}
@@ -930,7 +987,6 @@ func (c *Component) initInputAcceptFormatsFields() {
 }
 
 func (c *Component) traverseInputAcceptFormatsFields(input *structpb.Value, prefix string, inputAcceptFormatsFields map[string][]string) map[string][]string {
-	// fmt.Println("input", input)
 	for key, v := range input.GetStructValue().GetFields() {
 
 		if v, ok := v.GetStructValue().GetFields()["instillAcceptFormats"]; ok {
@@ -979,7 +1035,6 @@ func (c *Component) initOutputFormatsFields() {
 }
 
 func (c *Component) traverseOutputFormatsFields(input *structpb.Value, prefix string, outputFormatsFields map[string]string) map[string]string {
-	// fmt.Println("input", input)
 	for key, v := range input.GetStructValue().GetFields() {
 
 		if v, ok := v.GetStructValue().GetFields()["instillFormat"]; ok {

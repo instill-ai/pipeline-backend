@@ -66,12 +66,36 @@ func (s *service) GetCtxUserNamespace(ctx context.Context) (resource.Namespace, 
 		return resource.Namespace{}, fmt.Errorf("namespace error")
 	}
 	return resource.Namespace{
-		NsType: resource.NamespaceType("users"),
+		NsType: resource.User,
 		NsID:   resp.Id,
 		NsUID:  uid,
 	}, nil
 }
-func (s *service) GetRscNamespace(ctx context.Context, namespaceID string) (resource.Namespace, error) {
+
+func (s *service) GetNamespaceByUID(ctx context.Context, namespaceUID uuid.UUID) (resource.Namespace, error) {
+	resp, err := s.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{
+		Uid: namespaceUID.String(),
+	})
+	if err != nil {
+		return resource.Namespace{}, err
+	}
+	if resp.Type == mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_USER {
+		return resource.Namespace{
+			NsType: resource.User,
+			NsID:   resp.Id,
+			NsUID:  namespaceUID,
+		}, nil
+	} else if resp.Type == mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_ORGANIZATION {
+		return resource.Namespace{
+			NsType: resource.Organization,
+			NsID:   resp.Id,
+			NsUID:  namespaceUID,
+		}, nil
+	}
+	return resource.Namespace{}, fmt.Errorf("namespace error")
+}
+
+func (s *service) GetNamespaceByID(ctx context.Context, namespaceID string) (resource.Namespace, error) {
 
 	resp, err := s.mgmtPrivateServiceClient.CheckNamespaceAdmin(ctx, &mgmtpb.CheckNamespaceAdminRequest{
 		Id: namespaceID,

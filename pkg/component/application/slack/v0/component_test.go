@@ -18,6 +18,10 @@ import (
 
 type MockSlackClient struct{}
 
+func (m *MockSlackClient) AuthTest() (*slack.AuthTestResponse, error) {
+	return &slack.AuthTestResponse{}, nil
+}
+
 func (m *MockSlackClient) GetConversations(params *slack.GetConversationsParameters) ([]slack.Channel, string, error) {
 	var channels []slack.Channel
 	nextCursor := ""
@@ -103,8 +107,8 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 
 	testcases := []struct {
 		name       string
-		botClient  SlackClient
-		userClient SlackClient
+		botClient  slackClient
+		userClient slackClient
 		input      UserInputWriteTask
 		wantResp   WriteTaskResp
 		wantErr    string

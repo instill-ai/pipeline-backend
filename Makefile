@@ -17,13 +17,21 @@ dev:							## Run dev container
 	@docker inspect --type container ${SERVICE_NAME} >/dev/null 2>&1 && echo "A container named ${SERVICE_NAME} is already running." || \
 		echo "Run dev container ${SERVICE_NAME}. To stop it, run \"make stop\"."
 	@docker run -d --rm \
-		-v $(PWD):/${SERVICE_NAME} \
 		-p ${PUBLIC_SERVICE_PORT}:${PUBLIC_SERVICE_PORT} \
-		-p ${PRIVATE_SERVICE_PORT}:${PRIVATE_SERVICE_PORT} \
-		--env-file .env.component \
+		-v $(PWD)/../go.work:/go.work \
+		-v $(PWD)/../go.work.sum:/go.work.sum \
+		-v $(PWD)/../mgmt-backend:/mgmt-backend \
+		-v $(PWD)/../model-backend:/model-backend \
+		-v $(PWD)/../pipeline-backend:/pipeline-backend \
+		-v $(PWD)/../artifact-backend:/artifact-backend \
+		-v $(PWD)/../mgmt-backend-cloud:/mgmt-backend-cloud \
+		-v $(PWD)/../model-backend-cloud:/model-backend-cloud \
+		-v $(PWD)/../pipeline-backend-cloud:/pipeline-backend-cloud \
+		-v $(PWD)/../protogengo:/protogengo \
+		-v $(PWD)/../component:/component \
 		--network instill-network \
 		--name ${SERVICE_NAME} \
-		instill/${SERVICE_NAME}:dev >/dev/null 2>&1
+		instill/${SERVICE_NAME}:dev
 
 .PHONY: latest
 latest:							## Run latest container

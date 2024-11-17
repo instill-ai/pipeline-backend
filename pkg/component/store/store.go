@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -57,6 +58,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/text/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/video/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/web/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -83,10 +85,12 @@ func Init(
 	logger *zap.Logger,
 	secrets config.ComponentSecrets,
 	usageHandlerCreator base.UsageHandlerCreator,
+	binaryFetcher external.BinaryFetcher,
 ) *Store {
 	baseComp := base.Component{
 		Logger:          logger,
 		NewUsageHandler: usageHandlerCreator,
+		BinaryFetcher:   binaryFetcher,
 	}
 
 	once.Do(func() {
@@ -264,11 +268,18 @@ func (s *Store) CreateExecution(p ExecutionParams) (*base.ExecutionWrapper, erro
 	return &base.ExecutionWrapper{IExecution: x}, nil
 }
 
-func (s *Store) HandleVerificationEvent(defID string, header map[string][]string, req *structpb.Struct, setup map[string]any) (bool, *structpb.Struct, error) {
+func (s *Store) ParseEvent(ctx context.Context, defID string, rawEvent *base.RawEvent) (parsedEvent *base.ParsedEvent, err error) {
 	if c, ok := s.componentIDMap[defID]; ok {
-		return c.comp.HandleVerificationEvent(header, req, setup)
+		return c.comp.ParseEvent(ctx, rawEvent)
 	}
-	return false, nil, fmt.Errorf("component definition not found")
+	return nil, fmt.Errorf("component definition not found")
+}
+
+func (s *Store) RegisterEvent(ctx context.Context, defID string, settings *base.RegisterEventSettings) (identifiers []base.Identifier, err error) {
+	if c, ok := s.componentIDMap[defID]; ok {
+		return c.comp.RegisterEvent(ctx, settings)
+	}
+	return nil, fmt.Errorf("component definition not found")
 }
 
 // GetDefinitionByUID returns a component definition by its UID.

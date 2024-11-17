@@ -213,7 +213,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	var ownerType mgmtpb.OwnerType
-	switch param.SystemVariables.PipelineNamespace.NsType {
+	switch param.SystemVariables.PipelineOwner.NsType {
 	case resource.Organization:
 		ownerType = mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION
 	case resource.User:
@@ -223,7 +223,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	dataPoint := utils.PipelineUsageMetricData{
-		OwnerUID:           param.SystemVariables.PipelineNamespace.NsUID.String(),
+		OwnerUID:           param.SystemVariables.PipelineOwner.NsUID.String(),
 		OwnerType:          ownerType,
 		UserUID:            param.SystemVariables.PipelineUserUID.String(),
 		UserType:           mgmtpb.OwnerType_OWNER_TYPE_USER,
@@ -694,15 +694,15 @@ func (w *worker) uploadFileAndReplaceWithURL(ctx context.Context, param *Compone
 
 func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *ComponentActivityParam, value *format.File) (string, error) {
 	artifactClient := w.artifactPublicServiceClient
-	ns := param.SystemVariables.PipelineNamespace
+	requesterID := param.SystemVariables.PipelineRequesterID
 
 	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(sysVarJSON))
 
-	objectName := fmt.Sprintf("%s/%s", ns.NsID, uuid.Must(uuid.NewV4()).String())
+	objectName := fmt.Sprintf("%s/%s", requesterID, uuid.Must(uuid.NewV4()).String())
 	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
-		NamespaceId:      ns.NsID,
+		NamespaceId:      requesterID,
 		ObjectName:       objectName,
 		ObjectExpireDays: 0,
 	})
@@ -719,7 +719,7 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 	}
 
 	respDownloadURL, err := artifactClient.GetObjectDownloadURL(ctx, &artifactpb.GetObjectDownloadURLRequest{
-		NamespaceId: ns.NsID,
+		NamespaceId: requesterID,
 		ObjectUid:   resp.GetObject().GetUid(),
 	})
 	if err != nil {
@@ -1126,7 +1126,7 @@ func (w *worker) LoadRecipeActivity(ctx context.Context, param *LoadRecipeActivi
 		}
 		triggerRecipe = release.Recipe
 	default:
-		pipeline, err := w.repository.GetPipelineByUIDAdmin(ctx, param.PipelineUID, false, false)
+		pipeline, err := w.repository.GetPipelineByUID(ctx, param.PipelineUID, false, false)
 		if err != nil {
 			return handleErr(fmt.Errorf("loading pipeline recipe: %w", err))
 		}
@@ -1158,7 +1158,7 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 	// Load secrets and connections
 	pt := ""
 	var nsSecrets []*datamodel.Secret
-	ownerPermalink := fmt.Sprintf("%s/%s", param.SystemVariables.PipelineNamespace.NsType, param.SystemVariables.PipelineNamespace.NsUID)
+	ownerPermalink := fmt.Sprintf("%s/%s", param.SystemVariables.PipelineOwner.NsType, param.SystemVariables.PipelineOwner.NsUID)
 	for {
 		var secrets []*datamodel.Secret
 		secrets, _, pt, err = w.repository.ListNamespaceSecrets(ctx, ownerPermalink, 100, pt, filtering.Filter{})

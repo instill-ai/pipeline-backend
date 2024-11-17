@@ -42,7 +42,7 @@ func (c *SlackSetupConverter) Migrate() error {
 
 func (c *SlackSetupConverter) migrateConnection() error {
 	// fetch slack component ID
-	cds := componentstore.Init(c.Logger, nil, nil)
+	cds := componentstore.Init(c.Logger, nil, nil, nil)
 	cd, err := cds.GetDefinitionByID("slack", nil, nil)
 	if err != nil {
 		return fmt.Errorf("fetching slack component UID")

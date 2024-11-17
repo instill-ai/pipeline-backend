@@ -25,28 +25,34 @@ import (
 
 const defaultPipelineReleaseID = "latest"
 
-func (s *service) logPipelineRunStart(ctx context.Context, pipelineTriggerID string, pipelineUID uuid.UUID, pipelineReleaseID string) *datamodel.PipelineRun {
+type logPipelineRunStartParams struct {
+	pipelineTriggerID string
+	pipelineUID       uuid.UUID
+	pipelineReleaseID string
+	requesterUID      uuid.UUID
+	userUID           uuid.UUID
+}
+
+func (s *service) logPipelineRunStart(ctx context.Context, params logPipelineRunStartParams) *datamodel.PipelineRun {
 	runSource := datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API)
 	userAgentValue, ok := runpb.RunSource_value[resource.GetRequestSingleHeader(ctx, constant.HeaderUserAgentKey)]
 	if ok {
 		runSource = datamodel.RunSource(userAgentValue)
 	}
 
-	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
-
 	pipelineRun := &datamodel.PipelineRun{
-		PipelineTriggerUID: uuid.FromStringOrNil(pipelineTriggerID),
-		PipelineUID:        pipelineUID,
-		PipelineVersion:    pipelineReleaseID,
+		PipelineTriggerUID: uuid.FromStringOrNil(params.pipelineTriggerID),
+		PipelineUID:        params.pipelineUID,
+		PipelineVersion:    params.pipelineReleaseID,
 		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
 		Source:             runSource,
-		RequesterUID:       uuid.FromStringOrNil(requesterUID),
-		RunnerUID:          uuid.FromStringOrNil(userUID),
+		RequesterUID:       params.requesterUID,
+		RunnerUID:          params.userUID,
 		StartedTime:        time.Now(),
 	}
 
 	if err := s.repository.UpsertPipelineRun(ctx, pipelineRun); err != nil {
-		s.log.Error("failed to log pipeline run", zap.String("pipelineTriggerID", pipelineTriggerID), zap.Error(err))
+		s.log.Error("failed to log pipeline run", zap.String("pipelineTriggerID", params.pipelineTriggerID), zap.Error(err))
 	}
 	return pipelineRun
 }
@@ -66,7 +72,7 @@ func (s *service) logPipelineRunError(ctx context.Context, pipelineTriggerID str
 }
 
 func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRunsRequest, filter filtering.Filter) (*pb.ListPipelineRunsResponse, error) {
-	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
+	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("invalid namespace: %w", err)
 	}
@@ -281,7 +287,7 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListP
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 
-	ns, err := s.GetRscNamespace(ctx, req.GetRequesterId())
+	ns, err := s.GetNamespaceByID(ctx, req.GetRequesterId())
 	if err != nil {
 		return nil, fmt.Errorf("invalid namespace: %w", err)
 	}

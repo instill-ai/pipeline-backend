@@ -32,7 +32,7 @@ func HandleProfileImage(srv service.Service, repo repository.Repository) runtime
 		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 		defer cancel()
 
-		ns, err := srv.GetRscNamespace(ctx, pathParams["namespaceID"])
+		ns, err := srv.GetNamespaceByID(ctx, pathParams["namespaceID"])
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return

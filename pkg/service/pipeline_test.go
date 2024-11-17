@@ -12,6 +12,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
@@ -63,7 +64,7 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 	converter := mock.NewConverterMock(mc)
 	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
 
-	compStore := componentstore.Init(nil, config.Config.Component.Secrets, nil)
+	compStore := componentstore.Init(nil, config.Config.Component.Secrets, nil, external.NewBinaryFetcher())
 
 	workerUID, _ := uuid.NewV4()
 	service := NewService(
