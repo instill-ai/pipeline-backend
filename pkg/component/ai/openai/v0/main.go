@@ -468,7 +468,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 				job.Error.Error(ctx, err)
 				return
 			}
-			img, err := data.NewImageFromBytes(b, data.WEBP, "")
+			img, err := data.NewImageFromBytes(b, data.PNG, "")
 			if err != nil {
 				job.Error.Error(ctx, err)
 				return
