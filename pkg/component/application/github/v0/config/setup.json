@@ -27,7 +27,7 @@
     "accessUrl": "https://github.com/login/oauth/access_token",
     "scopes": [
       "repo",
-      "write:repo_hook"
+      "admin:repo_hook"
     ]
   },
   "title": "GitHub Connection",

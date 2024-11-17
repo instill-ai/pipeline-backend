@@ -17,7 +17,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
-	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/errmsg"
 
@@ -68,10 +67,7 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 
 	for _, identifier := range identifierResult.Identifiers {
 		// ListPipelineRunOns is used to list the pipeline run ons for the given identifier
-		runOns, err := s.repository.ListPipelineRunOns(ctx, repository.ListPipelineRunOnsParams{
-			ComponentType: params.WebhookType,
-			Identifier:    identifier,
-		})
+		runOns, err := s.repository.ListPipelineRunOnsByIdentifier(ctx, params.WebhookType, identifier)
 		if err != nil {
 			return DispatchPipelineWebhookEventResult{}, err
 		}

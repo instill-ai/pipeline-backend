@@ -289,6 +289,13 @@ func (s *Store) RegisterEvent(ctx context.Context, defID string, settings *base.
 	return nil, fmt.Errorf("component definition not found")
 }
 
+func (s *Store) UnregisterEvent(ctx context.Context, defID string, settings *base.UnregisterEventSettings, identifiers []base.Identifier) error {
+	if c, ok := s.componentIDMap[defID]; ok {
+		return c.comp.UnregisterEvent(ctx, settings, identifiers)
+	}
+	return fmt.Errorf("component definition not found")
+}
+
 // GetDefinitionByUID returns a component definition by its UID.
 func (s *Store) GetDefinitionByUID(defUID uuid.UUID, sysVars map[string]any, compConfig *base.ComponentConfig) (*pb.ComponentDefinition, error) {
 	if c, ok := s.componentUIDMap[defUID]; ok {

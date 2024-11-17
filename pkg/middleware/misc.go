@@ -153,7 +153,9 @@ func CustomMatcher(key string) (string, bool) {
 	if strings.HasPrefix(strings.ToLower(key), "instill-") {
 		return key, true
 	}
-
+	if strings.HasPrefix(strings.ToLower(key), "x-github") {
+		return key, true
+	}
 	switch key {
 	case "Accept":
 		return key, true
@@ -164,8 +166,6 @@ func CustomMatcher(key string) (string, bool) {
 	// TODO: huitang
 	// We should avoid hard-coding the webhook header here.
 	// The header should be collected from the component package.
-	case "X-Github-Event", "x-github-event":
-		return key, true
 	default:
 		return runtime.DefaultHeaderMatcher(key)
 	}

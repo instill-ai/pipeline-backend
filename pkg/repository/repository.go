@@ -102,7 +102,8 @@ type Repository interface {
 	UpsertComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error
 	UpdateComponentRun(ctx context.Context, pipelineTriggerUID, componentID string, componentRun *datamodel.ComponentRun) error
 
-	ListPipelineRunOns(context.Context, ListPipelineRunOnsParams) (PipelineRunList, error)
+	ListPipelineRunOnsByIdentifier(ctx context.Context, ComponentType string, Identifier base.Identifier) (PipelineRunList, error)
+	ListPipelineRunOns(ctx context.Context, pipelineUID, releaseUID uuid.UUID) (PipelineRunList, error)
 	CreatePipelineRunOn(context.Context, *datamodel.PipelineRunOn) error
 	DeletePipelineRunOn(ctx context.Context, pipelineUID, releaseUID uuid.UUID) error
 
@@ -831,15 +832,6 @@ type IntegrationList struct {
 	ComponentDefinitions []*datamodel.ComponentDefinition
 	NextPageToken        string
 	TotalSize            int32
-}
-
-type ListPipelineRunOnsParams struct {
-	ComponentType string
-	Identifier    base.Identifier
-}
-
-type PipelineRunList struct {
-	PipelineRunOns []*datamodel.PipelineRunOn
 }
 
 type integrationCursor struct {
@@ -1611,10 +1603,24 @@ func (r *repository) ListPipelineIDsByConnectionID(
 	return page, nil
 }
 
+type PipelineRunList struct {
+	PipelineRunOns []*datamodel.PipelineRunOn
+}
+
 func (r *repository) CreatePipelineRunOn(ctx context.Context, pipelineRunOn *datamodel.PipelineRunOn) error {
 	r.PinUser(ctx, "pipeline_run_on")
 	db := r.CheckPinnedUser(ctx, r.db, "pipeline_run_on")
 	return db.Model(&datamodel.PipelineRunOn{}).Create(pipelineRunOn).Error
+}
+
+func (r *repository) GetPipelineRunOn(ctx context.Context, pipelineUID, releaseUID uuid.UUID) (*datamodel.PipelineRunOn, error) {
+	db := r.db.WithContext(ctx)
+	runOn := &datamodel.PipelineRunOn{}
+	err := db.Model(&datamodel.PipelineRunOn{}).Where("pipeline_uid = ? AND release_uid = ?", pipelineUID, releaseUID).First(runOn).Error
+	if err != nil {
+		return nil, err
+	}
+	return runOn, nil
 }
 
 func (r *repository) DeletePipelineRunOn(ctx context.Context, pipelineUID, releaseUID uuid.UUID) error {
@@ -1625,18 +1631,31 @@ func (r *repository) DeletePipelineRunOn(ctx context.Context, pipelineUID, relea
 		Delete(&datamodel.PipelineRunOn{}).Error
 }
 
-func (r *repository) ListPipelineRunOns(ctx context.Context, params ListPipelineRunOnsParams) (PipelineRunList, error) {
+func (r *repository) ListPipelineRunOns(ctx context.Context, pipelineUID, releaseUID uuid.UUID) (PipelineRunList, error) {
+	db := r.CheckPinnedUser(ctx, r.db, "pipeline_run_on")
+
+	var runOns []*datamodel.PipelineRunOn
+	err := db.Model(&datamodel.PipelineRunOn{}).Where("pipeline_uid = ? AND release_uid = ?", pipelineUID, releaseUID).Find(&runOns).Error
+	if err != nil {
+		return PipelineRunList{}, err
+	}
+	return PipelineRunList{
+		PipelineRunOns: runOns,
+	}, nil
+}
+
+func (r *repository) ListPipelineRunOnsByIdentifier(ctx context.Context, componentType string, identifier base.Identifier) (PipelineRunList, error) {
 	db := r.CheckPinnedUser(ctx, r.db, "pipeline_run_on")
 
 	var runOns []*datamodel.PipelineRunOn
 
-	identifierJSON, err := json.Marshal(params.Identifier)
+	identifierJSON, err := json.Marshal(identifier)
 	if err != nil {
 		return PipelineRunList{}, err
 	}
 
-	err = db.Model(&datamodel.PipelineRunOn{}).
-		Where("run_on_type = ? AND identifier = ?", params.ComponentType, string(identifierJSON)).
+	err = db.Debug().Model(&datamodel.PipelineRunOn{}).
+		Where("run_on_type = ? AND identifier = ?", componentType, string(identifierJSON)).
 		Find(&runOns).Error
 	if err != nil {
 		return PipelineRunList{}, err

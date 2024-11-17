@@ -330,13 +330,87 @@ type configureRunOnParams struct {
 	recipe      *datamodel.Recipe
 }
 
+func (s *service) marshalEventSettings(ctx context.Context, ns resource.Namespace, config, setup any) (format.Value, format.Value, error) {
+	marshaler := data.NewMarshaler()
+	cfg, err := marshaler.Marshal(config)
+	if err != nil {
+		return nil, nil, err
+	}
+	st, err := marshaler.Marshal(setup)
+	if err != nil {
+		return nil, nil, err
+	}
+	if connRef, ok := st.(format.ReferenceString); ok {
+		connID, err := recipe.ConnectionIDFromReference(connRef.String())
+		if err != nil {
+			return nil, nil, err
+		}
+
+		conn, err := s.repository.GetNamespaceConnectionByID(ctx, ns.NsUID, connID)
+		if err != nil {
+			if errors.Is(err, errdomain.ErrNotFound) {
+				err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
+			}
+			return nil, nil, err
+		}
+
+		var s map[string]any
+		if err := json.Unmarshal(conn.Setup, &s); err != nil {
+			return nil, nil, err
+		}
+
+		setupVal, err := data.NewValue(s)
+		if err != nil {
+			return nil, nil, err
+		}
+		st = setupVal
+	}
+	return cfg, st, nil
+}
+
 func (s *service) configureRunOn(ctx context.Context, params configureRunOnParams) error {
 
-	err := s.repository.DeletePipelineRunOn(ctx, params.pipelineUID, params.releaseUID)
+	if params.recipe == nil {
+		return nil
+	}
+	// Unregister all webhooks from vendor
+	runOn, err := s.repository.ListPipelineRunOns(ctx, params.pipelineUID, params.releaseUID)
 	if err != nil {
 		return err
 	}
 
+	for _, r := range runOn.PipelineRunOns {
+		for eventID, v := range params.recipe.On {
+			if r.EventID == eventID {
+				cfg, setup, err := s.marshalEventSettings(ctx, params.Namespace, v.Config, v.Setup)
+				if err != nil {
+					return err
+				}
+				identifier := base.Identifier{}
+				err = json.Unmarshal(r.Identifier, &identifier)
+				if err != nil {
+					return err
+				}
+				err = s.component.UnregisterEvent(ctx, r.RunOnType, &base.UnregisterEventSettings{
+					EventSettings: base.EventSettings{
+						Config: cfg,
+						Setup:  setup,
+					},
+				}, []base.Identifier{identifier})
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	// Delete all run ons
+	err = s.repository.DeletePipelineRunOn(ctx, params.pipelineUID, params.releaseUID)
+	if err != nil {
+		return err
+	}
+
+	// Register all events from vendor
 	if params.recipe != nil && len(params.recipe.On) > 0 {
 		for eventID, v := range params.recipe.On {
 			if v != nil {
@@ -345,41 +419,10 @@ func (s *service) configureRunOn(ctx context.Context, params configureRunOnParam
 					return nil
 				case "schedule":
 					return fmt.Errorf("schedule is not supported yet")
-
 				default:
-					marshaler := data.NewMarshaler()
-					cfg, err := marshaler.Marshal(v.Config)
+					cfg, setup, err := s.marshalEventSettings(ctx, params.Namespace, v.Config, v.Setup)
 					if err != nil {
 						return err
-					}
-					setup, err := marshaler.Marshal(v.Setup)
-					if err != nil {
-						return err
-					}
-					if connRef, ok := setup.(format.ReferenceString); ok {
-						connID, err := recipe.ConnectionIDFromReference(connRef.String())
-						if err != nil {
-							return err
-						}
-
-						conn, err := s.repository.GetNamespaceConnectionByID(ctx, params.NsUID, connID)
-						if err != nil {
-							if errors.Is(err, errdomain.ErrNotFound) {
-								err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
-							}
-							return err
-						}
-
-						var s map[string]any
-						if err := json.Unmarshal(conn.Setup, &s); err != nil {
-							return err
-						}
-
-						setupVal, err := data.NewValue(s)
-						if err != nil {
-							return err
-						}
-						setup = setupVal
 					}
 
 					identifiers, err := s.component.RegisterEvent(ctx, v.Type, &base.RegisterEventSettings{
@@ -414,63 +457,6 @@ func (s *service) configureRunOn(ctx context.Context, params configureRunOnParam
 	return nil
 }
 
-// func (s *service) setSchedulePipeline(ctx context.Context, ns resource.Namespace, pipelineID, pipelineReleaseID string, pipelineUID, releaseUID uuid.UUID, recipe *datamodel.Recipe) error {
-// 	// TODO This check could be removed, as the receiver should be initialized
-// 	// at this point. However, some tests depend on it, so we would need to
-// 	// either mock this interface or (better) communicate with Temporal through
-// 	// our own interface.
-// 	if s.temporalClient == nil {
-// 		return nil
-// 	}
-
-// 	crons := []string{}
-// 	if recipe != nil && recipe.On != nil {
-// 		for _, v := range recipe.On {
-// 			// TODO: Introduce Schedule Component to define structured schema
-// 			// for schedule setup configuration
-// 			if v.Type == "schedule" {
-// 				crons = append(crons, v.Config["cron"].(string))
-// 			}
-// 		}
-// 	}
-
-// 	scheduleID := fmt.Sprintf("%s_%s_schedule", pipelineUID, releaseUID)
-
-// 	handle := s.temporalClient.ScheduleClient().GetHandle(ctx, scheduleID)
-// 	_ = handle.Delete(ctx)
-
-// 	if len(crons) > 0 {
-
-// 		param := &worker.SchedulePipelineWorkflowParam{
-// 			Namespace:          ns,
-// 			PipelineID:         pipelineID,
-// 			PipelineUID:        pipelineUID,
-// 			PipelineReleaseID:  pipelineReleaseID,
-// 			PipelineReleaseUID: releaseUID,
-// 		}
-// 		_, err := s.temporalClient.ScheduleClient().Create(ctx, client.ScheduleOptions{
-// 			ID: scheduleID,
-// 			Spec: client.ScheduleSpec{
-// 				CronExpressions: crons,
-// 			},
-// 			Action: &client.ScheduleWorkflowAction{
-// 				Args:      []any{param},
-// 				ID:        scheduleID,
-// 				Workflow:  "SchedulePipelineWorkflow",
-// 				TaskQueue: worker.TaskQueue,
-// 				RetryPolicy: &temporal.RetryPolicy{
-// 					MaximumAttempts: 1,
-// 				},
-// 			},
-// 		})
-
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-
-//		return nil
-//	}
 func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, toUpdPipeline *pipelinepb.Pipeline) (*pipelinepb.Pipeline, error) {
 
 	ownerPermalink := ns.Permalink()
