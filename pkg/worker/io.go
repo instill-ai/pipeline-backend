@@ -106,8 +106,8 @@ func (i *inputReader) ReadData(ctx context.Context, input any) (err error) {
 	if err != nil {
 		return err
 	}
-	unmarshaler := data.NewUnmarshaler(ctx, i.binaryFetcher)
-	return unmarshaler.Unmarshal(inputVal, input)
+	unmarshaler := data.NewUnmarshaler(i.binaryFetcher)
+	return unmarshaler.Unmarshal(ctx, inputVal, input)
 }
 
 type outputWriter struct {

@@ -69,8 +69,8 @@ func TestSegment(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			binaryFetcher := external.NewBinaryFetcher()
-			unmarshaler := data.NewUnmarshaler(context.Background(), binaryFetcher)
-			c.Assert(unmarshaler.Unmarshal(jsonValue, &segmentsStruct), qt.IsNil)
+			unmarshaler := data.NewUnmarshaler(binaryFetcher)
+			c.Assert(unmarshaler.Unmarshal(context.Background(), jsonValue, &segmentsStruct), qt.IsNil)
 			segments := segmentsStruct.Segments
 
 			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {

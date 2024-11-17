@@ -126,8 +126,8 @@ func TestDetectActivity(t *testing.T) {
 				c.Assert(err, qt.IsNil)
 
 				binaryFetcher := external.NewBinaryFetcher()
-				unmarshaler := data.NewUnmarshaler(context.Background(), binaryFetcher)
-				c.Assert(unmarshaler.Unmarshal(jsonValue, &expectedSegmentsStruct), qt.IsNil)
+				unmarshaler := data.NewUnmarshaler(binaryFetcher)
+				c.Assert(unmarshaler.Unmarshal(context.Background(), jsonValue, &expectedSegmentsStruct), qt.IsNil)
 				expectedSegments := expectedSegmentsStruct.Segments
 
 				c.Assert(capturedOutput.Segments, qt.HasLen, len(expectedSegments))

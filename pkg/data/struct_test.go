@@ -16,7 +16,7 @@ func TestUnmarshal(t *testing.T) {
 	c := qt.New(t)
 
 	binaryFetcher := external.NewBinaryFetcher()
-	unmarshaler := NewUnmarshaler(context.Background(), binaryFetcher)
+	unmarshaler := NewUnmarshaler(binaryFetcher)
 
 	c.Run("Basic types", func(c *qt.C) {
 		type TestStruct struct {
@@ -37,7 +37,7 @@ func TestUnmarshal(t *testing.T) {
 		}
 
 		var result TestStruct
-		err := unmarshaler.Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(context.Background(), input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(result.StringField.String(), qt.Equals, "test")
@@ -69,7 +69,7 @@ func TestUnmarshal(t *testing.T) {
 		}
 
 		var result TestStruct
-		err := unmarshaler.Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(context.Background(), input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(result.TopField.String(), qt.Equals, "top")
@@ -91,7 +91,7 @@ func TestUnmarshal(t *testing.T) {
 		}
 
 		var result TestStruct
-		err := unmarshaler.Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(context.Background(), input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(len(result.ArrayField), qt.Equals, 3)
@@ -134,7 +134,7 @@ func TestUnmarshal(t *testing.T) {
 		}
 
 		var result TestStruct
-		err := unmarshaler.Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(context.Background(), input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(len(result.MapField), qt.Equals, 2)
@@ -170,7 +170,7 @@ func TestUnmarshal(t *testing.T) {
 
 		// Unmarshal the input into the TestStruct, since we set the format to be image/jpeg, the result will be a JPEG image.
 		var result TestStruct
-		err = unmarshaler.Unmarshal(input, &result)
+		err = unmarshaler.Unmarshal(context.Background(), input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(result.Image.ContentType().String(), qt.Equals, "image/bmp")
@@ -188,7 +188,7 @@ func TestUnmarshal(t *testing.T) {
 		}
 
 		var result TestStruct
-		err := unmarshaler.Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(context.Background(), input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(result.NullField, qt.IsNil)
@@ -197,19 +197,19 @@ func TestUnmarshal(t *testing.T) {
 	c.Run("Error cases", func(c *qt.C) {
 		c.Run("Non-pointer input", func(c *qt.C) {
 			var s struct{}
-			err := unmarshaler.Unmarshal(Map{}, s)
+			err := unmarshaler.Unmarshal(context.Background(), Map{}, s)
 			c.Assert(err, qt.ErrorMatches, "input must be a pointer to a struct")
 		})
 
 		c.Run("Non-struct input", func(c *qt.C) {
 			var i int
-			err := unmarshaler.Unmarshal(Map{}, &i)
+			err := unmarshaler.Unmarshal(context.Background(), Map{}, &i)
 			c.Assert(err, qt.ErrorMatches, "input must be a pointer to a struct")
 		})
 
 		c.Run("Non-Map input", func(c *qt.C) {
 			var s struct{}
-			err := unmarshaler.Unmarshal(NewString("not a map"), &s)
+			err := unmarshaler.Unmarshal(context.Background(), NewString("not a map"), &s)
 			c.Assert(err, qt.ErrorMatches, "input value must be a Map")
 		})
 
@@ -221,7 +221,7 @@ func TestUnmarshal(t *testing.T) {
 				"field": NewString("not a number"),
 			}
 			var result InvalidStruct
-			err := unmarshaler.Unmarshal(input, &result)
+			err := unmarshaler.Unmarshal(context.Background(), input, &result)
 			c.Assert(err, qt.ErrorMatches, "error unmarshaling field field:.*")
 		})
 
@@ -233,7 +233,7 @@ func TestUnmarshal(t *testing.T) {
 				"numbers": Array{NewString("not a number")},
 			}
 			var result ArrayStruct
-			err := unmarshaler.Unmarshal(input, &result)
+			err := unmarshaler.Unmarshal(context.Background(), input, &result)
 			c.Assert(err, qt.ErrorMatches, "error unmarshaling field numbers:.*")
 		})
 
@@ -247,7 +247,7 @@ func TestUnmarshal(t *testing.T) {
 				},
 			}
 			var result MapStruct
-			err := unmarshaler.Unmarshal(input, &result)
+			err := unmarshaler.Unmarshal(context.Background(), input, &result)
 			c.Assert(err, qt.ErrorMatches, "error unmarshaling field values:.*")
 		})
 	})
@@ -260,7 +260,7 @@ func TestUnmarshal(t *testing.T) {
 
 		input := Map{}
 		var result TestStruct
-		err := unmarshaler.Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(context.Background(), input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(result.RequiredPtr, qt.IsNil)
@@ -281,7 +281,7 @@ func TestUnmarshal(t *testing.T) {
 		}
 
 		var result TestStruct
-		err := unmarshaler.Unmarshal(input, &result)
+		err := unmarshaler.Unmarshal(context.Background(), input, &result)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(len(result.MixedArray), qt.Equals, 4)
@@ -301,7 +301,7 @@ func TestUnmarshal(t *testing.T) {
 			"value": NewString("test"),
 		}
 		var stringResult TestStruct
-		err := unmarshaler.Unmarshal(stringInput, &stringResult)
+		err := unmarshaler.Unmarshal(context.Background(), stringInput, &stringResult)
 		c.Assert(err, qt.IsNil)
 		c.Assert(stringResult.Value.(format.String).String(), qt.Equals, "test")
 
@@ -310,7 +310,7 @@ func TestUnmarshal(t *testing.T) {
 			"value": NewNumberFromFloat(42.5),
 		}
 		var numberResult TestStruct
-		err = unmarshaler.Unmarshal(numberInput, &numberResult)
+		err = unmarshaler.Unmarshal(context.Background(), numberInput, &numberResult)
 		c.Assert(err, qt.IsNil)
 		c.Assert(numberResult.Value.(format.Number).Float64(), qt.Equals, 42.5)
 
@@ -319,7 +319,7 @@ func TestUnmarshal(t *testing.T) {
 			"value": NewBoolean(true),
 		}
 		var boolResult TestStruct
-		err = unmarshaler.Unmarshal(boolInput, &boolResult)
+		err = unmarshaler.Unmarshal(context.Background(), boolInput, &boolResult)
 		c.Assert(err, qt.IsNil)
 		c.Assert(boolResult.Value.(format.Boolean).Boolean(), qt.Equals, true)
 	})
