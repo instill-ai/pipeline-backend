@@ -157,11 +157,18 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 			return
 		}
 
-		if util.InSlice(pageLinks, link) {
+		parsedURL, err := url.Parse(link)
+		if err != nil {
 			return
 		}
 
-		pageLinks = append(pageLinks, link)
+		requestURL := stripQueryAndTrailingSlash(parsedURL)
+
+		if util.InSlice(pageLinks, requestURL.String()) {
+			return
+		}
+
+		pageLinks = append(pageLinks, requestURL.String())
 
 		_ = e.Request.Visit(link)
 	})
@@ -194,18 +201,16 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 			return
 		}
 
-		strippedURL := stripQueryAndTrailingSlash(r.Request.URL)
-
 		page := PageInfo{}
 
-		page.Link = strippedURL.String()
+		page.Link = r.Request.URL.String()
 
 		html := string(r.Body)
 		ioReader := strings.NewReader(html)
 		doc, err := goquery.NewDocumentFromReader(ioReader)
 
 		if err != nil {
-			fmt.Printf("Error parsing %s: %v", strippedURL.String(), err)
+			fmt.Printf("Error parsing %s: %v", r.Request.URL.String(), err)
 			return
 		}
 
