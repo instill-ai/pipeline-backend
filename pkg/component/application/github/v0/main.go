@@ -232,11 +232,15 @@ func (c *component) RegisterEvent(ctx context.Context, settings *base.RegisterEv
 	}
 
 	if !existingHook {
+		insecureSSL := github.String("1")
+		if strings.HasPrefix(host, "https://") {
+			insecureSSL = github.String("0")
+		}
 		hook, _, err := githubClient.Repositories.CreateHook(ctx, namespace, repo, &github.Hook{
 			Config: &github.HookConfig{
 				URL:         github.String(url),
-				ContentType: github.String("application/json"),
-				InsecureSSL: github.String("1"),
+				ContentType: github.String("json"),
+				InsecureSSL: insecureSSL,
 			},
 			Events: []string{"star"},
 			Active: github.Bool(true),
