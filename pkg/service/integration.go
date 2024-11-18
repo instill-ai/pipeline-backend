@@ -13,6 +13,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.einride.tech/aip/filtering"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -221,7 +222,12 @@ func (s *service) isOAuthVisible(ctx context.Context, integrationID string) (boo
 	// that returns the whole user info. The private API only exposes
 	// `mgmtpb.User`, which we can't extend with the email because it's an
 	// entity used by other public endpoints and we'd break the user's privacy.
-	resp, err := s.mgmtPublicServiceClient.GetAuthenticatedUser(ctx, new(mgmtpb.GetAuthenticatedUserRequest))
+	md := metadata.AppendToOutgoingContext(ctx,
+		constant.HeaderAuthTypeKey, "user",
+		constant.HeaderUserUIDKey, authUserUID,
+	)
+
+	resp, err := s.mgmtPublicServiceClient.GetAuthenticatedUser(md, new(mgmtpb.GetAuthenticatedUserRequest))
 	if err != nil {
 		return false, fmt.Errorf("fetching user info: %w", err)
 	}
