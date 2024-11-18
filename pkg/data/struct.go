@@ -426,6 +426,11 @@ func (m *Marshaler) marshalValue(v reflect.Value) (format.Value, error) {
 		return NewBoolean(v.Bool()), nil
 	case reflect.String:
 		return NewString(v.String()), nil
+	case reflect.Interface:
+		if v.IsNil() {
+			return NewNull(), nil
+		}
+		return m.marshalValue(v.Elem())
 	default:
 		return nil, fmt.Errorf("unsupported type: %v", v.Kind())
 	}

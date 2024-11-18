@@ -162,7 +162,7 @@ func (e *execution) sendMessage(in *structpb.Struct) (*structpb.Struct, error) {
 		return nil, fmt.Errorf("converting task input: %w", err)
 	}
 
-	var client SlackClient
+	var client slackClient
 	switch {
 	case params.AsUser:
 		client = e.userClient

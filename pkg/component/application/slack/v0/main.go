@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/x/errmsg"
 )
 
@@ -27,23 +28,24 @@ var (
 	setupJSON []byte
 	//go:embed config/tasks.json
 	tasksJSON []byte
-	//go:embed config/event.json
-	eventJSON []byte
+	//go:embed config/events.json
+	eventsJSON []byte
 
 	once sync.Once
 	comp *component
 )
 
-// SlackClient implements the methods we'll need to interact with Slack.
+// slackClient implements the methods we'll need to interact with Slack.
 // TODO jvallesm: instead of using an interface and mocking it in the tests,
 // create a client with the Slack SDK and use OptionAPIURL to test the
 // component.
-type SlackClient interface {
+type slackClient interface {
 	GetConversations(params *slack.GetConversationsParameters) ([]slack.Channel, string, error)
 	PostMessage(channelID string, options ...slack.MsgOption) (string, string, error)
 	GetConversationHistory(params *slack.GetConversationHistoryParameters) (*slack.GetConversationHistoryResponse, error)
 	GetConversationReplies(params *slack.GetConversationRepliesParameters) ([]slack.Message, bool, string, error)
 	GetUsersInfo(users ...string) (*[]slack.User, error)
+	AuthTest() (*slack.AuthTestResponse, error)
 }
 
 type component struct {
@@ -54,8 +56,8 @@ type component struct {
 type execution struct {
 	base.ComponentExecution
 
-	botClient  SlackClient
-	userClient SlackClient
+	botClient  slackClient
+	userClient slackClient
 	execute    func(*structpb.Struct) (*structpb.Struct, error)
 }
 
@@ -71,7 +73,7 @@ func (e *execution) userToken() string {
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, eventJSON, nil)
+		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, eventsJSON, nil)
 		if err != nil {
 			panic(err)
 		}
@@ -122,24 +124,114 @@ func (c *component) Test(sysVars map[string]any, setup *structpb.Struct) error {
 	return nil
 }
 
-func (c *component) HandleVerificationEvent(header map[string][]string, req *structpb.Struct, setup map[string]any) (isVerification bool, resp *structpb.Struct, err error) {
+func (c *component) ParseEvent(ctx context.Context, rawEvent *base.RawEvent) (parsedEvent *base.ParsedEvent, err error) {
 
-	switch event := req.GetFields()["type"].GetStringValue(); event {
-	case "url_verification":
-		resp, _ := structpb.NewStruct(map[string]any{
-			"challenge": req.GetFields()["challenge"].GetStringValue(),
-		})
-		return true, resp, nil
-	default:
-		return false, nil, nil
-
+	var slackEvent rawSlackMessage
+	unmarshaler := data.NewUnmarshaler(c.BinaryFetcher)
+	err = unmarshaler.Unmarshal(ctx, rawEvent.Message, &slackEvent)
+	if err != nil {
+		return nil, err
 	}
+	var setupStruct slackComponentSetup
+
+	err = unmarshaler.Unmarshal(ctx, rawEvent.Setup, &setupStruct)
+	if err != nil {
+		return nil, err
+	}
+
+	client := newClient(setupStruct.BotToken)
+
+	switch event := slackEvent.Type; event {
+	case "event_callback":
+		var slackEventType rawSlackEventType
+		unmarshaler := data.NewUnmarshaler(c.BinaryFetcher)
+		err = unmarshaler.Unmarshal(ctx, slackEvent.Event, &slackEventType)
+		if err != nil {
+			return nil, err
+		}
+
+		switch slackEventType.Type {
+		case "message":
+			return c.handleEventMessage(ctx, client, rawEvent)
+		}
+	}
+	return nil, nil
+}
+
+func (c *component) IdentifyEvent(ctx context.Context, rawEvent *base.RawEvent) (identifierResult *base.IdentifierResult, err error) {
+
+	var slackEvent rawSlackMessage
+	unmarshaler := data.NewUnmarshaler(c.BinaryFetcher)
+	err = unmarshaler.Unmarshal(ctx, rawEvent.Message, &slackEvent)
+	if err != nil {
+		return nil, err
+	}
+	switch event := slackEvent.Type; event {
+	case "url_verification":
+		resp := data.Map{
+			"challenge": data.NewString(rawEvent.Message.(data.Map)["challenge"].String()),
+		}
+		return &base.IdentifierResult{
+			SkipTrigger: true,
+			Response:    resp,
+		}, nil
+	case "event_callback":
+		var slackEventType rawSlackEventType
+		unmarshaler := data.NewUnmarshaler(c.BinaryFetcher)
+		err = unmarshaler.Unmarshal(ctx, slackEvent.Event, &slackEventType)
+		if err != nil {
+			return nil, err
+		}
+
+		switch slackEventType.Type {
+		case "message":
+			return c.identifyEventMessage(ctx, rawEvent)
+		}
+	}
+	return nil, nil
 
 }
 
-func (c *component) ParseEvent(ctx context.Context, req *structpb.Struct, setup map[string]any) (parsed *structpb.Struct, err error) {
-	// TODO: parse and validate event
-	return req, nil
+func (c *component) RegisterEvent(ctx context.Context, settings *base.RegisterEventSettings) ([]base.Identifier, error) {
+
+	var setupStruct slackComponentSetup
+	var config slackEventNewMessageConfig
+
+	unmarshaler := data.NewUnmarshaler(c.BinaryFetcher)
+	err := unmarshaler.Unmarshal(ctx, settings.Setup, &setupStruct)
+	if err != nil {
+		return nil, err
+	}
+	err = unmarshaler.Unmarshal(ctx, settings.Config, &config)
+	if err != nil {
+		return nil, err
+	}
+
+	client := newClient(setupStruct.BotToken)
+	authTestResp, err := client.AuthTest()
+	if err != nil {
+		return nil, err
+	}
+	identifiers := make([]base.Identifier, 0, len(config.ChannelNames))
+
+	for _, channelName := range config.ChannelNames {
+		targetChannelID, err := loopChannelListAPI(client, channelName)
+		if err != nil {
+			return nil, fmt.Errorf("fetching channel ID: %w", err)
+		}
+		identifier := base.Identifier{
+			"user-id":    authTestResp.UserID,
+			"channel-id": targetChannelID,
+		}
+		identifiers = append(identifiers, identifier)
+	}
+
+	return identifiers, nil
+}
+
+func (c *component) UnregisterEvent(ctx context.Context, settings *base.UnregisterEventSettings, identifiers []base.Identifier) error {
+	// We don't register dedciated webhook url for each pipeline in Slack. So we don't need to unregister event here.
+	return nil
 }
 
 // SupportsOAuth checks whether the component is configured to support OAuth.

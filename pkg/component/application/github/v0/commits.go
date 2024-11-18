@@ -11,7 +11,11 @@ import (
 
 type RepositoriesService interface {
 	GetCommit(context.Context, string, string, string, *github.ListOptions) (*github.RepositoryCommit, *github.Response, error)
+	ListHooks(context.Context, string, string, *github.ListOptions) ([]*github.Hook, *github.Response, error)
+	GetHook(context.Context, string, string, int64) (*github.Hook, *github.Response, error)
 	CreateHook(context.Context, string, string, *github.Hook) (*github.Hook, *github.Response, error)
+	DeleteHook(context.Context, string, string, int64) (*github.Response, error)
+	EditHook(context.Context, string, string, int64, *github.Hook) (*github.Hook, *github.Response, error)
 }
 
 type Commit struct {

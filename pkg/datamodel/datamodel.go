@@ -619,3 +619,13 @@ type Connection struct {
 	OAuthAccessDetails datatypes.JSON      `gorm:"type:jsonb"`
 	Integration        ComponentDefinition `gorm:"foreignKey:IntegrationUID;references:UID"`
 }
+
+// PipelineRunOn is the data model for the `pipeline_run_on` table
+type PipelineRunOn struct {
+	BaseDynamicHardDelete
+	PipelineUID uuid.UUID
+	ReleaseUID  uuid.UUID
+	EventID     string
+	RunOnType   string
+	Identifier  datatypes.JSON `gorm:"type:jsonb"`
+}

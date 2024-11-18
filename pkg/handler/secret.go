@@ -76,7 +76,7 @@ func (h *PublicHandler) CreateNamespaceSecret(ctx context.Context, req *pb.Creat
 		return nil, fmt.Errorf("%w: invalid pipeline ID: %w", errdomain.ErrInvalidArgument, err)
 	}
 
-	ns, err := h.service.GetRscNamespace(ctx, req.GetNamespaceId())
+	ns, err := h.service.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -148,7 +148,7 @@ func (h *PublicHandler) ListNamespaceSecrets(ctx context.Context, req *pb.ListNa
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -209,7 +209,7 @@ func (h *PublicHandler) GetNamespaceSecret(ctx context.Context, req *pb.GetNames
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -272,7 +272,7 @@ func (h *PublicHandler) UpdateNamespaceSecret(ctx context.Context, req *pb.Updat
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -378,7 +378,7 @@ func (h *PublicHandler) DeleteNamespaceSecret(ctx context.Context, req *pb.Delet
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err

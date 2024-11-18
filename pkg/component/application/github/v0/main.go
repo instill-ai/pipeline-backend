@@ -3,13 +3,19 @@ package github
 
 import (
 	"context"
-	_ "embed"
 	"fmt"
+	"strconv"
+	"strings"
 	"sync"
 
+	_ "embed"
+
+	"github.com/google/go-github/v62/github"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/x/errmsg"
 )
 
@@ -32,8 +38,8 @@ var (
 	setupJSON []byte
 	//go:embed config/tasks.json
 	tasksJSON []byte
-	//go:embed config/event.json
-	eventJSON []byte
+	//go:embed config/events.json
+	eventsJSON []byte
 
 	once sync.Once
 	comp *component
@@ -54,7 +60,7 @@ type execution struct {
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, eventJSON, nil)
+		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, eventsJSON, nil)
 		if err != nil {
 			panic(err)
 		}
@@ -131,16 +137,150 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	return nil
 }
 
-func (c *component) HandleVerificationEvent(header map[string][]string, req *structpb.Struct, setup map[string]any) (isVerification bool, resp *structpb.Struct, err error) {
-	if len(header["x-github-event"]) > 0 && header["x-github-event"][0] == "ping" {
-		return true, nil, nil
+func (c *component) IdentifyEvent(ctx context.Context, rawEvent *base.RawEvent) (identifierResult *base.IdentifierResult, err error) {
+
+	if len(rawEvent.Header["x-github-event"]) > 0 && rawEvent.Header["x-github-event"][0] == "ping" {
+		return &base.IdentifierResult{
+			SkipTrigger: true,
+			Response:    data.Map{},
+		}, nil
 	}
-	return false, nil, nil
+	if len(rawEvent.Header["x-github-hook-id"]) > 0 {
+		hookID := rawEvent.Header["x-github-hook-id"][0]
+		hookIDInt, err := strconv.Atoi(hookID)
+		if err != nil {
+			return nil, err
+		}
+		return &base.IdentifierResult{
+			Identifiers: []base.Identifier{{"hook-id": hookIDInt}},
+		}, nil
+	}
+	return nil, nil
 }
 
-func (c *component) ParseEvent(ctx context.Context, req *structpb.Struct, setup map[string]any) (parsed *structpb.Struct, err error) {
-	// TODO: parse and validate event
-	return req, nil
+func (c *component) ParseEvent(ctx context.Context, rawEvent *base.RawEvent) (parsedEvent *base.ParsedEvent, err error) {
+
+	unmarshaler := data.NewUnmarshaler(c.BinaryFetcher)
+	rawGithubEvent := rawGithubEvent{}
+	err = unmarshaler.Unmarshal(ctx, rawEvent.Message, &rawGithubEvent)
+	if err != nil {
+		return nil, err
+	}
+
+	event := rawEvent.Header["x-github-event"][0]
+
+	switch event + "." + rawGithubEvent.Action {
+	case "star.created":
+		cfg := rawGithubStarCreated{}
+		err = unmarshaler.Unmarshal(ctx, rawEvent.Message, &cfg)
+		if err != nil {
+			return nil, err
+		}
+		return &base.ParsedEvent{
+			ParsedMessage: rawEvent.Message,
+			Response:      data.Map{},
+		}, nil
+	}
+	return nil, fmt.Errorf("not supported event: %s.%s", event, rawGithubEvent.Action)
+}
+
+func (c *component) RegisterEvent(ctx context.Context, settings *base.RegisterEventSettings) ([]base.Identifier, error) {
+
+	// TODO: support more events
+	setup, err := settings.Setup.ToStructValue()
+	if err != nil {
+		return nil, err
+	}
+	githubClient := newClient(ctx, setup.GetStructValue())
+
+	unmarshaler := data.NewUnmarshaler(c.BinaryFetcher)
+	cfg := githubEventStarCreatedConfig{}
+	err = unmarshaler.Unmarshal(ctx, settings.Config, &cfg)
+	if err != nil {
+		return nil, err
+	}
+	namespace, repo, ok := strings.Cut(cfg.Repository, "/")
+	if !ok {
+		return nil, fmt.Errorf("invalid repository format: %s", cfg.Repository)
+	}
+
+	// TODO: avoid directly reading from config
+	host := config.Config.Server.InstillCoreHost
+	url := fmt.Sprintf("%s/v1beta/pipeline-webhooks/github", host)
+
+	// TODO: add secret
+	hooks, _, err := githubClient.Repositories.ListHooks(ctx, namespace, repo, &github.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	existingHook := false
+	hookID := int64(0)
+	for _, hook := range hooks {
+
+		if *hook.Config.URL == url && hook.Events[0] == "star" {
+			existingHook = true
+			_, _, err := githubClient.Repositories.EditHook(ctx, namespace, repo, hook.GetID(), &github.Hook{
+				Active: github.Bool(true),
+			})
+			if err != nil {
+				return nil, err
+			}
+			hookID = hook.GetID()
+			break
+		}
+	}
+
+	if !existingHook {
+		hook, _, err := githubClient.Repositories.CreateHook(ctx, namespace, repo, &github.Hook{
+			Config: &github.HookConfig{
+				URL:         github.String(url),
+				ContentType: github.String("application/json"),
+				InsecureSSL: github.String("1"),
+			},
+			Events: []string{"star"},
+			Active: github.Bool(true),
+		})
+
+		if err != nil {
+			return nil, err
+		}
+		hookID = hook.GetID()
+	}
+
+	return []base.Identifier{{"hook-id": hookID}}, nil
+}
+
+func (c *component) UnregisterEvent(ctx context.Context, settings *base.UnregisterEventSettings, identifier []base.Identifier) error {
+	// return nil
+	setup, err := settings.Setup.ToStructValue()
+	if err != nil {
+		return err
+	}
+	githubClient := newClient(ctx, setup.GetStructValue())
+
+	unmarshaler := data.NewUnmarshaler(c.BinaryFetcher)
+	cfg := githubEventStarCreatedConfig{}
+	err = unmarshaler.Unmarshal(ctx, settings.Config, &cfg)
+	if err != nil {
+		return err
+	}
+	namespace, repo, ok := strings.Cut(cfg.Repository, "/")
+	if !ok {
+		return fmt.Errorf("invalid repository format: %s", cfg.Repository)
+	}
+
+	for _, id := range identifier {
+		if hookID, ok := id["hook-id"]; ok {
+			_, _, err := githubClient.Repositories.EditHook(ctx, namespace, repo, int64(hookID.(float64)), &github.Hook{
+				Active: github.Bool(false),
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // SupportsOAuth checks whether the component is configured to support OAuth.

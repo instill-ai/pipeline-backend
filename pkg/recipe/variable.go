@@ -21,13 +21,21 @@ type SystemVariables struct {
 	PipelineReleaseUID uuid.UUID `json:"__PIPELINE_RELEASE_UID"`
 	ExpiryRuleTag      string    `json:"__EXPIRY_RULE_TAG"`
 
-	// PipelineNamespace is the namespace of the requester of the pipeline.
-	PipelineNamespace resource.Namespace `json:"__PIPELINE_NAMESPACE"`
-
-	// PipelineUserUID is the authenticated user executing a pipeline.
+	// PipelineOwner represents the namespace that owns the pipeline. This is typically
+	// the namespace where the pipeline was created and is stored.
+	PipelineOwner resource.Namespace `json:"__PIPELINE_OWNER"`
+	// PipelineUserUID is the unique identifier of the authenticated user who is
+	// executing the pipeline. This is used for access control and audit logging.
 	PipelineUserUID uuid.UUID `json:"__PIPELINE_USER_UID"`
-	// PipelineRequesterUID is the entity requesting the pipeline execution.
+	// PipelineRequesterID is the ID of the entity (user or organization)
+	// that initiated the pipeline execution. This may differ from PipelineUserUID
+	// when the pipeline is triggered by on behalf of an organization.
+	PipelineRequesterID string `json:"__PIPELINE_REQUESTER_ID"`
+	// PipelineRequesterUID is the unique identifier of the entity (user or organization)
+	// that initiated the pipeline execution. This may differ from PipelineUserUID
+	// when the pipeline is triggered by on behalf of an organization.
 	PipelineRequesterUID uuid.UUID `json:"__PIPELINE_REQUESTER_UID"`
+	// TODO: we should use resource.Namespace for PipelineOwner and PipelineRequester
 
 	HeaderAuthorization string `json:"__PIPELINE_HEADER_AUTHORIZATION"`
 	ModelBackend        string `json:"__MODEL_BACKEND"`
@@ -36,17 +44,14 @@ type SystemVariables struct {
 	AppBackend          string `json:"__APP_BACKEND"`
 }
 
+// TODO: GenerateSystemVariables will be refactored for better code structure.
+// Planned refactor: 2024-11
+
 // GenerateSystemVariables fills SystemVariable fields with information from
 // the context and instance configuration.
 func GenerateSystemVariables(ctx context.Context, sysVar SystemVariables) (map[string]any, error) {
 	if sysVar.PipelineUserUID.IsNil() {
 		sysVar.PipelineUserUID = uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
-	}
-	if sysVar.PipelineRequesterUID.IsNil() {
-		sysVar.PipelineRequesterUID = uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey))
-		if sysVar.PipelineRequesterUID.IsNil() {
-			sysVar.PipelineRequesterUID = sysVar.PipelineUserUID
-		}
 	}
 	if sysVar.HeaderAuthorization == "" {
 		sysVar.HeaderAuthorization = resource.GetRequestSingleHeader(ctx, "Authorization")

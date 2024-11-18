@@ -17,6 +17,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
+	"github.com/instill-ai/pipeline-backend/pkg/component/store"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
@@ -103,8 +104,16 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 	if err != nil {
 		return err
 	}
+	componentStore := store.Init(logger, config.Config.Component.Secrets, nil, nil)
 
-	converter := service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repo, "")
+	converter := service.NewConverter(service.ConverterConfig{
+		MgmtClient:      mgmtPrivateServiceClient,
+		RedisClient:     redisClient,
+		ACLClient:       &aclClient,
+		Repository:      repo,
+		InstillCoreHost: "",
+		ComponentStore:  componentStore,
+	})
 
 	if config.Config.InstillCloud.Host == "" {
 		// Skip the download process if the Instill Cloud host is not set.

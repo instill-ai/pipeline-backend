@@ -255,8 +255,10 @@ func main() {
 	if err != nil {
 		logger.Fatal("failed to create minio client", zap.Error(err))
 	}
-	workerUID, _ := uuid.NewV4()
-	compStore := componentstore.Init(logger, config.Config.Component.Secrets, nil)
+	minioxClientWrapper, err := miniox.NewMinioClient(ctx, &config.Config.Minio, logger)
+	if err != nil {
+		logger.Fatal("failed to create miniox client wrapper", zap.Error(err))
+	}
 
 	artifactPublicServiceClient, artifactPublicServiceClientConn := external.InitArtifactPublicServiceClient(ctx)
 	if artifactPublicServiceClientConn != nil {
@@ -268,19 +270,25 @@ func main() {
 		defer artifactPrivateServiceClientConn.Close()
 	}
 
-	minioxClientWrapper, err := miniox.NewMinioClient(ctx, &config.Config.Minio, logger)
-	if err != nil {
-		logger.Fatal("failed to create miniox client wrapper", zap.Error(err))
-	}
-
 	binaryFetcher := external.NewArtifactBinaryFetcher(artifactPrivateServiceClient, minioxClientWrapper)
+
+	compStore := componentstore.Init(logger, config.Config.Component.Secrets, nil, binaryFetcher)
+	workerUID, _ := uuid.NewV4()
+
 	service := service.NewService(
 		service.ServiceConfig{
-			Repository:               repo,
-			RedisClient:              redisClient,
-			TemporalClient:           temporalClient,
-			ACLClient:                &aclClient,
-			Converter:                service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repo, config.Config.Server.InstillCoreHost),
+			Repository:     repo,
+			RedisClient:    redisClient,
+			TemporalClient: temporalClient,
+			ACLClient:      &aclClient,
+			Converter: service.NewConverter(service.ConverterConfig{
+				MgmtClient:      mgmtPrivateServiceClient,
+				RedisClient:     redisClient,
+				ACLClient:       &aclClient,
+				Repository:      repo,
+				InstillCoreHost: config.Config.Server.InstillCoreHost,
+				ComponentStore:  compStore,
+			}),
 			MgmtPrivateServiceClient: mgmtPrivateServiceClient,
 			MinioClient:              minioClient,
 			ComponentStore:           compStore,

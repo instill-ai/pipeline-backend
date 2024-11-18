@@ -349,7 +349,7 @@ func (s *service) validateConnectionUpdate(
 }
 
 func (s *service) CreateNamespaceConnection(ctx context.Context, req *pb.CreateNamespaceConnectionRequest) (*pb.Connection, error) {
-	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
+	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
 	}
@@ -409,7 +409,7 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, req *pb.CreateN
 }
 
 func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pb.UpdateNamespaceConnectionRequest) (*pb.Connection, error) {
-	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
+	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
 	}
@@ -486,7 +486,7 @@ func (s *service) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespa
 		view = pb.View_VIEW_BASIC
 	}
 
-	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
+	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
 	}
@@ -543,7 +543,7 @@ func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view p
 }
 
 func (s *service) ListNamespaceConnections(ctx context.Context, req *pb.ListNamespaceConnectionsRequest) (*pb.ListNamespaceConnectionsResponse, error) {
-	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
+	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
 	}
@@ -594,7 +594,7 @@ func (s *service) ListNamespaceConnections(ctx context.Context, req *pb.ListName
 }
 
 func (s *service) DeleteNamespaceConnection(ctx context.Context, namespaceID, id string) error {
-	ns, err := s.GetRscNamespace(ctx, namespaceID)
+	ns, err := s.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return fmt.Errorf("fetching namespace: %w", err)
 	}
@@ -608,7 +608,7 @@ func (s *service) DeleteNamespaceConnection(ctx context.Context, namespaceID, id
 }
 
 func (s *service) ListPipelineIDsByConnectionID(ctx context.Context, req *pb.ListPipelineIDsByConnectionIDRequest) (*pb.ListPipelineIDsByConnectionIDResponse, error) {
-	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
+	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
 	}

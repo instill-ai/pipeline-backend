@@ -104,7 +104,7 @@ func (h *PrivateHandler) SetService(s service.Service) {
 func (h *PublicHandler) CheckName(ctx context.Context, req *pipelinepb.CheckNameRequest) (resp *pipelinepb.CheckNameResponse, err error) {
 	name := req.GetName()
 
-	ns, err := h.service.GetRscNamespace(ctx, name)
+	ns, err := h.service.GetNamespaceByID(ctx, name)
 	if err != nil {
 		return nil, err
 	}

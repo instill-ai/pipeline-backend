@@ -25,7 +25,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/x/checkfield"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
@@ -257,7 +256,7 @@ func (h *PublicHandler) CreateNamespacePipeline(ctx context.Context, req *pb.Cre
 		return nil, fmt.Errorf("%w: invalid secret ID: %w", errdomain.ErrInvalidArgument, err)
 	}
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -349,7 +348,7 @@ func (h *PublicHandler) ListNamespacePipelines(ctx context.Context, req *pb.List
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -455,7 +454,7 @@ func (h *PublicHandler) GetNamespacePipeline(ctx context.Context, req *pb.GetNam
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -521,7 +520,7 @@ func (h *PublicHandler) UpdateNamespacePipeline(ctx context.Context, req *pb.Upd
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -639,7 +638,7 @@ func (h *PublicHandler) DeleteNamespacePipeline(ctx context.Context, req *pb.Del
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -755,7 +754,7 @@ func (h *PublicHandler) ValidateNamespacePipeline(ctx context.Context, req *pb.V
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -816,7 +815,7 @@ func (h *PublicHandler) RenameNamespacePipeline(ctx context.Context, req *pb.Ren
 		return nil, ErrCheckRequiredFields
 	}
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -861,7 +860,7 @@ func (h *PublicHandler) CloneNamespacePipeline(ctx context.Context, req *pb.Clon
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -907,7 +906,7 @@ func (h *PublicHandler) CloneNamespacePipelineRelease(ctx context.Context, req *
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		return nil, err
 	}
@@ -953,7 +952,7 @@ func (h *PublicHandler) preTriggerNamespacePipeline(ctx context.Context, req Tri
 	}
 
 	id := req.GetPipelineId()
-	ns, err := h.service.GetRscNamespace(ctx, req.GetNamespaceId())
+	ns, err := h.service.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		return ns, id, nil, false, err
 	}
@@ -976,42 +975,6 @@ func (h *PublicHandler) preTriggerNamespacePipeline(ctx context.Context, req Tri
 
 	return ns, id, pbPipeline, returnTraces, nil
 
-}
-
-func (h *PublicHandler) SendNamespacePipelineEvent(ctx context.Context, req *pb.SendNamespacePipelineEventRequest) (resp *pb.SendNamespacePipelineEventResponse, err error) {
-
-	eventName := "SendNamespacePipelineEvent"
-
-	ctx, span := tracer.Start(ctx, eventName,
-		trace.WithSpanKind(trace.SpanKindServer))
-	defer span.End()
-
-	logUUID, _ := uuid.NewV4()
-
-	if err := checkfield.CheckRequiredFields(req, triggerPipelineRequiredFields); err != nil {
-		return nil, ErrCheckRequiredFields
-	}
-
-	ns, err := h.service.GetRscNamespace(ctx, req.GetNamespaceId())
-	if err != nil {
-		return nil, err
-	}
-
-	ok, err := h.service.CheckPipelineEventCode(ctx, ns, req.GetPipelineId(), req.GetCode())
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, service.ErrUnauthenticated
-	}
-
-	output, err := h.service.HandleNamespacePipelineEventByID(ctx, ns, req.GetPipelineId(), req.GetEvent(), req.GetData(), logUUID.String())
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return nil, err
-	}
-
-	return &pb.SendNamespacePipelineEventResponse{Data: output}, nil
 }
 
 func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.TriggerUserPipelineRequest) (resp *pb.TriggerUserPipelineResponse, err error) {
@@ -1178,7 +1141,7 @@ func (h *PublicHandler) CreateNamespacePipelineRelease(ctx context.Context, req 
 		return nil, ErrSematicVersion
 	}
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		return nil, err
 	}
@@ -1271,7 +1234,7 @@ func (h *PublicHandler) ListNamespacePipelineReleases(ctx context.Context, req *
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		return nil, err
 	}
@@ -1367,7 +1330,7 @@ func (h *PublicHandler) GetNamespacePipelineRelease(ctx context.Context, req *pb
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		return nil, err
 	}
@@ -1438,7 +1401,7 @@ func (h *PublicHandler) UpdateNamespacePipelineRelease(ctx context.Context, req 
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		return nil, err
 	}
@@ -1555,7 +1518,7 @@ func (h *PublicHandler) renameNamespacePipelineRelease(ctx context.Context, req 
 	namespaceID := splits[1]
 	pipelineID := splits[3]
 	releaseID := splits[5]
-	ns, err := h.service.GetRscNamespace(ctx, namespaceID)
+	ns, err := h.service.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -1628,7 +1591,7 @@ func (h *PublicHandler) DeleteNamespacePipelineRelease(ctx context.Context, req 
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
+	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		return nil, err
 	}
@@ -1705,7 +1668,7 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 	namespaceID := splits[1]
 	pipelineID := splits[3]
 	releaseID := splits[5]
-	ns, err := h.service.GetRscNamespace(ctx, namespaceID)
+	ns, err := h.service.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -1757,7 +1720,7 @@ func (h *PublicHandler) preTriggerNamespacePipelineRelease(ctx context.Context, 
 		return resource.Namespace{}, "", nil, nil, false, ErrCheckRequiredFields
 	}
 
-	ns, err := h.service.GetRscNamespace(ctx, req.GetNamespaceId())
+	ns, err := h.service.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		return ns, "", nil, nil, false, err
 	}

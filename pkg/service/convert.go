@@ -72,23 +72,24 @@ type converter struct {
 	instillCoreHost          string
 }
 
-// NewService initiates a service instance
-func NewConverter(
-	m mgmtpb.MgmtPrivateServiceClient,
-	rc *redis.Client,
-	acl acl.ACLClientInterface,
-	r repository.Repository,
-	ch string,
-) Converter {
-	logger, _ := logger.GetZapLogger(context.Background())
+type ConverterConfig struct {
+	MgmtClient      mgmtpb.MgmtPrivateServiceClient
+	RedisClient     *redis.Client
+	ACLClient       acl.ACLClientInterface
+	Repository      repository.Repository
+	InstillCoreHost string
+	ComponentStore  *componentstore.Store
+}
 
+// NewService initiates a service instance
+func NewConverter(cfg ConverterConfig) Converter {
 	return &converter{
-		mgmtPrivateServiceClient: m,
-		redisClient:              rc,
-		component:                componentstore.Init(logger, nil, nil),
-		aclClient:                acl,
-		repository:               r,
-		instillCoreHost:          ch,
+		mgmtPrivateServiceClient: cfg.MgmtClient,
+		redisClient:              cfg.RedisClient,
+		component:                cfg.ComponentStore,
+		aclClient:                cfg.ACLClient,
+		repository:               cfg.Repository,
+		instillCoreHost:          cfg.InstillCoreHost,
 	}
 }
 

@@ -103,3 +103,17 @@ func (m *MockRepositoriesService) CreateHook(ctx context.Context, owner, repo st
 	}
 	return hookResp, resp, nil
 }
+
+// TODO: implement these methods
+func (m *MockRepositoriesService) GetHook(ctx context.Context, owner, repo string, id int64) (*github.Hook, *github.Response, error) {
+	return nil, nil, nil
+}
+func (m *MockRepositoriesService) EditHook(ctx context.Context, owner, repo string, id int64, hook *github.Hook) (*github.Hook, *github.Response, error) {
+	return nil, nil, nil
+}
+func (m *MockRepositoriesService) DeleteHook(ctx context.Context, owner, repo string, id int64) (*github.Response, error) {
+	return nil, nil
+}
+func (m *MockRepositoriesService) ListHooks(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.Hook, *github.Response, error) {
+	return nil, nil, nil
+}
