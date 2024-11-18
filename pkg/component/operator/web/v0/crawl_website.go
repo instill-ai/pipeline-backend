@@ -237,9 +237,10 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 		inputStruct.URL = "https://" + inputStruct.URL
 	}
 
+	scrapeDone := make(chan struct{})
 	go func() {
+		defer close(scrapeDone)
 		_ = c.Visit(inputStruct.URL)
-		// We can only finish the c.Wait() by r.Abort() or cancel the context.
 		c.Wait()
 	}()
 
@@ -248,17 +249,26 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 	inactivityTimer := time.NewTimer(2 * time.Second)
 	defer inactivityTimer.Stop()
 
+	// There are 4 cases to finish the program:
+	// 1. No more pages to scrape: c.Wait() returns and the goroutine closes scrapeDone. Program finishes before the timeout.
+	// 2. Max pages scraped: c.OnResponse cancels the context / closes scrapeDone. Program finishes before the timeout.
+	// 3. Max pages haven't been collected before the timeout. Context is canceled and program finishes at the timeout.
+	// 4. Max pages haven't been collected before the timeout. Context is canceled and the program finishes when there are no more validate data in 2 seconds.
+	// We use 4. to avoid the program waiting for 2 minutes to close all URLs that will wait for over timeout.
 	crawling := true
 	for crawling {
 		select {
+		// This is for 1.
+		case <-scrapeDone:
+			crawling = false
+		// This is for 2. & 3.
+		case <-ctx.Done():
+			crawling = false
+		// The remaining is for 4.
 		case <-pageUpdateCh:
 			inactivityTimer.Reset(2 * time.Second)
-		// If no new pages for 2 seconds, cancel the context
 		case <-inactivityTimer.C:
 			cancel()
-			crawling = false
-		// If the context is done, we should return
-		case <-ctx.Done():
 			crawling = false
 		}
 	}
