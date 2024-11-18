@@ -805,10 +805,11 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 
 		m := i.(map[string]any)
 
+		// TODO: remove these conversions after the blob storage is fully rolled out
 		for k := range m {
 			switch s := m[k].(type) {
 			case string:
-				if formatMap[k] != "string" {
+				if formatMap[k] != "string" && formatMap[k] != "number" && formatMap[k] != "boolean" && formatMap[k] != "json" {
 					// Skip the base64 decoding if the string is a URL
 					if strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://") {
 						continue
@@ -824,7 +825,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 
 				}
 			case []string:
-				if formatMap[k] != "array:string" {
+				if formatMap[k] != "array:string" && formatMap[k] != "array:number" && formatMap[k] != "array:boolean" {
 					for idx := range s {
 						// Skip the base64 decoding if the string is a URL
 						if strings.HasPrefix(s[idx], "http://") || strings.HasPrefix(s[idx], "https://") {
@@ -860,6 +861,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 		formats[k] = []string{v}
 	}
 
+	// TODO(huitang): implement a structpb to format.Value converter
 	for idx, d := range pipelineData {
 
 		variable := data.Map{}
@@ -880,6 +882,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					variable[k] = data.NewBoolean(defaultValueMap[k].(bool))
 				} else {
+					if _, ok := v.Kind.(*structpb.Value_BoolValue); !ok {
+						return fmt.Errorf("%w: invalid boolean value: %v", errdomain.ErrInvalidArgument, v)
+					}
 					variable[k] = data.NewBoolean(v.GetBoolValue())
 				}
 			case "array:boolean":
@@ -892,6 +897,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
+						if _, ok := val.Kind.(*structpb.Value_BoolValue); !ok {
+							return fmt.Errorf("%w: invalid boolean value: %v", errdomain.ErrInvalidArgument, val)
+						}
 						array[idx] = data.NewBoolean(val.GetBoolValue())
 					}
 					variable[k] = array
@@ -900,6 +908,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					variable[k] = data.NewString(defaultValueMap[k].(string))
 				} else {
+					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
+						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
+					}
 					variable[k] = data.NewString(v.GetStringValue())
 				}
 			case "array:string":
@@ -912,6 +923,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
+						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
+							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
+						}
 						array[idx] = data.NewString(val.GetStringValue())
 					}
 					variable[k] = array
@@ -920,6 +934,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					variable[k] = data.NewNumberFromFloat(defaultValueMap[k].(float64))
 				} else {
+					if _, ok := v.Kind.(*structpb.Value_NumberValue); !ok {
+						return fmt.Errorf("%w: invalid number value: %v", errdomain.ErrInvalidArgument, v)
+					}
 					variable[k] = data.NewNumberFromFloat(v.GetNumberValue())
 				}
 			case "array:integer":
@@ -932,6 +949,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
+						if _, ok := val.Kind.(*structpb.Value_NumberValue); !ok {
+							return fmt.Errorf("%w: invalid number value: %v", errdomain.ErrInvalidArgument, val)
+						}
 						array[idx] = data.NewNumberFromFloat(val.GetNumberValue())
 					}
 					variable[k] = array
@@ -940,6 +960,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					variable[k] = data.NewNumberFromFloat(defaultValueMap[k].(float64))
 				} else {
+					if _, ok := v.Kind.(*structpb.Value_NumberValue); !ok {
+						return fmt.Errorf("%w: invalid number value: %v", errdomain.ErrInvalidArgument, v)
+					}
 					variable[k] = data.NewNumberFromFloat(v.GetNumberValue())
 				}
 			case "array:number":
@@ -952,6 +975,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
+						if _, ok := val.Kind.(*structpb.Value_NumberValue); !ok {
+							return fmt.Errorf("%w: invalid number value: %v", errdomain.ErrInvalidArgument, val)
+						}
 						array[idx] = data.NewNumberFromFloat(val.GetNumberValue())
 					}
 					variable[k] = array
@@ -963,6 +989,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						return err
 					}
 				} else {
+					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
+						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
+					}
 					variable[k], err = data.NewImageFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
 						return err
@@ -981,6 +1010,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
+						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
+							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
+						}
 						array[idx], err = data.NewImageFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
 							return err
@@ -995,6 +1027,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						return err
 					}
 				} else {
+					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
+						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
+					}
 					variable[k], err = data.NewAudioFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
 						return err
@@ -1013,6 +1048,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
+						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
+							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
+						}
 						array[idx], err = data.NewAudioFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
 							return err
@@ -1027,6 +1065,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						return err
 					}
 				} else {
+					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
+						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
+					}
 					variable[k], err = data.NewVideoFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
 						return err
@@ -1045,6 +1086,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
+						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
+							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
+						}
 						array[idx], err = data.NewVideoFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
 							return err
@@ -1060,6 +1104,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						return err
 					}
 				} else {
+					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
+						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
+					}
 					variable[k], err = data.NewDocumentFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
 						return err
@@ -1078,6 +1125,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
+						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
+							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
+						}
 						array[idx], err = data.NewDocumentFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
 							return err
@@ -1092,6 +1142,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						return err
 					}
 				} else {
+					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
+						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
+					}
 					variable[k], err = data.NewBinaryFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
 						return err
@@ -1110,6 +1163,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
+						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
+							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
+						}
 						array[idx], err = data.NewBinaryFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
 							return err
