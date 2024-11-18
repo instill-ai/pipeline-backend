@@ -217,19 +217,17 @@ func (s *service) isOAuthVisible(ctx context.Context, integrationID string) (boo
 		return false, nil
 	}
 
-	req := &mgmtpb.CheckNamespaceByUIDAdminRequest{Uid: authUserUID}
-	resp, err := s.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, req)
-	if err != nil || resp.Type != mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_USER {
+	// TODO: instead of using the public API, we should have a private endpoint
+	// that returns the whole user info. The private API only exposes
+	// `mgmtpb.User`, which we can't extend with the email because it's an
+	// entity used by other public endpoints and we'd break the user's privacy.
+	resp, err := s.mgmtPublicServiceClient.GetAuthenticatedUser(ctx, new(mgmtpb.GetAuthenticatedUserRequest))
+	if err != nil {
 		return false, fmt.Errorf("fetching user info: %w", err)
 	}
 
-	authenticatedUser := resp.GetUser()
-	if authenticatedUser == nil {
-		return false, nil
-	}
-
 	whitelistedEmails := config.Config.Component.InternalUserEmails
-	if !slices.Contains(whitelistedEmails, authenticatedUser.GetProfile().GetPublicEmail()) {
+	if !slices.Contains(whitelistedEmails, resp.GetUser().GetEmail()) {
 		return false, nil
 	}
 

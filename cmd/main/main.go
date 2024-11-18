@@ -242,6 +242,10 @@ func main() {
 	if pipelinePublicServiceClientConn != nil {
 		defer pipelinePublicServiceClientConn.Close()
 	}
+	mgmtPublicServiceClient, mgmtPublicServiceClientConn := external.InitMgmtPublicServiceClient(ctx)
+	if mgmtPublicServiceClientConn != nil {
+		defer mgmtPublicServiceClientConn.Close()
+	}
 	mgmtPrivateServiceClient, mgmtPrivateServiceClientConn := external.InitMgmtPrivateServiceClient(ctx)
 	if mgmtPrivateServiceClientConn != nil {
 		defer mgmtPrivateServiceClientConn.Close()
@@ -289,6 +293,7 @@ func main() {
 				InstillCoreHost: config.Config.Server.InstillCoreHost,
 				ComponentStore:  compStore,
 			}),
+			MgmtPublicServiceClient:  mgmtPublicServiceClient,
 			MgmtPrivateServiceClient: mgmtPrivateServiceClient,
 			MinioClient:              minioClient,
 			ComponentStore:           compStore,
