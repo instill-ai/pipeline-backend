@@ -94,7 +94,9 @@ type ServerConfig struct {
 // default API key when no setup is specified, or to connect with a 3rd party
 // vendor via OAuth.
 type ComponentConfig struct {
-	Secrets ComponentSecrets
+	Secrets                     ComponentSecrets
+	InternalUserEmails          []string
+	ComponentsWithInternalUsers []string
 }
 
 // ComponentSecrets contains the global config secrets of each

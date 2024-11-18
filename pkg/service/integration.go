@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -20,14 +21,18 @@ import (
 
 	fieldmaskutil "github.com/mennanov/fieldmask-utils"
 
+	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/checkfield"
 	"github.com/instill-ai/x/errmsg"
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -43,7 +48,7 @@ func (s *service) GetIntegration(ctx context.Context, id string, view pb.View) (
 		return nil, fmt.Errorf("fetching component information: %w", err)
 	}
 
-	integration, err := s.componentDefinitionToIntegration(cd, view)
+	integration, err := s.componentDefinitionToIntegration(ctx, cd, view)
 	if err != nil {
 		if errors.Is(err, errIntegrationConversion) {
 			return nil, errIntegrationNotFound
@@ -93,7 +98,7 @@ func (s *service) ListIntegrations(ctx context.Context, req *pb.ListIntegrations
 			return nil, fmt.Errorf("fetching component definition: %w", err)
 		}
 
-		integrations[i], err = s.componentDefinitionToIntegration(cd, pb.View_VIEW_BASIC)
+		integrations[i], err = s.componentDefinitionToIntegration(ctx, cd, pb.View_VIEW_BASIC)
 		if err != nil {
 			return nil, fmt.Errorf("converting component definition: %w", err)
 		}
@@ -109,6 +114,7 @@ func (s *service) ListIntegrations(ctx context.Context, req *pb.ListIntegrations
 var errIntegrationConversion = fmt.Errorf("component definition has no integration configuration")
 
 func (s *service) componentDefinitionToIntegration(
+	ctx context.Context,
 	cd *pb.ComponentDefinition,
 	view pb.View,
 ) (*pb.Integration, error) {
@@ -157,9 +163,26 @@ func (s *service) componentDefinitionToIntegration(
 	if err != nil {
 		return nil, fmt.Errorf("checking OAuth support: %w", err)
 	}
+	if !supportsOAuth {
+		return integration, nil
+	}
+
+	// This check verifies that the user can see the OAuth details. This is a
+	// mechanism to publish the OAuth feature for internal users in cases
+	// where, e.g., the OAuth flow of a vendor requires a review before being
+	// made public.
+	// TODO jvallesm: in the future we should use feature flags instead of this
+	// kind of condition.
+	supportsOAuth, err = s.isOAuthVisible(ctx, integration.Id)
+	if err != nil {
+		return nil, fmt.Errorf("checking OAuth visibility: %w", err)
+	}
+	if !supportsOAuth {
+		return integration, nil
+	}
 
 	oAuthConfig, hasOAuthConfig := schemaFields["instillOAuthConfig"]
-	if !(supportsOAuth && hasOAuthConfig) {
+	if !hasOAuthConfig {
 		return integration, nil
 	}
 
@@ -181,6 +204,36 @@ func (s *service) componentDefinitionToIntegration(
 
 	return integration, nil
 
+}
+
+func (s *service) isOAuthVisible(ctx context.Context, integrationID string) (bool, error) {
+	integrationsWithInternalUsers := config.Config.Component.ComponentsWithInternalUsers
+	if !slices.Contains(integrationsWithInternalUsers, integrationID) {
+		return true, nil
+	}
+
+	authUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+	if authUserUID == "" {
+		return false, nil
+	}
+
+	req := &mgmtpb.CheckNamespaceByUIDAdminRequest{Uid: authUserUID}
+	resp, err := s.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, req)
+	if err != nil || resp.Type != mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_USER {
+		return false, fmt.Errorf("fetching user info: %w", err)
+	}
+
+	authenticatedUser := resp.GetUser()
+	if authenticatedUser == nil {
+		return false, nil
+	}
+
+	whitelistedEmails := config.Config.Component.InternalUserEmails
+	if !slices.Contains(whitelistedEmails, authenticatedUser.GetProfile().GetPublicEmail()) {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 var outputOnlyConnectionFields = []string{
