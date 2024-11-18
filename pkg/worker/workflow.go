@@ -713,7 +713,7 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 
 	uploadURL := resp.GetUploadUrl()
 
-	err = uploadBlobData(ctx, uploadURL, value)
+	err = uploadBlobData(ctx, uploadURL, value, w.log)
 	if err != nil {
 		return "", fmt.Errorf("upload blob data: %w", err)
 	}
@@ -729,7 +729,7 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 	return respDownloadURL.GetDownloadUrl(), nil
 }
 
-func uploadBlobData(ctx context.Context, uploadURL string, value *format.File) error {
+func uploadBlobData(ctx context.Context, uploadURL string, value *format.File, logger *zap.Logger) error {
 	if uploadURL == "" {
 		return fmt.Errorf("empty upload URL provided")
 	}
@@ -748,7 +748,7 @@ func uploadBlobData(ctx context.Context, uploadURL string, value *format.File) e
 		return fmt.Errorf("getting file bytes: %w", err)
 	}
 
-	err = blobstorage.UploadFile(ctx, fullURL, fileBytes.ByteArray(), contentType)
+	err = blobstorage.UploadFile(ctx, logger, fullURL, fileBytes.ByteArray(), contentType)
 
 	if err != nil {
 		return fmt.Errorf("uploading blob: %w", err)
