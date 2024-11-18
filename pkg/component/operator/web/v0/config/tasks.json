@@ -106,6 +106,33 @@
           "minimum": 0,
           "title": "Max Depth",
           "type": "integer"
+        },
+        "filter": {
+          "description": "Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). The URL will be crawled if it matches either include-pattern or not match exclude-pattern. When both include-pattern and exclude-pattern are empty, all URLs will be crawled. It will process exclude-pattern first, then include-pattern. When exclude-pattern is not empty, only URLs that do not match exclude-pattern will be crawled. When include-pattern is not empty, only URLs that match include-pattern will be crawled.",
+          "instillUIOrder": 5,
+          "type": "object",
+          "title": "Filter",
+          "properties": {
+            "exclude-pattern": {
+              "description": "When the URL is matched, the URL will not be crawled.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIOrder": 1,
+              "type": "string",
+              "title": "Exclude Pattern"
+            },
+            "include-pattern": {
+              "description": "When the URL is matched, the URL will be crawled.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIOrder": 2,
+              "title": "Include Pattern",
+              "type": "string"
+            }
+          },
+          "required": []
         }
       },
       "required": [

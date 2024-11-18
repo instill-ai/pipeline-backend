@@ -70,6 +70,7 @@ An array of time segments defining the portions of the video to be extracted. Ea
 | Videos | `video-segments` | array[string] | An array of video clips resulting from the segmentation process. Each element in this array corresponds to one of the input segments and contains the video data for that specific time range from the original video. |
 </div>
 
+
 ### Subsample
 
 Reduce video file size by adjusting frame rate, bitrate, and dimensions while maintaining visual content. This task optimizes storage and bandwidth requirements with minimal quality loss.
@@ -99,6 +100,7 @@ Reduce video file size by adjusting frame rate, bitrate, and dimensions while ma
 | Video | `video` | string | The subsampled video data, processed according to the specified input parameters. Maintains the content of the original video with potentially reduced file size due to changes in frame rate, bitrate, or dimensions. |
 </div>
 
+
 ### Extract Audio
 
 Extract the audio track from a video file, creating a standalone audio output. This task takes a video input and isolates its sound component, removing all visual elements. The resulting audio data is provided as a single output, suitable for further audio processing, analysis, or use in audio-only applications.
@@ -122,6 +124,7 @@ Extract the audio track from a video file, creating a standalone audio output. T
 | :--- | :--- | :--- | :--- |
 | Audio | `audio` | string | The extracted audio data from the input video. This is a standalone audio file containing only the sound component of the original video, with all visual elements removed. The audio format may vary depending on the original video's audio codec and the extraction process. |
 </div>
+
 
 ### Extract Frames
 
@@ -148,5 +151,6 @@ Extract image frames from a video at regular intervals or specified timestamps. 
 | :--- | :--- | :--- | :--- |
 | Frames | `frames` | array[string] | Extracted video frames |
 </div>
+
 
 

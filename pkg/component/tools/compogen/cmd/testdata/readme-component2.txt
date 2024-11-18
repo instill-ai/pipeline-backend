@@ -230,6 +230,7 @@ Perform a dummy task.
 | :--- | :--- | :--- | :--- |
 | Orci (optional) | `orci` | string | Orci sagittis eu volutpat odio facilisis mauris sit |
 </div>
+
 #### How to use the dummy task
 
 You might be tempted to think than dummier is better than dummy. However,
@@ -276,6 +277,7 @@ This task is dummier than `TASK_DUMMY`.
 | Tincidunt tortor | `tortor` | string | Tincidunt tortor aliquam nulla |
 </div>
 </details>
+
 
 
 ## Final words

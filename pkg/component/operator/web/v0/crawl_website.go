@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -39,6 +40,38 @@ type CrawlWebsiteInput struct {
 	Timeout int `json:"timeout"`
 	// MaxDepth: The maximum depth of the pages to scrape.
 	MaxDepth int `json:"max-depth"`
+	// Filter: The filter to filter the URLs to crawl.
+	Filter filter `json:"filter"`
+}
+
+// filter defines the filter of the crawl website task
+type filter struct {
+	// ExcludePattern: The pattern to exclude the URLs to crawl.
+	ExcludePattern string `json:"exclude-pattern"`
+	// IncludePattern: The pattern to include the URLs to crawl.
+	IncludePattern string `json:"include-pattern"`
+
+	// excludeRegex: The compiled exclude pattern.
+	excludeRegex *regexp.Regexp
+	// includeRegex: The compiled include pattern.
+	includeRegex *regexp.Regexp
+}
+
+func (f *filter) compile() error {
+	var err error
+	if f.ExcludePattern != "" {
+		f.excludeRegex, err = regexp.Compile(f.ExcludePattern)
+		if err != nil {
+			return fmt.Errorf("compiling exclude pattern: %v", err)
+		}
+	}
+	if f.IncludePattern != "" {
+		f.includeRegex, err = regexp.Compile(f.IncludePattern)
+		if err != nil {
+			return fmt.Errorf("compiling include pattern: %v", err)
+		}
+	}
+	return nil
 }
 
 func (i *CrawlWebsiteInput) preset() {
@@ -73,7 +106,22 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 
 	inputStruct.preset()
 
-	output := ScrapeWebsiteOutput{}
+	err = inputStruct.Filter.compile()
+	if err != nil {
+		return nil, fmt.Errorf("compiling filter: %v", err)
+	}
+
+	output := ScrapeWebsiteOutput{
+		Pages: []PageInfo{},
+	}
+
+	if !targetLink(inputStruct.URL, inputStruct.Filter) {
+		outputStruct, err := base.ConvertToStructpb(output)
+		if err != nil {
+			return nil, fmt.Errorf("convert output to structpb error: %v", err)
+		}
+		return outputStruct, nil
+	}
 
 	c := initColly(inputStruct)
 
@@ -104,12 +152,23 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 		}
 
 		link := e.Attr("href")
-
-		if util.InSlice(pageLinks, link) {
+		absoluteURL := e.Request.AbsoluteURL(link)
+		if !targetLink(absoluteURL, inputStruct.Filter) {
 			return
 		}
 
-		pageLinks = append(pageLinks, link)
+		parsedURL, err := url.Parse(link)
+		if err != nil {
+			return
+		}
+
+		requestURL := stripQueryAndTrailingSlash(parsedURL)
+
+		if util.InSlice(pageLinks, requestURL.String()) {
+			return
+		}
+
+		pageLinks = append(pageLinks, requestURL.String())
 
 		_ = e.Request.Visit(link)
 	})
@@ -132,23 +191,26 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 		r.Headers.Set("User-Agent", randomString())
 	})
 
+	// colly.Wait() does not terminate the program. So, we need a system to terminate the program when there is no collector.
+	// We use a channel to notify the main goroutine that a new page has been scraped.
+	// When there is no new page for 2 seconds, we cancel the context.
+	pageUpdateCh := make(chan struct{})
+
 	c.OnResponse(func(r *colly.Response) {
 		if ctx.Err() != nil {
 			return
 		}
 
-		strippedURL := stripQueryAndTrailingSlash(r.Request.URL)
-
 		page := PageInfo{}
 
-		page.Link = strippedURL.String()
+		page.Link = r.Request.URL.String()
 
 		html := string(r.Body)
 		ioReader := strings.NewReader(html)
 		doc, err := goquery.NewDocumentFromReader(ioReader)
 
 		if err != nil {
-			fmt.Printf("Error parsing %s: %v", strippedURL.String(), err)
+			fmt.Printf("Error parsing %s: %v", r.Request.URL.String(), err)
 			return
 		}
 
@@ -160,6 +222,9 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 		// If we do not set this condition, the length of output.Pages could be over the limit.
 		if len(output.Pages) < inputStruct.MaxK {
 			output.Pages = append(output.Pages, page)
+
+			// Signal that we've added a new page
+			pageUpdateCh <- struct{}{}
 
 			// If the length of output.Pages is equal to MaxK, we should stop the scraping.
 			if len(output.Pages) == inputStruct.MaxK {
@@ -177,12 +242,41 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 		inputStruct.URL = "https://" + inputStruct.URL
 	}
 
+	scrapeDone := make(chan struct{})
 	go func() {
+		defer close(scrapeDone)
 		_ = c.Visit(inputStruct.URL)
 		c.Wait()
 	}()
 
-	<-ctx.Done()
+	// To avoid to wait for 2 minutes, we use a timer to check if there is a new page.
+	// If there is no new page, we cancel the context.
+	inactivityTimer := time.NewTimer(2 * time.Second)
+	defer inactivityTimer.Stop()
+
+	// There are 4 cases to finish the program:
+	// 1. No more pages to scrape: c.Wait() returns and the goroutine closes scrapeDone. Program finishes before the timeout.
+	// 2. Max pages scraped: c.OnResponse cancels the context / closes scrapeDone. Program finishes before the timeout.
+	// 3. Max pages haven't been collected before the timeout. Context is canceled and program finishes at the timeout.
+	// 4. Max pages haven't been collected before the timeout. Context is canceled and the program finishes when there are no more validate data in 2 seconds.
+	// We use 4. to avoid the program waiting for 2 minutes to close all URLs that will wait for over timeout.
+	crawling := true
+	for crawling {
+		select {
+		// This is for 1.
+		case <-scrapeDone:
+			crawling = false
+		// This is for 2. & 3.
+		case <-ctx.Done():
+			crawling = false
+		// The remaining is for 4.
+		case <-pageUpdateCh:
+			inactivityTimer.Reset(2 * time.Second)
+		case <-inactivityTimer.C:
+			cancel()
+			crawling = false
+		}
+	}
 
 	outputStruct, err := base.ConvertToStructpb(output)
 	if err != nil {
@@ -248,8 +342,8 @@ func initColly(inputStruct CrawlWebsiteInput) *colly.Collector {
 // It ensures that we fetch enough pages to get the required number of pages.
 func getPageTimes(maxK int) int {
 	if maxK < 10 {
-		return 10
+		return 30
 	} else {
-		return 2
+		return 3
 	}
 }

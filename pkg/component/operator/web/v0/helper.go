@@ -65,3 +65,14 @@ func getRemovedTagsHTML[T scrapeInput](doc *goquery.Document, input T) string {
 
 	return combinedHTML
 }
+
+// targetLink filters the URL based on the filter
+func targetLink(link string, f filter) bool {
+	if f.excludeRegex != nil && f.excludeRegex.MatchString(link) {
+		return false
+	}
+	if f.includeRegex != nil && !f.includeRegex.MatchString(link) {
+		return false
+	}
+	return true
+}
