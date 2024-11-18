@@ -102,8 +102,8 @@ type Repository interface {
 	UpsertComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error
 	UpdateComponentRun(ctx context.Context, pipelineTriggerUID, componentID string, componentRun *datamodel.ComponentRun) error
 
-	ListPipelineRunOnsByIdentifier(ctx context.Context, ComponentType string, Identifier base.Identifier) (PipelineRunList, error)
-	ListPipelineRunOns(ctx context.Context, pipelineUID, releaseUID uuid.UUID) (PipelineRunList, error)
+	ListPipelineRunOnsByIdentifier(ctx context.Context, ComponentType string, Identifier base.Identifier) (PipelineRunOnList, error)
+	ListPipelineRunOns(ctx context.Context, pipelineUID, releaseUID uuid.UUID) (PipelineRunOnList, error)
 	CreatePipelineRunOn(context.Context, *datamodel.PipelineRunOn) error
 	DeletePipelineRunOn(ctx context.Context, pipelineUID, releaseUID uuid.UUID) error
 
@@ -1603,7 +1603,7 @@ func (r *repository) ListPipelineIDsByConnectionID(
 	return page, nil
 }
 
-type PipelineRunList struct {
+type PipelineRunOnList struct {
 	PipelineRunOns []*datamodel.PipelineRunOn
 }
 
@@ -1636,36 +1636,36 @@ func (r *repository) DeletePipelineRunOn(ctx context.Context, pipelineUID, relea
 		Delete(&datamodel.PipelineRunOn{}).Error
 }
 
-func (r *repository) ListPipelineRunOns(ctx context.Context, pipelineUID, releaseUID uuid.UUID) (PipelineRunList, error) {
+func (r *repository) ListPipelineRunOns(ctx context.Context, pipelineUID, releaseUID uuid.UUID) (PipelineRunOnList, error) {
 	db := r.CheckPinnedUser(ctx, r.db, "pipeline_run_on")
 
 	var runOns []*datamodel.PipelineRunOn
 	err := db.Model(&datamodel.PipelineRunOn{}).Where("pipeline_uid = ? AND release_uid = ?", pipelineUID, releaseUID).Find(&runOns).Error
 	if err != nil {
-		return PipelineRunList{}, err
+		return PipelineRunOnList{}, err
 	}
-	return PipelineRunList{
+	return PipelineRunOnList{
 		PipelineRunOns: runOns,
 	}, nil
 }
 
-func (r *repository) ListPipelineRunOnsByIdentifier(ctx context.Context, componentType string, identifier base.Identifier) (PipelineRunList, error) {
+func (r *repository) ListPipelineRunOnsByIdentifier(ctx context.Context, componentType string, identifier base.Identifier) (PipelineRunOnList, error) {
 	db := r.CheckPinnedUser(ctx, r.db, "pipeline_run_on")
 
 	var runOns []*datamodel.PipelineRunOn
 
 	identifierJSON, err := json.Marshal(identifier)
 	if err != nil {
-		return PipelineRunList{}, err
+		return PipelineRunOnList{}, err
 	}
 
 	err = db.Model(&datamodel.PipelineRunOn{}).
 		Where("run_on_type = ? AND identifier = ?", componentType, string(identifierJSON)).
 		Find(&runOns).Error
 	if err != nil {
-		return PipelineRunList{}, err
+		return PipelineRunOnList{}, err
 	}
-	return PipelineRunList{
+	return PipelineRunOnList{
 		PipelineRunOns: runOns,
 	}, nil
 }

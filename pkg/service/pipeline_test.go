@@ -15,6 +15,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/mock"
+	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
@@ -93,6 +94,8 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 	repo.UpdateNamespacePipelineByUIDMock.Return(nil)
 	repo.DeletePipelineTagsMock.Expect(ctx, uid, []string{"tag3"}).Return(nil)
 	repo.CreatePipelineTagsMock.Expect(ctx, uid, []string{"tag2"}).Return(nil)
+	repo.ListPipelineRunOnsMock.Expect(ctx, uid, uuid.Nil).Return(repository.PipelineRunOnList{}, nil)
+	repo.DeletePipelineRunOnMock.Expect(ctx, uid, uuid.Nil).Return(nil)
 
 	converter.ConvertPipelineToDBMock.Return(&newDataPipeline, nil)
 

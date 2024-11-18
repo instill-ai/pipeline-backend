@@ -277,14 +277,14 @@ type RepositoryMock struct {
 	beforeListPipelineIDsByConnectionIDCounter uint64
 	ListPipelineIDsByConnectionIDMock          mRepositoryMockListPipelineIDsByConnectionID
 
-	funcListPipelineRunOns          func(ctx context.Context, pipelineUID uuid.UUID, releaseUID uuid.UUID) (p1 mm_repository.PipelineRunList, err error)
+	funcListPipelineRunOns          func(ctx context.Context, pipelineUID uuid.UUID, releaseUID uuid.UUID) (p1 mm_repository.PipelineRunOnList, err error)
 	funcListPipelineRunOnsOrigin    string
 	inspectFuncListPipelineRunOns   func(ctx context.Context, pipelineUID uuid.UUID, releaseUID uuid.UUID)
 	afterListPipelineRunOnsCounter  uint64
 	beforeListPipelineRunOnsCounter uint64
 	ListPipelineRunOnsMock          mRepositoryMockListPipelineRunOns
 
-	funcListPipelineRunOnsByIdentifier          func(ctx context.Context, ComponentType string, Identifier base.Identifier) (p1 mm_repository.PipelineRunList, err error)
+	funcListPipelineRunOnsByIdentifier          func(ctx context.Context, ComponentType string, Identifier base.Identifier) (p1 mm_repository.PipelineRunOnList, err error)
 	funcListPipelineRunOnsByIdentifierOrigin    string
 	inspectFuncListPipelineRunOnsByIdentifier   func(ctx context.Context, ComponentType string, Identifier base.Identifier)
 	afterListPipelineRunOnsByIdentifierCounter  uint64
@@ -14637,7 +14637,7 @@ type RepositoryMockListPipelineRunOnsParamPtrs struct {
 
 // RepositoryMockListPipelineRunOnsResults contains results of the Repository.ListPipelineRunOns
 type RepositoryMockListPipelineRunOnsResults struct {
-	p1  mm_repository.PipelineRunList
+	p1  mm_repository.PipelineRunOnList
 	err error
 }
 
@@ -14765,7 +14765,7 @@ func (mmListPipelineRunOns *mRepositoryMockListPipelineRunOns) Inspect(f func(ct
 }
 
 // Return sets up results that will be returned by Repository.ListPipelineRunOns
-func (mmListPipelineRunOns *mRepositoryMockListPipelineRunOns) Return(p1 mm_repository.PipelineRunList, err error) *RepositoryMock {
+func (mmListPipelineRunOns *mRepositoryMockListPipelineRunOns) Return(p1 mm_repository.PipelineRunOnList, err error) *RepositoryMock {
 	if mmListPipelineRunOns.mock.funcListPipelineRunOns != nil {
 		mmListPipelineRunOns.mock.t.Fatalf("RepositoryMock.ListPipelineRunOns mock is already set by Set")
 	}
@@ -14779,7 +14779,7 @@ func (mmListPipelineRunOns *mRepositoryMockListPipelineRunOns) Return(p1 mm_repo
 }
 
 // Set uses given function f to mock the Repository.ListPipelineRunOns method
-func (mmListPipelineRunOns *mRepositoryMockListPipelineRunOns) Set(f func(ctx context.Context, pipelineUID uuid.UUID, releaseUID uuid.UUID) (p1 mm_repository.PipelineRunList, err error)) *RepositoryMock {
+func (mmListPipelineRunOns *mRepositoryMockListPipelineRunOns) Set(f func(ctx context.Context, pipelineUID uuid.UUID, releaseUID uuid.UUID) (p1 mm_repository.PipelineRunOnList, err error)) *RepositoryMock {
 	if mmListPipelineRunOns.defaultExpectation != nil {
 		mmListPipelineRunOns.mock.t.Fatalf("Default expectation is already set for the Repository.ListPipelineRunOns method")
 	}
@@ -14810,7 +14810,7 @@ func (mmListPipelineRunOns *mRepositoryMockListPipelineRunOns) When(ctx context.
 }
 
 // Then sets up Repository.ListPipelineRunOns return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockListPipelineRunOnsExpectation) Then(p1 mm_repository.PipelineRunList, err error) *RepositoryMock {
+func (e *RepositoryMockListPipelineRunOnsExpectation) Then(p1 mm_repository.PipelineRunOnList, err error) *RepositoryMock {
 	e.results = &RepositoryMockListPipelineRunOnsResults{p1, err}
 	return e.mock
 }
@@ -14837,7 +14837,7 @@ func (mmListPipelineRunOns *mRepositoryMockListPipelineRunOns) invocationsDone()
 }
 
 // ListPipelineRunOns implements mm_repository.Repository
-func (mmListPipelineRunOns *RepositoryMock) ListPipelineRunOns(ctx context.Context, pipelineUID uuid.UUID, releaseUID uuid.UUID) (p1 mm_repository.PipelineRunList, err error) {
+func (mmListPipelineRunOns *RepositoryMock) ListPipelineRunOns(ctx context.Context, pipelineUID uuid.UUID, releaseUID uuid.UUID) (p1 mm_repository.PipelineRunOnList, err error) {
 	mm_atomic.AddUint64(&mmListPipelineRunOns.beforeListPipelineRunOnsCounter, 1)
 	defer mm_atomic.AddUint64(&mmListPipelineRunOns.afterListPipelineRunOnsCounter, 1)
 
@@ -15011,7 +15011,7 @@ type RepositoryMockListPipelineRunOnsByIdentifierParamPtrs struct {
 
 // RepositoryMockListPipelineRunOnsByIdentifierResults contains results of the Repository.ListPipelineRunOnsByIdentifier
 type RepositoryMockListPipelineRunOnsByIdentifierResults struct {
-	p1  mm_repository.PipelineRunList
+	p1  mm_repository.PipelineRunOnList
 	err error
 }
 
@@ -15139,7 +15139,7 @@ func (mmListPipelineRunOnsByIdentifier *mRepositoryMockListPipelineRunOnsByIdent
 }
 
 // Return sets up results that will be returned by Repository.ListPipelineRunOnsByIdentifier
-func (mmListPipelineRunOnsByIdentifier *mRepositoryMockListPipelineRunOnsByIdentifier) Return(p1 mm_repository.PipelineRunList, err error) *RepositoryMock {
+func (mmListPipelineRunOnsByIdentifier *mRepositoryMockListPipelineRunOnsByIdentifier) Return(p1 mm_repository.PipelineRunOnList, err error) *RepositoryMock {
 	if mmListPipelineRunOnsByIdentifier.mock.funcListPipelineRunOnsByIdentifier != nil {
 		mmListPipelineRunOnsByIdentifier.mock.t.Fatalf("RepositoryMock.ListPipelineRunOnsByIdentifier mock is already set by Set")
 	}
@@ -15153,7 +15153,7 @@ func (mmListPipelineRunOnsByIdentifier *mRepositoryMockListPipelineRunOnsByIdent
 }
 
 // Set uses given function f to mock the Repository.ListPipelineRunOnsByIdentifier method
-func (mmListPipelineRunOnsByIdentifier *mRepositoryMockListPipelineRunOnsByIdentifier) Set(f func(ctx context.Context, ComponentType string, Identifier base.Identifier) (p1 mm_repository.PipelineRunList, err error)) *RepositoryMock {
+func (mmListPipelineRunOnsByIdentifier *mRepositoryMockListPipelineRunOnsByIdentifier) Set(f func(ctx context.Context, ComponentType string, Identifier base.Identifier) (p1 mm_repository.PipelineRunOnList, err error)) *RepositoryMock {
 	if mmListPipelineRunOnsByIdentifier.defaultExpectation != nil {
 		mmListPipelineRunOnsByIdentifier.mock.t.Fatalf("Default expectation is already set for the Repository.ListPipelineRunOnsByIdentifier method")
 	}
@@ -15184,7 +15184,7 @@ func (mmListPipelineRunOnsByIdentifier *mRepositoryMockListPipelineRunOnsByIdent
 }
 
 // Then sets up Repository.ListPipelineRunOnsByIdentifier return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockListPipelineRunOnsByIdentifierExpectation) Then(p1 mm_repository.PipelineRunList, err error) *RepositoryMock {
+func (e *RepositoryMockListPipelineRunOnsByIdentifierExpectation) Then(p1 mm_repository.PipelineRunOnList, err error) *RepositoryMock {
 	e.results = &RepositoryMockListPipelineRunOnsByIdentifierResults{p1, err}
 	return e.mock
 }
@@ -15211,7 +15211,7 @@ func (mmListPipelineRunOnsByIdentifier *mRepositoryMockListPipelineRunOnsByIdent
 }
 
 // ListPipelineRunOnsByIdentifier implements mm_repository.Repository
-func (mmListPipelineRunOnsByIdentifier *RepositoryMock) ListPipelineRunOnsByIdentifier(ctx context.Context, ComponentType string, Identifier base.Identifier) (p1 mm_repository.PipelineRunList, err error) {
+func (mmListPipelineRunOnsByIdentifier *RepositoryMock) ListPipelineRunOnsByIdentifier(ctx context.Context, ComponentType string, Identifier base.Identifier) (p1 mm_repository.PipelineRunOnList, err error) {
 	mm_atomic.AddUint64(&mmListPipelineRunOnsByIdentifier.beforeListPipelineRunOnsByIdentifierCounter, 1)
 	defer mm_atomic.AddUint64(&mmListPipelineRunOnsByIdentifier.afterListPipelineRunOnsByIdentifierCounter, 1)
 
