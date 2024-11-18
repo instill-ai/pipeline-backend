@@ -103,6 +103,7 @@ type service struct {
 	redisClient              *redis.Client
 	temporalClient           client.Client
 	component                *componentstore.Store
+	mgmtPublicServiceClient  mgmtpb.MgmtPublicServiceClient
 	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
 	aclClient                acl.ACLClientInterface
 	converter                Converter
@@ -121,6 +122,7 @@ type ServiceConfig struct {
 	TemporalClient           client.Client
 	ACLClient                acl.ACLClientInterface
 	Converter                Converter
+	MgmtPublicServiceClient  mgmtpb.MgmtPublicServiceClient
 	MgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
 	MinioClient              miniox.MinioI
 	ComponentStore           *componentstore.Store
@@ -143,6 +145,7 @@ func NewService(
 		repository:               cfg.Repository,
 		redisClient:              cfg.RedisClient,
 		temporalClient:           cfg.TemporalClient,
+		mgmtPublicServiceClient:  cfg.MgmtPublicServiceClient,
 		mgmtPrivateServiceClient: cfg.MgmtPrivateServiceClient,
 		component:                cfg.ComponentStore,
 		aclClient:                cfg.ACLClient,

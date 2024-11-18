@@ -25,6 +25,30 @@ import (
 	usagepb "github.com/instill-ai/protogen-go/core/usage/v1beta"
 )
 
+// InitMgmtPublicServiceClient initialises a MgmtPublicServiceClient instance
+func InitMgmtPublicServiceClient(ctx context.Context) (mgmtpb.MgmtPublicServiceClient, *grpc.ClientConn) {
+	logger, _ := logger.GetZapLogger(ctx)
+
+	var clientDialOpts grpc.DialOption
+	if config.Config.MgmtBackend.HTTPS.Cert != "" && config.Config.MgmtBackend.HTTPS.Key != "" {
+		creds, err := credentials.NewServerTLSFromFile(config.Config.MgmtBackend.HTTPS.Cert, config.Config.MgmtBackend.HTTPS.Key)
+		if err != nil {
+			logger.Fatal(err.Error())
+		}
+		clientDialOpts = grpc.WithTransportCredentials(creds)
+	} else {
+		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
+	}
+
+	clientConn, err := grpc.NewClient(fmt.Sprintf("%v:%v", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, nil
+	}
+
+	return mgmtpb.NewMgmtPublicServiceClient(clientConn), clientConn
+}
+
 // InitMgmtPrivateServiceClient initialises a MgmtPrivateServiceClient instance
 func InitMgmtPrivateServiceClient(ctx context.Context) (mgmtpb.MgmtPrivateServiceClient, *grpc.ClientConn) {
 	logger, _ := logger.GetZapLogger(ctx)
