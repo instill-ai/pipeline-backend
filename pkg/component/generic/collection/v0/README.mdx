@@ -220,10 +220,10 @@ Split the array into an array of arrays with group size. i.e. `[1, 2, 3, 4, 5, 6
 ```yaml
 variable:
   texts:
-    instill-format: array:string
+    format: array:string
     title: Text
   texts-2:
-    instill-format: array:string
+    format: array:string
     title: Text
 
 component:
@@ -266,7 +266,7 @@ output:
 ```yaml
 variable:
   text:
-    instill-format: string
+    format: string
     title: Text
 
 component:
@@ -293,10 +293,10 @@ output:
 # ["foo", "bar", "bat", "zot"], 3 -> [["foo", "bar", "bat"], ["zot"]]
 variable:
   texts:
-    instill-format: array:string
+    format: array:string
     title: Text
   group-size:
-    instill-format: number
+    format: number
     title: Group Size
 
 component:

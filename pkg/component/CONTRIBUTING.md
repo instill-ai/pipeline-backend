@@ -614,7 +614,7 @@ variable:
   who:
     title: Who
     description: Who should be greeted?
-    instill-format: string
+    format: string
 component:
   hello-0:
     type: hello
