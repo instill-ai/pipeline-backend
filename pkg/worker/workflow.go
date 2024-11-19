@@ -740,7 +740,7 @@ func uploadBlobData(ctx context.Context, uploadURL string, value *format.File, l
 	if err != nil {
 		return fmt.Errorf("parsing upload URL: %w", err)
 	}
-	parsedURL.Scheme = "http"
+	parsedURL.Scheme = "https"
 	parsedURL.Host = fmt.Sprintf("%s:%d", config.Config.APIGateway.Host, config.Config.APIGateway.PublicPort)
 	fullURL := parsedURL.String()
 	contentType := (*value).ContentType().String()
