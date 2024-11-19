@@ -17,6 +17,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/x/errmsg"
@@ -463,7 +464,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 
 		results := []imageGenerationsOutputResult{}
 		for _, d := range resp.Data {
-			b, err := base64.StdEncoding.DecodeString(d.Image)
+			b, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(d.Image))
 			if err != nil {
 				job.Error.Error(ctx, err)
 				return
