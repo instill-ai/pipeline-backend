@@ -59,7 +59,7 @@ import (
 	miniox "github.com/instill-ai/x/minio"
 )
 
-const gracefulShutdownWaitPeriod = 15 * time.Second
+const gracefulShutdownWaitPeriod = 1 * time.Second
 const gracefulShutdownTimeout = 60 * time.Minute
 
 var propagator propagation.TextMapPropagator

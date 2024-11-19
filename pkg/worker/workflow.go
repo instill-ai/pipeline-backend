@@ -669,6 +669,7 @@ func (w *worker) uploadFileAndReplaceWithURL(ctx context.Context, param *Compone
 	}
 	switch v := (*value).(type) {
 	case format.File:
+		fmt.Println("uploadFileAndReplaceWithURL")
 		downloadURL, err := w.uploadBlobDataAndGetDownloadURL(ctx, param, &v)
 		if err != nil || downloadURL == "" {
 			logger.Warn("uploading blob data", zap.Error(err))
@@ -693,6 +694,7 @@ func (w *worker) uploadFileAndReplaceWithURL(ctx context.Context, param *Compone
 }
 
 func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *ComponentActivityParam, value *format.File) (string, error) {
+	fmt.Println("uploadBlobDataAndGetDownloadURL")
 	artifactClient := w.artifactPublicServiceClient
 	requesterID := param.SystemVariables.PipelineRequesterID
 
@@ -749,6 +751,8 @@ func uploadBlobData(ctx context.Context, uploadURL string, value *format.File, l
 	}
 
 	err = blobstorage.UploadFile(ctx, logger, fullURL, fileBytes.ByteArray(), contentType)
+	fmt.Println()
+	fmt.Println("blobstorage.UploadFile", fullURL, contentType, len(fileBytes.ByteArray()), fileBytes.ByteArray()[:100])
 
 	if err != nil {
 		return fmt.Errorf("uploading blob: %w", err)
