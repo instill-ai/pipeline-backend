@@ -766,6 +766,11 @@ func (r *repository) ListComponentDefinitionUIDs(_ context.Context, p ListCompon
 		Where(where, whereArgs...).
 		Where("is_visible IS TRUE")
 
+	if config.Config.Server.Edition == "local-ce:dev" {
+		skipComponentsInCE := []string{"instill-app"}
+		queryBuilder = queryBuilder.Where("id NOT IN (?)", skipComponentsInCE)
+	}
+
 	queryBuilder.Count(&totalSize)
 
 	// Several results might have the same score and release stage. We need to
