@@ -171,17 +171,10 @@ func (c *component) ParseEvent(ctx context.Context, rawEvent *base.RawEvent) (pa
 
 	switch event + "." + rawGithubEvent.Action {
 	case "star.created":
-		cfg := rawGithubStarCreated{}
-		err = unmarshaler.Unmarshal(ctx, rawEvent.Message, &cfg)
-		if err != nil {
-			return nil, err
-		}
-		return &base.ParsedEvent{
-			ParsedMessage: rawEvent.Message,
-			Response:      data.Map{},
-		}, nil
+		return c.handleStarCreated(ctx, rawEvent)
+	default:
+		return nil, fmt.Errorf("not supported event: %s.%s", event, rawGithubEvent.Action)
 	}
-	return nil, fmt.Errorf("not supported event: %s.%s", event, rawGithubEvent.Action)
 }
 
 func (c *component) RegisterEvent(ctx context.Context, settings *base.RegisterEventSettings) ([]base.Identifier, error) {
