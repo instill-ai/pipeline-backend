@@ -15,6 +15,6 @@
   "uid": "f0be2fd3-7266-4eeb-88eb-3bbbcc2a6b32",
   "version": "0.1.0",
   "sourceUrl": "https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/video/v0",
-  "description": "Operate video data",
+  "description": "Operate video data.",
   "releaseStage": "RELEASE_STAGE_ALPHA"
 }
