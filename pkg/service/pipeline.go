@@ -379,23 +379,23 @@ func (s *service) clearRunOn(ctx context.Context, params configureRunOnParams) e
 		for eventID, v := range params.recipe.On {
 			if r.EventID == eventID {
 				cfg, setup, err := s.marshalEventSettings(ctx, params.Namespace, v.Config, v.Setup)
-				if err != nil {
-					return err
+				if err == nil {
+					identifier := base.Identifier{}
+					err = json.Unmarshal(r.Identifier, &identifier)
+					if err != nil {
+						return err
+					}
+					err = s.component.UnregisterEvent(ctx, r.RunOnType, &base.UnregisterEventSettings{
+						EventSettings: base.EventSettings{
+							Config: cfg,
+							Setup:  setup,
+						},
+					}, []base.Identifier{identifier})
+					if err != nil {
+						return err
+					}
 				}
-				identifier := base.Identifier{}
-				err = json.Unmarshal(r.Identifier, &identifier)
-				if err != nil {
-					return err
-				}
-				err = s.component.UnregisterEvent(ctx, r.RunOnType, &base.UnregisterEventSettings{
-					EventSettings: base.EventSettings{
-						Config: cfg,
-						Setup:  setup,
-					},
-				}, []base.Identifier{identifier})
-				if err != nil {
-					return err
-				}
+
 			}
 		}
 	}
@@ -425,40 +425,39 @@ func (s *service) configureRunOn(ctx context.Context, params configureRunOnParam
 					return fmt.Errorf("schedule is not supported yet")
 				default:
 					cfg, setup, err := s.marshalEventSettings(ctx, params.Namespace, v.Config, v.Setup)
-					if err != nil {
-						return err
-					}
-
-					registrationUID := params.pipelineUID
-					if params.releaseUID != uuid.Nil {
-						registrationUID = params.releaseUID
-					}
-					identifiers, err := s.component.RegisterEvent(ctx, v.Type, &base.RegisterEventSettings{
-						EventSettings: base.EventSettings{
-							Config: cfg,
-							Setup:  setup,
-						},
-						RegistrationUID: registrationUID,
-					})
-					if err != nil {
-						return err
-					}
-					for _, identifier := range identifiers {
-						jsonIdentifier, err := json.Marshal(identifier)
-						if err != nil {
-							return err
+					if err == nil {
+						registrationUID := params.pipelineUID
+						if params.releaseUID != uuid.Nil {
+							registrationUID = params.releaseUID
 						}
-						err = s.repository.CreatePipelineRunOn(ctx, &datamodel.PipelineRunOn{
-							RunOnType:   v.Type,
-							EventID:     eventID,
-							Identifier:  jsonIdentifier,
-							PipelineUID: params.pipelineUID,
-							ReleaseUID:  params.releaseUID,
+						identifiers, err := s.component.RegisterEvent(ctx, v.Type, &base.RegisterEventSettings{
+							EventSettings: base.EventSettings{
+								Config: cfg,
+								Setup:  setup,
+							},
+							RegistrationUID: registrationUID,
 						})
 						if err != nil {
 							return err
 						}
+						for _, identifier := range identifiers {
+							jsonIdentifier, err := json.Marshal(identifier)
+							if err != nil {
+								return err
+							}
+							err = s.repository.CreatePipelineRunOn(ctx, &datamodel.PipelineRunOn{
+								RunOnType:   v.Type,
+								EventID:     eventID,
+								Identifier:  jsonIdentifier,
+								PipelineUID: params.pipelineUID,
+								ReleaseUID:  params.releaseUID,
+							})
+							if err != nil {
+								return err
+							}
+						}
 					}
+
 				}
 			}
 		}
