@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
@@ -27,8 +28,6 @@ import (
 
 var forward_PipelinePublicService_TriggerNamespacePipeline_0 = runtime.ForwardResponseMessage
 var forward_PipelinePublicService_TriggerNamespacePipelineRelease_0 = runtime.ForwardResponseMessage
-
-type streamingHandlerFunc func(triggerID string) error
 
 func convertFormData(ctx context.Context, req *http.Request) ([]*pb.TriggerData, error) {
 
@@ -206,52 +205,9 @@ func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient,
 
 	ctx := req.Context()
 
-	var sh streamingHandlerFunc
+	var sh *streamingHandler
 	if req.Header.Get(constant.HeaderAccept) == "text/event-stream" {
-		sh = func(triggerID string) (err error) {
-
-			wfm, err := ms.GetWorkflowMemory(ctx, triggerID)
-			if err != nil {
-				return err
-			}
-			defer func() {
-				_ = ms.PurgeWorkflowMemory(ctx, triggerID)
-			}()
-			ch := wfm.ListenEvent(ctx)
-
-			w.Header().Set("Content-Type", "text/event-stream")
-			w.Header().Set("Cache-Control", "no-cache")
-			w.Header().Set("Connection", "keep-alive")
-
-			// defer cancel()
-			closed := false
-			for !closed {
-				select {
-				// Check if the main context is canceled to stop the goroutine
-				case <-ctx.Done():
-					return nil
-				case event := <-ch:
-					if event.Event == string(memory.PipelineClosed) {
-						closed = true
-						break
-					}
-
-					b, err := json.Marshal(event.Data)
-					if err != nil {
-						return err
-					}
-					fmt.Fprintf(w, "event: %s\n", event.Event)
-					fmt.Fprintf(w, "data: %s\n", string(b))
-					fmt.Fprintf(w, "\n")
-					if flusher, ok := w.(http.Flusher); ok {
-						flusher.Flush()
-					}
-
-				}
-			}
-			return nil
-
-		}
+		sh = NewStreamingHandler(w, ms)
 	}
 
 	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -334,7 +290,7 @@ func HandleTriggerAsync(mux *runtime.ServeMux, client pb.PipelinePublicServiceCl
 }
 
 // ref: the generated protogen-go files
-func request_PipelinePublicService_TriggerNamespacePipeline_0(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh streamingHandlerFunc) (proto.Message, runtime.ServerMetadata, error) {
+func request_PipelinePublicService_TriggerNamespacePipeline_0(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq pb.TriggerNamespacePipelineRequest
 	var metadata runtime.ServerMetadata
 
@@ -380,13 +336,11 @@ func request_PipelinePublicService_TriggerNamespacePipeline_0(ctx context.Contex
 		}
 		resp, err := client.TriggerAsyncNamespacePipeline(ctx, &asyncReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 		if err != nil {
+			sendPipelineError(ctx, sh, err)
 			return nil, metadata, err
 		}
 		triggerID := strings.Split(resp.Operation.Name, "/")[1]
-		err = sh(triggerID)
-		if err != nil {
-			return nil, metadata, err
-		}
+		sh.Handle(ctx, triggerID)
 		return nil, metadata, nil
 	}
 	msg, err := client.TriggerNamespacePipeline(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -395,7 +349,7 @@ func request_PipelinePublicService_TriggerNamespacePipeline_0(ctx context.Contex
 }
 
 // ref: the generated protogen-go files
-func request_PipelinePublicService_TriggerNamespacePipeline_0_form(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh streamingHandlerFunc) (proto.Message, runtime.ServerMetadata, error) {
+func request_PipelinePublicService_TriggerNamespacePipeline_0_form(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -525,51 +479,9 @@ func request_PipelinePublicService_TriggerAsyncNamespacePipeline_0_form(ctx cont
 func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, ms memory.MemoryStore) {
 
 	ctx := req.Context()
-	var sh streamingHandlerFunc
+	var sh *streamingHandler
 	if req.Header.Get(constant.HeaderAccept) == "text/event-stream" {
-		sh = func(triggerID string) (err error) {
-
-			wfm, err := ms.GetWorkflowMemory(ctx, triggerID)
-			if err != nil {
-				return err
-			}
-			defer func() {
-				_ = ms.PurgeWorkflowMemory(ctx, triggerID)
-			}()
-			ch := wfm.ListenEvent(ctx)
-
-			w.Header().Set("Content-Type", "text/event-stream")
-			w.Header().Set("Cache-Control", "no-cache")
-			w.Header().Set("Connection", "keep-alive")
-
-			closed := false
-			for !closed {
-				select {
-				// Check if the main context is canceled to stop the goroutine
-				case <-ctx.Done():
-					return nil
-				case event := <-ch:
-					if event.Event == string(memory.PipelineClosed) {
-						closed = true
-						break
-					}
-
-					b, err := json.Marshal(event.Data)
-					if err != nil {
-						return err
-					}
-					fmt.Fprintf(w, "event: %s\n", event.Event)
-					fmt.Fprintf(w, "data: %s\n", string(b))
-					fmt.Fprintf(w, "\n")
-					if flusher, ok := w.(http.Flusher); ok {
-						flusher.Flush()
-					}
-
-				}
-			}
-			return nil
-
-		}
+		sh = NewStreamingHandler(w, ms)
 	}
 
 	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -651,7 +563,7 @@ func HandleTriggerAsyncRelease(mux *runtime.ServeMux, client pb.PipelinePublicSe
 }
 
 // ref: the generated protogen-go files
-func request_PipelinePublicService_TriggerNamespacePipelineRelease_0(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh streamingHandlerFunc) (proto.Message, runtime.ServerMetadata, error) {
+func request_PipelinePublicService_TriggerNamespacePipelineRelease_0(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq pb.TriggerNamespacePipelineReleaseRequest
 	var metadata runtime.ServerMetadata
 
@@ -707,13 +619,11 @@ func request_PipelinePublicService_TriggerNamespacePipelineRelease_0(ctx context
 		}
 		resp, err := client.TriggerAsyncNamespacePipelineRelease(ctx, &asyncReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 		if err != nil {
+			sendPipelineError(ctx, sh, err)
 			return nil, metadata, err
 		}
 		triggerID := strings.Split(resp.Operation.Name, "/")[1]
-		err = sh(triggerID)
-		if err != nil {
-			return nil, metadata, err
-		}
+		sh.Handle(ctx, triggerID)
 		return nil, metadata, nil
 	}
 
@@ -723,7 +633,7 @@ func request_PipelinePublicService_TriggerNamespacePipelineRelease_0(ctx context
 }
 
 // ref: the generated protogen-go files
-func request_PipelinePublicService_TriggerNamespacePipelineRelease_0_form(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh streamingHandlerFunc) (proto.Message, runtime.ServerMetadata, error) {
+func request_PipelinePublicService_TriggerNamespacePipelineRelease_0_form(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -872,5 +782,117 @@ func request_PipelinePublicService_TriggerAsyncNamespacePipelineRelease_0_form(c
 
 	msg, err := client.TriggerAsyncNamespacePipelineRelease(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
+}
+
+type streamingHandler struct {
+	writer http.ResponseWriter
+	ms     memory.MemoryStore
+}
+
+func NewStreamingHandler(writer http.ResponseWriter, ms memory.MemoryStore) *streamingHandler {
+	return &streamingHandler{
+		writer: writer,
+		ms:     ms,
+	}
+}
+
+func (sh *streamingHandler) Handle(ctx context.Context, triggerID string) {
+	wfm, err := sh.ms.GetWorkflowMemory(ctx, triggerID)
+	if err != nil {
+		return
+	}
+	defer func() {
+		_ = sh.ms.PurgeWorkflowMemory(ctx, triggerID)
+	}()
+	ch := wfm.ListenEvent(ctx)
+
+	sh.writer.Header().Set("Content-Type", "text/event-stream")
+	sh.writer.Header().Set("Cache-Control", "no-cache")
+	sh.writer.Header().Set("Connection", "keep-alive")
+
+	// defer cancel()
+	closed := false
+	for !closed {
+		select {
+		// Check if the main context is canceled to stop the goroutine
+		case <-ctx.Done():
+			return
+		case event := <-ch:
+			if event.Event == string(memory.PipelineClosed) {
+				closed = true
+				break
+			}
+
+			b, err := json.Marshal(event.Data)
+			if err != nil {
+				return
+			}
+			fmt.Fprintf(sh.writer, "event: %s\n", event.Event)
+			fmt.Fprintf(sh.writer, "data: %s\n", string(b))
+			fmt.Fprintf(sh.writer, "\n")
+			if flusher, ok := sh.writer.(http.Flusher); ok {
+				flusher.Flush()
+			}
+
+		}
+	}
+}
+
+// sendPipelineError is a helper function to send a pipeline error to the client
+func sendPipelineError(_ context.Context, sh *streamingHandler, err error) {
+
+	sh.writer.Header().Set("Content-Type", "text/event-stream")
+	sh.writer.Header().Set("Cache-Control", "no-cache")
+	sh.writer.Header().Set("Connection", "keep-alive")
+
+	startEvent := memory.Event{
+		Event: string(memory.PipelineStatusUpdated),
+		Data: memory.PipelineStatusUpdatedEventData{
+			PipelineEventData: memory.PipelineEventData{
+				UpdateTime: time.Now(),
+				BatchIndex: 0,
+				Status: map[memory.PipelineStatusType]bool{
+					memory.PipelineStatusStarted:   true,
+					memory.PipelineStatusErrored:   false,
+					memory.PipelineStatusCompleted: false,
+				},
+			},
+		},
+	}
+	errEvent := memory.Event{
+		Event: string(memory.PipelineErrorUpdated),
+		Data: memory.PipelineErrorUpdatedEventData{
+			PipelineEventData: memory.PipelineEventData{
+				UpdateTime: time.Now(),
+				BatchIndex: 0,
+				Status: map[memory.PipelineStatusType]bool{
+					memory.PipelineStatusStarted:   true,
+					memory.PipelineStatusErrored:   true,
+					memory.PipelineStatusCompleted: false,
+				},
+			},
+			Error: memory.MessageError{
+				Message: err.Error(),
+			},
+		},
+	}
+	startData, err := json.Marshal(startEvent.Data)
+	if err != nil {
+		return
+	}
+	errData, err := json.Marshal(errEvent.Data)
+	if err != nil {
+		return
+	}
+	fmt.Fprintf(sh.writer, "event: %s\n", startEvent.Event)
+	fmt.Fprintf(sh.writer, "data: %s\n", startData)
+	fmt.Fprintf(sh.writer, "\n")
+	fmt.Fprintf(sh.writer, "event: %s\n", errEvent.Event)
+	fmt.Fprintf(sh.writer, "data: %s\n", errData)
+	fmt.Fprintf(sh.writer, "\n")
+	if flusher, ok := sh.writer.(http.Flusher); ok {
+		flusher.Flush()
+	}
 
 }
