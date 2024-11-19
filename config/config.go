@@ -43,6 +43,7 @@ type AppConfig struct {
 type APIGatewayConfig struct {
 	Host       string `koanf:"host"`
 	PublicPort int    `koanf:"publicport"`
+	TLSEnabled bool   `koanf:"tlsenabled"`
 }
 
 // InstillCloud config
