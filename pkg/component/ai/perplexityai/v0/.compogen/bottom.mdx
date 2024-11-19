@@ -1,0 +1,48 @@
+## Example Recipes
+
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  prompt:
+    format: string
+    title: Prompt
+
+component:
+  perplexity-0:
+    type: perplexity-ai
+    task: TASK_CHAT
+    input:
+      data:
+        model: llama-3.1-sonar-small-128k-online
+        messages:
+          - content:
+            - text: Be precise and concise.
+              type: text
+            role: system
+          - content:
+            - text: ${variable.prompt}
+              type: text
+            role: user
+            name: chunhao  
+      parameter:
+        max-tokens: 500
+        temperature: 0.2
+        top-p: 0.9
+        stream: false
+        search-domain-filter:
+          - perplexity.ai
+        search-recency-filter: month
+        top-k: 0
+        presence-penalty: 0
+        frequency-penalty: 1
+    setup:
+      api-key: ${secret.perplexity}
+
+output:
+  perplexity:
+    title: Perplexity
+    value: ${perplexity-0.output}
+
+```
