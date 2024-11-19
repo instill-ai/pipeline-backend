@@ -52,7 +52,7 @@ Convert JSON to a string
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| JSON String | `string` | string | String representation of the JSON input |
+| JSON String | `string` | string | String representation of the JSON input. |
 </div>
 
 
@@ -77,7 +77,7 @@ Convert a string to JSON
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| JSON | `json` | any | JSON entity extracted from the string input |
+| JSON | `json` | any | JSON entity extracted from the string input. |
 </div>
 
 
@@ -91,7 +91,7 @@ Process JSON through a `jq` command
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_JQ` |
 | JSON Value | `json-value` | any | JSON entity to be processed by the filter. It can be any valid JSON datatype (e.g. number, string, hash, array). |
-| Filter (required) | `jq-filter` | string | Filter, in `jq` syntax, that will be applied to the JSON input |
+| Filter (required) | `jq-filter` | string | Filter, in `jq` syntax, that will be applied to the JSON input. |
 </div>
 
 
@@ -103,7 +103,7 @@ Process JSON through a `jq` command
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Results | `results` | array | The `jq` command results |
+| Results | `results` | array | The `jq` command results. |
 </div>
 
 [`jq`](https://jqlang.github.io/jq/) defines a syntax to "transform JSON in

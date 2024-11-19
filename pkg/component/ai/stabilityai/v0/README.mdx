@@ -39,7 +39,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key | `api-key` | string | Fill in your Stability AI API key. To find your keys, visit <a href="https://platform.stability.ai/account/keys">here</a>  |
+| API Key | `api-key` | string | Fill in your Stability AI API key. To find your keys, visit <a href="https://platform.stability.ai/account/keys">here</a>.  |
 
 </div>
 
@@ -61,9 +61,9 @@ Generate a new image from a text prompt.
 | Prompts (required) | `prompts` | array[string] | An array of prompts to use for generation. |
 | Weights | `weights` | array[number] | An array of weights to use for generation. |
 | CFG Scale | `cfg-scale` | number | How strictly the diffusion process adheres to the prompt text (higher values keep your image closer to your prompt) |
-| Clip Guidance Preset | `clip-guidance-preset` | string | Clip guidance preset |
-| Height | `height` | integer | The image height |
-| Width | `width` | integer | The image width |
+| Clip Guidance Preset | `clip-guidance-preset` | string | Clip guidance preset. |
+| Height | `height` | integer | The image height. |
+| Width | `width` | integer | The image width. |
 | Sampler | `sampler` | string | Which sampler to use for the diffusion process. If this value is omitted we'll automatically select an appropriate sampler for you. |
 | Samples | `samples` | integer | Number of images to generate |
 | Seed | `seed` | integer | Random noise seed (omit this option or use `0` for a random seed) |
@@ -80,8 +80,8 @@ Generate a new image from a text prompt.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Images | `images` | array[string] | Generated images |
-| Seeds | `seeds` | array[number] | Seeds of generated images |
+| Images | `images` | array[string] | Generated images. |
+| Seeds | `seeds` | array[number] | Seeds of generated images. |
 </div>
 
 
@@ -98,7 +98,7 @@ Modify an image based on a text prompt.
 | Prompts (required) | `prompts` | array[string] | An array of prompts to use for generation. |
 | Init Image | `init-image` | string | Image used to initialize the diffusion process, in lieu of random noise. |
 | Weights | `weights` | array[number] | An array of weights to use for generation. If unspecified, the model will automatically assign a default weight of 1.0 to each prompt. |
-| Clip Guidance Preset | `clip-guidance-preset` | string | Clip guidance preset |
+| Clip Guidance Preset | `clip-guidance-preset` | string | Clip guidance preset. |
 | Image Strength | `image-strength` | number | How much influence the `init_image` has on the diffusion process. Values close to `1` will yield images very similar to the `init_image` while values close to `0` will yield images wildly different than the `init_image`. The behavior of this is meant to mirror DreamStudio's "Image Strength" slider.  <br/> <br/> This parameter is just an alternate way to set `step_schedule_start`, which is done via the calculation `1 - image_strength`. For example, passing in an Image Strength of 35% (`0.35`) would result in a `step_schedule_start` of `0.65`.  |
 | CFG Scale | `cfg-scale` | number | How strictly the diffusion process adheres to the prompt text (higher values keep your image closer to your prompt) |
 | Init Image Mode | `init-image-mode` | string | Whether to use `image_strength` or `step_schedule_*` to control how much influence the `init_image` has on the result. |
@@ -120,8 +120,8 @@ Modify an image based on a text prompt.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Images | `images` | array[string] | Generated images |
-| Seeds | `seeds` | array[number] | Seeds of generated images |
+| Images | `images` | array[string] | Generated images. |
+| Seeds | `seeds` | array[number] | Seeds of generated images. |
 </div>
 
 

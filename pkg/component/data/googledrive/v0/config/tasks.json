@@ -158,7 +158,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 1,
       "properties": {
         "files": {

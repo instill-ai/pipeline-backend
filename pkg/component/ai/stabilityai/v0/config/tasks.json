@@ -3,7 +3,7 @@
     "instillShortDescription": "Modify an image based on a text prompt.",
     "input": {
       "additionalProperties": false,
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "prompts",
         "engine"
@@ -25,7 +25,7 @@
         },
         "clip-guidance-preset": {
           "$ref": "stabilityai.json#/components/schemas/ClipGuidancePreset",
-          "description": "Clip guidance preset",
+          "description": "Clip guidance preset.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -239,7 +239,7 @@
     "instillShortDescription": "Generate a new image from a text prompt.",
     "input": {
       "additionalProperties": false,
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "prompts",
         "engine"
@@ -261,7 +261,7 @@
         },
         "clip-guidance-preset": {
           "$ref": "stabilityai.json#/components/schemas/ClipGuidancePreset",
-          "description": "Clip guidance preset",
+          "description": "Clip guidance preset.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -307,7 +307,7 @@
         },
         "height": {
           "$ref": "stabilityai.json#/components/schemas/DiffuseImageHeight",
-          "description": "The image height",
+          "description": "The image height.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -416,7 +416,7 @@
         },
         "width": {
           "$ref": "stabilityai.json#/components/schemas/DiffuseImageWidth",
-          "description": "The image width",
+          "description": "The image width.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -437,7 +437,7 @@
     },
     "output": {
       "additionalProperties": false,
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "images",
         "seeds"
@@ -445,7 +445,7 @@
       "instillUIOrder": 0,
       "properties": {
         "images": {
-          "description": "Generated images",
+          "description": "Generated images.",
           "instillUIOrder": 0,
           "instillFormat": "array:image/png",
           "items": {
@@ -457,7 +457,7 @@
           "type": "array"
         },
         "seeds": {
-          "description": "Seeds of generated images",
+          "description": "Seeds of generated images.",
           "instillUIOrder": 1,
           "instillFormat": "array:number",
           "items": {

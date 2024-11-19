@@ -56,15 +56,15 @@ Anthropic's text generation models (often called generative pre-trained transfor
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
-| Model Name (required) | `model-name` | string | The Anthropic model to be used |
-| Prompt (required) | `prompt` | string | The prompt text |
-| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message as "You are a helpful assistant." |
-| Prompt Images | `prompt-images` | array[string] | The prompt images (Note: The prompt images will be injected in the order they are provided to the 'prompt' message. Anthropic doesn't support sending images via image-url, use this field instead) |
+| Model Name (required) | `model-name` | string | The Anthropic model to be used. |
+| Prompt (required) | `prompt` | string | The prompt text. |
+| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message as "You are a helpful assistant.". |
+| Prompt Images | `prompt-images` | array[string] | The prompt images (Note: The prompt images will be injected in the order they are provided to the 'prompt' message. Anthropic doesn't support sending images via image-url, use this field instead). |
 | [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
-| Seed | `seed` | integer | The seed (Note: Not supported by Anthropic Models) |
-| Temperature | `temperature` | number | The temperature for sampling |
-| Top K | `top-k` | integer | Top k for sampling |
-| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |
+| Seed | `seed` | integer | The seed (Note: Not supported by Anthropic Models). |
+| Temperature | `temperature` | number | The temperature for sampling. |
+| Top K | `top-k` | integer | Top k for sampling. |
+| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate. |
 </div>
 
 
@@ -79,24 +79,24 @@ Incorporate external chat history, specifically previous messages within the con
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#text-generation-chat-content) | `content` | array | The message content  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'  |
+| [Content](#text-generation-chat-content) | `content` | array | The message content.  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
 </div>
 <h4 id="text-generation-chat-content">Content</h4>
 
-The message content
+The message content.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL  |
+| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL.  |
 | Text | `text` | string | The text content.  |
 | Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details>  |
 </div>
 <h4 id="text-generation-chat-image-url">Image URL</h4>
 
-The image URL
+The image URL.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -112,8 +112,8 @@ The image URL
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Text | `text` | string | Model Output |
-| [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Usage tokens in Anthropic |
+| Text | `text` | string | Model Output. |
+| [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Usage tokens in Anthropic. |
 </div>
 
 <details>
@@ -125,8 +125,8 @@ The image URL
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Input Tokens | `input-tokens` | number | The input tokens used by Anthropic |
-| Output Tokens | `output-tokens` | number | The output tokens used by Anthropic |
+| Input Tokens | `input-tokens` | number | The input tokens used by Anthropic. |
+| Output Tokens | `output-tokens` | number | The output tokens used by Anthropic. |
 </div>
 </details>
 

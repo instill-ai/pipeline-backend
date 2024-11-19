@@ -14,7 +14,7 @@
   "id": "zilliz",
   "public": true,
   "title": "Zilliz",
-  "description": "Build and search vector datasets",
+  "description": "Build and search vector datasets.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_DATA",
   "uid": "7995e58f-de2c-4754-99d9-0876008faece",

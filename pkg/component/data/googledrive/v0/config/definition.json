@@ -9,7 +9,7 @@
   "id": "google-drive",
   "public": true,
   "title": "Google Drive",
-  "description": "Connect to, and read files and folders within an existing Google Drive",
+  "description": "Connect to, and read files and folders within an existing Google Drive.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_DATA",
   "uid": "cd220d2d-3d19-468e-8b95-37dd6a57c15f",

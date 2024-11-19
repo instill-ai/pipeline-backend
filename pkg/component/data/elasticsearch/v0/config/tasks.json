@@ -5,7 +5,7 @@
       "instillUIOrder": 0,
       "properties": {
         "index-name": {
-          "description": "Name of the Elasticsearch index",
+          "description": "Name of the Elasticsearch index.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -19,7 +19,7 @@
           "type": "string"
         },
         "id": {
-          "description": "The ID of the document",
+          "description": "The ID of the document.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -33,7 +33,7 @@
           "type": "string"
         },
         "data": {
-          "description": "Data to be indexed",
+          "description": "Data to be indexed.",
           "instillAcceptFormats": [
             "semi-structured/*",
             "object"
@@ -60,7 +60,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Index operation status",
+          "description": "Index operation status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,
@@ -81,7 +81,7 @@
       "instillUIOrder": 0,
       "properties": {
         "index-name": {
-          "description": "Name of the Elasticsearch index",
+          "description": "Name of the Elasticsearch index.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -95,7 +95,7 @@
           "type": "string"
         },
         "array-id": {
-          "description": "The array of id",
+          "description": "The array of id.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -106,7 +106,7 @@
             "value"
           ],
           "items": {
-            "description": "An id of the document",
+            "description": "An id of the document.",
             "type": "string",
             "example": 1
           },
@@ -115,7 +115,7 @@
           "type": "array"
         },
         "array-data": {
-          "description": "Array data to be indexed",
+          "description": "Array data to be indexed.",
           "instillAcceptFormats": [
             "array:semi-structured/*",
             "array:semi-structured/json",
@@ -131,7 +131,7 @@
           "title": "Array Data",
           "type": "array",
           "items": {
-            "description": "The data to be inserted",
+            "description": "The data to be inserted.",
             "title": "Data",
             "type": "object",
             "required": []
@@ -150,7 +150,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Index operation status",
+          "description": "Index operation status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,
@@ -171,7 +171,7 @@
       "instillUIOrder": 0,
       "properties": {
         "index-name": {
-          "description": "Name of the Elasticsearch index",
+          "description": "Name of the Elasticsearch index.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -185,7 +185,7 @@
           "type": "string"
         },
         "id": {
-          "description": "The ID of the document",
+          "description": "The ID of the document.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -199,7 +199,7 @@
           "type": "string"
         },
         "query": {
-          "description": "Full text search query for update task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected",
+          "description": "Full text search query for update task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -231,7 +231,7 @@
         },
         "filter-sql": {
           "instillShortDescription": "The filter sql to be applied to the data, if filter or id is provided, this field will be ignored",
-          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter",
+          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter.",
           "instillUIOrder": 4,
           "instillAcceptFormats": [
             "string"
@@ -245,7 +245,7 @@
           "type": "string"
         },
         "update-data": {
-          "description": "Update data",
+          "description": "Update data.",
           "instillAcceptFormats": [
             "semi-structured/*",
             "object"
@@ -277,7 +277,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Update operation status",
+          "description": "Update operation status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,
@@ -298,7 +298,7 @@
       "instillUIOrder": 0,
       "properties": {
         "index-name": {
-          "description": "Name of the Elasticsearch index",
+          "description": "Name of the Elasticsearch index.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -312,7 +312,7 @@
           "type": "string"
         },
         "id": {
-          "description": "The ID of the document",
+          "description": "The ID of the document.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -326,7 +326,7 @@
           "type": "string"
         },
         "query": {
-          "description": "Full text search query for search task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected",
+          "description": "Full text search query for search task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -358,7 +358,7 @@
         },
         "filter-sql": {
           "instillShortDescription": "The filter sql to be applied to the data, if filter or id is provided, this field will be ignored",
-          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter",
+          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter.",
           "instillUIOrder": 5,
           "instillAcceptFormats": [
             "string"
@@ -372,7 +372,7 @@
           "type": "string"
         },
         "size": {
-          "description": "Number of documents to return. If empty then all documents will be returned",
+          "description": "Number of documents to return. If empty then all documents will be returned.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -386,7 +386,7 @@
           "type": "integer"
         },
         "fields": {
-          "description": "The fields to return in the documents. If empty then all fields will be returned",
+          "description": "The fields to return in the documents. If empty then all fields will be returned.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -406,7 +406,7 @@
           "minItems": 1
         },
         "min-score": {
-          "description": "Minimum score to consider for search results. If empty then no minimum score will be considered",
+          "description": "Minimum score to consider for search results. If empty then no minimum score will be considered.",
           "instillAcceptFormats": [
             "number"
           ],
@@ -434,7 +434,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Search operation status",
+          "description": "Search operation status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,
@@ -442,26 +442,26 @@
           "type": "string"
         },
         "result": {
-          "description": "Result of the search operation",
+          "description": "Result of the search operation.",
           "instillUIOrder": 1,
           "title": "Result",
           "type": "object",
           "properties": {
             "ids": {
-              "description": "The ids returned from the search operation",
+              "description": "The ids returned from the search operation.",
               "instillUIOrder": 0,
               "title": "IDs",
               "type": "array",
               "required": [],
               "instillFormat": "array:string",
               "items": {
-                "description": "An id of the document",
+                "description": "An id of the document.",
                 "type": "string",
                 "example": "c8faa-4b3b-4b3b-4b3b"
               }
             },
             "documents": {
-              "description": "The documents returned from the search operation",
+              "description": "The documents returned from the search operation.",
               "instillUIOrder": 1,
               "required": [],
               "title": "Documents",
@@ -475,7 +475,7 @@
               }
             },
             "data": {
-              "description": "The data returned from the search operation",
+              "description": "The data returned from the search operation.",
               "instillUIOrder": 2,
               "title": "Data",
               "type": "array",
@@ -506,7 +506,7 @@
       "instillUIOrder": 0,
       "properties": {
         "index-name": {
-          "description": "Name of the Elasticsearch index",
+          "description": "Name of the Elasticsearch index.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -520,7 +520,7 @@
           "type": "string"
         },
         "field": {
-          "description": "Field name of the vector to search for similar vectors",
+          "description": "Field name of the vector to search for similar vectors.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -534,7 +534,7 @@
           "type": "string"
         },
         "query-vector": {
-          "description": "Query vector to search for similar vectors",
+          "description": "Query vector to search for similar vectors.",
           "instillAcceptFormats": [
             "array:int",
             "array:number"
@@ -548,7 +548,7 @@
           ],
           "type": "array",
           "items": {
-            "description": "A dimension of the vector",
+            "description": "A dimension of the vector.",
             "example": 0.8167237,
             "type": "number"
           },
@@ -556,7 +556,7 @@
           "title": "Query Vector"
         },
         "k": {
-          "description": "K of documents to do kNN vector search",
+          "description": "K of documents to do kNN vector search.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -570,7 +570,7 @@
           "type": "integer"
         },
         "num-candidates": {
-          "description": "Number of candidates to be considered for kNN vector search. Default to 2 times of k",
+          "description": "Number of candidates to be considered for kNN vector search. Default to 2 times of k.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -601,7 +601,7 @@
         },
         "filter-sql": {
           "instillShortDescription": "The filter sql to be applied to the data, if filter or id is provided, this field will be ignored",
-          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter",
+          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter.",
           "instillUIOrder": 7,
           "instillAcceptFormats": [
             "string"
@@ -615,7 +615,7 @@
           "type": "string"
         },
         "fields": {
-          "description": "The fields to return in the documents. If empty then all fields will be returned",
+          "description": "The fields to return in the documents. If empty then all fields will be returned.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -635,7 +635,7 @@
           "minItems": 1
         },
         "min-score": {
-          "description": "Minimum score to consider for search results. If empty then no minimum score will be considered",
+          "description": "Minimum score to consider for search results. If empty then no minimum score will be considered.",
           "instillAcceptFormats": [
             "number"
           ],
@@ -666,7 +666,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Search operation status",
+          "description": "Search operation status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,
@@ -674,26 +674,26 @@
           "type": "string"
         },
         "result": {
-          "description": "Result of the vector search operation",
+          "description": "Result of the vector search operation.",
           "instillUIOrder": 1,
           "title": "Result",
           "type": "object",
           "properties": {
             "ids": {
-              "description": "The ids returned from the vector search operation",
+              "description": "The ids returned from the vector search operation.",
               "instillUIOrder": 0,
               "title": "IDs",
               "type": "array",
               "required": [],
               "instillFormat": "array:string",
               "items": {
-                "description": "An id of the document",
+                "description": "An id of the document.",
                 "type": "string",
                 "example": "c8faa-4b3b-4b3b-4b3b"
               }
             },
             "documents": {
-              "description": "The documents returned from the vector search operation",
+              "description": "The documents returned from the vector search operation.",
               "instillUIOrder": 1,
               "required": [],
               "title": "Documents",
@@ -707,26 +707,26 @@
               }
             },
             "vectors": {
-              "description": "The vectors returned from the vector search operation",
+              "description": "The vectors returned from the vector search operation.",
               "instillUIOrder": 2,
               "title": "Vectors",
               "type": "array",
               "required": [],
               "instillFormat": "array:array",
               "items": {
-                "description": "The vector from array vectors",
+                "description": "The vector from array vectors.",
                 "type": "array",
                 "instillFormat": "array",
                 "required": [],
                 "items": {
-                  "description": "A dimension of the vector",
+                  "description": "A dimension of the vector.",
                   "example": 0.8167237,
                   "type": "number"
                 }
               }
             },
             "metadata": {
-              "description": "The metadata returned from the vector search operation",
+              "description": "The metadata returned from the vector search operation.",
               "instillUIOrder": 3,
               "title": "Metadata",
               "type": "array",
@@ -757,7 +757,7 @@
       "instillUIOrder": 0,
       "properties": {
         "index-name": {
-          "description": "Name of the Elasticsearch index",
+          "description": "Name of the Elasticsearch index.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -771,7 +771,7 @@
           "type": "string"
         },
         "id": {
-          "description": "The ID of the document",
+          "description": "The ID of the document.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -785,7 +785,7 @@
           "type": "string"
         },
         "query": {
-          "description": "Full text search query for delete task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected",
+          "description": "Full text search query for delete task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -817,7 +817,7 @@
         },
         "filter-sql": {
           "instillShortDescription": "The filter sql to be applied to the data, if filter or id is provided, this field will be ignored",
-          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter",
+          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter.",
           "instillUIOrder": 4,
           "instillUpstreamTypes": [
             "reference",
@@ -846,7 +846,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Delete operation status",
+          "description": "Delete operation status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,
@@ -867,7 +867,7 @@
       "instillUIOrder": 0,
       "properties": {
         "index-name": {
-          "description": "Name of the Elasticsearch index",
+          "description": "Name of the Elasticsearch index.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -907,7 +907,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Create index operation status",
+          "description": "Create index operation status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,
@@ -928,7 +928,7 @@
       "instillUIOrder": 0,
       "properties": {
         "index-name": {
-          "description": "Name of the Elasticsearch index",
+          "description": "Name of the Elasticsearch index.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -952,7 +952,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Delete index operation status",
+          "description": "Delete index operation status.",
           "instillFormat": "string",
           "required": [],
           "instillUIOrder": 0,

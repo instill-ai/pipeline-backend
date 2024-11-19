@@ -5,7 +5,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to perform vector similarity search on",
+          "description": "The name of the collection to perform vector similarity search on.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -31,7 +31,7 @@
             "value"
           ],
           "items": {
-            "description": "A dimension of the vector",
+            "description": "A dimension of the vector.",
             "example": 0.8167237,
             "type": "number"
           },
@@ -40,7 +40,7 @@
           "type": "array"
         },
         "limit": {
-          "description": "The limit of points, empty for all points",
+          "description": "The limit of points, empty for all points.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -55,7 +55,7 @@
           "type": "integer"
         },
         "payloads": {
-          "description": "The payloads to return in the points. If empty then all payloads will be returned",
+          "description": "The payloads to return in the points. If empty then all payloads will be returned.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -107,7 +107,7 @@
           "required": []
         },
         "min-score": {
-          "description": "The minimum score of the points to be returned",
+          "description": "The minimum score of the points to be returned.",
           "instillAcceptFormats": [
             "number"
           ],
@@ -133,33 +133,33 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Vector search status",
+          "description": "Vector search status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
           "type": "string"
         },
         "result": {
-          "description": "Result of the vector search operation",
+          "description": "Result of the vector search operation.",
           "instillUIOrder": 0,
           "title": "Result",
           "type": "object",
           "properties": {
             "ids": {
-              "description": "The ids returned from the vector search operation",
+              "description": "The ids returned from the vector search operation.",
               "instillUIOrder": 0,
               "title": "IDs",
               "type": "array",
               "required": [],
               "instillFormat": "array:string",
               "items": {
-                "description": "An id of the point",
+                "description": "An id of the point.",
                 "type": "string",
                 "example": "c8faa-4b3b-4b3b-4b3b"
               }
             },
             "points": {
-              "description": "The points returned from the vector search operation",
+              "description": "The points returned from the vector search operation.",
               "instillUIOrder": 1,
               "required": [],
               "title": "Points",
@@ -173,26 +173,26 @@
               }
             },
             "vectors": {
-              "description": "The vectors returned from the vector search operation",
+              "description": "The vectors returned from the vector search operation.",
               "instillUIOrder": 2,
               "title": "Vectors",
               "type": "array",
               "required": [],
               "instillFormat": "array:array",
               "items": {
-                "description": "The vector from array vectors",
+                "description": "The vector from array vectors.",
                 "type": "array",
                 "instillFormat": "array",
                 "required": [],
                 "items": {
-                  "description": "A dimension of the vector",
+                  "description": "A dimension of the vector.",
                   "example": 0.8167237,
                   "type": "number"
                 }
               }
             },
             "metadata": {
-              "description": "The metadata returned from the vector search operation",
+              "description": "The metadata returned from the vector search operation.",
               "instillUIOrder": 3,
               "title": "Metadata",
               "type": "array",
@@ -223,7 +223,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to upsert the point into",
+          "description": "The name of the collection to upsert the point into.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -237,7 +237,7 @@
           "type": "string"
         },
         "array-id": {
-          "description": "The array of id",
+          "description": "The array of id.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -248,7 +248,7 @@
             "value"
           ],
           "items": {
-            "description": "An id of the point",
+            "description": "An id of the point.",
             "type": "string",
             "example": 1
           },
@@ -257,7 +257,7 @@
           "type": "array"
         },
         "array-metadata": {
-          "description": "The array of vector metadata payload",
+          "description": "The array of vector metadata payload.",
           "instillAcceptFormats": [
             "array:semi-structured/*",
             "array:semi-structured/json",
@@ -274,14 +274,14 @@
           "title": "Array Metadata",
           "type": "array",
           "items": {
-            "description": "The vector metadata payload",
+            "description": "The vector metadata payload.",
             "title": "Metadatum",
             "type": "object",
             "required": []
           }
         },
         "array-vector": {
-          "description": "The array of vector values",
+          "description": "The array of vector values.",
           "instillAcceptFormats": [
             "array:array"
           ],
@@ -292,14 +292,14 @@
             "value"
           ],
           "items": {
-            "description": "An array of dimensions for the vector value",
+            "description": "An array of dimensions for the vector value.",
             "type": "array",
             "instillAcceptFormats": [
               "array:number",
               "array:integer"
             ],
             "items": {
-              "description": "A dimension of the vector",
+              "description": "A dimension of the vector.",
               "example": 0.8167237,
               "type": "number"
             }
@@ -309,7 +309,7 @@
           "type": "array"
         },
         "ordering": {
-          "description": "The ordering guarantees of the batch upsert",
+          "description": "The ordering guarantees of the batch upsert.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -341,7 +341,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Batch upsert status",
+          "description": "Batch upsert status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -361,7 +361,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to upsert the point into",
+          "description": "The name of the collection to upsert the point into.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -375,7 +375,7 @@
           "type": "string"
         },
         "id": {
-          "description": "The ID of the point",
+          "description": "The ID of the point.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -389,7 +389,7 @@
           "type": "string"
         },
         "metadata": {
-          "description": "The vector metadata payload",
+          "description": "The vector metadata payload.",
           "instillAcceptFormats": [
             "semi-structured/*",
             "object"
@@ -405,7 +405,7 @@
           "required": []
         },
         "vector": {
-          "description": "An array of dimensions for the vector value",
+          "description": "An array of dimensions for the vector value.",
           "instillAcceptFormats": [
             "array:number",
             "array:integer"
@@ -417,7 +417,7 @@
             "value"
           ],
           "items": {
-            "description": "A dimension of the vector",
+            "description": "A dimension of the vector.",
             "example": 0.8167237,
             "type": "number"
           },
@@ -426,7 +426,7 @@
           "type": "array"
         },
         "ordering": {
-          "description": "The ordering guarantees of the batch upsert",
+          "description": "The ordering guarantees of the batch upsert.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -458,7 +458,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Upsert status",
+          "description": "Upsert status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -478,7 +478,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to delete the object from",
+          "description": "The name of the collection to delete the object from.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -492,7 +492,7 @@
           "type": "string"
         },
         "id": {
-          "description": "The ID of the point",
+          "description": "The ID of the point.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -522,7 +522,7 @@
           "required": []
         },
         "ordering": {
-          "description": "The ordering guarantees of the batch upsert",
+          "description": "The ordering guarantees of the batch upsert.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -556,7 +556,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Delete status",
+          "description": "Delete status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -576,7 +576,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to create",
+          "description": "The name of the collection to create.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -617,7 +617,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Create collection status",
+          "description": "Create collection status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -637,7 +637,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to delete",
+          "description": "The name of the collection to delete.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -661,7 +661,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Delete collection status",
+          "description": "Delete collection status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",

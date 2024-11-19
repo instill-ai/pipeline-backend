@@ -10,7 +10,7 @@
   "id": "stability-ai",
   "public": true,
   "title": "Stability AI",
-  "description": "Connect the AI models served on the Stability AI Platform",
+  "description": "Connect the AI models served on the Stability AI Platform.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_AI",
   "uid": "c86a95cc-7d32-4e22-a290-8c699f6705a4",

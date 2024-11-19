@@ -25,7 +25,7 @@
   "id": "hugging-face",
   "public": true,
   "title": "Hugging Face",
-  "description": "Connect the AI models served on the Hugging Face Platform",
+  "description": "Connect the AI models served on the Hugging Face Platform.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_AI",
   "uid": "0255ef87-33ce-4f88-b9db-8897f8c17233",

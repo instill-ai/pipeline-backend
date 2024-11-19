@@ -166,11 +166,11 @@
   "TASK_SCRAPE_SITEMAP": {
     "instillShortDescription": "This task extracts data directly from a website’s sitemap. A sitemap is typically an XML file that lists all URLs and other relevant metadata, providing a structured overview of the site’s pages. This method efficiently gathers key information from the sitemap without navigating through the site’s internal pages.",
     "input": {
-      "description": "The URL contains sitemap",
+      "description": "The URL contains sitemap.",
       "instillUIOrder": 0,
       "properties": {
         "url": {
-          "description": "The URL of the sitemap to scrape",
+          "description": "The URL of the sitemap to scrape.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -194,34 +194,34 @@
       "instillUIOrder": 0,
       "properties": {
         "list": {
-          "description": "The list of information in a sitemap",
+          "description": "The list of information in a sitemap.",
           "instillFormat": "array:semi-structured/json",
           "instillUIOrder": 0,
           "items": {
             "properties": {
               "loc": {
-                "description": "The URL of the webpage",
+                "description": "The URL of the webpage.",
                 "instillFormat": "string",
                 "title": "URL",
                 "instillUIOrder": 0,
                 "type": "string"
               },
               "lastmod": {
-                "description": "The last modified time of the webpage with ISO 8601 format",
+                "description": "The last modified time of the webpage with ISO 8601 format.",
                 "instillFormat": "string",
                 "title": "Last Modified",
                 "instillUIOrder": 1,
                 "type": "string"
               },
               "changefreq": {
-                "description": "The change frequency of the webpage",
+                "description": "The change frequency of the webpage.",
                 "instillFormat": "string",
                 "title": "Change Frequency",
                 "instillUIOrder": 2,
                 "type": "string"
               },
               "priority": {
-                "description": "The priority of the webpage",
+                "description": "The priority of the webpage.",
                 "instillFormat": "number",
                 "title": "Priority",
                 "instillUIOrder": 3,

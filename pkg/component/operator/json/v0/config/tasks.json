@@ -2,7 +2,7 @@
   "TASK_MARSHAL": {
     "instillShortDescription": "Convert JSON to a string",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "json"
       ],
@@ -32,14 +32,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "string"
       ],
       "instillUIOrder": 0,
       "properties": {
         "string": {
-          "description": "String representation of the JSON input",
+          "description": "String representation of the JSON input.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 0,
@@ -57,7 +57,7 @@
   "TASK_UNMARSHAL": {
     "instillShortDescription": "Convert a string to JSON",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "string"
       ],
@@ -87,14 +87,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "json"
       ],
       "instillUIOrder": 0,
       "properties": {
         "json": {
-          "description": "JSON entity extracted from the string input",
+          "description": "JSON entity extracted from the string input.",
           "instillEditOnNodeFields": [],
           "instillFormat": "semi-structured/json",
           "instillUIOrder": 0,
@@ -113,7 +113,7 @@
     "instillShortDescription": "Process JSON through a `jq` command",
     "title": "jq",
     "input": {
-      "description": "Source JSON and `jq` command",
+      "description": "Source JSON and `jq` command.",
       "instillUIOrder": 0,
       "properties": {
         "json-string": {
@@ -150,7 +150,7 @@
         },
         "jq-filter": {
           "instillUIOrder": 1,
-          "description": "Filter, in `jq` syntax, that will be applied to the JSON input",
+          "description": "Filter, in `jq` syntax, that will be applied to the JSON input.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -175,11 +175,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Results of the `jq` command applied to the input JSON",
+      "description": "Results of the `jq` command applied to the input JSON.",
       "instillUIOrder": 0,
       "properties": {
         "results": {
-          "description": "The `jq` command results",
+          "description": "The `jq` command results.",
           "instillEditOnNodeFields": [],
           "instillUIOrder": 0,
           "required": [],
@@ -203,7 +203,7 @@
     "instillShortDescription": "Rename fields in a JSON object with a conflict resolution strategy. If the new field already exists, it will be overwritten by default.",
     "title": "Rename Fields",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "json": {
@@ -282,7 +282,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 1,
       "properties": {
         "json": {

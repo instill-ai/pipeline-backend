@@ -30,7 +30,7 @@
   "TASK_SEGMENT": {
     "instillShortDescription": "Split a video into multiple shorter clips based on user-defined time segments. This task takes a video input and an optional list of time ranges, then produces an array of video segments corresponding to those ranges. Each segment becomes a separate video clip, enabling precise extraction of specific portions from the original content for targeted use or analysis.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "video": {
@@ -64,7 +64,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "properties": {
         "video-segments": {
@@ -88,7 +88,7 @@
   "TASK_SUBSAMPLE": {
     "instillShortDescription": "Reduce video file size by adjusting frame rate, bitrate, and dimensions while maintaining visual content. This task optimizes storage and bandwidth requirements with minimal quality loss.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "video"
       ],
@@ -181,7 +181,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 1,
       "properties": {
         "video": {
@@ -202,7 +202,7 @@
   "TASK_EXTRACT_AUDIO": {
     "instillShortDescription": "Extract the audio track from a video file, creating a standalone audio output. This task takes a video input and isolates its sound component, removing all visual elements. The resulting audio data is provided as a single output, suitable for further audio processing, analysis, or use in audio-only applications.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "video"
       ],
@@ -229,7 +229,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 1,
       "properties": {
         "audio": {
@@ -250,7 +250,7 @@
   "TASK_EXTRACT_FRAMES": {
     "instillShortDescription": "Extract image frames from a video at regular intervals or specified timestamps. This task takes a video input and either an interval value or a list of timestamps. It then produces an array of image frames corresponding to these specifications, allowing for precise capture of key moments or creation of a sequence of still images from the video content.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "video",
         "fps"
@@ -299,11 +299,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 1,
       "properties": {
         "frames": {
-          "description": "Extracted video frames",
+          "description": "Extracted video frames.",
           "instillFormat": "array:image/*",
           "instillUIOrder": 0,
           "items": {

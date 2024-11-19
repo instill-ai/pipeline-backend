@@ -15,7 +15,7 @@
   "id": "instill-artifact",
   "public": true,
   "title": "Instill Artifact",
-  "description": "Manipulate and smart search files and data in the artifact store",
+  "description": "Manipulate and smart search files and data in the artifact store.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_DATA",
   "uid": "6ec46048-f82f-4452-ba19-79698af9186e",

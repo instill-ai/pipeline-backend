@@ -2,7 +2,7 @@
   "TASK_REGISTER": {
     "instillShortDescription": "Register a file into NumbersProtocol Chain.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "images": {
@@ -22,7 +22,7 @@
           "type": "array"
         },
         "headline": {
-          "description": "Headline of the asset",
+          "description": "Headline of the asset.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -66,7 +66,7 @@
         },
         "digital-source-type": {
           "default": "trainedAlgorithmicMedia",
-          "description": "Specify the type of the source. More details <a href=\"https://docs.numbersprotocol.io/introduction/numbers-protocol/defining-web3-assets/assettree/digitalsourcetype\">here</a>",
+          "description": "Specify the type of the source. More details <a href=\"https://docs.numbersprotocol.io/introduction/numbers-protocol/defining-web3-assets/assettree/digitalsourcetype\">here</a>.",
           "enum": [
             "trainedAlgorithmicMedia",
             "trainedAlgorithmicData",
@@ -101,7 +101,7 @@
           "type": "string"
         },
         "license": {
-          "description": "License",
+          "description": "License.",
           "instillUIOrder": 7,
           "properties": {
             "document": {
@@ -140,7 +140,7 @@
         },
         "mining-preference": {
           "default": "notAllowed",
-          "description": "Designates the selection made by the asset creators or licensed owners to decide if the asset is suitable for inclusion in a data mining or AI/ML training workflow. More details <a href=\"https://docs.numbersprotocol.io/introduction/numbers-protocol/defining-web3-assets/assettree/miningpreference\">here</a>",
+          "description": "Designates the selection made by the asset creators or licensed owners to decide if the asset is suitable for inclusion in a data mining or AI/ML training workflow. More details <a href=\"https://docs.numbersprotocol.io/introduction/numbers-protocol/defining-web3-assets/assettree/miningpreference\">here</a>.",
           "enum": [
             "dataMining",
             "aiInference",
@@ -171,11 +171,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "properties": {
         "asset-urls": {
-          "description": "Asset Urls",
+          "description": "Asset Urls.",
           "instillEnableCopyButton": true,
           "instillUIOrder": 0,
           "instillFormat": "array:string",

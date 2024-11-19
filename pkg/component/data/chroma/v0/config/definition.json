@@ -12,7 +12,7 @@
   "id": "chroma",
   "public": true,
   "title": "Chroma",
-  "description": "Build and search vector datasets",
+  "description": "Build and search vector datasets.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_DATA",
   "uid": "cb69cb22-c1e6-4ebd-aee5-6c1838429de7",

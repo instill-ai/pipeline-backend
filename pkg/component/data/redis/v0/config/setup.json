@@ -4,7 +4,7 @@
   "properties": {
     "host": {
       "default": "localhost",
-      "description": "Redis host to connect to",
+      "description": "Redis host to connect to.",
       "examples": [
         "localhost,127.0.0.1"
       ],
@@ -20,7 +20,7 @@
       "type": "string"
     },
     "password": {
-      "description": "Password associated with Redis",
+      "description": "Password associated with Redis.",
       "instillUpstreamTypes": [
         "reference"
       ],
@@ -34,7 +34,7 @@
     },
     "port": {
       "default": 6379,
-      "description": "Port of Redis",
+      "description": "Port of Redis.",
       "instillUpstreamTypes": [
         "value"
       ],
@@ -61,7 +61,7 @@
       "type": "boolean"
     },
     "username": {
-      "description": "Username associated with Redis",
+      "description": "Username associated with Redis.",
       "instillUpstreamTypes": [
         "value"
       ],

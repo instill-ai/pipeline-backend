@@ -20,7 +20,7 @@
   "id": "instill-model",
   "public": true,
   "title": "Instill Model",
-  "description": "Connect the AI models served on the Instill Model Platform",
+  "description": "Connect the AI models served on the Instill Model Platform.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_AI",
   "uid": "ddcf42c3-4c30-4c65-9585-25f1c89b2b48",

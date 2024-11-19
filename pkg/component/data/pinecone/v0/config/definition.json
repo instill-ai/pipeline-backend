@@ -10,7 +10,7 @@
   "id": "pinecone",
   "public": true,
   "title": "Pinecone",
-  "description": "Build and search vector datasets",
+  "description": "Build and search vector datasets.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_DATA",
   "uid": "4b1dcf82-e134-4ba7-992f-f9a02536ec2b",

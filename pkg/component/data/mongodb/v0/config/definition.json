@@ -16,7 +16,7 @@
   "id": "mongodb",
   "public": true,
   "title": "MongoDB",
-  "description": "Access the MongoDB NoSQL database",
+  "description": "Access the MongoDB NoSQL database.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_DATA",
   "uid": "1547711c-864b-4983-b0ca-cb79eafa2f7f",

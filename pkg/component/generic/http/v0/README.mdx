@@ -45,7 +45,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Authentication](#authentication) (required) | `authentication` | object | Authentication method to use for the REST API  |
+| [Authentication](#authentication) (required) | `authentication` | object | Authentication method to use for the REST API.  |
 
 </div>
 
@@ -73,8 +73,8 @@ ${connection.<my-connection-id>}`.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Auth Type | `auth-type` | string |  Must be `"BASIC_AUTH"`   |
-| Password | `password` | string |  Password for Basic auth  |
-| Username | `username` | string |  Username for Basic Auth  |
+| Password | `password` | string |  Password for Basic auth.  |
+| Username | `username` | string |  Username for Basic Auth.  |
 </div>
 
 <h5 id="setup-api-key"><code>API Key</code></h5>
@@ -85,8 +85,8 @@ ${connection.<my-connection-id>}`.
 | :--- | :--- | :--- | :--- |
 | Auth Location | `auth-location` | string |  Add the API key to the header or query params.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`header`</li><li>`query`</li></ul></details>  |
 | Auth Type | `auth-type` | string |  Must be `"API_KEY"`   |
-| Key Name | `key` | string |  Key name for API key authentication  |
-| Key Value | `value` | string |  Key value for API key authentication  |
+| Key Name | `key` | string |  Key name for API key authentication.  |
+| Key Value | `value` | string |  Key value for API key authentication.  |
 </div>
 
 <h5 id="setup-bearer-token"><code>Bearer Token</code></h5>
@@ -96,7 +96,7 @@ ${connection.<my-connection-id>}`.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Auth Type | `auth-type` | string |  Must be `"BEARER_TOKEN"`   |
-| Token | `token` | string |  Bearer token  |
+| Token | `token` | string |  Bearer token.  |
 </div>
 </details>
 
@@ -111,8 +111,8 @@ Send a HTTP GET request.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url |
-| Body | `output-body-schema` | string | The request body |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Body | `output-body-schema` | string | The request body. |
 </div>
 
 
@@ -124,9 +124,9 @@ Send a HTTP GET request.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status Code | `status-code` | integer | The HTTP status code of the response |
-| Body | `body` | any | The body of the response |
-| Header | `header` | object | The HTTP header of the response |
+| Status Code | `status-code` | integer | The HTTP status code of the response. |
+| Body | `body` | any | The body of the response. |
+| Header | `header` | object | The HTTP header of the response. |
 </div>
 
 
@@ -139,9 +139,9 @@ Send a HTTP POST request.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_POST` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url |
-| Body | `body` | any | The request body |
-| Body | `output-body-schema` | string | The JSON schema of output body |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Body | `body` | any | The request body. |
+| Body | `output-body-schema` | string | The JSON schema of output body. |
 </div>
 
 
@@ -153,9 +153,9 @@ Send a HTTP POST request.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status Code | `status-code` | integer | The HTTP status code of the response |
-| Body | `body` | any | The body of the response |
-| Header | `header` | object | The HTTP header of the response |
+| Status Code | `status-code` | integer | The HTTP status code of the response. |
+| Body | `body` | any | The body of the response. |
+| Header | `header` | object | The HTTP header of the response. |
 </div>
 
 
@@ -168,9 +168,9 @@ Send a HTTP PATCH request.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_PATCH` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url |
-| Body | `body` | any | The request body |
-| Body | `output-body-schema` | string | The JSON schema of output body |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Body | `body` | any | The request body. |
+| Body | `output-body-schema` | string | The JSON schema of output body. |
 </div>
 
 
@@ -182,9 +182,9 @@ Send a HTTP PATCH request.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status Code | `status-code` | integer | The HTTP status code of the response |
-| Body | `body` | any | The body of the response |
-| Header | `header` | object | The HTTP header of the response |
+| Status Code | `status-code` | integer | The HTTP status code of the response. |
+| Body | `body` | any | The body of the response. |
+| Header | `header` | object | The HTTP header of the response. |
 </div>
 
 
@@ -197,9 +197,9 @@ Send a HTTP PUT request.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_PUT` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url |
-| Body | `body` | any | The request body |
-| Body | `output-body-schema` | string | The JSON schema of output body |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Body | `body` | any | The request body. |
+| Body | `output-body-schema` | string | The JSON schema of output body. |
 </div>
 
 
@@ -211,9 +211,9 @@ Send a HTTP PUT request.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status Code | `status-code` | integer | The HTTP status code of the response |
-| Body | `body` | any | The body of the response |
-| Header | `header` | object | The HTTP header of the response |
+| Status Code | `status-code` | integer | The HTTP status code of the response. |
+| Body | `body` | any | The body of the response. |
+| Header | `header` | object | The HTTP header of the response. |
 </div>
 
 
@@ -226,9 +226,9 @@ Send a HTTP DELETE request.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url |
-| Body | `body` | any | The request body |
-| Body | `output-body-schema` | string | The JSON schema of output body |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Body | `body` | any | The request body. |
+| Body | `output-body-schema` | string | The JSON schema of output body. |
 </div>
 
 
@@ -240,9 +240,9 @@ Send a HTTP DELETE request.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status Code | `status-code` | integer | The HTTP status code of the response |
-| Body | `body` | any | The body of the response |
-| Header | `header` | object | The HTTP header of the response |
+| Status Code | `status-code` | integer | The HTTP status code of the response. |
+| Body | `body` | any | The body of the response. |
+| Header | `header` | object | The HTTP header of the response. |
 </div>
 
 
@@ -255,8 +255,8 @@ Send a HTTP HEAD request.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_HEAD` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url |
-| Body | `output-body-schema` | string | The request body |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Body | `output-body-schema` | string | The request body. |
 </div>
 
 
@@ -268,9 +268,9 @@ Send a HTTP HEAD request.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status Code | `status-code` | integer | The HTTP status code of the response |
-| Body | `body` | any | The body of the response |
-| Header | `header` | object | The HTTP header of the response |
+| Status Code | `status-code` | integer | The HTTP status code of the response. |
+| Body | `body` | any | The body of the response. |
+| Header | `header` | object | The HTTP header of the response. |
 </div>
 
 
@@ -283,9 +283,9 @@ Send a HTTP OPTIONS request.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_OPTIONS` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url |
-| Body | `body` | any | The request body |
-| Body | `output-body-schema` | string | The JSON schema of output body |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Body | `body` | any | The request body. |
+| Body | `output-body-schema` | string | The JSON schema of output body. |
 </div>
 
 
@@ -297,9 +297,9 @@ Send a HTTP OPTIONS request.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status Code | `status-code` | integer | The HTTP status code of the response |
-| Body | `body` | any | The body of the response |
-| Header | `header` | object | The HTTP header of the response |
+| Status Code | `status-code` | integer | The HTTP status code of the response. |
+| Body | `body` | any | The body of the response. |
+| Header | `header` | object | The HTTP header of the response. |
 </div>
 
 

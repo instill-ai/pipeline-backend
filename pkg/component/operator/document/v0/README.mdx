@@ -39,8 +39,8 @@ Convert document to text in Markdown format.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONVERT_TO_MARKDOWN` |
-| Document (required) | `document` | string | Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML/XLSX/XLS/CSV to be converted to text in Markdown format |
-| Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf' |
+| Document (required) | `document` | string | Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML/XLSX/XLS/CSV to be converted to text in Markdown format. |
+| Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'. |
 | Display Image Tag | `display-image-tag` | boolean | Whether to display image tag in the markdown text. Default is 'false'. It is only applicable for convert-2024-08-28 converter. And, it is only applicable for the type of PPTX/PPT/DOCX/DOC/PDF. |
 | Display All Page Image | `display-all-page-image` | boolean | Whether to respond the whole page as the images if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF. |
 | Resolution | `resolution` | number | Desired number pixels per inch. Defaults to 500. Minimum is 72. |
@@ -55,10 +55,10 @@ Convert document to text in Markdown format.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Body | `body` | string | Markdown text converted from the PDF document |
-| Filename (optional) | `filename` | string | The name of the file |
-| Images (optional) | `images` | array[string] | Images extracted from the document |
-| Error (optional) | `error` | string | Error message if any during the conversion process |
+| Body | `body` | string | Markdown text converted from the PDF document. |
+| Filename (optional) | `filename` | string | The name of the file. |
+| Images (optional) | `images` | array[string] | Images extracted from the document. |
+| Error (optional) | `error` | string | Error message if any during the conversion process. |
 | All Page Images (optional) | `all-page-images` | array[string] | The image contains all the pages in the document if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF. |
 | Markdowns (optional) | `markdowns` | array[string] | Markdown text converted from the PDF document, separated by page. |
 </div>
@@ -73,8 +73,8 @@ Convert document to text.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONVERT_TO_TEXT` |
-| Document (required) | `document` | string | Base64 encoded PDF/DOC/DOCX/XML/HTML/RTF/MD/PPTX/ODT/TIF/CSV/TXT/PNG document to be converted to plain text |
-| Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf' |
+| Document (required) | `document` | string | Base64 encoded PDF/DOC/DOCX/XML/HTML/RTF/MD/PPTX/ODT/TIF/CSV/TXT/PNG document to be converted to plain text. |
+| Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'. |
 </div>
 
 
@@ -86,11 +86,11 @@ Convert document to text.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Body | `body` | string | Plain text converted from the document |
-| Filename (optional) | `filename` | string | The name of the file |
-| Meta | `meta` | object | Metadata extracted from the document |
-| Milliseconds | `msecs` | number | Time taken to convert the document |
-| Error | `error` | string | Error message if any during the conversion process |
+| Body | `body` | string | Plain text converted from the document. |
+| Filename (optional) | `filename` | string | The name of the file. |
+| Meta | `meta` | object | Metadata extracted from the document. |
+| Milliseconds | `msecs` | number | Time taken to convert the document. |
+| Error | `error` | string | Error message if any during the conversion process. |
 </div>
 
 
@@ -103,8 +103,8 @@ Convert Document to images.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONVERT_TO_IMAGES` |
-| PDF (required) | `document` | string | Base64 encoded PDF/DOCX/DOC/PPT/PPTX to be converted to images |
-| Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf' |
+| PDF (required) | `document` | string | Base64 encoded PDF/DOCX/DOC/PPT/PPTX to be converted to images. |
+| Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'. |
 | Resolution | `resolution` | number | Desired number pixels per inch. Defaults to 500. Minimum is 72. |
 </div>
 
@@ -117,8 +117,8 @@ Convert Document to images.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Images | `images` | array[string] | Images converted from the document |
-| Filenames (optional) | `filenames` | array[string] | The filenames of the images. The filenames will be appended with the page number. e.g. 'example-1.jpg' |
+| Images | `images` | array[string] | Images converted from the document. |
+| Filenames (optional) | `filenames` | array[string] | The filenames of the images. The filenames will be appended with the page number. e.g. 'example-1.jpg'. |
 </div>
 
 

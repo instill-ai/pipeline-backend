@@ -41,7 +41,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Token (required) | `token` | string | Fill in your Asana Personal Access Token (PAT). You can generate one from <a href="https://app.asana.com/0/my-apps">developer console</a>  |
+| Token (required) | `token` | string | Fill in your Asana Personal Access Token (PAT). You can generate one from <a href="https://app.asana.com/0/my-apps">developer console</a>.  |
 
 </div>
 
@@ -52,14 +52,14 @@ ${connection.<my-connection-id>}`.
 
 ### Crud Goal
 
-Create, Update, Delete, Read and Duplicate goal in Asana
+Create, Update, Delete, Read and Duplicate goal in Asana.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRUD_GOAL` |
-| [Action](#crud-goal-action) | `action` | object | action |
+| [Action](#crud-goal-action) | `action` | object | action. |
 </div>
 
 
@@ -74,7 +74,7 @@ Create, Update, Delete, Read and Duplicate goal in Asana
 
 <h5 id="crud-goal-get"><code>Get</code></h5>
 
-Get Goal
+Get Goal.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -86,7 +86,7 @@ Get Goal
 
 <h5 id="crud-goal-update"><code>Update</code></h5>
 
-Update Goal
+Update Goal.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -116,7 +116,7 @@ Delete Goal.
 
 <h5 id="crud-goal-create"><code>Create</code></h5>
 
-Create Goal
+Create Goal.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -127,10 +127,10 @@ Create Goal
 | Liked | `liked` | boolean |  Whether the goal is liked by the user.  |
 | Goal Name | `name` | string |  The name of the goal.  |
 | Goal Note | `notes` | string |  The notes of the goal.  |
-| Owner | `owner` | string |  User GID of the Owner. You can find one by filling the workspace id in the <a href="https://developers.asana.com/reference/getusers">Asana API Playground</a>  |
+| Owner | `owner` | string |  User GID of the Owner. You can find one by filling the workspace id in the <a href="https://developers.asana.com/reference/getusers">Asana API Playground</a>.  |
 | Start Date | `start-on` | string |  The date on which the goal starts. In the format YYYY-MM-DD.  |
-| Time Period | `time-period` | string |  GID of the time period. You can find one by filling the workspace id in the <a href="https://developers.asana.com/reference/gettimeperiods">Asana API Playground</a>  |
-| Workspace | `workspace` | string |  GID of the workspace.  You can find one by filling the access token in the <a href="https://developers.asana.com/reference/getworkspaces">Asana API Playground</a>  |
+| Time Period | `time-period` | string |  GID of the time period. You can find one by filling the workspace id in the <a href="https://developers.asana.com/reference/gettimeperiods">Asana API Playground</a>.  |
+| Workspace | `workspace` | string |  GID of the workspace.  You can find one by filling the access token in the <a href="https://developers.asana.com/reference/getworkspaces">Asana API Playground</a>.  |
 </div>
 </details>
 
@@ -177,14 +177,14 @@ Create Goal
 
 ### Crud Task
 
-Create, Update, Delete, Read and Duplicate Task in Asana
+Create, Update, Delete, Read and Duplicate Task in Asana.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRUD_TASK` |
-| [Action](#crud-task-action) | `action` | object | Action |
+| [Action](#crud-task-action) | `action` | object | Action. |
 </div>
 
 
@@ -199,7 +199,7 @@ Create, Update, Delete, Read and Duplicate Task in Asana
 
 <h5 id="crud-task-get"><code>Get</code></h5>
 
-Get Task
+Get Task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -211,7 +211,7 @@ Get Task
 
 <h5 id="crud-task-update"><code>Update</code></h5>
 
-Update Task
+Update Task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -231,7 +231,7 @@ Update Task
 
 <h5 id="crud-task-delete"><code>Delete</code></h5>
 
-Delete Task
+Delete Task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -243,7 +243,7 @@ Delete Task
 
 <h5 id="crud-task-create"><code>Create</code></h5>
 
-Create Task
+Create Task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -260,12 +260,12 @@ Create Task
 | Parent Task | `parent` | string |  GID of the parent task.  |
 | Resource Subtype | `resource-subtype` | string |  The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`default_task`</li><li>`milestone`</li><li>`section`</li><li>`approval`</li><li>`custom`</li></ul></details>  |
 | Start Date & Time | `start-at` | string |  The UTC date and time on which this task is due, or null if the task has no due time. This takes an ISO 8601 date string in UTC.  |
-| Workspace | `workspace` | string |  GID of the workspace.  You can find one by filling the access token in the <a href="https://developers.asana.com/reference/getworkspaces">Asana API Playground</a>  |
+| Workspace | `workspace` | string |  GID of the workspace.  You can find one by filling the access token in the <a href="https://developers.asana.com/reference/getworkspaces">Asana API Playground</a>.  |
 </div>
 
 <h5 id="crud-task-duplicate"><code>Duplicate</code></h5>
 
-Duplicate Task
+Duplicate Task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -278,7 +278,7 @@ Duplicate Task
 
 <h5 id="crud-task-set-parent"><code>Set Parent</code></h5>
 
-Set Parent Task
+Set Parent Task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -291,7 +291,7 @@ Set Parent Task
 
 <h5 id="crud-task-edit-tag"><code>Edit Tag</code></h5>
 
-Edit Tag
+Edit Tag.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -305,7 +305,7 @@ Edit Tag
 
 <h5 id="crud-task-edit-follower"><code>Edit Follower</code></h5>
 
-Edit Follower
+Edit Follower.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -319,7 +319,7 @@ Edit Follower
 
 <h5 id="crud-task-edit-project"><code>Edit Project</code></h5>
 
-Edit Project
+Edit Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -380,14 +380,14 @@ Edit Project
 
 ### Crud Project
 
-Create, Update, Delete, Read and Duplicate project in Asana
+Create, Update, Delete, Read and Duplicate project in Asana.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRUD_PROJECT` |
-| [Action](#crud-project-action) | `action` | object | action |
+| [Action](#crud-project-action) | `action` | object | action. |
 </div>
 
 
@@ -414,7 +414,7 @@ Get Project.
 
 <h5 id="crud-project-update"><code>Update</code></h5>
 
-Update Project
+Update Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -433,7 +433,7 @@ Update Project
 
 <h5 id="crud-project-delete"><code>Delete</code></h5>
 
-Delete Project
+Delete Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -445,7 +445,7 @@ Delete Project
 
 <h5 id="crud-project-create"><code>Create</code></h5>
 
-Create Project
+Create Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -459,12 +459,12 @@ Create Project
 | Update Privacy Setting | `privacy-setting` | string |  The privacy setting of the project.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`public to workspace`</li><li>`private to team`</li><li>`private`</li></ul></details>  |
 | Start Date | `start-on` | string |  The date on which the project starts. In the format YYYY-MM-DD.  |
 | Team ID | `team` | string |  Globally unique identifier (GID) for the team of the new project.  |
-| Workspace ID | `workspace` | string |  Globally unique identifier (GID) for the workspace. You can find one by filling the access token in the <a href="https://developers.asana.com/reference/getworkspaces">Asana API Playground</a>  |
+| Workspace ID | `workspace` | string |  Globally unique identifier (GID) for the workspace. You can find one by filling the access token in the <a href="https://developers.asana.com/reference/getworkspaces">Asana API Playground</a>.  |
 </div>
 
 <h5 id="crud-project-duplicate"><code>Duplicate</code></h5>
 
-Duplicate Project
+Duplicate Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -529,14 +529,14 @@ Duplicate Project
 
 ### Crud Portfolio
 
-Create, Update, Delete and Read portfolio in Asana
+Create, Update, Delete and Read portfolio in Asana.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRUD_PORTFOLIO` |
-| [Action](#crud-portfolio-action) | `action` | object | action |
+| [Action](#crud-portfolio-action) | `action` | object | action. |
 </div>
 
 
@@ -551,7 +551,7 @@ Create, Update, Delete and Read portfolio in Asana
 
 <h5 id="crud-portfolio-get"><code>Get</code></h5>
 
-Get Portfolio
+Get Portfolio.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -563,7 +563,7 @@ Get Portfolio
 
 <h5 id="crud-portfolio-update"><code>Update</code></h5>
 
-Update Portfolio
+Update Portfolio.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -579,7 +579,7 @@ Update Portfolio
 
 <h5 id="crud-portfolio-delete"><code>Delete</code></h5>
 
-Delete Portfolio
+Delete Portfolio.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -591,7 +591,7 @@ Delete Portfolio
 
 <h5 id="crud-portfolio-create"><code>Create</code></h5>
 
-Create Portfolio
+Create Portfolio.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 

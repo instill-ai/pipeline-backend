@@ -89,7 +89,7 @@
           "items": {
             "$ref": "#/$defs/commit",
             "required": [],
-            "description": "A commit in the PR"
+            "description": "A commit in the PR."
           }
         }
       },
@@ -101,7 +101,7 @@
       "description": "A commit object.",
       "properties": {
         "sha": {
-          "description": "SHA of the commit",
+          "description": "SHA of the commit.",
           "instillUIOrder": 1,
           "title": "Commit SHA",
           "instillFormat": "string",
@@ -128,7 +128,7 @@
           "items": {
             "$ref": "#/$defs/commitFile",
             "required": [],
-            "description": "A file in the commit"
+            "description": "A file in the commit."
           }
         }
       },
@@ -148,14 +148,14 @@
           "type": "integer"
         },
         "deletions": {
-          "description": "Number of deletions in the commit",
+          "description": "Number of deletions in the commit.",
           "instillUIOrder": 2,
           "title": "Deletions",
           "instillFormat": "integer",
           "type": "integer"
         },
         "changes": {
-          "description": "Total number of changes in the commit",
+          "description": "Total number of changes in the commit.",
           "instillUIOrder": 3,
           "title": "Total changes",
           "instillFormat": "integer",
@@ -191,7 +191,7 @@
     },
     "repository-info": {
       "owner": {
-        "description": "Owner of the repository",
+        "description": "Owner of the repository.",
         "instillUIMultiline": false,
         "instillUIOrder": 0,
         "instillAcceptFormats": [
@@ -207,7 +207,7 @@
         "type": "string"
       },
       "repository": {
-        "description": "Repository name",
+        "description": "Repository name.",
         "instillUIMultiline": false,
         "instillUIOrder": 1,
         "instillAcceptFormats": [
@@ -227,35 +227,35 @@
       "description": "A review comment object.",
       "properties": {
         "id": {
-          "description": "ID of the comment",
+          "description": "ID of the comment.",
           "instillUIOrder": 1,
           "title": "Comment id",
           "instillFormat": "integer",
           "type": "integer"
         },
         "in-reply-to-id": {
-          "description": "ID of the comment this comment is in reply to",
+          "description": "ID of the comment this comment is in reply to.",
           "instillFormat": "integer",
           "instillUIOrder": 2,
           "title": "In Reply To",
           "type": "integer"
         },
         "commitId": {
-          "description": "SHA of the commit on which you want to comment",
+          "description": "SHA of the commit on which you want to comment.",
           "instillFormat": "string",
           "instillUIOrder": 3,
           "title": "Commit SHA",
           "type": "string"
         },
         "body": {
-          "description": "Body of the comment",
+          "description": "Body of the comment.",
           "instillFormat": "string",
           "instillUIOrder": 4,
           "title": "Comment body",
           "type": "string"
         },
         "path": {
-          "description": "Path of the file the comment is on",
+          "description": "Path of the file the comment is on.",
           "instillFormat": "string",
           "instillUIOrder": 5,
           "title": "Comment path",
@@ -305,7 +305,7 @@
           "type": "string"
         },
         "subject-type": {
-          "description": "Subject type of the comment, can be one of: line, file. Default is line",
+          "description": "Subject type of the comment, can be one of: line, file. Default is line.",
           "instillUIOrder": 10,
           "title": "Comment type",
           "instillFormat": "string",
@@ -317,35 +317,35 @@
           "type": "string"
         },
         "created-at": {
-          "description": "Time the comment was created",
+          "description": "Time the comment was created.",
           "instillUIOrder": 11,
           "title": "Comment created at",
           "instillFormat": "string",
           "type": "string"
         },
         "updated-at": {
-          "description": "Time the comment was updated",
+          "description": "Time the comment was updated.",
           "instillUIOrder": 12,
           "title": "Comment updated at",
           "instillFormat": "string",
           "type": "string"
         },
         "user": {
-          "description": "User who created the comment",
+          "description": "User who created the comment.",
           "instillUIOrder": 13,
           "title": "User",
           "instillFormat": "object",
           "type": "object",
           "properties": {
             "id": {
-              "description": "ID of the user",
+              "description": "ID of the user.",
               "instillUIOrder": 14,
               "title": "User id",
               "instillFormat": "integer",
               "type": "integer"
             },
             "url": {
-              "description": "URL of the user",
+              "description": "URL of the user.",
               "instillUIOrder": 15,
               "title": "User URL",
               "instillFormat": "string",
@@ -362,42 +362,42 @@
       "description": "An issue object.",
       "properties": {
         "number": {
-          "description": "Number of the issue",
+          "description": "Number of the issue.",
           "instillUIOrder": 2,
           "title": "Issue Number",
           "instillFormat": "integer",
           "type": "integer"
         },
         "state": {
-          "description": "State of the issue",
+          "description": "State of the issue.",
           "instillUIOrder": 3,
           "title": "Issue state",
           "instillFormat": "string",
           "type": "string"
         },
         "title": {
-          "description": "Title of the issue",
+          "description": "Title of the issue.",
           "instillUIOrder": 4,
           "title": "Issue title",
           "instillFormat": "string",
           "type": "string"
         },
         "body": {
-          "description": "Body of the issue",
+          "description": "Body of the issue.",
           "instillUIOrder": 5,
           "title": "Issue body",
           "instillFormat": "string",
           "type": "string"
         },
         "assignee": {
-          "description": "Assignee of the issue",
+          "description": "Assignee of the issue.",
           "instillUIOrder": 6,
           "title": "Assignee",
           "instillFormat": "string",
           "type": "string"
         },
         "assignees": {
-          "description": "Assignees of the issue",
+          "description": "Assignees of the issue.",
           "instillUIOrder": 7,
           "title": "Assignees",
           "instillFormat": "array:string",
@@ -408,7 +408,7 @@
           }
         },
         "labels": {
-          "description": "Labels of the issue",
+          "description": "Labels of the issue.",
           "instillUIOrder": 8,
           "title": "Labels",
           "instillFormat": "array:string",
@@ -419,7 +419,7 @@
           }
         },
         "is-pull-request": {
-          "description": "Whether the issue is a pull request",
+          "description": "Whether the issue is a pull request.",
           "instillUIOrder": 9,
           "title": "Is Pull Request",
           "instillFormat": "boolean",
@@ -431,13 +431,13 @@
     },
     "page-options": {
       "title": "Page Options",
-      "description": "Options for listing pages",
+      "description": "Options for listing pages.",
       "instillFormat": "object",
       "type": "object",
       "required": [],
       "page": {
         "default": 1,
-        "description": "Page number of the results to fetch. Default is 1",
+        "description": "Page number of the results to fetch. Default is 1.",
         "instillUIOrder": 100,
         "title": "Page",
         "instillFormat": "integer",
@@ -471,7 +471,7 @@
     "instillShortDescription": "Get the list of all pull requests in a repository",
     "description": "Get the list of all pull requests in a repository. Detailed information about each commit in a PR is omitted, please use the `Get Commit` task or the `Get Pull Request` task to get the details of a commit.",
     "input": {
-      "description": "Please input the repository name and owner",
+      "description": "Please input the repository name and owner.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "owner",
@@ -482,7 +482,7 @@
         "state": {
           "default": "open",
           "title": "State",
-          "description": "State of the PRs, including open, closed, all. Default is open",
+          "description": "State of the PRs, including open, closed, all. Default is open.",
           "enum": [
             "open",
             "closed",
@@ -503,7 +503,7 @@
         "sort": {
           "default": "created",
           "title": "Sort",
-          "description": "Sort the PRs by created, updated, popularity, or long-running. Default is created",
+          "description": "Sort the PRs by created, updated, popularity, or long-running. Default is created.",
           "enum": [
             "created",
             "updated",
@@ -525,7 +525,7 @@
         "direction": {
           "default": "desc",
           "title": "Direction",
-          "description": "Direction of the sort, including asc or desc. Default is desc",
+          "description": "Direction of the sort, including asc or desc. Default is desc.",
           "enum": [
             "asc",
             "desc"
@@ -544,7 +544,7 @@
         },
         "page": {
           "default": 1,
-          "description": "Page number of the results to fetch. Default is 1",
+          "description": "Page number of the results to fetch. Default is 1.",
           "instillUIOrder": 100,
           "title": "Page",
           "instillFormat": "integer",
@@ -559,7 +559,7 @@
         },
         "per-page": {
           "default": 30,
-          "description": "Number of results to fetch per page. Default is 30",
+          "description": "Number of results to fetch per page. Default is 30.",
           "instillUIOrder": 101,
           "title": "Per Page",
           "instillFormat": "integer",
@@ -582,11 +582,11 @@
       "type": "object"
     },
     "output": {
-      "description": "All PRs in GitHub repository",
+      "description": "All PRs in GitHub repository.",
       "instillUIOrder": 0,
       "properties": {
         "pull-requests": {
-          "description": "An array of PRs",
+          "description": "An array of PRs.",
           "title": "Pull Requests",
           "instillUIOrder": 1,
           "instillFormat": "array:object",
@@ -594,7 +594,7 @@
           "items": {
             "$ref": "#/$defs/pull-request",
             "required": [],
-            "description": "A pull request in GitHub"
+            "description": "A pull request in GitHub."
           }
         }
       },
@@ -621,7 +621,7 @@
         "pr-number": {
           "default": 0,
           "title": "PR Number",
-          "description": "Number of the PR. `0` for the latest PR",
+          "description": "Number of the PR. `0` for the latest PR.",
           "instillFormat": "integer",
           "instillAcceptFormats": [
             "integer"
@@ -643,7 +643,7 @@
       "type": "object"
     },
     "output": {
-      "description": "The specific pr in GitHub repository",
+      "description": "The specific pr in GitHub repository.",
       "instillUIOrder": 0,
       "$ref": "#/$defs/pull-request",
       "required": [],
@@ -668,7 +668,7 @@
         "pr-number": {
           "default": 0,
           "title": "PR Number",
-          "description": "Number of the PR. Default is `0`, which retrieves all comments on all PRs in the repository",
+          "description": "Number of the PR. Default is `0`, which retrieves all comments on all PRs in the repository.",
           "instillFormat": "integer",
           "instillAcceptFormats": [
             "integer"
@@ -683,7 +683,7 @@
         "sort": {
           "default": "created",
           "title": "Sort",
-          "description": "Sort the comments by created, updated. Default is created",
+          "description": "Sort the comments by created, updated. Default is created.",
           "enum": [
             "created",
             "updated"
@@ -701,7 +701,7 @@
         "direction": {
           "default": "desc",
           "title": "Direction",
-          "description": "Direction of the sort, including asc or desc. Default is desc",
+          "description": "Direction of the sort, including asc or desc. Default is desc.",
           "enum": [
             "asc",
             "desc"
@@ -719,7 +719,7 @@
         "since": {
           "default": "2021-01-01T00:00:00Z",
           "title": "Since",
-          "description": "Only comments updated at or after this time are returned. Default is 2021-01-01T00:00:00Z",
+          "description": "Only comments updated at or after this time are returned. Default is 2021-01-01T00:00:00Z.",
           "instillFormat": "string",
           "instillAcceptFormats": [
             "string"
@@ -734,7 +734,7 @@
         },
         "page": {
           "default": 1,
-          "description": "Page number of the results to fetch. Default is 1",
+          "description": "Page number of the results to fetch. Default is 1.",
           "instillUIOrder": 100,
           "title": "Page",
           "instillFormat": "integer",
@@ -749,7 +749,7 @@
         },
         "per-page": {
           "default": 30,
-          "description": "Number of results to fetch per page. Default is 30",
+          "description": "Number of results to fetch per page. Default is 30.",
           "instillUIOrder": 101,
           "title": "Per Page",
           "instillFormat": "integer",
@@ -772,11 +772,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Comments in the PR",
+      "description": "Comments in the PR.",
       "instillUIOrder": 0,
       "properties": {
         "comments": {
-          "description": "An array of comments",
+          "description": "An array of comments.",
           "instillUIOrder": 0,
           "title": "Comments",
           "instillFormat": "array:object",
@@ -785,7 +785,7 @@
             "$ref": "#/$defs/review-comments",
             "required": [],
             "instillUIOrder": 1,
-            "description": "Comments in the PR"
+            "description": "Comments in the PR."
           }
         }
       },
@@ -812,7 +812,7 @@
         "$ref": "#/$defs/repository-info",
         "pr-number": {
           "title": "PR Number",
-          "description": "Number of the PR",
+          "description": "Number of the PR.",
           "instillFormat": "integer",
           "instillAcceptFormats": [
             "integer"
@@ -826,7 +826,7 @@
         },
         "comment": {
           "title": "Comment",
-          "description": "The comment to be added",
+          "description": "The comment to be added.",
           "instillFormat": "object",
           "instillUIOrder": 4,
           "type": "object",
@@ -937,7 +937,7 @@
       "type": "object"
     },
     "output": {
-      "description": "The created comment",
+      "description": "The created comment.",
       "instillUIOrder": 0,
       "properties": {
         "$ref": "#/$defs/review-comments/properties"
@@ -951,7 +951,7 @@
   "TASK_GET_COMMIT": {
     "instillShortDescription": "Get a commit from a repository, given the commit SHA",
     "input": {
-      "description": "Please input the repository name and owner, and the commit SHA",
+      "description": "Please input the repository name and owner, and the commit SHA.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "owner",
@@ -982,7 +982,7 @@
       "type": "object"
     },
     "output": {
-      "description": "The specific commit in GitHub repository",
+      "description": "The specific commit in GitHub repository.",
       "instillUIOrder": 0,
       "properties": {
         "$ref": "#/$defs/commit/properties"
@@ -997,7 +997,7 @@
     "description": "Get the list of all issues in a repository,This can be a pull request or a general issue, and you can tell by the `is-pull-request` field.",
     "instillShortDescription": "Get the list of all issues in a repository",
     "input": {
-      "description": "Please input the repository name and owner",
+      "description": "Please input the repository name and owner.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "owner",
@@ -1008,7 +1008,7 @@
         "state": {
           "default": "open",
           "title": "State",
-          "description": "State of the issues, can be one of: open, closed, all. Default is open",
+          "description": "State of the issues, can be one of: open, closed, all. Default is open.",
           "enum": [
             "open",
             "closed",
@@ -1027,7 +1027,7 @@
         "sort": {
           "default": "created",
           "title": "Sort",
-          "description": "Sort the issues by created, updated, popularity, or long-running. Default is created",
+          "description": "Sort the issues by created, updated, popularity, or long-running. Default is created.",
           "enum": [
             "created",
             "updated",
@@ -1047,7 +1047,7 @@
         "direction": {
           "default": "desc",
           "title": "Direction",
-          "description": "Direction of the sort, can be one of: asc, desc. Default is desc",
+          "description": "Direction of the sort, can be one of: asc, desc. Default is desc.",
           "enum": [
             "asc",
             "desc"
@@ -1065,7 +1065,7 @@
         "since": {
           "default": "2021-01-01T00:00:00Z",
           "title": "Since",
-          "description": "Only issues updated at or after this time are returned. Default is 2021-01-01T00:00:00Z",
+          "description": "Only issues updated at or after this time are returned. Default is 2021-01-01T00:00:00Z.",
           "instillFormat": "string",
           "instillAcceptFormats": [
             "string"
@@ -1080,7 +1080,7 @@
         },
         "no-pull-request": {
           "title": "No Pull Request",
-          "description": "Whether to `not` include pull requests in the response. Since issue and pr use the same indexing system in GitHub, the API returns all relevant objects (issues and pr). Default is false",
+          "description": "Whether to `not` include pull requests in the response. Since issue and pr use the same indexing system in GitHub, the API returns all relevant objects (issues and pr). Default is false.",
           "instillFormat": "boolean",
           "instillAcceptFormats": [
             "boolean"
@@ -1093,7 +1093,7 @@
         },
         "page": {
           "default": 1,
-          "description": "Page number of the results to fetch. Default is 1",
+          "description": "Page number of the results to fetch. Default is 1.",
           "instillUIOrder": 100,
           "title": "Page",
           "instillFormat": "integer",
@@ -1108,7 +1108,7 @@
         },
         "per-page": {
           "default": 30,
-          "description": "Number of results to fetch per page. Default is 30",
+          "description": "Number of results to fetch per page. Default is 30.",
           "instillUIOrder": 101,
           "title": "Per Page",
           "instillFormat": "integer",
@@ -1131,11 +1131,11 @@
       "type": "object"
     },
     "output": {
-      "description": "All issues in GitHub repository",
+      "description": "All issues in GitHub repository.",
       "instillUIOrder": 0,
       "properties": {
         "issues": {
-          "description": "An array of issues",
+          "description": "An array of issues.",
           "instillUIOrder": 1,
           "title": "Issues",
           "instillFormat": "array:object",
@@ -1143,7 +1143,7 @@
           "items": {
             "$ref": "#/$defs/issue",
             "required": [],
-            "description": "An issue in GitHub"
+            "description": "An issue in GitHub."
           }
         }
       },
@@ -1159,7 +1159,7 @@
     "description": "Get an issue. This can be a pull request or a general issue, and you can tell by the `is-pull-request` field.",
     "instillShortDescription": "Get an issue.",
     "input": {
-      "description": "Please input the repository name and owner",
+      "description": "Please input the repository name and owner.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "owner",
@@ -1171,7 +1171,7 @@
         "issue-number": {
           "default": 0,
           "title": "Issue Number",
-          "description": "Number of the issue",
+          "description": "Number of the issue.",
           "instillFormat": "integer",
           "instillAcceptFormats": [
             "integer"
@@ -1194,7 +1194,7 @@
       "type": "object"
     },
     "output": {
-      "description": "The specific issue in GitHub repository",
+      "description": "The specific issue in GitHub repository.",
       "instillUIOrder": 0,
       "properties": {
         "$ref": "#/$defs/issue/properties"
@@ -1206,9 +1206,9 @@
     }
   },
   "TASK_CREATE_ISSUE": {
-    "description": "Create an issue",
+    "description": "Create an issue.",
     "input": {
-      "description": "Please input the repository name and owner",
+      "description": "Please input the repository name and owner.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "owner",
@@ -1286,7 +1286,7 @@
       "type": "object"
     },
     "output": {
-      "description": "The created issue",
+      "description": "The created issue.",
       "instillUIOrder": 0,
       "properties": {
         "$ref": "#/$defs/issue/properties"
@@ -1298,9 +1298,9 @@
     }
   },
   "TASK_CREATE_WEBHOOK": {
-    "description": "Create a webhook for a repository",
+    "description": "Create a webhook for a repository.",
     "input": {
-      "description": "Please input the repository name and owner",
+      "description": "Please input the repository name and owner.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "owner",
@@ -1312,7 +1312,7 @@
         "$ref": "#/$defs/repository-info",
         "hook-url": {
           "title": "Webhook URL",
-          "description": "URL to send the payload to",
+          "description": "URL to send the payload to.",
           "instillFormat": "string",
           "instillAcceptFormats": [
             "string"
@@ -1327,7 +1327,7 @@
         },
         "events": {
           "title": "Events",
-          "description": "Events to trigger the webhook. Please see <a href=\"https://docs.github.com/en/webhooks/webhook-events-and-payloads\">the github document</a> for more information",
+          "description": "Events to trigger the webhook. Please see <a href=\"https://docs.github.com/en/webhooks/webhook-events-and-payloads\">the github document</a> for more information.",
           "instillFormat": "array:string",
           "instillAcceptFormats": [
             "array"
@@ -1353,7 +1353,7 @@
         "active": {
           "title": "Active",
           "default": false,
-          "description": "Whether the webhook is active. Default is false",
+          "description": "Whether the webhook is active. Default is false.",
           "instillFormat": "boolean",
           "instillAcceptFormats": [
             "boolean"
@@ -1367,7 +1367,7 @@
         "content-type": {
           "default": "json",
           "title": "Content Type",
-          "description": "Content type of the webhook, can be one of: json, form. Default is json",
+          "description": "Content type of the webhook, can be one of: json, form. Default is json.",
           "enum": [
             "json",
             "form"
@@ -1384,7 +1384,7 @@
         },
         "hook-secret": {
           "title": "Hook Secret",
-          "description": "If provided, the secret will be used as the key to generate the HMAC hex digest value for delivery signature headers. (see <a href=\"https://docs.github.com/en/webhooks/webhook-events-and-payloads#delivery-headers\">the document</a>)",
+          "description": "If provided, the secret will be used as the key to generate the HMAC hex digest value for delivery signature headers. (see <a href=\"https://docs.github.com/en/webhooks/webhook-events-and-payloads#delivery-headers\">the document</a>).",
           "instillSecret": true,
           "instillFormat": "string",
           "instillAcceptFormats": [
@@ -1408,60 +1408,60 @@
       "type": "object"
     },
     "output": {
-      "description": "The created webhook",
+      "description": "The created webhook.",
       "instillUIOrder": 0,
       "properties": {
         "id": {
-          "description": "ID of the webhook",
+          "description": "ID of the webhook.",
           "instillUIOrder": 1,
           "title": "Webhook ID",
           "instillFormat": "integer",
           "type": "integer"
         },
         "url": {
-          "description": "URL of the webhook",
+          "description": "URL of the webhook.",
           "instillUIOrder": 2,
           "title": "Webhook URL",
           "instillFormat": "string",
           "type": "string"
         },
         "ping-url": {
-          "description": "URL to ping the webhook",
+          "description": "URL to ping the webhook.",
           "instillUIOrder": 3,
           "title": "Ping URL",
           "instillFormat": "string",
           "type": "string"
         },
         "test-url": {
-          "description": "URL to test the webhook",
+          "description": "URL to test the webhook.",
           "instillUIOrder": 4,
           "title": "Test URL",
           "instillFormat": "string",
           "type": "string"
         },
         "config": {
-          "description": "Configuration of the webhook",
+          "description": "Configuration of the webhook.",
           "instillUIOrder": 6,
           "title": "Config",
           "instillFormat": "object",
           "type": "object",
           "properties": {
             "url": {
-              "description": "URL of the webhook",
+              "description": "URL of the webhook.",
               "instillUIOrder": 1,
               "title": "Webhook URL",
               "instillFormat": "string",
               "type": "string"
             },
             "content-type": {
-              "description": "Content type of the webhook",
+              "description": "Content type of the webhook.",
               "instillUIOrder": 2,
               "title": "Content Type",
               "instillFormat": "string",
               "type": "string"
             },
             "insecure-ssl": {
-              "description": "Whether the webhook is insecure",
+              "description": "Whether the webhook is insecure.",
               "instillUIOrder": 3,
               "title": "Insecure SSL",
               "instillFormat": "string",

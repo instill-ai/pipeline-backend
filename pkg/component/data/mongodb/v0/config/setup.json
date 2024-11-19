@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "properties": {
     "uri": {
-      "description": "Fill in your MongoDB URI",
+      "description": "Fill in your MongoDB URI.",
       "instillUpstreamTypes": [
         "reference"
       ],

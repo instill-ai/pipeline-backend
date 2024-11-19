@@ -43,8 +43,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | Fill in your Chroma API key  |
-| Chroma URL Endpoint (required) | `url` | string | Fill in your Chroma hosted public URL endpoint with port, e.g http://1.2.3:8000  |
+| API Key (required) | `api-key` | string | Fill in your Chroma API key.  |
+| Chroma URL Endpoint (required) | `url` | string | Fill in your Chroma hosted public URL endpoint with port, e.g http://1.2.3:8000.  |
 
 </div>
 
@@ -62,12 +62,12 @@ Upsert multiple vector items into a collection, existing items will be updated
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the item into |
-| Array ID (required) | `array-id` | array[string] | The array of id |
-| [Array Metadata](#batch-upsert-array-metadata) (required) | `array-metadata` | array[object] | The array of vector metadata |
-| Array Vector (required) | `array-vector` | array[array] | The array of vector values |
-| Array Document | `array-document` | array[string] | The array of document string values |
-| Array URI | `array-uri` | array[string] | The array of uri |
+| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the item into. |
+| Array ID (required) | `array-id` | array[string] | The array of id. |
+| [Array Metadata](#batch-upsert-array-metadata) (required) | `array-metadata` | array[object] | The array of vector metadata. |
+| Array Vector (required) | `array-vector` | array[array] | The array of vector values. |
+| Array Document | `array-document` | array[string] | The array of document string values. |
+| Array URI | `array-uri` | array[string] | The array of uri. |
 </div>
 
 
@@ -79,7 +79,7 @@ Upsert multiple vector items into a collection, existing items will be updated
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Batch add status |
+| Status | `status` | string | Batch add status. |
 </div>
 
 
@@ -92,12 +92,12 @@ Upsert a vector item into a collection, existing item will be updated
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPSERT` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the item into |
-| ID (required) | `id` | string | The ID of the item |
-| Metadata (required) | `metadata` | object | The vector metadata |
-| Vector (required) | `vector` | array[number] | An array of dimensions for the vector value |
-| Document | `document` | string | The document string value |
-| URI | `uri` | string | The uri of the item |
+| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the item into. |
+| ID (required) | `id` | string | The ID of the item. |
+| Metadata (required) | `metadata` | object | The vector metadata. |
+| Vector (required) | `vector` | array[number] | An array of dimensions for the vector value. |
+| Document | `document` | string | The document string value. |
+| URI | `uri` | string | The uri of the item. |
 </div>
 
 
@@ -109,7 +109,7 @@ Upsert a vector item into a collection, existing item will be updated
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Add status |
+| Status | `status` | string | Add status. |
 </div>
 
 
@@ -122,12 +122,12 @@ Perform a vector search on a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_QUERY` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to perform vector similarity search on |
+| Collection Name (required) | `collection-name` | string | The name of the collection to perform vector similarity search on. |
 | Vector (required) | `vector` | array[number] | An array of dimensions for the vector query. |
-| N Results (required) | `n-results` | integer | The N amount of items to return from the vector search operation |
-| Filter | `filter` | object | The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters) |
-| Filter Document | `filter-document` | string | The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents) |
-| Fields | `fields` | array[string] | The fields to be returned from the vector search operation |
+| N Results (required) | `n-results` | integer | The N amount of items to return from the vector search operation. |
+| Filter | `filter` | object | The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters). |
+| Filter Document | `filter-document` | string | The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents). |
+| Fields | `fields` | array[string] | The fields to be returned from the vector search operation. |
 </div>
 
 
@@ -139,8 +139,8 @@ Perform a vector search on a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Result](#query-result) | `result` | object | Result of the vector search operation |
-| Status | `status` | string | Vector search status |
+| [Result](#query-result) | `result` | object | Result of the vector search operation. |
+| Status | `status` | string | Vector search status. |
 </div>
 
 <details>
@@ -152,10 +152,10 @@ Perform a vector search on a collection
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| IDs | `ids` | array | The ids returned from the vector search operation |
-| [Items](#query-items) | `items` | array | The items returned from the vector search operation |
-| [Metadata](#query-metadata) | `metadata` | array | The metadata returned from the vector search operation |
-| Vectors | `vectors` | array | The vectors returned from the vector search operation |
+| IDs | `ids` | array | The ids returned from the vector search operation. |
+| [Items](#query-items) | `items` | array | The items returned from the vector search operation. |
+| [Metadata](#query-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
+| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
 </div>
 </details>
 
@@ -169,10 +169,10 @@ Delete vector items from a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to delete the object from |
-| ID | `id` | string | The ID of the item |
-| Filter | `filter` | object | The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters) |
-| Filter Document | `filter-document` | string | The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents) |
+| Collection Name (required) | `collection-name` | string | The name of the collection to delete the object from. |
+| ID | `id` | string | The ID of the item. |
+| Filter | `filter` | object | The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters). |
+| Filter Document | `filter-document` | string | The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents). |
 </div>
 
 
@@ -184,7 +184,7 @@ Delete vector items from a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete status |
+| Status | `status` | string | Delete status. |
 </div>
 
 
@@ -197,10 +197,10 @@ Create a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_COLLECTION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to create |
-| Config | `metadata` | object | The metadata of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections) |
-| Configuration | `configuration` | object | The configuration of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections) |
-| Get or Create | `get-or-create` | boolean | If true, the collection will be created if it does not exist |
+| Collection Name (required) | `collection-name` | string | The name of the collection to create. |
+| Config | `metadata` | object | The metadata of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections). |
+| Configuration | `configuration` | object | The configuration of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections). |
+| Get or Create | `get-or-create` | boolean | If true, the collection will be created if it does not exist. |
 </div>
 
 
@@ -212,7 +212,7 @@ Create a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create collection status |
+| Status | `status` | string | Create collection status. |
 </div>
 
 
@@ -225,7 +225,7 @@ Delete a collection
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE_COLLECTION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to delete |
+| Collection Name (required) | `collection-name` | string | The name of the collection to delete. |
 </div>
 
 
@@ -237,7 +237,7 @@ Delete a collection
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete collection status |
+| Status | `status` | string | Delete collection status. |
 </div>
 
 

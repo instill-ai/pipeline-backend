@@ -12,7 +12,7 @@
   "id": "qdrant",
   "public": true,
   "title": "Qdrant",
-  "description": "Build and search vector datasets",
+  "description": "Build and search vector datasets.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_DATA",
   "uid": "628c91b8-1cf0-4141-b9e4-256b2ed109f2",

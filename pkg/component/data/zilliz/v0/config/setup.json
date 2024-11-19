@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "properties": {
     "url": {
-      "description": "Fill in your Zilliz public URL endpoint",
+      "description": "Fill in your Zilliz public URL endpoint.",
       "instillUpstreamTypes": [
         "value",
         "reference"
@@ -17,7 +17,7 @@
       "type": "string"
     },
     "api-key": {
-      "description": "Fill in your Zilliz API key",
+      "description": "Fill in your Zilliz API key.",
       "instillUpstreamTypes": [
         "value",
         "reference"

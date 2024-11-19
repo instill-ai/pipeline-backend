@@ -21,7 +21,7 @@
   "id": "hubspot",
   "public": true,
   "title": "HubSpot",
-  "description": "Use HubSpot application to do various tasks",
+  "description": "Use HubSpot application to do various tasks.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_APPLICATION",
   "uid": "0cd80b30-29bc-4f19-91ca-5911de3a3aae",

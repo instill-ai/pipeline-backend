@@ -1,7 +1,7 @@
 {
   "$defs": {
     "text": {
-      "description": "Text to be chunked",
+      "description": "Text to be chunked.",
       "instillAcceptFormats": [
         "string"
       ],
@@ -17,7 +17,7 @@
     },
     "chunk-size": {
       "default": 512,
-      "description": "Specifies the maximum size of each chunk in terms of the number of tokens",
+      "description": "Specifies the maximum size of each chunk in terms of the number of tokens.",
       "instillAcceptFormats": [
         "integer"
       ],
@@ -32,7 +32,7 @@
     },
     "chunk-overlap": {
       "default": 100,
-      "description": "Determines the number of tokens that overlap between consecutive chunks",
+      "description": "Determines the number of tokens that overlap between consecutive chunks.",
       "instillAcceptFormats": [
         "integer"
       ],
@@ -97,7 +97,7 @@
   "TASK_CHUNK_TEXT": {
     "instillShortDescription": "Chunk text with different strategies",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "text",
         "strategy"
@@ -108,11 +108,11 @@
           "$ref": "#/$defs/text"
         },
         "strategy": {
-          "description": "Chunking strategy",
+          "description": "Chunking strategy.",
           "instillUIOrder": 1,
           "properties": {
             "setting": {
-              "description": "Chunk Setting",
+              "description": "Chunk Setting.",
               "additionalProperties": true,
               "type": "object",
               "title": "Setting",
@@ -231,7 +231,7 @@
                       "type": "array"
                     },
                     "keep-separator": {
-                      "description": "A flag indicating whether to keep the separator characters at the beginning or end of chunks",
+                      "description": "A flag indicating whether to keep the separator characters at the beginning or end of chunks.",
                       "instillAcceptFormats": [
                         "boolean"
                       ],
@@ -279,7 +279,7 @@
                       "$ref": "#/$defs/model-name"
                     },
                     "code-blocks": {
-                      "description": "A flag indicating whether code blocks should be treated as a single unit",
+                      "description": "A flag indicating whether code blocks should be treated as a single unit.",
                       "instillAcceptFormats": [
                         "boolean"
                       ],
@@ -325,26 +325,26 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "properties": {
         "chunk-num": {
-          "description": "Total number of output text chunks",
+          "description": "Total number of output text chunks.",
           "instillUIOrder": 2,
           "instillFormat": "integer",
           "title": "Number of Text Chunks",
           "type": "integer"
         },
         "text-chunks": {
-          "description": "Text chunks after splitting",
+          "description": "Text chunks after splitting.",
           "instillUIOrder": 1,
           "items": {
             "title": "Text Chunk",
-            "description": "Text chunk after splitting",
+            "description": "Text chunk after splitting.",
             "properties": {
               "text": {
                 "title": "Text",
-                "description": "Text chunk after splitting",
+                "description": "Text chunk after splitting.",
                 "instillFormat": "string",
                 "instillUIMultiline": true,
                 "instillUIOrder": 0,
@@ -352,21 +352,21 @@
               },
               "start-position": {
                 "title": "Start Position",
-                "description": "The starting position of the chunk in the original text",
+                "description": "The starting position of the chunk in the original text.",
                 "instillFormat": "integer",
                 "instillUIOrder": 1,
                 "type": "integer"
               },
               "end-position": {
                 "title": "End Position",
-                "description": "The ending position of the chunk in the original text",
+                "description": "The ending position of the chunk in the original text.",
                 "instillFormat": "integer",
                 "instillUIOrder": 2,
                 "type": "integer"
               },
               "token-count": {
                 "title": "Token Count",
-                "description": "Count of tokens in a chunk",
+                "description": "Count of tokens in a chunk.",
                 "instillFormat": "integer",
                 "instillUIOrder": 3,
                 "type": "integer"
@@ -385,14 +385,14 @@
           "type": "array"
         },
         "token-count": {
-          "description": "Total count of tokens in the original input text",
+          "description": "Total count of tokens in the original input text.",
           "instillUIOrder": 0,
           "instillFormat": "integer",
           "title": "Token Count",
           "type": "integer"
         },
         "chunks-token-count": {
-          "description": "Total count of tokens in the output text chunks",
+          "description": "Total count of tokens in the output text chunks.",
           "instillUIOrder": 3,
           "instillFormat": "integer",
           "title": "Token Count Chunks",

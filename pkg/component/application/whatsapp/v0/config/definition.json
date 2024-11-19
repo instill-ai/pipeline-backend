@@ -15,7 +15,7 @@
   "id": "whatsapp",
   "public": true,
   "title": "WhatsApp",
-  "description": "Use WhatsApp Business Platform API to send template and messages",
+  "description": "Use WhatsApp Business Platform API to send template and messages.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_APPLICATION",
   "uid": "028c0ce7-94ff-4ac2-9324-d9a362724eed",

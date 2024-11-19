@@ -14,7 +14,7 @@
   "id": "elasticsearch",
   "public": true,
   "title": "Elasticsearch",
-  "description": "Access the Elasticsearch database",
+  "description": "Access the Elasticsearch database.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_DATA",
   "uid": "f253a0c1-eb8e-45e1-a677-adb8895f5ceb",

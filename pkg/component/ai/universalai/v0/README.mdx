@@ -59,8 +59,8 @@ Generate response base on conversation input
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CHAT` |
-| [Chat Data](#chat-chat-data) (required) | `data` | object | Input data |
-| [Input Parameter](#chat-input-parameter) | `parameter` | object | Input parameter |
+| [Chat Data](#chat-chat-data) (required) | `data` | object | Input data. |
+| [Input Parameter](#chat-input-parameter) | `parameter` | object | Input parameter. |
 </div>
 
 
@@ -69,39 +69,39 @@ Generate response base on conversation input
 
 <h4 id="chat-chat-data">Chat Data</h4>
 
-Input data
+Input data.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Chat Messages](#chat-chat-messages) | `messages` | array | List of chat messages  |
+| [Chat Messages](#chat-chat-messages) | `messages` | array | List of chat messages.  |
 </div>
 <h4 id="chat-chat-messages">Chat Messages</h4>
 
-List of chat messages
+List of chat messages.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#chat-content) | `content` | array | The message content  |
+| [Content](#chat-content) | `content` | array | The message content.  |
 | Name | `name` | string | An optional name for the participant. Provides the model information to differentiate between participants of the same role.  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`system`</li><li>`user`</li><li>`assistant`</li></ul></details>  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`system`</li><li>`user`</li><li>`assistant`</li></ul></details>  |
 </div>
 <h4 id="chat-input-parameter">Input Parameter</h4>
 
-Input parameter
+Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Max New Tokens | `max-tokens` | integer | The maximum number of tokens for model to generate  |
+| Max New Tokens | `max-tokens` | integer | The maximum number of tokens for model to generate.  |
 | Number of Choices | `n` | integer | How many chat completion choices to generate for each input message.  |
-| Seed | `seed` | integer | The seed, default is 0  |
+| Seed | `seed` | integer | The seed, default is 0.  |
 | Stream | `stream` | boolean | If set, partial message deltas will be sent. Tokens will be sent as data-only server-sent events as they become available.  |
-| Temperature | `temperature` | number | The temperature for sampling  |
+| Temperature | `temperature` | number | The temperature for sampling.  |
 | Top P | `top-p` | number | An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered. We generally recommend altering this or temperature but not both.  |
 </div>
 </details>
@@ -112,8 +112,8 @@ Input parameter
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Output Data](#chat-output-data) | `data` | object | Output data |
-| [Output Metadata](#chat-output-metadata) (optional) | `metadata` | object | Output metadata |
+| [Output Data](#chat-output-data) | `data` | object | Output data. |
+| [Output Metadata](#chat-output-metadata) (optional) | `metadata` | object | Output metadata. |
 </div>
 
 <details>
@@ -125,7 +125,7 @@ Input parameter
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Choices](#chat-choices) | `choices` | array | List of chat completion choices |
+| [Choices](#chat-choices) | `choices` | array | List of chat completion choices. |
 </div>
 
 <h4 id="chat-choices">Choices</h4>

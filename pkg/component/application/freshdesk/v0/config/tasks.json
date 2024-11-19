@@ -204,47 +204,47 @@
     },
     "ticket": {
       "ticket-id": {
-        "description": "The ID of the ticket",
+        "description": "The ID of the ticket.",
         "title": "Ticket ID",
         "type": "integer"
       },
       "subject": {
-        "description": "Subject of the ticket",
+        "description": "Subject of the ticket.",
         "title": "Subject",
         "type": "string"
       },
       "description-text": {
-        "description": "Content of the ticket",
+        "description": "Content of the ticket.",
         "title": "Description Text",
         "type": "string"
       },
       "source": {
-        "description": "Source of the ticket. Eg: Email",
+        "description": "Source of the ticket. Eg: Email.",
         "title": "Source",
         "type": "string"
       },
       "status": {
-        "description": "Status of the ticket. Eg: Pending",
+        "description": "Status of the ticket. Eg: Pending.",
         "title": "Status",
         "type": "string"
       },
       "priority": {
-        "description": "Priority of the ticket. Eg: Medium",
+        "description": "Priority of the ticket. Eg: Medium.",
         "title": "Priority",
         "type": "string"
       },
       "ticket-type": {
-        "description": "Used to categorize the ticket. To check the possible types a ticket can have, please go to Admin -> Ticket Fields",
+        "description": "Used to categorize the ticket. To check the possible types a ticket can have, please go to Admin -> Ticket Fields.",
         "title": "Ticket Type",
         "type": "string"
       },
       "association-type": {
-        "description": "Used to determine whether a ticket is a parent, child, tracker or related ticket",
+        "description": "Used to determine whether a ticket is a parent, child, tracker or related ticket.",
         "title": "Association Type",
         "type": "string"
       },
       "associated-ticket-list": {
-        "description": "List of associated ticket IDs",
+        "description": "List of associated ticket IDs.",
         "title": "Associated Ticket List",
         "type": "array"
       },
@@ -254,47 +254,47 @@
         "type": "array"
       },
       "cc-emails": {
-        "description": "Email addresses added in the 'cc' field of the incoming ticket email",
+        "description": "Email addresses added in the 'cc' field of the incoming ticket email.",
         "title": "CC Emails",
         "type": "array"
       },
       "bcc-emails": {
-        "description": "Email addresses added in the 'bcc' field of the incoming ticket email",
+        "description": "Email addresses added in the 'bcc' field of the incoming ticket email.",
         "title": "BCC Emails",
         "type": "array"
       },
       "forward-emails": {
-        "description": "Email addresses added while forwarding a ticket",
+        "description": "Email addresses added while forwarding a ticket.",
         "title": "Forward Emails",
         "type": "array"
       },
       "reply-cc-emails": {
-        "description": "Email addresses added while replying to a ticket",
+        "description": "Email addresses added while replying to a ticket.",
         "title": "Reply CC Emails",
         "type": "array"
       },
       "requester-id": {
-        "description": "ID of the requester",
+        "description": "ID of the requester.",
         "title": "Requester ID",
         "type": "integer"
       },
       "responder-id": {
-        "description": "ID of the agent to whom the ticket has been assigned. List of agents can be found in Admin -> Agents",
+        "description": "ID of the agent to whom the ticket has been assigned. List of agents can be found in Admin -> Agents.",
         "title": "Responder ID",
         "type": "integer"
       },
       "company-id": {
-        "description": "ID of the company to which this ticket belongs",
+        "description": "ID of the company to which this ticket belongs.",
         "title": "Company ID",
         "type": "integer"
       },
       "group-id": {
-        "description": "ID of the group to which the ticket has been assigned. List of groups can be found in Admin -> Groups",
+        "description": "ID of the group to which the ticket has been assigned. List of groups can be found in Admin -> Groups.",
         "title": "Group ID",
         "type": "integer"
       },
       "product-id": {
-        "description": "ID of the product to which the ticket is associated. List of products can be found in Admin -> Multiple Products",
+        "description": "ID of the product to which the ticket is associated. List of products can be found in Admin -> Multiple Products.",
         "title": "Product ID",
         "type": "integer"
       },
@@ -304,12 +304,12 @@
         "type": "string"
       },
       "to-emails": {
-        "description": "Email addresses to which the ticket was originally sent",
+        "description": "Email addresses to which the ticket was originally sent.",
         "title": "To Emails",
         "type": "array"
       },
       "spam": {
-        "description": "Set to true if the ticket is marked as spam",
+        "description": "Set to true if the ticket is marked as spam.",
         "title": "Spam",
         "type": "boolean"
       },
@@ -319,7 +319,7 @@
         "type": "string"
       },
       "is-escalated": {
-        "description": "Set to true if the ticket has been escalated",
+        "description": "Set to true if the ticket has been escalated.",
         "title": "Is Escalated",
         "type": "boolean"
       },
@@ -329,7 +329,7 @@
         "type": "string"
       },
       "first-response-escalated": {
-        "description": "Set to true if the ticket has been escalated as the result of first response time being breached",
+        "description": "Set to true if the ticket has been escalated as the result of first response time being breached.",
         "title": "First Response Escalated",
         "type": "boolean"
       },
@@ -339,7 +339,7 @@
         "type": "string"
       },
       "next-response-escalated": {
-        "description": "Set to true if the ticket has been escalated as the result of next response time being breached",
+        "description": "Set to true if the ticket has been escalated as the result of next response time being breached.",
         "title": "Next Response Escalated",
         "type": "boolean"
       },
@@ -354,7 +354,7 @@
         "type": "string"
       },
       "attachments": {
-        "description": "Ticket attachments (cannot be more than 20MB)",
+        "description": "Ticket attachments (cannot be more than 20MB).",
         "title": "Attachments",
         "type": "array"
       },
@@ -364,89 +364,89 @@
         "type": "integer"
       },
       "initial-sentiment-score": {
-        "description": "The initial sentiment score of the ticket",
+        "description": "The initial sentiment score of the ticket.",
         "title": "Initial Sentiment Score",
         "type": "integer"
       },
       "custom-fields": {
-        "description": "Custom fields that the ticket have. Custom fields can be created or modified in Admin -> Ticket Fields",
+        "description": "Custom fields that the ticket have. Custom fields can be created or modified in Admin -> Ticket Fields.",
         "title": "Custom Fields",
         "type": "object"
       },
       "conversation-id": {
-        "description": "The ID of the note or reply that is associated with the ticket",
+        "description": "The ID of the note or reply that is associated with the ticket.",
         "title": "Conversation ID",
         "type": "integer"
       }
     },
     "contact": {
       "contact-id": {
-        "description": "ID of the contact",
+        "description": "ID of the contact.",
         "title": "Contact ID",
         "type": "integer"
       },
       "name": {
-        "description": "Name of the contact",
+        "description": "Name of the contact.",
         "title": "Name",
         "type": "string"
       },
       "email": {
-        "description": "The primary email address of the contact",
+        "description": "The primary email address of the contact.",
         "title": "Email",
         "type": "string"
       },
       "phone": {
-        "description": "Telephone number of the contact",
+        "description": "Telephone number of the contact.",
         "title": "Phone",
         "type": "string"
       },
       "mobile": {
-        "description": "Mobile number of the contact",
+        "description": "Mobile number of the contact.",
         "title": "Mobile",
         "type": "string"
       },
       "description": {
-        "description": "Description of the contact",
+        "description": "Description of the contact.",
         "title": "Description",
         "type": "string"
       },
       "address": {
-        "description": "Address of the contact",
+        "description": "Address of the contact.",
         "title": "Address",
         "type": "string"
       },
       "job-title": {
-        "description": "Job title of the contact",
+        "description": "Job title of the contact.",
         "title": "Job Title",
         "type": "string"
       },
       "tags": {
-        "description": "Tags associated with the contact",
+        "description": "Tags associated with the contact.",
         "title": "Tags",
         "type": "array"
       },
       "language": {
-        "description": "Language of the contact",
+        "description": "Language of the contact.",
         "title": "Language",
         "type": "string"
       },
       "time-zone": {
-        "description": "Time zone of the contact",
+        "description": "Time zone of the contact.",
         "title": "Time Zone",
         "type": "string"
       },
       "company-id": {
-        "description": "ID of the primary company to which the contact belongs",
+        "description": "ID of the primary company to which the contact belongs.",
         "title": "Company ID",
         "type": "integer"
       },
       "unique-external-id": {
-        "description": "Unique external ID of the contact which be assigned by the user(agent)",
+        "description": "Unique external ID of the contact which be assigned by the user(agent).",
         "title": "Unique External ID",
         "type": "string"
       },
       "twitter-id": {
-        "description": "Twitter ID of the contact",
+        "description": "Twitter ID of the contact.",
         "title": "Twitter ID",
         "type": "string"
       },
@@ -456,27 +456,27 @@
         "type": "boolean"
       },
       "deleted": {
-        "description": "Set to true if the contact is deleted",
+        "description": "Set to true if the contact is deleted.",
         "title": "Deleted",
         "type": "boolean"
       },
       "active": {
-        "description": "Set to true if the contact has been verified",
+        "description": "Set to true if the contact has been verified.",
         "title": "Active",
         "type": "boolean"
       },
       "other-emails": {
-        "description": "List of other email addresses of the contact",
+        "description": "List of other email addresses of the contact.",
         "title": "Other Emails",
         "type": "array"
       },
       "other-companies": {
-        "description": "List of other companies to which the contact belongs",
+        "description": "List of other companies to which the contact belongs.",
         "title": "Other Companies",
         "type": "array"
       },
       "other-phone-numbers": {
-        "description": "List of other phone numbers of the contact",
+        "description": "List of other phone numbers of the contact.",
         "title": "Other Phone Numbers",
         "type": "array"
       },
@@ -491,49 +491,49 @@
         "type": "string"
       },
       "custom-fields": {
-        "description": "Custom fields that the contact have. Custom fields can be created or modified in Admin -> Customer Fields",
+        "description": "Custom fields that the contact have. Custom fields can be created or modified in Admin -> Customer Fields.",
         "title": "Custom Fields",
         "type": "object"
       }
     },
     "company": {
       "company-id": {
-        "description": "ID of the company",
+        "description": "ID of the company.",
         "title": "Company ID",
         "type": "integer"
       },
       "name": {
-        "description": "Name of the company",
+        "description": "Name of the company.",
         "title": "Name",
         "type": "string"
       },
       "description": {
-        "description": "Description of the company",
+        "description": "Description of the company.",
         "title": "Description",
         "type": "string"
       },
       "note": {
-        "description": "Note about the company",
+        "description": "Note about the company.",
         "title": "Note",
         "type": "string"
       },
       "domains": {
-        "description": "Domains of the company",
+        "description": "Domains of the company.",
         "title": "Domains",
         "type": "array"
       },
       "health-score": {
-        "description": "The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: \"At risk\", \"Doing okay\", \"Happy\"",
+        "description": "The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: \"At risk\", \"Doing okay\", \"Happy\".",
         "title": "Health Score",
         "type": "string"
       },
       "account-tier": {
-        "description": "Classification based on how much value the company brings to your business. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: \"Basic\", \"Premium\", \"Enterprise\"",
+        "description": "Classification based on how much value the company brings to your business. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: \"Basic\", \"Premium\", \"Enterprise\".",
         "title": "Account Tier",
         "type": "string"
       },
       "renewal-date": {
-        "description": "Date when your contract or relationship with the company is due for renewal",
+        "description": "Date when your contract or relationship with the company is due for renewal.",
         "title": "Renewal Date",
         "type": "string"
       },
@@ -553,7 +553,7 @@
         "type": "string"
       },
       "custom-fields": {
-        "description": "Custom fields that the company have. Custom fields can be created or modified in Admin -> Customer Fields",
+        "description": "Custom fields that the company have. Custom fields can be created or modified in Admin -> Customer Fields.",
         "title": "Custom Fields",
         "type": "object"
       }
@@ -562,7 +562,7 @@
   "TASK_GET_TICKET": {
     "instillShortDescription": "Get ticket using ID",
     "input": {
-      "description": "Ticket ID",
+      "description": "Ticket ID.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "ticket-id"
@@ -588,7 +588,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Ticket information",
+      "description": "Ticket information.",
       "instillUIOrder": 0,
       "properties": {
         "subject": {
@@ -632,7 +632,7 @@
           "items": {
             "title": "Associated Ticket",
             "type": "integer",
-            "description": "The ID of the ticket associated with the current ticket",
+            "description": "The ID of the ticket associated with the current ticket.",
             "instillFormat": "integer"
           },
           "instillUIOrder": 7
@@ -643,7 +643,7 @@
           "items": {
             "title": "Tag",
             "type": "string",
-            "description": "Tag associated with the ticket",
+            "description": "Tag associated with the ticket.",
             "instillFormat": "string"
           },
           "instillUIOrder": 8
@@ -654,7 +654,7 @@
           "items": {
             "title": "CC Email",
             "type": "string",
-            "description": "One of the email address added in the 'cc' field of the incoming ticket email",
+            "description": "One of the email address added in the 'cc' field of the incoming ticket email.",
             "instillFormat": "string"
           },
           "instillUIOrder": 9
@@ -665,7 +665,7 @@
           "items": {
             "title": "Forward Email",
             "type": "string",
-            "description": "One of the email address added while forwarding a ticket",
+            "description": "One of the email address added while forwarding a ticket.",
             "instillFormat": "string"
           },
           "instillUIOrder": 10
@@ -676,7 +676,7 @@
           "items": {
             "title": "Reply CC Email",
             "type": "string",
-            "description": "One of the email address added while replying to a ticket",
+            "description": "One of the email address added while replying to a ticket.",
             "instillFormat": "string"
           },
           "instillUIOrder": 11
@@ -717,7 +717,7 @@
           "items": {
             "title": "To Email",
             "type": "string",
-            "description": "One of the email address to which the ticket was originally sent",
+            "description": "One of the email address to which the ticket was originally sent.",
             "instillFormat": "string"
           },
           "instillUIOrder": 18
@@ -775,14 +775,14 @@
             "type": "object",
             "properties": {
               "name": {
-                "description": "The name of the file",
+                "description": "The name of the file.",
                 "instillFormat": "string",
                 "instillUIOrder": 0,
                 "title": "Attachment Name",
                 "type": "string"
               },
               "content-type": {
-                "description": "The type of the file",
+                "description": "The type of the file.",
                 "instillFormat": "string",
                 "instillUIOrder": 1,
                 "title": "Attachment Content Type",
@@ -838,7 +838,7 @@
   "TASK_CREATE_TICKET": {
     "instillShortDescription": "Create ticket",
     "input": {
-      "description": "Ticket Information",
+      "description": "Ticket Information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "requester-id",
@@ -1104,7 +1104,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Ticket ID and create date",
+      "description": "Ticket ID and create date.",
       "instillUIOrder": 0,
       "properties": {
         "ticket-id": {
@@ -1129,7 +1129,7 @@
   "TASK_REPLY_TO_TICKET": {
     "instillShortDescription": "Reply to a ticket thread.",
     "input": {
-      "description": "Reply information",
+      "description": "Reply information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "ticket-id",
@@ -1241,7 +1241,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Conversation ID, Ticket ID and created date",
+      "description": "Conversation ID, Ticket ID and created date.",
       "instillUIOrder": 0,
       "properties": {
         "conversation-id": {
@@ -1266,7 +1266,7 @@
   "TASK_CREATE_TICKET_NOTE": {
     "instillShortDescription": "Create a private/public note on a ticket thread.",
     "input": {
-      "description": "Note information",
+      "description": "Note information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "ticket-id",
@@ -1338,7 +1338,7 @@
           ]
         },
         "private": {
-          "description": "Set to true if the note is private",
+          "description": "Set to true if the note is private.",
           "title": "Private",
           "type": "boolean",
           "instillUIOrder": 4,
@@ -1376,7 +1376,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Conversation ID, Ticket ID and created date",
+      "description": "Conversation ID, Ticket ID and created date.",
       "instillUIOrder": 0,
       "properties": {
         "conversation-id": {
@@ -1401,14 +1401,14 @@
   "TASK_GET_ALL_CONVERSATIONS": {
     "instillShortDescription": "Get all the conversations in a ticket. (Conversations are replies and notes that are added to a ticket)",
     "input": {
-      "description": "Ticket ID",
+      "description": "Ticket ID.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "ticket-id"
       ],
       "properties": {
         "ticket-id": {
-          "description": "Ticket ID",
+          "description": "Ticket ID.",
           "title": "Ticket ID",
           "type": "integer",
           "instillUIOrder": 2,
@@ -1430,11 +1430,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Conversations",
+      "description": "Conversations.",
       "instillUIOrder": 0,
       "properties": {
         "conversations": {
-          "description": "An array of conversations",
+          "description": "An array of conversations.",
           "instillUIOrder": 0,
           "title": "Conversations",
           "type": "array",
@@ -1443,7 +1443,7 @@
             "type": "object",
             "properties": {
               "body-text": {
-                "description": "Content of the conversation",
+                "description": "Content of the conversation.",
                 "title": "Body Text",
                 "type": "string",
                 "instillUIOrder": 0,
@@ -1460,7 +1460,7 @@
                 "instillFormat": "string"
               },
               "to-emails": {
-                "description": "Email addresses of agents/users who need to be notified about this conversation",
+                "description": "Email addresses of agents/users who need to be notified about this conversation.",
                 "title": "To Emails",
                 "type": "array",
                 "instillUIOrder": 3,
@@ -1468,7 +1468,7 @@
                 "items": {
                   "title": "To Email",
                   "type": "string",
-                  "description": "One of the email addresses of agents/users who need to be notified about this conversation",
+                  "description": "One of the email addresses of agents/users who need to be notified about this conversation.",
                   "instillFormat": "string"
                 }
               },
@@ -1494,7 +1494,7 @@
                 "items": {
                   "title": "CC Email",
                   "type": "string",
-                  "description": "One of the email address added in the 'cc' field of the incoming ticket email",
+                  "description": "One of the email address added in the 'cc' field of the incoming ticket email.",
                   "instillFormat": "string"
                 }
               },
@@ -1505,12 +1505,12 @@
                 "items": {
                   "title": "BCC Email",
                   "type": "string",
-                  "description": "One of the email address added in the 'bcc' field of the incoming ticket email",
+                  "description": "One of the email address added in the 'bcc' field of the incoming ticket email.",
                   "instillFormat": "string"
                 }
               },
               "incoming": {
-                "description": "Set to true if a particular conversation should appear as being created from outside",
+                "description": "Set to true if a particular conversation should appear as being created from outside.",
                 "title": "Incoming",
                 "type": "boolean",
                 "instillUIOrder": 7,
@@ -1543,7 +1543,7 @@
           }
         },
         "conversations-length": {
-          "description": "Number of conversations",
+          "description": "Number of conversations.",
           "title": "Conversations Length",
           "type": "integer",
           "instillUIOrder": 1,
@@ -1561,7 +1561,7 @@
   "TASK_GET_CONTACT": {
     "instillShortDescription": "Get contact using ID",
     "input": {
-      "description": "Contact ID",
+      "description": "Contact ID.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "contact-id"
@@ -1587,7 +1587,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Contact information",
+      "description": "Contact information.",
       "instillUIOrder": 0,
       "properties": {
         "name": {
@@ -1631,7 +1631,7 @@
           "items": {
             "title": "Tag",
             "type": "string",
-            "description": "Tag associated with the contact",
+            "description": "Tag associated with the contact.",
             "instillFormat": "string"
           },
           "instillUIOrder": 7
@@ -1682,7 +1682,7 @@
           "items": {
             "title": "Other Email",
             "type": "string",
-            "description": "The other email addresses of the contact",
+            "description": "The other email addresses of the contact.",
             "instillFormat": "string"
           },
           "instillUIOrder": 16
@@ -1695,7 +1695,7 @@
             "type": "object",
             "properties": {
               "company-id": {
-                "description": "ID of the company",
+                "description": "ID of the company.",
                 "instillFormat": "integer",
                 "instillUIOrder": 0,
                 "title": "Company ID",
@@ -1722,7 +1722,7 @@
           "items": {
             "title": "Other Phone Number",
             "type": "string",
-            "description": "The other phone number of the contact",
+            "description": "The other phone number of the contact.",
             "instillFormat": "string"
           },
           "instillUIOrder": 18
@@ -1754,7 +1754,7 @@
   "TASK_CREATE_CONTACT": {
     "instillShortDescription": "Create contact",
     "input": {
-      "description": "Contact Information",
+      "description": "Contact Information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "name",
@@ -1873,7 +1873,7 @@
           ]
         },
         "language": {
-          "description": "Language of the contact",
+          "description": "Language of the contact.",
           "title": "Language",
           "type": "string",
           "$ref": "#/$defs/language",
@@ -1888,7 +1888,7 @@
           ]
         },
         "time-zone": {
-          "description": "Time zone of the contact",
+          "description": "Time zone of the contact.",
           "title": "Time Zone",
           "type": "string",
           "$ref": "#/$defs/time-zone",
@@ -1973,7 +1973,7 @@
         "other-companies": {
           "title": "Other Companies",
           "type": "array",
-          "description": "List of other companies to which the contact belongs. Each company should be in the format of company-id;view-all-tickets(boolean \"true\"/\"false\") Example: 123;true",
+          "description": "List of other companies to which the contact belongs. Each company should be in the format of company-id;view-all-tickets(boolean \"true\"/\"false\") Example: 123;true.",
           "items": {
             "type": "string"
           },
@@ -2007,7 +2007,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Contact ID and create date",
+      "description": "Contact ID and create date.",
       "instillUIOrder": 0,
       "properties": {
         "contact-id": {
@@ -2032,7 +2032,7 @@
   "TASK_GET_COMPANY": {
     "instillShortDescription": "Get company using ID",
     "input": {
-      "description": "Company ID",
+      "description": "Company ID.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "company-id"
@@ -2058,7 +2058,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Company information",
+      "description": "Company information.",
       "instillUIOrder": 0,
       "properties": {
         "name": {
@@ -2082,7 +2082,7 @@
           "items": {
             "title": "Domain",
             "type": "string",
-            "description": "Domain of the company",
+            "description": "Domain of the company.",
             "instillFormat": "string"
           },
           "instillUIOrder": 3
@@ -2136,7 +2136,7 @@
   "TASK_CREATE_COMPANY": {
     "instillShortDescription": "Create company",
     "input": {
-      "description": "Company Information",
+      "description": "Company Information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "name",
@@ -2261,7 +2261,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Company ID and create date",
+      "description": "Company ID and create date.",
       "instillUIOrder": 0,
       "properties": {
         "company-id": {
@@ -2286,7 +2286,7 @@
   "TASK_GET_ALL": {
     "instillShortDescription": "Task to get all the IDs of existing contacts, companies, tickets, products, agents, roles, or skills. Note: products, agents, roles, and skills require admin privileges. Some of these might not work, depending on the plan you are on.",
     "input": {
-      "description": "Object type",
+      "description": "Object type.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "object-type",
@@ -2294,7 +2294,7 @@
       ],
       "properties": {
         "object-type": {
-          "description": "Type of object to get IDs for",
+          "description": "Type of object to get IDs for.",
           "title": "Object Type",
           "type": "string",
           "enum": [
@@ -2343,24 +2343,24 @@
       "type": "object"
     },
     "output": {
-      "description": "IDs of the object",
+      "description": "IDs of the object.",
       "instillUIOrder": 0,
       "properties": {
         "ids": {
-          "description": "List of IDs",
+          "description": "List of IDs.",
           "title": "IDs",
           "type": "array",
           "items": {
             "title": "ID",
             "type": "integer",
-            "description": "ID of the object",
+            "description": "ID of the object.",
             "instillFormat": "integer"
           },
           "instillFormat": "array:integer",
           "instillUIOrder": 0
         },
         "id-length": {
-          "description": "Number of IDs",
+          "description": "Number of IDs.",
           "title": "ID Length",
           "type": "integer",
           "instillFormat": "integer",
@@ -2378,14 +2378,14 @@
   "TASK_GET_PRODUCT": {
     "instillShortDescription": "Get product using ID. This task will only work if you have admin privileges.",
     "input": {
-      "description": "Product ID",
+      "description": "Product ID.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "product-id"
       ],
       "properties": {
         "product-id": {
-          "description": "Product ID",
+          "description": "Product ID.",
           "title": "Product ID",
           "type": "integer",
           "instillUIOrder": 0,
@@ -2407,46 +2407,46 @@
       "type": "object"
     },
     "output": {
-      "description": "Product information",
+      "description": "Product information.",
       "instillUIOrder": 0,
       "properties": {
         "name": {
-          "description": "Name of the product",
+          "description": "Name of the product.",
           "title": "Name",
           "type": "string",
           "instillUIOrder": 0,
           "instillFormat": "string"
         },
         "description": {
-          "description": "Description of the product",
+          "description": "Description of the product.",
           "title": "Description",
           "type": "string",
           "instillUIOrder": 1,
           "instillFormat": "string"
         },
         "primary-email": {
-          "description": "Primary email of the product",
+          "description": "Primary email of the product.",
           "title": "Primary Email",
           "type": "string",
           "instillUIOrder": 2,
           "instillFormat": "string"
         },
         "created-at": {
-          "description": "Timestamp that denotes when the product was created",
+          "description": "Timestamp that denotes when the product was created.",
           "title": "Created At",
           "type": "string",
           "instillUIOrder": 3,
           "instillFormat": "string"
         },
         "updated-at": {
-          "description": "Timestamp that denotes when the product was last updated",
+          "description": "Timestamp that denotes when the product was last updated.",
           "title": "Updated At",
           "type": "string",
           "instillUIOrder": 4,
           "instillFormat": "string"
         },
         "default": {
-          "description": "Set to true if the product is the default product",
+          "description": "Set to true if the product is the default product.",
           "title": "Default",
           "type": "boolean",
           "instillUIOrder": 5,
@@ -2468,14 +2468,14 @@
   "TASK_GET_AGENT": {
     "instillShortDescription": "Get agent using ID. This task will only work if you have admin privileges. Agents are those in your team who will login to Freshdesk.",
     "input": {
-      "description": "Agent ID",
+      "description": "Agent ID.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "agent-id"
       ],
       "properties": {
         "agent-id": {
-          "description": "Agent ID",
+          "description": "Agent ID.",
           "title": "Agent ID",
           "type": "integer",
           "instillUIOrder": 0,
@@ -2497,88 +2497,88 @@
       "type": "object"
     },
     "output": {
-      "description": "Agent information",
+      "description": "Agent information.",
       "instillUIOrder": 0,
       "properties": {
         "name": {
-          "description": "Name of the agent",
+          "description": "Name of the agent.",
           "title": "Name",
           "type": "string",
           "instillUIOrder": 0,
           "instillFormat": "string"
         },
         "active": {
-          "description": "Set to true if the agent is verified",
+          "description": "Set to true if the agent is verified.",
           "title": "Active",
           "type": "boolean",
           "instillUIOrder": 1,
           "instillFormat": "boolean"
         },
         "email": {
-          "description": "Email of the agent",
+          "description": "Email of the agent.",
           "title": "Email",
           "type": "string",
           "instillUIOrder": 2,
           "instillFormat": "string"
         },
         "job-title": {
-          "description": "Job title of the agent",
+          "description": "Job title of the agent.",
           "title": "Job Title",
           "type": "string",
           "instillUIOrder": 3,
           "instillFormat": "string"
         },
         "language": {
-          "description": "Language of the agent",
+          "description": "Language of the agent.",
           "title": "Language",
           "type": "string",
           "instillUIOrder": 4,
           "instillFormat": "string"
         },
         "mobile": {
-          "description": "Mobile number of the agent",
+          "description": "Mobile number of the agent.",
           "title": "Mobile",
           "type": "string",
           "instillUIOrder": 5,
           "instillFormat": "string"
         },
         "phone": {
-          "description": "Telephone number of the agent",
+          "description": "Telephone number of the agent.",
           "title": "Phone",
           "type": "string",
           "instillUIOrder": 6,
           "instillFormat": "string"
         },
         "time-zone": {
-          "description": "Time zone of the agent",
+          "description": "Time zone of the agent.",
           "title": "Time Zone",
           "type": "string",
           "instillUIOrder": 7,
           "instillFormat": "string"
         },
         "type": {
-          "description": "Type of the agent. Can be \"Support Agent\", \"Field Agent\" or \"Collaborator\"",
+          "description": "Type of the agent. Can be \"Support Agent\", \"Field Agent\" or \"Collaborator\".",
           "title": "Type",
           "type": "string",
           "instillUIOrder": 8,
           "instillFormat": "string"
         },
         "ticket-scope": {
-          "description": "Ticket permission of the agent. Can be \"Global Access\", \"Group Access\" or \"Restricted Access\"",
+          "description": "Ticket permission of the agent. Can be \"Global Access\", \"Group Access\" or \"Restricted Access\".",
           "title": "Ticket Scope",
           "type": "string",
           "instillUIOrder": 9,
           "instillFormat": "string"
         },
         "available": {
-          "description": "Set to true if the agent is in a group that has enabled \"Automatic Ticket Assignment\"",
+          "description": "Set to true if the agent is in a group that has enabled \"Automatic Ticket Assignment\".",
           "title": "Available",
           "type": "boolean",
           "instillUIOrder": 10,
           "instillFormat": "boolean"
         },
         "group-ids": {
-          "description": "Group IDs of the agent",
+          "description": "Group IDs of the agent.",
           "title": "Group IDs",
           "type": "array",
           "instillUIOrder": 11,
@@ -2586,12 +2586,12 @@
           "items": {
             "title": "Group ID",
             "type": "integer",
-            "description": "ID of the group",
+            "description": "ID of the group.",
             "instillFormat": "integer"
           }
         },
         "role-ids": {
-          "description": "Role IDs of the agent",
+          "description": "Role IDs of the agent.",
           "title": "Role IDs",
           "type": "array",
           "instillUIOrder": 12,
@@ -2599,12 +2599,12 @@
           "items": {
             "title": "Role ID",
             "type": "integer",
-            "description": "ID of the role",
+            "description": "ID of the role.",
             "instillFormat": "integer"
           }
         },
         "skill-ids": {
-          "description": "Skill IDs of the agent",
+          "description": "Skill IDs of the agent.",
           "title": "Skill IDs",
           "type": "array",
           "instillUIOrder": 13,
@@ -2612,47 +2612,47 @@
           "items": {
             "title": "Skill ID",
             "type": "integer",
-            "description": "ID of the skill",
+            "description": "ID of the skill.",
             "instillFormat": "integer"
           }
         },
         "occasional": {
-          "description": "Set to true if the agent is not working full-time",
+          "description": "Set to true if the agent is not working full-time.",
           "title": "Occasional",
           "type": "boolean",
           "instillUIOrder": 14,
           "instillFormat": "boolean"
         },
         "signature": {
-          "description": "Signature of the agent in HTML format",
+          "description": "Signature of the agent in HTML format.",
           "title": "Signature",
           "type": "string",
           "instillUIOrder": 15,
           "instillFormat": "string"
         },
         "focus-mode": {
-          "description": "Set to true if the agent is in focus mode",
+          "description": "Set to true if the agent is in focus mode.",
           "title": "Focus Mode",
           "type": "boolean",
           "instillUIOrder": 16,
           "instillFormat": "boolean"
         },
         "deactivated": {
-          "description": "Set to true if the agent is deactivated",
+          "description": "Set to true if the agent is deactivated.",
           "title": "Deactivated",
           "type": "boolean",
           "instillUIOrder": 17,
           "instillFormat": "boolean"
         },
         "created-at": {
-          "description": "Timestamp that denotes when the agent was created",
+          "description": "Timestamp that denotes when the agent was created.",
           "title": "Created At",
           "type": "string",
           "instillUIOrder": 18,
           "instillFormat": "string"
         },
         "updated-at": {
-          "description": "Timestamp that denotes when the agent was last updated",
+          "description": "Timestamp that denotes when the agent was last updated.",
           "title": "Updated At",
           "type": "string",
           "instillUIOrder": 19,
@@ -2672,14 +2672,14 @@
   "TASK_GET_ROLE": {
     "instillShortDescription": "Get role using ID. This task will only work if you have admin privileges. Roles allow agents/collaborators to have different privileges.",
     "input": {
-      "description": "Role ID",
+      "description": "Role ID.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "role-id"
       ],
       "properties": {
         "role-id": {
-          "description": "Role ID",
+          "description": "Role ID.",
           "title": "Role ID",
           "type": "integer",
           "instillUIOrder": 0,
@@ -2701,46 +2701,46 @@
       "type": "object"
     },
     "output": {
-      "description": "Role information",
+      "description": "Role information.",
       "instillUIOrder": 0,
       "properties": {
         "name": {
-          "description": "Name of the role",
+          "description": "Name of the role.",
           "title": "Name",
           "type": "string",
           "instillUIOrder": 0,
           "instillFormat": "string"
         },
         "description": {
-          "description": "Description of the role",
+          "description": "Description of the role.",
           "title": "Description",
           "type": "string",
           "instillUIOrder": 1,
           "instillFormat": "string"
         },
         "default": {
-          "description": "Set to true if the role is the default role",
+          "description": "Set to true if the role is the default role.",
           "title": "Default",
           "type": "boolean",
           "instillUIOrder": 2,
           "instillFormat": "boolean"
         },
         "agent-type": {
-          "description": "Type of the agent. Can be \"Support Agent\", \"Field Agent\" or \"Collaborator\"",
+          "description": "Type of the agent. Can be \"Support Agent\", \"Field Agent\" or \"Collaborator\".",
           "title": "Agent Type",
           "type": "string",
           "instillUIOrder": 3,
           "instillFormat": "string"
         },
         "created-at": {
-          "description": "Timestamp that denotes when the role was created",
+          "description": "Timestamp that denotes when the role was created.",
           "title": "Created At",
           "type": "string",
           "instillUIOrder": 4,
           "instillFormat": "string"
         },
         "updated-at": {
-          "description": "Timestamp that denotes when the role was last updated",
+          "description": "Timestamp that denotes when the role was last updated.",
           "title": "Updated At",
           "type": "string",
           "instillUIOrder": 5,
@@ -2762,14 +2762,14 @@
   "TASK_GET_GROUP": {
     "instillShortDescription": "Get group using ID. This task will only work if you have admin privileges. Agents can be classified into groups such as Customer Support.",
     "input": {
-      "description": "Group ID",
+      "description": "Group ID.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "group-id"
       ],
       "properties": {
         "group-id": {
-          "description": "Group ID",
+          "description": "Group ID.",
           "title": "Group ID",
           "type": "integer",
           "instillUIOrder": 0,
@@ -2791,25 +2791,25 @@
       "type": "object"
     },
     "output": {
-      "description": "Group information",
+      "description": "Group information.",
       "instillUIOrder": 0,
       "properties": {
         "name": {
-          "description": "Name of the group",
+          "description": "Name of the group.",
           "title": "Name",
           "type": "string",
           "instillUIOrder": 0,
           "instillFormat": "string"
         },
         "description": {
-          "description": "Description of the group",
+          "description": "Description of the group.",
           "title": "Description",
           "type": "string",
           "instillUIOrder": 1,
           "instillFormat": "string"
         },
         "agent-ids": {
-          "description": "Agent IDs of the group",
+          "description": "Agent IDs of the group.",
           "title": "Agent IDs",
           "type": "array",
           "instillUIOrder": 2,
@@ -2817,7 +2817,7 @@
           "items": {
             "title": "Agent ID",
             "type": "integer",
-            "description": "ID of the agent",
+            "description": "ID of the agent.",
             "instillFormat": "integer"
           }
         },
@@ -2843,7 +2843,7 @@
           "instillFormat": "string"
         },
         "group-type": {
-          "description": "Group type. Can be \"support_agent_group\" or \"field_agent_group\"",
+          "description": "Group type. Can be \"support_agent_group\" or \"field_agent_group\".",
           "title": "Group Type",
           "type": "string",
           "instillUIOrder": 6,
@@ -2857,14 +2857,14 @@
           "instillFormat": "boolean"
         },
         "created-at": {
-          "description": "Timestamp that denotes when the group was created",
+          "description": "Timestamp that denotes when the group was created.",
           "title": "Created At",
           "type": "string",
           "instillUIOrder": 8,
           "instillFormat": "string"
         },
         "updated-at": {
-          "description": "Timestamp that denotes when the group was last updated",
+          "description": "Timestamp that denotes when the group was last updated.",
           "title": "Updated At",
           "type": "string",
           "instillUIOrder": 9,
@@ -2885,14 +2885,14 @@
   "TASK_GET_SKILL": {
     "instillShortDescription": "Get skill using ID. This task will only work if you have admin privileges. Agents can be assigned skills, and it is possible for tickets to be automatically assigned to agents based on the skills they have.",
     "input": {
-      "description": "Skill ID",
+      "description": "Skill ID.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "skill-id"
       ],
       "properties": {
         "skill-id": {
-          "description": "Skill ID",
+          "description": "Skill ID.",
           "title": "Skill ID",
           "type": "integer",
           "instillUIOrder": 0,
@@ -2914,32 +2914,32 @@
       "type": "object"
     },
     "output": {
-      "description": "Skill information",
+      "description": "Skill information.",
       "instillUIOrder": 0,
       "properties": {
         "name": {
-          "description": "Name of the skill",
+          "description": "Name of the skill.",
           "title": "Name",
           "type": "string",
           "instillUIOrder": 0,
           "instillFormat": "string"
         },
         "rank": {
-          "description": "Rank of the skill",
+          "description": "Rank of the skill.",
           "title": "Rank",
           "type": "integer",
           "instillUIOrder": 1,
           "instillFormat": "integer"
         },
         "condition-match-type": {
-          "description": "Type of condition match. Can be \"all\" or \"any\"",
+          "description": "Type of condition match. Can be \"all\" or \"any\".",
           "title": "Condition Match Type",
           "type": "string",
           "instillUIOrder": 2,
           "instillFormat": "string"
         },
         "conditions": {
-          "description": "Conditions for the skill",
+          "description": "Conditions for the skill.",
           "title": "Conditions",
           "instillFormat": "array:semi-structured/json",
           "type": "array",
@@ -2950,14 +2950,14 @@
           "instillUIOrder": 3
         },
         "created-at": {
-          "description": "Timestamp that denotes when the skill was created",
+          "description": "Timestamp that denotes when the skill was created.",
           "title": "Created At",
           "type": "string",
           "instillUIOrder": 4,
           "instillFormat": "string"
         },
         "updated-at": {
-          "description": "Timestamp that denotes when the skill was last updated",
+          "description": "Timestamp that denotes when the skill was last updated.",
           "title": "Updated At",
           "type": "string",
           "instillUIOrder": 5,

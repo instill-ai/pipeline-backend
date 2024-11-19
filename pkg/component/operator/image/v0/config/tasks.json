@@ -2,11 +2,11 @@
   "TASK_CONCAT": {
     "instillShortDescription": "Concatenate images horizontally or vertically. All images must have the same width and height. If `grid-width` and `grid-height` are not provided, the images will be concatenated to a square grid.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "images": {
-          "description": "Input images",
+          "description": "Input images.",
           "instillAcceptFormats": [
             "array:image/*"
           ],
@@ -61,14 +61,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output concatenated image",
+      "description": "Output concatenated image.",
       "instillEditOnNodeFields": [
         "image"
       ],
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Output image",
+          "description": "Output image.",
           "instillFormat": "image/png",
           "instillUIOrder": 0,
           "title": "Image",
@@ -85,11 +85,11 @@
   "TASK_CROP": {
     "instillShortDescription": "Crop image to the specified size.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Input image",
+          "description": "Input image.",
           "instillAcceptFormats": [
             "image/*"
           ],
@@ -125,7 +125,7 @@
           "type": "integer"
         },
         "top-offset": {
-          "description": "Top offset of the crop",
+          "description": "Top offset of the crop.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -137,7 +137,7 @@
           "type": "integer"
         },
         "right-offset": {
-          "description": "Right offset of the crop",
+          "description": "Right offset of the crop.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -149,7 +149,7 @@
           "type": "integer"
         },
         "bottom-offset": {
-          "description": "Bottom offset of the crop",
+          "description": "Bottom offset of the crop.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -161,7 +161,7 @@
           "type": "integer"
         },
         "left-offset": {
-          "description": "Left offset of the crop",
+          "description": "Left offset of the crop.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -180,14 +180,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output cropped image",
+      "description": "Output cropped image.",
       "instillEditOnNodeFields": [
         "image"
       ],
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Output image",
+          "description": "Output image.",
           "instillFormat": "image/png",
           "instillUIOrder": 0,
           "title": "Image",
@@ -204,11 +204,11 @@
   "TASK_RESIZE": {
     "instillShortDescription": "Resize image to the specified size.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Input image",
+          "description": "Input image.",
           "instillAcceptFormats": [
             "image/*"
           ],
@@ -263,14 +263,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output resized image",
+      "description": "Output resized image.",
       "instillEditOnNodeFields": [
         "image"
       ],
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Output image",
+          "description": "Output image.",
           "instillFormat": "image/png",
           "instillUIOrder": 0,
           "title": "Image",
@@ -287,7 +287,7 @@
   "TASK_DRAW_CLASSIFICATION": {
     "instillShortDescription": "Draw classification result on the image.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "category": {
@@ -302,7 +302,7 @@
           ]
         },
         "image": {
-          "description": "Input image",
+          "description": "Input image.",
           "instillAcceptFormats": [
             "image/*"
           ],
@@ -325,7 +325,7 @@
           ]
         },
         "show-score": {
-          "description": "Show model confidence score on each instance",
+          "description": "Show model confidence score on each instance.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -347,14 +347,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "image"
       ],
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Output image",
+          "description": "Output image.",
           "instillFormat": "image/png",
           "instillUIOrder": 0,
           "title": "Image",
@@ -371,11 +371,11 @@
   "TASK_DRAW_DETECTION": {
     "instillShortDescription": "Draw detection result on the image.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Input image",
+          "description": "Input image.",
           "instillAcceptFormats": [
             "image/*"
           ],
@@ -396,7 +396,7 @@
           ]
         },
         "show-score": {
-          "description": "Show model confidence score on each instance",
+          "description": "Show model confidence score on each instance.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -417,14 +417,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "image"
       ],
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Output image",
+          "description": "Output image.",
           "instillFormat": "image/png",
           "instillUIOrder": 0,
           "title": "Image",
@@ -441,11 +441,11 @@
   "TASK_DRAW_KEYPOINT": {
     "instillShortDescription": "Draw keypoint result on the image.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Input image",
+          "description": "Input image.",
           "instillAcceptFormats": [
             "image/*"
           ],
@@ -466,7 +466,7 @@
           ]
         },
         "show-score": {
-          "description": "Show model confidence score on each instance",
+          "description": "Show model confidence score on each instance.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -487,14 +487,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "image"
       ],
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Output image",
+          "description": "Output image.",
           "instillFormat": "image/png",
           "instillUIOrder": 0,
           "title": "Image",
@@ -511,11 +511,11 @@
   "TASK_DRAW_SEMANTIC_SEGMENTATION": {
     "instillShortDescription": "Draw semantic segmentation result on the image.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Input image",
+          "description": "Input image.",
           "instillAcceptFormats": [
             "image/*"
           ],
@@ -544,14 +544,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "image"
       ],
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Output image",
+          "description": "Output image.",
           "instillFormat": "image/png",
           "instillUIOrder": 0,
           "title": "Image",
@@ -568,11 +568,11 @@
   "TASK_DRAW_INSTANCE_SEGMENTATION": {
     "instillShortDescription": "Draw instance segmentation result on the image.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Input image",
+          "description": "Input image.",
           "instillAcceptFormats": [
             "image/*"
           ],
@@ -593,7 +593,7 @@
           ]
         },
         "show-score": {
-          "description": "Show model confidence score on each instance",
+          "description": "Show model confidence score on each instance.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -614,14 +614,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "image"
       ],
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Output image",
+          "description": "Output image.",
           "instillFormat": "image/png",
           "instillUIOrder": 0,
           "title": "Image",
@@ -638,11 +638,11 @@
   "TASK_DRAW_OCR": {
     "instillShortDescription": "Draw OCR result on the image.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Input image",
+          "description": "Input image.",
           "instillAcceptFormats": [
             "image/*"
           ],
@@ -663,7 +663,7 @@
           ]
         },
         "show-score": {
-          "description": "Show model confidence score on each instance",
+          "description": "Show model confidence score on each instance.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -684,14 +684,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "image"
       ],
       "instillUIOrder": 0,
       "properties": {
         "image": {
-          "description": "Output image",
+          "description": "Output image.",
           "instillFormat": "image/png",
           "instillUIOrder": 0,
           "title": "Image",

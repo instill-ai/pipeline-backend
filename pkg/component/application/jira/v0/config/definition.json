@@ -16,7 +16,7 @@
   "public": true,
   "title": "Jira",
   "vendor": "Atlassian",
-  "description": "Do anything available on Jira",
+  "description": "Do anything available on Jira.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_APPLICATION",
   "uid": "3b27f50d-a754-4b9d-8141-95aaec647cc5",

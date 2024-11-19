@@ -5,7 +5,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to perform vector similarity search on",
+          "description": "The name of the collection to perform vector similarity search on.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -31,7 +31,7 @@
             "value"
           ],
           "items": {
-            "description": "A dimension of the vector",
+            "description": "A dimension of the vector.",
             "example": 0.8167237,
             "type": "number"
           },
@@ -40,7 +40,7 @@
           "type": "array"
         },
         "n-results": {
-          "description": "The N amount of items to return from the vector search operation",
+          "description": "The N amount of items to return from the vector search operation.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -54,7 +54,7 @@
           "type": "integer"
         },
         "filter": {
-          "description": "The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters)",
+          "description": "The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters).",
           "instillAcceptFormats": [
             "semi-structured/*",
             "object"
@@ -70,7 +70,7 @@
           "required": []
         },
         "filter-document": {
-          "description": "The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents)",
+          "description": "The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents).",
           "instillAcceptFormats": [
             "string"
           ],
@@ -84,7 +84,7 @@
           "type": "string"
         },
         "fields": {
-          "description": "The fields to be returned from the vector search operation",
+          "description": "The fields to be returned from the vector search operation.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -95,7 +95,7 @@
             "value"
           ],
           "items": {
-            "description": "A field to be returned",
+            "description": "A field to be returned.",
             "type": "string",
             "example": "field"
           },
@@ -116,33 +116,33 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Vector search status",
+          "description": "Vector search status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
           "type": "string"
         },
         "result": {
-          "description": "Result of the vector search operation",
+          "description": "Result of the vector search operation.",
           "instillUIOrder": 0,
           "title": "Result",
           "type": "object",
           "properties": {
             "ids": {
-              "description": "The ids returned from the vector search operation",
+              "description": "The ids returned from the vector search operation.",
               "instillUIOrder": 0,
               "title": "IDs",
               "type": "array",
               "required": [],
               "instillFormat": "array:string",
               "items": {
-                "description": "An id of the item",
+                "description": "An id of the item.",
                 "type": "string",
                 "example": "c8faa-4b3b-4b3b-4b3b"
               }
             },
             "items": {
-              "description": "The items returned from the vector search operation",
+              "description": "The items returned from the vector search operation.",
               "instillUIOrder": 1,
               "required": [],
               "title": "Items",
@@ -156,26 +156,26 @@
               }
             },
             "vectors": {
-              "description": "The vectors returned from the vector search operation",
+              "description": "The vectors returned from the vector search operation.",
               "instillUIOrder": 2,
               "title": "Vectors",
               "type": "array",
               "required": [],
               "instillFormat": "array:array",
               "items": {
-                "description": "The vector from array vectors",
+                "description": "The vector from array vectors.",
                 "type": "array",
                 "instillFormat": "array:number",
                 "required": [],
                 "items": {
-                  "description": "A dimension of the vector",
+                  "description": "A dimension of the vector.",
                   "example": 0.8167237,
                   "type": "number"
                 }
               }
             },
             "metadata": {
-              "description": "The metadata returned from the vector search operation",
+              "description": "The metadata returned from the vector search operation.",
               "instillUIOrder": 3,
               "title": "Metadata",
               "type": "array",
@@ -206,7 +206,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to upsert the item into",
+          "description": "The name of the collection to upsert the item into.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -220,7 +220,7 @@
           "type": "string"
         },
         "array-id": {
-          "description": "The array of id",
+          "description": "The array of id.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -231,7 +231,7 @@
             "value"
           ],
           "items": {
-            "description": "An id of the point",
+            "description": "An id of the point.",
             "type": "string",
             "example": 1
           },
@@ -240,7 +240,7 @@
           "type": "array"
         },
         "array-metadata": {
-          "description": "The array of vector metadata",
+          "description": "The array of vector metadata.",
           "instillAcceptFormats": [
             "array:semi-structured/*",
             "array:semi-structured/json",
@@ -257,14 +257,14 @@
           "title": "Array Metadata",
           "type": "array",
           "items": {
-            "description": "The vector metadata",
+            "description": "The vector metadata.",
             "title": "Metadatum",
             "type": "object",
             "required": []
           }
         },
         "array-vector": {
-          "description": "The array of vector values",
+          "description": "The array of vector values.",
           "instillAcceptFormats": [
             "array:array"
           ],
@@ -275,14 +275,14 @@
             "value"
           ],
           "items": {
-            "description": "An array of dimensions for the vector value",
+            "description": "An array of dimensions for the vector value.",
             "type": "array",
             "instillAcceptFormats": [
               "array:number",
               "array:integer"
             ],
             "items": {
-              "description": "A dimension of the vector",
+              "description": "A dimension of the vector.",
               "example": 0.8167237,
               "type": "number"
             }
@@ -292,7 +292,7 @@
           "type": "array"
         },
         "array-document": {
-          "description": "The array of document string values",
+          "description": "The array of document string values.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -303,7 +303,7 @@
             "value"
           ],
           "items": {
-            "description": "A document string value",
+            "description": "A document string value.",
             "type": "string",
             "example": "document"
           },
@@ -312,7 +312,7 @@
           "type": "array"
         },
         "array-uri": {
-          "description": "The array of uri",
+          "description": "The array of uri.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -323,7 +323,7 @@
             "value"
           ],
           "items": {
-            "description": "An uri of the point",
+            "description": "An uri of the point.",
             "type": "string"
           },
           "minItems": 1,
@@ -344,7 +344,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Batch add status",
+          "description": "Batch add status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -364,7 +364,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to upsert the item into",
+          "description": "The name of the collection to upsert the item into.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -378,7 +378,7 @@
           "type": "string"
         },
         "id": {
-          "description": "The ID of the item",
+          "description": "The ID of the item.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -392,7 +392,7 @@
           "type": "string"
         },
         "metadata": {
-          "description": "The vector metadata",
+          "description": "The vector metadata.",
           "instillAcceptFormats": [
             "semi-structured/*",
             "object"
@@ -408,7 +408,7 @@
           "required": []
         },
         "vector": {
-          "description": "An array of dimensions for the vector value",
+          "description": "An array of dimensions for the vector value.",
           "instillAcceptFormats": [
             "array:number",
             "array:integer"
@@ -420,7 +420,7 @@
             "value"
           ],
           "items": {
-            "description": "A dimension of the vector",
+            "description": "A dimension of the vector.",
             "example": 0.8167237,
             "type": "number"
           },
@@ -429,7 +429,7 @@
           "type": "array"
         },
         "document": {
-          "description": "The document string value",
+          "description": "The document string value.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -443,7 +443,7 @@
           "type": "string"
         },
         "uri": {
-          "description": "The uri of the item",
+          "description": "The uri of the item.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -470,7 +470,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Add status",
+          "description": "Add status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -490,7 +490,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to delete the object from",
+          "description": "The name of the collection to delete the object from.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -504,7 +504,7 @@
           "type": "string"
         },
         "id": {
-          "description": "The ID of the item",
+          "description": "The ID of the item.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -518,7 +518,7 @@
           "type": "string"
         },
         "filter": {
-          "description": "The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters)",
+          "description": "The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters).",
           "instillAcceptFormats": [
             "semi-structured/*",
             "object"
@@ -534,7 +534,7 @@
           "required": []
         },
         "filter-document": {
-          "description": "The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents)",
+          "description": "The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents).",
           "instillAcceptFormats": [
             "string"
           ],
@@ -562,7 +562,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Delete status",
+          "description": "Delete status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -582,7 +582,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to create",
+          "description": "The name of the collection to create.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -596,7 +596,7 @@
           "type": "string"
         },
         "metadata": {
-          "description": "The metadata of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections)",
+          "description": "The metadata of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections).",
           "instillAcceptFormats": [
             "semi-structured/*",
             "object"
@@ -612,7 +612,7 @@
           "required": []
         },
         "configuration": {
-          "description": "The configuration of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections)",
+          "description": "The configuration of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections).",
           "instillAcceptFormats": [
             "semi-structured/*",
             "object"
@@ -628,7 +628,7 @@
           "required": []
         },
         "get-or-create": {
-          "description": "If true, the collection will be created if it does not exist",
+          "description": "If true, the collection will be created if it does not exist.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -653,7 +653,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Create collection status",
+          "description": "Create collection status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -673,7 +673,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to delete",
+          "description": "The name of the collection to delete.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -697,7 +697,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Delete collection status",
+          "description": "Delete collection status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",

@@ -54,7 +54,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | Fill in your Hugging face API token. To find your token, visit <a href="https://huggingface.co/settings/tokens">here</a>  |
+| API Key (required) | `api-key` | string | Fill in your Hugging face API token. To find your token, visit <a href="https://huggingface.co/settings/tokens">here</a>.  |
 | Base URL (required) | `base-url` | string | Hostname for the endpoint. To use Inference API set to <a href="https://api-inference.huggingface.co">here</a>, for Inference Endpoint set to your custom endpoint.  |
 | Is Custom Endpoint (required) | `is-custom-endpoint` | boolean | Fill true if you are using a custom Inference Endpoint and not the Inference API.  |
 
@@ -74,10 +74,10 @@ Generating text is the task of producing new text. These models can, for example
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| String Input (required) | `inputs` | string | String input |
-| [Parameters](#text-generation-parameters) | `parameters` | object | Parameters |
-| [Options](#text-generation-options) | `options` | object | Options for the model |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| String Input (required) | `inputs` | string | String input. |
+| [Parameters](#text-generation-parameters) | `parameters` | object | Parameters. |
+| [Options](#text-generation-options) | `options` | object | Options for the model. |
 </div>
 
 
@@ -86,7 +86,7 @@ Generating text is the task of producing new text. These models can, for example
 
 <h4 id="text-generation-parameters">Parameters</h4>
 
-Parameters
+Parameters.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -104,7 +104,7 @@ Parameters
 </div>
 <h4 id="text-generation-options">Options</h4>
 
-Options for the model
+Options for the model.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -121,7 +121,7 @@ Options for the model
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Generated Text | `generated-text` | string | The continuated string |
+| Generated Text | `generated-text` | string | The continuated string. |
 </div>
 
 
@@ -134,9 +134,9 @@ Masked language modeling is the task of masking some of the words in a sentence 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_FILL_MASK` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| String Input (required) | `inputs` | string | a string to be filled from, must contain the [MASK] token (check model card for exact name of the mask) |
-| [Options](#fill-mask-options) | `options` | object | Options for the model |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| String Input (required) | `inputs` | string | a string to be filled from, must contain the [MASK] token (check model card for exact name of the mask). |
+| [Options](#fill-mask-options) | `options` | object | Options for the model. |
 </div>
 
 
@@ -145,7 +145,7 @@ Masked language modeling is the task of masking some of the words in a sentence 
 
 <h4 id="fill-mask-options">Options</h4>
 
-Options for the model
+Options for the model.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -162,7 +162,7 @@ Options for the model
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Results](#fill-mask-results) | `results` | array[object] | Results |
+| [Results](#fill-mask-results) | `results` | array[object] | Results. |
 </div>
 
 <details>
@@ -175,9 +175,9 @@ Options for the model
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Score | `score` | number | The probability for this token. |
-| Sequence | `sequence` | string | The actual sequence of tokens that ran against the model (may contain special tokens) |
-| Token | `token` | integer | The id of the token |
-| Token Str | `token-str` | string | The string representation of the token |
+| Sequence | `sequence` | string | The actual sequence of tokens that ran against the model (may contain special tokens). |
+| Token | `token` | integer | The id of the token. |
+| Token Str | `token-str` | string | The string representation of the token. |
 </div>
 </details>
 
@@ -191,10 +191,10 @@ Summarization is the task of producing a shorter version of a document while pre
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SUMMARIZATION` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| String Input (required) | `inputs` | string | String input |
-| [Parameters](#summarization-parameters) | `parameters` | object | Parameters |
-| [Options](#summarization-options) | `options` | object | Options for the model |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| String Input (required) | `inputs` | string | String input. |
+| [Parameters](#summarization-parameters) | `parameters` | object | Parameters. |
+| [Options](#summarization-options) | `options` | object | Options for the model. |
 </div>
 
 
@@ -203,7 +203,7 @@ Summarization is the task of producing a shorter version of a document while pre
 
 <h4 id="summarization-parameters">Parameters</h4>
 
-Parameters
+Parameters.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -219,7 +219,7 @@ Parameters
 </div>
 <h4 id="summarization-options">Options</h4>
 
-Options for the model
+Options for the model.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -236,7 +236,7 @@ Options for the model
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Summary Text | `summary-text` | string | The string after summarization |
+| Summary Text | `summary-text` | string | The string after summarization. |
 </div>
 
 
@@ -249,9 +249,9 @@ Text Classification is the task of assigning a label or class to a given text. S
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_CLASSIFICATION` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| String Input (required) | `inputs` | string | String input |
-| [Options](#text-classification-options) | `options` | object | Options for the model |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| String Input (required) | `inputs` | string | String input. |
+| [Options](#text-classification-options) | `options` | object | Options for the model. |
 </div>
 
 
@@ -260,7 +260,7 @@ Text Classification is the task of assigning a label or class to a given text. S
 
 <h4 id="text-classification-options">Options</h4>
 
-Options for the model
+Options for the model.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -277,7 +277,7 @@ Options for the model
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Results](#text-classification-results) | `results` | array[object] | Results |
+| [Results](#text-classification-results) | `results` | array[object] | Results. |
 </div>
 
 <details>
@@ -289,7 +289,7 @@ Options for the model
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Label | `label` | string | The label for the class (model specific) |
+| Label | `label` | string | The label for the class (model specific). |
 | Score | `score` | number | A floats that represents how likely is that the text belongs the this class. |
 </div>
 </details>
@@ -304,10 +304,10 @@ Token classification is a natural language understanding task in which a label i
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TOKEN_CLASSIFICATION` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| String Input (required) | `inputs` | string | String input |
-| [Parameters](#token-classification-parameters) | `parameters` | object | Parameters |
-| [Options](#token-classification-options) | `options` | object | Options for the model |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| String Input (required) | `inputs` | string | String input. |
+| [Parameters](#token-classification-parameters) | `parameters` | object | Parameters. |
+| [Options](#token-classification-options) | `options` | object | Options for the model. |
 </div>
 
 
@@ -316,7 +316,7 @@ Token classification is a natural language understanding task in which a label i
 
 <h4 id="token-classification-parameters">Parameters</h4>
 
-Parameters
+Parameters.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -331,7 +331,7 @@ max: Same as the simple strategy except words cannot end up with different tags.
 </div>
 <h4 id="token-classification-options">Options</h4>
 
-Options for the model
+Options for the model.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -348,7 +348,7 @@ Options for the model
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Results](#token-classification-results) | `results` | array[object] | Results |
+| [Results](#token-classification-results) | `results` | array[object] | Results. |
 </div>
 
 <details>
@@ -364,7 +364,7 @@ Options for the model
 | Entity Group | `entity-group` | string | The type for the entity being recognized (model specific). |
 | Score | `score` | number | How likely the entity was recognized. |
 | Start | `start` | integer | The offset stringwise where the answer is located. Useful to disambiguate if word occurs multiple times. |
-| Word | `word` | string | The string that was captured |
+| Word | `word` | string | The string that was captured. |
 </div>
 </details>
 
@@ -378,9 +378,9 @@ Translation is the task of converting text from one language to another.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TRANSLATION` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| String Input (required) | `inputs` | string | String input |
-| [Options](#translation-options) | `options` | object | Options for the model |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| String Input (required) | `inputs` | string | String input. |
+| [Options](#translation-options) | `options` | object | Options for the model. |
 </div>
 
 
@@ -389,7 +389,7 @@ Translation is the task of converting text from one language to another.
 
 <h4 id="translation-options">Options</h4>
 
-Options for the model
+Options for the model.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -406,7 +406,7 @@ Options for the model
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Translation Text | `translation-text` | string | The string after translation |
+| Translation Text | `translation-text` | string | The string after translation. |
 </div>
 
 
@@ -419,10 +419,10 @@ Zero-shot text classification is a task in natural language processing where a m
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_ZERO_SHOT_CLASSIFICATION` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| String Input (required) | `inputs` | string | String input |
-| [Parameters](#zero-shot-classification-parameters) | `parameters` | object | Parameters |
-| [Options](#zero-shot-classification-options) | `options` | object | Options for the model |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| String Input (required) | `inputs` | string | String input. |
+| [Parameters](#zero-shot-classification-parameters) | `parameters` | object | Parameters. |
+| [Options](#zero-shot-classification-options) | `options` | object | Options for the model. |
 </div>
 
 
@@ -431,18 +431,18 @@ Zero-shot text classification is a task in natural language processing where a m
 
 <h4 id="zero-shot-classification-parameters">Parameters</h4>
 
-Parameters
+Parameters.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Candidate Labels | `candidate-labels` | array | a list of strings that are potential classes for inputs. (max 10 candidate-labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate-labels anyway. If you want to keep the exact same, you can simply run multi-label=True and do the scaling on your end. )  |
-| Multi Label | `multi-label` | boolean | Boolean that is set to True if classes can overlap  |
+| Candidate Labels | `candidate-labels` | array | a list of strings that are potential classes for inputs. (max 10 candidate-labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate-labels anyway. If you want to keep the exact same, you can simply run multi-label=True and do the scaling on your end. ).  |
+| Multi Label | `multi-label` | boolean | Boolean that is set to True if classes can overlap.  |
 </div>
 <h4 id="zero-shot-classification-options">Options</h4>
 
-Options for the model
+Options for the model.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -460,23 +460,23 @@ Options for the model
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Scores | `scores` | array[number] | a list of floats that correspond the the probability of label, in the same order as labels. |
-| Labels | `labels` | array[string] | The list of strings for labels that you sent (in order) |
-| Sequence (optional) | `sequence` | string | The string sent as an input |
+| Labels | `labels` | array[string] | The list of strings for labels that you sent (in order). |
+| Sequence (optional) | `sequence` | string | The string sent as an input. |
 </div>
 
 
 ### Question Answering
 
-Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a document. Some question answering models can generate answers without context!
+Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a document. Some question answering models can generate answers without context!.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_QUESTION_ANSWERING` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| [Inputs](#question-answering-inputs) (required) | `inputs` | object | Inputs |
-| [Options](#question-answering-options) | `options` | object | Options for the model |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| [Inputs](#question-answering-inputs) (required) | `inputs` | object | Inputs. |
+| [Options](#question-answering-options) | `options` | object | Options for the model. |
 </div>
 
 
@@ -485,18 +485,18 @@ Question Answering models can retrieve the answer to a question from a given tex
 
 <h4 id="question-answering-inputs">Inputs</h4>
 
-Inputs
+Inputs.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Context | `context` | string | The context for answering the question.  |
-| Question | `question` | string | The question  |
+| Question | `question` | string | The question.  |
 </div>
 <h4 id="question-answering-options">Options</h4>
 
-Options for the model
+Options for the model.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -515,7 +515,7 @@ Options for the model
 | :--- | :--- | :--- | :--- |
 | Answer | `answer` | string | A string that’s the answer within the text. |
 | Stop (optional) | `stop` | integer | The index (string wise) of the stop of the answer within context. |
-| Score (optional) | `score` | number | A float that represents how likely that the answer is correct |
+| Score (optional) | `score` | number | A float that represents how likely that the answer is correct. |
 | Start (optional) | `start` | integer | The index (string wise) of the start of the answer within context. |
 </div>
 
@@ -529,9 +529,9 @@ Table Question Answering (Table QA) is the answering a question about an informa
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TABLE_QUESTION_ANSWERING` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| [Inputs](#table-question-answering-inputs) (required) | `inputs` | object | Inputs |
-| [Options](#table-question-answering-options) | `options` | object | Options for the model |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| [Inputs](#table-question-answering-inputs) (required) | `inputs` | object | Inputs. |
+| [Options](#table-question-answering-options) | `options` | object | Options for the model. |
 </div>
 
 
@@ -540,18 +540,18 @@ Table Question Answering (Table QA) is the answering a question about an informa
 
 <h4 id="table-question-answering-inputs">Inputs</h4>
 
-Inputs
+Inputs.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Query | `query` | string | The query in plain text that you want to ask the table  |
+| Query | `query` | string | The query in plain text that you want to ask the table.  |
 | Table | `table` | object | A table of data represented as a dict of list where entries are headers and the lists are all the values, all lists must have the same size.  |
 </div>
 <h4 id="table-question-answering-options">Options</h4>
 
-Options for the model
+Options for the model.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -568,10 +568,10 @@ Options for the model
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Aggregator (optional) | `aggregator` | string | The aggregator used to get the answer |
-| Answer | `answer` | string | The plaintext answer |
-| Cells (optional) | `cells` | array[string] | a list of coordinates of the cells contents |
-| Coordinates (optional) | `coordinates` | array[array] | a list of coordinates of the cells referenced in the answer |
+| Aggregator (optional) | `aggregator` | string | The aggregator used to get the answer. |
+| Answer | `answer` | string | The plaintext answer. |
+| Cells (optional) | `cells` | array[string] | a list of coordinates of the cells contents. |
+| Coordinates (optional) | `coordinates` | array[array] | a list of coordinates of the cells referenced in the answer. |
 </div>
 
 
@@ -584,9 +584,9 @@ Sentence Similarity is the task of determining how similar two texts are. Senten
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SENTENCE_SIMILARITY` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| [Inputs](#sentence-similarity-inputs) (required) | `inputs` | object | Inputs |
-| [Options](#sentence-similarity-options) | `options` | object | Options for the model |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| [Inputs](#sentence-similarity-inputs) (required) | `inputs` | object | Inputs. |
+| [Options](#sentence-similarity-options) | `options` | object | Options for the model. |
 </div>
 
 
@@ -595,7 +595,7 @@ Sentence Similarity is the task of determining how similar two texts are. Senten
 
 <h4 id="sentence-similarity-inputs">Inputs</h4>
 
-Inputs
+Inputs.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -606,7 +606,7 @@ Inputs
 </div>
 <h4 id="sentence-similarity-options">Options</h4>
 
-Options for the model
+Options for the model.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -623,23 +623,23 @@ Options for the model
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Scores | `scores` | array[number] | The associated similarity score for each of the given strings |
+| Scores | `scores` | array[number] | The associated similarity score for each of the given strings. |
 </div>
 
 
 ### Conversational
 
-Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgable given a prompt. These models have applications in chatbots, and as a part of voice assistants
+Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgable given a prompt. These models have applications in chatbots, and as a part of voice assistants.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONVERSATIONAL` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| [Inputs](#conversational-inputs) (required) | `inputs` | object | Inputs |
-| [Parameters](#conversational-parameters) | `parameters` | object | Parameters |
-| [Options](#conversational-options) | `options` | object | Options for the model |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| [Inputs](#conversational-inputs) (required) | `inputs` | object | Inputs. |
+| [Parameters](#conversational-parameters) | `parameters` | object | Parameters. |
+| [Options](#conversational-options) | `options` | object | Options for the model. |
 </div>
 
 
@@ -648,7 +648,7 @@ Conversational response modelling is the task of generating conversational text 
 
 <h4 id="conversational-inputs">Inputs</h4>
 
-Inputs
+Inputs.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -660,7 +660,7 @@ Inputs
 </div>
 <h4 id="conversational-parameters">Parameters</h4>
 
-Parameters
+Parameters.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -676,7 +676,7 @@ Parameters
 </div>
 <h4 id="conversational-options">Options</h4>
 
-Options for the model
+Options for the model.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -694,7 +694,7 @@ Options for the model
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Conversation](#conversational-conversation) (optional) | `conversation` | object | A facility dictionary to send back for the next input (with the new user input addition). |
-| Generated Text | `generated-text` | string | The answer of the bot |
+| Generated Text | `generated-text` | string | The answer of the bot. |
 </div>
 
 <details>
@@ -721,8 +721,8 @@ Image classification is the task of assigning a label or class to an entire imag
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_IMAGE_CLASSIFICATION` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| Image (required) | `image` | string | The image file |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| Image (required) | `image` | string | The image file. |
 </div>
 
 
@@ -734,7 +734,7 @@ Image classification is the task of assigning a label or class to an entire imag
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Classes](#image-classification-classes) | `classes` | array[object] | Classes |
+| [Classes](#image-classification-classes) | `classes` | array[object] | Classes. |
 </div>
 
 <details>
@@ -746,7 +746,7 @@ Image classification is the task of assigning a label or class to an entire imag
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Label | `label` | string | The label for the class (model specific) |
+| Label | `label` | string | The label for the class (model specific). |
 | Score | `score` | number | A float that represents how likely it is that the image file belongs to this class. |
 </div>
 </details>
@@ -761,8 +761,8 @@ Image Segmentation divides an image into segments where each pixel in the image 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_IMAGE_SEGMENTATION` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| Image (required) | `image` | string | The image file |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| Image (required) | `image` | string | The image file. |
 </div>
 
 
@@ -774,7 +774,7 @@ Image Segmentation divides an image into segments where each pixel in the image 
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Segments](#image-segmentation-segments) | `segments` | array[object] | Segments |
+| [Segments](#image-segmentation-segments) | `segments` | array[object] | Segments. |
 </div>
 
 <details>
@@ -802,8 +802,8 @@ Object Detection models allow users to identify objects of certain defined class
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_OBJECT_DETECTION` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| Image (required) | `image` | string | The image file |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| Image (required) | `image` | string | The image file. |
 </div>
 
 
@@ -815,7 +815,7 @@ Object Detection models allow users to identify objects of certain defined class
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Objects](#object-detection-objects) | `objects` | array[object] | Objects |
+| [Objects](#object-detection-objects) | `objects` | array[object] | Objects. |
 </div>
 
 <details>
@@ -838,10 +838,10 @@ Object Detection models allow users to identify objects of certain defined class
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| X Max | `xmax` | number | X max |
-| X Min | `xmin` | number | X min |
-| Y Max | `ymax` | number | Y Max |
-| Y min | `ymin` | number | Y min |
+| X Max | `xmax` | number | X max. |
+| X Min | `xmin` | number | X min. |
+| Y Max | `ymax` | number | Y Max. |
+| Y min | `ymin` | number | Y min. |
 </div>
 </details>
 
@@ -855,8 +855,8 @@ Image to text models output a text from a given image. Image captioning or optic
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_IMAGE_TO_TEXT` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| Image (required) | `image` | string | The image file |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| Image (required) | `image` | string | The image file. |
 </div>
 
 
@@ -868,7 +868,7 @@ Image to text models output a text from a given image. Image captioning or optic
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Text | `text` | string | Generated text |
+| Text | `text` | string | Generated text. |
 </div>
 
 
@@ -881,8 +881,8 @@ Automatic Speech Recognition (ASR), also known as Speech to Text (STT), is the t
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SPEECH_RECOGNITION` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| Audio (required) | `audio` | string | The audio file |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| Audio (required) | `audio` | string | The audio file. |
 </div>
 
 
@@ -907,8 +907,8 @@ Audio classification is the task of assigning a label or class to a given audio.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_AUDIO_CLASSIFICATION` |
-| Model (required) | `model` | string | The Hugging Face model to be used |
-| Audio (required) | `audio` | string | The audio file |
+| Model (required) | `model` | string | The Hugging Face model to be used. |
+| Audio (required) | `audio` | string | The audio file. |
 </div>
 
 
@@ -920,7 +920,7 @@ Audio classification is the task of assigning a label or class to a given audio.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Classes](#audio-classification-classes) | `classes` | array[object] | Classes |
+| [Classes](#audio-classification-classes) | `classes` | array[object] | Classes. |
 </div>
 
 <details>
@@ -932,7 +932,7 @@ Audio classification is the task of assigning a label or class to a given audio.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Label | `label` | string | The label for the class (model specific) |
+| Label | `label` | string | The label for the class (model specific). |
 | Score | `score` | number | A float that represents how likely it is that the audio file belongs to this class. |
 </div>
 </details>

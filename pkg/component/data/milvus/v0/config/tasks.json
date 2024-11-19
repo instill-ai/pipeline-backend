@@ -5,7 +5,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to perform vector search on",
+          "description": "The name of the collection to perform vector search on.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -19,7 +19,7 @@
           "type": "string"
         },
         "partition-name": {
-          "description": "The name of the partition to vector search the data from",
+          "description": "The name of the partition to vector search the data from.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -33,7 +33,7 @@
           "type": "string"
         },
         "vector": {
-          "description": "An array of dimensions for the vector search",
+          "description": "An array of dimensions for the vector search.",
           "instillAcceptFormats": [
             "array:number",
             "array:integer"
@@ -45,7 +45,7 @@
             "value"
           ],
           "items": {
-            "description": "A dimension of the vector",
+            "description": "A dimension of the vector.",
             "example": 0.8167237,
             "type": "number"
           },
@@ -54,7 +54,7 @@
           "type": "array"
         },
         "vector-field": {
-          "description": "The name of the field to perform vector search on",
+          "description": "The name of the field to perform vector search on.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -68,7 +68,7 @@
           "type": "string"
         },
         "limit": {
-          "description": "The limit of the data to return",
+          "description": "The limit of the data to return.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -82,7 +82,7 @@
           "type": "integer"
         },
         "fields": {
-          "description": "The fields to return in the data. If empty then all fields will be returned",
+          "description": "The fields to return in the data. If empty then all fields will be returned.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -102,7 +102,7 @@
           }
         },
         "filter": {
-          "description": "The properties filter to be applied to the data with milvus scalar filter, please refer to [filter-search](https://milvus.io/docs/single-vector-search.md#Filtered-search)",
+          "description": "The properties filter to be applied to the data with milvus scalar filter, please refer to [filter-search](https://milvus.io/docs/single-vector-search.md#Filtered-search).",
           "instillUIOrder": 5,
           "instillAcceptFormats": [
             "string"
@@ -116,7 +116,7 @@
           "type": "string"
         },
         "offset": {
-          "description": "The offset of the data to return",
+          "description": "The offset of the data to return.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -130,7 +130,7 @@
           "type": "integer"
         },
         "grouping-field": {
-          "description": "The name of the field to group the data by, please refer to [Grouping-search](https://milvus.io/docs/single-vector-search.md#Grouping-search)",
+          "description": "The name of the field to group the data by, please refer to [Grouping-search](https://milvus.io/docs/single-vector-search.md#Grouping-search).",
           "instillAcceptFormats": [
             "string"
           ],
@@ -144,7 +144,7 @@
           "type": "string"
         },
         "search-params": {
-          "description": "The search parameters to be applied to the data with milvus search parameters, please refer to [Search-parameters](https://milvus.io/docs/single-vector-search.md#Search-parameters)",
+          "description": "The search parameters to be applied to the data with milvus search parameters, please refer to [Search-parameters](https://milvus.io/docs/single-vector-search.md#Search-parameters).",
           "instillUIOrder": 8,
           "instillAcceptFormats": [
             "semi-structured/*",
@@ -180,33 +180,33 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Vector search status",
+          "description": "Vector search status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
           "type": "string"
         },
         "result": {
-          "description": "Result of the vector search operation",
+          "description": "Result of the vector search operation.",
           "instillUIOrder": 0,
           "title": "Result",
           "type": "object",
           "properties": {
             "ids": {
-              "description": "The ids returned from the vector search operation",
+              "description": "The ids returned from the vector search operation.",
               "instillUIOrder": 0,
               "title": "IDs",
               "type": "array",
               "required": [],
               "instillFormat": "array:string",
               "items": {
-                "description": "An id of the point",
+                "description": "An id of the point.",
                 "type": "string",
                 "example": "c8faa-4b3b-4b3b-4b3b"
               }
             },
             "data": {
-              "description": "The points returned from the vector search operation",
+              "description": "The points returned from the vector search operation.",
               "instillUIOrder": 1,
               "required": [],
               "title": "Data",
@@ -220,26 +220,26 @@
               }
             },
             "vectors": {
-              "description": "The vectors returned from the vector search operation",
+              "description": "The vectors returned from the vector search operation.",
               "instillUIOrder": 2,
               "title": "Vectors",
               "type": "array",
               "required": [],
               "instillFormat": "array:array",
               "items": {
-                "description": "The vector from array vectors",
+                "description": "The vector from array vectors.",
                 "type": "array",
                 "instillFormat": "array",
                 "required": [],
                 "items": {
-                  "description": "A dimension of the vector",
+                  "description": "A dimension of the vector.",
                   "example": 0.8167237,
                   "type": "number"
                 }
               }
             },
             "metadata": {
-              "description": "The metadata returned from the vector search operation",
+              "description": "The metadata returned from the vector search operation.",
               "instillUIOrder": 3,
               "title": "Metadata",
               "type": "array",
@@ -270,7 +270,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to upsert the data into",
+          "description": "The name of the collection to upsert the data into.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -284,7 +284,7 @@
           "type": "string"
         },
         "partition-name": {
-          "description": "The name of the partition to upsert the data from. If empty then default partition will be used",
+          "description": "The name of the partition to upsert the data from. If empty then default partition will be used.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -298,7 +298,7 @@
           "type": "string"
         },
         "data": {
-          "description": "The data",
+          "description": "The data.",
           "instillAcceptFormats": [
             "semi-structured/*",
             "object"
@@ -330,7 +330,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Upsert status",
+          "description": "Upsert status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -350,7 +350,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to upsert the data into",
+          "description": "The name of the collection to upsert the data into.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -364,7 +364,7 @@
           "type": "string"
         },
         "partition-name": {
-          "description": "The name of the partition to upsert the data from. If empty then default partition will be used",
+          "description": "The name of the partition to upsert the data from. If empty then default partition will be used.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -378,7 +378,7 @@
           "type": "string"
         },
         "array-data": {
-          "description": "The data",
+          "description": "The data.",
           "instillAcceptFormats": [
             "array:semi-structured/*",
             "array:semi-structured/json",
@@ -394,7 +394,7 @@
           "title": "Array Data",
           "type": "array",
           "items": {
-            "description": "A datum",
+            "description": "A datum.",
             "type": "object",
             "required": []
           }
@@ -416,7 +416,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Batch upsert status",
+          "description": "Batch upsert status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -436,7 +436,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to delete the data from",
+          "description": "The name of the collection to delete the data from.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -450,7 +450,7 @@
           "type": "string"
         },
         "partition-name": {
-          "description": "The name of the partition to delete the data from. If empty then default partition will be used",
+          "description": "The name of the partition to delete the data from. If empty then default partition will be used.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -464,7 +464,7 @@
           "type": "string"
         },
         "filter": {
-          "description": "The properties filter to be applied to the data with milvus scalar filter, please refer to [Filtered-search](https://milvus.io/docs/single-vector-search.md#Filtered-search)",
+          "description": "The properties filter to be applied to the data with milvus scalar filter, please refer to [Filtered-search](https://milvus.io/docs/single-vector-search.md#Filtered-search).",
           "instillUIOrder": 2,
           "instillAcceptFormats": [
             "string"
@@ -493,7 +493,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Delete status",
+          "description": "Delete status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -513,7 +513,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to create",
+          "description": "The name of the collection to create.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -527,7 +527,7 @@
           "type": "string"
         },
         "dimension": {
-          "description": "The dimension of the collection",
+          "description": "The dimension of the collection.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -541,7 +541,7 @@
           "type": "integer"
         },
         "id-type": {
-          "description": "The type of the id",
+          "description": "The type of the id.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -555,7 +555,7 @@
           "type": "string"
         },
         "schema": {
-          "description": "The schema of the collection",
+          "description": "The schema of the collection.",
           "instillAcceptFormats": [
             "semi-structured/*",
             "object"
@@ -571,7 +571,7 @@
           "required": []
         },
         "auto-id": {
-          "description": "Whether to auto generate id",
+          "description": "Whether to auto generate id.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -586,7 +586,7 @@
           "default": false
         },
         "metric-type": {
-          "description": "The metric type of the collection",
+          "description": "The metric type of the collection.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -606,7 +606,7 @@
           "default": "L2"
         },
         "index-params": {
-          "description": "The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Collection%20(v2)/Create.md)",
+          "description": "The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Collection%20(v2)/Create.md).",
           "instillUIOrder": 7,
           "instillAcceptFormats": [
             "array:semi-structured/*",
@@ -621,13 +621,13 @@
           "type": "array",
           "required": [],
           "items": {
-            "description": "Index parameter",
+            "description": "Index parameter.",
             "type": "object",
             "required": []
           }
         },
         "params": {
-          "description": "The parameters to be applied to the collection with milvus parameters, please refer to [Parameters](https://milvus.io/docs/single-vector-search.md#Parameters)",
+          "description": "The parameters to be applied to the collection with milvus parameters, please refer to [Parameters](https://milvus.io/docs/single-vector-search.md#Parameters).",
           "instillUIOrder": 8,
           "instillAcceptFormats": [
             "semi-structured/*",
@@ -654,7 +654,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Create collection status",
+          "description": "Create collection status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -674,7 +674,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to drop",
+          "description": "The name of the collection to drop.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -698,7 +698,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Drop collection status",
+          "description": "Drop collection status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -718,7 +718,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to create the partition in",
+          "description": "The name of the collection to create the partition in.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -732,7 +732,7 @@
           "type": "string"
         },
         "partition-name": {
-          "description": "The name of the partition to create",
+          "description": "The name of the partition to create.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -761,7 +761,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Create partition status",
+          "description": "Create partition status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -781,7 +781,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to drop the partition from",
+          "description": "The name of the collection to drop the partition from.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -795,7 +795,7 @@
           "type": "string"
         },
         "partition-name": {
-          "description": "The name of the partition to drop",
+          "description": "The name of the partition to drop.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -824,7 +824,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Drop partition status",
+          "description": "Drop partition status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -844,7 +844,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to create the index in",
+          "description": "The name of the collection to create the index in.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -858,7 +858,7 @@
           "type": "string"
         },
         "index-params": {
-          "description": "The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Index%20(v2)/Create.md)",
+          "description": "The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Index%20(v2)/Create.md).",
           "instillUIOrder": 7,
           "instillAcceptFormats": [
             "semi-structured/*",
@@ -885,7 +885,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Create index status",
+          "description": "Create index status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",
@@ -905,7 +905,7 @@
       "instillUIOrder": 0,
       "properties": {
         "collection-name": {
-          "description": "The name of the collection to drop the index from",
+          "description": "The name of the collection to drop the index from.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -919,7 +919,7 @@
           "type": "string"
         },
         "index-name": {
-          "description": "The name of the index to drop",
+          "description": "The name of the index to drop.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -944,7 +944,7 @@
       "instillUIOrder": 0,
       "properties": {
         "status": {
-          "description": "Drop index status",
+          "description": "Drop index status.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Status",

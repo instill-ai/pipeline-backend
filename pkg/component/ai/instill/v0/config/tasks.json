@@ -4,12 +4,12 @@
       "properties": {
         "content": {
           "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/multi-modal-content",
-          "description": "The message content",
+          "description": "The message content.",
           "instillUIOrder": 1,
           "title": "Content"
         },
         "role": {
-          "description": "The message role, i.e. 'system', 'user' or 'assistant'",
+          "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Role",
@@ -24,7 +24,7 @@
       "type": "object"
     },
     "common": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "image-base64",
         "model-name"
@@ -32,7 +32,7 @@
       "instillUIOrder": 0,
       "properties": {
         "image-base64": {
-          "description": "Image base64",
+          "description": "Image base64.",
           "instillAcceptFormats": [
             "image/*"
           ],
@@ -74,7 +74,7 @@
     },
     "output": {
       "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/classification",
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "title": "Output",
       "type": "object"
@@ -88,7 +88,7 @@
     },
     "output": {
       "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/detection",
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "title": "Output",
       "type": "object"
@@ -102,7 +102,7 @@
     },
     "output": {
       "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/instance-segmentation",
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "title": "Output",
       "type": "object"
@@ -116,7 +116,7 @@
     },
     "output": {
       "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/keypoint",
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "title": "Output",
       "type": "object"
@@ -130,7 +130,7 @@
     },
     "output": {
       "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/ocr",
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "title": "Output",
       "type": "object"
@@ -144,7 +144,7 @@
     },
     "output": {
       "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/semantic-segmentation",
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "title": "Output",
       "type": "object"
@@ -153,7 +153,7 @@
   "TASK_TEXT_GENERATION": {
     "instillShortDescription": "Generate texts from input text prompts.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "prompt",
         "model-name"
@@ -162,7 +162,7 @@
       "properties": {
         "max-new-tokens": {
           "default": 50,
-          "description": "The maximum number of tokens for model to generate",
+          "description": "The maximum number of tokens for model to generate.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -189,7 +189,7 @@
           "type": "string"
         },
         "prompt": {
-          "description": "The prompt text",
+          "description": "The prompt text.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -204,7 +204,7 @@
           "type": "string"
         },
         "seed": {
-          "description": "The seed",
+          "description": "The seed.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -218,7 +218,7 @@
         },
         "system-message": {
           "default": "You are a helpful assistant.",
-          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as \"You are a helpful assistant.\"",
+          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as \"You are a helpful assistant.\".",
           "instillAcceptFormats": [
             "string"
           ],
@@ -235,7 +235,7 @@
         },
         "temperature": {
           "default": 0.7,
-          "description": "The temperature for sampling",
+          "description": "The temperature for sampling.",
           "instillAcceptFormats": [
             "number"
           ],
@@ -256,14 +256,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "text"
       ],
       "instillUIOrder": 0,
       "properties": {
         "text": {
-          "description": "Text",
+          "description": "Text.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 0,
@@ -281,7 +281,7 @@
   "TASK_TEXT_GENERATION_CHAT": {
     "instillShortDescription": "Generate texts from input text prompts and chat history.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "prompt",
         "model-name"
@@ -306,7 +306,7 @@
         },
         "max-new-tokens": {
           "default": 50,
-          "description": "The maximum number of tokens for model to generate",
+          "description": "The maximum number of tokens for model to generate.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -333,7 +333,7 @@
           "type": "string"
         },
         "prompt": {
-          "description": "The prompt text",
+          "description": "The prompt text.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -348,7 +348,7 @@
           "type": "string"
         },
         "prompt-images": {
-          "description": "The prompt images",
+          "description": "The prompt images.",
           "instillAcceptFormats": [
             "array:image/*"
           ],
@@ -363,7 +363,7 @@
           "type": "array"
         },
         "seed": {
-          "description": "The seed",
+          "description": "The seed.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -377,7 +377,7 @@
         },
         "system-message": {
           "default": "You are a helpful assistant.",
-          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as \"You are a helpful assistant.\"",
+          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as \"You are a helpful assistant.\".",
           "instillAcceptFormats": [
             "string"
           ],
@@ -394,7 +394,7 @@
         },
         "temperature": {
           "default": 0.7,
-          "description": "The temperature for sampling",
+          "description": "The temperature for sampling.",
           "instillAcceptFormats": [
             "number"
           ],
@@ -415,14 +415,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "text"
       ],
       "instillUIOrder": 0,
       "properties": {
         "text": {
-          "description": "Text",
+          "description": "Text.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 0,
@@ -440,7 +440,7 @@
   "TASK_TEXT_TO_IMAGE": {
     "instillShortDescription": "Generate images from input text prompts.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "prompt",
         "model-name"
@@ -462,7 +462,7 @@
           "type": "string"
         },
         "prompt": {
-          "description": "The prompt text",
+          "description": "The prompt text.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -477,7 +477,7 @@
           "type": "string"
         },
         "samples": {
-          "description": "The number of generated samples, default is 1",
+          "description": "The number of generated samples, default is 1.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -490,7 +490,7 @@
           "type": "integer"
         },
         "seed": {
-          "description": "The seed, default is 0",
+          "description": "The seed, default is 0.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -543,14 +543,14 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillEditOnNodeFields": [
         "images"
       ],
       "instillUIOrder": 0,
       "properties": {
         "images": {
-          "description": "Images",
+          "description": "Images.",
           "instillUIOrder": 0,
           "instillFormat": "array:image/jpeg",
           "items": {
@@ -654,7 +654,7 @@
                       },
                       "type": {
                         "title": "Image URL",
-                        "description": "Image URL input content type",
+                        "description": "Image URL input content type.",
                         "instillShortDescription": "Image URL input content type",
                         "instillAcceptFormats": [
                           "string"

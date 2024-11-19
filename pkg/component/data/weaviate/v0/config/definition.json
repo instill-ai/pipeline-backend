@@ -12,7 +12,7 @@
   "id": "weaviate",
   "public": true,
   "title": "Weaviate",
-  "description": "Build and search vector datasets",
+  "description": "Build and search vector datasets.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_DATA",
   "uid": "8833d994-ab21-4627-910f-6612ae5526c0",

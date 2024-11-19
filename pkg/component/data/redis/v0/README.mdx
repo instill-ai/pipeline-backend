@@ -40,10 +40,10 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Host (required) | `host` | string | Redis host to connect to  |
-| Port (required) | `port` | integer | Port of Redis  |
-| Username | `username` | string | Username associated with Redis  |
-| Password | `password` | string | Password associated with Redis  |
+| Host (required) | `host` | string | Redis host to connect to.  |
+| Port (required) | `port` | integer | Port of Redis.  |
+| Username | `username` | string | Username associated with Redis.  |
+| Password | `password` | string | Password associated with Redis.  |
 | SSL Connection | `ssl` | boolean | Indicates whether SSL encryption protocol will be used to connect to Redis. It is recommended to use SSL connection if possible.  |
 
 </div>
@@ -62,9 +62,9 @@ Retrieve chat history from Redis.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_RETRIEVE_CHAT_HISTORY` |
-| Session ID (required) | `session-id` | string | A unique identifier for the chat session |
+| Session ID (required) | `session-id` | string | A unique identifier for the chat session. |
 | Latest K | `latest-k` | integer | The number of latest conversation turns to retrieve. A conversation turn typically includes one participant speaking or sending a message, and the other participant(s) responding to it. |
-| Include System Message if Exists | `include-system-message` | boolean | Include system message in the retrieved conversation turns if exists |
+| Include System Message if Exists | `include-system-message` | boolean | Include system message in the retrieved conversation turns if exists. |
 </div>
 
 
@@ -76,7 +76,7 @@ Retrieve chat history from Redis.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Chat Message](#retrieve-chat-history-chat-message) | `messages` | array[object] | Messages |
+| [Chat Message](#retrieve-chat-history-chat-message) | `messages` | array[object] | Messages. |
 </div>
 
 <details>
@@ -124,10 +124,10 @@ Write chat message into Redis.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_WRITE_CHAT_MESSAGE` |
-| Session ID (required) | `session-id` | string | A unique identifier for the chat session |
-| Role (required) | `role` | string | The message role, i.e. 'system', 'user' or 'assistant' |
-| Content (required) | `content` | string | The message content |
-| Metadata | `metadata` | object | The message metadata |
+| Session ID (required) | `session-id` | string | A unique identifier for the chat session. |
+| Role (required) | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'. |
+| Content (required) | `content` | string | The message content. |
+| Metadata | `metadata` | object | The message metadata. |
 </div>
 
 
@@ -139,7 +139,7 @@ Write chat message into Redis.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | boolean | The status of the write operation |
+| Status | `status` | boolean | The status of the write operation. |
 </div>
 
 
@@ -152,10 +152,10 @@ Write multi-modal chat message into Redis.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_WRITE_MULTI_MODAL_CHAT_MESSAGE` |
-| Session ID (required) | `session-id` | string | A unique identifier for the chat session |
-| Role (required) | `role` | string | The message role, i.e. 'system', 'user' or 'assistant' |
-| Content (required) | `content` | string | The multi-modal message content |
-| Metadata | `metadata` | object | The message metadata |
+| Session ID (required) | `session-id` | string | A unique identifier for the chat session. |
+| Role (required) | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'. |
+| Content (required) | `content` | string | The multi-modal message content. |
+| Metadata | `metadata` | object | The message metadata. |
 </div>
 
 
@@ -167,7 +167,7 @@ Write multi-modal chat message into Redis.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | boolean | The status of the write operation |
+| Status | `status` | boolean | The status of the write operation. |
 </div>
 
 

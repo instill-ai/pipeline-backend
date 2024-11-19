@@ -14,6 +14,6 @@
   "uid": "5b7aca5b-1ae3-477f-bf60-d34e1c993c87",
   "version": "0.1.1",
   "sourceUrl": "https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/text/v0",
-  "description": "Extract and manipulate text from different sources",
+  "description": "Extract and manipulate text from different sources.",
   "releaseStage": "RELEASE_STAGE_ALPHA"
 }

@@ -46,12 +46,12 @@ ${connection.<my-connection-id>}`.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Engine (required) | `engine` | string | Choose the engine of your database.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MySQL`</li><li>`PostgreSQL`</li><li>`SQL Server`</li><li>`Oracle`</li><li>`MariaDB`</li><li>`Firebird`</li></ul></details>  |
-| Username (required) | `username` | string | Fill in your account username  |
-| Password (required) | `password` | string | Fill in your account password  |
-| Database Name (required) | `database-name` | string | Fill in the name of your database  |
-| Host (required) | `host` | string | Fill in the host of your database  |
-| Port (required) | `port` | number | Fill in the port of your database  |
-| [SSL / TLS](#ssl-tls) (required) | `ssl-tls` | object | Enable SSL / TLS  |
+| Username (required) | `username` | string | Fill in your account username.  |
+| Password (required) | `password` | string | Fill in your account password.  |
+| Database Name (required) | `database-name` | string | Fill in the name of your database.  |
+| Host (required) | `host` | string | Fill in the host of your database.  |
+| Port (required) | `port` | number | Fill in the port of your database.  |
+| [SSL / TLS](#ssl-tls) (required) | `ssl-tls` | object | Enable SSL / TLS.  |
 
 </div>
 
@@ -78,7 +78,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file  |
+| CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file.  |
 | SSL / TLS Type | `ssl-tls-type` | string |  Must be `"TLS"`   |
 </div>
 
@@ -88,9 +88,9 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file  |
-| Client Certificate | `ssl-tls-cert` | string |  Base64 encoded client certificate file  |
-| Client Key | `ssl-tls-key` | string |  Base64 encoded client key file  |
+| CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file.  |
+| Client Certificate | `ssl-tls-cert` | string |  Base64 encoded client certificate file.  |
+| Client Key | `ssl-tls-key` | string |  Base64 encoded client key file.  |
 | SSL / TLS Type | `ssl-tls-type` | string |  Must be `"mTLS"`   |
 </div>
 </details>
@@ -106,8 +106,8 @@ Perform insert operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT` |
-| Table Name (required) | `table-name` | string | The table name in the database to insert data into |
-| Data (required) | `data` | object | The data to be inserted |
+| Table Name (required) | `table-name` | string | The table name in the database to insert data into. |
+| Data (required) | `data` | object | The data to be inserted. |
 </div>
 
 
@@ -119,7 +119,7 @@ Perform insert operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Insert status |
+| Status | `status` | string | Insert status. |
 </div>
 
 
@@ -132,8 +132,8 @@ Perform insert operation with multiple rows
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT_MANY` |
-| Table Name (required) | `table-name` | string | The table name in the database to insert data into |
-| [Data](#insert-many-data) (required) | `array-data` | array[object] | The array data to be inserted |
+| Table Name (required) | `table-name` | string | The table name in the database to insert data into. |
+| [Data](#insert-many-data) (required) | `array-data` | array[object] | The array data to be inserted. |
 </div>
 
 
@@ -145,7 +145,7 @@ Perform insert operation with multiple rows
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Insert many status |
+| Status | `status` | string | Insert many status. |
 </div>
 
 
@@ -158,9 +158,9 @@ Perform update operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE` |
-| Table Name (required) | `table-name` | string | The table name in the database to update data into |
-| Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause |
-| Update (required) | `update-data` | object | The new data to be updated to |
+| Table Name (required) | `table-name` | string | The table name in the database to update data into. |
+| Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
+| Update (required) | `update-data` | object | The new data to be updated to. |
 </div>
 
 
@@ -172,7 +172,7 @@ Perform update operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Update status |
+| Status | `status` | string | Update status. |
 </div>
 
 
@@ -185,10 +185,10 @@ Perform select operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SELECT` |
-| Table Name (required) | `table-name` | string | The table name in the database to be selected |
-| Filter | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for all rows |
-| Limit | `limit` | integer | The limit of rows to be selected, empty for all rows |
-| Columns | `columns` | array[string] | The columns to return in the rows. If empty then all columns will be returned |
+| Table Name (required) | `table-name` | string | The table name in the database to be selected. |
+| Filter | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for all rows. |
+| Limit | `limit` | integer | The limit of rows to be selected, empty for all rows. |
+| Columns | `columns` | array[string] | The columns to return in the rows. If empty then all columns will be returned. |
 </div>
 
 
@@ -200,8 +200,8 @@ Perform select operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Rows](#select-rows) | `rows` | array[object] | The rows returned from the select operation |
-| Status | `status` | string | Select status |
+| [Rows](#select-rows) | `rows` | array[object] | The rows returned from the select operation. |
+| Status | `status` | string | Select status. |
 </div>
 
 
@@ -214,8 +214,8 @@ Perform delete operation
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
-| Table Name (required) | `table-name` | string | The table name in the database to be deleted |
-| Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause |
+| Table Name (required) | `table-name` | string | The table name in the database to be deleted. |
+| Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
 </div>
 
 
@@ -227,7 +227,7 @@ Perform delete operation
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete status |
+| Status | `status` | string | Delete status. |
 </div>
 
 
@@ -240,8 +240,8 @@ Create a table in the database
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_TABLE` |
-| Table Name (required) | `table-name` | string | The table name in the database to be created |
-| Columns (required) | `columns-structure` | object | The columns structure to be created in the table, json with value string, e.g \{"name": "VARCHAR(255)", "age": "INT not null"\} |
+| Table Name (required) | `table-name` | string | The table name in the database to be created. |
+| Columns (required) | `columns-structure` | object | The columns structure to be created in the table, json with value string, e.g \{"name": "VARCHAR(255)", "age": "INT not null"\}. |
 </div>
 
 
@@ -253,7 +253,7 @@ Create a table in the database
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create table status |
+| Status | `status` | string | Create table status. |
 </div>
 
 
@@ -266,7 +266,7 @@ Drop a table in the database
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_TABLE` |
-| Table Name (required) | `table-name` | string | The table name in the database to be dropped |
+| Table Name (required) | `table-name` | string | The table name in the database to be dropped. |
 </div>
 
 
@@ -278,7 +278,7 @@ Drop a table in the database
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Drop table status |
+| Status | `status` | string | Drop table status. |
 </div>
 
 

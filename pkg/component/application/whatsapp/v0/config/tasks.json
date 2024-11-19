@@ -17,7 +17,7 @@
         "type": "string"
       },
       "to": {
-        "description": "The number of the recipient you are sending the message to",
+        "description": "The number of the recipient you are sending the message to.",
         "instillAcceptFormats": [
           "string"
         ],
@@ -33,7 +33,7 @@
       },
       "template": {
         "name": {
-          "description": "Name of the template",
+          "description": "Name of the template.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -47,7 +47,7 @@
           "type": "string"
         },
         "language-code": {
-          "description": "The code of the language in which the template is used. [Supported languages](https://developers.facebook.com/docs/whatsapp/api/messages/message-templates#supported-languages)",
+          "description": "The code of the language in which the template is used. [Supported languages](https://developers.facebook.com/docs/whatsapp/api/messages/message-templates#supported-languages).",
           "instillAcceptFormats": [
             "string"
           ],
@@ -68,7 +68,7 @@
           "items": {
             "title": "Body Parameter",
             "type": "string",
-            "description": "Body parameter",
+            "description": "Body parameter.",
             "instillFormat": "string"
           }
         },
@@ -80,7 +80,7 @@
           "items": {
             "title": "Button Parameter",
             "type": "string",
-            "description": "Button parameter",
+            "description": "Button parameter.",
             "instillFormat": "string"
           }
         }
@@ -128,7 +128,7 @@
       },
       "location": {
         "latitude": {
-          "description": "Location latitude",
+          "description": "Location latitude.",
           "instillAcceptFormats": [
             "number"
           ],
@@ -141,7 +141,7 @@
           "type": "number"
         },
         "longitude": {
-          "description": "Location longitude",
+          "description": "Location longitude.",
           "instillAcceptFormats": [
             "number"
           ],
@@ -154,7 +154,7 @@
           "type": "number"
         },
         "location-name": {
-          "description": "Name of the location",
+          "description": "Name of the location.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -167,7 +167,7 @@
           "type": "string"
         },
         "address": {
-          "description": "Address of the location",
+          "description": "Address of the location.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -190,7 +190,7 @@
         "instillFormat": "string"
       },
       "message-id": {
-        "description": "The ID of the message",
+        "description": "The ID of the message.",
         "instillUIOrder": 1,
         "title": "Message ID",
         "type": "string",
@@ -208,7 +208,7 @@
   "TASK_SEND_TEXT_BASED_TEMPLATE_MESSAGE": {
     "instillShortDescription": "Send text-based template message. This task support header(text), body and button parameters.",
     "input": {
-      "description": "Template information",
+      "description": "Template information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "phone-number-id",
@@ -242,7 +242,7 @@
           "items": {
             "title": "Header Parameter",
             "type": "string",
-            "description": "Header parameter",
+            "description": "Header parameter.",
             "instillFormat": "string"
           }
         },
@@ -265,7 +265,7 @@
       "type": "object"
     },
     "output": {
-      "description": "API response",
+      "description": "API response.",
       "instillUIOrder": 0,
       "properties": {
         "recipient-wa-id": {
@@ -290,7 +290,7 @@
   "TASK_SEND_MEDIA_BASED_TEMPLATE_MESSAGE": {
     "instillShortDescription": "Send media-based template message. This task support header(image, document & video), body and button parameters.",
     "input": {
-      "description": "Template information",
+      "description": "Template information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "phone-number-id",
@@ -368,7 +368,7 @@
       "type": "object"
     },
     "output": {
-      "description": "API response",
+      "description": "API response.",
       "instillUIOrder": 0,
       "properties": {
         "recipient-wa-id": {
@@ -393,7 +393,7 @@
   "TASK_SEND_LOCATION_BASED_TEMPLATE_MESSAGE": {
     "instillShortDescription": "Send location-based template message. This task support header(location), body and button parameters.",
     "input": {
-      "description": "Template information",
+      "description": "Template information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "phone-number-id",
@@ -464,7 +464,7 @@
       "type": "object"
     },
     "output": {
-      "description": "API response",
+      "description": "API response.",
       "instillUIOrder": 0,
       "properties": {
         "recipient-wa-id": {
@@ -489,7 +489,7 @@
   "TASK_SEND_AUTHENTICATION_TEMPLATE_MESSAGE": {
     "instillShortDescription": "Send authentication template message with one-time password button (The button is used to copy the password to clipboard). Authentication template has no header parameters.",
     "input": {
-      "description": "Template information",
+      "description": "Template information.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "phone-number-id",
@@ -540,7 +540,7 @@
       "type": "object"
     },
     "output": {
-      "description": "API response",
+      "description": "API response.",
       "instillUIOrder": 0,
       "properties": {
         "recipient-wa-id": {
@@ -565,7 +565,7 @@
   "TASK_SEND_TEXT_MESSAGE": {
     "instillShortDescription": "Send text message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)",
     "input": {
-      "description": "Text input",
+      "description": "Text input.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "phone-number-id",
@@ -581,7 +581,7 @@
           "$ref": "#/$defs/def-input/to"
         },
         "body": {
-          "description": "Body of the message",
+          "description": "Body of the message.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -625,7 +625,7 @@
       "type": "object"
     },
     "output": {
-      "description": "API response",
+      "description": "API response.",
       "instillUIOrder": 0,
       "properties": {
         "recipient-wa-id": {
@@ -646,7 +646,7 @@
   "TASK_SEND_MEDIA_MESSAGE": {
     "instillShortDescription": "Send media message. Media supported: video, audio, document, image. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)",
     "input": {
-      "description": "Media input",
+      "description": "Media input.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "phone-number-id",
@@ -710,7 +710,7 @@
       "type": "object"
     },
     "output": {
-      "description": "API response",
+      "description": "API response.",
       "instillUIOrder": 0,
       "properties": {
         "recipient-wa-id": {
@@ -731,7 +731,7 @@
   "TASK_SEND_LOCATION_MESSAGE": {
     "instillShortDescription": "Send location message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)",
     "input": {
-      "description": "Location input",
+      "description": "Location input.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "phone-number-id",
@@ -781,7 +781,7 @@
       "type": "object"
     },
     "output": {
-      "description": "API response",
+      "description": "API response.",
       "instillUIOrder": 0,
       "properties": {
         "recipient-wa-id": {
@@ -802,7 +802,7 @@
   "TASK_SEND_CONTACT_MESSAGE": {
     "instillShortDescription": "Send contact message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)",
     "input": {
-      "description": "Contact input",
+      "description": "Contact input.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "phone-number-id",
@@ -824,7 +824,7 @@
           "$ref": "#/$defs/def-input/to"
         },
         "first-name": {
-          "description": "First name of the contact",
+          "description": "First name of the contact.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -839,7 +839,7 @@
           "type": "string"
         },
         "middle-name": {
-          "description": "Middle name of the contact",
+          "description": "Middle name of the contact.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -854,7 +854,7 @@
           "type": "string"
         },
         "last-name": {
-          "description": "Last name of the contact",
+          "description": "Last name of the contact.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -869,7 +869,7 @@
           "type": "string"
         },
         "phone-number": {
-          "description": "Phone number of the contact",
+          "description": "Phone number of the contact.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -908,7 +908,7 @@
           "type": "string"
         },
         "email": {
-          "description": "Email of the contact",
+          "description": "Email of the contact.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -968,7 +968,7 @@
       "type": "object"
     },
     "output": {
-      "description": "API response",
+      "description": "API response.",
       "instillUIOrder": 0,
       "properties": {
         "recipient-wa-id": {
@@ -989,7 +989,7 @@
   "TASK_SEND_INTERACTIVE_CALL_TO_ACTION_URL_BUTTON_MESSAGE": {
     "instillShortDescription": "Send interactive Call-To-Action URL button message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows).",
     "input": {
-      "description": "Interactive CTA URL button input",
+      "description": "Interactive CTA URL button input.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "phone-number-id",
@@ -1053,7 +1053,7 @@
           "type": "string"
         },
         "button-display-text": {
-          "description": "The text displayed on the button",
+          "description": "The text displayed on the button.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -1068,7 +1068,7 @@
           "type": "string"
         },
         "button-url": {
-          "description": "URL to load when the user tapped the button",
+          "description": "URL to load when the user tapped the button.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -1094,7 +1094,7 @@
       "type": "object"
     },
     "output": {
-      "description": "API response",
+      "description": "API response.",
       "instillUIOrder": 0,
       "properties": {
         "recipient-wa-id": {

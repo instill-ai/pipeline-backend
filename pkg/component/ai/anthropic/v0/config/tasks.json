@@ -17,7 +17,7 @@
               "url"
             ],
             "title": "Image URL",
-            "description": "The image URL",
+            "description": "The image URL.",
             "instillUIOrder": 0,
             "type": "object"
           },
@@ -51,12 +51,12 @@
       "properties": {
         "content": {
           "$ref": "#/$defs/multi-modal-content",
-          "description": "The message content",
+          "description": "The message content.",
           "instillUIOrder": 1,
           "title": "Content"
         },
         "role": {
-          "description": "The message role, i.e. 'system', 'user' or 'assistant'",
+          "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Role",
@@ -71,18 +71,18 @@
       "type": "object"
     },
     "usage": {
-      "description": "Usage tokens in Anthropic",
+      "description": "Usage tokens in Anthropic.",
       "instillUIOrder": 1,
       "properties": {
         "input-tokens": {
-          "description": "The input tokens used by Anthropic",
+          "description": "The input tokens used by Anthropic.",
           "instillFormat": "number",
           "instillUIOrder": 2,
           "title": "Input Tokens",
           "type": "number"
         },
         "output-tokens": {
-          "description": "The output tokens used by Anthropic",
+          "description": "The output tokens used by Anthropic.",
           "instillFormat": "number",
           "instillUIOrder": 3,
           "title": "Output Tokens",
@@ -101,7 +101,7 @@
     "instillShortDescription": "Provide text outputs in response to text inputs.",
     "description": "Anthropic's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as \"prompts\". Designing a prompt is essentially how you \u201cprogram\u201d a large language model model, usually by providing instructions or some examples of how to successfully complete a task.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillEditOnNodeFields": [
         "prompt",
         "model-name"
@@ -126,7 +126,7 @@
         },
         "max-new-tokens": {
           "default": 50,
-          "description": "The maximum number of tokens for model to generate",
+          "description": "The maximum number of tokens for model to generate.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -148,7 +148,7 @@
             "claude-3-haiku-20240307"
           ],
           "example": "claude-3-5-sonnet-latest",
-          "description": "The Anthropic model to be used",
+          "description": "The Anthropic model to be used.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -175,7 +175,7 @@
           "type": "string"
         },
         "prompt": {
-          "description": "The prompt text",
+          "description": "The prompt text.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -190,7 +190,7 @@
           "type": "string"
         },
         "prompt-images": {
-          "description": "The prompt images (Note: The prompt images will be injected in the order they are provided to the 'prompt' message. Anthropic doesn't support sending images via image-url, use this field instead)",
+          "description": "The prompt images (Note: The prompt images will be injected in the order they are provided to the 'prompt' message. Anthropic doesn't support sending images via image-url, use this field instead).",
           "instillAcceptFormats": [
             "array:image/*"
           ],
@@ -205,7 +205,7 @@
           "type": "array"
         },
         "seed": {
-          "description": "The seed (Note: Not supported by Anthropic Models)",
+          "description": "The seed (Note: Not supported by Anthropic Models).",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -219,7 +219,7 @@
         },
         "system-message": {
           "default": "You are a helpful assistant.",
-          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model\u2019s behavior is set using a generic message as \"You are a helpful assistant.\"",
+          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model\u2019s behavior is set using a generic message as \"You are a helpful assistant.\".",
           "instillAcceptFormats": [
             "string"
           ],
@@ -236,7 +236,7 @@
         },
         "temperature": {
           "default": 0.7,
-          "description": "The temperature for sampling",
+          "description": "The temperature for sampling.",
           "instillAcceptFormats": [
             "number"
           ],
@@ -250,7 +250,7 @@
         },
         "top-k": {
           "default": 10,
-          "description": "Top k for sampling",
+          "description": "Top k for sampling.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -271,11 +271,11 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "properties": {
         "text": {
-          "description": "Model Output",
+          "description": "Model Output.",
           "instillUIOrder": 0,
           "instillFormat": "string",
           "instillUIMultiline": true,

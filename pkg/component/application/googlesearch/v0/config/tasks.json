@@ -13,7 +13,7 @@
           "type": "string"
         },
         "link-html": {
-          "description": "The scraped raw html of the link associated with this search result",
+          "description": "The scraped raw html of the link associated with this search result.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -24,7 +24,7 @@
           "type": "string"
         },
         "link-text": {
-          "description": "The scraped text of the link associated with this search result, in plain text",
+          "description": "The scraped text of the link associated with this search result, in plain text.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -35,7 +35,7 @@
           "type": "string"
         },
         "snippet": {
-          "description": "The snippet from the page associated with this search result, in plain text",
+          "description": "The snippet from the page associated with this search result, in plain text.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -46,7 +46,7 @@
           "type": "string"
         },
         "title": {
-          "description": "The title of a search result, in plain text",
+          "description": "The title of a search result, in plain text.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -73,7 +73,7 @@
       "properties": {
         "include-link-html": {
           "default": false,
-          "description": "Indicate whether to scrape the link and include the raw HTML of the link associated with this search result in the 'link-html' field",
+          "description": "Indicate whether to scrape the link and include the raw HTML of the link associated with this search result in the 'link-html' field.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -87,7 +87,7 @@
         },
         "include-link-text": {
           "default": false,
-          "description": "Indicate whether to scrape the link and include the text of the link associated with this search result in the 'link-text' field",
+          "description": "Indicate whether to scrape the link and include the text of the link associated with this search result in the 'link-text' field.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -100,7 +100,7 @@
           "type": "boolean"
         },
         "query": {
-          "description": "The search query for Google",
+          "description": "The search query for Google.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -116,7 +116,7 @@
         },
         "top-k": {
           "default": 10,
-          "description": "The number of results to return for each query",
+          "description": "The number of results to return for each query.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -141,7 +141,7 @@
       "instillUIOrder": 0,
       "properties": {
         "results": {
-          "description": "The returned search results from Google",
+          "description": "The returned search results from Google.",
           "instillUIOrder": 0,
           "items": {
             "$ref": "#/$defs/result"

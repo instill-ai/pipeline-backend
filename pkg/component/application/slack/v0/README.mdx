@@ -39,8 +39,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Bot OAuth Token (required) | `bot-token` | string | Token associated to the application bot  |
-| User OAuth Token | `user-token` | string | Token to act on behalf of a Slack user  |
+| Bot OAuth Token (required) | `bot-token` | string | Token associated to the application bot.  |
+| User OAuth Token | `user-token` | string | Token to act on behalf of a Slack user.  |
 
 </div>
 
@@ -80,7 +80,7 @@ Get the latest message since specific date
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_MESSAGE` |
-| Channel Name (required) | `channel-name` | string | Channel name, as displayed on Slack |
+| Channel Name (required) | `channel-name` | string | Channel name, as displayed on Slack. |
 | Start to Read Date | `start-to-read-date` | string | Date (in `YYYY-MM-DD` format) from which messages will start to be fetched. If not provided, it will be 7 days before the current date. The date will be in the UTC timezone. |
 </div>
 
@@ -93,7 +93,7 @@ Get the latest message since specific date
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Conversations](#read-message-conversations) | `conversations` | array[object] | An array of conversations with thread messages |
+| [Conversations](#read-message-conversations) | `conversations` | array[object] | An array of conversations with thread messages. |
 </div>
 
 <details>
@@ -105,12 +105,12 @@ Get the latest message since specific date
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Last Date | `last-date` | string | Date of the last message |
-| Start Conversation Message | `message` | string | message to start a conversation |
-| Start Date | `start-date` | string | when a conversation starts |
-| [Replied messages](#read-message-replied-messages) | `thread-reply-messages` | array | replies in a conversation |
-| User UID | `user-id` | string | unique id from Slack |
-| User Name | `user-name` | string | user name in Slack |
+| Last Date | `last-date` | string | Date of the last message. |
+| Start Conversation Message | `message` | string | message to start a conversation. |
+| Start Date | `start-date` | string | when a conversation starts. |
+| [Replied messages](#read-message-replied-messages) | `thread-reply-messages` | array | replies in a conversation. |
+| User UID | `user-id` | string | unique id from Slack. |
+| User Name | `user-name` | string | user name in Slack. |
 </div>
 
 <h4 id="read-message-replied-messages">Replied Messages</h4>
@@ -119,10 +119,10 @@ Get the latest message since specific date
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Replied Time | `datetime` | string | replied datetime |
-| Replied Message | `message` | string | message to reply a conversation |
-| User UID | `user-id` | string | unique id from Slack |
-| User Name | `user-name` | string | user name in Slack |
+| Replied Time | `datetime` | string | replied datetime. |
+| Replied Message | `message` | string | message to reply a conversation. |
+| User UID | `user-id` | string | unique id from Slack. |
+| User Name | `user-name` | string | user name in Slack. |
 </div>
 </details>
 
@@ -136,9 +136,9 @@ send message to a specific channel
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_WRITE_MESSAGE` |
-| Channel Name (required) | `channel-name` | string | Channel name, as displayed on Slack |
-| Message (required) | `message` | string | The message to be sent to the target channel |
-| Send As User | `as-user` | boolean | Send the message on behalf of the user identified by the <code>setup.user-token</code> field |
+| Channel Name (required) | `channel-name` | string | Channel name, as displayed on Slack. |
+| Message (required) | `message` | string | The message to be sent to the target channel. |
+| Send As User | `as-user` | boolean | Send the message on behalf of the user identified by the <code>setup.user-token</code> field. |
 </div>
 
 
@@ -150,7 +150,7 @@ send message to a specific channel
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Result | `result` | string | Result of the message delivery |
+| Result | `result` | string | Result of the message delivery. |
 </div>
 
 

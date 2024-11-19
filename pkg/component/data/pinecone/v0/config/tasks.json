@@ -29,7 +29,7 @@
             "reference"
           ],
           "items": {
-            "description": "A dimension of the vector",
+            "description": "A dimension of the vector.",
             "example": 0.8167237,
             "type": "number"
           },
@@ -38,7 +38,7 @@
           "type": "array"
         },
         "top-k": {
-          "description": "The number of results to return for each query",
+          "description": "The number of results to return for each query.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -51,7 +51,7 @@
           "type": "integer"
         },
         "namespace": {
-          "description": "The namespace to query",
+          "description": "The namespace to query.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -80,7 +80,7 @@
           "type": "object"
         },
         "min-score": {
-          "description": "Exclude results whose score is below this value",
+          "description": "Exclude results whose score is below this value.",
           "instillAcceptFormats": [
             "number",
             "integer"
@@ -95,7 +95,7 @@
         },
         "include-metadata": {
           "default": false,
-          "description": "Indicates whether metadata is included in the response as well as the IDs",
+          "description": "Indicates whether metadata is included in the response as well as the IDs.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -109,7 +109,7 @@
         },
         "include-values": {
           "default": false,
-          "description": "Indicates whether vector values are included in the response",
+          "description": "Indicates whether vector values are included in the response.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -133,19 +133,19 @@
       "instillUIOrder": 0,
       "properties": {
         "matches": {
-          "description": "The matches returned for the query",
+          "description": "The matches returned for the query.",
           "instillUIOrder": 1,
           "items": {
             "properties": {
               "id": {
-                "description": "The ID of the matched vector",
+                "description": "The ID of the matched vector.",
                 "instillFormat": "string",
                 "instillUIOrder": 0,
                 "title": "ID",
                 "type": "string"
               },
               "metadata": {
-                "description": "Metadata",
+                "description": "Metadata.",
                 "instillFormat": "semi-structured/object",
                 "instillUIOrder": 3,
                 "required": [],
@@ -160,11 +160,11 @@
                 "type": "number"
               },
               "values": {
-                "description": "Vector data values",
+                "description": "Vector data values.",
                 "instillUIOrder": 2,
                 "instillFormat": "array:number",
                 "items": {
-                  "description": "Each float value represents one dimension",
+                  "description": "Each float value represents one dimension.",
                   "type": "number",
                   "title": "Value",
                   "instillFormat": "number"
@@ -184,7 +184,7 @@
           "type": "array"
         },
         "namespace": {
-          "description": "The namespace of the query",
+          "description": "The namespace of the query.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Namespace",
@@ -205,7 +205,7 @@
       "instillUIOrder": 0,
       "properties": {
         "id": {
-          "description": "This is the vector's unique id",
+          "description": "This is the vector's unique id.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -219,7 +219,7 @@
           "type": "string"
         },
         "metadata": {
-          "description": "The vector metadata",
+          "description": "The vector metadata.",
           "instillAcceptFormats": [
             "semi-structured/object"
           ],
@@ -234,7 +234,7 @@
           "type": "object"
         },
         "values": {
-          "description": "An array of dimensions for the vector to be saved",
+          "description": "An array of dimensions for the vector to be saved.",
           "instillAcceptFormats": [
             "array:number",
             "array:integer"
@@ -244,7 +244,7 @@
             "reference"
           ],
           "items": {
-            "description": "A dimension of the vector",
+            "description": "A dimension of the vector.",
             "example": 0.8167237,
             "type": "number"
           },
@@ -253,7 +253,7 @@
           "type": "array"
         },
         "namespace": {
-          "description": "The namespace to query",
+          "description": "The namespace to query.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -278,7 +278,7 @@
       "instillUIOrder": 0,
       "properties": {
         "upserted-count": {
-          "description": "Number of records modified or added",
+          "description": "Number of records modified or added.",
           "instillFormat": "integer",
           "instillUIOrder": 0,
           "title": "Upserted Count",

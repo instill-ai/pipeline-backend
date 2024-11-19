@@ -49,7 +49,7 @@ Classify images into predefined categories.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CLASSIFICATION` |
 | Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Image (required) | `image-base64` | string | Image base64 |
+| Image (required) | `image-base64` | string | Image base64. |
 </div>
 
 
@@ -76,7 +76,7 @@ Detect, localize and delineate multiple objects in images.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSTANCE_SEGMENTATION` |
 | Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Image (required) | `image-base64` | string | Image base64 |
+| Image (required) | `image-base64` | string | Image base64. |
 </div>
 
 
@@ -130,7 +130,7 @@ Detect and localize multiple keypoints of objects in images.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_KEYPOINT` |
 | Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Image (required) | `image-base64` | string | Image base64 |
+| Image (required) | `image-base64` | string | Image base64. |
 </div>
 
 
@@ -194,7 +194,7 @@ Detect and localize multiple objects in images.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DETECTION` |
 | Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Image (required) | `image-base64` | string | Image base64 |
+| Image (required) | `image-base64` | string | Image base64. |
 </div>
 
 
@@ -247,7 +247,7 @@ Detect and recognize text in images.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_OCR` |
 | Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Image (required) | `image-base64` | string | Image base64 |
+| Image (required) | `image-base64` | string | Image base64. |
 </div>
 
 
@@ -300,7 +300,7 @@ Classify image pixels into predefined categories.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEMANTIC_SEGMENTATION` |
 | Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Image (required) | `image-base64` | string | Image base64 |
+| Image (required) | `image-base64` | string | Image base64. |
 </div>
 
 
@@ -340,11 +340,11 @@ Generate texts from input text prompts.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION` |
 | Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Prompt (required) | `prompt` | string | The prompt text |
-| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant." |
-| Seed | `seed` | integer | The seed |
-| Temperature | `temperature` | number | The temperature for sampling |
-| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |
+| Prompt (required) | `prompt` | string | The prompt text. |
+| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant.". |
+| Seed | `seed` | integer | The seed. |
+| Temperature | `temperature` | number | The temperature for sampling. |
+| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate. |
 </div>
 
 
@@ -356,7 +356,7 @@ Generate texts from input text prompts.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Text | `text` | string | Text |
+| Text | `text` | string | Text. |
 </div>
 
 
@@ -370,13 +370,13 @@ Generate texts from input text prompts and chat history.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
 | Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Prompt (required) | `prompt` | string | The prompt text |
-| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant." |
-| Prompt Images | `prompt-images` | array[string] | The prompt images |
+| Prompt (required) | `prompt` | string | The prompt text. |
+| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant.". |
+| Prompt Images | `prompt-images` | array[string] | The prompt images. |
 | [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
-| Seed | `seed` | integer | The seed |
-| Temperature | `temperature` | number | The temperature for sampling |
-| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |
+| Seed | `seed` | integer | The seed. |
+| Temperature | `temperature` | number | The temperature for sampling. |
+| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate. |
 </div>
 
 
@@ -391,12 +391,12 @@ Incorporate external chat history, specifically previous messages within the con
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#text-generation-chat-content) | `content` | array | The message content  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'  |
+| [Content](#text-generation-chat-content) | `content` | array | The message content.  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
 </div>
 <h4 id="text-generation-chat-content">Content</h4>
 
-The message content
+The message content.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -424,7 +424,7 @@ The image URL
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Text | `text` | string | Text |
+| Text | `text` | string | Text. |
 </div>
 
 
@@ -438,9 +438,9 @@ Generate images from input text prompts.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_TO_IMAGE` |
 | Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Prompt (required) | `prompt` | string | The prompt text |
-| Samples | `samples` | integer | The number of generated samples, default is 1 |
-| Seed | `seed` | integer | The seed, default is 0 |
+| Prompt (required) | `prompt` | string | The prompt text. |
+| Samples | `samples` | integer | The number of generated samples, default is 1. |
+| Seed | `seed` | integer | The seed, default is 0. |
 | Aspect Ratio | `negative-prompt` | string | Keywords of what you do not wish to see in the output image. |
 | Aspect Ratio | `aspect-ratio` | string | Controls the aspect ratio of the generated image. Defaults to 1:1. |
 </div>
@@ -454,7 +454,7 @@ Generate images from input text prompts.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Images | `images` | array[string] | Images |
+| Images | `images` | array[string] | Images. |
 </div>
 
 
@@ -468,13 +468,13 @@ Answer questions based on a prompt and an image.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_VISUAL_QUESTION_ANSWERING` |
 | Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Prompt (required) | `prompt` | string | The prompt text |
-| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant." |
-| Prompt Images | `prompt-images` | array[string] | The prompt images |
+| Prompt (required) | `prompt` | string | The prompt text. |
+| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant.". |
+| Prompt Images | `prompt-images` | array[string] | The prompt images. |
 | [Chat History](#visual-question-answering-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
-| Seed | `seed` | integer | The seed |
-| Temperature | `temperature` | number | The temperature for sampling |
-| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |
+| Seed | `seed` | integer | The seed. |
+| Temperature | `temperature` | number | The temperature for sampling. |
+| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate. |
 </div>
 
 
@@ -489,12 +489,12 @@ Incorporate external chat history, specifically previous messages within the con
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#visual-question-answering-content) | `content` | array | The message content  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'  |
+| [Content](#visual-question-answering-content) | `content` | array | The message content.  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
 </div>
 <h4 id="visual-question-answering-content">Content</h4>
 
-The message content
+The message content.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -522,7 +522,7 @@ The image URL
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Text | `text` | string | Text |
+| Text | `text` | string | Text. |
 </div>
 
 
@@ -536,13 +536,13 @@ Generate texts from input text prompts and chat history.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CHAT` |
 | Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Prompt (required) | `prompt` | string | The prompt text |
-| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant." |
-| Prompt Images | `prompt-images` | array[string] | The prompt images |
+| Prompt (required) | `prompt` | string | The prompt text. |
+| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant.". |
+| Prompt Images | `prompt-images` | array[string] | The prompt images. |
 | [Chat History](#chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
-| Seed | `seed` | integer | The seed |
-| Temperature | `temperature` | number | The temperature for sampling |
-| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |
+| Seed | `seed` | integer | The seed. |
+| Temperature | `temperature` | number | The temperature for sampling. |
+| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate. |
 </div>
 
 
@@ -557,12 +557,12 @@ Incorporate external chat history, specifically previous messages within the con
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#chat-content) | `content` | array | The message content  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'  |
+| [Content](#chat-content) | `content` | array | The message content.  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
 </div>
 <h4 id="chat-content">Content</h4>
 
-The message content
+The message content.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -590,7 +590,7 @@ The image URL
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Text | `text` | string | Text |
+| Text | `text` | string | Text. |
 </div>
 
 

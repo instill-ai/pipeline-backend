@@ -29,7 +29,7 @@
   "TASK_DETECT_ACTIVITY": {
     "instillShortDescription": "Detect speech segments in audio data using Voice Activity Detection (VAD). This task processes the input audio to 16kHz mono format, identifies periods of human speech, and outputs time segments for each detected speech activity.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "audio": {
@@ -77,7 +77,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "properties": {
         "segments": {
@@ -101,7 +101,7 @@
   "TASK_SEGMENT": {
     "instillShortDescription": "Segment audio data into pieces based on the provided time segments.",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "audio": {
@@ -136,7 +136,7 @@
       "type": "object"
     },
     "output": {
-      "description": "Output",
+      "description": "Output.",
       "instillUIOrder": 0,
       "properties": {
         "audio-segments": {

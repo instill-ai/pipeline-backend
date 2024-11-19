@@ -10,7 +10,7 @@
   "id": "slack",
   "public": true,
   "title": "Slack",
-  "description": "Get and send message on Slack",
+  "description": "Get and send message on Slack.",
   "tombstone": false,
   "type": "COMPONENT_TYPE_APPLICATION",
   "uid": "1e9f469e-da5e-46eb-8a89-23466627e3b5",

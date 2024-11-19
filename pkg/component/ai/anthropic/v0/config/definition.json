@@ -8,7 +8,7 @@
   "id": "anthropic",
   "public": true,
   "title": "Anthropic",
-  "description": "Connect the AI models served on the Anthropic Platform",
+  "description": "Connect the AI models served on the Anthropic Platform.",
   "type": "COMPONENT_TYPE_AI",
   "uid": "42bdb620-74ad-486a-82da-25e45431b42c",
   "vendor": "Anthropic",

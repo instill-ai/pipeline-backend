@@ -1,7 +1,7 @@
 {
   "$defs": {
     "search-subject": {
-      "description": "Search for emails with a specific subject",
+      "description": "Search for emails with a specific subject.",
       "instillAcceptFormats": [
         "string"
       ],
@@ -15,7 +15,7 @@
       "type": "string"
     },
     "search-from": {
-      "description": "Search for emails from a specific email address",
+      "description": "Search for emails from a specific email address.",
       "instillAcceptFormats": [
         "string"
       ],
@@ -29,7 +29,7 @@
       "type": "string"
     },
     "search-to": {
-      "description": "Search for emails to a specific email address",
+      "description": "Search for emails to a specific email address.",
       "instillAcceptFormats": [
         "string"
       ],
@@ -43,7 +43,7 @@
       "type": "string"
     },
     "limit": {
-      "description": "The maximum number of emails to search for",
+      "description": "The maximum number of emails to search for.",
       "instillAcceptFormats": [
         "integer"
       ],
@@ -56,7 +56,7 @@
       "type": "integer"
     },
     "date": {
-      "description": "Search for emails with the date the email was sent",
+      "description": "Search for emails with the date the email was sent.",
       "instillFormat": "string",
       "instillAcceptFormats": [
         "string"
@@ -71,7 +71,7 @@
       "type": "string"
     },
     "search-email-message": {
-      "description": "Search for emails with a specific message",
+      "description": "Search for emails with a specific message.",
       "instillAcceptFormats": [
         "string"
       ],
@@ -88,11 +88,11 @@
   "TASK_SEND_EMAIL": {
     "instillShortDescription": "Send an email to recipients",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "properties": {
         "recipients": {
-          "description": "The email addresses of the recipients",
+          "description": "The email addresses of the recipients.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -109,7 +109,7 @@
           "type": "array"
         },
         "cc": {
-          "description": "The email addresses for Carbon Copy",
+          "description": "The email addresses for Carbon Copy.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -126,7 +126,7 @@
           "type": "array"
         },
         "bcc": {
-          "description": "The email addresses for Blind Carbon Copy",
+          "description": "The email addresses for Blind Carbon Copy.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -143,7 +143,7 @@
           "type": "array"
         },
         "subject": {
-          "description": "The subject of the email",
+          "description": "The subject of the email.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -157,7 +157,7 @@
           "type": "string"
         },
         "message": {
-          "description": "The message to be sent",
+          "description": "The message to be sent.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -180,11 +180,11 @@
       "type": "object"
     },
     "output": {
-      "description": "The result of sending the email",
+      "description": "The result of sending the email.",
       "instillUIOrder": 0,
       "properties": {
         "result": {
-          "description": "The result of sending the email",
+          "description": "The result of sending the email.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Result",
@@ -201,18 +201,18 @@
   "TASK_READ_EMAILS": {
     "instillShortDescription": "Read emails from a mailbox",
     "input": {
-      "description": "Input",
+      "description": "Input.",
       "instillUIOrder": 0,
       "instillEditOnNodeFields": [
         "search"
       ],
       "properties": {
         "search": {
-          "description": "The search criteria for the emails",
+          "description": "The search criteria for the emails.",
           "instillUIOrder": 0,
           "properties": {
             "mailbox": {
-              "description": "The mailbox to search for emails",
+              "description": "The mailbox to search for emails.",
               "instillAcceptFormats": [
                 "string"
               ],
@@ -264,48 +264,48 @@
       "type": "object"
     },
     "output": {
-      "description": "The emails that match the search criteria",
+      "description": "The emails that match the search criteria.",
       "instillUIOrder": 0,
       "properties": {
         "emails": {
-          "description": "The emails that match the search criteria",
+          "description": "The emails that match the search criteria.",
           "instillUIOrder": 0,
           "items": {
             "properties": {
               "date": {
-                "description": "The date the email was sent",
+                "description": "The date the email was sent.",
                 "instillUIOrder": 0,
                 "instillFormat": "string",
                 "title": "Date",
                 "type": "string"
               },
               "from": {
-                "description": "The email address of the sender",
+                "description": "The email address of the sender.",
                 "instillUIOrder": 1,
                 "instillFormat": "string",
                 "title": "From",
                 "type": "string"
               },
               "to": {
-                "description": "The email addresses of the recipient",
+                "description": "The email addresses of the recipient.",
                 "instillUIOrder": 2,
                 "instillFormat": "array:string",
                 "items": {
-                  "description": "The email address of the recipient",
+                  "description": "The email address of the recipient.",
                   "type": "string"
                 },
                 "title": "To",
                 "type": "array"
               },
               "subject": {
-                "description": "The subject of the email",
+                "description": "The subject of the email.",
                 "instillUIOrder": 3,
                 "instillFormat": "string",
                 "title": "Subject",
                 "type": "string"
               },
               "message": {
-                "description": "The message of the email",
+                "description": "The message of the email.",
                 "instillUIOrder": 4,
                 "instillFormat": "string",
                 "title": "Message",
