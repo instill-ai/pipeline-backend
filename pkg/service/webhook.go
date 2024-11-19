@@ -178,6 +178,17 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 				if err != nil {
 					return DispatchPipelineWebhookEventResult{}, err
 				}
+			} else {
+				_, err = s.triggerAsyncPipeline(ctx, triggerParams{
+					ns:                 loadPipelineResult.ns,
+					pipelineID:         loadPipelineResult.pipeline.ID,
+					pipelineUID:        loadPipelineResult.pipeline.UID,
+					pipelineReleaseID:  loadPipelineResult.release.ID,
+					pipelineReleaseUID: loadPipelineResult.release.UID,
+					userUID:            loadPipelineResult.ns.NsUID,
+					requesterUID:       loadPipelineResult.ns.NsUID,
+					pipelineTriggerID:  pipelineTriggerID.String(),
+				})
 			}
 		}
 	}

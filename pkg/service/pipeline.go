@@ -1299,6 +1299,15 @@ func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resourc
 		return nil, err
 	}
 
+	if err := s.configureRunOn(ctx, configureRunOnParams{
+		Namespace:   ns,
+		pipelineUID: dbPipeline.UID,
+		releaseUID:  dbCreatedPipelineRelease.UID,
+		recipe:      dbCreatedPipelineRelease.Recipe,
+	}); err != nil {
+		return nil, err
+	}
+
 	return s.converter.ConvertPipelineReleaseToPB(ctx, dbPipeline, dbCreatedPipelineRelease, pipelinepb.Pipeline_VIEW_FULL)
 
 }
