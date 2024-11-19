@@ -1040,7 +1040,24 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 
 						walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[curr]
 					} else if seg.SegmentType == path.IndexSegment {
+						// insert instillFormat to items
+						arrayFormat, ok := walk.GetStructValue().Fields["instillFormat"]
 						walk = walk.GetStructValue().Fields["items"]
+						if !ok {
+							continue
+						}
+						// It will be like `array:image/*``
+						bef, _, ok := strings.Cut(arrayFormat.GetStringValue(), "/")
+						if !ok {
+							continue
+						}
+						_, instillFormat, ok := strings.Cut(bef, ":")
+						if !ok {
+							continue
+						}
+						if walk.GetStructValue() != nil {
+							walk.GetStructValue().Fields["instillFormat"] = structpb.NewStringValue(instillFormat)
+						}
 					} else {
 						walk, _ = structpb.NewValue(map[string]interface{}{
 							"title":         v.Title,
