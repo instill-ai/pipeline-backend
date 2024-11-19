@@ -170,9 +170,7 @@ func (f *binaryFetcher) FetchFromURL(ctx context.Context, url string) (body []by
 	}
 
 	body = resp.Body()
-	if h := resp.Header().Get("Content-Type"); h != "" {
-		contentType = h
-	}
+	contentType = strings.Split(mimetype.Detect(body).String(), ";")[0]
 
 	if disposition := resp.Header().Get("Content-Disposition"); disposition == "" {
 		if strings.HasPrefix(disposition, "attachment") {
@@ -272,10 +270,11 @@ func (f *artifactBinaryFetcher) fetchFromBlobStorage(ctx context.Context, urlUID
 	bucketName := "instill-ai-blob"
 	objectPath := *objectRes.Object.Path
 
-	b, contentType, err = f.minIOClient.GetFile(ctx, bucketName, objectPath)
+	b, _, err = f.minIOClient.GetFile(ctx, bucketName, objectPath)
 	if err != nil {
 		return nil, "", "", err
 	}
+	contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
 	return b, contentType, objectRes.Object.Name, nil
 }
 

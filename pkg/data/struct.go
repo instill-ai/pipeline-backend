@@ -361,7 +361,17 @@ func (u *Unmarshaler) unmarshalInterface(v format.Value, field reflect.Value, st
 				}
 			}
 		}
-		field.Set(reflect.ValueOf(v))
+		if f, ok := v.(*fileData); ok {
+			file, err := NewBinaryFromBytes(f.raw, f.contentType, f.filename)
+			if err != nil {
+				return err
+			}
+			field.Set(reflect.ValueOf(file))
+			return nil
+		} else {
+			field.Set(reflect.ValueOf(v))
+		}
+
 		return nil
 	}
 	return fmt.Errorf("cannot unmarshal %T into %v", v, field.Type())
