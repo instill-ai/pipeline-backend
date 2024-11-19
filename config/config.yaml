@@ -100,3 +100,4 @@ appbackend:
 apigateway:
   host: api-gateway
   publicport: 8080
+  tlsenabled: false
