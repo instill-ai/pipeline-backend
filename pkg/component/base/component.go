@@ -127,7 +127,7 @@ type EventSettings struct {
 
 type RegisterEventSettings struct {
 	EventSettings
-	WebhookURL string
+	RegistrationUID uuid.UUID
 }
 
 type UnregisterEventSettings struct {

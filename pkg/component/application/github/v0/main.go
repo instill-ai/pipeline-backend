@@ -4,6 +4,7 @@ package github
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -139,6 +140,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 
 func (c *component) IdentifyEvent(ctx context.Context, rawEvent *base.RawEvent) (identifierResult *base.IdentifierResult, err error) {
 
+	// TODO: validate signature
 	if len(rawEvent.Header["x-github-event"]) > 0 && rawEvent.Header["x-github-event"][0] == "ping" {
 		return &base.IdentifierResult{
 			SkipTrigger: true,
@@ -178,8 +180,9 @@ func (c *component) ParseEvent(ctx context.Context, rawEvent *base.RawEvent) (pa
 }
 
 func (c *component) RegisterEvent(ctx context.Context, settings *base.RegisterEventSettings) ([]base.Identifier, error) {
-
-	// TODO: support more events
+	// TODO: Handle errors from CreateHook and EditHook properly
+	// TODO: Support additional GitHub webhook events beyond 'star'
+	// TODO: Add validation for repository format and webhook configuration
 	setup, err := settings.Setup.ToStructValue()
 	if err != nil {
 		return nil, err
@@ -199,27 +202,35 @@ func (c *component) RegisterEvent(ctx context.Context, settings *base.RegisterEv
 
 	// TODO: avoid directly reading from config
 	host := config.Config.Server.InstillCoreHost
-	url := fmt.Sprintf("%s/v1beta/pipeline-webhooks/github", host)
 
-	// TODO: add secret
-	hooks, _, err := githubClient.Repositories.ListHooks(ctx, namespace, repo, &github.ListOptions{})
-	if err != nil {
-		return nil, err
+	hooks := []*github.Hook{}
+	page := 1
+	for {
+		pageHooks, _, err := githubClient.Repositories.ListHooks(ctx, namespace, repo, &github.ListOptions{Page: page, PerPage: 100})
+		if err != nil {
+			break
+		}
+		if len(pageHooks) == 0 {
+			break
+		}
+		hooks = append(hooks, pageHooks...)
+		page++
 	}
 
-	existingHook := false
 	hookID := int64(0)
+	existingHook := false
 	for _, hook := range hooks {
-
-		if *hook.Config.URL == url && hook.Events[0] == "star" {
-			existingHook = true
-			_, _, err := githubClient.Repositories.EditHook(ctx, namespace, repo, hook.GetID(), &github.Hook{
-				Active: github.Bool(true),
-			})
-			if err != nil {
-				return nil, err
-			}
+		parsedURL, err := url.Parse(hook.GetConfig().GetURL())
+		if err != nil {
+			return nil, err
+		}
+		query, err := url.ParseQuery(parsedURL.RawQuery)
+		if err != nil {
+			return nil, err
+		}
+		if parsedURL.Path == "/v1beta/pipeline-webhooks/github" && query.Get("uid") == settings.RegistrationUID.String() {
 			hookID = hook.GetID()
+			existingHook = true
 			break
 		}
 	}
@@ -229,27 +240,37 @@ func (c *component) RegisterEvent(ctx context.Context, settings *base.RegisterEv
 		if strings.HasPrefix(host, "https://") {
 			insecureSSL = github.String("0")
 		}
+		u := fmt.Sprintf("%s/v1beta/pipeline-webhooks/github?uid=%s", host, settings.RegistrationUID.String())
+
 		hook, _, err := githubClient.Repositories.CreateHook(ctx, namespace, repo, &github.Hook{
 			Config: &github.HookConfig{
-				URL:         github.String(url),
+				URL:         github.String(u),
 				ContentType: github.String("json"),
 				InsecureSSL: insecureSSL,
+				Secret:      github.String(settings.RegistrationUID.String()),
 			},
 			Events: []string{"star"},
 			Active: github.Bool(true),
 		})
-
 		if err != nil {
-			return nil, err
+			// TODO: Handle error
+			return nil, nil
 		}
 		hookID = hook.GetID()
+	} else {
+		_, _, err := githubClient.Repositories.EditHook(ctx, namespace, repo, hookID, &github.Hook{
+			Active: github.Bool(true),
+		})
+		if err != nil {
+			// TODO: Handle error
+			return nil, nil
+		}
 	}
 
 	return []base.Identifier{{"hook-id": hookID}}, nil
 }
 
 func (c *component) UnregisterEvent(ctx context.Context, settings *base.UnregisterEventSettings, identifier []base.Identifier) error {
-	// return nil
 	setup, err := settings.Setup.ToStructValue()
 	if err != nil {
 		return err
@@ -269,12 +290,10 @@ func (c *component) UnregisterEvent(ctx context.Context, settings *base.Unregist
 
 	for _, id := range identifier {
 		if hookID, ok := id["hook-id"]; ok {
-			_, _, err := githubClient.Repositories.EditHook(ctx, namespace, repo, int64(hookID.(float64)), &github.Hook{
+			// Note: Only repository administrators can delete webhooks, so we temporarily disable it instead
+			_, _, _ = githubClient.Repositories.EditHook(ctx, namespace, repo, int64(hookID.(float64)), &github.Hook{
 				Active: github.Bool(false),
 			})
-			if err != nil {
-				return err
-			}
 		}
 	}
 	return nil
