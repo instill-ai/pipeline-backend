@@ -251,12 +251,14 @@ func (s *service) initEventWorkflow(ctx context.Context, params initEventWorkflo
 				return fmt.Errorf("cannot listen to data outside of `on`")
 			}
 
-			p, err := path.NewPath(strings.Join(s[2:], "."))
-			if err != nil {
-				return err
-			}
-
 			if s[1] == params.eventID {
+				if s[2] != "message" {
+					return fmt.Errorf("only `message` is supported for event %s", params.eventID)
+				}
+				p, err := path.NewPath(strings.Join(s[3:], "."))
+				if err != nil {
+					return err
+				}
 				messageValue, err := params.parsedMessage.Get(p)
 				if err != nil {
 					return err
