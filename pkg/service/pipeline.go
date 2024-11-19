@@ -368,11 +368,7 @@ func (s *service) marshalEventSettings(ctx context.Context, ns resource.Namespac
 	return cfg, st, nil
 }
 
-func (s *service) configureRunOn(ctx context.Context, params configureRunOnParams) error {
-
-	if params.recipe == nil {
-		return nil
-	}
+func (s *service) clearRunOn(ctx context.Context, params configureRunOnParams) error {
 	// Unregister all webhooks from vendor
 	runOn, err := s.repository.ListPipelineRunOns(ctx, params.pipelineUID, params.releaseUID)
 	if err != nil {
@@ -409,6 +405,14 @@ func (s *service) configureRunOn(ctx context.Context, params configureRunOnParam
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (s *service) configureRunOn(ctx context.Context, params configureRunOnParams) error {
+
+	if params.recipe == nil {
+		return nil
+	}
 
 	// Register all events from vendor
 	if params.recipe != nil && len(params.recipe.On) > 0 {
@@ -425,11 +429,16 @@ func (s *service) configureRunOn(ctx context.Context, params configureRunOnParam
 						return err
 					}
 
+					registrationUID := params.pipelineUID
+					if params.releaseUID != uuid.Nil {
+						registrationUID = params.releaseUID
+					}
 					identifiers, err := s.component.RegisterEvent(ctx, v.Type, &base.RegisterEventSettings{
 						EventSettings: base.EventSettings{
 							Config: cfg,
 							Setup:  setup,
 						},
+						RegistrationUID: registrationUID,
 					})
 					if err != nil {
 						return err
@@ -486,7 +495,7 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	var existingPipeline *datamodel.Pipeline
 	// Validation: Pipeline existence
-	if existingPipeline, _ = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true, false); existingPipeline == nil {
+	if existingPipeline, _ = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, false); existingPipeline == nil {
 		return nil, err
 	}
 
@@ -535,6 +544,15 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	dbPipeline, err = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, toUpdPipeline.Id, false, true)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := s.clearRunOn(ctx, configureRunOnParams{
+		Namespace:   ns,
+		pipelineUID: dbPipeline.UID,
+		releaseUID:  uuid.Nil,
+		recipe:      existingPipeline.Recipe,
+	}); err != nil {
 		return nil, err
 	}
 
