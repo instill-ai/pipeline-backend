@@ -51,6 +51,11 @@ func (c *RenameInstillFormat) migratePipeline() error {
 									varContent.Content[k].Value = "format"
 									isRecipeUpdated = true
 								}
+								if varContent.Content[k].Value == "format" && varContent.Content[k+1].Value == "*/*" {
+									varContent.Content[k+1].Style = yaml.FlowStyle
+									varContent.Content[k+1].Value = "file"
+									isRecipeUpdated = true
+								}
 							}
 						}
 						break
@@ -103,6 +108,11 @@ func (c *RenameInstillFormat) migratePipelineRelease() error {
 							for k := 0; k < len(varContent.Content); k += 2 {
 								if varContent.Content[k].Value == "instill-format" {
 									varContent.Content[k].Value = "format"
+									isRecipeUpdated = true
+								}
+								if varContent.Content[k].Value == "format" && varContent.Content[k+1].Value == "*/*" {
+									varContent.Content[k+1].Style = yaml.FlowStyle
+									varContent.Content[k+1].Value = "file"
 									isRecipeUpdated = true
 								}
 							}
