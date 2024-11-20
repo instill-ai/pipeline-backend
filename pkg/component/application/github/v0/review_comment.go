@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/go-github/v62/github"
@@ -52,7 +53,7 @@ func (githubClient *Client) listReviewCommentsTask(ctx context.Context, props *s
 	// The time will be 2006-01-02 00:00:00 +0000 UTC exactly
 	sinceTime, err := time.Parse(time.DateOnly, inputStruct.Since)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parse since time: %w", err)
 	}
 	opts := &github.PullRequestListCommentsOptions{
 		Sort:      inputStruct.Sort,

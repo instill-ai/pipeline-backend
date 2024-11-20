@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/go-github/v62/github"
@@ -102,7 +103,7 @@ func (githubClient *Client) listIssuesTask(ctx context.Context, props *structpb.
 	// The time will be 2006-01-02 00:00:00 +0000 UTC exactly
 	sinceTime, err := time.Parse(time.DateOnly, inputStruct.Since)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parse since time: %w", err)
 	}
 	opts := &github.IssueListByRepoOptions{
 		State:     inputStruct.State,
