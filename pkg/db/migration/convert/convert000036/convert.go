@@ -81,16 +81,16 @@ func (c *RenameInstillFormat) migratePipeline() error {
 }
 
 func (c *RenameInstillFormat) migratePipelineRelease() error {
-	pipelines := make([]*datamodel.Pipeline, 0, batchSize)
-	return c.DB.Select("uid", "recipe_yaml").FindInBatches(&pipelines, batchSize, func(tx *gorm.DB, _ int) error {
-		for _, p := range pipelines {
+	releases := make([]*datamodel.PipelineRelease, 0, batchSize)
+	return c.DB.Select("uid", "recipe_yaml").FindInBatches(&releases, batchSize, func(tx *gorm.DB, _ int) error {
+		for _, r := range releases {
 			isRecipeUpdated := false
-			l := c.Logger.With(zap.String("pipelineReleaseUID", p.UID.String()))
+			l := c.Logger.With(zap.String("pipelineReleaseUID", r.UID.String()))
 
 			var node yaml.Node
-			if p.Recipe != nil {
+			if r.Recipe != nil {
 				// Update recipe_yaml content
-				if err := yaml.Unmarshal([]byte(p.RecipeYAML), &node); err != nil {
+				if err := yaml.Unmarshal([]byte(r.RecipeYAML), &node); err != nil {
 					return fmt.Errorf("unmarshalling recipe yaml: %w", err)
 				}
 
@@ -122,7 +122,7 @@ func (c *RenameInstillFormat) migratePipelineRelease() error {
 					return fmt.Errorf("marshalling recipe: %w", err)
 				}
 				recipeYAML := buf.String()
-				result := tx.Model(p).Where("uid = ?", p.UID).Update("recipe_yaml", recipeYAML)
+				result := tx.Model(r).Where("uid = ?", r.UID).Update("recipe_yaml", recipeYAML)
 				if result.Error != nil {
 					l.Error("Failed to update pipeline release.")
 					return fmt.Errorf("updating pipeline recipe: %w", result.Error)
