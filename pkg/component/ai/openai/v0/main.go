@@ -183,6 +183,25 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		userContents := []Content{}
 		userContents = append(userContents, Content{Type: "text", Text: &inputStruct.Prompt})
 		for _, image := range inputStruct.Images {
+			if image.Height().Integer() > 8192 || image.Width().Integer() > 8192 {
+				// Calculate new dimensions maintaining aspect ratio with max length 8192
+				ratio := float64(image.Width().Integer()) / float64(image.Height().Integer())
+				var newWidth, newHeight int
+
+				if image.Width().Integer() > image.Height().Integer() {
+					newWidth = 8192
+					newHeight = int(float64(newWidth) / ratio)
+				} else {
+					newHeight = 8192
+					newWidth = int(float64(newHeight) * ratio)
+				}
+
+				image, err = image.Resize(newWidth, newHeight)
+				if err != nil {
+					job.Error.Error(ctx, err)
+					return
+				}
+			}
 			i, err := image.DataURI()
 			if err != nil {
 				job.Error.Error(ctx, err)
