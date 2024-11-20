@@ -717,9 +717,9 @@
           "type": "string"
         },
         "since": {
-          "default": "2021-01-01T00:00:00Z",
+          "default": "2021-01-01",
           "title": "Since",
-          "description": "Only comments updated at or after this time are returned. Default is 2021-01-01T00:00:00Z.",
+          "description": "Date (in `YYYY-MM-DD` format) from which comments will start to be fetched. The date will be in the UTC timezone.",
           "instillFormat": "string",
           "instillAcceptFormats": [
             "string"
@@ -1063,9 +1063,9 @@
           "type": "string"
         },
         "since": {
-          "default": "2021-01-01T00:00:00Z",
+          "default": "2021-01-01",
           "title": "Since",
-          "description": "Only issues updated at or after this time are returned. Default is 2021-01-01T00:00:00Z.",
+          "description": "Date (in `YYYY-MM-DD` format) from which issues will start to be fetched. The date will be in the UTC timezone.",
           "instillFormat": "string",
           "instillAcceptFormats": [
             "string"

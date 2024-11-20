@@ -296,7 +296,7 @@ Get the review comments in a pull request. The comments can be on a specific lin
 | PR Number | `pr-number` | integer | Number of the PR. Default is `0`, which retrieves all comments on all PRs in the repository. |
 | Sort | `sort` | string | Sort the comments by created, updated. Default is created. |
 | Direction | `direction` | string | Direction of the sort, including asc or desc. Default is desc. |
-| Since | `since` | string | Only comments updated at or after this time are returned. Default is 2021-01-01T00:00:00Z. |
+| Since | `since` | string | Date (in `YYYY-MM-DD` format) from which comments will start to be fetched. The date will be in the UTC timezone. |
 | Page | `page` | integer | Page number of the results to fetch. Default is 1. |
 | Per Page | `per-page` | integer | Number of results to fetch per page. Default is 30. |
 </div>
@@ -437,7 +437,7 @@ Get the list of all issues in a repository,This can be a pull request or a gener
 | State | `state` | string | State of the issues, can be one of: open, closed, all. Default is open. |
 | Sort | `sort` | string | Sort the issues by created, updated, popularity, or long-running. Default is created. |
 | Direction | `direction` | string | Direction of the sort, can be one of: asc, desc. Default is desc. |
-| Since | `since` | string | Only issues updated at or after this time are returned. Default is 2021-01-01T00:00:00Z. |
+| Since | `since` | string | Date (in `YYYY-MM-DD` format) from which issues will start to be fetched. The date will be in the UTC timezone. |
 | No Pull Request | `no-pull-request` | boolean | Whether to `not` include pull requests in the response. Since issue and pr use the same indexing system in GitHub, the API returns all relevant objects (issues and pr). Default is false. |
 | Page | `page` | integer | Page number of the results to fetch. Default is 1. |
 | Per Page | `per-page` | integer | Number of results to fetch per page. Default is 30. |
