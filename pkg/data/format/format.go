@@ -56,6 +56,7 @@ type Image interface {
 	Width() Number
 	Height() Number
 	Convert(contentType string) (val Image, err error)
+	Resize(width, height int) (val Image, err error)
 }
 
 type Video interface {

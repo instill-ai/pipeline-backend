@@ -173,3 +173,34 @@ func (i *imageData) Get(p *path.Path) (v format.Value, err error) {
 
 	return result.Get(remainingPath)
 }
+
+func (i *imageData) Resize(width, height int) (format.Image, error) {
+	img, _, err := goimage.Decode(bytes.NewReader(i.raw))
+	if err != nil {
+		return nil, fmt.Errorf("error decoding image for resize: %v", err)
+	}
+
+	// Create new image with desired dimensions
+	resized := goimage.NewRGBA(goimage.Rect(0, 0, width, height))
+
+	// Simple nearest-neighbor scaling
+	scaleX := float64(img.Bounds().Dx()) / float64(width)
+	scaleY := float64(img.Bounds().Dy()) / float64(height)
+
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			srcX := int(float64(x) * scaleX)
+			srcY := int(float64(y) * scaleY)
+			resized.Set(x, y, img.At(srcX, srcY))
+		}
+	}
+
+	// Encode resized image to PNG format
+	buf := new(bytes.Buffer)
+	if err := png.Encode(buf, resized); err != nil {
+		return nil, fmt.Errorf("error encoding resized image: %v", err)
+	}
+
+	// Create new image data from encoded bytes
+	return NewImageFromBytes(buf.Bytes(), PNG, "")
+}
