@@ -55,3 +55,50 @@ A new message event from Slack.
 | Display Name | `display-name` | string | Display name of the Slack user. |
 </div>
 </details>
+
+## Example Recipes
+
+**Send a message to Slack when a new message is posted in a channel**
+
+```yaml
+# VDP Version
+version: v1beta
+
+on:
+  slack-0:
+    type: slack
+    event: EVENT_NEW_MESSAGE
+    config:
+      channel-names:
+        - channel-to-be-listened
+    setup: ${connection.my-slack-connection}
+
+variable:
+  message:
+    title: message
+    format: string
+    listen:
+      - ${on.slack-0.message.text}
+  user:
+    title: user
+    format: string
+    listen:
+      - ${on.slack-0.message.user.name}
+  channel:
+    title: channel
+    format: string
+    listen:
+      - ${on.slack-0.message.channel.name}
+
+component:
+  slack-0:
+    type: slack
+    input:
+      channel-name: channel-for-notification
+      message: Message received in #${variable.channel} from @${variable.user}: ${variable.message}
+      as-user: false
+    condition:
+    setup: ${connection.my-slack-connection}
+    task: TASK_WRITE_MESSAGE
+
+```

@@ -1,5 +1,9 @@
 ## Supported events
 
+<InfoBlock type="warning" title="Warning">
+  Only repository owners can configure event. Make sure you have owner permissions for the repository you want to monitor.
+</InfoBlock>
+
 ### Star Created Event
 
 A star created event from GitHub.
@@ -169,6 +173,9 @@ A star created event from GitHub.
 
 ## Example Recipes
 
+
+**Summarise and pick the most important issues from this list**
+
 Recipe for the [List GitHub Repo Issues](https://instill.tech/instill-ai/pipelines/github-demo/playground) pipeline.
 
 ```yaml
@@ -212,4 +219,62 @@ output:
   result:
     title: Result
     value: ${anthropic-0.output.text}
+```
+
+**Send a message to Slack when a repository is starred**
+
+```yaml
+# VDP Version
+version: v1beta
+on:
+  github-0:
+    type: github
+    event: EVENT_STAR_CREATED
+    config:
+      repository: instill-ai/instill-core
+    setup: ${connection.my-github-connection}
+
+variable:
+  repository:
+    title: repository
+    format: string
+    listen:
+      - ${on.github-0.message.repository.full-name}
+  user:
+    title: user
+    format: string
+    listen:
+      - ${on.github-0.message.sender.login}
+  description:
+    title: user
+    format: string
+    listen:
+      - ${on.github-0.message.repository.description}
+  stargazers-count:
+    title: stargazers-count
+    format: number
+    listen:
+      - ${on.github-0.message.repository.stargazers-count}
+
+output:
+  text:
+    value: ${variable.repository} ${variable.user}
+
+
+component:
+  slack-0:
+    type: slack
+    input:
+      channel-name: test-slack
+      message: |
+        ${variable.user} just starred ${variable.repository}!
+
+        *Repository Details:*
+        • Description: ${variable.description}
+        • Total Stars: ${variable.stargazers-count}
+      as-user: false
+    condition:
+    setup: ${connection.my-slack-connection}
+    task: TASK_WRITE_MESSAGE
+
 ```
