@@ -113,9 +113,9 @@ type Metadata struct {
 // Usage contains the token usages.
 type Usage struct {
 	// CompletionTokens is the number of completion tokens.
-	CompletionTokens int `json:"completion-tokens"`
+	CompletionTokens int `instill:"completion-tokens"`
 	// PromptTokens is the number of prompt tokens.
-	PromptTokens int `json:"prompt-tokens"`
+	PromptTokens int `instill:"prompt-tokens"`
 	// TotalTokens is the total number of tokens.
-	TotalTokens int `json:"total-tokens"`
+	TotalTokens int `instill:"total-tokens"`
 }

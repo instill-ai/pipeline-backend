@@ -168,7 +168,8 @@ func Init(
 		{
 			// PerplexityAI
 			conn := perplexityai.Init(baseComp)
-			conn = conn.WithInstillCredentials(secrets[conn.GetDefinitionID()])
+			// Secret doesn't allow hyphens
+			conn = conn.WithInstillCredentials(secrets["perplexityai"])
 			compStore.Import(conn)
 		}
 
