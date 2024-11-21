@@ -2,6 +2,8 @@ package github
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/google/go-github/v62/github"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -47,15 +49,16 @@ func (githubClient *Client) listReviewCommentsTask(ctx context.Context, props *s
 	if err != nil {
 		return nil, err
 	}
-	// from format like `2006-01-02T15:04:05Z07:00` to time.Time
-	sinceTime, err := parseTime(inputStruct.Since)
+	// from format like `2006-01-02` parse it into UTC time
+	// The time will be 2006-01-02 00:00:00 +0000 UTC exactly
+	sinceTime, err := time.Parse(time.DateOnly, inputStruct.Since)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parse since time: %w", err)
 	}
 	opts := &github.PullRequestListCommentsOptions{
 		Sort:      inputStruct.Sort,
 		Direction: inputStruct.Direction,
-		Since:     *sinceTime,
+		Since:     sinceTime,
 		ListOptions: github.ListOptions{
 			Page:    inputStruct.Page,
 			PerPage: min(inputStruct.PerPage, 100), // GitHub API only allows 100 per page

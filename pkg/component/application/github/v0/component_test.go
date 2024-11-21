@@ -260,7 +260,7 @@ func TestComponent_ListReviewCommentsTask(t *testing.T) {
 				PrNumber:  1,
 				Sort:      "created",
 				Direction: "asc",
-				Since:     "2021-01-01T00:00:00Z",
+				Since:     "2021-01-01",
 			},
 			wantResp: ListReviewCommentsResp{
 				ReviewComments: []ReviewComment{
@@ -284,7 +284,7 @@ func TestComponent_ListReviewCommentsTask(t *testing.T) {
 				PrNumber:  1,
 				Sort:      "created",
 				Direction: "asc",
-				Since:     "2021-01-01T00:00:00Z",
+				Since:     "2021-01-01",
 			},
 			wantErr: `403 API rate limit exceeded`,
 		},
@@ -299,7 +299,7 @@ func TestComponent_ListReviewCommentsTask(t *testing.T) {
 				PrNumber:  1,
 				Sort:      "created",
 				Direction: "asc",
-				Since:     "2021-01-01T00:00:00Z",
+				Since:     "2021-01-01",
 			},
 			wantErr: `404 Not Found`,
 		},
@@ -316,7 +316,7 @@ func TestComponent_ListReviewCommentsTask(t *testing.T) {
 				Direction: "asc",
 				Since:     "2021-0100:00:00Z",
 			},
-			wantErr: `invalid time format`,
+			wantErr: `^parse since time:.*cannot parse.*$`,
 		},
 	}
 	taskTesting(testcases, taskGetReviewComments, t)
@@ -537,7 +537,7 @@ func TestComponent_ListIssuesTask(t *testing.T) {
 				State:         "open",
 				Direction:     "asc",
 				Sort:          "created",
-				Since:         "2021-01-01T00:00:00Z",
+				Since:         "2021-01-01",
 				NoPullRequest: true,
 			},
 			wantResp: ListIssuesResp{
@@ -565,7 +565,7 @@ func TestComponent_ListIssuesTask(t *testing.T) {
 				State:         "open",
 				Direction:     "asc",
 				Sort:          "created",
-				Since:         "2021-01-01T00:00:00Z",
+				Since:         "2021-01-01",
 				NoPullRequest: true,
 			},
 			wantErr: `403 API rate limit exceeded`,
@@ -581,7 +581,7 @@ func TestComponent_ListIssuesTask(t *testing.T) {
 				State:         "open",
 				Direction:     "asc",
 				Sort:          "created",
-				Since:         "2021-01-01T00:00:00Z",
+				Since:         "2021-01-01",
 				NoPullRequest: true,
 			},
 			wantErr: `404 Not Found`,
@@ -600,7 +600,7 @@ func TestComponent_ListIssuesTask(t *testing.T) {
 				Since:         "2021-0Z",
 				NoPullRequest: true,
 			},
-			wantErr: `invalid time format`,
+			wantErr: `^parse since time:.*cannot parse.*$`,
 		},
 	}
 	taskTesting(testcases, taskListIssues, t)
