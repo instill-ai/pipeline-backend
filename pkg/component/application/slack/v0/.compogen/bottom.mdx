@@ -1,0 +1,57 @@
+## Supported events
+
+### New Message Event
+
+A new message event from Slack.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Configuration | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Channel Names (required) | `channel-names` | array[string] | Names of the Slack channels to listen to. |
+</div>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Event Message | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Timestamp | `timestamp` | string | Timestamp of the message. |
+| [Channel](#new-message-channel) | `channel` | object | Channel information. |
+| [User](#new-message-user) | `user` | object | User information. |
+| Message Text | `text` | string | Content of the message. |
+</div>
+
+<details>
+<summary>Event Message Objects</summary>
+
+<h4 id="new-message-channel">Channel</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Channel ID | `id` | string | Unique ID of the Slack channel. |
+| Channel Name | `name` | string | Name of the Slack channel. |
+</div>
+
+<h4 id="new-message-user">User</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| User ID | `id` | string | Unique ID of the Slack user. |
+| User Name | `name` | string | Username of the Slack user. |
+| Real Name | `real-name` | string | Real name of the Slack user. |
+| [Profile](#new-message-user-profile) | `profile` | object | User profile information. |
+</div>
+
+<h4 id="new-message-user-profile">Profile</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Display Name | `display-name` | string | Display name of the Slack user. |
+</div>
+</details>
