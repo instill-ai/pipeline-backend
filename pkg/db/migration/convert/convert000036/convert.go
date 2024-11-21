@@ -41,32 +41,33 @@ func (c *RenameInstillFormat) migratePipeline() error {
 				}
 
 				// Find and update the variable section
-				for i := 0; i < len(node.Content[0].Content); i += 2 {
-					if node.Content[0].Content[i].Value == "variable" {
-						variableNode := node.Content[0].Content[i+1]
-						for j := 0; j < len(variableNode.Content); j += 2 {
-							varContent := variableNode.Content[j+1]
-							for k := 0; k < len(varContent.Content); k += 2 {
-								if varContent.Content[k].Value == "instill-format" {
-									varContent.Content[k].Value = "format"
-									isRecipeUpdated = true
-								}
-								if varContent.Content[k].Value == "format" && varContent.Content[k+1].Value == "*/*" {
-									varContent.Content[k+1].Style = yaml.FlowStyle
-									varContent.Content[k+1].Value = "file"
-									isRecipeUpdated = true
-								}
-								if varContent.Content[k].Value == "format" && varContent.Content[k+1].Value == "array:*/*" {
-									varContent.Content[k+1].Style = yaml.FlowStyle
-									varContent.Content[k+1].Value = "array:file"
-									isRecipeUpdated = true
+				if len(node.Content) > 0 && len(node.Content[0].Content) > 0 {
+					for i := 0; i < len(node.Content[0].Content); i += 2 {
+						if node.Content[0].Content[i].Value == "variable" {
+							variableNode := node.Content[0].Content[i+1]
+							for j := 0; j < len(variableNode.Content); j += 2 {
+								varContent := variableNode.Content[j+1]
+								for k := 0; k < len(varContent.Content); k += 2 {
+									if varContent.Content[k].Value == "instill-format" {
+										varContent.Content[k].Value = "format"
+										isRecipeUpdated = true
+									}
+									if varContent.Content[k].Value == "format" && varContent.Content[k+1].Value == "*/*" {
+										varContent.Content[k+1].Style = yaml.FlowStyle
+										varContent.Content[k+1].Value = "file"
+										isRecipeUpdated = true
+									}
+									if varContent.Content[k].Value == "format" && varContent.Content[k+1].Value == "array:*/*" {
+										varContent.Content[k+1].Style = yaml.FlowStyle
+										varContent.Content[k+1].Value = "array:file"
+										isRecipeUpdated = true
+									}
 								}
 							}
+							break
 						}
-						break
 					}
 				}
-
 			}
 
 			if isRecipeUpdated {
@@ -105,32 +106,33 @@ func (c *RenameInstillFormat) migratePipelineRelease() error {
 				}
 
 				// Find and update the variable section
-				for i := 0; i < len(node.Content[0].Content); i += 2 {
-					if node.Content[0].Content[i].Value == "variable" {
-						variableNode := node.Content[0].Content[i+1]
-						for j := 0; j < len(variableNode.Content); j += 2 {
-							varContent := variableNode.Content[j+1]
-							for k := 0; k < len(varContent.Content); k += 2 {
-								if varContent.Content[k].Value == "instill-format" {
-									varContent.Content[k].Value = "format"
-									isRecipeUpdated = true
-								}
-								if varContent.Content[k].Value == "format" && varContent.Content[k+1].Value == "*/*" {
-									varContent.Content[k+1].Style = yaml.FlowStyle
-									varContent.Content[k+1].Value = "file"
-									isRecipeUpdated = true
-								}
-								if varContent.Content[k].Value == "format" && varContent.Content[k+1].Value == "array:*/*" {
-									varContent.Content[k+1].Style = yaml.FlowStyle
-									varContent.Content[k+1].Value = "array:file"
-									isRecipeUpdated = true
+				if len(node.Content) > 0 && len(node.Content[0].Content) > 0 {
+					for i := 0; i < len(node.Content[0].Content); i += 2 {
+						if node.Content[0].Content[i].Value == "variable" {
+							variableNode := node.Content[0].Content[i+1]
+							for j := 0; j < len(variableNode.Content); j += 2 {
+								varContent := variableNode.Content[j+1]
+								for k := 0; k < len(varContent.Content); k += 2 {
+									if varContent.Content[k].Value == "instill-format" {
+										varContent.Content[k].Value = "format"
+										isRecipeUpdated = true
+									}
+									if varContent.Content[k].Value == "format" && varContent.Content[k+1].Value == "*/*" {
+										varContent.Content[k+1].Style = yaml.FlowStyle
+										varContent.Content[k+1].Value = "file"
+										isRecipeUpdated = true
+									}
+									if varContent.Content[k].Value == "format" && varContent.Content[k+1].Value == "array:*/*" {
+										varContent.Content[k+1].Style = yaml.FlowStyle
+										varContent.Content[k+1].Value = "array:file"
+										isRecipeUpdated = true
+									}
 								}
 							}
+							break
 						}
-						break
 					}
 				}
-
 			}
 
 			if isRecipeUpdated {
