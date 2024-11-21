@@ -1,7 +1,7 @@
 {
   "TASK_CHAT": {
     "title": "Chat",
-    "instillShortDescription": "Generate response base on conversation input",
+    "instillShortDescription": "Generate response base on conversation input.",
     "input": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Chat Input",
@@ -45,7 +45,7 @@
                 "properties": {
                   "content": {
                     "description": "The message content.",
-                    "instillShortDescription": "The message content",
+                    "instillShortDescription": "The message content.",
                     "title": "Content",
                     "type": "array",
                     "items": {
@@ -80,7 +80,7 @@
                   },
                   "role": {
                     "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
-                    "instillShortDescription": "The message role, i.e. 'system', 'user' or 'assistant'",
+                    "instillShortDescription": "The message role, i.e. 'system', 'user' or 'assistant'.",
                     "instillAcceptFormats": [
                       "string"
                     ],
@@ -120,7 +120,7 @@
         },
         "parameter": {
           "description": "Input parameter.",
-          "instillShortDescription": "Input parameter",
+          "instillShortDescription": "Input parameter.",
           "type": "object",
           "properties": {
             "max-tokens": {
@@ -234,7 +234,7 @@
       "properties": {
         "data": {
           "description": "Output data.",
-          "instillShortDescription": "Output data",
+          "instillShortDescription": "Output data.",
           "type": "object",
           "properties": {
             "choices": {
@@ -326,7 +326,7 @@
         },
         "metadata": {
           "description": "Output metadata.",
-          "instillShortDescription": "Output metadata",
+          "instillShortDescription": "Output metadata.",
           "type": "object",
           "properties": {
             "usage": {

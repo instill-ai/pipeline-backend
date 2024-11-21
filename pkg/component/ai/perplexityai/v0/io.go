@@ -1,5 +1,8 @@
 package perplexityai
 
+// We expose them because we will use them to calculate the Instill Credit
+// after the IO struct is finished.
+
 // TextChatInput is the input for the TASK_CHAT task.
 type TextChatInput struct {
 	// Data contains the input data.
@@ -26,7 +29,9 @@ type InputMessage struct {
 	Name string `instill:"name"`
 }
 
-// InputContent is the content of a message.
+// Content is the content of a message.
+// We remain the structure of standardised AI design.
+// So, in Content, even though we only support Text, we still keep the Type field.
 type Content struct {
 	// Text is the text of the message.
 	Text string `instill:"text"`
@@ -44,7 +49,7 @@ type Parameter struct {
 	TopP float64 `instill:"top-p"`
 	// Stream is whether to stream the output.
 	Stream bool `instill:"stream"`
-	// Search Domain Filter gives the list of domains,
+	// SearchDomainFilter gives the list of domains,
 	// limit the citations used by the online model to URLs from the specified
 	// domains. Currently limited to only 3 domains for whitelisting and
 	// blacklisting. For blacklisting add a `-` to the beginning of the domain
