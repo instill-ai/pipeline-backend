@@ -1060,9 +1060,10 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 						}
 					} else {
 						walk, _ = structpb.NewValue(map[string]interface{}{
-							"title":         v.Title,
-							"description":   v.Description,
-							"instillFormat": "json",
+							"title":          v.Title,
+							"description":    v.Description,
+							"instillFormat":  "json",
+							"instillUIOrder": v.InstillUIOrder,
 						})
 					}
 
@@ -1070,10 +1071,11 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 				if walk.GetStructValue() != nil && walk.GetStructValue().Fields != nil {
 					instillFormat := walk.GetStructValue().Fields["instillFormat"].GetStringValue()
 					m, err = structpb.NewValue(map[string]interface{}{
-						"title":         v.Title,
-						"description":   v.Description,
-						"type":          walk.GetStructValue().Fields["type"].GetStringValue(),
-						"instillFormat": checkFormat(instillFormat),
+						"title":          v.Title,
+						"description":    v.Description,
+						"type":           walk.GetStructValue().Fields["type"].GetStringValue(),
+						"instillFormat":  checkFormat(instillFormat),
+						"instillUIOrder": v.InstillUIOrder,
 					})
 					if err != nil {
 						return nil, err
@@ -1086,10 +1088,11 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 
 		} else {
 			m, err = structpb.NewValue(map[string]interface{}{
-				"title":         v.Title,
-				"description":   v.Description,
-				"type":          "string",
-				"instillFormat": "string",
+				"title":          v.Title,
+				"description":    v.Description,
+				"type":           "string",
+				"instillFormat":  "string",
+				"instillUIOrder": v.InstillUIOrder,
 			})
 		}
 
