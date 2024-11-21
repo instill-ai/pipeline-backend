@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.47.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.47.0-beta...v0.47.2-beta) (2024-11-21)
+
+
+### Bug Fixes
+
+* **github:** fix time format bug ([#866](https://github.com/instill-ai/pipeline-backend/issues/866)) ([94edc7c](https://github.com/instill-ai/pipeline-backend/commit/94edc7ca5971a0f51b7dca3fcdd08303bb6686a0))
+* **migration:** add array index check for migration 36 ([03bbf91](https://github.com/instill-ai/pipeline-backend/commit/03bbf91ef78d0357c164bd8469e2f24d9200a97a))
+
+
+### Miscellaneous Chores
+
+* release v0.47.2-beta ([a5f5c07](https://github.com/instill-ai/pipeline-backend/commit/a5f5c07e1b733be9f7b586d40b7b3d27a7b37791))
+
 ## [0.47.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.46.0-beta...v0.47.0-beta) (2024-11-20)
 
 
