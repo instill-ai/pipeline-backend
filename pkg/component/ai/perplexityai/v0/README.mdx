@@ -1,0 +1,236 @@
+---
+title: "Perplexity AI"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Perplexity AI component https://github.com/instill-ai/instill-core"
+---
+
+The Perplexity AI component is an AI component that allows users to connect the AI models served on the Perplexity Platform.
+It can carry out the following tasks:
+- [Chat](#chat)
+
+
+
+## Release Stage
+
+`Alpha`
+
+
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/perplexityai/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/perplexityai/v0/config/tasks.json) files respectively.
+
+
+
+
+## Setup
+
+
+In order to communicate with Perplexity, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| API Key | `api-key` | string | Fill in your API key from the vendor's platform.  |
+
+</div>
+
+
+
+
+## Supported Tasks
+
+### Chat
+
+Generate response base on conversation input.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CHAT` |
+| [Chat Data](#chat-chat-data) (required) | `data` | object | Input data. |
+| [Input Parameter](#chat-input-parameter) | `parameter` | object | Input parameter. |
+</div>
+
+
+<details>
+<summary> Input Objects in Chat</summary>
+
+<h4 id="chat-chat-data">Chat Data</h4>
+
+Input data.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Chat Messages](#chat-chat-messages) | `messages` | array | List of chat messages.  |
+| Model Name | `model` | string | The model to be used for `TASK_CHAT`.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`llama-3.1-sonar-small-128k-online`</li><li>`llama-3.1-sonar-large-128k-online`</li><li>`llama-3.1-sonar-huge-128k-online`</li></ul></details>  |
+</div>
+<h4 id="chat-chat-messages">Chat Messages</h4>
+
+List of chat messages.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Content](#chat-content) | `content` | array | The message content.  |
+| Name | `name` | string | An optional name for the participant. Provides the model information to differentiate between participants of the same role.  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`system`</li><li>`user`</li><li>`assistant`</li></ul></details>  |
+</div>
+<h4 id="chat-content">Content</h4>
+
+The message content.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Text Message | `text` | string | Text message.  |
+| Text | `type` | string | Text content type.  |
+</div>
+<h4 id="chat-input-parameter">Input Parameter</h4>
+
+Input parameter.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Frequency Penalty | `frequency-penalty` | number | A multiplicative penalty greater than 0. Values greater than 1.0 penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim. A value of 1.0 means no penalty. Incompatible with `presence_penalty`.  |
+| Max New Tokens | `max-tokens` | integer | The maximum number of completion tokens returned by the API. The total number of tokens requested in max_tokens plus the number of prompt tokens sent in messages must not exceed the context window token limit of model requested. If left unspecified, then the model will generate tokens until either it reaches its stop token or the end of its context window.  |
+| Presence Penalty | `presence-penalty` | number | A value between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics. Incompatible with `frequency_penalty`.  |
+| Search Domain Filter | `search-domain-filter` | string | Given a list of domains, limit the citations used by the online model to URLs from the specified domains. Currently limited to only 3 domains for whitelisting and blacklisting. For blacklisting add a `-` to the beginning of the domain string.  |
+| Search Recency Filter | `search-recency-filter` | string | Returns search results within the specified time interval - does not apply to images. Values include `month`, `week`, `day`, `hour`.  |
+| Stream | `stream` | boolean | If set, partial message deltas will be sent. Tokens will be sent as data-only server-sent events as they become available.  |
+| Temperature | `temperature` | number | The amount of randomness in the response, valued between 0 inclusive and 2 exclusive. Higher values are more random, and lower values are more deterministic.  |
+| Top K | `top-k` | number | The number of tokens to keep for highest top-k filtering, specified as an integer between 0 and 2048 inclusive. If set to 0, top-k filtering is disabled. We recommend either altering top_k or top_p, but not both.  |
+| Top P | `top-p` | number | The nucleus sampling threshold, valued between 0 and 1 inclusive. For each subsequent token, the model considers the results of the tokens with top_p probability mass. We recommend either altering top_k or top_p, but not both.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Output Data](#chat-output-data) | `data` | object | Output data. |
+| [Output Metadata](#chat-output-metadata) (optional) | `metadata` | object | Output metadata. |
+</div>
+
+<details>
+<summary> Output Objects in Chat</summary>
+
+<h4 id="chat-output-data">Output Data</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Choices](#chat-choices) | `choices` | array | List of chat completion choices. |
+| Citations | `citations` | array | List of citations. |
+</div>
+
+<h4 id="chat-choices">Choices</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Created | `created` | integer | The timestamp of when the chat completion was created. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
+| Finish Reason | `finish-reason` | string | The reason the model stopped generating tokens. |
+| Index | `index` | integer | The index of the choice in the list of choices. |
+| [Message](#chat-message) | `message` | object | A chat message generated by the model. |
+</div>
+
+<h4 id="chat-message">Message</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | string | The contents of the message. |
+| Role | `role` | string | The role of the author of this message. |
+</div>
+
+<h4 id="chat-output-metadata">Output Metadata</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Usage](#chat-usage) | `usage` | object | Usage statistics for the request. |
+</div>
+
+<h4 id="chat-usage">Usage</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Completion Tokens | `completion-tokens` | integer | Number of tokens in the generated response. |
+| Prompt Tokens | `prompt-tokens` | integer | Number of tokens in the prompt. |
+| Total Tokens | `total-tokens` | integer | Total number of tokens used in the request (prompt + completion). |
+</div>
+</details>
+
+
+
+## Example Recipes
+
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  prompt:
+    format: string
+    title: Prompt
+
+component:
+  perplexity-0:
+    type: perplexity-ai
+    task: TASK_CHAT
+    input:
+      data:
+        model: llama-3.1-sonar-small-128k-online
+        messages:
+          - content:
+            - text: Be precise and concise.
+              type: text
+            role: system
+          - content:
+            - text: ${variable.prompt}
+              type: text
+            role: user
+            name: chunhao
+      parameter:
+        max-tokens: 500
+        temperature: 0.2
+        top-p: 0.9
+        stream: false
+        search-domain-filter:
+          - perplexity.ai
+        search-recency-filter: month
+        top-k: 0
+        presence-penalty: 0
+        frequency-penalty: 1
+    setup:
+      api-key: ${secret.perplexity}
+
+output:
+  perplexity:
+    title: Perplexity
+    value: ${perplexity-0.output}
+
+```

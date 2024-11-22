@@ -312,3 +312,8 @@ func TrimBase64Mime(b64 string) string {
 func FormatToISO8601(ts *timestampPB.Timestamp) string {
 	return ts.AsTime().UTC().Format(time.RFC3339)
 }
+
+// UnixToISO8601 converts a Unix timestamp to an ISO8601 formatted string
+func UnixToISO8601(unix int64) string {
+	return time.Unix(unix, 0).UTC().Format(time.RFC3339)
+}
