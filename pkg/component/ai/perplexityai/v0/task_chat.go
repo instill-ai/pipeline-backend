@@ -13,6 +13,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
+	"github.com/instill-ai/x/errmsg"
 )
 
 const (
@@ -57,7 +58,8 @@ func (e *execution) executeTextChat(ctx context.Context, job *base.Job) error {
 			zap.Binary("chatReq", chatReqBytes),
 		)
 
-		err = fmt.Errorf("failed to send request, status code: %d, body: %s", restyResp.StatusCode(), bodyBytes)
+		msg := fmt.Sprintf("Perplexity API responded with status %d", restyResp.StatusCode())
+		err = errmsg.AddMessage(fmt.Errorf("perplexity responded with non-200 status"), msg)
 		job.Error.Error(ctx, err)
 		return err
 	}
