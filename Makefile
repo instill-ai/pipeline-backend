@@ -11,7 +11,7 @@ GOTEST_FLAGS := CFG_DATABASE_HOST=${TEST_DBHOST} CFG_DATABASE_NAME=${TEST_DBNAME
 #============================================================================
 
 .PHONY: dev
-dev:							## Run dev container
+dev: ## Run dev container
 	@docker compose ls -q | grep -q "instill-core" && true || \
 		(echo "Error: Run \"make latest PROFILE=exclude-pipeline\" in vdp repository (https://github.com/instill-ai/instill-core) in your local machine first." && exit 1)
 	@docker inspect --type container ${SERVICE_NAME} >/dev/null 2>&1 && echo "A container named ${SERVICE_NAME} is already running." || \
@@ -25,7 +25,7 @@ dev:							## Run dev container
 		--name ${SERVICE_NAME} \
 		instill/${SERVICE_NAME}:dev >/dev/null 2>&1
 .PHONY: latest
-latest:							## Run latest container
+latest: ## Run latest container
 	@docker compose ls -q | grep -q "instill-core" && true || \
 		(echo "Error: Run \"make latest PROFILE=exclude-pipeline\" in vdp repository (https://github.com/instill-ai/instill-core) in your local machine first." && exit 1)
 	@docker inspect --type container ${SERVICE_NAME} >/dev/null 2>&1 && echo "A container named ${SERVICE_NAME} is already running." || \
@@ -38,11 +38,11 @@ latest:							## Run latest container
 		-d instill/${SERVICE_NAME}:latest ./${SERVICE_NAME}-worker
 
 .PHONY: rm
-rm:								## Remove all running containers
+rm: ## Remove all running containers
 	@docker rm -f ${SERVICE_NAME} ${SERVICE_NAME}-worker >/dev/null 2>&1
 
 .PHONY: build-dev
-build-dev:							## Build dev docker image
+build-dev: ## Build dev docker image
 	@docker build \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
 		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
@@ -53,14 +53,14 @@ build-dev:							## Build dev docker image
 		-f Dockerfile.dev -t instill/${SERVICE_NAME}:dev .
 
 .PHONY: build-latest
-build-latest:							## Build latest docker image
+build-latest: ## Build latest docker image
 	@docker build \
 		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
 		-t instill/pipeline-backend:latest .
 
 .PHONY: go-gen
-go-gen:       					## Generate codes
+go-gen: ## Generate codes
 	go generate ./...
 
 .PHONY: dbtest-pre
@@ -68,7 +68,7 @@ dbtest-pre:
 	@${GOTEST_FLAGS} go run ./cmd/migration
 
 .PHONY: coverage
-coverage:
+coverage: ## Generate coverage report
 	@if [ "${DBTEST}" = "true" ]; then  make dbtest-pre; fi
 	@docker run --rm \
 		-v $(PWD):/${SERVICE_NAME} \
@@ -92,7 +92,7 @@ coverage:
 # If you encounter container test issues, install tparse locally:
 # go install github.com/mfridman/tparse/cmd/tparse@latest
 .PHONY: test
-test:
+test: ## Run unit test
 	@TAGS=""; \
 	if [ "$${OCR}" = "true" ]; then \
 		TAGS="$$TAGS,ocr"; \
@@ -115,7 +115,7 @@ test:
 	fi
 
 .PHONY: integration-test
-integration-test:				## Run integration test
+integration-test: ## Run integration test
 	@ # DB_HOST points to localhost by default. Override this variable if
 	@ # pipeline-backend's database isn't accessible at that host.
 	@TEST_FOLDER_ABS_PATH=${PWD} k6 run \
@@ -130,17 +130,17 @@ integration-test:				## Run integration test
 		integration-test/pipeline/rest.js --no-usage-report --quiet
 
 .PHONY: gen-mock
-gen-mock:
+gen-mock: ## Generate mock files
 	@go install github.com/gojuno/minimock/v3/cmd/minimock@v3.4.0
 	@go generate -run minimock ./...
 
 .PHONY: gen-component-doc
-gen-component-doc:				## Generate component docs
+gen-component-doc: ## Generate component docs
 	@rm -f $$(find ./pkg/component -name README.mdx | paste -d ' ' -s -)
 	@cd ./pkg/component/tools/compogen && go install .
 	@go generate -run compogen ./pkg/component/...
 
 .PHONY: help
-help:       	 				## Show this help
+help: ## Show this help
 	@echo "\nMakefile for local development"
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m (default: help)\n\nTargets:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
