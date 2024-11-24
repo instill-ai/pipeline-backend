@@ -21,7 +21,6 @@ const (
 func (c *OAuthConnector) WithOAuthConfig(s map[string]any) {
 	c.oAuthClientID = ReadFromGlobalConfig(cfgOAuthClientID, s)
 	c.oAuthClientSecret = ReadFromGlobalConfig(cfgOAuthClientSecret, s)
-
 }
 
 // SupportsOAuth checks whether the connector is configured to support OAuth.

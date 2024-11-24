@@ -44,6 +44,7 @@ func (m *MockRepositoriesService) GetCommit(ctx context.Context, owner, repo, sh
 	}
 	return commit, resp, nil
 }
+
 func (m *MockRepositoriesService) ListCommits(ctx context.Context, owner, repo string, opts *github.CommitsListOptions) ([]*github.RepositoryCommit, *github.Response, error) {
 	switch middleWare(owner) {
 	case 403:

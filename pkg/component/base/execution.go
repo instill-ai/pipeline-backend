@@ -29,13 +29,16 @@ type IExecution interface {
 	Execute(context.Context, []*Job) error
 }
 
+// Job is the job for the component.
 type Job struct {
 	Input  InputReader
 	Output OutputWriter
 	Error  ErrorHandler
 }
 
+// InputReader is an interface for reading input data from a job.
 type InputReader interface {
+	// ReadData reads the input data from the job into the provided struct.
 	ReadData(ctx context.Context, input any) (err error)
 
 	// Deprecated: Read() is deprecated and will be removed in a future version.
@@ -43,7 +46,10 @@ type InputReader interface {
 	// and will be phased out gradually.
 	Read(ctx context.Context) (input *structpb.Struct, err error)
 }
+
+// OutputWriter is an interface for writing output data to a job.
 type OutputWriter interface {
+	// WriteData writes the output data to the job from the provided struct.
 	WriteData(ctx context.Context, output any) (err error)
 
 	// Deprecated: Write() is deprecated and will be removed in a future
@@ -51,6 +57,8 @@ type OutputWriter interface {
 	// binary data and will be phased out gradually.
 	Write(ctx context.Context, output *structpb.Struct) (err error)
 }
+
+// ErrorHandler is an interface for handling errors from a job.
 type ErrorHandler interface {
 	Error(ctx context.Context, err error)
 }
@@ -83,19 +91,29 @@ func (e *ComponentExecution) GetComponent() IComponent { return e.Component }
 // GetComponentID returns the ID of the component that's being executed.
 func (e *ComponentExecution) GetComponentID() string { return e.ComponentID }
 
-func (e *ComponentExecution) GetTask() string                    { return e.Task }
-func (e *ComponentExecution) GetSetup() *structpb.Struct         { return e.Setup }
-func (e *ComponentExecution) GetSystemVariables() map[string]any { return e.SystemVariables }
-func (e *ComponentExecution) GetLogger() *zap.Logger             { return e.Component.GetLogger() }
+// GetTask returns the task that the component is executing.
+func (e *ComponentExecution) GetTask() string { return e.Task }
 
+// GetSetup returns the setup of the component.
+func (e *ComponentExecution) GetSetup() *structpb.Struct { return e.Setup }
+
+// GetSystemVariables returns the system variables of the component.
+func (e *ComponentExecution) GetSystemVariables() map[string]any { return e.SystemVariables }
+
+// GetLogger returns the logger of the component.
+func (e *ComponentExecution) GetLogger() *zap.Logger { return e.Component.GetLogger() }
+
+// GetTaskInputSchema returns the input schema of the task.
 func (e *ComponentExecution) GetTaskInputSchema() string {
 	return e.Component.GetTaskInputSchemas()[e.Task]
 }
+
+// GetTaskOutputSchema returns the output schema of the task.
 func (e *ComponentExecution) GetTaskOutputSchema() string {
 	return e.Component.GetTaskOutputSchemas()[e.Task]
 }
 
-// UsesInstillCredentials indicates wether the component setup includes the use
+// UsesInstillCredentials indicates whether the component setup includes the use
 // of global secrets (as opposed to a bring-your-own-key configuration) to
 // connect to external services. Components should override this method when
 // they have the ability to read global secrets and be executed without
@@ -121,13 +139,16 @@ func (e *ComponentExecution) getInputSchemaJSON(task string) (map[string]interfa
 	inputMap := taskSpecMap["properties"].(map[string]interface{})
 	return inputMap, nil
 }
-func (e *ComponentExecution) FillInDefaultValues(input *structpb.Struct) (*structpb.Struct, error) {
+
+// FillInDefaultValues fills in default values for the input based on the task's input schema
+func (e *ComponentExecution) FillInDefaultValues(input any) (any, error) {
 	inputMap, err := e.getInputSchemaJSON(e.Task)
 	if err != nil {
 		return nil, err
 	}
 	return e.fillInDefaultValuesWithReference(input, inputMap)
 }
+
 func hasNextLevel(valueMap map[string]interface{}) bool {
 	if valType, ok := valueMap["type"]; ok {
 		if valType != "object" {
@@ -149,6 +170,7 @@ func hasNextLevel(valueMap map[string]interface{}) bool {
 	}
 	return false
 }
+
 func optionMatch(valueMap *structpb.Struct, reference map[string]interface{}, checkFields []string) bool {
 	for _, checkField := range checkFields {
 		if _, ok := valueMap.GetFields()[checkField]; !ok {
@@ -162,94 +184,173 @@ func optionMatch(valueMap *structpb.Struct, reference map[string]interface{}, ch
 	}
 	return true
 }
-func (e *ComponentExecution) fillInDefaultValuesWithReference(input *structpb.Struct, reference map[string]interface{}) (*structpb.Struct, error) {
+
+// Helper functions
+func convertToStructPb(input any) (*structpb.Struct, error) {
+	if s, ok := input.(*structpb.Struct); ok {
+		return s, nil
+	}
+
+	jsonBytes, err := json.Marshal(input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal input: %w", err)
+	}
+
+	result := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
+	if err := protojson.Unmarshal(jsonBytes, result); err != nil {
+		return nil, fmt.Errorf("failed to convert input to struct: %w", err)
+	}
+
+	return result, nil
+}
+
+func handleNestedObject(e *ComponentExecution, inputStruct *structpb.Struct, key string, valueMap map[string]interface{}) error {
+	if !hasNextLevel(valueMap) {
+		return nil
+	}
+
+	if _, ok := inputStruct.GetFields()[key]; !ok {
+		inputStruct.GetFields()[key] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
+	}
+
+	if properties, ok := valueMap["properties"].(map[string]interface{}); ok {
+		return handleProperties(e, inputStruct, key, properties)
+	}
+
+	return handleCompositeTypes(e, inputStruct, key, valueMap)
+}
+
+func handleProperties(e *ComponentExecution, inputStruct *structpb.Struct, key string, properties map[string]interface{}) error {
+	subField, err := e.fillInDefaultValuesWithReference(inputStruct.GetFields()[key].GetStructValue(), properties)
+	if err != nil {
+		return err
+	}
+	inputStruct.GetFields()[key] = structpb.NewStructValue(subField.(*structpb.Struct))
+	return nil
+}
+
+func extractRequiredFields(valueMap map[string]interface{}) ([]string, bool) {
+	requiredFieldsRaw, ok := valueMap["required"].([]interface{})
+	if !ok {
+		return nil, false
+	}
+
+	requiredFields := make([]string, len(requiredFieldsRaw))
+	for idx, v := range requiredFieldsRaw {
+		requiredFields[idx] = fmt.Sprintf("%v", v)
+	}
+
+	return requiredFields, true
+}
+
+func handleCompositeTypes(e *ComponentExecution, inputStruct *structpb.Struct, key string, valueMap map[string]interface{}) error {
+	requiredFields, ok := extractRequiredFields(valueMap)
+	if !ok {
+		return nil
+	}
+
+	for _, target := range []string{"allOf", "anyOf", "oneOf"} {
+		items, ok := valueMap[target].([]interface{})
+		if !ok {
+			continue
+		}
+
+		for _, v := range items {
+			properties, ok := v.(map[string]interface{})["properties"].(map[string]interface{})
+			if !ok {
+				continue
+			}
+
+			inputSubField := inputStruct.GetFields()[key].GetStructValue()
+			if target == "oneOf" && !optionMatch(inputSubField, properties, requiredFields) {
+				continue
+			}
+
+			if err := handleProperties(e, inputStruct, key, properties); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func handleDefaultValue(inputStruct *structpb.Struct, key string, valueMap map[string]interface{}) error {
+	if _, exists := inputStruct.GetFields()[key]; exists {
+		return nil
+	}
+
+	defaultValue := valueMap["default"]
+	typeValue := valueMap["type"].(string)
+
+	switch typeValue {
+	case "string", "integer", "number", "boolean":
+		val, err := structpb.NewValue(defaultValue)
+		if err == nil {
+			inputStruct.GetFields()[key] = val
+		}
+	case "array":
+		if err := handleDefaultArray(inputStruct, key, valueMap); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func handleDefaultArray(inputStruct *structpb.Struct, key string, valueMap map[string]interface{}) error {
+	tempArray := &structpb.ListValue{Values: []*structpb.Value{}}
+	itemType := valueMap["items"].(map[string]interface{})["type"].(string)
+
+	if itemType != "string" && itemType != "integer" && itemType != "number" && itemType != "boolean" {
+		return nil
+	}
+
+	for _, v := range valueMap["default"].([]interface{}) {
+		if val, err := structpb.NewValue(v); err == nil {
+			tempArray.Values = append(tempArray.Values, val)
+		}
+	}
+
+	inputStruct.GetFields()[key] = structpb.NewListValue(tempArray)
+	return nil
+}
+
+// Main function
+func (e *ComponentExecution) fillInDefaultValuesWithReference(input any, reference map[string]interface{}) (any, error) {
+	inputStruct, err := convertToStructPb(input)
+	if err != nil {
+		return nil, err
+	}
+
 	for key, value := range reference {
 		valueMap, ok := value.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		if _, ok := valueMap["default"]; !ok {
-			if !hasNextLevel(valueMap) {
-				continue
-			}
-			if _, ok := input.GetFields()[key]; !ok {
-				input.GetFields()[key] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
-			}
-			var properties map[string]interface{}
-			if _, ok := valueMap["properties"]; !ok {
-				var requiredFieldsRaw []interface{}
-				if requiredFieldsRaw, ok = valueMap["required"].([]interface{}); !ok {
-					continue
-				}
-				requiredFields := make([]string, len(requiredFieldsRaw))
-				for idx, v := range requiredFieldsRaw {
-					requiredFields[idx] = fmt.Sprintf("%v", v)
-				}
-				for _, target := range []string{"allOf", "anyOf", "oneOf"} {
-					var items []interface{}
-					if items, ok = valueMap[target].([]interface{}); !ok {
-						continue
-					}
-					for _, v := range items {
-						if properties, ok = v.(map[string]interface{})["properties"].(map[string]interface{}); !ok {
-							continue
-						}
-						inputSubField := input.GetFields()[key].GetStructValue()
-						if target == "oneOf" && !optionMatch(inputSubField, properties, requiredFields) {
-							continue
-						}
-						subField, err := e.fillInDefaultValuesWithReference(inputSubField, properties)
-						if err != nil {
-							return nil, err
-						}
-						input.GetFields()[key] = structpb.NewStructValue(subField)
-					}
-				}
-			} else {
-				if properties, ok = valueMap["properties"].(map[string]interface{}); !ok {
-					continue
-				}
-				subField, err := e.fillInDefaultValuesWithReference(input.GetFields()[key].GetStructValue(), properties)
-				if err != nil {
-					return nil, err
-				}
-				input.GetFields()[key] = structpb.NewStructValue(subField)
+
+		if _, hasDefault := valueMap["default"]; !hasDefault {
+			if err := handleNestedObject(e, inputStruct, key, valueMap); err != nil {
+				return nil, err
 			}
 			continue
 		}
-		if _, ok := input.GetFields()[key]; ok {
-			continue
-		}
-		defaultValue := valueMap["default"]
-		typeValue := valueMap["type"]
-		switch typeValue {
-		case "string", "integer", "number", "boolean":
-			val, err := structpb.NewValue(defaultValue)
-			if err != nil {
-				continue
-			}
-			input.GetFields()[key] = val
-		case "array":
-			tempArray := &structpb.ListValue{Values: []*structpb.Value{}}
-			itemType := valueMap["items"].(map[string]interface{})["type"]
-			switch itemType {
-			case "string", "integer", "number", "boolean":
-				for _, v := range defaultValue.([]interface{}) {
-					val, err := structpb.NewValue(v)
-					if err != nil {
-						continue
-					}
-					tempArray.Values = append(tempArray.Values, val)
-				}
-			default:
-				continue
-			}
-			input.GetFields()[key] = structpb.NewListValue(tempArray)
+
+		if err := handleDefaultValue(inputStruct, key, valueMap); err != nil {
+			return nil, err
 		}
 	}
-	return input, nil
+
+	resultJSON, err := protojson.Marshal(inputStruct)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal result: %w", err)
+	}
+	if err := json.Unmarshal(resultJSON, input); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal result back to original type: %w", err)
+	}
+
+	return inputStruct, nil
 }
 
+// FormatErrors formats the errors from the jsonschema validation
 func FormatErrors(inputPath string, e jsonschema.Detailed, errors *[]string) {
 	path := inputPath + e.InstanceLocation
 

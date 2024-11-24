@@ -1,6 +1,6 @@
 {
   "$defs": {
-    "pull-request": {
+    "pullRequest": {
       "description": "A pull request object.",
       "properties": {
         "id": {
@@ -189,7 +189,7 @@
       "title": "Commit File",
       "type": "object"
     },
-    "repository-info": {
+    "repositoryInfo": {
       "owner": {
         "description": "Owner of the repository.",
         "instillUIMultiline": false,
@@ -223,7 +223,7 @@
         "type": "string"
       }
     },
-    "review-comments": {
+    "reviewComments": {
       "description": "A review comment object.",
       "properties": {
         "id": {
@@ -240,7 +240,7 @@
           "title": "In Reply To",
           "type": "integer"
         },
-        "commitId": {
+        "commit-id": {
           "description": "SHA of the commit on which you want to comment.",
           "instillFormat": "string",
           "instillUIOrder": 3,
@@ -429,7 +429,7 @@
       "title": "Issue",
       "type": "object"
     },
-    "page-options": {
+    "pageOptions": {
       "title": "Page Options",
       "description": "Options for listing pages.",
       "instillFormat": "object",
@@ -467,744 +467,6 @@
       }
     }
   },
-  "TASK_LIST_PULL_REQUESTS": {
-    "instillShortDescription": "Get the list of all pull requests in a repository",
-    "description": "Get the list of all pull requests in a repository. Detailed information about each commit in a PR is omitted, please use the `Get Commit` task or the `Get Pull Request` task to get the details of a commit.",
-    "input": {
-      "description": "Please input the repository name and owner.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "owner",
-        "repository"
-      ],
-      "properties": {
-        "$ref": "#/$defs/repository-info",
-        "state": {
-          "default": "open",
-          "title": "State",
-          "description": "State of the PRs, including open, closed, all. Default is open.",
-          "enum": [
-            "open",
-            "closed",
-            "all"
-          ],
-          "instillFormat": "string",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "instillUIOrder": 10,
-          "type": "string"
-        },
-        "sort": {
-          "default": "created",
-          "title": "Sort",
-          "description": "Sort the PRs by created, updated, popularity, or long-running. Default is created.",
-          "enum": [
-            "created",
-            "updated",
-            "popularity",
-            "long-running"
-          ],
-          "instillFormat": "string",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "instillUIOrder": 11,
-          "type": "string"
-        },
-        "direction": {
-          "default": "desc",
-          "title": "Direction",
-          "description": "Direction of the sort, including asc or desc. Default is desc.",
-          "enum": [
-            "asc",
-            "desc"
-          ],
-          "instillFormat": "string",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "instillUIOrder": 12,
-          "type": "string"
-        },
-        "page": {
-          "default": 1,
-          "description": "Page number of the results to fetch. Default is 1.",
-          "instillUIOrder": 100,
-          "title": "Page",
-          "instillFormat": "integer",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "type": "integer"
-        },
-        "per-page": {
-          "default": 30,
-          "description": "Number of results to fetch per page. Default is 30.",
-          "instillUIOrder": 101,
-          "title": "Per Page",
-          "instillFormat": "integer",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "type": "integer"
-        }
-      },
-      "required": [
-        "owner",
-        "repository"
-      ],
-      "title": "Input",
-      "instillFormat": "object",
-      "type": "object"
-    },
-    "output": {
-      "description": "All PRs in GitHub repository.",
-      "instillUIOrder": 0,
-      "properties": {
-        "pull-requests": {
-          "description": "An array of PRs.",
-          "title": "Pull Requests",
-          "instillUIOrder": 1,
-          "instillFormat": "array:object",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/pull-request",
-            "required": [],
-            "description": "A pull request in GitHub."
-          }
-        }
-      },
-      "required": [
-        "pull-requests"
-      ],
-      "title": "Output",
-      "instillFormat": "object",
-      "type": "object"
-    }
-  },
-  "TASK_GET_PULL_REQUEST": {
-    "instillShortDescription": "Get a pull request from a repository, given the PR number. This will default to the latest PR if no PR number is provided.",
-    "input": {
-      "description": "Please input the repository name and owner, and the PR number.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "owner",
-        "repository",
-        "pr-number"
-      ],
-      "properties": {
-        "$ref": "#/$defs/repository-info",
-        "pr-number": {
-          "default": 0,
-          "title": "PR Number",
-          "description": "Number of the PR. `0` for the latest PR.",
-          "instillFormat": "integer",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "instillUIOrder": 4,
-          "type": "integer"
-        }
-      },
-      "required": [
-        "owner",
-        "repository"
-      ],
-      "title": "Input",
-      "instillFormat": "object",
-      "type": "object"
-    },
-    "output": {
-      "description": "The specific pr in GitHub repository.",
-      "instillUIOrder": 0,
-      "$ref": "#/$defs/pull-request",
-      "required": [],
-      "title": "Output",
-      "instillFormat": "object",
-      "type": "object"
-    }
-  },
-  "TASK_LIST_REVIEW_COMMENTS": {
-    "instillShortDescription": "Get the review comments in a pull request",
-    "description": "Get the review comments in a pull request. The comments can be on a specific line or on the PR as a whole.",
-    "input": {
-      "description": "Please input the repository name and owner, and the PR number. Set PR number as`0` to get all comments on all PRs in the repository.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "owner",
-        "repository",
-        "pr-number"
-      ],
-      "properties": {
-        "$ref": "#/$defs/repository-info",
-        "pr-number": {
-          "default": 0,
-          "title": "PR Number",
-          "description": "Number of the PR. Default is `0`, which retrieves all comments on all PRs in the repository.",
-          "instillFormat": "integer",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "instillUIOrder": 4,
-          "type": "integer"
-        },
-        "sort": {
-          "default": "created",
-          "title": "Sort",
-          "description": "Sort the comments by created, updated. Default is created.",
-          "enum": [
-            "created",
-            "updated"
-          ],
-          "instillFormat": "string",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUpstreamTypes": [
-            "value"
-          ],
-          "instillUIOrder": 11,
-          "type": "string"
-        },
-        "direction": {
-          "default": "desc",
-          "title": "Direction",
-          "description": "Direction of the sort, including asc or desc. Default is desc.",
-          "enum": [
-            "asc",
-            "desc"
-          ],
-          "instillFormat": "string",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUpstreamTypes": [
-            "value"
-          ],
-          "instillUIOrder": 12,
-          "type": "string"
-        },
-        "since": {
-          "default": "2021-01-01",
-          "title": "Since",
-          "description": "Date (in `YYYY-MM-DD` format) from which comments will start to be fetched. The date will be in the UTC timezone.",
-          "instillFormat": "string",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "instillUIOrder": 13,
-          "type": "string"
-        },
-        "page": {
-          "default": 1,
-          "description": "Page number of the results to fetch. Default is 1.",
-          "instillUIOrder": 100,
-          "title": "Page",
-          "instillFormat": "integer",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "type": "integer"
-        },
-        "per-page": {
-          "default": 30,
-          "description": "Number of results to fetch per page. Default is 30.",
-          "instillUIOrder": 101,
-          "title": "Per Page",
-          "instillFormat": "integer",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "type": "integer"
-        }
-      },
-      "required": [
-        "owner",
-        "repository"
-      ],
-      "title": "Input",
-      "instillFormat": "object",
-      "type": "object"
-    },
-    "output": {
-      "description": "Comments in the PR.",
-      "instillUIOrder": 0,
-      "properties": {
-        "comments": {
-          "description": "An array of comments.",
-          "instillUIOrder": 0,
-          "title": "Comments",
-          "instillFormat": "array:object",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/review-comments",
-            "required": [],
-            "instillUIOrder": 1,
-            "description": "Comments in the PR."
-          }
-        }
-      },
-      "required": [
-        "comments"
-      ],
-      "title": "Output",
-      "instillFormat": "object",
-      "type": "object"
-    }
-  },
-  "TASK_CREATE_REVIEW_COMMENT": {
-    "instillShortDescription": "Create a review comment in pull request.",
-    "description": "Create a review comment in a pull request. The comment can be a general comment or a review comment. The comment can be on a specific line or on the PR as a whole.",
-    "input": {
-      "description": "Please input the repository name and owner, and the PR number.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "owner",
-        "repository",
-        "pr-number"
-      ],
-      "properties": {
-        "$ref": "#/$defs/repository-info",
-        "pr-number": {
-          "title": "PR Number",
-          "description": "Number of the PR.",
-          "instillFormat": "integer",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "instillUIOrder": 3,
-          "type": "integer"
-        },
-        "comment": {
-          "title": "Comment",
-          "description": "The comment to be added.",
-          "instillFormat": "object",
-          "instillUIOrder": 4,
-          "type": "object",
-          "properties": {
-            "commit-id": {
-              "$ref": "#/$defs/review-comments/properties/commitId",
-              "instillAcceptFormats": [
-                "string"
-              ],
-              "instillUpstreamTypes": [
-                "value",
-                "reference"
-              ],
-              "instillUIOrder": 0
-            },
-            "body": {
-              "$ref": "#/$defs/review-comments/properties/body",
-              "instillAcceptFormats": [
-                "string"
-              ],
-              "instillUpstreamTypes": [
-                "value",
-                "reference",
-                "template"
-              ],
-              "instillUIOrder": 1
-            },
-            "path": {
-              "$ref": "#/$defs/review-comments/properties/path",
-              "instillAcceptFormats": [
-                "string"
-              ],
-              "instillUpstreamTypes": [
-                "value",
-                "reference",
-                "template"
-              ],
-              "instillUIOrder": 2
-            },
-            "start-line": {
-              "$ref": "#/$defs/review-comments/properties/start-line",
-              "instillAcceptFormats": [
-                "integer"
-              ],
-              "instillUpstreamTypes": [
-                "value",
-                "reference"
-              ],
-              "instillUIOrder": 3
-            },
-            "line": {
-              "$ref": "#/$defs/review-comments/properties/line",
-              "instillAcceptFormats": [
-                "integer"
-              ],
-              "instillUpstreamTypes": [
-                "value",
-                "reference"
-              ],
-              "instillUIOrder": 4
-            },
-            "start-side": {
-              "$ref": "#/$defs/review-comments/properties/start-side",
-              "instillAcceptFormats": [
-                "string"
-              ],
-              "instillUpstreamTypes": [
-                "value"
-              ],
-              "instillUIOrder": 5
-            },
-            "side": {
-              "$ref": "#/$defs/review-comments/properties/side",
-              "instillAcceptFormats": [
-                "string"
-              ],
-              "instillUpstreamTypes": [
-                "value"
-              ],
-              "instillUIOrder": 6
-            },
-            "subject-type": {
-              "$ref": "#/$defs/review-comments/properties/subject-type",
-              "instillAcceptFormats": [
-                "string"
-              ],
-              "instillUpstreamTypes": [
-                "value"
-              ],
-              "instillUIOrder": 7
-            }
-          },
-          "required": [
-            "body",
-            "path",
-            "commit-id"
-          ]
-        }
-      },
-      "required": [
-        "owner",
-        "repository",
-        "pr-number",
-        "comment"
-      ],
-      "title": "Input",
-      "instillFormat": "object",
-      "type": "object"
-    },
-    "output": {
-      "description": "The created comment.",
-      "instillUIOrder": 0,
-      "properties": {
-        "$ref": "#/$defs/review-comments/properties"
-      },
-      "required": [],
-      "title": "Output",
-      "instillFormat": "object",
-      "type": "object"
-    }
-  },
-  "TASK_GET_COMMIT": {
-    "instillShortDescription": "Get a commit from a repository, given the commit SHA",
-    "input": {
-      "description": "Please input the repository name and owner, and the commit SHA.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "owner",
-        "repository",
-        "sha"
-      ],
-      "properties": {
-        "$ref": "#/$defs/repository-info",
-        "sha": {
-          "$ref": "#/$defs/commit/properties/sha",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "instillUIOrder": 3
-        }
-      },
-      "required": [
-        "owner",
-        "repository",
-        "sha"
-      ],
-      "title": "Input",
-      "instillFormat": "object",
-      "type": "object"
-    },
-    "output": {
-      "description": "The specific commit in GitHub repository.",
-      "instillUIOrder": 0,
-      "properties": {
-        "$ref": "#/$defs/commit/properties"
-      },
-      "required": [],
-      "title": "Output",
-      "instillFormat": "object",
-      "type": "object"
-    }
-  },
-  "TASK_LIST_ISSUES": {
-    "description": "Get the list of all issues in a repository,This can be a pull request or a general issue, and you can tell by the `is-pull-request` field.",
-    "instillShortDescription": "Get the list of all issues in a repository",
-    "input": {
-      "description": "Please input the repository name and owner.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "owner",
-        "repository"
-      ],
-      "properties": {
-        "$ref": "#/$defs/repository-info",
-        "state": {
-          "default": "open",
-          "title": "State",
-          "description": "State of the issues, can be one of: open, closed, all. Default is open.",
-          "enum": [
-            "open",
-            "closed",
-            "all"
-          ],
-          "instillFormat": "string",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUpstreamTypes": [
-            "value"
-          ],
-          "instillUIOrder": 10,
-          "type": "string"
-        },
-        "sort": {
-          "default": "created",
-          "title": "Sort",
-          "description": "Sort the issues by created, updated, popularity, or long-running. Default is created.",
-          "enum": [
-            "created",
-            "updated",
-            "popularity",
-            "long-running"
-          ],
-          "instillFormat": "string",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUpstreamTypes": [
-            "value"
-          ],
-          "instillUIOrder": 11,
-          "type": "string"
-        },
-        "direction": {
-          "default": "desc",
-          "title": "Direction",
-          "description": "Direction of the sort, can be one of: asc, desc. Default is desc.",
-          "enum": [
-            "asc",
-            "desc"
-          ],
-          "instillFormat": "string",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUpstreamTypes": [
-            "value"
-          ],
-          "instillUIOrder": 12,
-          "type": "string"
-        },
-        "since": {
-          "default": "2021-01-01",
-          "title": "Since",
-          "description": "Date (in `YYYY-MM-DD` format) from which issues will start to be fetched. The date will be in the UTC timezone.",
-          "instillFormat": "string",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "instillUIOrder": 13,
-          "type": "string"
-        },
-        "no-pull-request": {
-          "title": "No Pull Request",
-          "description": "Whether to `not` include pull requests in the response. Since issue and pr use the same indexing system in GitHub, the API returns all relevant objects (issues and pr). Default is false.",
-          "instillFormat": "boolean",
-          "instillAcceptFormats": [
-            "boolean"
-          ],
-          "instillUpstreamTypes": [
-            "value"
-          ],
-          "instillUIOrder": 14,
-          "type": "boolean"
-        },
-        "page": {
-          "default": 1,
-          "description": "Page number of the results to fetch. Default is 1.",
-          "instillUIOrder": 100,
-          "title": "Page",
-          "instillFormat": "integer",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "type": "integer"
-        },
-        "per-page": {
-          "default": 30,
-          "description": "Number of results to fetch per page. Default is 30.",
-          "instillUIOrder": 101,
-          "title": "Per Page",
-          "instillFormat": "integer",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "type": "integer"
-        }
-      },
-      "required": [
-        "owner",
-        "repository"
-      ],
-      "title": "Input",
-      "instillFormat": "object",
-      "type": "object"
-    },
-    "output": {
-      "description": "All issues in GitHub repository.",
-      "instillUIOrder": 0,
-      "properties": {
-        "issues": {
-          "description": "An array of issues.",
-          "instillUIOrder": 1,
-          "title": "Issues",
-          "instillFormat": "array:object",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/issue",
-            "required": [],
-            "description": "An issue in GitHub."
-          }
-        }
-      },
-      "required": [
-        "issues"
-      ],
-      "title": "Output",
-      "instillFormat": "object",
-      "type": "object"
-    }
-  },
-  "TASK_GET_ISSUE": {
-    "description": "Get an issue. This can be a pull request or a general issue, and you can tell by the `is-pull-request` field.",
-    "instillShortDescription": "Get an issue.",
-    "input": {
-      "description": "Please input the repository name and owner.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "owner",
-        "repository",
-        "issue-number"
-      ],
-      "properties": {
-        "$ref": "#/$defs/repository-info",
-        "issue-number": {
-          "default": 0,
-          "title": "Issue Number",
-          "description": "Number of the issue.",
-          "instillFormat": "integer",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "instillUIOrder": 4,
-          "type": "integer"
-        }
-      },
-      "required": [
-        "owner",
-        "repository",
-        "issue-number"
-      ],
-      "title": "Input",
-      "instillFormat": "object",
-      "type": "object"
-    },
-    "output": {
-      "description": "The specific issue in GitHub repository.",
-      "instillUIOrder": 0,
-      "properties": {
-        "$ref": "#/$defs/issue/properties"
-      },
-      "required": [],
-      "title": "Output",
-      "instillFormat": "object",
-      "type": "object"
-    }
-  },
   "TASK_CREATE_ISSUE": {
     "description": "Create an issue.",
     "input": {
@@ -1217,7 +479,7 @@
         "body"
       ],
       "properties": {
-        "$ref": "#/$defs/repository-info",
+        "$ref": "#/$defs/repositoryInfo",
         "title": {
           "$ref": "#/$defs/issue/properties/title",
           "instillAcceptFormats": [
@@ -1297,6 +559,157 @@
       "type": "object"
     }
   },
+  "TASK_CREATE_REVIEW_COMMENT": {
+    "instillShortDescription": "Create a review comment in pull request.",
+    "description": "Create a review comment in a pull request. The comment can be a general comment or a review comment. The comment can be on a specific line or on the PR as a whole.",
+    "input": {
+      "description": "Please input the repository name and owner, and the PR number.",
+      "instillUIOrder": 0,
+      "instillEditOnNodeFields": [
+        "owner",
+        "repository",
+        "pr-number"
+      ],
+      "properties": {
+        "$ref": "#/$defs/repositoryInfo",
+        "pr-number": {
+          "title": "PR Number",
+          "description": "Number of the PR.",
+          "instillFormat": "integer",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "instillUIOrder": 3,
+          "type": "integer"
+        },
+        "comment": {
+          "title": "Comment",
+          "description": "The comment to be added.",
+          "instillFormat": "object",
+          "instillUIOrder": 4,
+          "type": "object",
+          "properties": {
+            "commit-id": {
+              "$ref": "#/$defs/reviewComments/properties/commit-id",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "instillUIOrder": 0
+            },
+            "body": {
+              "$ref": "#/$defs/reviewComments/properties/body",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUpstreamTypes": [
+                "value",
+                "reference",
+                "template"
+              ],
+              "instillUIOrder": 1
+            },
+            "path": {
+              "$ref": "#/$defs/reviewComments/properties/path",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUpstreamTypes": [
+                "value",
+                "reference",
+                "template"
+              ],
+              "instillUIOrder": 2
+            },
+            "start-line": {
+              "$ref": "#/$defs/reviewComments/properties/start-line",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "instillUIOrder": 3
+            },
+            "line": {
+              "$ref": "#/$defs/reviewComments/properties/line",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "instillUIOrder": 4
+            },
+            "start-side": {
+              "$ref": "#/$defs/reviewComments/properties/start-side",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUpstreamTypes": [
+                "value"
+              ],
+              "instillUIOrder": 5
+            },
+            "side": {
+              "$ref": "#/$defs/reviewComments/properties/side",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUpstreamTypes": [
+                "value"
+              ],
+              "instillUIOrder": 6
+            },
+            "subject-type": {
+              "$ref": "#/$defs/reviewComments/properties/subject-type",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUpstreamTypes": [
+                "value"
+              ],
+              "instillUIOrder": 7
+            }
+          },
+          "required": [
+            "body",
+            "path",
+            "commit-id"
+          ]
+        }
+      },
+      "required": [
+        "owner",
+        "repository",
+        "pr-number",
+        "comment"
+      ],
+      "title": "Input",
+      "instillFormat": "object",
+      "type": "object"
+    },
+    "output": {
+      "description": "The created comment.",
+      "instillUIOrder": 0,
+      "properties": {
+        "$ref": "#/$defs/reviewComments/properties"
+      },
+      "required": [],
+      "title": "Output",
+      "instillFormat": "object",
+      "type": "object"
+    }
+  },
   "TASK_CREATE_WEBHOOK": {
     "description": "Create a webhook for a repository.",
     "input": {
@@ -1309,7 +722,7 @@
         "events"
       ],
       "properties": {
-        "$ref": "#/$defs/repository-info",
+        "$ref": "#/$defs/repositoryInfo",
         "hook-url": {
           "title": "Webhook URL",
           "description": "URL to send the payload to.",
@@ -1472,6 +885,593 @@
         }
       },
       "required": [],
+      "title": "Output",
+      "instillFormat": "object",
+      "type": "object"
+    }
+  },
+  "TASK_GET_COMMIT": {
+    "instillShortDescription": "Get a commit from a repository, given the commit SHA",
+    "input": {
+      "description": "Please input the repository name and owner, and the commit SHA.",
+      "instillUIOrder": 0,
+      "instillEditOnNodeFields": [
+        "owner",
+        "repository",
+        "sha"
+      ],
+      "properties": {
+        "$ref": "#/$defs/repositoryInfo",
+        "sha": {
+          "$ref": "#/$defs/commit/properties/sha",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "instillUIOrder": 3
+        }
+      },
+      "required": [
+        "owner",
+        "repository",
+        "sha"
+      ],
+      "title": "Input",
+      "instillFormat": "object",
+      "type": "object"
+    },
+    "output": {
+      "description": "The specific commit in GitHub repository.",
+      "instillUIOrder": 0,
+      "properties": {
+        "$ref": "#/$defs/commit/properties"
+      },
+      "required": [],
+      "title": "Output",
+      "instillFormat": "object",
+      "type": "object"
+    }
+  },
+  "TASK_GET_ISSUE": {
+    "description": "Get an issue. This can be a pull request or a general issue, and you can tell by the `is-pull-request` field.",
+    "instillShortDescription": "Get an issue.",
+    "input": {
+      "description": "Please input the repository name and owner.",
+      "instillUIOrder": 0,
+      "instillEditOnNodeFields": [
+        "owner",
+        "repository",
+        "issue-number"
+      ],
+      "properties": {
+        "$ref": "#/$defs/repositoryInfo",
+        "issue-number": {
+          "default": 0,
+          "title": "Issue Number",
+          "description": "Number of the issue.",
+          "instillFormat": "integer",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "instillUIOrder": 4,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "owner",
+        "repository",
+        "issue-number"
+      ],
+      "title": "Input",
+      "instillFormat": "object",
+      "type": "object"
+    },
+    "output": {
+      "description": "The specific issue in GitHub repository.",
+      "instillUIOrder": 0,
+      "properties": {
+        "$ref": "#/$defs/issue/properties"
+      },
+      "required": [],
+      "title": "Output",
+      "instillFormat": "object",
+      "type": "object"
+    }
+  },
+  "TASK_GET_PULL_REQUEST": {
+    "instillShortDescription": "Get a pull request from a repository, given the PR number. This will default to the latest PR if no PR number is provided.",
+    "input": {
+      "description": "Please input the repository name and owner, and the PR number.",
+      "instillUIOrder": 0,
+      "instillEditOnNodeFields": [
+        "owner",
+        "repository",
+        "pr-number"
+      ],
+      "properties": {
+        "$ref": "#/$defs/repositoryInfo",
+        "pr-number": {
+          "default": 0,
+          "title": "PR Number",
+          "description": "Number of the PR. `0` for the latest PR.",
+          "instillFormat": "integer",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "instillUIOrder": 4,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "owner",
+        "repository"
+      ],
+      "title": "Input",
+      "instillFormat": "object",
+      "type": "object"
+    },
+    "output": {
+      "description": "The specific pr in GitHub repository.",
+      "instillUIOrder": 0,
+      "$ref": "#/$defs/pullRequest",
+      "required": [],
+      "title": "Output",
+      "instillFormat": "object",
+      "type": "object"
+    }
+  },
+  "TASK_LIST_ISSUES": {
+    "description": "Get the list of all issues in a repository,This can be a pull request or a general issue, and you can tell by the `is-pull-request` field.",
+    "instillShortDescription": "Get the list of all issues in a repository",
+    "input": {
+      "description": "Please input the repository name and owner.",
+      "instillUIOrder": 0,
+      "instillEditOnNodeFields": [
+        "owner",
+        "repository"
+      ],
+      "properties": {
+        "$ref": "#/$defs/repositoryInfo",
+        "state": {
+          "default": "open",
+          "title": "State",
+          "description": "State of the issues, can be one of: open, closed, all. Default is open.",
+          "enum": [
+            "open",
+            "closed",
+            "all"
+          ],
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "instillUIOrder": 10,
+          "type": "string"
+        },
+        "sort": {
+          "default": "created",
+          "title": "Sort",
+          "description": "Sort the issues by created, updated, popularity, or long-running. Default is created.",
+          "enum": [
+            "created",
+            "updated",
+            "popularity",
+            "long-running"
+          ],
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "instillUIOrder": 11,
+          "type": "string"
+        },
+        "direction": {
+          "default": "desc",
+          "title": "Direction",
+          "description": "Direction of the sort, can be one of: asc, desc. Default is desc.",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "instillUIOrder": 12,
+          "type": "string"
+        },
+        "since": {
+          "default": "2021-01-01",
+          "title": "Since",
+          "description": "Date (in `YYYY-MM-DD` format) from which issues will start to be fetched. The date will be in the UTC timezone.",
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "instillUIOrder": 13,
+          "type": "string"
+        },
+        "no-pull-request": {
+          "title": "No Pull Request",
+          "description": "Whether to `not` include pull requests in the response. Since issue and pr use the same indexing system in GitHub, the API returns all relevant objects (issues and pr). Default is false.",
+          "instillFormat": "boolean",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "instillUIOrder": 14,
+          "type": "boolean"
+        },
+        "page": {
+          "default": 1,
+          "description": "Page number of the results to fetch. Default is 1.",
+          "instillUIOrder": 100,
+          "title": "Page",
+          "instillFormat": "integer",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "type": "integer"
+        },
+        "per-page": {
+          "default": 30,
+          "description": "Number of results to fetch per page. Default is 30.",
+          "instillUIOrder": 101,
+          "title": "Per Page",
+          "instillFormat": "integer",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "type": "integer"
+        }
+      },
+      "required": [
+        "owner",
+        "repository"
+      ],
+      "title": "Input",
+      "instillFormat": "object",
+      "type": "object"
+    },
+    "output": {
+      "description": "All issues in GitHub repository.",
+      "instillUIOrder": 0,
+      "properties": {
+        "issues": {
+          "description": "An array of issues.",
+          "instillUIOrder": 1,
+          "title": "Issues",
+          "instillFormat": "array:object",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/issue",
+            "required": [],
+            "description": "An issue in GitHub."
+          }
+        }
+      },
+      "required": [
+        "issues"
+      ],
+      "title": "Output",
+      "instillFormat": "object",
+      "type": "object"
+    }
+  },
+  "TASK_LIST_PULL_REQUESTS": {
+    "instillShortDescription": "Get the list of all pull requests in a repository",
+    "description": "Get the list of all pull requests in a repository. Detailed information about each commit in a PR is omitted, please use the `Get Commit` task or the `Get Pull Request` task to get the details of a commit.",
+    "input": {
+      "description": "Please input the repository name and owner.",
+      "instillUIOrder": 0,
+      "instillEditOnNodeFields": [
+        "owner",
+        "repository"
+      ],
+      "properties": {
+        "$ref": "#/$defs/repositoryInfo",
+        "state": {
+          "default": "open",
+          "title": "State",
+          "description": "State of the PRs, including open, closed, all. Default is open.",
+          "enum": [
+            "open",
+            "closed",
+            "all"
+          ],
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "instillUIOrder": 10,
+          "type": "string"
+        },
+        "sort": {
+          "default": "created",
+          "title": "Sort",
+          "description": "Sort the PRs by created, updated, popularity, or long-running. Default is created.",
+          "enum": [
+            "created",
+            "updated",
+            "popularity",
+            "long-running"
+          ],
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "instillUIOrder": 11,
+          "type": "string"
+        },
+        "direction": {
+          "default": "desc",
+          "title": "Direction",
+          "description": "Direction of the sort, including asc or desc. Default is desc.",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "instillUIOrder": 12,
+          "type": "string"
+        },
+        "page": {
+          "default": 1,
+          "description": "Page number of the results to fetch. Default is 1.",
+          "instillUIOrder": 100,
+          "title": "Page",
+          "instillFormat": "integer",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "type": "integer"
+        },
+        "per-page": {
+          "default": 30,
+          "description": "Number of results to fetch per page. Default is 30.",
+          "instillUIOrder": 101,
+          "title": "Per Page",
+          "instillFormat": "integer",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "type": "integer"
+        }
+      },
+      "required": [
+        "owner",
+        "repository"
+      ],
+      "title": "Input",
+      "instillFormat": "object",
+      "type": "object"
+    },
+    "output": {
+      "description": "All PRs in GitHub repository.",
+      "instillUIOrder": 0,
+      "properties": {
+        "pull-requests": {
+          "description": "An array of PRs.",
+          "title": "Pull Requests",
+          "instillUIOrder": 1,
+          "instillFormat": "array:object",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pullRequest",
+            "required": [],
+            "description": "A pull request in GitHub."
+          }
+        }
+      },
+      "required": [
+        "pull-requests"
+      ],
+      "title": "Output",
+      "instillFormat": "object",
+      "type": "object"
+    }
+  },
+  "TASK_LIST_REVIEW_COMMENTS": {
+    "instillShortDescription": "Get the review comments in a pull request",
+    "description": "Get the review comments in a pull request. The comments can be on a specific line or on the PR as a whole.",
+    "input": {
+      "description": "Please input the repository name and owner, and the PR number. Set PR number as`0` to get all comments on all PRs in the repository.",
+      "instillUIOrder": 0,
+      "instillEditOnNodeFields": [
+        "owner",
+        "repository",
+        "pr-number"
+      ],
+      "properties": {
+        "$ref": "#/$defs/repositoryInfo",
+        "pr-number": {
+          "default": 0,
+          "title": "PR Number",
+          "description": "Number of the PR. Default is `0`, which retrieves all comments on all PRs in the repository.",
+          "instillFormat": "integer",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "instillUIOrder": 4,
+          "type": "integer"
+        },
+        "sort": {
+          "default": "created",
+          "title": "Sort",
+          "description": "Sort the comments by created, updated. Default is created.",
+          "enum": [
+            "created",
+            "updated"
+          ],
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "instillUIOrder": 11,
+          "type": "string"
+        },
+        "direction": {
+          "default": "desc",
+          "title": "Direction",
+          "description": "Direction of the sort, including asc or desc. Default is desc.",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "instillUIOrder": 12,
+          "type": "string"
+        },
+        "since": {
+          "default": "2021-01-01",
+          "title": "Since",
+          "description": "Date (in `YYYY-MM-DD` format) from which comments will start to be fetched. The date will be in the UTC timezone.",
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "instillUIOrder": 13,
+          "type": "string"
+        },
+        "page": {
+          "default": 1,
+          "description": "Page number of the results to fetch. Default is 1.",
+          "instillUIOrder": 100,
+          "title": "Page",
+          "instillFormat": "integer",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "type": "integer"
+        },
+        "per-page": {
+          "default": 30,
+          "description": "Number of results to fetch per page. Default is 30.",
+          "instillUIOrder": 101,
+          "title": "Per Page",
+          "instillFormat": "integer",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "type": "integer"
+        }
+      },
+      "required": [
+        "owner",
+        "repository"
+      ],
+      "title": "Input",
+      "instillFormat": "object",
+      "type": "object"
+    },
+    "output": {
+      "description": "Comments in the PR.",
+      "instillUIOrder": 0,
+      "properties": {
+        "comments": {
+          "description": "An array of comments.",
+          "instillUIOrder": 0,
+          "title": "Comments",
+          "instillFormat": "array:object",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reviewComments",
+            "required": [],
+            "instillUIOrder": 1,
+            "description": "Comments in the PR."
+          }
+        }
+      },
+      "required": [
+        "comments"
+      ],
       "title": "Output",
       "instillFormat": "object",
       "type": "object"
