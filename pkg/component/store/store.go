@@ -174,6 +174,13 @@ func Init(
 		}
 
 		{
+			// LeadIQ
+			conn := perplexityai.Init(baseComp)
+			conn = conn.WithInstillCredentials(secrets[conn.GetDefinitionID()])
+			compStore.Import(conn)
+		}
+
+		{
 			// Numbers
 			conn := numbers.Init(baseComp)
 			conn = conn.WithNumbersSecret(secrets[conn.GetDefinitionID()])

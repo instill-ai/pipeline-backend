@@ -1,0 +1,127 @@
+---
+title: "LeadIQ"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP LeadIQ component https://github.com/instill-ai/instill-core"
+---
+
+The LeadIQ component is an application component that allows users to search for prospects and enrich your leads.
+It can carry out the following tasks:
+- [Find Prospects](#find-prospects)
+
+
+
+## Release Stage
+
+`Alpha`
+
+
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/leadiq/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/leadiq/v0/config/tasks.json) files respectively.
+
+
+
+
+## Setup
+
+
+In order to communicate with LeadIQ, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| API Key (required) | `api-key` | string | Fill in your LeadIQ Secret Base64 API key, you can find it in [API Key](https://account.leadiq.com/app/settings/api-keys).  |
+
+</div>
+
+
+
+
+## Supported Tasks
+
+### Find Prospects
+
+Find prospects' contact information based on the company name you provide. And, it will filter out the prospects who are not relevant to your search.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_FIND_PROSPECTS` |
+| Company Name (required) | `company-name` | string | Provide the company name for which you want to find prospects. |
+| Limit | `limit` | integer | Provide the number of prospects you want to find. If you don't provide any value, it will return 10 prospects. The maximum limit is 60. |
+| [Filter By](#find-prospects-filter-by) | `filter-by` | object | Provide the information about the prospects you want to filter. You can filter the prospects based on job title, name, and seniority. You can provide the regular expression for each field. When it matches, the prospect will be included in the output. If you don't provide any value, it will return all the prospects. |
+| [Order By](#find-prospects-order-by) | `order-by` | object | Sort the prospects' info after getting the results based on company name. You can sort the prospects based on the job title and seniority. If you don't provide any value, it will return the prospects in the order they are found. |
+</div>
+
+
+<details>
+<summary> Input Objects in Find Prospects</summary>
+
+<h4 id="find-prospects-filter-by">Filter By</h4>
+
+Provide the information about the prospects you want to filter. You can filter the prospects based on job title, name, and seniority. You can provide the regular expression for each field. When it matches, the prospect will be included in the output. If you don't provide any value, it will return all the prospects.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Job Title | `job-title` | string | Provide the job title of the prospects you want to find with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions).  |
+| Seniority | `seniority` | string | Provide the seniority of the prospects you want to find with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions).  |
+</div>
+<h4 id="find-prospects-order-by">Order By</h4>
+
+Sort the prospects' info after getting the results based on company name. You can sort the prospects based on the job title and seniority. If you don't provide any value, it will return the prospects in the order they are found.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Job Title | `job-title` | string | Please provide the order in which you want to sort the prospects based on the job title.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details>  |
+| Seniority | `seniority` | string | Please provide the order in which you want to sort the prospects based on the seniority.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details>  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Prospects](#find-prospects-prospects) (optional) | `prospects` | array[object] | The list of prospects' contact information based on the company name you provide. |
+</div>
+
+<details>
+<summary> Output Objects in Find Prospects</summary>
+
+<h4 id="find-prospects-prospects">Prospects</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Company Description | `company-description` | string | The description of the company from LeadIQ. |
+| Email | `email` | string | The email address of the prospect. |
+| Job Title | `job-title` | string | The job title of the prospect. |
+| LinkedIn URL | `linkedin-url` | string | The LinkedIn URL of the prospect. |
+| Name | `name` | string | The name of the prospect. |
+| Seniority | `seniority` | string | The seniority of the prospect. |
+</div>
+</details>
+
+
+
+## Example Recipes
+
+
+
+```yaml
+```

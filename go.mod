@@ -100,6 +100,11 @@ require (
 )
 
 require (
+	github.com/machinebox/graphql v0.2.2
+	github.com/matryer/is v1.4.1 // indirect
+)
+
+require (
 	cloud.google.com/go v0.115.0 // indirect
 	cloud.google.com/go/auth v0.7.2 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.3 // indirect

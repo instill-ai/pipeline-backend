@@ -1,0 +1,161 @@
+{
+  "TASK_FIND_PROSPECTS": {
+    "title": "Find Prospects",
+    "instillShortDescription": "Find prospects' contact information based on the company name you provide.",
+    "description": "Find prospects' contact information based on the company name you provide. And, it will filter out the prospects who are not relevant to your search.",
+    "input": {
+      "title": "Input",
+      "description": "Provide the information for which you want to find prospects.",
+      "properties": {
+        "company-name": {
+          "title": "Company Name",
+          "description": "Provide the company name for which you want to find prospects.",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "type": "string",
+          "instillUIOrder": 0
+        },
+        "limit": {
+          "title": "Limit",
+          "description": "Provide the number of prospects you want to find. If you don't provide any value, it will return 10 prospects. The maximum limit is 60.",
+          "default": 10,
+          "maximum": 60,
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "type": "integer",
+          "instillUIOrder": 1
+        },
+        "filter-by": {
+          "title": "Filter By",
+          "description": "Provide the information about the prospects you want to filter. You can filter the prospects based on job title, name, and seniority. You can provide the regular expression for each field. When it matches, the prospect will be included in the output. If you don't provide any value, it will return all the prospects.",
+          "properties": {
+            "job-title": {
+              "title": "Job Title",
+              "description": "Provide the job title of the prospects you want to find with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions).",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "type": "string",
+              "instillUIOrder": 0
+            },
+            "seniority": {
+              "title": "Seniority",
+              "description": "Provide the seniority of the prospects you want to find with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions).",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "type": "string",
+              "instillUIOrder": 1
+            }
+          },
+          "required": [],
+          "type": "object",
+          "instillUIOrder": 2
+        },
+        "order-by": {
+          "title": "Order By",
+          "description": "Sort the prospects' info after getting the results based on company name. You can sort the prospects based on the job title and seniority. If you don't provide any value, it will return the prospects in the order they are found.",
+          "properties": {
+            "job-title": {
+              "title": "Job Title",
+              "description": "Please provide the order in which you want to sort the prospects based on the job title.",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "type": "string",
+              "instillUIOrder": 0
+            },
+            "seniority": {
+              "title": "Seniority",
+              "description": "Please provide the order in which you want to sort the prospects based on the seniority.",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "type": "string",
+              "instillUIOrder": 1
+            }
+          },
+          "required": [],
+          "type": "object",
+          "instillUIOrder": 3
+        }
+      },
+      "required": [
+        "company-name"
+      ]
+    },
+    "output": {
+      "title": "Output",
+      "description": "The output will be the list of prospects' contact information based on the company name you provide. It will include the name, job title, seniority, and email address of the prospects.",
+      "properties": {
+        "prospects": {
+          "title": "Prospects",
+          "description": "The list of prospects' contact information based on the company name you provide.",
+          "type": "array",
+          "items": {
+            "properties": {
+              "name": {
+                "title": "Name",
+                "description": "The name of the prospect.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 0
+              },
+              "job-title": {
+                "title": "Job Title",
+                "description": "The job title of the prospect.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 1
+              },
+              "seniority": {
+                "title": "Seniority",
+                "description": "The seniority of the prospect.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 2
+              },
+              "email": {
+                "title": "Email",
+                "description": "The email address of the prospect.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 3
+              },
+              "linkedin-url": {
+                "title": "LinkedIn URL",
+                "description": "The LinkedIn URL of the prospect.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 4
+              },
+              "company-description": {
+                "title": "Company Description",
+                "description": "The description of the company from LeadIQ.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 5
+              }
+            },
+            "type": "object"
+          },
+          "instillFormat": "array",
+          "instillUIOrder": 0
+        }
+      },
+      "required": [],
+      "type": "object",
+      "instillUIOrder": 1
+    }
+  }
+}
