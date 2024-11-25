@@ -31,6 +31,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/hubspot/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/instillapp/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/jira/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/application/leadiq/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/numbers/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/slack/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/whatsapp/v0"
@@ -175,7 +176,7 @@ func Init(
 
 		{
 			// LeadIQ
-			conn := perplexityai.Init(baseComp)
+			conn := leadiq.Init(baseComp)
 			conn = conn.WithInstillCredentials(secrets[conn.GetDefinitionID()])
 			compStore.Import(conn)
 		}

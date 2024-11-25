@@ -13,6 +13,7 @@
           "instillAcceptFormats": [
             "string"
           ],
+          "instillFormat": "string",
           "type": "string",
           "instillUIOrder": 0
         },
@@ -24,6 +25,7 @@
           "instillAcceptFormats": [
             "integer"
           ],
+          "instillFormat": "integer",
           "type": "integer",
           "instillUIOrder": 1
         },
@@ -37,6 +39,7 @@
               "instillAcceptFormats": [
                 "string"
               ],
+              "instillFormat": "string",
               "type": "string",
               "instillUIOrder": 0
             },
@@ -46,6 +49,7 @@
               "instillAcceptFormats": [
                 "string"
               ],
+              "instillFormat": "string",
               "type": "string",
               "instillUIOrder": 1
             }
@@ -68,6 +72,7 @@
               "instillAcceptFormats": [
                 "string"
               ],
+              "instillFormat": "string",
               "type": "string",
               "instillUIOrder": 0
             },
@@ -81,6 +86,7 @@
               "instillAcceptFormats": [
                 "string"
               ],
+              "instillFormat": "string",
               "type": "string",
               "instillUIOrder": 1
             }
@@ -90,6 +96,8 @@
           "instillUIOrder": 3
         }
       },
+      "type": "object",
+      "instillUIOrder": 0,
       "required": [
         "company-name"
       ]
@@ -147,6 +155,7 @@
                 "instillUIOrder": 5
               }
             },
+            "required": [],
             "type": "object"
           },
           "instillFormat": "array",
