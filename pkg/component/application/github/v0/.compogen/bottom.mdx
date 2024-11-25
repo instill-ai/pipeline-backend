@@ -1,4 +1,180 @@
+## Supported events
+
+<InfoBlock type="warning" title="Warning">
+  Only repository owners can configure event. Make sure you have owner permissions for the repository you want to monitor.
+</InfoBlock>
+
+### Star Created Event
+
+A star created event from GitHub.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Configuration | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Repository | `repository` | string | The repository to watch for star events. |
+</div>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Event Message | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Action | `action` | string | The action performed (always "created"). |
+| Starred At | `starred-at` | string | The time the star was created. This is a timestamp in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. Will be `null` for the `deleted` action. |
+| [Repository](#star-created-repository) | `repository` | object | A git repository. |
+| [Sender](#star-created-sender) | `sender` | object | User who performed the action. |
+</div>
+
+<details>
+<summary>Event Message Objects</summary>
+
+<h4 id="star-created-repository">Repository</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| ID | `id` | integer | Unique identifier of the repository. |
+| Node ID | `node-id` | string | The GraphQL identifier of the repository. |
+| Name | `name` | string | The name of the repository. |
+| Full Name | `full-name` | string | The full, globally unique, name of the repository. |
+| Private | `private` | boolean | Whether the repository is private or public. |
+| [Owner](#star-created-repository-owner) | `owner` | object | The owner of the repository. |
+| HTML URL | `html-url` | string | The URL to view the repository on GitHub.com. |
+| Description | `description` | string | The repository description. |
+| Fork | `fork` | boolean | Whether the repository is a fork. |
+| URL | `url` | string | The URL to get more information about the repository from the GitHub API. |
+| Forks URL | `forks-url` | string | The API URL to list the forks of the repository. |
+| Keys URL | `keys-url` | string | A template for the API URL to get information about deploy keys on the repository. |
+| Collaborators URL | `collaborators-url` | string | A template for the API URL to get information about collaborators of the repository. |
+| Teams URL | `teams-url` | string | The API URL to list the teams on the repository. |
+| Hooks URL | `hooks-url` | string | The API URL to list the hooks on the repository. |
+| Issue Events URL | `issue-events-url` | string | A template for the API URL to get information about issue events on the repository. |
+| Events URL | `events-url` | string | The API URL to list the events of the repository. |
+| Assignees URL | `assignees-url` | string | A template for the API URL to list the available assignees for issues in the repository. |
+| Branches URL | `branches-url` | string | A template for the API URL to get information about branches in the repository. |
+| Tags URL | `tags-url` | string | The API URL to get information about tags on the repository. |
+| Blobs URL | `blobs-url` | string | A template for the API URL to create or retrieve a raw Git blob in the repository. |
+| Git Tags URL | `git-tags-url` | string | A template for the API URL to get information about Git tags of the repository. |
+| Git Refs URL | `git-refs-url` | string | A template for the API URL to get information about Git refs of the repository. |
+| Trees URL | `trees-url` | string | A template for the API URL to create or retrieve a raw Git tree of the repository. |
+| Statuses URL | `statuses-url` | string | A template for the API URL to get information about statuses of a commit. |
+| Languages URL | `languages-url` | string | The API URL to get information about the languages of the repository. |
+| Stargazers URL | `stargazers-url` | string | The API URL to list the stargazers on the repository. |
+| Contributors URL | `contributors-url` | string | A template for the API URL to list the contributors to the repository. |
+| Subscribers URL | `subscribers-url` | string | The API URL to list the subscribers on the repository. |
+| Subscription URL | `subscription-url` | string | The API URL to subscribe to notifications for this repository. |
+| Commits URL | `commits-url` | string | A template for the API URL to get information about commits on the repository. |
+| Git Commits URL | `git-commits-url` | string | A template for the API URL to get information about Git commits of the repository. |
+| Comments URL | `comments-url` | string | A template for the API URL to get information about comments on the repository. |
+| Issue Comment URL | `issue-comment-url` | string | A template for the API URL to get information about issue comments on the repository. |
+| Contents URL | `contents-url` | string | A template for the API URL to get the contents of the repository. |
+| Compare URL | `compare-url` | string | A template for the API URL to compare two commits or refs. |
+| Merges URL | `merges-url` | string | The API URL to merge branches in the repository. |
+| Archive URL | `archive-url` | string | A template for the API URL to download the repository as an archive. |
+| Downloads URL | `downloads-url` | string | The API URL to list the downloads on the repository. |
+| Issues URL | `issues-url` | string | A template for the API URL to get information about issues on the repository. |
+| Pulls URL | `pulls-url` | string | A template for the API URL to get information about pull requests on the repository. |
+| Milestones URL | `milestones-url` | string | A template for the API URL to get information about milestones of the repository. |
+| Notifications URL | `notifications-url` | string | A template for the API URL to get information about notifications on the repository. |
+| Labels URL | `labels-url` | string | A template for the API URL to get information about labels of the repository. |
+| Releases URL | `releases-url` | string | A template for the API URL to get information about releases on the repository. |
+| Deployments URL | `deployments-url` | string | The API URL to list the deployments of the repository. |
+| Created At | `created-at` | string/integer | The time the repository was created. |
+| Updated At | `updated-at` | string | The time the repository was last updated. |
+| Pushed At | `pushed-at` | string/integer/null | The time the repository was last pushed to. |
+| Git URL | `git-url` | string | The Git URL to the repository. |
+| SSH URL | `ssh-url` | string | The SSH URL to the repository. |
+| Clone URL | `clone-url` | string | The URL to clone the repository. |
+| SVN URL | `svn-url` | string | The SVN URL to the repository. |
+| Homepage | `homepage` | string | The homepage URL of the repository. |
+| Size | `size` | integer | The size of the repository. |
+| Stargazers Count | `stargazers-count` | integer | The number of stargazers. |
+| Watchers Count | `watchers-count` | integer | The number of watchers. |
+| Language | `language` | string | The primary language of the repository. |
+| Has Issues | `has-issues` | boolean | Whether issues are enabled. |
+| Has Projects | `has-projects` | boolean | Whether projects are enabled. |
+| Has Downloads | `has-downloads` | boolean | Whether downloads are enabled. |
+| Has Wiki | `has-wiki` | boolean | Whether the wiki is enabled. |
+| Has Pages | `has-pages` | boolean | Whether GitHub Pages is enabled. |
+| Has Discussions | `has-discussions` | boolean | Whether discussions are enabled. |
+| Forks Count | `forks-count` | integer | The number of forks. |
+| Mirror URL | `mirror-url` | string | The URL of the repository mirror. |
+| Archived | `archived` | boolean | Whether the repository is archived. |
+| Disabled | `disabled` | boolean | Whether the repository is disabled. |
+| Open Issues Count | `open-issues-count` | integer | The number of open issues. |
+| License | `license` | object | The license information. |
+| Forks | `forks` | integer | The number of forks. |
+| Open Issues | `open-issues` | integer | The number of open issues. |
+| Watchers | `watchers` | integer | The number of watchers. |
+| Default Branch | `default-branch` | string | The default branch of the repository. |
+| Is Template | `is-template` | boolean | Whether the repository is a template. |
+| Web Commit Signoff Required | `web-commit-signoff-required` | boolean | Whether commit signoff is required. |
+| Topics | `topics` | array[string] | List of repository topics. |
+| Visibility | `visibility` | string | Visibility level of the repository. |
+| Custom Properties | `custom-properties` | object | Custom properties of the repository. |
+</div>
+
+<h4 id="star-created-repository-owner">Repository Owner</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Login | `login` | string | The username of the owner. |
+| ID | `id` | integer | Unique identifier of the owner. |
+| Node ID | `node-id` | string | The GraphQL identifier of the owner. |
+| Name | `name` | string | The name of the owner. |
+| Email | `email` | string | The email of the owner. |
+| Avatar URL | `avatar-url` | string | URL of the owner's avatar image. |
+| Gravatar ID | `gravatar-id` | string | The owner's Gravatar ID. |
+| URL | `url` | string | The URL to the owner's GitHub profile. |
+| HTML URL | `html-url` | string | The HTML URL to the owner's GitHub profile. |
+| Followers URL | `followers-url` | string | The URL to list the owner's followers. |
+| Following URL | `following-url` | string | The URL to list who the owner follows. |
+| Gists URL | `gists-url` | string | The URL to list the owner's gists. |
+| Starred URL | `starred-url` | string | The URL to list repositories the owner has starred. |
+| Subscriptions URL | `subscriptions-url` | string | The URL to list the owner's subscriptions. |
+| Organizations URL | `organizations-url` | string | The URL to list the owner's organizations. |
+| Repos URL | `repos-url` | string | The URL to list the owner's repositories. |
+| Events URL | `events-url` | string | The URL to list the owner's events. |
+| Received Events URL | `received-events-url` | string | The URL to list events received by the owner. |
+| Type | `type` | string | Type of account (Bot, User, or Organization). |
+| Site Admin | `site-admin` | boolean | Whether the owner is a GitHub admin. |
+</div>
+
+<h4 id="star-created-sender">Sender</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Login | `login` | string | The username of the sender. |
+| ID | `id` | integer | Unique identifier of the sender. |
+| Node ID | `node-id` | string | The GraphQL identifier of the sender. |
+| Avatar URL | `avatar-url` | string | URL of the sender's avatar image. |
+| Gravatar ID | `gravatar-id` | string | The sender's Gravatar ID. |
+| URL | `url` | string | The URL to the sender's GitHub profile. |
+| HTML URL | `html-url` | string | The HTML URL to the sender's GitHub profile. |
+| Followers URL | `followers-url` | string | The URL to list the sender's followers. |
+| Following URL | `following-url` | string | The URL to list who the sender follows. |
+| Gists URL | `gists-url` | string | The URL to list the sender's gists. |
+| Starred URL | `starred-url` | string | The URL to list repositories the sender has starred. |
+| Subscriptions URL | `subscriptions-url` | string | The URL to list the sender's subscriptions. |
+| Organizations URL | `organizations-url` | string | The URL to list the sender's organizations. |
+| Repos URL | `repos-url` | string | The URL to list the sender's repositories. |
+| Events URL | `events-url` | string | The URL to list the sender's events. |
+| Received Events URL | `received-events-url` | string | The URL to list events received by the sender. |
+| Type | `type` | string | Type of account (Bot, User, or Organization). |
+| Site Admin | `site-admin` | boolean | Whether the sender is a GitHub admin. |
+</div>
+</details>
+
+
 ## Example Recipes
+
+
+**Summarise and pick the most important issues from this list**
 
 Recipe for the [List GitHub Repo Issues](https://instill.tech/instill-ai/pipelines/github-demo/playground) pipeline.
 
@@ -43,4 +219,62 @@ output:
   result:
     title: Result
     value: ${anthropic-0.output.text}
+```
+
+**Send a message to Slack when a repository is starred**
+
+```yaml
+# VDP Version
+version: v1beta
+on:
+  github-0:
+    type: github
+    event: EVENT_STAR_CREATED
+    config:
+      repository: instill-ai/instill-core
+    setup: ${connection.my-github-connection}
+
+variable:
+  repository:
+    title: repository
+    format: string
+    listen:
+      - ${on.github-0.message.repository.full-name}
+  user:
+    title: user
+    format: string
+    listen:
+      - ${on.github-0.message.sender.login}
+  description:
+    title: user
+    format: string
+    listen:
+      - ${on.github-0.message.repository.description}
+  stargazers-count:
+    title: stargazers-count
+    format: number
+    listen:
+      - ${on.github-0.message.repository.stargazers-count}
+
+output:
+  text:
+    value: ${variable.repository} ${variable.user}
+
+
+component:
+  slack-0:
+    type: slack
+    input:
+      channel-name: test-slack
+      message: |
+        ${variable.user} just starred ${variable.repository}!
+
+        *Repository Details:*
+        • Description: ${variable.description}
+        • Total Stars: ${variable.stargazers-count}
+      as-user: false
+    condition:
+    setup: ${connection.my-slack-connection}
+    task: TASK_WRITE_MESSAGE
+
 ```
