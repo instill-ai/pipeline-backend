@@ -8,6 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/gofrs/uuid"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
@@ -41,6 +42,11 @@ func (fileData) IsValue() {}
 func NewFileFromBytes(b []byte, contentType, filename string) (bin *fileData, err error) {
 	if contentType == "" {
 		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
+	}
+
+	if filename == "" {
+		fileUID, _ := uuid.NewV4()
+		filename = fmt.Sprintf("%s.%s", fileUID, strings.ToLower(mimetype.Detect(b).Extension()))
 	}
 
 	f := &fileData{

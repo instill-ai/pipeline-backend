@@ -669,7 +669,7 @@ func (w *worker) uploadFileAndReplaceWithURL(ctx context.Context, param *Compone
 	}
 	switch v := (*value).(type) {
 	case format.File:
-		downloadURL, err := w.uploadBlobDataAndGetDownloadURL(ctx, param, &v)
+		downloadURL, err := w.uploadBlobDataAndGetDownloadURL(ctx, param, v)
 		if err != nil || downloadURL == "" {
 			logger.Warn("uploading blob data", zap.Error(err))
 			return v
@@ -692,7 +692,7 @@ func (w *worker) uploadFileAndReplaceWithURL(ctx context.Context, param *Compone
 	}
 }
 
-func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *ComponentActivityParam, value *format.File) (string, error) {
+func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *ComponentActivityParam, value format.File) (string, error) {
 	artifactClient := w.artifactPublicServiceClient
 	requesterID := param.SystemVariables.PipelineRequesterID
 
@@ -700,7 +700,7 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(sysVarJSON))
 
-	objectName := fmt.Sprintf("%s/%s", requesterID, uuid.Must(uuid.NewV4()).String())
+	objectName := fmt.Sprintf("%s/%s", requesterID, value.Filename())
 	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
 		NamespaceId:      requesterID,
 		ObjectName:       objectName,
@@ -729,7 +729,7 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 	return respDownloadURL.GetDownloadUrl(), nil
 }
 
-func uploadBlobData(ctx context.Context, uploadURL string, value *format.File, logger *zap.Logger) error {
+func uploadBlobData(ctx context.Context, uploadURL string, value format.File, logger *zap.Logger) error {
 	if uploadURL == "" {
 		return fmt.Errorf("empty upload URL provided")
 	}
@@ -745,8 +745,8 @@ func uploadBlobData(ctx context.Context, uploadURL string, value *format.File, l
 	}
 	parsedURL.Host = fmt.Sprintf("%s:%d", config.Config.APIGateway.Host, config.Config.APIGateway.PublicPort)
 	fullURL := parsedURL.String()
-	contentType := (*value).ContentType().String()
-	fileBytes, err := (*value).Binary()
+	contentType := value.ContentType().String()
+	fileBytes, err := value.Binary()
 
 	if err != nil {
 		return fmt.Errorf("getting file bytes: %w", err)
