@@ -19,7 +19,7 @@ if __name__ == "__main__":
 	if "resolution" in params and params["resolution"] != 0 and params["resolution"] != None:
 		resolution = params["resolution"]
 	else:
-		resolution = 500
+		resolution = 300
 	decoded_bytes = base64.b64decode(pdf_string)
 	pdf_file_obj = BytesIO(decoded_bytes)
 	pdf = PDFTransformer(pdf_file_obj, display_image_tag)
