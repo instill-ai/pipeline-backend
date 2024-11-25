@@ -19,9 +19,10 @@
         },
         "limit": {
           "title": "Limit",
-          "description": "Provide the number of prospects you want to find. If you don't provide any value, it will return 10 prospects. The maximum limit is 60.",
+          "description": "Provide the number of prospects you want to find. If you don't provide any value, it will return 10 prospects. The maximum limit is 60. The minimum limit is 1.",
           "default": 10,
           "maximum": 60,
+          "minimum": 1,
           "instillAcceptFormats": [
             "integer"
           ],
@@ -60,7 +61,7 @@
         },
         "order-by": {
           "title": "Order By",
-          "description": "Sort the prospects' info after getting the results based on company name. You can sort the prospects based on the job title and seniority. If you don't provide any value, it will return the prospects in the order they are found.",
+          "description": "Sort the prospects' info after getting the results based on company name. You can sort the prospects based on the job title and seniority. If you don't provide any value, it will return the prospects in the order they are found. If you provide both values, it will first sort the prospects based on the job title and then based on the seniority.",
           "properties": {
             "job-title": {
               "title": "Job Title",
@@ -99,7 +100,8 @@
       "type": "object",
       "instillUIOrder": 0,
       "required": [
-        "company-name"
+        "company-name",
+        "limit"
       ]
     },
     "output": {

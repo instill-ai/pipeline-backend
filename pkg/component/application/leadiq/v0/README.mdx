@@ -57,9 +57,9 @@ Find prospects' contact information based on the company name you provide. And, 
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_FIND_PROSPECTS` |
 | Company Name (required) | `company-name` | string | Provide the company name for which you want to find prospects. |
-| Limit | `limit` | integer | Provide the number of prospects you want to find. If you don't provide any value, it will return 10 prospects. The maximum limit is 60. |
+| Limit (required) | `limit` | integer | Provide the number of prospects you want to find. If you don't provide any value, it will return 10 prospects. The maximum limit is 60. The minimum limit is 1. |
 | [Filter By](#find-prospects-filter-by) | `filter-by` | object | Provide the information about the prospects you want to filter. You can filter the prospects based on job title, name, and seniority. You can provide the regular expression for each field. When it matches, the prospect will be included in the output. If you don't provide any value, it will return all the prospects. |
-| [Order By](#find-prospects-order-by) | `order-by` | object | Sort the prospects' info after getting the results based on company name. You can sort the prospects based on the job title and seniority. If you don't provide any value, it will return the prospects in the order they are found. |
+| [Order By](#find-prospects-order-by) | `order-by` | object | Sort the prospects' info after getting the results based on company name. You can sort the prospects based on the job title and seniority. If you don't provide any value, it will return the prospects in the order they are found. If you provide both values, it will first sort the prospects based on the job title and then based on the seniority. |
 </div>
 
 
@@ -79,7 +79,7 @@ Provide the information about the prospects you want to filter. You can filter t
 </div>
 <h4 id="find-prospects-order-by">Order By</h4>
 
-Sort the prospects' info after getting the results based on company name. You can sort the prospects based on the job title and seniority. If you don't provide any value, it will return the prospects in the order they are found.
+Sort the prospects' info after getting the results based on company name. You can sort the prospects based on the job title and seniority. If you don't provide any value, it will return the prospects in the order they are found. If you provide both values, it will first sort the prospects based on the job title and then based on the seniority.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -117,11 +117,83 @@ Sort the prospects' info after getting the results based on company name. You ca
 </div>
 </details>
 
+#### Regex Match Sample
 
+##### Sample for Title
+
+- Match Sales or Founder with case-insensitive
+    ```regex
+    (?i)\b(sales|founder)\b
+    ```
+
+
+- Match titles containing "Manager", "Director", or "VP" (case-insensitive)
+    ```regex
+    (?i)\b(manager|director|vp)\b
+    ```
+
+- Match titles starting with "Chief" (e.g., "Chief Executive Officer", "Chief Marketing Officer")
+    ```regex
+    (?i)\bchief\s\w+\b
+    ```
+
+
+- Match "Engineer", "Developer", or "Programmer" (case-insensitive)
+    ```regex
+    (?i)\b(engineer|developer|programmer)\b
+    ```
+
+
+##### Sample for Seniority
+
+- Match Senior or Sr. with case-insensitive
+    ```regex
+    (?i)\b(senior|sr\.)\b
+    ```
+
+- Match "Junior" or "Intern" (case-insensitive)
+    ```regex
+    (?i)\b(junior|intern)\b
+    ```
+
+- Match any C-level title (e.g., "CEO", "CTO", "CFO")
+    ```regex
+    (?i)\b(c(eo|to|fo|oo|mo)|chief\s\w+\b)
+    ```
 
 ## Example Recipes
 
 
-
 ```yaml
+
+# VDP Version
+version: v1beta
+
+variable:
+  company-name:
+    title: Company Name
+    format: string
+
+component:
+  prospects:
+    type: leadiq
+    task: TASK_FIND_PROSPECTS
+    input:
+      company-name: ${variable.company-name}
+      limit: 5
+      filter-by:
+        job-title: (?i)\b(sales|founder)\b
+        seniority:
+      order-by:
+        job-title: asc
+        seniority: desc
+    condition:
+    setup:
+      api-key: ${secret.leadiq}
+
+output:
+  result:
+    title: Result
+    value: ${prospects.output}
+
 ```

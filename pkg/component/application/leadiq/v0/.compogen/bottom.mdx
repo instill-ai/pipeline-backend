@@ -1,6 +1,36 @@
 ## Example Recipes
 
 
-
 ```yaml
+
+# VDP Version
+version: v1beta
+
+variable:
+  company-name:
+    title: Company Name
+    format: string
+
+component:
+  prospects:
+    type: leadiq
+    task: TASK_FIND_PROSPECTS
+    input:
+      company-name: ${variable.company-name}
+      limit: 5
+      filter-by:
+        job-title: (?i)\b(sales|founder)\b
+        seniority:
+      order-by:
+        job-title: asc
+        seniority: desc
+    condition:
+    setup:
+      api-key: ${secret.leadiq}
+
+output:
+  result:
+    title: Result
+    value: ${prospects.output}
+
 ```

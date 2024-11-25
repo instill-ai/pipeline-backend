@@ -1,9 +1,10 @@
-//go:generate compogen readme ./config ./README.mdx --extraContents bottom=.compogen/bottom.mdx
+//go:generate compogen readme ./config ./README.mdx --extraContents TASK_FIND_PROSPECTS=.compogen/find_prospects.mdx --extraContents bottom=.compogen/bottom.mdx
 package leadiq
 
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"sync"
 
 	_ "embed"
@@ -31,6 +32,11 @@ var (
 	//go:embed config/tasks.json
 	tasksJSON []byte
 
+	//go:embed queries/flat_advanced_search.txt
+	flatAdvancedSearchQuery string
+	//go:embed queries/search_people.txt
+	searchPeopleQuery string
+
 	once sync.Once
 	comp *component
 )
@@ -46,6 +52,7 @@ type execution struct {
 
 	execute                func(context.Context, *base.Job) error
 	usesInstillCredentials bool
+	httpStatusCodeCompiler *regexp.Regexp
 }
 
 // Init initializes the component with the provided base component.
@@ -78,9 +85,17 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 
 	x.Setup = resolvedSetup
 
+	httpStatusCodeCompiler, err := regexp.Compile(`\b(\d{3})\b`)
+
+	if err != nil {
+		err = fmt.Errorf("compiling http status code regex: %w", err)
+		return nil, err
+	}
+
 	e := &execution{
 		ComponentExecution:     x,
 		usesInstillCredentials: resolved,
+		httpStatusCodeCompiler: httpStatusCodeCompiler,
 	}
 	switch x.Task {
 	case TaskFindProspects:
@@ -141,6 +156,10 @@ func newClient(setup *structpb.Struct, logger *zap.Logger) *graphql.Client {
 		httpclient.WithLogger(logger),
 		httpclient.WithEndUserError(new(errBody)),
 	)
+	// Set the API key as a basic auth header.
+	// Ideally, graphql.NewRequest should support setting headers.
+	// But, it will not be used in graphql.NewRequest because it does not support setting headers.
+	// So, we have to reset it again before sending the request.
 	c.SetHeader("Authorization", "Basic "+getAPIKey(setup))
 	return graphql.NewClient(apiBaseURL, graphql.WithHTTPClient(c.GetClient()))
 }
