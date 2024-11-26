@@ -27,7 +27,7 @@ export function CheckIntegrations() {
     });
 
     var id = "github";
-    var cdefs = http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?pageSize=100`, null, null).
+    var cdefs = http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?filter=qTitle="GitHub"`, null, null).
       json().componentDefinitions;
 
     var cdef = null;
