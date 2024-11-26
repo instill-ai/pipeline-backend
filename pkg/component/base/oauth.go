@@ -1,6 +1,6 @@
 package base
 
-// OAuthConnector contains the OAuth configuration that a comopnent can use to
+// OAuthConnector contains the OAuth configuration that a component can use to
 // support OAuth 2.0 connections. Such components must have an
 // `instillOAuthConfig` object in their setup definition.
 type OAuthConnector struct {

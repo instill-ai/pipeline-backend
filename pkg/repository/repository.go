@@ -149,7 +149,7 @@ func decodeCursor[T any](token string) (cursor T, err error) {
 	}
 
 	if err := json.Unmarshal(b, &cursor); err != nil {
-		return cursor, fmt.Errorf("unmarshalling token: %w", err)
+		return cursor, fmt.Errorf("unmarshaling token: %w", err)
 	}
 
 	return cursor, nil

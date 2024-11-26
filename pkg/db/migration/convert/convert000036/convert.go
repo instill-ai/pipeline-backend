@@ -37,7 +37,7 @@ func (c *RenameInstillFormat) migratePipeline() error {
 			if p.Recipe != nil {
 				// Update recipe_yaml content
 				if err := yaml.Unmarshal([]byte(p.RecipeYAML), &node); err != nil {
-					return fmt.Errorf("unmarshalling recipe yaml: %w", err)
+					return fmt.Errorf("unmarshaling recipe yaml: %w", err)
 				}
 
 				// Find and update the variable section
@@ -102,7 +102,7 @@ func (c *RenameInstillFormat) migratePipelineRelease() error {
 			if r.Recipe != nil {
 				// Update recipe_yaml content
 				if err := yaml.Unmarshal([]byte(r.RecipeYAML), &node); err != nil {
-					return fmt.Errorf("unmarshalling recipe yaml: %w", err)
+					return fmt.Errorf("unmarshaling recipe yaml: %w", err)
 				}
 
 				// Find and update the variable section

@@ -1209,7 +1209,7 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 
 			var setup map[string]any
 			if err := json.Unmarshal(conn.Setup, &setup); err != nil {
-				return handleErr(fmt.Errorf("unmarshalling setup: %w", err))
+				return handleErr(fmt.Errorf("unmarshaling setup: %w", err))
 			}
 
 			setupVal, err := data.NewValue(setup)
@@ -1247,7 +1247,7 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 
 					var setup map[string]any
 					if err := json.Unmarshal(conn.Setup, &setup); err != nil {
-						return handleErr(fmt.Errorf("unmarshalling setup: %w", err))
+						return handleErr(fmt.Errorf("unmarshaling setup: %w", err))
 					}
 
 					setupVal, err := data.NewValue(setup)

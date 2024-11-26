@@ -39,7 +39,7 @@ func (c *RenameHTTPComponent) migratePipeline() error {
 
 			var node yaml.Node
 			if err := yaml.Unmarshal([]byte(p.RecipeYAML), &node); err != nil {
-				return fmt.Errorf("unmarshalling recipe yaml: %w", err)
+				return fmt.Errorf("unmarshaling recipe yaml: %w", err)
 			}
 
 			// Find and update the component section
@@ -91,7 +91,7 @@ func (c *RenameHTTPComponent) migratePipelineRelease() error {
 
 			var node yaml.Node
 			if err := yaml.Unmarshal([]byte(pr.RecipeYAML), &node); err != nil {
-				return fmt.Errorf("unmarshalling recipe yaml: %w", err)
+				return fmt.Errorf("unmarshaling recipe yaml: %w", err)
 			}
 
 			// Find and update the component section

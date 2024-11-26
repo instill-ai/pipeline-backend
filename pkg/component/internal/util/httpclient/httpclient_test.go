@@ -141,7 +141,7 @@ func TestClient_SendReqAndUnmarshal(t *testing.T) {
 			}
 
 			// All logs contain the "name" key. Sometimes (e.g. on
-			// unmarshalling error) we'll have > 1 log so the assertion above
+			// unmarshaling error) we'll have > 1 log so the assertion above
 			// is too particular.
 			logs := zLogs.FilterFieldKey("name")
 			c.Assert(logs.Len(), qt.Not(qt.Equals), 0)
