@@ -77,14 +77,14 @@ Provide the company information for which you want to find prospects.
 | Countries | `countries` | array | Provide the countries of the company you want to find prospects. If you don't provide any value, it will return all the prospects.  |
 | Descriptions | `descriptions` | array | Provide the descriptions of the company you want to find prospects. In LeadIQ, it will return the similar companies based on the descriptions.  |
 | Industries | `industries` | array | Provide the industries of the company you want to find prospects. If you don't provide any value, it will return all the prospects.  |
-| Name | `name` | string | Provide the company name for which you want to find prospects.  |
-| [Revenue Size](#find-prospects-revenue-size) | `revenue-size` | object | Provide the min or max revenue size of the company you want to find prospects. If you don't provide any value, it will return all the prospects.  |
+| Names | `names` | array | Provide the company names for which you want to find prospects.  |
+| [Revenue Size](#find-prospects-revenue-size) | `revenue-size` | object | Provide the min or max revenue size of the company you want to find prospects. If you don't provide any value, it will return all the prospects. If you set the company names, the revenue size will be ignored.  |
 | States | `states` | array | Provide the states of the company you want to find prospects. If you don't provide any value, it will return all the prospects.  |
 | Technologies | `technologies` | array | Provide the technologies used by the company you want to find prospects. If you don't provide any value, it will return all the prospects.  |
 </div>
 <h4 id="find-prospects-revenue-size">Revenue Size</h4>
 
-Provide the min or max revenue size of the company you want to find prospects. If you don't provide any value, it will return all the prospects.
+Provide the min or max revenue size of the company you want to find prospects. If you don't provide any value, it will return all the prospects. If you set the company names, the revenue size will be ignored.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -103,7 +103,7 @@ Provide the information about the prospects you want to filter. You can filter t
 | :--- | :--- | :--- | :--- |
 | Function | `function` | string | Provide the function of the prospects you want to filter with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions).  |
 | Job Title | `job-title` | string | Provide the job title of the prospects you want to filter with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions).  |
-| Seniority | `seniority` | string | Provide the seniority of the prospects you want to filter.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Executive`</li><li>`Director`</li><li>`SeniorIndividualContributor`</li><li>`VP`</li><li>`Manager`</li><li>`Other`</li></ul></details>  |
+| Seniorities | `seniorities` | array | Provide the seniorities of the prospects you want to filter.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Executive`</li><li>`Director`</li><li>`SeniorIndividualContributor`</li><li>`VP`</li><li>`Manager`</li><li>`Other`</li></ul></details>  |
 </div>
 </details>
 
@@ -135,13 +135,23 @@ Provide the information about the prospects you want to filter. You can filter t
 | Job Title | `job-title` | string | The job title of the prospect. |
 | LinkedIn URL | `linkedin-url` | string | The LinkedIn URL of the prospect. |
 | Name | `name` | string | The name of the prospect. |
+| [Revenue Size](#find-prospects-revenue-size) | `revenue-size` | object | The revenue size of the company from LeadIQ. |
 | Seniority | `seniority` | string | The seniority of the prospect. |
+</div>
+
+<h4 id="find-prospects-revenue-size">Revenue Size</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Description | `description` | string | The description of the revenue size of the company from LeadIQ. |
+| Max | `max` | integer | The maximum revenue size of the company from LeadIQ. |
+| Min | `min` | integer | The minimum revenue size of the company from LeadIQ. |
 </div>
 </details>
 
 #### Regex Match Sample
-
-##### Sample for Title
 
 - Match Sales or Founder with case-insensitive
     ```regex
@@ -166,56 +176,66 @@ Provide the information about the prospects you want to filter. You can filter t
     ```
 
 
-##### Sample for Seniority
-
-- Match Senior or Sr. with case-insensitive
-    ```regex
-    (?i)\b(senior|sr\.)\b
-    ```
-
-- Match "Junior" or "Intern" (case-insensitive)
-    ```regex
-    (?i)\b(junior|intern)\b
-    ```
-
-- Match any C-level title (e.g., "CEO", "CTO", "CFO")
-    ```regex
-    (?i)\b(c(eo|to|fo|oo|mo)|chief\s\w+\b)
-    ```
-
 ## Example Recipes
 
 
 ```yaml
-
-# VDP Version
 version: v1beta
 
 variable:
-  company-name:
-    title: Company Name
+  city:
+    title: City
     format: string
+    default: "London"
+  country:
+    title: Country
+    format: string
+    default: "United Kingdom"
+  industry:
+    title: Industry
+    format: string
+    default: "Software Development"
+  description:
+    title: Description
+    format: string
+    default: "AI"
+  technology:
+    title: Technology
+    format: string
+    default: "HTTP"
 
 component:
   prospects:
     type: leadiq
     task: TASK_FIND_PROSPECTS
     input:
-      company-name: ${variable.company-name}
-      limit: 5
+      company:
+        names:
+        revenue-size:
+          min: 10000000
+          max:
+        countries:
+          - ${variable.country}
+        states:
+        cities:
+          - ${variable.city}
+        industries:
+          - ${variable.industry}
+        descriptions:
+          - ${variable.description}
+        technologies:
+          - ${variable.technology}
+      limit: 2
       filter-by:
         job-title: (?i)\b(sales|founder)\b
-        seniority:
-      order-by:
-        job-title: asc
-        seniority: desc
+        seniorities:
+          - Executive
+          - Director
+        function:
     condition:
-    setup:
-      api-key: ${secret.leadiq}
 
 output:
   result:
     title: Result
     value: ${prospects.output}
-
 ```

@@ -12,19 +12,19 @@
           "description": "Provide the company information for which you want to find prospects.",
           "type": "object",
           "properties": {
-            "name": {
-              "title": "Name",
-              "description": "Provide the company name for which you want to find prospects.",
+            "names": {
+              "title": "Names",
+              "description": "Provide the company names for which you want to find prospects.",
               "instillAcceptFormats": [
-                "string"
+                "array:string"
               ],
-              "instillFormat": "string",
-              "type": "string",
+              "instillFormat": "array:string",
+              "type": "array",
               "instillUIOrder": 0
             },
             "revenue-size": {
               "title": "Revenue Size",
-              "description": "Provide the min or max revenue size of the company you want to find prospects. If you don't provide any value, it will return all the prospects.",
+              "description": "Provide the min or max revenue size of the company you want to find prospects. If you don't provide any value, it will return all the prospects. If you set the company names, the revenue size will be ignored.",
               "type": "object",
               "properties": {
                 "min": {
@@ -142,11 +142,11 @@
               "type": "string",
               "instillUIOrder": 0
             },
-            "seniority": {
-              "title": "Seniority",
-              "description": "Provide the seniority of the prospects you want to filter.",
+            "seniorities": {
+              "title": "Seniorities",
+              "description": "Provide the seniorities of the prospects you want to filter.",
               "instillAcceptFormats": [
-                "string"
+                "array:string"
               ],
               "enum": [
                 "Executive",
@@ -156,8 +156,8 @@
                 "Manager",
                 "Other"
               ],
-              "instillFormat": "string",
-              "type": "string",
+              "instillFormat": "array:string",
+              "type": "array",
               "instillUIOrder": 1
             },
             "function": {
@@ -269,6 +269,42 @@
                 "instillFormat": "array:string",
                 "type": "array",
                 "instillUIOrder": 10
+              },
+              "revenue-size": {
+                "title": "Revenue Size",
+                "description": "The revenue size of the company from LeadIQ.",
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "title": "Min",
+                    "description": "The minimum revenue size of the company from LeadIQ.",
+                    "instillAcceptFormats": [
+                      "integer"
+                    ],
+                    "instillFormat": "integer",
+                    "type": "integer",
+                    "instillUIOrder": 0
+                  },
+                  "max": {
+                    "title": "Max",
+                    "description": "The maximum revenue size of the company from LeadIQ.",
+                    "instillAcceptFormats": [
+                      "integer"
+                    ],
+                    "instillFormat": "integer",
+                    "type": "integer",
+                    "instillUIOrder": 1
+                  },
+                  "description": {
+                    "title": "Description",
+                    "description": "The description of the revenue size of the company from LeadIQ.",
+                    "instillFormat": "string",
+                    "type": "string",
+                    "instillUIOrder": 2
+                  }
+                },
+                "required": [],
+                "instillUIOrder": 11
               }
             },
             "required": [],
