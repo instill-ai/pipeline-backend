@@ -48,9 +48,8 @@ type intersectionOutput struct {
 }
 
 type splitInput struct {
-	Data      format.Value `instill:"data"`
-	Size      int          `instill:"size"`
-	Delimiter string       `instill:"delimiter"`
+	Data format.Value `instill:"data"`
+	Size int          `instill:"size"`
 }
 
 type splitOutput struct {
