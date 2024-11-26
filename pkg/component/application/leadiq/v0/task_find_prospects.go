@@ -3,7 +3,6 @@ package leadiq
 import (
 	"context"
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -30,8 +29,6 @@ func (e *execution) executeFindProspects(ctx context.Context, job *base.Job) err
 		return err
 	}
 
-	log.Println("====== inputStruct =======\n", inputStruct)
-
 	flatAdvancedSearchIn := buildFlatAdvancedSearchInput(inputStruct)
 	flatAdvancedSearchResp := flatAdvancedSearchResp{}
 	if err := e.sendRequest(ctx, client, logger, flatAdvancedSearchQuery, flatAdvancedSearchIn, &flatAdvancedSearchResp); err != nil {
@@ -40,8 +37,6 @@ func (e *execution) executeFindProspects(ctx context.Context, job *base.Job) err
 		job.Error.Error(ctx, err)
 		return err
 	}
-
-	log.Println("====== flatAdvancedSearchResp =======\n", flatAdvancedSearchResp)
 
 	filterBy := inputStruct.FilterBy
 	if err := filterBy.compile(); err != nil {
@@ -162,7 +157,6 @@ func (e *execution) sendRequest(ctx context.Context, client *graphql.Client, log
 
 			statusCode := match[1]
 
-			// If the error is too many requests, we use backoff retry strategy.
 			if statusCode != "429" {
 				logger.Error("Failed to send request to LeadIQ with status code",
 					zap.String("status code", statusCode),
@@ -172,6 +166,7 @@ func (e *execution) sendRequest(ctx context.Context, client *graphql.Client, log
 				return err
 			}
 
+			// If the error is too many requests, we use backoff retry strategy.
 			logger.Error("Rate limited by LeadIQ",
 				zap.Error(err),
 				zap.Int("retries", retries),

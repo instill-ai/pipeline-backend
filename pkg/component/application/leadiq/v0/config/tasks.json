@@ -185,7 +185,7 @@
     },
     "output": {
       "title": "Output",
-      "description": "The output will be the list of prospects' contact information based on the company name you provide. It will include the name, job title, seniority, and email address of the prospects.",
+      "description": "The output will be the list of prospects' contact information based on the company name you provide. It will include the name, job title, seniority, and email address of the prospects, and other company information from LeadIQ provided in the response.",
       "properties": {
         "prospects": {
           "title": "Prospects",

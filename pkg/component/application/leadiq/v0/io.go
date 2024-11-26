@@ -37,6 +37,7 @@ type Company struct {
 	Technologies []string `instill:"technologies,omitempty"`
 }
 
+// RevenueSize is the revenue size of the company.
 type RevenueSize struct {
 	// Min is the minimum revenue size.
 	Min int `instill:"min"`
