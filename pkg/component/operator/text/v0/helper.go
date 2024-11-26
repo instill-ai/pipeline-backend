@@ -225,12 +225,13 @@ func getOverlap(previousMergingChunk mergingChunks, setting *Setting, tkm *tikto
 		j := len(runes) - 1
 		for j >= 0 {
 			currentRune := string(runes[j])
-			if getTokenSize(overlapText+currentRune, setting, tkm) >= overlapSize {
-				return overlapText, previousMergingChunk.Chunks[i].ContentEndPosition - (len(runes) - j) + 2
-			}
 			overlapText = currentRune + overlapText
 			j--
 		}
+		// TODO: need to check overlap chunk by chunk
+		// if getTokenSize(overlapText+currentRune, setting, tkm) >= overlapSize {
+		// 	return overlapText, previousMergingChunk.Chunks[i].ContentEndPosition - (len(runes) - j) + 2
+		// }
 		i--
 	}
 	panic("no overlap found")
