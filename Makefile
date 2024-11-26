@@ -48,6 +48,8 @@ build-dev:							## Build dev docker image
 		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
 		--build-arg K6_VERSION=${K6_VERSION} \
 		--build-arg XK6_VERSION=${XK6_VERSION} \
+		--build-arg XK6_SQL_VERSION=${XK6_SQL_VERSION} \
+		--build-arg XK6_SQL_POSTGRES_VERSION=${XK6_SQL_POSTGRES_VERSION} \
 		-f Dockerfile.dev -t instill/${SERVICE_NAME}:dev .
 
 .PHONY: build-latest

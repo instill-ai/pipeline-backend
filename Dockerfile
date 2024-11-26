@@ -1,7 +1,7 @@
 ARG GOLANG_VERSION=1.22.5
 FROM golang:${GOLANG_VERSION}-bullseye AS build
 
-ARG TARGETOS TARGETARCH K6_VERSION XK6_VERSION
+ARG TARGETOS TARGETARCH
 
 RUN apt-get update && apt-get install -y \
     build-essential \
