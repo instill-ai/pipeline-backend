@@ -7,7 +7,7 @@ WORKDIR /${SERVICE_NAME}
 
 # -- install 3rd-party
 
-ARG TARGETOS TARGETARCH K6_VERSION XK6_VERSION
+ARG TARGETOS TARGETARCH K6_VERSION XK6_VERSION XK6_SQL_VERSION XK6_SQL_POSTGRES_VERSION
 
 # Install Python, create virtual environment, and install pdfplumber
 RUN apt update && \
@@ -51,7 +51,10 @@ RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=typ
 
 # k6
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install go.k6.io/xk6/cmd/xk6@v${XK6_VERSION}
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH xk6 build v${K6_VERSION} --with github.com/grafana/xk6-sql@v0.4.1 --output /usr/bin/k6
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH xk6 build v${K6_VERSION} \
+  --with github.com/grafana/xk6-sql@v${XK6_SQL_VERSION} \
+  --with github.com/grafana/xk6-sql-driver-postgres@v${XK6_SQL_POSTGRES_VERSION} \
+  --output /usr/bin/k6
 
 # -- set up Go
 

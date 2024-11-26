@@ -1,0 +1,32 @@
+{
+  "componentDefinitions": [
+    "collection": [
+      {
+        "name": "component-definitions/collection",
+        "id": "collection",
+        "uid": "eb611e31-fbe6-43ad-8671-5b9a2e351638",
+        "title": "Collection",
+        "icon": "assets/collection.svg",
+        ...
+        "version": "0.1.0"
+      }
+    ],
+    "http": [
+      {
+        "name": "component-definitions/http",
+        "id": "http",
+        "uid": "5ee55a5c-6e30-4c7a-80e8-90165a729e0a",
+        "id": "http",
+        "title": "HTTP",
+        "documentationUrl": "https://www.instill.tech/docs/component/generic/http",
+        "icon": "assets/http.svg",
+        ...
+        "version": "0.2.0"
+      }
+    ]
+
+  ],
+  "totalSize": 2,
+  "pageSize": 10,
+  "page": 0
+}
