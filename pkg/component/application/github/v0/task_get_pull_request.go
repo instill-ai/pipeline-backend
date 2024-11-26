@@ -22,7 +22,7 @@ func (client *Client) getPullRequest(ctx context.Context, job *base.Job) error {
 	if err != nil {
 		return err
 	}
-	number := input.PrNumber
+	number := input.PRNumber
 	var pullRequest *github.PullRequest
 	if number > 0 {
 		pr, _, err := client.PullRequests.Get(ctx, owner, repository, int(number))

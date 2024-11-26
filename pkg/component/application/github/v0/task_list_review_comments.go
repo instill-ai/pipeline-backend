@@ -39,7 +39,7 @@ func (client *Client) listReviewComments(ctx context.Context, job *base.Job) err
 			PerPage: min(input.PerPage, 100), // GitHub API only allows 100 per page
 		},
 	}
-	number := input.PrNumber
+	number := input.PRNumber
 	comments, _, err := client.PullRequests.ListComments(ctx, owner, repository, number, opts)
 	if err != nil {
 		return addErrMsgToClientError(err)

@@ -20,7 +20,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 					Owner:      "test_owner",
 					Repository: "test_repo",
 				},
-				PrNumber: 1,
+				PRNumber: 1,
 				Comment: github.PullRequestComment{
 					Body:        github.String("This is a fake comment"),
 					Line:        github.Int(2),
@@ -53,7 +53,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 					Owner:      "test_owner",
 					Repository: "test_repo",
 				},
-				PrNumber: 1,
+				PRNumber: 1,
 				Comment: github.PullRequestComment{
 					Body:        github.String("This is a fake comment"),
 					Line:        github.Int(1),
@@ -85,7 +85,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 					Owner:      "rate_limit",
 					Repository: "test_repo",
 				},
-				PrNumber: 1,
+				PRNumber: 1,
 				Comment: github.PullRequestComment{
 					Body:        github.String("This is a fake comment"),
 					Line:        github.Int(2),
@@ -105,7 +105,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 					Owner:      "not_found",
 					Repository: "test_repo",
 				},
-				PrNumber: 1,
+				PRNumber: 1,
 				Comment: github.PullRequestComment{
 					Body:        github.String("This is a fake comment"),
 					Line:        github.Int(2),
@@ -125,7 +125,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 					Owner:      "unprocessable_entity",
 					Repository: "test_repo",
 				},
-				PrNumber: 1,
+				PRNumber: 1,
 				Comment: github.PullRequestComment{
 					Body:        github.String("This is a fake comment"),
 					Line:        github.Int(2),
@@ -145,7 +145,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 					Owner:      "test_owner",
 					Repository: "test_repo",
 				},
-				PrNumber: 1,
+				PRNumber: 1,
 				Comment: github.PullRequestComment{
 					Body:        github.String("This is a fake comment"),
 					Line:        github.Int(1),

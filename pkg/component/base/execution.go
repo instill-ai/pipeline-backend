@@ -185,7 +185,6 @@ func optionMatch(valueMap *structpb.Struct, reference map[string]interface{}, ch
 	return true
 }
 
-// Helper functions
 func convertToStructPb(input any) (*structpb.Struct, error) {
 	if s, ok := input.(*structpb.Struct); ok {
 		return s, nil
@@ -347,7 +346,7 @@ func (e *ComponentExecution) fillInDefaultValuesWithReference(input any, referen
 		return nil, fmt.Errorf("failed to unmarshal result back to original type: %w", err)
 	}
 
-	return inputStruct, nil
+	return input, nil
 }
 
 // FormatErrors formats the errors from the jsonschema validation

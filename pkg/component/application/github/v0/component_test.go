@@ -29,9 +29,9 @@ type TaskCase[inType any, outType any] struct {
 	wantErr    string
 }
 
-func taskTesting[inType any, outType any](testcases []TaskCase[inType, outType], execution *execution, t *testing.T) {
+func taskTesting[inType any, outType any](testCases []TaskCase[inType, outType], execution *execution, t *testing.T) {
 	c := qt.New(t)
-	for _, tc := range testcases {
+	for _, tc := range testCases {
 		c.Run(tc._type+`-`+tc.name, func(c *qt.C) {
 			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {

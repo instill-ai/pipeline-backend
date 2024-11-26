@@ -10,7 +10,7 @@ import (
 )
 
 func TestComponent_GetIssueTask(t *testing.T) {
-	testcases := []TaskCase[getIssueInput, getIssueOutput]{
+	testCases := []TaskCase[getIssueInput, getIssueOutput]{
 		{
 			_type: "ok",
 			name:  "get all issues",
@@ -80,5 +80,5 @@ func TestComponent_GetIssueTask(t *testing.T) {
 
 	e.execute = e.client.getIssue
 
-	taskTesting(testcases, e, t)
+	taskTesting(testCases, e, t)
 }

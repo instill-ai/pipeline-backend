@@ -12,11 +12,11 @@ import (
 	_ "embed"
 
 	"github.com/google/go-github/v62/github"
-	"github.com/instill-ai/x/errmsg"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/x/errmsg"
 )
 
 const (

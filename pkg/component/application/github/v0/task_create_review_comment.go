@@ -20,7 +20,7 @@ func (client *Client) createReviewComment(ctx context.Context, job *base.Job) er
 	if err != nil {
 		return err
 	}
-	number := input.PrNumber
+	number := input.PRNumber
 	commentReqs := &input.Comment
 	commentReqs.Position = commentReqs.Line // Position is deprecated, use Line instead
 
