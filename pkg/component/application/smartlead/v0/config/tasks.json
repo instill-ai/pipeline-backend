@@ -29,7 +29,7 @@
       "properties": {
         "id": {
           "title": "ID",
-          "description": "ID of the campaign. You will need this ID to update campaign setting, add sequences, and add leads to this campaign.",
+          "description": "ID of the campaign.",
           "type": "string",
           "instillFormat": "string",
           "instillUIOrder": 0
@@ -56,9 +56,9 @@
       "description": "Input parameters for setting up a campaign.",
       "type": "object",
       "properties": {
-        "campaign-id": {
-          "title": "Campaign ID",
-          "description": "ID of the campaign.",
+        "campaign-name": {
+          "title": "Campaign Name",
+          "description": "Name of the campaign.",
           "type": "string",
           "instillFormat": "string",
           "instillAcceptFormats": [
@@ -133,7 +133,7 @@
         },
         "schedule-start-time": {
           "title": "Schedule Start Time",
-          "description": "Schedule start time of the campaign. Time to start the campaign in 24-hour format (HH:MM).",
+          "description": "Schedule start time of the campaign. Time to start the campaign in 24-hour format (HH:MM). e.g. 2024-11-27T07:29:25.978Z.",
           "type": "string",
           "instillFormat": "string",
           "instillAcceptFormats": [
@@ -238,9 +238,9 @@
       "description": "Input parameters for saving sequences.",
       "type": "object",
       "properties": {
-        "campaign-id": {
-          "title": "Campaign ID",
-          "description": "ID of the campaign.",
+        "campaign-name": {
+          "title": "Campaign Name",
+          "description": "Name of the campaign.",
           "type": "string",
           "instillFormat": "string",
           "instillAcceptFormats": [
@@ -306,7 +306,7 @@
         }
       },
       "required": [
-        "campaign-id",
+        "campaign-name",
         "sequences"
       ]
     },
@@ -336,9 +336,9 @@
       "description": "Input parameters for getting sequences.",
       "type": "object",
       "properties": {
-        "campaign-id": {
-          "title": "Campaign ID",
-          "description": "ID of the campaign.",
+        "campaign-name": {
+          "title": "Campaign Name",
+          "description": "Name of the campaign.",
           "type": "string",
           "instillFormat": "string",
           "instillAcceptFormats": [
@@ -348,7 +348,7 @@
         }
       },
       "required": [
-        "campaign-id"
+        "campaign-name"
       ]
     },
     "output": {
@@ -436,9 +436,9 @@
       "description": "Input parameters for adding leads.",
       "type": "object",
       "properties": {
-        "campaign-id": {
-          "title": "Campaign ID",
-          "description": "ID of the campaign.",
+        "campaign-name": {
+          "title": "Campaign Name",
+          "description": "Name of the campaign.",
           "type": "string",
           "instillFormat": "string",
           "instillAcceptFormats": [
@@ -577,7 +577,7 @@
         }
       },
       "required": [
-        "campaign-id",
+        "campaign-name",
         "leads"
       ]
     },
@@ -591,9 +591,6 @@
           "description": "Number of leads uploaded.",
           "type": "number",
           "instillFormat": "number",
-          "instillAcceptFormats": [
-            "number"
-          ],
           "instillUIOrder": 0
         },
         "total-leads": {
@@ -601,9 +598,6 @@
           "description": "Total number of leads in the campaign.",
           "type": "number",
           "instillFormat": "number",
-          "instillAcceptFormats": [
-            "number"
-          ],
           "instillUIOrder": 1
         },
         "already-added-to-campaign": {
@@ -611,9 +605,6 @@
           "description": "Number of leads already added to the campaign.",
           "type": "number",
           "instillFormat": "number",
-          "instillAcceptFormats": [
-            "number"
-          ],
           "instillUIOrder": 2
         },
         "invalid-email-count": {
@@ -621,9 +612,6 @@
           "description": "Number of leads with invalid email.",
           "type": "number",
           "instillFormat": "number",
-          "instillAcceptFormats": [
-            "number"
-          ],
           "instillUIOrder": 3
         },
         "error": {
@@ -647,9 +635,9 @@
       "description": "Input parameters for adding a sender email.",
       "type": "object",
       "properties": {
-        "campaign-id": {
-          "title": "Campaign ID",
-          "description": "ID of the campaign.",
+        "campaign-name": {
+          "title": "Campaign Name",
+          "description": "Name of the campaign.",
           "type": "string",
           "instillFormat": "string",
           "instillAcceptFormats": [
@@ -669,7 +657,7 @@
         }
       },
       "required": [
-        "campaign-id",
+        "campaign-name",
         "sender-email"
       ]
     },
@@ -699,9 +687,9 @@
       "description": "Input parameters for updating the status of a campaign.",
       "type": "object",
       "properties": {
-        "campaign-id": {
-          "title": "Campaign ID",
-          "description": "ID of the campaign.",
+        "campaign-name": {
+          "title": "Campaign Name",
+          "description": "Name of the campaign.",
           "type": "string",
           "instillFormat": "string",
           "instillAcceptFormats": [
@@ -723,7 +711,7 @@
         }
       },
       "required": [
-        "campaign-id",
+        "campaign-name",
         "status"
       ]
     },

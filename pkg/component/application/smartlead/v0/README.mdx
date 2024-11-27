@@ -83,7 +83,7 @@ Create a new campaign. You have to create a campaign before you can start adding
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| ID | `id` | string | ID of the campaign. You will need this ID to update campaign setting, add sequences, and add leads to this campaign. |
+| ID | `id` | string | ID of the campaign. |
 | Created At | `created-at` | string | Created at timestamp of the campaign. |
 </div>
 
@@ -97,14 +97,14 @@ Setup a campaign. You can update campaign settings and add sequences to this cam
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SETUP_CAMPAIGN` |
-| Campaign ID | `campaign-id` | string | ID of the campaign. |
+| Campaign Name | `campaign-name` | string | Name of the campaign. |
 | Timezone | `timezone` | string | Timezone of the campaign. Please choose the value in [List of Timezones](https://help.smartlead.ai/Timezones-20fcff9ddbb5441790c7c8e5ce0e9233). |
 | Days of the Week | `days-of-the-week` | array[number] | Days of the week when the campaign will run. A number value ranging from 0 to 6; i.e [0,1,2,3,4,5,6]. 0 is Sunday, 1 is Monday, and so on. |
 | Start Hour | `start-hour` | string | Start hour of the campaign. Time to start the campaign in 24-hour format (HH:MM). |
 | End Hour | `end-hour` | string | End hour of the campaign. Time to end the campaign in 24-hour format (HH:MM). |
 | Minimum Time Between Emails | `min-time-btw-emails` | number | Minimum time between emails in minutes. The minimum value is 3 minutes. |
 | Maximum New Leads per Day | `max-new-leads-per-day` | number | Maximum new leads per day. |
-| Schedule Start Time | `schedule-start-time` | string | Schedule start time of the campaign. Time to start the campaign in 24-hour format (HH:MM). |
+| Schedule Start Time | `schedule-start-time` | string | Schedule start time of the campaign. Time to start the campaign in 24-hour format (HH:MM). e.g. 2024-11-27T07:29:25.978Z. |
 | Track Settings | `track-settings` | array[string] | Tracking settings; options like not tracking opens or link clicks. |
 | Stop Lead Settings | `stop-lead-settings` | string | Stops lead if they do the action specified. |
 | Send As Plain Text | `send-as-plain-text` | boolean | Send emails as plain text. |
@@ -136,7 +136,7 @@ Save sequences to a campaign. A Smartlead sequence is a series of automated emai
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SAVE_SEQUENCES` |
-| Campaign ID (required) | `campaign-id` | string | ID of the campaign. |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
 | [Sequence](#save-sequences-sequence) (required) | `sequences` | array[object] | A Smartlead sequence is a series of automated emails sent to potential customers based on specific actions, or triggers. |
 </div>
 
@@ -178,7 +178,7 @@ Get sequences of a campaign. If you want to add more sequences to the campaign, 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_SEQUENCES` |
-| Campaign ID (required) | `campaign-id` | string | ID of the campaign. |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
 </div>
 
 
@@ -220,7 +220,7 @@ Add leads to a campaign.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_ADD_LEADS` |
-| Campaign ID (required) | `campaign-id` | string | ID of the campaign. |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
 | [Leads](#add-leads-leads) (required) | `leads` | array[object] | Leads to add to the campaign. |
 | [Settings](#add-leads-settings) | `settings` | object | Settings for adding leads. |
 </div>
@@ -282,7 +282,7 @@ Add a sender email to the campaign. You have to configure the sender email in Sm
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_ADD_SENDER_EMAIL` |
-| Campaign ID (required) | `campaign-id` | string | ID of the campaign. |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
 | Sender Email (required) | `sender-email` | string | Email address of the sender. You need to configure the sender email in Smartlead console before adding it to the campaign. |
 </div>
 
@@ -308,7 +308,7 @@ Update the status of a campaign. You need to start a campaign to send the emails
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE_CAMPAIGN_STATUS` |
-| Campaign ID (required) | `campaign-id` | string | ID of the campaign. |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
 | Status (required) | `status` | string | Status of the campaign. |
 </div>
 
