@@ -38,7 +38,6 @@ export function CheckIntegrations() {
       vendor: cdef.vendor,
       icon: cdef.icon,
       setupSchema: null,
-      schemas: [], // Deprecated
       view: "VIEW_BASIC"
     };
 
@@ -59,8 +58,6 @@ export function CheckIntegrations() {
       [`GET /v1beta/integrations/${id}?view=VIEW_FULL response status is 200`]: (r) => r.status === 200,
       [`GET /v1beta/integrations/${id}?view=VIEW_FULL response contains schema`]: (r) => r.json().integration.setupSchema.required[0] === "token",
       [`GET /v1beta/integrations/${id}?view=VIEW_FULL response contains OAuth config`]: (r) => deepEqual(r.json().integration.oAuthConfig, oAuthConfig),
-      // Deprecated
-      [`DEPRECATED GET /v1beta/integrations/${id}?view=VIEW_FULL response contains schema`]: (r) => r.json().integration.schemas[0].method === "METHOD_DICTIONARY",
     });
   });
 

@@ -495,8 +495,8 @@ message CloneNamespacePipelineReleaseRequest {
 // CloneNamespacePipelineReleaseResponse contains a cloned pipeline.
 message CloneNamespacePipelineReleaseResponse {}
 
-//SendNamespacePipelineEventRequest
-message SendNamespacePipelineEventRequest {
+//HandleNamespacePipelineWebhookEventRequest
+message HandleNamespacePipelineWebhookEventRequest {
   // Namespace ID
   string namespace_id = 1 [(google.api.field_behavior) = REQUIRED];
   // Pipeline ID
@@ -509,14 +509,14 @@ message SendNamespacePipelineEventRequest {
   google.protobuf.Struct data = 5;
 }
 
-//SendNamespacePipelineEventResponse
-message SendNamespacePipelineEventResponse {
+//HandleNamespacePipelineWebhookEventResponse
+message HandleNamespacePipelineWebhookEventResponse {
   // data
   google.protobuf.Struct data = 1;
 }
 
-//SendNamespacePipelineReleaseEventRequest
-message SendNamespacePipelineReleaseEventRequest {
+//HandleNamespacePipelineReleaseWebhookEventRequest
+message HandleNamespacePipelineReleaseWebhookEventRequest {
   // Namespace ID
   string namespace_id = 1 [(google.api.field_behavior) = REQUIRED];
   // Pipeline ID
@@ -531,10 +531,30 @@ message SendNamespacePipelineReleaseEventRequest {
   google.protobuf.Struct data = 6;
 }
 
-//SendNamespacePipelineReleaseEventResponse
-message SendNamespacePipelineReleaseEventResponse {
+//HandleNamespacePipelineReleaseWebhookEventResponse
+message HandleNamespacePipelineReleaseWebhookEventResponse {
   // data
   google.protobuf.Struct data = 1;
+}
+
+// DispatchPipelineWebhookEventRequest represents a request to dispatch webhook events
+// for a pipeline. The request contains the webhook type and event message that
+// will be processed by the event router and dispatched to the appropriate pipeline
+// based on the webhook type and message. The event message contains the payload
+// data that will be used to trigger pipeline execution.
+message DispatchPipelineWebhookEventRequest {
+  // Webhook Type
+  string webhook_type = 1 [(google.api.field_behavior) = REQUIRED];
+  // Event
+  google.protobuf.Struct message = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// DispatchPipelineWebhookEventResponse represents a response to dispatch webhook events
+// for a pipeline. The response contains the response message that will be sent
+// back to the webhook sender.
+message DispatchPipelineWebhookEventResponse {
+  // Response
+  google.protobuf.Struct response = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // TriggerNamespacePipelineRequest represents a request to trigger a user-owned
@@ -2075,6 +2095,9 @@ message PipelineRun {
   // Requester ID. This field might be empty if the pipeline run belongs to a
   // deleted namespace.
   string requester_id = 20 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Namespace ID
+  string namespace_id = 21 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // ComponentRun represents the execution details of a single component within a pipeline run.

@@ -46,7 +46,13 @@ service PipelinePublicService {
   // Return the stats of the hub
   rpc GetHubStats(GetHubStatsRequest) returns (GetHubStatsResponse) {
     option (google.api.http) = {get: "/v1beta/hub-stats"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
     option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
@@ -55,7 +61,13 @@ service PipelinePublicService {
   // Returns a paginated list of pipelines that are visible to the requester.
   rpc ListPipelines(ListPipelinesRequest) returns (ListPipelinesResponse) {
     option (google.api.http) = {get: "/v1beta/pipelines"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Get a pipeline by UID
@@ -64,7 +76,13 @@ service PipelinePublicService {
   // UID.
   rpc LookUpPipeline(LookUpPipelineRequest) returns (LookUpPipelineResponse) {
     option (google.api.http) = {get: "/v1beta/{permalink=pipelines/*}/lookUp"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
     option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
@@ -73,7 +91,13 @@ service PipelinePublicService {
   // Returns a paginated list of pipelines of a namespace
   rpc ListNamespacePipelines(ListNamespacePipelinesRequest) returns (ListNamespacePipelinesResponse) {
     option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/pipelines"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Create a new pipeline
@@ -84,7 +108,13 @@ service PipelinePublicService {
       post: "/v1beta/namespaces/{namespace_id}/pipelines"
       body: "pipeline"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Get a pipeline
@@ -92,7 +122,13 @@ service PipelinePublicService {
   // Returns the details of a pipeline.
   rpc GetNamespacePipeline(GetNamespacePipelineRequest) returns (GetNamespacePipelineResponse) {
     option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Update a pipeline
@@ -108,7 +144,13 @@ service PipelinePublicService {
       patch: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}"
       body: "pipeline"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Delete a pipeline
@@ -118,7 +160,13 @@ service PipelinePublicService {
   // the parent of the pipeline in order to delete it.
   rpc DeleteNamespacePipeline(DeleteNamespacePipelineRequest) returns (DeleteNamespacePipelineResponse) {
     option (google.api.http) = {delete: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Validate a pipeline
@@ -132,7 +180,13 @@ service PipelinePublicService {
       post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/validate"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Rename a pipeline
@@ -151,7 +205,13 @@ service PipelinePublicService {
       post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/rename"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Clone a pipeline
@@ -163,25 +223,46 @@ service PipelinePublicService {
       post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/clone"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
-  // SendNamespacePipelineEvent
-  rpc SendNamespacePipelineEvent(SendNamespacePipelineEventRequest) returns (SendNamespacePipelineEventResponse) {
+  // HandleNamespacePipelineWebhookEvent
+  rpc HandleNamespacePipelineWebhookEvent(HandleNamespacePipelineWebhookEventRequest) returns (HandleNamespacePipelineWebhookEventResponse) {
     option (google.api.http) = {
-      post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/events"
+      post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/webhooks"
       body: "data"
       response_body: "data"
     };
     option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
-  // SendNamespacePipelineReleaseEvent
-  rpc SendNamespacePipelineReleaseEvent(SendNamespacePipelineReleaseEventRequest) returns (SendNamespacePipelineReleaseEventResponse) {
+  // HandleNamespacePipelineReleaseWebhookEvent
+  rpc HandleNamespacePipelineReleaseWebhookEvent(HandleNamespacePipelineReleaseWebhookEventRequest) returns (HandleNamespacePipelineReleaseWebhookEventResponse) {
     option (google.api.http) = {
-      post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/releases/{release_id}/events"
+      post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/releases/{release_id}/webhooks"
       body: "data"
       response_body: "data"
+    };
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Dispatch Pipeline Webhook Event
+  //
+  // Handles webhook events by routing them to the appropriate pipeline based on the webhook type and message.
+  // The webhook type determines which component processes the event, while the message payload contains data
+  // that triggers pipeline execution. The pipeline processes the event using configured handlers and returns
+  // a response to the webhook sender.
+  rpc DispatchPipelineWebhookEvent(DispatchPipelineWebhookEventRequest) returns (DispatchPipelineWebhookEventResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/pipeline-webhooks/{webhook_type}"
+      body: "message"
+      response_body: "response"
     };
     option (google.api.method_visibility).restriction = "INTERNAL";
   }
@@ -278,7 +359,13 @@ service PipelinePublicService {
       post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/releases"
       body: "release"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // List the releases in a pipeline
@@ -287,7 +374,13 @@ service PipelinePublicService {
   // name, which is formed by the parent namespace and ID of the pipeline.
   rpc ListNamespacePipelineReleases(ListNamespacePipelineReleasesRequest) returns (ListNamespacePipelineReleasesResponse) {
     option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/releases"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Get a pipeline release
@@ -296,7 +389,13 @@ service PipelinePublicService {
   // by its resource name, formed by its parent namespace and ID.
   rpc GetNamespacePipelineRelease(GetNamespacePipelineReleaseRequest) returns (GetNamespacePipelineReleaseResponse) {
     option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/releases/{release_id}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Update a pipeline release
@@ -311,7 +410,13 @@ service PipelinePublicService {
       patch: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/releases/{release_id}"
       body: "release"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Delete a pipeline release
@@ -323,7 +428,13 @@ service PipelinePublicService {
   // perform this action.
   rpc DeleteNamespacePipelineRelease(DeleteNamespacePipelineReleaseRequest) returns (DeleteNamespacePipelineReleaseResponse) {
     option (google.api.http) = {delete: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/releases/{release_id}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Clone a pipeline release
@@ -335,7 +446,13 @@ service PipelinePublicService {
       post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/releases/{release_id}/clone"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Trigger a pipeline release
@@ -398,7 +515,13 @@ service PipelinePublicService {
       post: "/v1beta/namespaces/{namespace_id}/secrets"
       body: "secret"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // List secrets
@@ -407,7 +530,13 @@ service PipelinePublicService {
   // namespace.
   rpc ListNamespaceSecrets(ListNamespaceSecretsRequest) returns (ListNamespaceSecretsResponse) {
     option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/secrets"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Get a secret
@@ -416,7 +545,13 @@ service PipelinePublicService {
   // which is defined by the parent namespace and the ID of the secret.
   rpc GetNamespaceSecret(GetNamespaceSecretRequest) returns (GetNamespaceSecretResponse) {
     option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/secrets/{secret_id}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Update a secret
@@ -430,7 +565,13 @@ service PipelinePublicService {
       patch: "/v1beta/namespaces/{namespace_id}/secrets/{secret_id}"
       body: "secret"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Delete a secret
@@ -439,7 +580,13 @@ service PipelinePublicService {
   // the parent namespace and the ID of the secret.
   rpc DeleteNamespaceSecret(DeleteNamespaceSecretRequest) returns (DeleteNamespaceSecretResponse) {
     option (google.api.http) = {delete: "/v1beta/namespaces/{namespace_id}/secrets/{secret_id}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // List component definitions
@@ -449,7 +596,13 @@ service PipelinePublicService {
   // capabilities, for the components that might be used in a VDP pipeline.
   rpc ListComponentDefinitions(ListComponentDefinitionsRequest) returns (ListComponentDefinitionsResponse) {
     option (google.api.http) = {get: "/v1beta/component-definitions"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Get the details of a long-running operation
@@ -1034,42 +1187,6 @@ service PipelinePublicService {
     option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
-  // List connector definitions
-  //
-  // Returns a paginated list of connector definitions.
-  rpc ListConnectorDefinitions(ListConnectorDefinitionsRequest) returns (ListConnectorDefinitionsResponse) {
-    option (google.api.http) = {get: "/v1beta/connector-definitions"};
-    option deprecated = true;
-    option (google.api.method_visibility).restriction = "INTERNAL";
-  }
-
-  // Get connector definition
-  //
-  // Returns the details of a connector definition.
-  rpc GetConnectorDefinition(GetConnectorDefinitionRequest) returns (GetConnectorDefinitionResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=connector-definitions/*}"};
-    option deprecated = true;
-    option (google.api.method_visibility).restriction = "INTERNAL";
-  }
-
-  // List operator definitions
-  //
-  // Returns a paginated list of operator definitions.
-  rpc ListOperatorDefinitions(ListOperatorDefinitionsRequest) returns (ListOperatorDefinitionsResponse) {
-    option (google.api.http) = {get: "/v1beta/operator-definitions"};
-    option deprecated = true;
-    option (google.api.method_visibility).restriction = "INTERNAL";
-  }
-
-  // Get operator definition
-  //
-  // Returns the details of an operator definition.
-  rpc GetOperatorDefinition(GetOperatorDefinitionRequest) returns (GetOperatorDefinitionResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=operator-definitions/*}"};
-    option deprecated = true;
-    option (google.api.method_visibility).restriction = "INTERNAL";
-  }
-
   // Check the availibity of a resource name
   //
   // Check whether a resource name is already in use. Currently this endpoint
@@ -1257,7 +1374,13 @@ service PipelinePublicService {
   // Returns a paginated list of connections created by a namespace.
   rpc ListNamespaceConnections(ListNamespaceConnectionsRequest) returns (ListNamespaceConnectionsResponse) {
     option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/connections"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Get a namespace connection
@@ -1265,7 +1388,13 @@ service PipelinePublicService {
   // Returns the details of a connection.
   rpc GetNamespaceConnection(GetNamespaceConnectionRequest) returns (GetNamespaceConnectionResponse) {
     option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/connections/{connection_id}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Create a connection
@@ -1276,7 +1405,13 @@ service PipelinePublicService {
       post: "/v1beta/namespaces/{namespace_id}/connections"
       body: "connection"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Update a connection
@@ -1287,7 +1422,13 @@ service PipelinePublicService {
       patch: "/v1beta/namespaces/{namespace_id}/connections/{connection_id}"
       body: "connection"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Delete a connection
@@ -1295,7 +1436,13 @@ service PipelinePublicService {
   // Deletes a connection.
   rpc DeleteNamespaceConnection(DeleteNamespaceConnectionRequest) returns (DeleteNamespaceConnectionResponse) {
     option (google.api.http) = {delete: "/v1beta/namespaces/{namespace_id}/connections/{connection_id}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Test a connection
@@ -1309,7 +1456,13 @@ service PipelinePublicService {
   // account in the 3rd party app.
   rpc TestNamespaceConnection(TestNamespaceConnectionRequest) returns (TestNamespaceConnectionResponse) {
     option (google.api.http) = {post: "/v1beta/namespaces/{namespace_id}/connections/{connection_id}/test"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // List pipelines that reference a connection
@@ -1319,7 +1472,13 @@ service PipelinePublicService {
   // the connection.
   rpc ListPipelineIDsByConnectionID(ListPipelineIDsByConnectionIDRequest) returns (ListPipelineIDsByConnectionIDResponse) {
     option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/connections/{connection_id}/referenced-pipelines"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // List integrations
@@ -1327,7 +1486,13 @@ service PipelinePublicService {
   // Returns a paginated list of available integrations.
   rpc ListIntegrations(ListIntegrationsRequest) returns (ListIntegrationsResponse) {
     option (google.api.http) = {get: "/v1beta/integrations"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 
   // Get an integration
@@ -1335,6 +1500,12 @@ service PipelinePublicService {
   // Returns the details of an integration.
   rpc GetIntegration(GetIntegrationRequest) returns (GetIntegrationResponse) {
     option (google.api.http) = {get: "/v1beta/integrations/{integration_id}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "💧 VDP"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "💧 VDP"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
   }
 }

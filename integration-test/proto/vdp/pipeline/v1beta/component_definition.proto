@@ -72,10 +72,14 @@ message ComponentDefinition {
   // Spec represents a specification data model.
   message Spec {
     // Component specification.
-    google.protobuf.Struct component_specification = 3 [(google.api.field_behavior) = REQUIRED];
+    google.protobuf.Struct component_specification = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
     // Data specifications.
     // The key represents the task, and the value is the corresponding data_specification.
-    map<string, DataSpecification> data_specifications = 5 [(google.api.field_behavior) = REQUIRED];
+    // Note: This field will be renamed to task_specifications in the future.
+    map<string, DataSpecification> data_specifications = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Event specifications.
+    // The key represents the event, and the value is the corresponding event_specification.
+    map<string, EventSpecification> event_specifications = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   }
 
   // The name of the component definition, defined by its ID.
@@ -125,9 +129,12 @@ message ComponentDefinition {
   string description = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Release stage.
   ComponentDefinition.ReleaseStage release_stage = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // List of events that can be produced by the component.
+  repeated ComponentEvent events = 19 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // DataSpecification describes the JSON schema of component input and output.
+// Note: This message will be renamed to TaskSpecifications in the future.
 message DataSpecification {
   // JSON schema describing the component input data.
   google.protobuf.Struct input = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -135,174 +142,18 @@ message DataSpecification {
   google.protobuf.Struct output = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
-// ConnectorSpec represents a specification data model.
-message ConnectorSpec {
-  // Deleted
-  reserved 2;
-  // Component specification.
-  google.protobuf.Struct component_specification = 3 [(google.api.field_behavior) = REQUIRED];
-  // Deleted field.
-  reserved 4;
-  // Data specifications.
-  // The key represents the task, and the value is the corresponding data_specification.
-  map<string, DataSpecification> data_specifications = 5 [(google.api.field_behavior) = REQUIRED];
-}
-
-// ConnectorType defines the connector type based on its task features.
-enum ConnectorType {
-  // Unspecified.
-  CONNECTOR_TYPE_UNSPECIFIED = 0;
-  // 1 Is reserved for the source connector.
-  reserved 1;
-  // 2 Is reserved for the destination connector.
-  reserved 2;
-  // AI connector.
-  CONNECTOR_TYPE_AI = 3;
-  // 4 is reserved for the blockchain connector (deprecated by
-  // CONNECTOR_TYPE_APPLICATION).
-  reserved 4;
-  // Data connector.
-  CONNECTOR_TYPE_DATA = 5;
-  // Operator connector.
-  CONNECTOR_TYPE_OPERATOR = 6;
-  // Application connector.
-  CONNECTOR_TYPE_APPLICATION = 7;
-  // Generic.
-  CONNECTOR_TYPE_GENERIC = 8;
-}
-
-// A Connector is a type of pipeline component that queries, processes or sends
-// the ingested unstructured data to a service or app. Users need to configure
-// their connectors (e.g. by providing an API token to a remote service). A
-// ConnectorDefinition describes a certain type of Connector.
-//
-// For more information, see
-// [Component](https://www.instill.tech/docs/component/introduction)
-// in the official documentation.
-message ConnectorDefinition {
-  option (google.api.resource) = {
-    type: "api.instill.tech/ConnectorDefinition"
-    pattern: "connector-definitions/{id}"
-    pattern: "connector-definitions/{uid}"
-  };
-
-  // The name of the connector definition, defined by its ID.
-  // - Format: `connector-definitions/{id}
-  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector definition UUID.
-  string uid = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector definition resource ID (used in `name` as the last segment). This
-  // conforms to RFC-1034, which restricts to letters, numbers, and hyphen,
-  // with the first character a letter, the last a letter or a number, and a 63
-  // character maximum.
-  string id = 3 [(google.api.field_behavior) = IMMUTABLE];
-  // Connector definition title.
-  string title = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector definition documentation URL.
-  string documentation_url = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector definition icon. This is a path that's relative to the root of
-  // the connector implementation (see `source_url`) and that allows clients
-  // frontend applications to pull and locate the icons.
-  string icon = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector definition specification.
-  ConnectorSpec spec = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector definition type.
-  ConnectorType type = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector definition tombstone. If true, this configuration is permanently
-  // off. Otherwise, the configuration is active.
-  bool tombstone = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // The public flag determines whether this connector definition is available
-  // to all workspaces.
-  bool public = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector definition custom flag, i.e., whether this is a custom
-  // connector definition.
-  bool custom = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // field 12 is reserved for 'icon_url'.
-  reserved 12;
-  // Connector definition vendor name.
-  string vendor = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Vendor-specific attributes.
-  google.protobuf.Struct vendor_attributes = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Source code URL. This points to the source code where the connector is
-  // implemented.
-  string source_url = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector definition version. This is a string that fulfills the SemVer
-  // specification (e.g. `1.0.0-beta`).
-  string version = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // List of tasks that can be executed by the connector.
-  repeated ComponentTask tasks = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Short description of the connector.
-  string description = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Release stage.
-  ComponentDefinition.ReleaseStage release_stage = 19 [(google.api.field_behavior) = OUTPUT_ONLY];
-}
-
-// OperatorSpec represents a specification data model.
-message OperatorSpec {
-  // Component specification.
-  google.protobuf.Struct component_specification = 1 [(google.api.field_behavior) = REQUIRED];
-  // Deleted field.
-  reserved 2;
-  // Data specifications.
-  // The key represents the task, and the value is the corresponding data_specification.
-  map<string, DataSpecification> data_specifications = 3 [(google.api.field_behavior) = REQUIRED];
-}
-
-// An Operator is a type of pipeline component that performs data injection and
-// manipulation. OperatorDefinition describes a certain type of operator.
-//
-// For more information, see
-// [Component](https://www.instill.tech/docs/component/introduction)
-// in the official documentation.
-message OperatorDefinition {
-  option (google.api.resource) = {
-    type: "api.instill.tech/OperatorDefinition"
-    pattern: "operator-definitions/{id}"
-    pattern: "operator-definitions/{uid}"
-  };
-
-  // The name of the operator definition.
-  // - Format: `operator-definitions/*`
-  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Operator definition UUID.
-  string uid = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Operator definition resource ID (used in `name` as the last segment).
-  // This conforms to RFC-1034, which restricts to letters, numbers, and
-  // hyphen, with the first character a letter, the last a letter or a number,
-  // and a 63 character maximum.
-  string id = 3 [(google.api.field_behavior) = IMMUTABLE];
-  // Operator definition title.
-  string title = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Operator definition documentation URL.
-  string documentation_url = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Operator definition icon. This is a path that's relative to the root of
-  // the operator implementation (see `source_url`) and that allows clients
-  // frontend applications to pull and locate the icons.
-  string icon = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Operator definition specification.
-  OperatorSpec spec = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Operator definition tombstone. If true, this configuration is permanently
-  // off. Otherwise, the configuration is active.
-  bool tombstone = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // The public flag determines whether this operator definition is available
-  // to all workspaces.
-  bool public = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // The custom flag determines whether this is a custom operator definition.
-  bool custom = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // field 11 is reserved for 'icon_url'.
-  reserved 11;
-  // Source code URL. This points to the source code where the operator is
-  // implemented.
-  string source_url = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Operator definition version. This is a string that fulfills the SemVer
-  // specification (e.g. `1.0.0-beta`).
-  string version = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // List of tasks that can be executed by the operator.
-  repeated ComponentTask tasks = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Short description of the operator.
-  string description = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Release stage.
-  ComponentDefinition.ReleaseStage release_stage = 19 [(google.api.field_behavior) = OUTPUT_ONLY];
+// EventSpecification describes the JSON schema of component event setup and examples.
+message EventSpecification {
+  // Event title.
+  string title = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Event description.
+  string description = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // JSON schema describing the component event config data.
+  google.protobuf.Struct config_schema = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // JSON schema describing the component event message data.
+  google.protobuf.Struct message_schema = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // JSON schema describing the component event examples.
+  repeated google.protobuf.Struct message_examples = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -346,115 +197,4 @@ message ListComponentDefinitionsResponse {
   int32 page_size = 4;
   // The requested page offset.
   int32 page = 5;
-}
-
-// ListConnectorDefinitionsRequest represents a request to list connector
-// definitions.
-message ListConnectorDefinitionsRequest {
-  // The maximum number of connector definitions to return. If this parameter
-  // is unspecified, at most 10 definitions will be returned. The cap value for
-  // this parameter is 100 (i.e. any value above that will be coerced to 100).
-  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
-  // Page token.
-  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
-  // field 3 is reserved for the "view" property of ConnectorDefinition.View
-  // type, removed in favour of ComponentDefinition.View.
-  reserved 3;
-  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
-  // expression.
-  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
-  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
-  // View allows clients to specify the desired resource view in the response.
-  optional ComponentDefinition.View view = 5 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// ListConnectorDefinitionsResponse contains a list of connector definitions.
-message ListConnectorDefinitionsResponse {
-  // A list of connector definition resources.
-  repeated ConnectorDefinition connector_definitions = 1;
-  // Next page token.
-  string next_page_token = 2;
-  // Total number of connector definitions.
-  int32 total_size = 3;
-}
-
-// GetConnectorDefinitionRequest represents a request to fetch the details of a
-// connector definition.
-message GetConnectorDefinitionRequest {
-  // The resource name of the connector definition, which allows its access by ID.
-  // - Format: `connector-definitions/{id}`.
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/ConnectorDefinition"},
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration: {path_param_name: "connector_definition_name"}
-    }
-  ];
-  // field 2 is reserved for the "view" property of ConnectorDefinition.View
-  // type, removed in favour of ComponentDefinition.View.
-  reserved 2;
-  // View allows clients to specify the desired resource view in the response.
-  optional ComponentDefinition.View view = 3 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// GetConnectorDefinitionResponse contains the requested connector definition.
-message GetConnectorDefinitionResponse {
-  // The connector definition resource.
-  ConnectorDefinition connector_definition = 1;
-}
-
-// ListOperatorDefinitionsRequest represents a request to list operator
-// definitions.
-message ListOperatorDefinitionsRequest {
-  // The maximum number of OperatorDefinitions to return. The
-  // service may return fewer than this value. If unspecified, at most 10
-  // OperatorDefinitions will be returned. The maximum value is 100;
-  // values above 100 will be coerced to 100.
-  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
-  // Page token.
-  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
-  // field 3 is reserved for the "view" property of OperatorDefinition.View
-  // type, removed in favour of ComponentDefinition.View.
-  reserved 3;
-  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
-  // expression.
-  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
-  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
-  // View allows clients to specify the desired resource view in the response.
-  optional ComponentDefinition.View view = 5 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// ListOperatorDefinitionsResponse contains a list of operator definitions.
-message ListOperatorDefinitionsResponse {
-  // A list of operator definition resources.
-  repeated OperatorDefinition operator_definitions = 1;
-  // Next page token.
-  string next_page_token = 2;
-  // Total number of operator definitions.
-  int32 total_size = 3;
-}
-
-// GetOperatorDefinitionRequest represents a request to fetch the details of a
-// operator definition.
-message GetOperatorDefinitionRequest {
-  // The resource name of the operator definition, which allows its access by ID.
-  // - Format: `operator-definitions/{id}`.
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/OperatorDefinition"},
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration: {path_param_name: "operator_definition_name"}
-    }
-  ];
-  // field 2 is reserved for the "view" property of OperatorDefinition.View
-  // type, removed in favour of ComponentDefinition.View.
-  reserved 2;
-  // View allows clients to specify the desired resource view in the response.
-  optional ComponentDefinition.View view = 3 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// GetOperatorDefinitionResponse contains the requested operator definition.
-message GetOperatorDefinitionResponse {
-  // The operator definition resource.
-  OperatorDefinition operator_definition = 1;
 }

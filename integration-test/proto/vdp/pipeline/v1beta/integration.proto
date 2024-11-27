@@ -234,36 +234,9 @@ message Integration {
   optional OAuthConfig o_auth_config = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
   // View defines how the integration is presented. The following fields are
   // only shown in the FULL view:
-  // - schemas
   // - setupSchema
   // - oAuthConfig
   View view = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
-
-  // SetupSchema defines the schema for a connection setup.
-  // This message is deprecated.
-  message SetupSchema {
-    // The connection method, which will define the fields in the schema.
-    Connection.Method method = 1 [
-      deprecated = true,
-      (google.api.field_behavior) = OUTPUT_ONLY
-    ];
-    // The connection setup field definitions. Each integration will require
-    // different data to connect to the 3rd party app.
-    google.protobuf.Struct schema = 2 [
-      deprecated = true,
-      (google.api.field_behavior) = OUTPUT_ONLY
-    ];
-  }
-
-  // Schemas defines the supported schemas for the connection setup.
-  // We haven't found a case for a schema that changes on the connection method
-  // (components don't care about how the connection was built), so the schema
-  // will be provided in the setupSchema field and the OAuth support and
-  // configuration will be provided in oAuthConfig.
-  repeated SetupSchema schemas = 8 [
-    deprecated = true,
-    (google.api.field_behavior) = OUTPUT_ONLY
-  ];
 }
 
 // ListPipelineIDsByConnectionIDRequest represents a request to list the
