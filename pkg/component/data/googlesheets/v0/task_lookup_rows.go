@@ -8,10 +8,10 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
-func (e *execution) lookupRowsHelper(ctx context.Context, sharedLink string, sheetName string, columnName string, value string) ([]int, []map[string]format.Value, error) {
+func (e *execution) lookupRowsHelper(ctx context.Context, sharedLink string, sheetName string, columnName string, value string) ([]Row, error) {
 	spreadsheetID, err := e.extractSpreadsheetID(sharedLink)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	// Get all values from the sheet
@@ -20,11 +20,11 @@ func (e *execution) lookupRowsHelper(ctx context.Context, sharedLink string, she
 		sheetName,
 	).Context(ctx).Do()
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if len(resp.Values) == 0 {
-		return nil, nil, nil // Empty sheet
+		return nil, nil // Empty sheet
 	}
 
 	// Get headers from first row
@@ -40,12 +40,11 @@ func (e *execution) lookupRowsHelper(ctx context.Context, sharedLink string, she
 	}
 
 	if columnIndex == -1 {
-		return nil, nil, nil // Column not found
+		return nil, nil // Column not found
 	}
 
 	// Look for matching rows
-	var rowNumbers []int
-	var result []map[string]format.Value
+	var result []Row
 	for i := 1; i < len(resp.Values); i++ {
 		row := resp.Values[i]
 		// Check if the column value matches exactly
@@ -65,12 +64,14 @@ func (e *execution) lookupRowsHelper(ctx context.Context, sharedLink string, she
 					}
 				}
 			}
-			result = append(result, rowMap)
-			rowNumbers = append(rowNumbers, i)
+			result = append(result, Row{
+				RowValue:  rowMap,
+				RowNumber: i + 1,
+			})
 		}
 	}
 
-	return rowNumbers, result, nil
+	return result, nil
 }
 
 func (e *execution) lookupRows(ctx context.Context, job *base.Job) error {
@@ -79,14 +80,13 @@ func (e *execution) lookupRows(ctx context.Context, job *base.Job) error {
 		return err
 	}
 
-	rowNumbers, rows, err := e.lookupRowsHelper(ctx, input.SharedLink, input.SheetName, input.ColumnName, input.Value)
+	rows, err := e.lookupRowsHelper(ctx, input.SharedLink, input.SheetName, input.ColumnName, input.Value)
 	if err != nil {
 		return err
 	}
 
 	output := &taskLookupRowsOutput{
-		Rows:       rows,
-		RowNumbers: rowNumbers,
+		Rows: rows,
 	}
 
 	return job.Output.WriteData(ctx, output)

@@ -87,7 +87,7 @@ type taskListRowsInput struct {
 
 // taskListRowsOutput represents output after listing rows
 type taskListRowsOutput struct {
-	Rows []map[string]format.Value `instill:"rows"`
+	Rows []Row `instill:"rows"`
 }
 
 // taskLookupRowsInput represents input for looking up multiple rows
@@ -100,8 +100,7 @@ type taskLookupRowsInput struct {
 
 // taskLookupRowsOutput represents output after looking up multiple rows
 type taskLookupRowsOutput struct {
-	Rows       []map[string]format.Value `instill:"rows"`
-	RowNumbers []int                     `instill:"row-numbers"`
+	Rows []Row `instill:"rows"`
 }
 
 // taskGetRowInput represents input for getting a row
@@ -113,7 +112,7 @@ type taskGetRowInput struct {
 
 // taskGetRowOutput represents output after getting a row
 type taskGetRowOutput struct {
-	Row map[string]format.Value `instill:"row"`
+	Row Row `instill:"row"`
 }
 
 // taskGetMultipleRowsInput represents input for getting multiple rows
@@ -125,59 +124,61 @@ type taskGetMultipleRowsInput struct {
 
 // taskGetMultipleRowsOutput represents output after getting multiple rows
 type taskGetMultipleRowsOutput struct {
-	Rows []map[string]format.Value `instill:"rows"`
+	Rows []Row `instill:"rows"`
+}
+
+// Row represents a row with row number and data
+type Row struct {
+	RowNumber int                     `instill:"row-number"`
+	RowValue  map[string]format.Value `instill:"row-value"`
 }
 
 // taskInsertRowInput represents input for inserting a row
 type taskInsertRowInput struct {
 	SharedLink string                  `instill:"shared-link"`
 	SheetName  string                  `instill:"sheet-name"`
-	Row        map[string]format.Value `instill:"row"`
+	RowValue   map[string]format.Value `instill:"row-value"`
 }
 
 // taskInsertRowOutput represents output after inserting a row
 type taskInsertRowOutput struct {
-	Row       map[string]format.Value `instill:"row"`
-	RowNumber int                     `instill:"row-number"`
+	Row Row `instill:"row"`
 }
 
 // taskInsertMultipleRowsInput represents input for inserting multiple rows
 type taskInsertMultipleRowsInput struct {
 	SharedLink string                    `instill:"shared-link"`
 	SheetName  string                    `instill:"sheet-name"`
-	Rows       []map[string]format.Value `instill:"rows"`
+	RowValues  []map[string]format.Value `instill:"row-values"`
 }
 
 // taskInsertMultipleRowsOutput represents output after inserting multiple rows
 type taskInsertMultipleRowsOutput struct {
-	Rows       []map[string]format.Value `instill:"rows"`
-	RowNumbers []int                     `instill:"row-numbers"`
+	Rows []Row `instill:"rows"`
 }
 
 // taskUpdateRowInput represents input for updating a row
 type taskUpdateRowInput struct {
-	SharedLink string                  `instill:"shared-link"`
-	SheetName  string                  `instill:"sheet-name"`
-	RowNumber  int                     `instill:"row-number"`
-	Row        map[string]format.Value `instill:"row"`
+	SharedLink string `instill:"shared-link"`
+	SheetName  string `instill:"sheet-name"`
+	Row        Row    `instill:"row"`
 }
 
 // taskUpdateRowOutput represents output after updating a row
 type taskUpdateRowOutput struct {
-	Row map[string]format.Value `instill:"row"`
+	Row Row `instill:"row"`
 }
 
 // taskUpdateMultipleRowsInput represents input for updating multiple rows
 type taskUpdateMultipleRowsInput struct {
-	SharedLink string                    `instill:"shared-link"`
-	SheetName  string                    `instill:"sheet-name"`
-	RowNumbers []int                     `instill:"row-numbers"`
-	Rows       []map[string]format.Value `instill:"rows"`
+	SharedLink string `instill:"shared-link"`
+	SheetName  string `instill:"sheet-name"`
+	Rows       []Row  `instill:"rows"`
 }
 
 // taskUpdateMultipleRowsOutput represents output after updating multiple rows
 type taskUpdateMultipleRowsOutput struct {
-	Rows []map[string]format.Value `instill:"rows"`
+	Rows []Row `instill:"rows"`
 }
 
 // taskDeleteRowInput represents input for deleting a row

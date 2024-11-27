@@ -13,14 +13,13 @@ func (e *execution) insertRow(ctx context.Context, job *base.Job) error {
 		return err
 	}
 
-	rowNumbers, insertedRows, err := e.insertRowsHelper(ctx, input.SharedLink, input.SheetName, []map[string]format.Value{input.Row})
+	insertedRows, err := e.insertRowsHelper(ctx, input.SharedLink, input.SheetName, []map[string]format.Value{input.RowValue})
 	if err != nil {
 		return err
 	}
 
 	output := &taskInsertRowOutput{
-		RowNumber: rowNumbers[0],
-		Row:       insertedRows[0],
+		Row: insertedRows[0],
 	}
 	if err := job.Output.WriteData(ctx, output); err != nil {
 		return err

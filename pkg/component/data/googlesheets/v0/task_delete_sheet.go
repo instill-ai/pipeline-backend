@@ -41,7 +41,9 @@ func (e *execution) deleteSheet(ctx context.Context, job *base.Job) error {
 		return err
 	}
 
-	output := &taskDeleteSheetOutput{}
+	output := &taskDeleteSheetOutput{
+		Success: true,
+	}
 	if err := job.Output.WriteData(ctx, output); err != nil {
 		return err
 	}

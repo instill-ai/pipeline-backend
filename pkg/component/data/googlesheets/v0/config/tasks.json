@@ -48,32 +48,55 @@
       "title": "Row Numbers",
       "type": "array"
     },
-    "row": {
-      "description": "Row data in JSON format where keys are column names.",
+    "row-value": {
+      "type": "object",
+      "description": "Row data in JSON format where keys are column names and values are the corresponding cell values",
+      "title": "Row Data",
       "instillFormat": "json",
       "instillUIOrder": 6,
+      "additionalProperties": {
+        "type": "string",
+        "description": "Cell value for the corresponding column"
+      },
+      "required": []
+    },
+    "row": {
+      "description": "Row data with row number and data.",
+      "instillFormat": "json",
+      "instillUIOrder": 7,
       "title": "Row Data",
-      "required": [],
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "row-number": {
+          "type": "integer",
+          "instillFormat": "number",
+          "description": "Row number to update (1-based index)",
+          "title": "Row Number",
+          "instillUIOrder": 0
+        },
+        "row-value": {
+          "$ref": "#/$defs/row-value",
+          "instillUIOrder": 1
+        }
+      },
+      "required": ["row-number", "data"]
     },
     "rows": {
-      "description": "Rows data in JSON format where keys are column names.",
+      "description": "Multiple rows data with row numbers and data.",
       "instillFormat": "array:json",
       "items": {
-        "type": "object",
-        "instillFormat": "json",
-        "required": []
+        "$ref": "#/$defs/row"
       },
-      "instillUIOrder": 7,
+      "instillUIOrder": 8,
       "title": "Rows Data",
       "type": "array"
     },
     "success": {
       "description": "Result of the operation.",
-      "instillFormat": "string",
-      "instillUIOrder": 8,
+      "instillFormat": "boolean",
+      "instillUIOrder": 9,
       "title": "Success",
-      "type": "string"
+      "type": "boolean"
     }
   },
   "TASK_CREATE_SPREADSHEET": {
@@ -179,12 +202,12 @@
     },
     "output": {
       "properties": {
-        "result": {
+        "success": {
           "$ref": "#/$defs/success"
         }
       },
       "required": [
-        "result"
+        "success"
       ],
       "title": "Output",
       "type": "object"
@@ -211,12 +234,12 @@
     },
     "output": {
       "properties": {
-        "result": {
+        "success": {
           "$ref": "#/$defs/success"
         }
       },
       "required": [
-        "result"
+        "success"
       ],
       "title": "Output",
       "type": "object"
@@ -247,12 +270,12 @@
     },
     "output": {
       "properties": {
-        "result": {
+        "success": {
           "$ref": "#/$defs/success"
         }
       },
       "required": [
-        "result"
+        "success"
       ],
       "title": "Output",
       "type": "object"
@@ -283,12 +306,12 @@
     },
     "output": {
       "properties": {
-        "result": {
+        "success": {
           "$ref": "#/$defs/success"
         }
       },
       "required": [
-        "result"
+        "success"
       ],
       "title": "Output",
       "type": "object"
@@ -462,9 +485,6 @@
     },
     "output": {
       "properties": {
-        "row-numbers": {
-          "$ref": "#/$defs/row-numbers"
-        },
         "rows": {
           "$ref": "#/$defs/rows"
         }
@@ -487,8 +507,8 @@
         "sheet-name": {
           "$ref": "#/$defs/sheet-name"
         },
-        "row": {
-          "$ref": "#/$defs/row"
+        "row-value": {
+          "$ref": "#/$defs/row-value"
         }
       },
       "required": [
@@ -503,9 +523,6 @@
       "properties": {
         "row": {
           "$ref": "#/$defs/row"
-        },
-        "row-number": {
-          "$ref": "#/$defs/row-number"
         }
       },
       "required": [
@@ -527,8 +544,15 @@
         "sheet-name": {
           "$ref": "#/$defs/sheet-name"
         },
-        "rows": {
-          "$ref": "#/$defs/rows"
+        "row-values": {
+          "type": "array",
+          "description": "Array of row data in JSON format where keys are column names and values are the corresponding cell values",
+          "items": {
+            "$ref": "#/$defs/row-value"
+          },
+          "instillFormat": "array:json",
+          "instillUIOrder": 2,
+          "title": "Row Values"
         }
       },
       "required": [
@@ -543,14 +567,10 @@
       "properties": {
         "rows": {
           "$ref": "#/$defs/rows"
-        },
-        "row-numbers": {
-          "$ref": "#/$defs/row-numbers"
         }
       },
       "required": [
-        "rows",
-        "row-numbers"
+        "rows"
       ],
       "title": "Output",
       "type": "object"
@@ -566,9 +586,6 @@
         },
         "sheet-name": {
           "$ref": "#/$defs/sheet-name"
-        },
-        "row-number": {
-          "$ref": "#/$defs/row-number"
         },
         "row": {
           "$ref": "#/$defs/row"
@@ -606,9 +623,6 @@
         },
         "sheet-name": {
           "$ref": "#/$defs/sheet-name"
-        },
-        "row-numbers": {
-          "$ref": "#/$defs/row-numbers"
         },
         "rows": {
           "$ref": "#/$defs/rows"
@@ -661,12 +675,12 @@
     },
     "output": {
       "properties": {
-        "result": {
+        "success": {
           "$ref": "#/$defs/success"
         }
       },
       "required": [
-        "result"
+        "success"
       ],
       "title": "Output",
       "type": "object"
@@ -697,12 +711,12 @@
     },
     "output": {
       "properties": {
-        "result": {
+        "success": {
           "$ref": "#/$defs/success"
         }
       },
       "required": [
-        "result"
+        "success"
       ],
       "title": "Output",
       "type": "object"

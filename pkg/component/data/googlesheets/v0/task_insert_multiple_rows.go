@@ -11,16 +11,16 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
-func (e *execution) insertRowsHelper(ctx context.Context, sharedLink string, sheetName string, rows []map[string]format.Value) ([]int, []map[string]format.Value, error) {
+func (e *execution) insertRowsHelper(ctx context.Context, sharedLink string, sheetName string, rows []map[string]format.Value) ([]Row, error) {
 
 	spreadsheetID, err := e.extractSpreadsheetID(sharedLink)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	sheetID, err := e.convertSheetNameToSheetID(ctx, spreadsheetID, sheetName)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	// Get the last row index by querying the sheet data
@@ -29,12 +29,12 @@ func (e *execution) insertRowsHelper(ctx context.Context, sharedLink string, she
 		sheetName,
 	).Context(ctx).Do()
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	// Get the header row
 	if len(resp.Values) == 0 {
-		return nil, nil, nil // Empty sheet, no headers
+		return nil, nil // Empty sheet, no headers
 	}
 	headers := resp.Values[0] // First row contains headers
 
@@ -65,14 +65,17 @@ func (e *execution) insertRowsHelper(ctx context.Context, sharedLink string, she
 
 	// Add each row to the request
 	for _, rowValues := range values {
-		cells := []*sheets.CellData{}
-		for _, value := range rowValues {
+		cells := make([]*sheets.CellData, len(headers))
+		for colIdx, value := range rowValues {
+			if value == nil {
+				continue
+			}
 			valueStr := value.(string)
-			cells = append(cells, &sheets.CellData{
+			cells[colIdx] = &sheets.CellData{
 				UserEnteredValue: &sheets.ExtendedValue{
 					StringValue: &valueStr,
 				},
-			})
+			}
 		}
 		request.AppendCells.Rows = append(request.AppendCells.Rows, &sheets.RowData{
 			Values: cells,
@@ -86,7 +89,7 @@ func (e *execution) insertRowsHelper(ctx context.Context, sharedLink string, she
 
 	_, err = e.sheetService.Spreadsheets.BatchUpdate(spreadsheetID, batchUpdateRequest).Context(ctx).Do()
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	// Get the last row number before insertion
@@ -95,7 +98,7 @@ func (e *execution) insertRowsHelper(ctx context.Context, sharedLink string, she
 		fmt.Sprintf("%s!A1:A", sheetName),
 	).Context(ctx).Do()
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	startRow := len(lastRowResp.Values) - len(values) + 1
@@ -105,7 +108,7 @@ func (e *execution) insertRowsHelper(ctx context.Context, sharedLink string, she
 	}
 
 	// Convert the inserted values back to map format
-	insertedRows := make([]map[string]format.Value, len(values))
+	insertedRows := make([]Row, len(values))
 	for i, rowValues := range values {
 		rowMap := make(map[string]format.Value)
 		for j, val := range rowValues {
@@ -125,10 +128,13 @@ func (e *execution) insertRowsHelper(ctx context.Context, sharedLink string, she
 				rowMap[headerStr] = data.NewBoolean(val)
 			}
 		}
-		insertedRows[i] = rowMap
+		insertedRows[i] = Row{
+			RowValue:  rowMap,
+			RowNumber: rowNumbers[i],
+		}
 	}
 
-	return rowNumbers, insertedRows, nil
+	return insertedRows, nil
 }
 
 func (e *execution) insertMultipleRows(ctx context.Context, job *base.Job) error {
@@ -137,14 +143,13 @@ func (e *execution) insertMultipleRows(ctx context.Context, job *base.Job) error
 		return err
 	}
 
-	rowNumbers, insertedRows, err := e.insertRowsHelper(ctx, input.SharedLink, input.SheetName, input.Rows)
+	insertedRows, err := e.insertRowsHelper(ctx, input.SharedLink, input.SheetName, input.RowValues)
 	if err != nil {
 		return err
 	}
 
 	output := &taskInsertMultipleRowsOutput{
-		RowNumbers: rowNumbers,
-		Rows:       insertedRows,
+		Rows: insertedRows,
 	}
 	if err := job.Output.WriteData(ctx, output); err != nil {
 		return err

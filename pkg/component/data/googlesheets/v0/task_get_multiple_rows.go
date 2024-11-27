@@ -9,7 +9,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
-func (e *execution) getRowsHelper(ctx context.Context, sharedLink string, sheetName string, rowNumbers []int) ([]map[string]format.Value, error) {
+func (e *execution) getRowsHelper(ctx context.Context, sharedLink string, sheetName string, rowNumbers []int) ([]Row, error) {
 	spreadsheetID, err := e.extractSpreadsheetID(sharedLink)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (e *execution) getRowsHelper(ctx context.Context, sharedLink string, sheetN
 
 	headers := headerResp.Values[0]
 
-	result := make([]map[string]format.Value, len(rowNumbers))
+	result := make([]Row, len(rowNumbers))
 	for i, rowNum := range rowNumbers {
 		if rowNum <= 0 {
 			continue
@@ -67,7 +67,8 @@ func (e *execution) getRowsHelper(ctx context.Context, sharedLink string, sheetN
 				}
 			}
 		}
-		result[i] = rowMap
+		result[i].RowValue = rowMap
+		result[i].RowNumber = rowNum
 	}
 
 	return result, nil

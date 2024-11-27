@@ -2,6 +2,7 @@ package googlesheets
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -41,7 +42,7 @@ func TestDeleteRow(t *testing.T) {
 			_, _ = w.Write([]byte(`{}`))
 			return
 		}
-		http.Error(w, "not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("not found: %s %s", r.Method, r.URL.Path), http.StatusNotFound)
 	}))
 	defer ts.Close()
 

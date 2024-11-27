@@ -11,7 +11,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
-func (e *execution) updateRowsHelper(ctx context.Context, sharedLink string, sheetName string, rowNumbers []int, rows []map[string]format.Value) ([]map[string]format.Value, error) {
+func (e *execution) updateRowsHelper(ctx context.Context, sharedLink string, sheetName string, rows []Row) ([]Row, error) {
 	spreadsheetID, err := e.extractSpreadsheetID(sharedLink)
 	if err != nil {
 		return nil, err
@@ -40,9 +40,7 @@ func (e *execution) updateRowsHelper(ctx context.Context, sharedLink string, she
 	var requests []*sheets.Request
 
 	// Create update requests for each row
-	for i, rowNumber := range rowNumbers {
-
-		row := rows[i]
+	for _, row := range rows {
 
 		for colIdx, header := range headers {
 			headerStr, ok := header.(string)
@@ -50,7 +48,7 @@ func (e *execution) updateRowsHelper(ctx context.Context, sharedLink string, she
 				continue
 			}
 
-			if val, exists := row[headerStr]; exists {
+			if val, exists := row.RowValue[headerStr]; exists {
 				// Only add cell data if key exists in input row
 				valueStr := val.String()
 				cell := &sheets.CellData{
@@ -63,8 +61,8 @@ func (e *execution) updateRowsHelper(ctx context.Context, sharedLink string, she
 					UpdateCells: &sheets.UpdateCellsRequest{
 						Range: &sheets.GridRange{
 							SheetId:          sheetID,
-							StartRowIndex:    int64(rowNumber - 1), // Convert to 0-based index
-							EndRowIndex:      int64(rowNumber),
+							StartRowIndex:    int64(row.RowNumber - 1), // Convert to 0-based index
+							EndRowIndex:      int64(row.RowNumber),
 							StartColumnIndex: int64(colIdx),
 							EndColumnIndex:   int64(colIdx + 1),
 						},
@@ -93,10 +91,10 @@ func (e *execution) updateRowsHelper(ctx context.Context, sharedLink string, she
 	}
 
 	// Fetch the updated rows from Google Sheets
-	updatedRows := make([]map[string]format.Value, len(rowNumbers))
-	for i, rowNumber := range rowNumbers {
+	updatedRows := make([]Row, len(rows))
+	for i, row := range rows {
 		// Get the specific row
-		rowRange := fmt.Sprintf("%s!%d:%d", sheetName, rowNumber, rowNumber)
+		rowRange := fmt.Sprintf("%s!%d:%d", sheetName, row.RowNumber, row.RowNumber)
 		rowResp, err := e.sheetService.Spreadsheets.Values.Get(spreadsheetID, rowRange).Context(ctx).Do()
 		if err != nil {
 			return nil, err
@@ -126,7 +124,10 @@ func (e *execution) updateRowsHelper(ctx context.Context, sharedLink string, she
 				}
 			}
 		}
-		updatedRows[i] = rowMap
+		updatedRows[i] = Row{
+			RowValue:  rowMap,
+			RowNumber: row.RowNumber,
+		}
 	}
 
 	return updatedRows, nil
@@ -138,7 +139,7 @@ func (e *execution) updateMultipleRows(ctx context.Context, job *base.Job) error
 		return err
 	}
 
-	updatedRows, err := e.updateRowsHelper(ctx, input.SharedLink, input.SheetName, input.RowNumbers, input.Rows)
+	updatedRows, err := e.updateRowsHelper(ctx, input.SharedLink, input.SheetName, input.Rows)
 	if err != nil {
 		return err
 	}

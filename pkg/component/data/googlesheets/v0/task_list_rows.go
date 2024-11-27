@@ -9,44 +9,39 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
-func (e *execution) listRows(ctx context.Context, job *base.Job) error {
-	input := &taskListRowsInput{}
-	if err := job.Input.ReadData(ctx, input); err != nil {
-		return err
-	}
-
-	spreadsheetID, err := e.extractSpreadsheetID(input.SharedLink)
+func (e *execution) listRowsHelper(ctx context.Context, sharedLink string, sheetName string, startRow int, endRow int) ([]Row, error) {
+	spreadsheetID, err := e.extractSpreadsheetID(sharedLink)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Get headers from first row
 	headerResp, err := e.sheetService.Spreadsheets.Values.Get(
 		spreadsheetID,
-		input.SheetName+"!1:1",
+		sheetName+"!1:1",
 	).Context(ctx).Do()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if len(headerResp.Values) == 0 {
-		return nil // Empty sheet
+		return nil, nil // Empty sheet
 	}
 
 	headers := headerResp.Values[0]
 
 	// Get data rows
-	dataRange := fmt.Sprintf("%s!%d:%d", input.SheetName, input.StartRow, input.EndRow)
+	dataRange := fmt.Sprintf("%s!%d:%d", sheetName, startRow, endRow)
 	dataResp, err := e.sheetService.Spreadsheets.Values.Get(
 		spreadsheetID,
 		dataRange,
 	).Context(ctx).Do()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	rows := make([]map[string]format.Value, 0)
-	for _, row := range dataResp.Values {
+	rows := make([]Row, 0)
+	for i, row := range dataResp.Values {
 		rowMap := make(map[string]format.Value)
 
 		for j, header := range headers {
@@ -62,7 +57,23 @@ func (e *execution) listRows(ctx context.Context, job *base.Job) error {
 				}
 			}
 		}
-		rows = append(rows, rowMap)
+		rows = append(rows, Row{
+			RowValue:  rowMap,
+			RowNumber: i + startRow,
+		})
+	}
+	return rows, nil
+}
+
+func (e *execution) listRows(ctx context.Context, job *base.Job) error {
+	input := &taskListRowsInput{}
+	if err := job.Input.ReadData(ctx, input); err != nil {
+		return err
+	}
+
+	rows, err := e.listRowsHelper(ctx, input.SharedLink, input.SheetName, input.StartRow, input.EndRow)
+	if err != nil {
+		return err
 	}
 
 	output := &taskListRowsOutput{

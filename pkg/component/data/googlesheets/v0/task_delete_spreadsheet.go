@@ -23,7 +23,9 @@ func (e *execution) deleteSpreadsheet(ctx context.Context, job *base.Job) error 
 		return err
 	}
 
-	output := &taskDeleteSpreadsheetOutput{}
+	output := &taskDeleteSpreadsheetOutput{
+		Success: true,
+	}
 	if err := job.Output.WriteData(ctx, output); err != nil {
 		return err
 	}

@@ -71,7 +71,9 @@ func (e *execution) deleteSpreadsheetColumn(ctx context.Context, job *base.Job) 
 		return err
 	}
 
-	output := &taskDeleteSpreadsheetColumnOutput{}
+	output := &taskDeleteSpreadsheetColumnOutput{
+		Success: true,
+	}
 	if err := job.Output.WriteData(ctx, output); err != nil {
 		return err
 	}
