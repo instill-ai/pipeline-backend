@@ -31,6 +31,13 @@ type AppPublicServiceServerMock struct {
 	beforeCreateAppCounter uint64
 	CreateAppMock          mAppPublicServiceServerMockCreateApp
 
+	funcCreateChat          func(ctx context.Context, cp1 *mm_appv1alpha.CreateChatRequest) (cp2 *mm_appv1alpha.CreateChatResponse, err error)
+	funcCreateChatOrigin    string
+	inspectFuncCreateChat   func(ctx context.Context, cp1 *mm_appv1alpha.CreateChatRequest)
+	afterCreateChatCounter  uint64
+	beforeCreateChatCounter uint64
+	CreateChatMock          mAppPublicServiceServerMockCreateChat
+
 	funcCreateConversation          func(ctx context.Context, cp1 *mm_appv1alpha.CreateConversationRequest) (cp2 *mm_appv1alpha.CreateConversationResponse, err error)
 	funcCreateConversationOrigin    string
 	inspectFuncCreateConversation   func(ctx context.Context, cp1 *mm_appv1alpha.CreateConversationRequest)
@@ -51,6 +58,13 @@ type AppPublicServiceServerMock struct {
 	afterDeleteAppCounter  uint64
 	beforeDeleteAppCounter uint64
 	DeleteAppMock          mAppPublicServiceServerMockDeleteApp
+
+	funcDeleteChat          func(ctx context.Context, dp1 *mm_appv1alpha.DeleteChatRequest) (dp2 *mm_appv1alpha.DeleteChatResponse, err error)
+	funcDeleteChatOrigin    string
+	inspectFuncDeleteChat   func(ctx context.Context, dp1 *mm_appv1alpha.DeleteChatRequest)
+	afterDeleteChatCounter  uint64
+	beforeDeleteChatCounter uint64
+	DeleteChatMock          mAppPublicServiceServerMockDeleteChat
 
 	funcDeleteConversation          func(ctx context.Context, dp1 *mm_appv1alpha.DeleteConversationRequest) (dp2 *mm_appv1alpha.DeleteConversationResponse, err error)
 	funcDeleteConversationOrigin    string
@@ -79,6 +93,20 @@ type AppPublicServiceServerMock struct {
 	afterListAppsCounter  uint64
 	beforeListAppsCounter uint64
 	ListAppsMock          mAppPublicServiceServerMockListApps
+
+	funcListChatMessages          func(ctx context.Context, lp1 *mm_appv1alpha.ListChatMessagesRequest) (lp2 *mm_appv1alpha.ListChatMessagesResponse, err error)
+	funcListChatMessagesOrigin    string
+	inspectFuncListChatMessages   func(ctx context.Context, lp1 *mm_appv1alpha.ListChatMessagesRequest)
+	afterListChatMessagesCounter  uint64
+	beforeListChatMessagesCounter uint64
+	ListChatMessagesMock          mAppPublicServiceServerMockListChatMessages
+
+	funcListChats          func(ctx context.Context, lp1 *mm_appv1alpha.ListChatsRequest) (lp2 *mm_appv1alpha.ListChatsResponse, err error)
+	funcListChatsOrigin    string
+	inspectFuncListChats   func(ctx context.Context, lp1 *mm_appv1alpha.ListChatsRequest)
+	afterListChatsCounter  uint64
+	beforeListChatsCounter uint64
+	ListChatsMock          mAppPublicServiceServerMockListChats
 
 	funcListConversations          func(ctx context.Context, lp1 *mm_appv1alpha.ListConversationsRequest) (lp2 *mm_appv1alpha.ListConversationsResponse, err error)
 	funcListConversationsOrigin    string
@@ -122,6 +150,13 @@ type AppPublicServiceServerMock struct {
 	beforeUpdateAppCounter uint64
 	UpdateAppMock          mAppPublicServiceServerMockUpdateApp
 
+	funcUpdateChat          func(ctx context.Context, up1 *mm_appv1alpha.UpdateChatRequest) (up2 *mm_appv1alpha.UpdateChatResponse, err error)
+	funcUpdateChatOrigin    string
+	inspectFuncUpdateChat   func(ctx context.Context, up1 *mm_appv1alpha.UpdateChatRequest)
+	afterUpdateChatCounter  uint64
+	beforeUpdateChatCounter uint64
+	UpdateChatMock          mAppPublicServiceServerMockUpdateChat
+
 	funcUpdateConversation          func(ctx context.Context, up1 *mm_appv1alpha.UpdateConversationRequest) (up2 *mm_appv1alpha.UpdateConversationResponse, err error)
 	funcUpdateConversationOrigin    string
 	inspectFuncUpdateConversation   func(ctx context.Context, up1 *mm_appv1alpha.UpdateConversationRequest)
@@ -151,6 +186,9 @@ func NewAppPublicServiceServerMock(t minimock.Tester) *AppPublicServiceServerMoc
 	m.CreateAppMock = mAppPublicServiceServerMockCreateApp{mock: m}
 	m.CreateAppMock.callArgs = []*AppPublicServiceServerMockCreateAppParams{}
 
+	m.CreateChatMock = mAppPublicServiceServerMockCreateChat{mock: m}
+	m.CreateChatMock.callArgs = []*AppPublicServiceServerMockCreateChatParams{}
+
 	m.CreateConversationMock = mAppPublicServiceServerMockCreateConversation{mock: m}
 	m.CreateConversationMock.callArgs = []*AppPublicServiceServerMockCreateConversationParams{}
 
@@ -159,6 +197,9 @@ func NewAppPublicServiceServerMock(t minimock.Tester) *AppPublicServiceServerMoc
 
 	m.DeleteAppMock = mAppPublicServiceServerMockDeleteApp{mock: m}
 	m.DeleteAppMock.callArgs = []*AppPublicServiceServerMockDeleteAppParams{}
+
+	m.DeleteChatMock = mAppPublicServiceServerMockDeleteChat{mock: m}
+	m.DeleteChatMock.callArgs = []*AppPublicServiceServerMockDeleteChatParams{}
 
 	m.DeleteConversationMock = mAppPublicServiceServerMockDeleteConversation{mock: m}
 	m.DeleteConversationMock.callArgs = []*AppPublicServiceServerMockDeleteConversationParams{}
@@ -171,6 +212,12 @@ func NewAppPublicServiceServerMock(t minimock.Tester) *AppPublicServiceServerMoc
 
 	m.ListAppsMock = mAppPublicServiceServerMockListApps{mock: m}
 	m.ListAppsMock.callArgs = []*AppPublicServiceServerMockListAppsParams{}
+
+	m.ListChatMessagesMock = mAppPublicServiceServerMockListChatMessages{mock: m}
+	m.ListChatMessagesMock.callArgs = []*AppPublicServiceServerMockListChatMessagesParams{}
+
+	m.ListChatsMock = mAppPublicServiceServerMockListChats{mock: m}
+	m.ListChatsMock.callArgs = []*AppPublicServiceServerMockListChatsParams{}
 
 	m.ListConversationsMock = mAppPublicServiceServerMockListConversations{mock: m}
 	m.ListConversationsMock.callArgs = []*AppPublicServiceServerMockListConversationsParams{}
@@ -189,6 +236,9 @@ func NewAppPublicServiceServerMock(t minimock.Tester) *AppPublicServiceServerMoc
 
 	m.UpdateAppMock = mAppPublicServiceServerMockUpdateApp{mock: m}
 	m.UpdateAppMock.callArgs = []*AppPublicServiceServerMockUpdateAppParams{}
+
+	m.UpdateChatMock = mAppPublicServiceServerMockUpdateChat{mock: m}
+	m.UpdateChatMock.callArgs = []*AppPublicServiceServerMockUpdateChatParams{}
 
 	m.UpdateConversationMock = mAppPublicServiceServerMockUpdateConversation{mock: m}
 	m.UpdateConversationMock.callArgs = []*AppPublicServiceServerMockUpdateConversationParams{}
@@ -884,6 +934,349 @@ func (m *AppPublicServiceServerMock) MinimockCreateAppInspect() {
 	if !m.CreateAppMock.invocationsDone() && afterCreateAppCounter > 0 {
 		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.CreateApp at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.CreateAppMock.expectedInvocations), m.CreateAppMock.expectedInvocationsOrigin, afterCreateAppCounter)
+	}
+}
+
+type mAppPublicServiceServerMockCreateChat struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockCreateChatExpectation
+	expectations       []*AppPublicServiceServerMockCreateChatExpectation
+
+	callArgs []*AppPublicServiceServerMockCreateChatParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockCreateChatExpectation specifies expectation struct of the AppPublicServiceServer.CreateChat
+type AppPublicServiceServerMockCreateChatExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockCreateChatParams
+	paramPtrs          *AppPublicServiceServerMockCreateChatParamPtrs
+	expectationOrigins AppPublicServiceServerMockCreateChatExpectationOrigins
+	results            *AppPublicServiceServerMockCreateChatResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockCreateChatParams contains parameters of the AppPublicServiceServer.CreateChat
+type AppPublicServiceServerMockCreateChatParams struct {
+	ctx context.Context
+	cp1 *mm_appv1alpha.CreateChatRequest
+}
+
+// AppPublicServiceServerMockCreateChatParamPtrs contains pointers to parameters of the AppPublicServiceServer.CreateChat
+type AppPublicServiceServerMockCreateChatParamPtrs struct {
+	ctx *context.Context
+	cp1 **mm_appv1alpha.CreateChatRequest
+}
+
+// AppPublicServiceServerMockCreateChatResults contains results of the AppPublicServiceServer.CreateChat
+type AppPublicServiceServerMockCreateChatResults struct {
+	cp2 *mm_appv1alpha.CreateChatResponse
+	err error
+}
+
+// AppPublicServiceServerMockCreateChatOrigins contains origins of expectations of the AppPublicServiceServer.CreateChat
+type AppPublicServiceServerMockCreateChatExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originCp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmCreateChat *mAppPublicServiceServerMockCreateChat) Optional() *mAppPublicServiceServerMockCreateChat {
+	mmCreateChat.optional = true
+	return mmCreateChat
+}
+
+// Expect sets up expected params for AppPublicServiceServer.CreateChat
+func (mmCreateChat *mAppPublicServiceServerMockCreateChat) Expect(ctx context.Context, cp1 *mm_appv1alpha.CreateChatRequest) *mAppPublicServiceServerMockCreateChat {
+	if mmCreateChat.mock.funcCreateChat != nil {
+		mmCreateChat.mock.t.Fatalf("AppPublicServiceServerMock.CreateChat mock is already set by Set")
+	}
+
+	if mmCreateChat.defaultExpectation == nil {
+		mmCreateChat.defaultExpectation = &AppPublicServiceServerMockCreateChatExpectation{}
+	}
+
+	if mmCreateChat.defaultExpectation.paramPtrs != nil {
+		mmCreateChat.mock.t.Fatalf("AppPublicServiceServerMock.CreateChat mock is already set by ExpectParams functions")
+	}
+
+	mmCreateChat.defaultExpectation.params = &AppPublicServiceServerMockCreateChatParams{ctx, cp1}
+	mmCreateChat.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmCreateChat.expectations {
+		if minimock.Equal(e.params, mmCreateChat.defaultExpectation.params) {
+			mmCreateChat.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreateChat.defaultExpectation.params)
+		}
+	}
+
+	return mmCreateChat
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.CreateChat
+func (mmCreateChat *mAppPublicServiceServerMockCreateChat) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockCreateChat {
+	if mmCreateChat.mock.funcCreateChat != nil {
+		mmCreateChat.mock.t.Fatalf("AppPublicServiceServerMock.CreateChat mock is already set by Set")
+	}
+
+	if mmCreateChat.defaultExpectation == nil {
+		mmCreateChat.defaultExpectation = &AppPublicServiceServerMockCreateChatExpectation{}
+	}
+
+	if mmCreateChat.defaultExpectation.params != nil {
+		mmCreateChat.mock.t.Fatalf("AppPublicServiceServerMock.CreateChat mock is already set by Expect")
+	}
+
+	if mmCreateChat.defaultExpectation.paramPtrs == nil {
+		mmCreateChat.defaultExpectation.paramPtrs = &AppPublicServiceServerMockCreateChatParamPtrs{}
+	}
+	mmCreateChat.defaultExpectation.paramPtrs.ctx = &ctx
+	mmCreateChat.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmCreateChat
+}
+
+// ExpectCp1Param2 sets up expected param cp1 for AppPublicServiceServer.CreateChat
+func (mmCreateChat *mAppPublicServiceServerMockCreateChat) ExpectCp1Param2(cp1 *mm_appv1alpha.CreateChatRequest) *mAppPublicServiceServerMockCreateChat {
+	if mmCreateChat.mock.funcCreateChat != nil {
+		mmCreateChat.mock.t.Fatalf("AppPublicServiceServerMock.CreateChat mock is already set by Set")
+	}
+
+	if mmCreateChat.defaultExpectation == nil {
+		mmCreateChat.defaultExpectation = &AppPublicServiceServerMockCreateChatExpectation{}
+	}
+
+	if mmCreateChat.defaultExpectation.params != nil {
+		mmCreateChat.mock.t.Fatalf("AppPublicServiceServerMock.CreateChat mock is already set by Expect")
+	}
+
+	if mmCreateChat.defaultExpectation.paramPtrs == nil {
+		mmCreateChat.defaultExpectation.paramPtrs = &AppPublicServiceServerMockCreateChatParamPtrs{}
+	}
+	mmCreateChat.defaultExpectation.paramPtrs.cp1 = &cp1
+	mmCreateChat.defaultExpectation.expectationOrigins.originCp1 = minimock.CallerInfo(1)
+
+	return mmCreateChat
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.CreateChat
+func (mmCreateChat *mAppPublicServiceServerMockCreateChat) Inspect(f func(ctx context.Context, cp1 *mm_appv1alpha.CreateChatRequest)) *mAppPublicServiceServerMockCreateChat {
+	if mmCreateChat.mock.inspectFuncCreateChat != nil {
+		mmCreateChat.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.CreateChat")
+	}
+
+	mmCreateChat.mock.inspectFuncCreateChat = f
+
+	return mmCreateChat
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.CreateChat
+func (mmCreateChat *mAppPublicServiceServerMockCreateChat) Return(cp2 *mm_appv1alpha.CreateChatResponse, err error) *AppPublicServiceServerMock {
+	if mmCreateChat.mock.funcCreateChat != nil {
+		mmCreateChat.mock.t.Fatalf("AppPublicServiceServerMock.CreateChat mock is already set by Set")
+	}
+
+	if mmCreateChat.defaultExpectation == nil {
+		mmCreateChat.defaultExpectation = &AppPublicServiceServerMockCreateChatExpectation{mock: mmCreateChat.mock}
+	}
+	mmCreateChat.defaultExpectation.results = &AppPublicServiceServerMockCreateChatResults{cp2, err}
+	mmCreateChat.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmCreateChat.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.CreateChat method
+func (mmCreateChat *mAppPublicServiceServerMockCreateChat) Set(f func(ctx context.Context, cp1 *mm_appv1alpha.CreateChatRequest) (cp2 *mm_appv1alpha.CreateChatResponse, err error)) *AppPublicServiceServerMock {
+	if mmCreateChat.defaultExpectation != nil {
+		mmCreateChat.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.CreateChat method")
+	}
+
+	if len(mmCreateChat.expectations) > 0 {
+		mmCreateChat.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.CreateChat method")
+	}
+
+	mmCreateChat.mock.funcCreateChat = f
+	mmCreateChat.mock.funcCreateChatOrigin = minimock.CallerInfo(1)
+	return mmCreateChat.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.CreateChat which will trigger the result defined by the following
+// Then helper
+func (mmCreateChat *mAppPublicServiceServerMockCreateChat) When(ctx context.Context, cp1 *mm_appv1alpha.CreateChatRequest) *AppPublicServiceServerMockCreateChatExpectation {
+	if mmCreateChat.mock.funcCreateChat != nil {
+		mmCreateChat.mock.t.Fatalf("AppPublicServiceServerMock.CreateChat mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockCreateChatExpectation{
+		mock:               mmCreateChat.mock,
+		params:             &AppPublicServiceServerMockCreateChatParams{ctx, cp1},
+		expectationOrigins: AppPublicServiceServerMockCreateChatExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmCreateChat.expectations = append(mmCreateChat.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.CreateChat return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockCreateChatExpectation) Then(cp2 *mm_appv1alpha.CreateChatResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockCreateChatResults{cp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.CreateChat should be invoked
+func (mmCreateChat *mAppPublicServiceServerMockCreateChat) Times(n uint64) *mAppPublicServiceServerMockCreateChat {
+	if n == 0 {
+		mmCreateChat.mock.t.Fatalf("Times of AppPublicServiceServerMock.CreateChat mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmCreateChat.expectedInvocations, n)
+	mmCreateChat.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmCreateChat
+}
+
+func (mmCreateChat *mAppPublicServiceServerMockCreateChat) invocationsDone() bool {
+	if len(mmCreateChat.expectations) == 0 && mmCreateChat.defaultExpectation == nil && mmCreateChat.mock.funcCreateChat == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmCreateChat.mock.afterCreateChatCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmCreateChat.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// CreateChat implements mm_appv1alpha.AppPublicServiceServer
+func (mmCreateChat *AppPublicServiceServerMock) CreateChat(ctx context.Context, cp1 *mm_appv1alpha.CreateChatRequest) (cp2 *mm_appv1alpha.CreateChatResponse, err error) {
+	mm_atomic.AddUint64(&mmCreateChat.beforeCreateChatCounter, 1)
+	defer mm_atomic.AddUint64(&mmCreateChat.afterCreateChatCounter, 1)
+
+	mmCreateChat.t.Helper()
+
+	if mmCreateChat.inspectFuncCreateChat != nil {
+		mmCreateChat.inspectFuncCreateChat(ctx, cp1)
+	}
+
+	mm_params := AppPublicServiceServerMockCreateChatParams{ctx, cp1}
+
+	// Record call args
+	mmCreateChat.CreateChatMock.mutex.Lock()
+	mmCreateChat.CreateChatMock.callArgs = append(mmCreateChat.CreateChatMock.callArgs, &mm_params)
+	mmCreateChat.CreateChatMock.mutex.Unlock()
+
+	for _, e := range mmCreateChat.CreateChatMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.cp2, e.results.err
+		}
+	}
+
+	if mmCreateChat.CreateChatMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmCreateChat.CreateChatMock.defaultExpectation.Counter, 1)
+		mm_want := mmCreateChat.CreateChatMock.defaultExpectation.params
+		mm_want_ptrs := mmCreateChat.CreateChatMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockCreateChatParams{ctx, cp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmCreateChat.t.Errorf("AppPublicServiceServerMock.CreateChat got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreateChat.CreateChatMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.cp1 != nil && !minimock.Equal(*mm_want_ptrs.cp1, mm_got.cp1) {
+				mmCreateChat.t.Errorf("AppPublicServiceServerMock.CreateChat got unexpected parameter cp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreateChat.CreateChatMock.defaultExpectation.expectationOrigins.originCp1, *mm_want_ptrs.cp1, mm_got.cp1, minimock.Diff(*mm_want_ptrs.cp1, mm_got.cp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmCreateChat.t.Errorf("AppPublicServiceServerMock.CreateChat got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmCreateChat.CreateChatMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmCreateChat.CreateChatMock.defaultExpectation.results
+		if mm_results == nil {
+			mmCreateChat.t.Fatal("No results are set for the AppPublicServiceServerMock.CreateChat")
+		}
+		return (*mm_results).cp2, (*mm_results).err
+	}
+	if mmCreateChat.funcCreateChat != nil {
+		return mmCreateChat.funcCreateChat(ctx, cp1)
+	}
+	mmCreateChat.t.Fatalf("Unexpected call to AppPublicServiceServerMock.CreateChat. %v %v", ctx, cp1)
+	return
+}
+
+// CreateChatAfterCounter returns a count of finished AppPublicServiceServerMock.CreateChat invocations
+func (mmCreateChat *AppPublicServiceServerMock) CreateChatAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreateChat.afterCreateChatCounter)
+}
+
+// CreateChatBeforeCounter returns a count of AppPublicServiceServerMock.CreateChat invocations
+func (mmCreateChat *AppPublicServiceServerMock) CreateChatBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreateChat.beforeCreateChatCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.CreateChat.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmCreateChat *mAppPublicServiceServerMockCreateChat) Calls() []*AppPublicServiceServerMockCreateChatParams {
+	mmCreateChat.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockCreateChatParams, len(mmCreateChat.callArgs))
+	copy(argCopy, mmCreateChat.callArgs)
+
+	mmCreateChat.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockCreateChatDone returns true if the count of the CreateChat invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockCreateChatDone() bool {
+	if m.CreateChatMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.CreateChatMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.CreateChatMock.invocationsDone()
+}
+
+// MinimockCreateChatInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockCreateChatInspect() {
+	for _, e := range m.CreateChatMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.CreateChat at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterCreateChatCounter := mm_atomic.LoadUint64(&m.afterCreateChatCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.CreateChatMock.defaultExpectation != nil && afterCreateChatCounter < 1 {
+		if m.CreateChatMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.CreateChat at\n%s", m.CreateChatMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.CreateChat at\n%s with params: %#v", m.CreateChatMock.defaultExpectation.expectationOrigins.origin, *m.CreateChatMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcCreateChat != nil && afterCreateChatCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.CreateChat at\n%s", m.funcCreateChatOrigin)
+	}
+
+	if !m.CreateChatMock.invocationsDone() && afterCreateChatCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.CreateChat at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.CreateChatMock.expectedInvocations), m.CreateChatMock.expectedInvocationsOrigin, afterCreateChatCounter)
 	}
 }
 
@@ -1913,6 +2306,349 @@ func (m *AppPublicServiceServerMock) MinimockDeleteAppInspect() {
 	if !m.DeleteAppMock.invocationsDone() && afterDeleteAppCounter > 0 {
 		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.DeleteApp at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.DeleteAppMock.expectedInvocations), m.DeleteAppMock.expectedInvocationsOrigin, afterDeleteAppCounter)
+	}
+}
+
+type mAppPublicServiceServerMockDeleteChat struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockDeleteChatExpectation
+	expectations       []*AppPublicServiceServerMockDeleteChatExpectation
+
+	callArgs []*AppPublicServiceServerMockDeleteChatParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockDeleteChatExpectation specifies expectation struct of the AppPublicServiceServer.DeleteChat
+type AppPublicServiceServerMockDeleteChatExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockDeleteChatParams
+	paramPtrs          *AppPublicServiceServerMockDeleteChatParamPtrs
+	expectationOrigins AppPublicServiceServerMockDeleteChatExpectationOrigins
+	results            *AppPublicServiceServerMockDeleteChatResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockDeleteChatParams contains parameters of the AppPublicServiceServer.DeleteChat
+type AppPublicServiceServerMockDeleteChatParams struct {
+	ctx context.Context
+	dp1 *mm_appv1alpha.DeleteChatRequest
+}
+
+// AppPublicServiceServerMockDeleteChatParamPtrs contains pointers to parameters of the AppPublicServiceServer.DeleteChat
+type AppPublicServiceServerMockDeleteChatParamPtrs struct {
+	ctx *context.Context
+	dp1 **mm_appv1alpha.DeleteChatRequest
+}
+
+// AppPublicServiceServerMockDeleteChatResults contains results of the AppPublicServiceServer.DeleteChat
+type AppPublicServiceServerMockDeleteChatResults struct {
+	dp2 *mm_appv1alpha.DeleteChatResponse
+	err error
+}
+
+// AppPublicServiceServerMockDeleteChatOrigins contains origins of expectations of the AppPublicServiceServer.DeleteChat
+type AppPublicServiceServerMockDeleteChatExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originDp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmDeleteChat *mAppPublicServiceServerMockDeleteChat) Optional() *mAppPublicServiceServerMockDeleteChat {
+	mmDeleteChat.optional = true
+	return mmDeleteChat
+}
+
+// Expect sets up expected params for AppPublicServiceServer.DeleteChat
+func (mmDeleteChat *mAppPublicServiceServerMockDeleteChat) Expect(ctx context.Context, dp1 *mm_appv1alpha.DeleteChatRequest) *mAppPublicServiceServerMockDeleteChat {
+	if mmDeleteChat.mock.funcDeleteChat != nil {
+		mmDeleteChat.mock.t.Fatalf("AppPublicServiceServerMock.DeleteChat mock is already set by Set")
+	}
+
+	if mmDeleteChat.defaultExpectation == nil {
+		mmDeleteChat.defaultExpectation = &AppPublicServiceServerMockDeleteChatExpectation{}
+	}
+
+	if mmDeleteChat.defaultExpectation.paramPtrs != nil {
+		mmDeleteChat.mock.t.Fatalf("AppPublicServiceServerMock.DeleteChat mock is already set by ExpectParams functions")
+	}
+
+	mmDeleteChat.defaultExpectation.params = &AppPublicServiceServerMockDeleteChatParams{ctx, dp1}
+	mmDeleteChat.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmDeleteChat.expectations {
+		if minimock.Equal(e.params, mmDeleteChat.defaultExpectation.params) {
+			mmDeleteChat.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmDeleteChat.defaultExpectation.params)
+		}
+	}
+
+	return mmDeleteChat
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.DeleteChat
+func (mmDeleteChat *mAppPublicServiceServerMockDeleteChat) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockDeleteChat {
+	if mmDeleteChat.mock.funcDeleteChat != nil {
+		mmDeleteChat.mock.t.Fatalf("AppPublicServiceServerMock.DeleteChat mock is already set by Set")
+	}
+
+	if mmDeleteChat.defaultExpectation == nil {
+		mmDeleteChat.defaultExpectation = &AppPublicServiceServerMockDeleteChatExpectation{}
+	}
+
+	if mmDeleteChat.defaultExpectation.params != nil {
+		mmDeleteChat.mock.t.Fatalf("AppPublicServiceServerMock.DeleteChat mock is already set by Expect")
+	}
+
+	if mmDeleteChat.defaultExpectation.paramPtrs == nil {
+		mmDeleteChat.defaultExpectation.paramPtrs = &AppPublicServiceServerMockDeleteChatParamPtrs{}
+	}
+	mmDeleteChat.defaultExpectation.paramPtrs.ctx = &ctx
+	mmDeleteChat.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmDeleteChat
+}
+
+// ExpectDp1Param2 sets up expected param dp1 for AppPublicServiceServer.DeleteChat
+func (mmDeleteChat *mAppPublicServiceServerMockDeleteChat) ExpectDp1Param2(dp1 *mm_appv1alpha.DeleteChatRequest) *mAppPublicServiceServerMockDeleteChat {
+	if mmDeleteChat.mock.funcDeleteChat != nil {
+		mmDeleteChat.mock.t.Fatalf("AppPublicServiceServerMock.DeleteChat mock is already set by Set")
+	}
+
+	if mmDeleteChat.defaultExpectation == nil {
+		mmDeleteChat.defaultExpectation = &AppPublicServiceServerMockDeleteChatExpectation{}
+	}
+
+	if mmDeleteChat.defaultExpectation.params != nil {
+		mmDeleteChat.mock.t.Fatalf("AppPublicServiceServerMock.DeleteChat mock is already set by Expect")
+	}
+
+	if mmDeleteChat.defaultExpectation.paramPtrs == nil {
+		mmDeleteChat.defaultExpectation.paramPtrs = &AppPublicServiceServerMockDeleteChatParamPtrs{}
+	}
+	mmDeleteChat.defaultExpectation.paramPtrs.dp1 = &dp1
+	mmDeleteChat.defaultExpectation.expectationOrigins.originDp1 = minimock.CallerInfo(1)
+
+	return mmDeleteChat
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.DeleteChat
+func (mmDeleteChat *mAppPublicServiceServerMockDeleteChat) Inspect(f func(ctx context.Context, dp1 *mm_appv1alpha.DeleteChatRequest)) *mAppPublicServiceServerMockDeleteChat {
+	if mmDeleteChat.mock.inspectFuncDeleteChat != nil {
+		mmDeleteChat.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.DeleteChat")
+	}
+
+	mmDeleteChat.mock.inspectFuncDeleteChat = f
+
+	return mmDeleteChat
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.DeleteChat
+func (mmDeleteChat *mAppPublicServiceServerMockDeleteChat) Return(dp2 *mm_appv1alpha.DeleteChatResponse, err error) *AppPublicServiceServerMock {
+	if mmDeleteChat.mock.funcDeleteChat != nil {
+		mmDeleteChat.mock.t.Fatalf("AppPublicServiceServerMock.DeleteChat mock is already set by Set")
+	}
+
+	if mmDeleteChat.defaultExpectation == nil {
+		mmDeleteChat.defaultExpectation = &AppPublicServiceServerMockDeleteChatExpectation{mock: mmDeleteChat.mock}
+	}
+	mmDeleteChat.defaultExpectation.results = &AppPublicServiceServerMockDeleteChatResults{dp2, err}
+	mmDeleteChat.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmDeleteChat.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.DeleteChat method
+func (mmDeleteChat *mAppPublicServiceServerMockDeleteChat) Set(f func(ctx context.Context, dp1 *mm_appv1alpha.DeleteChatRequest) (dp2 *mm_appv1alpha.DeleteChatResponse, err error)) *AppPublicServiceServerMock {
+	if mmDeleteChat.defaultExpectation != nil {
+		mmDeleteChat.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.DeleteChat method")
+	}
+
+	if len(mmDeleteChat.expectations) > 0 {
+		mmDeleteChat.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.DeleteChat method")
+	}
+
+	mmDeleteChat.mock.funcDeleteChat = f
+	mmDeleteChat.mock.funcDeleteChatOrigin = minimock.CallerInfo(1)
+	return mmDeleteChat.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.DeleteChat which will trigger the result defined by the following
+// Then helper
+func (mmDeleteChat *mAppPublicServiceServerMockDeleteChat) When(ctx context.Context, dp1 *mm_appv1alpha.DeleteChatRequest) *AppPublicServiceServerMockDeleteChatExpectation {
+	if mmDeleteChat.mock.funcDeleteChat != nil {
+		mmDeleteChat.mock.t.Fatalf("AppPublicServiceServerMock.DeleteChat mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockDeleteChatExpectation{
+		mock:               mmDeleteChat.mock,
+		params:             &AppPublicServiceServerMockDeleteChatParams{ctx, dp1},
+		expectationOrigins: AppPublicServiceServerMockDeleteChatExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmDeleteChat.expectations = append(mmDeleteChat.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.DeleteChat return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockDeleteChatExpectation) Then(dp2 *mm_appv1alpha.DeleteChatResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockDeleteChatResults{dp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.DeleteChat should be invoked
+func (mmDeleteChat *mAppPublicServiceServerMockDeleteChat) Times(n uint64) *mAppPublicServiceServerMockDeleteChat {
+	if n == 0 {
+		mmDeleteChat.mock.t.Fatalf("Times of AppPublicServiceServerMock.DeleteChat mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmDeleteChat.expectedInvocations, n)
+	mmDeleteChat.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmDeleteChat
+}
+
+func (mmDeleteChat *mAppPublicServiceServerMockDeleteChat) invocationsDone() bool {
+	if len(mmDeleteChat.expectations) == 0 && mmDeleteChat.defaultExpectation == nil && mmDeleteChat.mock.funcDeleteChat == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmDeleteChat.mock.afterDeleteChatCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmDeleteChat.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// DeleteChat implements mm_appv1alpha.AppPublicServiceServer
+func (mmDeleteChat *AppPublicServiceServerMock) DeleteChat(ctx context.Context, dp1 *mm_appv1alpha.DeleteChatRequest) (dp2 *mm_appv1alpha.DeleteChatResponse, err error) {
+	mm_atomic.AddUint64(&mmDeleteChat.beforeDeleteChatCounter, 1)
+	defer mm_atomic.AddUint64(&mmDeleteChat.afterDeleteChatCounter, 1)
+
+	mmDeleteChat.t.Helper()
+
+	if mmDeleteChat.inspectFuncDeleteChat != nil {
+		mmDeleteChat.inspectFuncDeleteChat(ctx, dp1)
+	}
+
+	mm_params := AppPublicServiceServerMockDeleteChatParams{ctx, dp1}
+
+	// Record call args
+	mmDeleteChat.DeleteChatMock.mutex.Lock()
+	mmDeleteChat.DeleteChatMock.callArgs = append(mmDeleteChat.DeleteChatMock.callArgs, &mm_params)
+	mmDeleteChat.DeleteChatMock.mutex.Unlock()
+
+	for _, e := range mmDeleteChat.DeleteChatMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.dp2, e.results.err
+		}
+	}
+
+	if mmDeleteChat.DeleteChatMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmDeleteChat.DeleteChatMock.defaultExpectation.Counter, 1)
+		mm_want := mmDeleteChat.DeleteChatMock.defaultExpectation.params
+		mm_want_ptrs := mmDeleteChat.DeleteChatMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockDeleteChatParams{ctx, dp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmDeleteChat.t.Errorf("AppPublicServiceServerMock.DeleteChat got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteChat.DeleteChatMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.dp1 != nil && !minimock.Equal(*mm_want_ptrs.dp1, mm_got.dp1) {
+				mmDeleteChat.t.Errorf("AppPublicServiceServerMock.DeleteChat got unexpected parameter dp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteChat.DeleteChatMock.defaultExpectation.expectationOrigins.originDp1, *mm_want_ptrs.dp1, mm_got.dp1, minimock.Diff(*mm_want_ptrs.dp1, mm_got.dp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmDeleteChat.t.Errorf("AppPublicServiceServerMock.DeleteChat got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmDeleteChat.DeleteChatMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmDeleteChat.DeleteChatMock.defaultExpectation.results
+		if mm_results == nil {
+			mmDeleteChat.t.Fatal("No results are set for the AppPublicServiceServerMock.DeleteChat")
+		}
+		return (*mm_results).dp2, (*mm_results).err
+	}
+	if mmDeleteChat.funcDeleteChat != nil {
+		return mmDeleteChat.funcDeleteChat(ctx, dp1)
+	}
+	mmDeleteChat.t.Fatalf("Unexpected call to AppPublicServiceServerMock.DeleteChat. %v %v", ctx, dp1)
+	return
+}
+
+// DeleteChatAfterCounter returns a count of finished AppPublicServiceServerMock.DeleteChat invocations
+func (mmDeleteChat *AppPublicServiceServerMock) DeleteChatAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteChat.afterDeleteChatCounter)
+}
+
+// DeleteChatBeforeCounter returns a count of AppPublicServiceServerMock.DeleteChat invocations
+func (mmDeleteChat *AppPublicServiceServerMock) DeleteChatBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteChat.beforeDeleteChatCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.DeleteChat.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmDeleteChat *mAppPublicServiceServerMockDeleteChat) Calls() []*AppPublicServiceServerMockDeleteChatParams {
+	mmDeleteChat.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockDeleteChatParams, len(mmDeleteChat.callArgs))
+	copy(argCopy, mmDeleteChat.callArgs)
+
+	mmDeleteChat.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockDeleteChatDone returns true if the count of the DeleteChat invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockDeleteChatDone() bool {
+	if m.DeleteChatMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.DeleteChatMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.DeleteChatMock.invocationsDone()
+}
+
+// MinimockDeleteChatInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockDeleteChatInspect() {
+	for _, e := range m.DeleteChatMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteChat at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterDeleteChatCounter := mm_atomic.LoadUint64(&m.afterDeleteChatCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.DeleteChatMock.defaultExpectation != nil && afterDeleteChatCounter < 1 {
+		if m.DeleteChatMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteChat at\n%s", m.DeleteChatMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteChat at\n%s with params: %#v", m.DeleteChatMock.defaultExpectation.expectationOrigins.origin, *m.DeleteChatMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcDeleteChat != nil && afterDeleteChatCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteChat at\n%s", m.funcDeleteChatOrigin)
+	}
+
+	if !m.DeleteChatMock.invocationsDone() && afterDeleteChatCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.DeleteChat at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.DeleteChatMock.expectedInvocations), m.DeleteChatMock.expectedInvocationsOrigin, afterDeleteChatCounter)
 	}
 }
 
@@ -3285,6 +4021,692 @@ func (m *AppPublicServiceServerMock) MinimockListAppsInspect() {
 	if !m.ListAppsMock.invocationsDone() && afterListAppsCounter > 0 {
 		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.ListApps at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.ListAppsMock.expectedInvocations), m.ListAppsMock.expectedInvocationsOrigin, afterListAppsCounter)
+	}
+}
+
+type mAppPublicServiceServerMockListChatMessages struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockListChatMessagesExpectation
+	expectations       []*AppPublicServiceServerMockListChatMessagesExpectation
+
+	callArgs []*AppPublicServiceServerMockListChatMessagesParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockListChatMessagesExpectation specifies expectation struct of the AppPublicServiceServer.ListChatMessages
+type AppPublicServiceServerMockListChatMessagesExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockListChatMessagesParams
+	paramPtrs          *AppPublicServiceServerMockListChatMessagesParamPtrs
+	expectationOrigins AppPublicServiceServerMockListChatMessagesExpectationOrigins
+	results            *AppPublicServiceServerMockListChatMessagesResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockListChatMessagesParams contains parameters of the AppPublicServiceServer.ListChatMessages
+type AppPublicServiceServerMockListChatMessagesParams struct {
+	ctx context.Context
+	lp1 *mm_appv1alpha.ListChatMessagesRequest
+}
+
+// AppPublicServiceServerMockListChatMessagesParamPtrs contains pointers to parameters of the AppPublicServiceServer.ListChatMessages
+type AppPublicServiceServerMockListChatMessagesParamPtrs struct {
+	ctx *context.Context
+	lp1 **mm_appv1alpha.ListChatMessagesRequest
+}
+
+// AppPublicServiceServerMockListChatMessagesResults contains results of the AppPublicServiceServer.ListChatMessages
+type AppPublicServiceServerMockListChatMessagesResults struct {
+	lp2 *mm_appv1alpha.ListChatMessagesResponse
+	err error
+}
+
+// AppPublicServiceServerMockListChatMessagesOrigins contains origins of expectations of the AppPublicServiceServer.ListChatMessages
+type AppPublicServiceServerMockListChatMessagesExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originLp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListChatMessages *mAppPublicServiceServerMockListChatMessages) Optional() *mAppPublicServiceServerMockListChatMessages {
+	mmListChatMessages.optional = true
+	return mmListChatMessages
+}
+
+// Expect sets up expected params for AppPublicServiceServer.ListChatMessages
+func (mmListChatMessages *mAppPublicServiceServerMockListChatMessages) Expect(ctx context.Context, lp1 *mm_appv1alpha.ListChatMessagesRequest) *mAppPublicServiceServerMockListChatMessages {
+	if mmListChatMessages.mock.funcListChatMessages != nil {
+		mmListChatMessages.mock.t.Fatalf("AppPublicServiceServerMock.ListChatMessages mock is already set by Set")
+	}
+
+	if mmListChatMessages.defaultExpectation == nil {
+		mmListChatMessages.defaultExpectation = &AppPublicServiceServerMockListChatMessagesExpectation{}
+	}
+
+	if mmListChatMessages.defaultExpectation.paramPtrs != nil {
+		mmListChatMessages.mock.t.Fatalf("AppPublicServiceServerMock.ListChatMessages mock is already set by ExpectParams functions")
+	}
+
+	mmListChatMessages.defaultExpectation.params = &AppPublicServiceServerMockListChatMessagesParams{ctx, lp1}
+	mmListChatMessages.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmListChatMessages.expectations {
+		if minimock.Equal(e.params, mmListChatMessages.defaultExpectation.params) {
+			mmListChatMessages.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListChatMessages.defaultExpectation.params)
+		}
+	}
+
+	return mmListChatMessages
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.ListChatMessages
+func (mmListChatMessages *mAppPublicServiceServerMockListChatMessages) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockListChatMessages {
+	if mmListChatMessages.mock.funcListChatMessages != nil {
+		mmListChatMessages.mock.t.Fatalf("AppPublicServiceServerMock.ListChatMessages mock is already set by Set")
+	}
+
+	if mmListChatMessages.defaultExpectation == nil {
+		mmListChatMessages.defaultExpectation = &AppPublicServiceServerMockListChatMessagesExpectation{}
+	}
+
+	if mmListChatMessages.defaultExpectation.params != nil {
+		mmListChatMessages.mock.t.Fatalf("AppPublicServiceServerMock.ListChatMessages mock is already set by Expect")
+	}
+
+	if mmListChatMessages.defaultExpectation.paramPtrs == nil {
+		mmListChatMessages.defaultExpectation.paramPtrs = &AppPublicServiceServerMockListChatMessagesParamPtrs{}
+	}
+	mmListChatMessages.defaultExpectation.paramPtrs.ctx = &ctx
+	mmListChatMessages.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmListChatMessages
+}
+
+// ExpectLp1Param2 sets up expected param lp1 for AppPublicServiceServer.ListChatMessages
+func (mmListChatMessages *mAppPublicServiceServerMockListChatMessages) ExpectLp1Param2(lp1 *mm_appv1alpha.ListChatMessagesRequest) *mAppPublicServiceServerMockListChatMessages {
+	if mmListChatMessages.mock.funcListChatMessages != nil {
+		mmListChatMessages.mock.t.Fatalf("AppPublicServiceServerMock.ListChatMessages mock is already set by Set")
+	}
+
+	if mmListChatMessages.defaultExpectation == nil {
+		mmListChatMessages.defaultExpectation = &AppPublicServiceServerMockListChatMessagesExpectation{}
+	}
+
+	if mmListChatMessages.defaultExpectation.params != nil {
+		mmListChatMessages.mock.t.Fatalf("AppPublicServiceServerMock.ListChatMessages mock is already set by Expect")
+	}
+
+	if mmListChatMessages.defaultExpectation.paramPtrs == nil {
+		mmListChatMessages.defaultExpectation.paramPtrs = &AppPublicServiceServerMockListChatMessagesParamPtrs{}
+	}
+	mmListChatMessages.defaultExpectation.paramPtrs.lp1 = &lp1
+	mmListChatMessages.defaultExpectation.expectationOrigins.originLp1 = minimock.CallerInfo(1)
+
+	return mmListChatMessages
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.ListChatMessages
+func (mmListChatMessages *mAppPublicServiceServerMockListChatMessages) Inspect(f func(ctx context.Context, lp1 *mm_appv1alpha.ListChatMessagesRequest)) *mAppPublicServiceServerMockListChatMessages {
+	if mmListChatMessages.mock.inspectFuncListChatMessages != nil {
+		mmListChatMessages.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.ListChatMessages")
+	}
+
+	mmListChatMessages.mock.inspectFuncListChatMessages = f
+
+	return mmListChatMessages
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.ListChatMessages
+func (mmListChatMessages *mAppPublicServiceServerMockListChatMessages) Return(lp2 *mm_appv1alpha.ListChatMessagesResponse, err error) *AppPublicServiceServerMock {
+	if mmListChatMessages.mock.funcListChatMessages != nil {
+		mmListChatMessages.mock.t.Fatalf("AppPublicServiceServerMock.ListChatMessages mock is already set by Set")
+	}
+
+	if mmListChatMessages.defaultExpectation == nil {
+		mmListChatMessages.defaultExpectation = &AppPublicServiceServerMockListChatMessagesExpectation{mock: mmListChatMessages.mock}
+	}
+	mmListChatMessages.defaultExpectation.results = &AppPublicServiceServerMockListChatMessagesResults{lp2, err}
+	mmListChatMessages.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmListChatMessages.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.ListChatMessages method
+func (mmListChatMessages *mAppPublicServiceServerMockListChatMessages) Set(f func(ctx context.Context, lp1 *mm_appv1alpha.ListChatMessagesRequest) (lp2 *mm_appv1alpha.ListChatMessagesResponse, err error)) *AppPublicServiceServerMock {
+	if mmListChatMessages.defaultExpectation != nil {
+		mmListChatMessages.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.ListChatMessages method")
+	}
+
+	if len(mmListChatMessages.expectations) > 0 {
+		mmListChatMessages.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.ListChatMessages method")
+	}
+
+	mmListChatMessages.mock.funcListChatMessages = f
+	mmListChatMessages.mock.funcListChatMessagesOrigin = minimock.CallerInfo(1)
+	return mmListChatMessages.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.ListChatMessages which will trigger the result defined by the following
+// Then helper
+func (mmListChatMessages *mAppPublicServiceServerMockListChatMessages) When(ctx context.Context, lp1 *mm_appv1alpha.ListChatMessagesRequest) *AppPublicServiceServerMockListChatMessagesExpectation {
+	if mmListChatMessages.mock.funcListChatMessages != nil {
+		mmListChatMessages.mock.t.Fatalf("AppPublicServiceServerMock.ListChatMessages mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockListChatMessagesExpectation{
+		mock:               mmListChatMessages.mock,
+		params:             &AppPublicServiceServerMockListChatMessagesParams{ctx, lp1},
+		expectationOrigins: AppPublicServiceServerMockListChatMessagesExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmListChatMessages.expectations = append(mmListChatMessages.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.ListChatMessages return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockListChatMessagesExpectation) Then(lp2 *mm_appv1alpha.ListChatMessagesResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockListChatMessagesResults{lp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.ListChatMessages should be invoked
+func (mmListChatMessages *mAppPublicServiceServerMockListChatMessages) Times(n uint64) *mAppPublicServiceServerMockListChatMessages {
+	if n == 0 {
+		mmListChatMessages.mock.t.Fatalf("Times of AppPublicServiceServerMock.ListChatMessages mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListChatMessages.expectedInvocations, n)
+	mmListChatMessages.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmListChatMessages
+}
+
+func (mmListChatMessages *mAppPublicServiceServerMockListChatMessages) invocationsDone() bool {
+	if len(mmListChatMessages.expectations) == 0 && mmListChatMessages.defaultExpectation == nil && mmListChatMessages.mock.funcListChatMessages == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListChatMessages.mock.afterListChatMessagesCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListChatMessages.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListChatMessages implements mm_appv1alpha.AppPublicServiceServer
+func (mmListChatMessages *AppPublicServiceServerMock) ListChatMessages(ctx context.Context, lp1 *mm_appv1alpha.ListChatMessagesRequest) (lp2 *mm_appv1alpha.ListChatMessagesResponse, err error) {
+	mm_atomic.AddUint64(&mmListChatMessages.beforeListChatMessagesCounter, 1)
+	defer mm_atomic.AddUint64(&mmListChatMessages.afterListChatMessagesCounter, 1)
+
+	mmListChatMessages.t.Helper()
+
+	if mmListChatMessages.inspectFuncListChatMessages != nil {
+		mmListChatMessages.inspectFuncListChatMessages(ctx, lp1)
+	}
+
+	mm_params := AppPublicServiceServerMockListChatMessagesParams{ctx, lp1}
+
+	// Record call args
+	mmListChatMessages.ListChatMessagesMock.mutex.Lock()
+	mmListChatMessages.ListChatMessagesMock.callArgs = append(mmListChatMessages.ListChatMessagesMock.callArgs, &mm_params)
+	mmListChatMessages.ListChatMessagesMock.mutex.Unlock()
+
+	for _, e := range mmListChatMessages.ListChatMessagesMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.lp2, e.results.err
+		}
+	}
+
+	if mmListChatMessages.ListChatMessagesMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListChatMessages.ListChatMessagesMock.defaultExpectation.Counter, 1)
+		mm_want := mmListChatMessages.ListChatMessagesMock.defaultExpectation.params
+		mm_want_ptrs := mmListChatMessages.ListChatMessagesMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockListChatMessagesParams{ctx, lp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListChatMessages.t.Errorf("AppPublicServiceServerMock.ListChatMessages got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListChatMessages.ListChatMessagesMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.lp1 != nil && !minimock.Equal(*mm_want_ptrs.lp1, mm_got.lp1) {
+				mmListChatMessages.t.Errorf("AppPublicServiceServerMock.ListChatMessages got unexpected parameter lp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListChatMessages.ListChatMessagesMock.defaultExpectation.expectationOrigins.originLp1, *mm_want_ptrs.lp1, mm_got.lp1, minimock.Diff(*mm_want_ptrs.lp1, mm_got.lp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListChatMessages.t.Errorf("AppPublicServiceServerMock.ListChatMessages got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmListChatMessages.ListChatMessagesMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListChatMessages.ListChatMessagesMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListChatMessages.t.Fatal("No results are set for the AppPublicServiceServerMock.ListChatMessages")
+		}
+		return (*mm_results).lp2, (*mm_results).err
+	}
+	if mmListChatMessages.funcListChatMessages != nil {
+		return mmListChatMessages.funcListChatMessages(ctx, lp1)
+	}
+	mmListChatMessages.t.Fatalf("Unexpected call to AppPublicServiceServerMock.ListChatMessages. %v %v", ctx, lp1)
+	return
+}
+
+// ListChatMessagesAfterCounter returns a count of finished AppPublicServiceServerMock.ListChatMessages invocations
+func (mmListChatMessages *AppPublicServiceServerMock) ListChatMessagesAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListChatMessages.afterListChatMessagesCounter)
+}
+
+// ListChatMessagesBeforeCounter returns a count of AppPublicServiceServerMock.ListChatMessages invocations
+func (mmListChatMessages *AppPublicServiceServerMock) ListChatMessagesBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListChatMessages.beforeListChatMessagesCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.ListChatMessages.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListChatMessages *mAppPublicServiceServerMockListChatMessages) Calls() []*AppPublicServiceServerMockListChatMessagesParams {
+	mmListChatMessages.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockListChatMessagesParams, len(mmListChatMessages.callArgs))
+	copy(argCopy, mmListChatMessages.callArgs)
+
+	mmListChatMessages.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListChatMessagesDone returns true if the count of the ListChatMessages invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockListChatMessagesDone() bool {
+	if m.ListChatMessagesMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListChatMessagesMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListChatMessagesMock.invocationsDone()
+}
+
+// MinimockListChatMessagesInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockListChatMessagesInspect() {
+	for _, e := range m.ListChatMessagesMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListChatMessages at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterListChatMessagesCounter := mm_atomic.LoadUint64(&m.afterListChatMessagesCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListChatMessagesMock.defaultExpectation != nil && afterListChatMessagesCounter < 1 {
+		if m.ListChatMessagesMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListChatMessages at\n%s", m.ListChatMessagesMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListChatMessages at\n%s with params: %#v", m.ListChatMessagesMock.defaultExpectation.expectationOrigins.origin, *m.ListChatMessagesMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListChatMessages != nil && afterListChatMessagesCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.ListChatMessages at\n%s", m.funcListChatMessagesOrigin)
+	}
+
+	if !m.ListChatMessagesMock.invocationsDone() && afterListChatMessagesCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.ListChatMessages at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.ListChatMessagesMock.expectedInvocations), m.ListChatMessagesMock.expectedInvocationsOrigin, afterListChatMessagesCounter)
+	}
+}
+
+type mAppPublicServiceServerMockListChats struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockListChatsExpectation
+	expectations       []*AppPublicServiceServerMockListChatsExpectation
+
+	callArgs []*AppPublicServiceServerMockListChatsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockListChatsExpectation specifies expectation struct of the AppPublicServiceServer.ListChats
+type AppPublicServiceServerMockListChatsExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockListChatsParams
+	paramPtrs          *AppPublicServiceServerMockListChatsParamPtrs
+	expectationOrigins AppPublicServiceServerMockListChatsExpectationOrigins
+	results            *AppPublicServiceServerMockListChatsResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockListChatsParams contains parameters of the AppPublicServiceServer.ListChats
+type AppPublicServiceServerMockListChatsParams struct {
+	ctx context.Context
+	lp1 *mm_appv1alpha.ListChatsRequest
+}
+
+// AppPublicServiceServerMockListChatsParamPtrs contains pointers to parameters of the AppPublicServiceServer.ListChats
+type AppPublicServiceServerMockListChatsParamPtrs struct {
+	ctx *context.Context
+	lp1 **mm_appv1alpha.ListChatsRequest
+}
+
+// AppPublicServiceServerMockListChatsResults contains results of the AppPublicServiceServer.ListChats
+type AppPublicServiceServerMockListChatsResults struct {
+	lp2 *mm_appv1alpha.ListChatsResponse
+	err error
+}
+
+// AppPublicServiceServerMockListChatsOrigins contains origins of expectations of the AppPublicServiceServer.ListChats
+type AppPublicServiceServerMockListChatsExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originLp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListChats *mAppPublicServiceServerMockListChats) Optional() *mAppPublicServiceServerMockListChats {
+	mmListChats.optional = true
+	return mmListChats
+}
+
+// Expect sets up expected params for AppPublicServiceServer.ListChats
+func (mmListChats *mAppPublicServiceServerMockListChats) Expect(ctx context.Context, lp1 *mm_appv1alpha.ListChatsRequest) *mAppPublicServiceServerMockListChats {
+	if mmListChats.mock.funcListChats != nil {
+		mmListChats.mock.t.Fatalf("AppPublicServiceServerMock.ListChats mock is already set by Set")
+	}
+
+	if mmListChats.defaultExpectation == nil {
+		mmListChats.defaultExpectation = &AppPublicServiceServerMockListChatsExpectation{}
+	}
+
+	if mmListChats.defaultExpectation.paramPtrs != nil {
+		mmListChats.mock.t.Fatalf("AppPublicServiceServerMock.ListChats mock is already set by ExpectParams functions")
+	}
+
+	mmListChats.defaultExpectation.params = &AppPublicServiceServerMockListChatsParams{ctx, lp1}
+	mmListChats.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmListChats.expectations {
+		if minimock.Equal(e.params, mmListChats.defaultExpectation.params) {
+			mmListChats.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListChats.defaultExpectation.params)
+		}
+	}
+
+	return mmListChats
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.ListChats
+func (mmListChats *mAppPublicServiceServerMockListChats) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockListChats {
+	if mmListChats.mock.funcListChats != nil {
+		mmListChats.mock.t.Fatalf("AppPublicServiceServerMock.ListChats mock is already set by Set")
+	}
+
+	if mmListChats.defaultExpectation == nil {
+		mmListChats.defaultExpectation = &AppPublicServiceServerMockListChatsExpectation{}
+	}
+
+	if mmListChats.defaultExpectation.params != nil {
+		mmListChats.mock.t.Fatalf("AppPublicServiceServerMock.ListChats mock is already set by Expect")
+	}
+
+	if mmListChats.defaultExpectation.paramPtrs == nil {
+		mmListChats.defaultExpectation.paramPtrs = &AppPublicServiceServerMockListChatsParamPtrs{}
+	}
+	mmListChats.defaultExpectation.paramPtrs.ctx = &ctx
+	mmListChats.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmListChats
+}
+
+// ExpectLp1Param2 sets up expected param lp1 for AppPublicServiceServer.ListChats
+func (mmListChats *mAppPublicServiceServerMockListChats) ExpectLp1Param2(lp1 *mm_appv1alpha.ListChatsRequest) *mAppPublicServiceServerMockListChats {
+	if mmListChats.mock.funcListChats != nil {
+		mmListChats.mock.t.Fatalf("AppPublicServiceServerMock.ListChats mock is already set by Set")
+	}
+
+	if mmListChats.defaultExpectation == nil {
+		mmListChats.defaultExpectation = &AppPublicServiceServerMockListChatsExpectation{}
+	}
+
+	if mmListChats.defaultExpectation.params != nil {
+		mmListChats.mock.t.Fatalf("AppPublicServiceServerMock.ListChats mock is already set by Expect")
+	}
+
+	if mmListChats.defaultExpectation.paramPtrs == nil {
+		mmListChats.defaultExpectation.paramPtrs = &AppPublicServiceServerMockListChatsParamPtrs{}
+	}
+	mmListChats.defaultExpectation.paramPtrs.lp1 = &lp1
+	mmListChats.defaultExpectation.expectationOrigins.originLp1 = minimock.CallerInfo(1)
+
+	return mmListChats
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.ListChats
+func (mmListChats *mAppPublicServiceServerMockListChats) Inspect(f func(ctx context.Context, lp1 *mm_appv1alpha.ListChatsRequest)) *mAppPublicServiceServerMockListChats {
+	if mmListChats.mock.inspectFuncListChats != nil {
+		mmListChats.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.ListChats")
+	}
+
+	mmListChats.mock.inspectFuncListChats = f
+
+	return mmListChats
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.ListChats
+func (mmListChats *mAppPublicServiceServerMockListChats) Return(lp2 *mm_appv1alpha.ListChatsResponse, err error) *AppPublicServiceServerMock {
+	if mmListChats.mock.funcListChats != nil {
+		mmListChats.mock.t.Fatalf("AppPublicServiceServerMock.ListChats mock is already set by Set")
+	}
+
+	if mmListChats.defaultExpectation == nil {
+		mmListChats.defaultExpectation = &AppPublicServiceServerMockListChatsExpectation{mock: mmListChats.mock}
+	}
+	mmListChats.defaultExpectation.results = &AppPublicServiceServerMockListChatsResults{lp2, err}
+	mmListChats.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmListChats.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.ListChats method
+func (mmListChats *mAppPublicServiceServerMockListChats) Set(f func(ctx context.Context, lp1 *mm_appv1alpha.ListChatsRequest) (lp2 *mm_appv1alpha.ListChatsResponse, err error)) *AppPublicServiceServerMock {
+	if mmListChats.defaultExpectation != nil {
+		mmListChats.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.ListChats method")
+	}
+
+	if len(mmListChats.expectations) > 0 {
+		mmListChats.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.ListChats method")
+	}
+
+	mmListChats.mock.funcListChats = f
+	mmListChats.mock.funcListChatsOrigin = minimock.CallerInfo(1)
+	return mmListChats.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.ListChats which will trigger the result defined by the following
+// Then helper
+func (mmListChats *mAppPublicServiceServerMockListChats) When(ctx context.Context, lp1 *mm_appv1alpha.ListChatsRequest) *AppPublicServiceServerMockListChatsExpectation {
+	if mmListChats.mock.funcListChats != nil {
+		mmListChats.mock.t.Fatalf("AppPublicServiceServerMock.ListChats mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockListChatsExpectation{
+		mock:               mmListChats.mock,
+		params:             &AppPublicServiceServerMockListChatsParams{ctx, lp1},
+		expectationOrigins: AppPublicServiceServerMockListChatsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmListChats.expectations = append(mmListChats.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.ListChats return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockListChatsExpectation) Then(lp2 *mm_appv1alpha.ListChatsResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockListChatsResults{lp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.ListChats should be invoked
+func (mmListChats *mAppPublicServiceServerMockListChats) Times(n uint64) *mAppPublicServiceServerMockListChats {
+	if n == 0 {
+		mmListChats.mock.t.Fatalf("Times of AppPublicServiceServerMock.ListChats mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListChats.expectedInvocations, n)
+	mmListChats.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmListChats
+}
+
+func (mmListChats *mAppPublicServiceServerMockListChats) invocationsDone() bool {
+	if len(mmListChats.expectations) == 0 && mmListChats.defaultExpectation == nil && mmListChats.mock.funcListChats == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListChats.mock.afterListChatsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListChats.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListChats implements mm_appv1alpha.AppPublicServiceServer
+func (mmListChats *AppPublicServiceServerMock) ListChats(ctx context.Context, lp1 *mm_appv1alpha.ListChatsRequest) (lp2 *mm_appv1alpha.ListChatsResponse, err error) {
+	mm_atomic.AddUint64(&mmListChats.beforeListChatsCounter, 1)
+	defer mm_atomic.AddUint64(&mmListChats.afterListChatsCounter, 1)
+
+	mmListChats.t.Helper()
+
+	if mmListChats.inspectFuncListChats != nil {
+		mmListChats.inspectFuncListChats(ctx, lp1)
+	}
+
+	mm_params := AppPublicServiceServerMockListChatsParams{ctx, lp1}
+
+	// Record call args
+	mmListChats.ListChatsMock.mutex.Lock()
+	mmListChats.ListChatsMock.callArgs = append(mmListChats.ListChatsMock.callArgs, &mm_params)
+	mmListChats.ListChatsMock.mutex.Unlock()
+
+	for _, e := range mmListChats.ListChatsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.lp2, e.results.err
+		}
+	}
+
+	if mmListChats.ListChatsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListChats.ListChatsMock.defaultExpectation.Counter, 1)
+		mm_want := mmListChats.ListChatsMock.defaultExpectation.params
+		mm_want_ptrs := mmListChats.ListChatsMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockListChatsParams{ctx, lp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListChats.t.Errorf("AppPublicServiceServerMock.ListChats got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListChats.ListChatsMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.lp1 != nil && !minimock.Equal(*mm_want_ptrs.lp1, mm_got.lp1) {
+				mmListChats.t.Errorf("AppPublicServiceServerMock.ListChats got unexpected parameter lp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListChats.ListChatsMock.defaultExpectation.expectationOrigins.originLp1, *mm_want_ptrs.lp1, mm_got.lp1, minimock.Diff(*mm_want_ptrs.lp1, mm_got.lp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListChats.t.Errorf("AppPublicServiceServerMock.ListChats got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmListChats.ListChatsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListChats.ListChatsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListChats.t.Fatal("No results are set for the AppPublicServiceServerMock.ListChats")
+		}
+		return (*mm_results).lp2, (*mm_results).err
+	}
+	if mmListChats.funcListChats != nil {
+		return mmListChats.funcListChats(ctx, lp1)
+	}
+	mmListChats.t.Fatalf("Unexpected call to AppPublicServiceServerMock.ListChats. %v %v", ctx, lp1)
+	return
+}
+
+// ListChatsAfterCounter returns a count of finished AppPublicServiceServerMock.ListChats invocations
+func (mmListChats *AppPublicServiceServerMock) ListChatsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListChats.afterListChatsCounter)
+}
+
+// ListChatsBeforeCounter returns a count of AppPublicServiceServerMock.ListChats invocations
+func (mmListChats *AppPublicServiceServerMock) ListChatsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListChats.beforeListChatsCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.ListChats.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListChats *mAppPublicServiceServerMockListChats) Calls() []*AppPublicServiceServerMockListChatsParams {
+	mmListChats.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockListChatsParams, len(mmListChats.callArgs))
+	copy(argCopy, mmListChats.callArgs)
+
+	mmListChats.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListChatsDone returns true if the count of the ListChats invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockListChatsDone() bool {
+	if m.ListChatsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListChatsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListChatsMock.invocationsDone()
+}
+
+// MinimockListChatsInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockListChatsInspect() {
+	for _, e := range m.ListChatsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListChats at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterListChatsCounter := mm_atomic.LoadUint64(&m.afterListChatsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListChatsMock.defaultExpectation != nil && afterListChatsCounter < 1 {
+		if m.ListChatsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListChats at\n%s", m.ListChatsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListChats at\n%s with params: %#v", m.ListChatsMock.defaultExpectation.expectationOrigins.origin, *m.ListChatsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListChats != nil && afterListChatsCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.ListChats at\n%s", m.funcListChatsOrigin)
+	}
+
+	if !m.ListChatsMock.invocationsDone() && afterListChatsCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.ListChats at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.ListChatsMock.expectedInvocations), m.ListChatsMock.expectedInvocationsOrigin, afterListChatsCounter)
 	}
 }
 
@@ -5346,6 +6768,349 @@ func (m *AppPublicServiceServerMock) MinimockUpdateAppInspect() {
 	}
 }
 
+type mAppPublicServiceServerMockUpdateChat struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockUpdateChatExpectation
+	expectations       []*AppPublicServiceServerMockUpdateChatExpectation
+
+	callArgs []*AppPublicServiceServerMockUpdateChatParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockUpdateChatExpectation specifies expectation struct of the AppPublicServiceServer.UpdateChat
+type AppPublicServiceServerMockUpdateChatExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockUpdateChatParams
+	paramPtrs          *AppPublicServiceServerMockUpdateChatParamPtrs
+	expectationOrigins AppPublicServiceServerMockUpdateChatExpectationOrigins
+	results            *AppPublicServiceServerMockUpdateChatResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockUpdateChatParams contains parameters of the AppPublicServiceServer.UpdateChat
+type AppPublicServiceServerMockUpdateChatParams struct {
+	ctx context.Context
+	up1 *mm_appv1alpha.UpdateChatRequest
+}
+
+// AppPublicServiceServerMockUpdateChatParamPtrs contains pointers to parameters of the AppPublicServiceServer.UpdateChat
+type AppPublicServiceServerMockUpdateChatParamPtrs struct {
+	ctx *context.Context
+	up1 **mm_appv1alpha.UpdateChatRequest
+}
+
+// AppPublicServiceServerMockUpdateChatResults contains results of the AppPublicServiceServer.UpdateChat
+type AppPublicServiceServerMockUpdateChatResults struct {
+	up2 *mm_appv1alpha.UpdateChatResponse
+	err error
+}
+
+// AppPublicServiceServerMockUpdateChatOrigins contains origins of expectations of the AppPublicServiceServer.UpdateChat
+type AppPublicServiceServerMockUpdateChatExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originUp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdateChat *mAppPublicServiceServerMockUpdateChat) Optional() *mAppPublicServiceServerMockUpdateChat {
+	mmUpdateChat.optional = true
+	return mmUpdateChat
+}
+
+// Expect sets up expected params for AppPublicServiceServer.UpdateChat
+func (mmUpdateChat *mAppPublicServiceServerMockUpdateChat) Expect(ctx context.Context, up1 *mm_appv1alpha.UpdateChatRequest) *mAppPublicServiceServerMockUpdateChat {
+	if mmUpdateChat.mock.funcUpdateChat != nil {
+		mmUpdateChat.mock.t.Fatalf("AppPublicServiceServerMock.UpdateChat mock is already set by Set")
+	}
+
+	if mmUpdateChat.defaultExpectation == nil {
+		mmUpdateChat.defaultExpectation = &AppPublicServiceServerMockUpdateChatExpectation{}
+	}
+
+	if mmUpdateChat.defaultExpectation.paramPtrs != nil {
+		mmUpdateChat.mock.t.Fatalf("AppPublicServiceServerMock.UpdateChat mock is already set by ExpectParams functions")
+	}
+
+	mmUpdateChat.defaultExpectation.params = &AppPublicServiceServerMockUpdateChatParams{ctx, up1}
+	mmUpdateChat.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUpdateChat.expectations {
+		if minimock.Equal(e.params, mmUpdateChat.defaultExpectation.params) {
+			mmUpdateChat.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdateChat.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdateChat
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.UpdateChat
+func (mmUpdateChat *mAppPublicServiceServerMockUpdateChat) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockUpdateChat {
+	if mmUpdateChat.mock.funcUpdateChat != nil {
+		mmUpdateChat.mock.t.Fatalf("AppPublicServiceServerMock.UpdateChat mock is already set by Set")
+	}
+
+	if mmUpdateChat.defaultExpectation == nil {
+		mmUpdateChat.defaultExpectation = &AppPublicServiceServerMockUpdateChatExpectation{}
+	}
+
+	if mmUpdateChat.defaultExpectation.params != nil {
+		mmUpdateChat.mock.t.Fatalf("AppPublicServiceServerMock.UpdateChat mock is already set by Expect")
+	}
+
+	if mmUpdateChat.defaultExpectation.paramPtrs == nil {
+		mmUpdateChat.defaultExpectation.paramPtrs = &AppPublicServiceServerMockUpdateChatParamPtrs{}
+	}
+	mmUpdateChat.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUpdateChat.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUpdateChat
+}
+
+// ExpectUp1Param2 sets up expected param up1 for AppPublicServiceServer.UpdateChat
+func (mmUpdateChat *mAppPublicServiceServerMockUpdateChat) ExpectUp1Param2(up1 *mm_appv1alpha.UpdateChatRequest) *mAppPublicServiceServerMockUpdateChat {
+	if mmUpdateChat.mock.funcUpdateChat != nil {
+		mmUpdateChat.mock.t.Fatalf("AppPublicServiceServerMock.UpdateChat mock is already set by Set")
+	}
+
+	if mmUpdateChat.defaultExpectation == nil {
+		mmUpdateChat.defaultExpectation = &AppPublicServiceServerMockUpdateChatExpectation{}
+	}
+
+	if mmUpdateChat.defaultExpectation.params != nil {
+		mmUpdateChat.mock.t.Fatalf("AppPublicServiceServerMock.UpdateChat mock is already set by Expect")
+	}
+
+	if mmUpdateChat.defaultExpectation.paramPtrs == nil {
+		mmUpdateChat.defaultExpectation.paramPtrs = &AppPublicServiceServerMockUpdateChatParamPtrs{}
+	}
+	mmUpdateChat.defaultExpectation.paramPtrs.up1 = &up1
+	mmUpdateChat.defaultExpectation.expectationOrigins.originUp1 = minimock.CallerInfo(1)
+
+	return mmUpdateChat
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.UpdateChat
+func (mmUpdateChat *mAppPublicServiceServerMockUpdateChat) Inspect(f func(ctx context.Context, up1 *mm_appv1alpha.UpdateChatRequest)) *mAppPublicServiceServerMockUpdateChat {
+	if mmUpdateChat.mock.inspectFuncUpdateChat != nil {
+		mmUpdateChat.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.UpdateChat")
+	}
+
+	mmUpdateChat.mock.inspectFuncUpdateChat = f
+
+	return mmUpdateChat
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.UpdateChat
+func (mmUpdateChat *mAppPublicServiceServerMockUpdateChat) Return(up2 *mm_appv1alpha.UpdateChatResponse, err error) *AppPublicServiceServerMock {
+	if mmUpdateChat.mock.funcUpdateChat != nil {
+		mmUpdateChat.mock.t.Fatalf("AppPublicServiceServerMock.UpdateChat mock is already set by Set")
+	}
+
+	if mmUpdateChat.defaultExpectation == nil {
+		mmUpdateChat.defaultExpectation = &AppPublicServiceServerMockUpdateChatExpectation{mock: mmUpdateChat.mock}
+	}
+	mmUpdateChat.defaultExpectation.results = &AppPublicServiceServerMockUpdateChatResults{up2, err}
+	mmUpdateChat.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUpdateChat.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.UpdateChat method
+func (mmUpdateChat *mAppPublicServiceServerMockUpdateChat) Set(f func(ctx context.Context, up1 *mm_appv1alpha.UpdateChatRequest) (up2 *mm_appv1alpha.UpdateChatResponse, err error)) *AppPublicServiceServerMock {
+	if mmUpdateChat.defaultExpectation != nil {
+		mmUpdateChat.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.UpdateChat method")
+	}
+
+	if len(mmUpdateChat.expectations) > 0 {
+		mmUpdateChat.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.UpdateChat method")
+	}
+
+	mmUpdateChat.mock.funcUpdateChat = f
+	mmUpdateChat.mock.funcUpdateChatOrigin = minimock.CallerInfo(1)
+	return mmUpdateChat.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.UpdateChat which will trigger the result defined by the following
+// Then helper
+func (mmUpdateChat *mAppPublicServiceServerMockUpdateChat) When(ctx context.Context, up1 *mm_appv1alpha.UpdateChatRequest) *AppPublicServiceServerMockUpdateChatExpectation {
+	if mmUpdateChat.mock.funcUpdateChat != nil {
+		mmUpdateChat.mock.t.Fatalf("AppPublicServiceServerMock.UpdateChat mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockUpdateChatExpectation{
+		mock:               mmUpdateChat.mock,
+		params:             &AppPublicServiceServerMockUpdateChatParams{ctx, up1},
+		expectationOrigins: AppPublicServiceServerMockUpdateChatExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUpdateChat.expectations = append(mmUpdateChat.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.UpdateChat return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockUpdateChatExpectation) Then(up2 *mm_appv1alpha.UpdateChatResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockUpdateChatResults{up2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.UpdateChat should be invoked
+func (mmUpdateChat *mAppPublicServiceServerMockUpdateChat) Times(n uint64) *mAppPublicServiceServerMockUpdateChat {
+	if n == 0 {
+		mmUpdateChat.mock.t.Fatalf("Times of AppPublicServiceServerMock.UpdateChat mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdateChat.expectedInvocations, n)
+	mmUpdateChat.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUpdateChat
+}
+
+func (mmUpdateChat *mAppPublicServiceServerMockUpdateChat) invocationsDone() bool {
+	if len(mmUpdateChat.expectations) == 0 && mmUpdateChat.defaultExpectation == nil && mmUpdateChat.mock.funcUpdateChat == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdateChat.mock.afterUpdateChatCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdateChat.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdateChat implements mm_appv1alpha.AppPublicServiceServer
+func (mmUpdateChat *AppPublicServiceServerMock) UpdateChat(ctx context.Context, up1 *mm_appv1alpha.UpdateChatRequest) (up2 *mm_appv1alpha.UpdateChatResponse, err error) {
+	mm_atomic.AddUint64(&mmUpdateChat.beforeUpdateChatCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdateChat.afterUpdateChatCounter, 1)
+
+	mmUpdateChat.t.Helper()
+
+	if mmUpdateChat.inspectFuncUpdateChat != nil {
+		mmUpdateChat.inspectFuncUpdateChat(ctx, up1)
+	}
+
+	mm_params := AppPublicServiceServerMockUpdateChatParams{ctx, up1}
+
+	// Record call args
+	mmUpdateChat.UpdateChatMock.mutex.Lock()
+	mmUpdateChat.UpdateChatMock.callArgs = append(mmUpdateChat.UpdateChatMock.callArgs, &mm_params)
+	mmUpdateChat.UpdateChatMock.mutex.Unlock()
+
+	for _, e := range mmUpdateChat.UpdateChatMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.up2, e.results.err
+		}
+	}
+
+	if mmUpdateChat.UpdateChatMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdateChat.UpdateChatMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdateChat.UpdateChatMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdateChat.UpdateChatMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockUpdateChatParams{ctx, up1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpdateChat.t.Errorf("AppPublicServiceServerMock.UpdateChat got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateChat.UpdateChatMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.up1 != nil && !minimock.Equal(*mm_want_ptrs.up1, mm_got.up1) {
+				mmUpdateChat.t.Errorf("AppPublicServiceServerMock.UpdateChat got unexpected parameter up1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateChat.UpdateChatMock.defaultExpectation.expectationOrigins.originUp1, *mm_want_ptrs.up1, mm_got.up1, minimock.Diff(*mm_want_ptrs.up1, mm_got.up1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdateChat.t.Errorf("AppPublicServiceServerMock.UpdateChat got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUpdateChat.UpdateChatMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdateChat.UpdateChatMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdateChat.t.Fatal("No results are set for the AppPublicServiceServerMock.UpdateChat")
+		}
+		return (*mm_results).up2, (*mm_results).err
+	}
+	if mmUpdateChat.funcUpdateChat != nil {
+		return mmUpdateChat.funcUpdateChat(ctx, up1)
+	}
+	mmUpdateChat.t.Fatalf("Unexpected call to AppPublicServiceServerMock.UpdateChat. %v %v", ctx, up1)
+	return
+}
+
+// UpdateChatAfterCounter returns a count of finished AppPublicServiceServerMock.UpdateChat invocations
+func (mmUpdateChat *AppPublicServiceServerMock) UpdateChatAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateChat.afterUpdateChatCounter)
+}
+
+// UpdateChatBeforeCounter returns a count of AppPublicServiceServerMock.UpdateChat invocations
+func (mmUpdateChat *AppPublicServiceServerMock) UpdateChatBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateChat.beforeUpdateChatCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.UpdateChat.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdateChat *mAppPublicServiceServerMockUpdateChat) Calls() []*AppPublicServiceServerMockUpdateChatParams {
+	mmUpdateChat.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockUpdateChatParams, len(mmUpdateChat.callArgs))
+	copy(argCopy, mmUpdateChat.callArgs)
+
+	mmUpdateChat.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdateChatDone returns true if the count of the UpdateChat invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockUpdateChatDone() bool {
+	if m.UpdateChatMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdateChatMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdateChatMock.invocationsDone()
+}
+
+// MinimockUpdateChatInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockUpdateChatInspect() {
+	for _, e := range m.UpdateChatMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateChat at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUpdateChatCounter := mm_atomic.LoadUint64(&m.afterUpdateChatCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdateChatMock.defaultExpectation != nil && afterUpdateChatCounter < 1 {
+		if m.UpdateChatMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateChat at\n%s", m.UpdateChatMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateChat at\n%s with params: %#v", m.UpdateChatMock.defaultExpectation.expectationOrigins.origin, *m.UpdateChatMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdateChat != nil && afterUpdateChatCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateChat at\n%s", m.funcUpdateChatOrigin)
+	}
+
+	if !m.UpdateChatMock.invocationsDone() && afterUpdateChatCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.UpdateChat at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdateChatMock.expectedInvocations), m.UpdateChatMock.expectedInvocationsOrigin, afterUpdateChatCounter)
+	}
+}
+
 type mAppPublicServiceServerMockUpdateConversation struct {
 	optional           bool
 	mock               *AppPublicServiceServerMock
@@ -6040,11 +7805,15 @@ func (m *AppPublicServiceServerMock) MinimockFinish() {
 
 			m.MinimockCreateAppInspect()
 
+			m.MinimockCreateChatInspect()
+
 			m.MinimockCreateConversationInspect()
 
 			m.MinimockCreateMessageInspect()
 
 			m.MinimockDeleteAppInspect()
+
+			m.MinimockDeleteChatInspect()
 
 			m.MinimockDeleteConversationInspect()
 
@@ -6053,6 +7822,10 @@ func (m *AppPublicServiceServerMock) MinimockFinish() {
 			m.MinimockGetPlaygroundConversationInspect()
 
 			m.MinimockListAppsInspect()
+
+			m.MinimockListChatMessagesInspect()
+
+			m.MinimockListChatsInspect()
 
 			m.MinimockListConversationsInspect()
 
@@ -6065,6 +7838,8 @@ func (m *AppPublicServiceServerMock) MinimockFinish() {
 			m.MinimockRestartPlaygroundConversationInspect()
 
 			m.MinimockUpdateAppInspect()
+
+			m.MinimockUpdateChatInspect()
 
 			m.MinimockUpdateConversationInspect()
 
@@ -6094,19 +7869,24 @@ func (m *AppPublicServiceServerMock) minimockDone() bool {
 	return done &&
 		m.MinimockChatDone() &&
 		m.MinimockCreateAppDone() &&
+		m.MinimockCreateChatDone() &&
 		m.MinimockCreateConversationDone() &&
 		m.MinimockCreateMessageDone() &&
 		m.MinimockDeleteAppDone() &&
+		m.MinimockDeleteChatDone() &&
 		m.MinimockDeleteConversationDone() &&
 		m.MinimockDeleteMessageDone() &&
 		m.MinimockGetPlaygroundConversationDone() &&
 		m.MinimockListAppsDone() &&
+		m.MinimockListChatMessagesDone() &&
+		m.MinimockListChatsDone() &&
 		m.MinimockListConversationsDone() &&
 		m.MinimockListMessagesDone() &&
 		m.MinimockLivenessDone() &&
 		m.MinimockReadinessDone() &&
 		m.MinimockRestartPlaygroundConversationDone() &&
 		m.MinimockUpdateAppDone() &&
+		m.MinimockUpdateChatDone() &&
 		m.MinimockUpdateConversationDone() &&
 		m.MinimockUpdateMessageDone()
 }
