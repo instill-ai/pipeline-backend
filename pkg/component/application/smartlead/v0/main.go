@@ -8,11 +8,26 @@ import (
 
 	_ "embed"
 
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/structpb"
+
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
 	"github.com/instill-ai/x/errmsg"
 )
 
-const ()
+const (
+	taskCreateCampaign       = "TASK_CREATE_CAMPAIGN"
+	taskSetupCampaign        = "TASK_SETUP_CAMPAIGN"
+	taskSaveSequences        = "TASK_SAVE_SEQUENCES"
+	taskGetSequences         = "TASK_GET_SEQUENCES"
+	taskAddLeads             = "TASK_ADD_LEADS"
+	taskAddSenderEmail       = "TASK_ADD_SENDER_EMAIL"
+	taskUpdateCampaignStatus = "TASK_UPDATE_CAMPAIGN_STATUS"
+
+	getCampaignPath = "campaigns?api_key={apiKey}"
+	baseURL         = "https://server.smartlead.ai/api/v1/"
+)
 
 var (
 	//go:embed config/definition.json
@@ -56,7 +71,20 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	}
 
 	switch x.Task {
-
+	case taskCreateCampaign:
+		e.execute = e.createCampaign
+	case taskSetupCampaign:
+		e.execute = e.setupCampaign
+	case taskSaveSequences:
+		e.execute = e.saveSequences
+	case taskGetSequences:
+		e.execute = e.getSequences
+	case taskAddLeads:
+		e.execute = e.addLeads
+	case taskAddSenderEmail:
+		e.execute = e.addSenderEmail
+	case taskUpdateCampaignStatus:
+		e.execute = e.updateCampaignStatus
 	default:
 		return nil, errmsg.AddMessage(
 			fmt.Errorf("not supported task: %s", x.Task),
@@ -70,4 +98,37 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 // Execute runs the component with the given jobs.
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	return base.ConcurrentExecutor(ctx, jobs, e.execute)
+}
+
+type errBody struct {
+	Error struct {
+		Message string `json:"message"`
+	} `json:"error"`
+}
+
+// Message returns the error message from the response body.
+func (e errBody) Message() string {
+	return e.Error.Message
+}
+
+func newClient(setup *structpb.Struct, logger *zap.Logger, pathParams map[string]string) *httpclient.Client {
+	c := httpclient.New("Smartlead", baseURL,
+		httpclient.WithLogger(logger),
+		httpclient.WithEndUserError(new(errBody)),
+	)
+
+	c.SetPathParam("apiKey", getAPIKey(setup))
+	if pathParams != nil {
+		c.SetPathParams(pathParams)
+	}
+	return c
+}
+
+func getAPIKey(setup *structpb.Struct) string {
+	return setup.GetFields()["api-key"].GetStringValue()
+}
+
+type campaignResp struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
