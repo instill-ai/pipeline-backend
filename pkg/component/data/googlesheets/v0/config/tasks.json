@@ -1,0 +1,725 @@
+{
+  "$defs": {
+    "shared-link": {
+      "description": "Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'.",
+      "instillFormat": "string",
+      "instillUIOrder": 0,
+      "title": "Spreadsheet ID",
+      "type": "string"
+    },
+    "headers": {
+      "description": "Column headers for the sheet.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "instillFormat": "array:string",
+      "instillUIOrder": 1,
+      "title": "Headers"
+    },
+    "sheet-name": {
+      "description": "Name of the sheet.",
+      "instillFormat": "string",
+      "instillUIOrder": 2,
+      "title": "Sheet Name",
+      "type": "string"
+    },
+    "column-name": {
+      "description": "Name of the column.",
+      "instillFormat": "string",
+      "instillUIOrder": 3,
+      "title": "Column Name",
+      "type": "string"
+    },
+    "row-number": {
+      "description": "Row number to update (1-based index).",
+      "instillFormat": "number",
+      "instillUIOrder": 4,
+      "title": "Row Number",
+      "type": "integer"
+    },
+    "row-numbers": {
+      "description": "Row numbers to update (1-based indices).",
+      "items": {
+        "type": "integer"
+      },
+      "instillFormat": "array:number",
+      "instillUIOrder": 5,
+      "title": "Row Numbers",
+      "type": "array"
+    },
+    "row-value": {
+      "type": "object",
+      "description": "Row data in JSON format where keys are column names and values are the corresponding cell values",
+      "title": "Row Data",
+      "instillFormat": "json",
+      "instillUIOrder": 6,
+      "additionalProperties": {
+        "type": "string",
+        "description": "Cell value for the corresponding column"
+      },
+      "required": []
+    },
+    "row": {
+      "description": "Row data with row number and data.",
+      "instillFormat": "json",
+      "instillUIOrder": 7,
+      "title": "Row Data",
+      "type": "object",
+      "properties": {
+        "row-number": {
+          "type": "integer",
+          "instillFormat": "number",
+          "description": "Row number to update (1-based index)",
+          "title": "Row Number",
+          "instillUIOrder": 0
+        },
+        "row-value": {
+          "$ref": "#/$defs/row-value",
+          "instillUIOrder": 1
+        }
+      },
+      "required": ["row-number", "data"]
+    },
+    "rows": {
+      "description": "Multiple rows data with row numbers and data.",
+      "instillFormat": "array:json",
+      "items": {
+        "$ref": "#/$defs/row"
+      },
+      "instillUIOrder": 8,
+      "title": "Rows Data",
+      "type": "array"
+    },
+    "success": {
+      "description": "Result of the operation.",
+      "instillFormat": "boolean",
+      "instillUIOrder": 9,
+      "title": "Success",
+      "type": "boolean"
+    }
+  },
+  "TASK_CREATE_SPREADSHEET": {
+    "instillShortDescription": "Create a new Google Sheets spreadsheet with multiple sheets.",
+    "input": {
+      "description": "Please provide the name and sheets configuration for the new spreadsheet.",
+      "properties": {
+        "title": {
+          "description": "Title of the new spreadsheet.",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Title",
+          "type": "string"
+        },
+        "sheets": {
+          "title": "Sheets",
+          "description": "Configuration for sheets to create.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "$ref": "#/$defs/sheet-name"
+              },
+              "headers": {
+                "$ref": "#/$defs/headers"
+              }
+            },
+            "required": ["name"]
+          },
+          "instillUIOrder": 1
+        }
+      },
+      "required": [
+        "name",
+        "sheets"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        }
+      },
+      "required": [
+        "shared-link"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DELETE_SPREADSHEET": {
+    "instillShortDescription": "Delete a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the shared link of the spreadsheet to delete.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        }
+      },
+      "required": [
+        "shared-link"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "success": {
+          "$ref": "#/$defs/success"
+        }
+      },
+      "required": [
+        "success"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_ADD_SHEET": {
+    "instillShortDescription": "Add a new sheet to an existing Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details and new sheet configuration.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        },
+        "headers": {
+          "$ref": "#/$defs/headers"
+        }
+      },
+      "required": [
+        "shared-link",
+        "sheet-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "success": {
+          "$ref": "#/$defs/success"
+        }
+      },
+      "required": [
+        "success"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DELETE_SHEET": {
+    "instillShortDescription": "Remove a sheet from a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details and sheet to remove.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        }
+      },
+      "required": [
+        "shared-link",
+        "sheet-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "success": {
+          "$ref": "#/$defs/success"
+        }
+      },
+      "required": [
+        "success"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_CREATE_SPREADSHEET_COLUMN": {
+    "instillShortDescription": "Add a new column to a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details and new column information.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        },
+        "column-name": {
+          "$ref": "#/$defs/column-name"
+        }
+      },
+      "required": [
+        "shared-link",
+        "column-name",
+        "sheet-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "success": {
+          "$ref": "#/$defs/success"
+        }
+      },
+      "required": [
+        "success"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DELETE_SPREADSHEET_COLUMN": {
+    "instillShortDescription": "Delete a column from a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details and column to delete.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        },
+        "column-name": {
+          "$ref": "#/$defs/column-name"
+        }
+      },
+      "required": [
+        "shared-link",
+        "column-name",
+        "sheet-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "success": {
+          "$ref": "#/$defs/success"
+        }
+      },
+      "required": [
+        "success"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_GET_ROW": {
+    "instillShortDescription": "Get a single row from a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details and row number.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        },
+        "row-number": {
+          "description": "The row number to retrieve (1-based index).",
+          "instillFormat": "number",
+          "minimum": 1,
+          "title": "Row Number",
+          "type": "integer",
+          "instillUIOrder": 0
+        }
+      },
+      "required": [
+        "shared-link",
+        "row-number",
+        "sheet-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "row": {
+          "$ref": "#/$defs/row"
+        }
+      },
+      "required": [
+        "row"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_GET_MULTIPLE_ROWS": {
+    "instillShortDescription": "Get multiple rows from a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details and row numbers.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        },
+        "row-numbers": {
+          "description": "The row numbers to retrieve (1-based indices).",
+          "items": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "instillFormat": "array:number",
+          "title": "Row Numbers",
+          "type": "array",
+          "instillUIOrder": 0
+        }
+      },
+      "required": [
+        "shared-link",
+        "row-numbers",
+        "sheet-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "rows": {
+          "$ref": "#/$defs/rows"
+        }
+      },
+      "required": [
+        "rows"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_LIST_ROWS": {
+    "instillShortDescription": "List all rows in a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details to list all rows.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        },
+        "start-row": {
+          "description": "The starting row number to retrieve (1-based index).",
+          "instillFormat": "number",
+          "minimum": 1,
+          "title": "Start Row",
+          "type": "integer",
+          "instillUIOrder": 0
+        },
+        "end-row": {
+          "description": "The ending row number to retrieve (1-based index).",
+          "instillFormat": "number",
+          "minimum": 1,
+          "title": "End Row",
+          "type": "integer",
+          "instillUIOrder": 1
+        }
+      },
+      "required": [
+        "shared-link",
+        "sheet-name",
+        "start-row",
+        "end-row"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "rows": {
+          "$ref": "#/$defs/rows"
+        }
+      },
+      "required": [
+        "rows"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_LOOKUP_ROWS": {
+    "instillShortDescription": "Find multiple rows based on column value in a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details and lookup criteria.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        },
+        "column-name": {
+          "$ref": "#/$defs/column-name"
+        },
+        "value": {
+          "description": "Value to search for in the specified column.",
+          "instillFormat": "string",
+          "title": "Search Value",
+          "type": "string",
+          "instillUIOrder": 10
+        }
+      },
+      "required": [
+        "shared-link",
+        "column-name",
+        "value",
+        "sheet-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "rows": {
+          "$ref": "#/$defs/rows"
+        }
+      },
+      "required": [
+        "rows"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_INSERT_ROW": {
+    "instillShortDescription": "Insert a single row into a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details and row data to insert.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        },
+        "row-value": {
+          "$ref": "#/$defs/row-value"
+        }
+      },
+      "required": [
+        "shared-link",
+        "row",
+        "sheet-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "row": {
+          "$ref": "#/$defs/row"
+        }
+      },
+      "required": [
+        "row",
+        "row-number"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_INSERT_MULTIPLE_ROWS": {
+    "instillShortDescription": "Insert multiple rows into a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details and rows data to insert.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        },
+        "row-values": {
+          "type": "array",
+          "description": "Array of row data in JSON format where keys are column names and values are the corresponding cell values",
+          "items": {
+            "$ref": "#/$defs/row-value"
+          },
+          "instillFormat": "array:json",
+          "instillUIOrder": 2,
+          "title": "Row Values"
+        }
+      },
+      "required": [
+        "shared-link",
+        "rows",
+        "sheet-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "rows": {
+          "$ref": "#/$defs/rows"
+        }
+      },
+      "required": [
+        "rows"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_UPDATE_ROW": {
+    "instillShortDescription": "Update a row in a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details and row data to update.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        },
+        "row": {
+          "$ref": "#/$defs/row"
+        }
+      },
+      "required": [
+        "shared-link",
+        "row-number",
+        "row",
+        "sheet-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "row": {
+          "$ref": "#/$defs/row"
+        }
+      },
+      "required": [
+        "row"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_UPDATE_MULTIPLE_ROWS": {
+    "instillShortDescription": "Update multiple rows in a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details and rows data to update.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        },
+        "rows": {
+          "$ref": "#/$defs/rows"
+        }
+      },
+      "required": [
+        "shared-link",
+        "row-numbers",
+        "rows",
+        "sheet-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "rows": {
+          "$ref": "#/$defs/rows"
+        }
+      },
+      "required": [
+        "rows"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DELETE_ROW": {
+    "instillShortDescription": "Delete a row from a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details and Row number to delete.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        },
+        "row-number": {
+          "$ref": "#/$defs/row-number"
+        }
+      },
+      "required": [
+        "shared-link",
+        "row-number",
+        "sheet-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "success": {
+          "$ref": "#/$defs/success"
+        }
+      },
+      "required": [
+        "success"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DELETE_MULTIPLE_ROWS": {
+    "instillShortDescription": "Delete multiple rows from a Google Sheets spreadsheet.",
+    "input": {
+      "description": "Please provide the spreadsheet details and Row numbers to delete.",
+      "properties": {
+        "shared-link": {
+          "$ref": "#/$defs/shared-link"
+        },
+        "sheet-name": {
+          "$ref": "#/$defs/sheet-name"
+        },
+        "row-numbers": {
+          "$ref": "#/$defs/row-numbers"
+        }
+      },
+      "required": [
+        "shared-link",
+        "row-numbers",
+        "sheet-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "properties": {
+        "success": {
+          "$ref": "#/$defs/success"
+        }
+      },
+      "required": [
+        "success"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}
