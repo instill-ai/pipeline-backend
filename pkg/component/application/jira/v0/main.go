@@ -111,7 +111,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 		}
 
 		// TODO: use FillInDefaultValues for all components
-		if _, err := e.FillInDefaultValues(input); err != nil {
+		if err := e.FillInDefaultValues(input); err != nil {
 			job.Error.Error(ctx, err)
 			continue
 		}

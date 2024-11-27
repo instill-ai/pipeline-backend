@@ -4,38 +4,31 @@ import (
 	"context"
 
 	"github.com/google/go-github/v62/github"
-	"google.golang.org/protobuf/types/known/structpb"
-
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
-type RepositoriesService interface {
-	GetCommit(context.Context, string, string, string, *github.ListOptions) (*github.RepositoryCommit, *github.Response, error)
-	ListHooks(context.Context, string, string, *github.ListOptions) ([]*github.Hook, *github.Response, error)
-	GetHook(context.Context, string, string, int64) (*github.Hook, *github.Response, error)
-	CreateHook(context.Context, string, string, *github.Hook) (*github.Hook, *github.Response, error)
-	DeleteHook(context.Context, string, string, int64) (*github.Response, error)
-	EditHook(context.Context, string, string, int64, *github.Hook) (*github.Hook, *github.Response, error)
-}
-
+// Commit is a struct that contains the information of a commit
 type Commit struct {
 	SHA     string       `json:"sha"`
 	Message string       `json:"message"`
 	Stats   *CommitStats `json:"stats,omitempty"`
 	Files   []CommitFile `json:"files,omitempty"`
 }
+
+// CommitStats is a struct that contains the statistics of a commit
 type CommitStats struct {
 	Additions int `json:"additions"`
 	Deletions int `json:"deletions"`
 	Changes   int `json:"changes"`
 }
+
+// CommitFile is a struct that contains the information of a commit file
 type CommitFile struct {
 	Filename string `json:"filename"`
 	Patch    string `json:"patch"`
 	CommitStats
 }
 
-func (githubClient *Client) extractCommitFile(file *github.CommitFile) CommitFile {
+func (client *Client) extractCommitFile(file *github.CommitFile) CommitFile {
 	return CommitFile{
 		Filename: file.GetFilename(),
 		Patch:    file.GetPatch(),
@@ -46,7 +39,8 @@ func (githubClient *Client) extractCommitFile(file *github.CommitFile) CommitFil
 		},
 	}
 }
-func (githubClient *Client) extractCommitInformation(ctx context.Context, owner, repository string, originalCommit *github.RepositoryCommit, needCommitDetails bool) Commit {
+
+func (client *Client) extractCommitInformation(ctx context.Context, owner, repository string, originalCommit *github.RepositoryCommit, needCommitDetails bool) Commit {
 	if !needCommitDetails {
 		return Commit{
 			SHA:     originalCommit.GetSHA(),
@@ -56,7 +50,7 @@ func (githubClient *Client) extractCommitInformation(ctx context.Context, owner,
 	stats := originalCommit.GetStats()
 	commitFiles := originalCommit.Files
 	if stats == nil || commitFiles == nil {
-		commit, err := githubClient.getCommit(ctx, owner, repository, originalCommit.GetSHA())
+		commit, err := client.getCommitFunc(ctx, owner, repository, originalCommit.GetSHA())
 		if err == nil {
 			// only update stats and files if there is no error
 			// otherwise, we will maintain the original commit information
@@ -66,7 +60,7 @@ func (githubClient *Client) extractCommitInformation(ctx context.Context, owner,
 	}
 	files := make([]CommitFile, len(commitFiles))
 	for idx, file := range commitFiles {
-		files[idx] = githubClient.extractCommitFile(file)
+		files[idx] = client.extractCommitFile(file)
 	}
 	return Commit{
 		SHA:     originalCommit.GetSHA(),
@@ -80,41 +74,7 @@ func (githubClient *Client) extractCommitInformation(ctx context.Context, owner,
 	}
 }
 
-func (githubClient *Client) getCommit(ctx context.Context, owner string, repository string, sha string) (*github.RepositoryCommit, error) {
-	commit, _, err := githubClient.Repositories.GetCommit(ctx, owner, repository, sha, nil)
+func (client *Client) getCommitFunc(ctx context.Context, owner string, repository string, sha string) (*github.RepositoryCommit, error) {
+	commit, _, err := client.Repositories.GetCommit(ctx, owner, repository, sha, nil)
 	return commit, addErrMsgToClientError(err)
-}
-
-type GetCommitInput struct {
-	RepoInfo
-	SHA string `json:"sha"`
-}
-
-type GetCommitResp struct {
-	Commit Commit `json:"commit"`
-}
-
-func (githubClient *Client) getCommitTask(ctx context.Context, props *structpb.Struct) (*structpb.Struct, error) {
-	var inputStruct GetCommitInput
-	err := base.ConvertFromStructpb(props, &inputStruct)
-	if err != nil {
-		return nil, err
-	}
-	owner, repository, err := parseTargetRepo(inputStruct)
-	if err != nil {
-		return nil, err
-	}
-	sha := inputStruct.SHA
-	commit, err := githubClient.getCommit(ctx, owner, repository, sha)
-	if err != nil {
-		return nil, err
-	}
-	var resp GetCommitResp
-	resp.Commit = githubClient.extractCommitInformation(ctx, owner, repository, commit, true)
-	out, err := base.ConvertToStructpb(resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
 }

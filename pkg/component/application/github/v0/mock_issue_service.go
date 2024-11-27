@@ -50,6 +50,7 @@ func (m *MockIssuesService) ListByRepo(ctx context.Context, owner, repo string, 
 	})
 	return issues, resp, nil
 }
+
 func (m *MockIssuesService) Get(ctx context.Context, owner, repo string, number int) (*github.Issue, *github.Response, error) {
 	switch middleWare(owner) {
 	case 403:
@@ -89,6 +90,7 @@ func (m *MockIssuesService) Get(ctx context.Context, owner, repo string, number 
 	}
 	return issue, resp, nil
 }
+
 func (m *MockIssuesService) Create(ctx context.Context, owner, repo string, issue *github.IssueRequest) (*github.Issue, *github.Response, error) {
 	switch middleWare(owner) {
 	case 403:

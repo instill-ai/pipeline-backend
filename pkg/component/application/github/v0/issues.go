@@ -2,13 +2,8 @@ package github
 
 import (
 	"context"
-	"fmt"
-	"time"
 
 	"github.com/google/go-github/v62/github"
-	"google.golang.org/protobuf/types/known/structpb"
-
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
 type IssuesService interface {
@@ -29,7 +24,7 @@ type Issue struct {
 	IsPullRequest bool     `json:"is-pull-request"`
 }
 
-func (githubClient *Client) extractIssue(originalIssue *github.Issue) Issue {
+func (client *Client) extractIssue(originalIssue *github.Issue) Issue {
 	return Issue{
 		Number:        originalIssue.GetNumber(),
 		Title:         originalIssue.GetTitle(),
@@ -58,8 +53,8 @@ func extractLabels(labels []*github.Label) []string {
 	return labelList
 }
 
-func (githubClient *Client) getIssue(ctx context.Context, owner, repository string, issueNumber int) (*github.Issue, error) {
-	issue, _, err := githubClient.Issues.Get(ctx, owner, repository, issueNumber)
+func (client *Client) getIssueFunc(ctx context.Context, owner, repository string, issueNumber int) (*github.Issue, error) {
+	issue, _, err := client.Issues.Get(ctx, owner, repository, issueNumber)
 	if err != nil {
 		return nil, addErrMsgToClientError(err)
 	}
@@ -73,150 +68,4 @@ func filterOutPullRequests(issues []Issue) []Issue {
 		}
 	}
 	return filteredIssues
-}
-
-type ListIssuesInput struct {
-	RepoInfo
-	State         string `json:"state"`
-	Sort          string `json:"sort"`
-	Direction     string `json:"direction"`
-	Since         string `json:"since"`
-	NoPullRequest bool   `json:"no-pull-request"`
-	PageOptions
-}
-
-type ListIssuesResp struct {
-	Issues []Issue `json:"issues"`
-}
-
-func (githubClient *Client) listIssuesTask(ctx context.Context, props *structpb.Struct) (*structpb.Struct, error) {
-	var inputStruct ListIssuesInput
-	err := base.ConvertFromStructpb(props, &inputStruct)
-	if err != nil {
-		return nil, err
-	}
-	owner, repository, err := parseTargetRepo(inputStruct)
-	if err != nil {
-		return nil, err
-	}
-	// from format like `2006-01-02` parse it into UTC time
-	// The time will be 2006-01-02 00:00:00 +0000 UTC exactly
-	sinceTime, err := time.Parse(time.DateOnly, inputStruct.Since)
-	if err != nil {
-		return nil, fmt.Errorf("parse since time: %w", err)
-	}
-	opts := &github.IssueListByRepoOptions{
-		State:     inputStruct.State,
-		Sort:      inputStruct.Sort,
-		Direction: inputStruct.Direction,
-		Since:     sinceTime,
-		ListOptions: github.ListOptions{
-			Page:    inputStruct.Page,
-			PerPage: min(inputStruct.PerPage, 100), // GitHub API only allows 100 per page
-		},
-	}
-	if opts.Mentioned == "none" {
-		opts.Mentioned = ""
-	}
-
-	issues, _, err := githubClient.Issues.ListByRepo(ctx, owner, repository, opts)
-	if err != nil {
-		return nil, addErrMsgToClientError(err)
-	}
-
-	issueList := make([]Issue, len(issues))
-	for idx, issue := range issues {
-		issueList[idx] = githubClient.extractIssue(issue)
-	}
-
-	// filter out pull requests if no-pull-request is true
-	if inputStruct.NoPullRequest {
-		issueList = filterOutPullRequests(issueList)
-	}
-	var resp ListIssuesResp
-	resp.Issues = issueList
-	out, err := base.ConvertToStructpb(resp)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-type GetIssueInput struct {
-	RepoInfo
-	IssueNumber int `json:"issue-number"`
-}
-
-type GetIssueResp struct {
-	Issue
-}
-
-func (githubClient *Client) getIssueTask(ctx context.Context, props *structpb.Struct) (*structpb.Struct, error) {
-	var inputStruct GetIssueInput
-	err := base.ConvertFromStructpb(props, &inputStruct)
-	if err != nil {
-		return nil, err
-	}
-	owner, repository, err := parseTargetRepo(inputStruct)
-	if err != nil {
-		return nil, err
-	}
-
-	issueNumber := inputStruct.IssueNumber
-	issue, err := githubClient.getIssue(ctx, owner, repository, issueNumber)
-	if err != nil {
-		return nil, err
-	}
-
-	issueResp := githubClient.extractIssue(issue)
-	var resp GetIssueResp
-	resp.Issue = issueResp
-	out, err := base.ConvertToStructpb(resp)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-type CreateIssueInput struct {
-	RepoInfo
-	Title     string   `json:"title"`
-	Body      string   `json:"body"`
-	Assignees []string `json:"assignees"`
-	Labels    []string `json:"labels"`
-}
-
-type CreateIssueResp struct {
-	Issue
-}
-
-func (githubClient *Client) createIssueTask(ctx context.Context, props *structpb.Struct) (*structpb.Struct, error) {
-	var inputStruct CreateIssueInput
-	err := base.ConvertFromStructpb(props, &inputStruct)
-	if err != nil {
-		return nil, err
-	}
-	owner, repository, err := parseTargetRepo(inputStruct)
-	if err != nil {
-		return nil, err
-	}
-	issueRequest := &github.IssueRequest{
-		Title:     &inputStruct.Title,
-		Body:      &inputStruct.Body,
-		Assignees: &inputStruct.Assignees,
-		Labels:    &inputStruct.Labels,
-	}
-	issue, _, err := githubClient.Issues.Create(ctx, owner, repository, issueRequest)
-	if err != nil {
-		return nil, addErrMsgToClientError(err)
-	}
-
-	issueResp := githubClient.extractIssue(issue)
-	var resp CreateIssueResp
-	resp.Issue = issueResp
-	out, err := base.ConvertToStructpb(resp)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }

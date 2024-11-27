@@ -59,7 +59,7 @@ func (c *SlackSetupConverter) migrateConnection() error {
 
 			var setup map[string]any
 			if err := json.Unmarshal(conn.Setup, &setup); err != nil {
-				return fmt.Errorf("unmarshalling setup: %w", err)
+				return fmt.Errorf("unmarshaling setup: %w", err)
 			}
 
 			updated := c.updateToken(setup)

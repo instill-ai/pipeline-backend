@@ -185,7 +185,7 @@ func (s *service) componentDefinitionToIntegration(
 
 	integration.OAuthConfig = new(pb.Integration_OAuthConfig)
 	if err := protojson.Unmarshal(j, integration.OAuthConfig); err != nil {
-		return nil, fmt.Errorf("unmarshalling OAuth config: %w", err)
+		return nil, fmt.Errorf("unmarshaling OAuth config: %w", err)
 	}
 
 	// We remove the information from the setup so it isn't duplicated
@@ -573,7 +573,7 @@ func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view p
 	// TODO jvallesm: INS-5963 addresses redacting these values.
 	pbConn.Setup = new(structpb.Struct)
 	if err := pbConn.Setup.UnmarshalJSON(conn.Setup); err != nil {
-		return nil, fmt.Errorf("unmarshalling setup: %w", err)
+		return nil, fmt.Errorf("unmarshaling setup: %w", err)
 	}
 
 	pbConn.Scopes = conn.Scopes
@@ -581,7 +581,7 @@ func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view p
 	if len(conn.OAuthAccessDetails) > 0 {
 		pbConn.OAuthAccessDetails = new(structpb.Struct)
 		if err := pbConn.OAuthAccessDetails.UnmarshalJSON(conn.OAuthAccessDetails); err != nil {
-			return nil, fmt.Errorf("unmarshalling OAuth config: %w", err)
+			return nil, fmt.Errorf("unmarshaling OAuth config: %w", err)
 		}
 	}
 

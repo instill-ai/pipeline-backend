@@ -34,10 +34,12 @@ const conditionJSON = `
 }
 `
 
+// InstillExtension is the extension for the component.
 type InstillExtension struct {
 	jsoniter.DummyExtension
 }
 
+// UpdateStructDescriptor updates the struct descriptor for the component.
 func (e *InstillExtension) UpdateStructDescriptor(structDescriptor *jsoniter.StructDescriptor) {
 
 	// We use kebab-case for JSON keys in component input and output, while
@@ -81,7 +83,7 @@ type IComponent interface {
 
 	// CreateExecution takes a ComponentExecution that can be used to compose
 	// the core component behaviour with the particular business logic in the
-	// implmentation.
+	// implementation.
 	CreateExecution(base ComponentExecution) (IExecution, error)
 	Test(sysVars map[string]any, config *structpb.Struct) error
 
@@ -116,7 +118,10 @@ type IComponent interface {
 	UsageHandlerCreator() UsageHandlerCreator
 }
 
+// Identifier is the identifier for the event.
 type Identifier map[string]any
+
+// EventSettings is the settings for the event.
 type EventSettings struct {
 	// TODO: The Config field represents the component configuration settings
 	// while Setup contains initialization parameters. Consider renaming to
@@ -125,26 +130,31 @@ type EventSettings struct {
 	Setup  format.Value
 }
 
+// RegisterEventSettings is the settings for registering an event.
 type RegisterEventSettings struct {
 	EventSettings
 	RegistrationUID uuid.UUID
 }
 
+// UnregisterEventSettings is the settings for unregistering an event.
 type UnregisterEventSettings struct {
 	EventSettings
 }
 
+// RawEvent is the raw event from the webhook.
 type RawEvent struct {
 	EventSettings
 	Header  map[string][]string
 	Message format.Value
 }
 
+// ParsedEvent is the parsed event from the raw event.
 type ParsedEvent struct {
 	ParsedMessage format.Value
 	Response      format.Value
 }
 
+// IdentifierResult is the result of identifying an event.
 type IdentifierResult struct {
 	SkipTrigger bool
 	Identifiers []Identifier
@@ -167,18 +177,22 @@ type Component struct {
 	BinaryFetcher external.BinaryFetcher
 }
 
+// IdentifyEvent is not implemented for the base component.
 func (c *Component) IdentifyEvent(ctx context.Context, rawEvent *RawEvent) (identifierResult *IdentifierResult, err error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
+// ParseEvent is not implemented for the base component.
 func (c *Component) ParseEvent(ctx context.Context, rawEvent *RawEvent) (*ParsedEvent, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
+// RegisterEvent is not implemented for the base component.
 func (c *Component) RegisterEvent(context.Context, *RegisterEventSettings) ([]Identifier, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
+// UnregisterEvent is not implemented for the base component.
 func (c *Component) UnregisterEvent(context.Context, *UnregisterEventSettings, []Identifier) error {
 	return fmt.Errorf("not implemented")
 }
@@ -411,7 +425,6 @@ func generateComponentSpec(title string, tasks []*pb.ComponentTask, taskStructs 
 	}
 
 	return componentSpec, nil
-
 }
 
 func formatDataSpec(dataSpec *structpb.Struct) (*structpb.Struct, error) {
@@ -525,7 +538,10 @@ func formatDataSpec(dataSpec *structpb.Struct) (*structpb.Struct, error) {
 	return compSpec, nil
 }
 
+// EventJSON is the JSON for the event.
 type EventJSON map[string]Event
+
+// Event is the event for the component.
 type Event struct {
 	Title           string `json:"title"`
 	Description     string `json:"description"`
@@ -661,6 +677,7 @@ func ConvertToStructpb(from any) (*structpb.Struct, error) {
 	return to, nil
 }
 
+// RenderJSON renders the JSON for the component.
 func RenderJSON(tasksJSONBytes []byte, additionalJSONBytes map[string][]byte) ([]byte, error) {
 	var err error
 	mp := provider.NewMap()
@@ -747,13 +764,18 @@ func (c *Component) GetLogger() *zap.Logger {
 
 	return c.Logger
 }
+
+// GetDefinition returns the component definition.
 func (c *Component) GetDefinition(sysVars map[string]any, compConfig *ComponentConfig) (*pb.ComponentDefinition, error) {
 	return c.definition, nil
 }
 
+// GetTaskInputSchemas returns the task input schemas.
 func (c *Component) GetTaskInputSchemas() map[string]string {
 	return c.taskInputSchemas
 }
+
+// GetTaskOutputSchemas returns the task output schemas.
 func (c *Component) GetTaskOutputSchemas() map[string]string {
 	return c.taskOutputSchemas
 }
@@ -974,6 +996,7 @@ func (c *Component) SupportsOAuth() bool {
 	return false
 }
 
+// ListInputAcceptFormatsFields returns the input accept formats fields.
 func (c *Component) ListInputAcceptFormatsFields() (map[string]map[string][]string, error) {
 	return c.inputAcceptFormatsFields, nil
 }
@@ -1021,6 +1044,7 @@ func (c *Component) traverseInputAcceptFormatsFields(input *structpb.Value, pref
 	return inputAcceptFormatsFields
 }
 
+// ListOutputFormatsFields returns the output formats fields.
 func (c *Component) ListOutputFormatsFields() (map[string]map[string]string, error) {
 	return c.outputFormatsFields, nil
 }
@@ -1078,6 +1102,7 @@ func (c *Component) UsageHandlerCreator() UsageHandlerCreator {
 	return c.NewUsageHandler
 }
 
+// Test is not implemented for the base component.
 func (c *Component) Test(sysVars map[string]any, setup *structpb.Struct) error {
 	return nil
 }
@@ -1098,6 +1123,7 @@ func ReadFromGlobalConfig(key string, secrets map[string]any) string {
 	return ""
 }
 
+// ComponentConfig is the config for the component.
 type ComponentConfig struct {
 	Task  string
 	Input map[string]any

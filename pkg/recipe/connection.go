@@ -67,7 +67,7 @@ func FetchReferencedSetup(
 
 	var setup map[string]any
 	if err := json.Unmarshal(conn.Setup, &setup); err != nil {
-		return nil, fmt.Errorf("unmarshalling setup: %w", err)
+		return nil, fmt.Errorf("unmarshaling setup: %w", err)
 	}
 
 	return setup, nil
