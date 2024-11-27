@@ -141,12 +141,13 @@ func (e *ComponentExecution) getInputSchemaJSON(task string) (map[string]interfa
 }
 
 // FillInDefaultValues fills in default values for the input based on the task's input schema
-func (e *ComponentExecution) FillInDefaultValues(input any) (any, error) {
+func (e *ComponentExecution) FillInDefaultValues(input any) error {
 	inputMap, err := e.getInputSchemaJSON(e.Task)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return e.fillInDefaultValuesWithReference(input, inputMap)
+	_, err = e.fillInDefaultValuesWithReference(input, inputMap)
+	return err
 }
 
 func hasNextLevel(valueMap map[string]interface{}) bool {
