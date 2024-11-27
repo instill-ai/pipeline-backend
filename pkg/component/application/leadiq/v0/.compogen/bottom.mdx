@@ -1,0 +1,63 @@
+## Example Recipes
+
+
+```yaml
+version: v1beta
+
+variable:
+  city:
+    title: City
+    format: string
+    default: "London"
+  country:
+    title: Country
+    format: string
+    default: "United Kingdom"
+  industry:
+    title: Industry
+    format: string
+    default: "Software Development"
+  description:
+    title: Description
+    format: string
+    default: "AI"
+  technology:
+    title: Technology
+    format: string
+    default: "HTTP"
+
+component:
+  prospects:
+    type: leadiq
+    task: TASK_FIND_PROSPECTS
+    input:
+      company:
+        names:
+        revenue-size:
+          min: 10000000
+          max:
+        countries:
+          - ${variable.country}
+        states:
+        cities:
+          - ${variable.city}
+        industries:
+          - ${variable.industry}
+        descriptions:
+          - ${variable.description}
+        technologies:
+          - ${variable.technology}
+      limit: 2
+      filter-by:
+        job-title: (?i)\b(sales|founder)\b
+        seniorities:
+          - Executive
+          - Director
+        function:
+    condition:
+
+output:
+  result:
+    title: Result
+    value: ${prospects.output}
+```

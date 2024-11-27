@@ -1,0 +1,38 @@
+query SearchPeople($input: SearchPeopleInput!) {
+    searchPeople(input: $input) {
+        totalResults
+        results {
+            name {
+                first
+                fullName
+                last
+            }
+            linkedin {
+                linkedinUrl
+            }
+            personalPhones {
+                type
+                status
+                value
+            }
+            currentPositions {
+                title
+                seniority
+                function
+                emails {
+                    type
+                    status
+                    value
+                }
+                phones {
+                    type
+                    status
+                    value
+                }
+                companyInfo {
+                    name
+                }
+            }
+        }
+    }
+}

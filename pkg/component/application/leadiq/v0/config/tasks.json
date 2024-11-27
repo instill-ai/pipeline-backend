@@ -1,0 +1,322 @@
+{
+  "TASK_FIND_PROSPECTS": {
+    "title": "Find Prospects",
+    "instillShortDescription": "Find prospects' contact information based on the company name you provide.",
+    "description": "Find prospects' contact information based on the company name you provide. And, it will filter out the prospects who are not relevant to your search.",
+    "input": {
+      "title": "Input",
+      "description": "Provide the information for which you want to find prospects.",
+      "properties": {
+        "company": {
+          "title": "Company",
+          "description": "Provide the company information for which you want to find prospects.",
+          "type": "object",
+          "properties": {
+            "names": {
+              "title": "Names",
+              "description": "Provide the company names for which you want to find prospects.",
+              "instillAcceptFormats": [
+                "array:string"
+              ],
+              "instillFormat": "array:string",
+              "type": "array",
+              "instillUIOrder": 0
+            },
+            "revenue-size": {
+              "title": "Revenue Size",
+              "description": "Provide the min or max revenue size of the company you want to find prospects. If you don't provide any value, it will return all the prospects. If you set the company names, the revenue size will be ignored.",
+              "type": "object",
+              "properties": {
+                "min": {
+                  "title": "Min",
+                  "description": "Provide the minimum revenue size of the company you want to find prospects.",
+                  "instillAcceptFormats": [
+                    "integer"
+                  ],
+                  "instillFormat": "integer",
+                  "type": "integer",
+                  "instillUIOrder": 0
+                },
+                "max": {
+                  "title": "Max",
+                  "description": "Provide the maximum revenue size of the company you want to find prospects.",
+                  "instillAcceptFormats": [
+                    "integer"
+                  ],
+                  "instillFormat": "integer",
+                  "type": "integer",
+                  "instillUIOrder": 1
+                }
+              },
+              "required": [],
+              "instillUIOrder": 1
+            },
+            "countries": {
+              "title": "Countries",
+              "description": "Provide the countries of the company you want to find prospects. If you don't provide any value, it will return all the prospects.",
+              "instillAcceptFormats": [
+                "array:string"
+              ],
+              "instillFormat": "array:string",
+              "type": "array",
+              "instillUIOrder": 2
+            },
+            "states": {
+              "title": "States",
+              "description": "Provide the states of the company you want to find prospects. If you don't provide any value, it will return all the prospects.",
+              "instillAcceptFormats": [
+                "array:string"
+              ],
+              "instillFormat": "array:string",
+              "type": "array",
+              "instillUIOrder": 3
+            },
+            "cities": {
+              "title": "Cities",
+              "description": "Provide the cities of the company you want to find prospects. If you don't provide any value, it will return all the prospects.",
+              "instillAcceptFormats": [
+                "array:string"
+              ],
+              "instillFormat": "array:string",
+              "type": "array",
+              "instillUIOrder": 4
+            },
+            "industries": {
+              "title": "Industries",
+              "description": "Provide the industries of the company you want to find prospects. If you don't provide any value, it will return all the prospects.",
+              "instillAcceptFormats": [
+                "array:string"
+              ],
+              "instillFormat": "array:string",
+              "type": "array",
+              "instillUIOrder": 5
+            },
+            "descriptions": {
+              "title": "Descriptions",
+              "description": "Provide the descriptions of the company you want to find prospects. In LeadIQ, it will return the similar companies based on the descriptions.",
+              "instillAcceptFormats": [
+                "array:string"
+              ],
+              "instillFormat": "array:string",
+              "type": "array",
+              "instillUIOrder": 6
+            },
+            "technologies": {
+              "title": "Technologies",
+              "description": "Provide the technologies used by the company you want to find prospects. If you don't provide any value, it will return all the prospects.",
+              "instillAcceptFormats": [
+                "array:string"
+              ],
+              "instillFormat": "array:string",
+              "type": "array",
+              "instillUIOrder": 7
+            }
+          },
+          "required": [],
+          "instillUIOrder": 0
+        },
+        "limit": {
+          "title": "Limit",
+          "description": "Provide the number of prospects you want to find. If you don't provide any value, it will return 10 prospects. The maximum limit is 60. The minimum limit is 1.",
+          "default": 10,
+          "maximum": 60,
+          "minimum": 1,
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillFormat": "integer",
+          "type": "integer",
+          "instillUIOrder": 1
+        },
+        "filter-by": {
+          "title": "Filter By",
+          "description": "Provide the information about the prospects you want to filter. You can filter the prospects based on job title, name, seniority, and function. When it matches, the prospect will be included in the output. If you don't provide any value, it will return all the prospects.",
+          "properties": {
+            "job-title": {
+              "title": "Job Title",
+              "description": "Provide the job title of the prospects you want to filter with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions).",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillFormat": "string",
+              "type": "string",
+              "instillUIOrder": 0
+            },
+            "seniorities": {
+              "title": "Seniorities",
+              "description": "Provide the seniorities of the prospects you want to filter.",
+              "instillAcceptFormats": [
+                "array:string"
+              ],
+              "enum": [
+                "Executive",
+                "Director",
+                "SeniorIndividualContributor",
+                "VP",
+                "Manager",
+                "Other"
+              ],
+              "instillFormat": "array:string",
+              "type": "array",
+              "instillUIOrder": 1
+            },
+            "function": {
+              "title": "Function",
+              "description": "Provide the function of the prospects you want to filter with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions).",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillFormat": "string",
+              "type": "string",
+              "instillUIOrder": 2
+            }
+          },
+          "required": [],
+          "type": "object",
+          "instillUIOrder": 2
+        }
+      },
+      "type": "object",
+      "instillUIOrder": 0,
+      "required": [
+        "company",
+        "limit"
+      ]
+    },
+    "output": {
+      "title": "Output",
+      "description": "The output will be the list of prospects' contact information based on the company name you provide. It will include the name, job title, seniority, and email address of the prospects, and other company information from LeadIQ provided in the response.",
+      "properties": {
+        "prospects": {
+          "title": "Prospects",
+          "description": "The list of prospects' contact information based on the company information you provide.",
+          "type": "array",
+          "items": {
+            "properties": {
+              "name": {
+                "title": "Name",
+                "description": "The name of the prospect.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 0
+              },
+              "job-title": {
+                "title": "Job Title",
+                "description": "The job title of the prospect.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 1
+              },
+              "seniority": {
+                "title": "Seniority",
+                "description": "The seniority of the prospect.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 2
+              },
+              "email": {
+                "title": "Email",
+                "description": "The email address of the prospect.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 3
+              },
+              "linkedin-url": {
+                "title": "LinkedIn URL",
+                "description": "The LinkedIn URL of the prospect.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 4
+              },
+              "company-name": {
+                "title": "Company Name",
+                "description": "The company name of the prospect.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 5
+              },
+              "company-description": {
+                "title": "Company Description",
+                "description": "The description of the company from LeadIQ.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 6
+              },
+              "company-industry": {
+                "title": "Company Industry",
+                "description": "The industry of the company from LeadIQ.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 7
+              },
+              "company-address": {
+                "title": "Company Address",
+                "description": "The address of the company from LeadIQ. It combines the city, state, and country.",
+                "instillFormat": "string",
+                "type": "string",
+                "instillUIOrder": 8
+              },
+              "company-technologies": {
+                "title": "Company Technologies",
+                "description": "The technologies used by the company from LeadIQ.",
+                "instillFormat": "array:string",
+                "type": "array",
+                "instillUIOrder": 9
+              },
+              "company-technology-categories": {
+                "title": "Company Technology Categories",
+                "description": "The technology categories of the company from LeadIQ.",
+                "instillFormat": "array:string",
+                "type": "array",
+                "instillUIOrder": 10
+              },
+              "revenue-size": {
+                "title": "Revenue Size",
+                "description": "The revenue size of the company from LeadIQ.",
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "title": "Min",
+                    "description": "The minimum revenue size of the company from LeadIQ.",
+                    "instillAcceptFormats": [
+                      "integer"
+                    ],
+                    "instillFormat": "integer",
+                    "type": "integer",
+                    "instillUIOrder": 0
+                  },
+                  "max": {
+                    "title": "Max",
+                    "description": "The maximum revenue size of the company from LeadIQ.",
+                    "instillAcceptFormats": [
+                      "integer"
+                    ],
+                    "instillFormat": "integer",
+                    "type": "integer",
+                    "instillUIOrder": 1
+                  },
+                  "description": {
+                    "title": "Description",
+                    "description": "The description of the revenue size of the company from LeadIQ.",
+                    "instillFormat": "string",
+                    "type": "string",
+                    "instillUIOrder": 2
+                  }
+                },
+                "required": [],
+                "instillUIOrder": 11
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "instillFormat": "array",
+          "instillUIOrder": 0
+        }
+      },
+      "required": [],
+      "type": "object",
+      "instillUIOrder": 1
+    }
+  }
+}

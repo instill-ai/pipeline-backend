@@ -1,0 +1,62 @@
+query FlatAdvancedSearch($input: FlatSearchInput!) {
+    flatAdvancedSearch(input: $input) {
+        totalPeople
+        people {
+        id
+        companyId
+        name
+        linkedinId
+        linkedinUrl
+        title
+        role
+        state
+        country
+        seniority
+        workEmails
+        verifiedWorkEmails
+        verifiedLikelyWorkEmails
+        workPhones
+        personalEmails
+        personalPhones
+        score
+        firstName
+        middleName
+        lastName
+        updatedAt
+        currentPositionStartDate
+        company {
+            id
+            name
+            industry
+            description
+            linkedinId
+            domain
+            employeeCount
+            city
+            country
+            state
+            postalCode
+            score
+            companyTechnologies
+            companyTechnologyCategories
+            revenueRange {
+            start
+            end
+            description
+            }
+            fundingInfo {
+            fundingRounds
+            fundingTotalUsd
+            lastFundingOn
+            lastFundingType
+            lastFundingUsd
+            }
+            naicsCode {
+            code
+            description
+            }
+        }
+        picture
+        }
+    }
+}
