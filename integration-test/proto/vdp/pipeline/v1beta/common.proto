@@ -104,6 +104,17 @@ message ComponentTask {
   string description = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
+// ComponentEvent contains information about an event that a component can
+// produce.
+message ComponentEvent {
+  // The event name, e.g. `EVENT_NEW`.
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Title is the event name in a human-friendly format.
+  string title = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Description contains information about the event.
+  string description = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
 // ComponentType defines the component type based on its task features.
 enum ComponentType {
   // Unspecified.
