@@ -1,0 +1,514 @@
+---
+title: "Google Sheets"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Google Sheets component https://github.com/instill-ai/instill-core"
+---
+
+The Google Sheets component is a data component that allows users to connect to and interact with Google Sheets spreadsheets to read and write data.
+It can carry out the following tasks:
+- [Create Spreadsheet](#create-spreadsheet)
+- [Delete Spreadsheet](#delete-spreadsheet)
+- [Add Sheet](#add-sheet)
+- [Delete Sheet](#delete-sheet)
+- [Create Spreadsheet Column](#create-spreadsheet-column)
+- [Delete Spreadsheet Column](#delete-spreadsheet-column)
+- [List Rows](#list-rows)
+- [Lookup Rows](#lookup-rows)
+- [Get Row](#get-row)
+- [Get Multiple Rows](#get-multiple-rows)
+- [Insert Row](#insert-row)
+- [Insert Multiple Rows](#insert-multiple-rows)
+- [Update Row](#update-row)
+- [Update Multiple Rows](#update-multiple-rows)
+- [Delete Row](#delete-row)
+- [Delete Multiple Rows](#delete-multiple-rows)
+
+
+
+## Release Stage
+
+`Alpha`
+
+
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/googlesheets/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/googlesheets/v0/config/tasks.json) files respectively.
+
+
+
+
+## Setup
+
+
+In order to communicate with Google, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Refresh Token | `refresh-token` | string | Refresh token for the Google Sheets API. For more information about how to create tokens, please refer to the <a href="https://developers.google.com/sheets/api/guides/concepts">Google Sheets API documentation</a> and <a href="https://developers.google.com/identity/protocols/oauth2" >OAuth 2.0 documentation</a>.  |
+
+</div>
+
+
+
+
+## Supported Tasks
+
+### Create Spreadsheet
+
+Create a new Google Sheets spreadsheet with multiple sheets.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CREATE_SPREADSHEET` |
+| Title | `title` | string | Title of the new spreadsheet. |
+| [Sheets](#create-spreadsheet-sheets) (required) | `sheets` | array[object] | Configuration for sheets to create. |
+</div>
+
+
+<details>
+<summary> Input Objects in Create Spreadsheet</summary>
+
+<h4 id="create-spreadsheet-sheets">Sheets</h4>
+
+Configuration for sheets to create.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Headers | `headers` | array | Column headers for the sheet.  |
+| Sheet Name | `name` | string | Name of the sheet.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Spreadsheet ID | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+</div>
+
+
+### Delete Spreadsheet
+
+Delete a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE_SPREADSHEET` |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Success | `success` | string | Result of the operation. |
+</div>
+
+
+### Add Sheet
+
+Add a new sheet to an existing Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_ADD_SHEET` |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Headers | `headers` | array[string] | Column headers for the sheet. |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Success | `result` | string | Result of the operation. |
+</div>
+
+
+### Delete Sheet
+
+Remove a sheet from a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE_SHEET` |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Success | `result` | string | Result of the operation. |
+</div>
+
+
+### Create Spreadsheet Column
+
+Add a new column to a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CREATE_SPREADSHEET_COLUMN` |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+| Column Name (required) | `column-name` | string | Name of the column. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Success | `result` | string | Result of the operation. |
+</div>
+
+
+### Delete Spreadsheet Column
+
+Delete a column from a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE_SPREADSHEET_COLUMN` |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+| Column Name (required) | `column-name` | string | Name of the column. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Success | `result` | string | Result of the operation. |
+</div>
+
+
+### List Rows
+
+List all rows in a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_LIST_ROWS` |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Start Row (required) | `start-row` | integer | The starting row number to retrieve (1-based index). |
+| End Row (required) | `end-row` | integer | The ending row number to retrieve (1-based index). |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Rows Data](#list-rows-rows-data) | `rows` | array[object] | Rows data in JSON format where keys are column names. |
+</div>
+
+
+### Lookup Rows
+
+Find multiple rows based on column value in a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_LOOKUP_ROWS` |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+| Column Name (required) | `column-name` | string | Name of the column. |
+| Search Value (required) | `value` | string | Value to search for in the specified column. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Row Numbers (optional) | `row-numbers` | array[integer] | Row numbers to update (1-based indices). |
+| [Rows Data](#lookup-rows-rows-data) | `rows` | array[object] | Rows data in JSON format where keys are column names. |
+</div>
+
+
+### Get Row
+
+Get a single row from a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_ROW` |
+| Row Number (required) | `row-number` | integer | The row number to retrieve (1-based index). |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Row Data | `row` | object | Row data in JSON format where keys are column names. |
+</div>
+
+
+### Get Multiple Rows
+
+Get multiple rows from a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_MULTIPLE_ROWS` |
+| Row Numbers (required) | `row-numbers` | array[integer] | The row numbers to retrieve (1-based indices). |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Rows Data](#get-multiple-rows-rows-data) | `rows` | array[object] | Rows data in JSON format where keys are column names. |
+</div>
+
+
+### Insert Row
+
+Insert a single row into a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_INSERT_ROW` |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+| Row Data (required) | `row` | object | Row data in JSON format where keys are column names. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Row Number | `row-number` | integer | Row number to update (1-based index). |
+| Row Data | `row` | object | Row data in JSON format where keys are column names. |
+</div>
+
+
+### Insert Multiple Rows
+
+Insert multiple rows into a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_INSERT_MULTIPLE_ROWS` |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+| [Rows Data](#insert-multiple-rows-rows-data) (required) | `rows` | array[object] | Rows data in JSON format where keys are column names. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Row Numbers | `row-numbers` | array[integer] | Row numbers to update (1-based indices). |
+| [Rows Data](#insert-multiple-rows-rows-data) | `rows` | array[object] | Rows data in JSON format where keys are column names. |
+</div>
+
+
+### Update Row
+
+Update a row in a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_UPDATE_ROW` |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+| Row Number (required) | `row-number` | integer | Row number to update (1-based index). |
+| Row Data (required) | `row` | object | Row data in JSON format where keys are column names. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Row Data | `row` | object | Row data in JSON format where keys are column names. |
+</div>
+
+
+### Update Multiple Rows
+
+Update multiple rows in a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_UPDATE_MULTIPLE_ROWS` |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+| Row Numbers (required) | `row-numbers` | array[integer] | Row numbers to update (1-based indices). |
+| [Rows Data](#update-multiple-rows-rows-data) (required) | `rows` | array[object] | Rows data in JSON format where keys are column names. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Rows Data](#update-multiple-rows-rows-data) | `rows` | array[object] | Rows data in JSON format where keys are column names. |
+</div>
+
+
+### Delete Row
+
+Delete a row from a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE_ROW` |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+| Row Number (required) | `row-number` | integer | Row number to update (1-based index). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Success | `result` | string | Result of the operation. |
+</div>
+
+
+### Delete Multiple Rows
+
+Delete multiple rows from a Google Sheets spreadsheet.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE_MULTIPLE_ROWS` |
+| Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
+| Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
+| Row Numbers (required) | `row-numbers` | array[integer] | Row numbers to update (1-based indices). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Success | `result` | string | Result of the operation. |
+</div>
+
+
+

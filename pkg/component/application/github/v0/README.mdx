@@ -323,7 +323,7 @@ Get the review comments in a pull request. The comments can be on a specific lin
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Comment body | `body` | string | Body of the comment. |
-| Commit SHA | `commitId` | string | SHA of the commit on which you want to comment. |
+| Commit SHA | `commit-id` | string | SHA of the commit on which you want to comment. |
 | Comment created at | `created-at` | string | Time the comment was created. |
 | Comment id | `id` | integer | ID of the comment. |
 | In Reply To | `in-reply-to-id` | integer | ID of the comment this comment is in reply to. |
@@ -395,7 +395,7 @@ The comment to be added.
 | :--- | :--- | :--- | :--- |
 | Comment ID (optional) | `id` | integer | ID of the comment. |
 | In Reply To (optional) | `in-reply-to-id` | integer | ID of the comment this comment is in reply to. |
-| Commit SHA (optional) | `commitId` | string | SHA of the commit on which you want to comment. |
+| Commit SHA (optional) | `commit-id` | string | SHA of the commit on which you want to comment. |
 | Comment Body (optional) | `body` | string | Body of the comment. |
 | Comment Path (optional) | `path` | string | Path of the file the comment is on. |
 | Comment End Line (optional) | `line` | integer | The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that your comment applies to. |

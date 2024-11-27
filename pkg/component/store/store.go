@@ -40,6 +40,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/elasticsearch/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/googlecloudstorage/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/googledrive/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/data/googlesheets/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/instillartifact/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/milvus/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/mongodb/v0"
@@ -184,6 +185,7 @@ func Init(
 		compStore.Import(bigquery.Init(baseComp))
 		compStore.Import(googlecloudstorage.Init(baseComp))
 		compStore.Import(googlesearch.Init(baseComp))
+
 		compStore.Import(pinecone.Init(baseComp))
 		compStore.Import(redis.Init(baseComp))
 		compStore.Import(elasticsearch.Init(baseComp))
@@ -214,6 +216,12 @@ func Init(
 			// Google Drive
 			conn := googledrive.Init(baseComp)
 			conn.WithOAuthConfig(secrets["googledrive"])
+			compStore.Import(conn)
+		}
+		{
+			// Google Sheets
+			conn := googlesheets.Init(baseComp)
+			conn.WithOAuthConfig(secrets["googlesheets"])
 			compStore.Import(conn)
 		}
 		compStore.Import(email.Init(baseComp))
