@@ -27,8 +27,16 @@ export function CheckIntegrations() {
     });
 
     var id = "github";
-    var cdef = http.request("GET", `${pipelinePublicHost}/v1beta/connector-definitions/${id}`, null, null).
-      json().connectorDefinition;
+    var cdefs = http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?filter=qTitle="GitHub"`, null, null).
+      json().componentDefinitions;
+
+    var cdef = null;
+    for (var i = 0; i < cdefs.length; i++) {
+      if (cdefs[i].id === id) {
+        cdef = cdefs[i];
+        break;
+      }
+    }
 
     var integration = {
       uid: cdef.uid,
@@ -44,7 +52,7 @@ export function CheckIntegrations() {
     var oAuthConfig = {
       authUrl: "https://github.com/login/oauth/authorize",
       accessUrl: "https://github.com/login/oauth/access_token",
-      scopes: ["repo", "write:repo_hook"],
+      scopes: ["repo", "admin:repo_hook"],
     };
 
     // Basic view
