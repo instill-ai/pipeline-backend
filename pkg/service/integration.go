@@ -149,17 +149,6 @@ func (s *service) componentDefinitionToIntegration(
 	integration.SetupSchema = setup.GetStructValue()
 	schemaFields := integration.SetupSchema.GetFields()
 
-	//nolint:staticcheck
-	// This is deprecated and only maintained for backwards compatibility.
-	// TODO jvallesm: remove when Integration Milestone 2 (OAuth) is rolled
-	// out.
-	integration.Schemas = []*pb.Integration_SetupSchema{
-		{
-			Method: pb.Connection_METHOD_DICTIONARY,
-			Schema: setup.GetStructValue(),
-		},
-	}
-
 	supportsOAuth, err := s.component.SupportsOAuth(uuid.FromStringOrNil(integration.Uid))
 	if err != nil {
 		return nil, fmt.Errorf("checking OAuth support: %w", err)
