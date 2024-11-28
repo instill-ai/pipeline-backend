@@ -421,10 +421,10 @@ component:
     task: TASK_CREATE_CAMPAIGN
     input:
       name: ${variable.campaign-name}
-    condition:  
+    condition:
     setup:
       api-key: ${secret.smartlead}
-  
+
 
 output:
   create-campaign-result:
@@ -484,7 +484,7 @@ component:
       min-time-btw-emails: ${variable.min-time-btw-emails}
       max-new-leads-per-day: ${variable.max-new-leads-per-day}
       schedule-start-time: ${variable.schedule-start-time}
-      track-settings: 
+      track-settings:
       stop-lead-settings: ${variable.stop-lead-settings}
       send-as-plain-text: ${variable.send-as-plain-text}
       follow-up-percentage:
@@ -516,7 +516,7 @@ component:
     task: TASK_GET_SEQUENCES
     input:
       campaign-name: ${variable.campaign-name}
-    condition:  
+    condition:
     setup:
       api-key: ${secret.smartlead}
 
@@ -524,7 +524,7 @@ output:
   sequences:
     title: Sequences
     value: ${get-sequence.output}
-    
+
 ```
 
 Save Sequence
@@ -553,12 +553,12 @@ component:
         - email-body: ${variable.email-body}
           seq-number: 1
           sequence-delay-days: 2
-          subject: ${variable.subject} 
+          subject: ${variable.subject}
         - email-body: ${variable.email-body}
           seq-number: 2
           sequence-delay-days: 3
           subject: ${variable.subject}
-    condition:  
+    condition:
     setup:
       api-key: ${secret.smartlead}
 
@@ -594,12 +594,12 @@ component:
         - email-body: ${variable.email-body}
           seq-number: 1
           sequence-delay-days: 2
-          subject: ${variable.subject} 
+          subject: ${variable.subject}
         - email-body: ${variable.email-body}
           seq-number: 2
           sequence-delay-days: 3
           subject: ${variable.subject}
-    condition:  
+    condition:
     setup:
       api-key: ${secret.smartlead}
 
@@ -630,7 +630,7 @@ component:
     input:
       campaign-name: ${variable.campaign-name}
       sender-email: ${variable.email}
-    condition:  
+    condition:
     setup:
       api-key: ${secret.smartlead}
 
@@ -660,7 +660,7 @@ component:
     input:
       campaign-name: ${variable.campaign-name}
       status: ${variable.status}
-    condition:  
+    condition:
     setup:
       api-key: ${secret.smartlead}
 
@@ -687,7 +687,7 @@ component:
     task: TASK_GET_CAMPAIGN_METRIC
     input:
       campaign-name: ${variable.campaign-name}
-    condition:  
+    condition:
     setup:
       api-key: ${secret.smartlead}
 
@@ -695,5 +695,35 @@ output:
   result:
     title: Result
     value: ${get-metric.output}
+```
+
+Get Leads Status Data
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  limit:
+    title: Limit
+    format: number
+
+component:
+  get-leads:
+    type: smartlead
+    task: TASK_LIST_LEADS_STATUS
+    input:
+      campaign-name: ${variable.campaign-name}
+      limit: ${variable.limit}
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${get-leads.output}
 ```
 

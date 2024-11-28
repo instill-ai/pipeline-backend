@@ -68,7 +68,7 @@ func (e *execution) addSenderEmail(ctx context.Context, job *base.Job) error {
 		return err
 	}
 
-	job.Output.WriteData(ctx, addSenderEmailOutput{
+	err = job.Output.WriteData(ctx, addSenderEmailOutput{
 		Result: "success",
 	})
 
