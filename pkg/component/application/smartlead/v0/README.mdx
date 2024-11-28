@@ -644,5 +644,32 @@ output:
     value: ${add-sender.output}
 ```
 
+Update Campaign Status
+```yaml
+# VDP Version
+version: v1beta
 
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  status:
+    title: Status
+    format: string
 
+component:
+  update-campaign-status:
+    type: smartlead
+    task: TASK_UPDATE_CAMPAIGN_STATUS
+    input:
+      campaign-name: ${variable.campaign-name}
+      status: ${variable.status}
+    condition:  
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${update-campaign-status.output}
+```
