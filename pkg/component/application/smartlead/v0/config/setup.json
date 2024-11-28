@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "api-key": {
+      "description": "Fill in your Smartlead API key. You can generate one from your [Smartlead account](https://app.smartlead.ai/app/settings/profile).",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 0,
+      "title": "API Key",
+      "type": "string"
+    }
+  },
+  "required": [
+    "api-key"
+  ],
+  "title": "Smartlead Connection",
+  "type": "object"
+}

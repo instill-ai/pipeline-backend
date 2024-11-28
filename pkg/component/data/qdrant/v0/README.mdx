@@ -114,7 +114,7 @@ Insert multiple vector points into a collection
 | Array ID (required) | `array-id` | array[string] | The array of id. |
 | [Array Metadata](#batch-upsert-array-metadata) | `array-metadata` | array[object] | The array of vector metadata payload. |
 | Array Vector (required) | `array-vector` | array[array] | The array of vector values. |
-| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. |
+| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details>  |
 </div>
 
 
@@ -143,7 +143,7 @@ Upsert a vector point into a collection
 | ID (required) | `id` | string | The ID of the point. |
 | Metadata | `metadata` | object | The vector metadata payload. |
 | Vector (required) | `vector` | array[number] | An array of dimensions for the vector value. |
-| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. |
+| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details>  |
 </div>
 
 
@@ -171,7 +171,7 @@ Delete vector points from a collection
 | Collection Name (required) | `collection-name` | string | The name of the collection to delete the object from. |
 | ID | `id` | string | The ID of the point. |
 | Filter | `filter` | object | The properties filter to be applied to the data with Qdrant filter, please refer to [filter section](https://api.qdrant.tech/api-reference/points/delete-points). |
-| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. |
+| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details>  |
 </div>
 
 

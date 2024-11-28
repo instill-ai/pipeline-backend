@@ -57,7 +57,7 @@ Mistral AI's text generation models (often called generative pre-trained transfo
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
-| Model Name (required) | `model-name` | string | The Mistral model to be used. |
+| Model Name (required) | `model-name` | string | The Mistral model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open-mixtral-8x22b`</li><li>`open-mixtral-8x7b`</li><li>`open-mistral-7b`</li><li>`mistral-large-latest`</li><li>`mistral-small-latest`</li><li>`codestral-latest`</li></ul></details>  |
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message as "You are a helpful assistant.". |
 | Prompt Images | `prompt-images` | array[string] | The prompt images (Note: The Mistral models are not trained to process images, thus images will be omitted). |
@@ -143,7 +143,7 @@ An embedding is a list of floating point numbers that captures semantic informat
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
-| Model Name (required) | `model-name` | string | The Mistral embed model to be used. |
+| Model Name (required) | `model-name` | string | The Mistral embed model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`mistral-embed`</li></ul></details>  |
 | Text (required) | `text` | string | The text. |
 </div>
 

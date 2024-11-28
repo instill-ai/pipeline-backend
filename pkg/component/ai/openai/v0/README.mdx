@@ -61,7 +61,7 @@ OpenAI's text generation models (often called generative pre-trained transformer
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION` |
-| Model (required) | `model` | string | ID of the model to use. |
+| Model (required) | `model` | string | ID of the model to use. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`o1-preview`</li><li>`o1-mini`</li><li>`gpt-4o-mini`</li><li>`gpt-4o`</li><li>`gpt-4o-2024-05-13`</li><li>`gpt-4o-2024-08-06`</li><li>`gpt-4-turbo`</li><li>`gpt-4-turbo-2024-04-09`</li><li>`gpt-4-0125-preview`</li><li>`gpt-4-turbo-preview`</li><li>`gpt-4-1106-preview`</li><li>`gpt-4-vision-preview`</li><li>`gpt-4`</li><li>`gpt-4-0314`</li><li>`gpt-4-0613`</li><li>`gpt-4-32k`</li><li>`gpt-4-32k-0314`</li><li>`gpt-4-32k-0613`</li><li>`gpt-3.5-turbo`</li><li>`gpt-3.5-turbo-16k`</li><li>`gpt-3.5-turbo-0301`</li><li>`gpt-3.5-turbo-0613`</li><li>`gpt-3.5-turbo-1106`</li><li>`gpt-3.5-turbo-0125`</li><li>`gpt-3.5-turbo-16k-0613`</li></ul></details>  |
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant.". |
 | Image | `images` | array[string] | The images. |
@@ -183,7 +183,7 @@ Turn text into numbers, unlocking use cases like search.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
-| Model (required) | `model` | string | ID of the model to use. |
+| Model (required) | `model` | string | ID of the model to use. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text-embedding-ada-002`</li><li>`text-embedding-3-small`</li><li>`text-embedding-3-large`</li></ul></details>  |
 | Text (required) | `text` | string | The text. |
 | Dimensions | `dimensions` | integer | The number of dimensions the resulting output embeddings should have. Only supported in text-embedding-3 and later models. |
 </div>
@@ -210,7 +210,7 @@ Turn audio into text.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SPEECH_RECOGNITION` |
-| Model (required) | `model` | string | ID of the model to use. Only `whisper-1` is currently available. . |
+| Model (required) | `model` | string | ID of the model to use. Only `whisper-1` is currently available. . <br/><details><summary><strong>Enum values</strong></summary><ul><li>`whisper-1`</li></ul></details>  |
 | Audio (required) | `audio` | string | The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm. . |
 | Prompt | `prompt` | string | An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language. . |
 | Language | `language` | string | The language of the input audio. Supplying the input language in <a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO-639-1</a> format will improve accuracy and latency. . |
@@ -239,10 +239,10 @@ Turn text into lifelike spoken audio
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_TO_SPEECH` |
-| Model (required) | `model` | string | One of the available TTS models: `tts-1` or `tts-1-hd` . |
+| Model (required) | `model` | string | One of the available TTS models: `tts-1` or `tts-1-hd` . <br/><details><summary><strong>Enum values</strong></summary><ul><li>`tts-1`</li><li>`tts-1-hd`</li></ul></details>  |
 | Text (required) | `text` | string | The text to generate audio for. The maximum length is 4096 characters. |
-| Voice (required) | `voice` | string | The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`. |
-| Response Format | `response-format` | string | The format to audio in. Supported formats are `mp3`, `opus`, `aac`, and `flac`. |
+| Voice (required) | `voice` | string | The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`alloy`</li><li>`echo`</li><li>`fable`</li><li>`onyx`</li><li>`nova`</li><li>`shimmer`</li></ul></details>  |
+| Response Format | `response-format` | string | The format to audio in. Supported formats are `mp3`, `opus`, `aac`, and `flac`. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`mp3`</li><li>`opus`</li><li>`aac`</li><li>`flac`</li></ul></details>  |
 | Speed | `speed` | number | The speed of the generated audio. Select a value from `0.25` to `4.0`. `1.0` is the default. |
 </div>
 
@@ -268,12 +268,12 @@ Generate or manipulate images with DALL·E.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_TO_IMAGE` |
-| Model (required) | `model` | string | The model to use for image generation. |
+| Model (required) | `model` | string | The model to use for image generation. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`dall-e-2`</li><li>`dall-e-3`</li></ul></details>  |
 | Prompt (required) | `prompt` | string | A text description of the desired image(s). The maximum length is 1000 characters for `dall-e-2` and 4000 characters for `dall-e-3`. |
 | N | `n` | integer | The number of images to generate. Must be between 1 and 10. For `dall-e-3`, only `n=1` is supported. |
-| Quality | `quality` | string | The quality of the image that will be generated. `hd` creates images with finer details and greater consistency across the image. This param is only supported for `dall-e-3`. |
-| Size | `size` | string | The size of the generated images. Must be one of `256x256`, `512x512`, or `1024x1024` for `dall-e-2`. Must be one of `1024x1024`, `1792x1024`, or `1024x1792` for `dall-e-3` models. |
-| N | `style` | string | The style of the generated images. Must be one of `vivid` or `natural`. Vivid causes the model to lean towards generating hyper-real and dramatic images. Natural causes the model to produce more natural, less hyper-real looking images. This param is only supported for `dall-e-3`. |
+| Quality | `quality` | string | The quality of the image that will be generated. `hd` creates images with finer details and greater consistency across the image. This param is only supported for `dall-e-3`. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`standard`</li><li>`hd`</li></ul></details>  |
+| Size | `size` | string | The size of the generated images. Must be one of `256x256`, `512x512`, or `1024x1024` for `dall-e-2`. Must be one of `1024x1024`, `1792x1024`, or `1024x1792` for `dall-e-3` models. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`256x256`</li><li>`512x512`</li><li>`1024x1024`</li><li>`1792x1024`</li><li>`1024x1792`</li></ul></details>  |
+| N | `style` | string | The style of the generated images. Must be one of `vivid` or `natural`. Vivid causes the model to lean towards generating hyper-real and dramatic images. Natural causes the model to produce more natural, less hyper-real looking images. This param is only supported for `dall-e-3`. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`vivid`</li><li>`natural`</li></ul></details>  |
 </div>
 
 

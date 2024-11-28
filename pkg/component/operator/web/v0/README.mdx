@@ -148,7 +148,7 @@ This task focuses on extracting specific data from targeted webpages by parsing 
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SCRAPE_PAGES` |
 | URLs (required) | `urls` | array[string] | The URLs to scrape the webpage contents. |
-| Scrape Method (required) | `scrape-method` | string | Defines the method used for web scraping. Available options include 'http' for standard HTTP-based scraping and 'chrome-simulator' for scraping through a simulated Chrome browser environment. |
+| Scrape Method (required) | `scrape-method` | string | Defines the method used for web scraping. Available options include 'http' for standard HTTP-based scraping and 'chrome-simulator' for scraping through a simulated Chrome browser environment. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`http`</li><li>`chrome-simulator`</li></ul></details>  |
 | Include HTML | `include-html` | boolean | Indicate whether to include the raw HTML of the webpage in the output. If you want to include the raw HTML, set this to true. |
 | Only Main Content | `only-main-content` | boolean | Only return the main content of the page by excluding the content of the tag of header, nav, footer. |
 | Remove Tags | `remove-tags` | array[string] | A list of tags, classes, and ids to remove from the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to remove data. If empty, no tags will be removed. Example: 'script, .ad, #footer'. Please check the [jQuery Syntax Examples](#jquery-syntax-examples). |

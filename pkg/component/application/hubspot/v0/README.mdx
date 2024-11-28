@@ -517,7 +517,7 @@ Get the object IDs associated with contact ID (contact->objects). If you are try
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_RETRIEVE_ASSOCIATION` |
 | Contact ID (required) | `contact-id` | string | Input contact ID. |
-| Object Type (required) | `object-type` | string | Input object type (CRM objects or 'Threads'). Note: CRM objects include 'Deals', 'Companies', 'Tickets', etc. |
+| Object Type (required) | `object-type` | string | Input object type (CRM objects or 'Threads'). Note: CRM objects include 'Deals', 'Companies', 'Tickets', etc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Deals`</li><li>`Companies`</li><li>`Tickets`</li><li>`Threads`</li></ul></details>  |
 </div>
 
 
@@ -543,7 +543,7 @@ Get information about HubSpot owner using either owner ID or user ID. For more i
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_OWNER` |
-| ID Type (required) | `id-type` | string | Specify the type of ID you will use to get owner's information. |
+| ID Type (required) | `id-type` | string | Specify the type of ID you will use to get owner's information. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Owner ID`</li><li>`User ID`</li></ul></details>  |
 | ID (required) | `id` | string | Can either be owner ID or user ID; according to the ID type you selected. |
 </div>
 
@@ -592,7 +592,7 @@ Get all the IDs for a specific object (e.g. all contact IDs)
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ALL` |
-| Object Type (required) | `object-type` | string | The object which you want to get all IDs for. |
+| Object Type (required) | `object-type` | string | The object which you want to get all IDs for. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Contacts`</li><li>`Deals`</li><li>`Companies`</li><li>`Tickets`</li><li>`Threads`</li><li>`Owners`</li></ul></details>  |
 </div>
 
 

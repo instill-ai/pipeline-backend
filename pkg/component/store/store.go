@@ -34,6 +34,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/leadiq/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/numbers/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/slack/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/application/smartlead/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/whatsapp/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/bigquery/v0"
@@ -239,6 +240,7 @@ func Init(
 		compStore.Import(whatsapp.Init(baseComp))
 		compStore.Import(freshdesk.Init(baseComp))
 		compStore.Import(asana.Init(baseComp))
+		compStore.Import(smartlead.Init(baseComp))
 	})
 	return compStore
 }

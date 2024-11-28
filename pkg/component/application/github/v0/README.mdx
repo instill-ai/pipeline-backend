@@ -66,9 +66,9 @@ Get the list of all pull requests in a repository. Detailed information about ea
 | Task ID (required) | `task` | string | `TASK_LIST_PULL_REQUESTS` |
 | Owner (required) | `owner` | string | Owner of the repository. |
 | Repository (required) | `repository` | string | Repository name. |
-| State | `state` | string | State of the PRs, including open, closed, all. Default is open. |
-| Sort | `sort` | string | Sort the PRs by created, updated, popularity, or long-running. Default is created. |
-| Direction | `direction` | string | Direction of the sort, including asc or desc. Default is desc. |
+| State | `state` | string | State of the PRs, including open, closed, all. Default is open. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open`</li><li>`closed`</li><li>`all`</li></ul></details>  |
+| Sort | `sort` | string | Sort the PRs by created, updated, popularity, or long-running. Default is created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`created`</li><li>`updated`</li><li>`popularity`</li><li>`long-running`</li></ul></details>  |
+| Direction | `direction` | string | Direction of the sort, including asc or desc. Default is desc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details>  |
 | Page | `page` | integer | Page number of the results to fetch. Default is 1. |
 | Per Page | `per-page` | integer | Number of results to fetch per page. Default is 30. |
 </div>
@@ -294,8 +294,8 @@ Get the review comments in a pull request. The comments can be on a specific lin
 | Owner (required) | `owner` | string | Owner of the repository. |
 | Repository (required) | `repository` | string | Repository name. |
 | PR Number | `pr-number` | integer | Number of the PR. Default is `0`, which retrieves all comments on all PRs in the repository. |
-| Sort | `sort` | string | Sort the comments by created, updated. Default is created. |
-| Direction | `direction` | string | Direction of the sort, including asc or desc. Default is desc. |
+| Sort | `sort` | string | Sort the comments by created, updated. Default is created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`created`</li><li>`updated`</li></ul></details>  |
+| Direction | `direction` | string | Direction of the sort, including asc or desc. Default is desc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details>  |
 | Since | `since` | string | Date (in `YYYY-MM-DD` format) from which comments will start to be fetched. The date will be in the UTC timezone. |
 | Page | `page` | integer | Page number of the results to fetch. Default is 1. |
 | Per Page | `per-page` | integer | Number of results to fetch per page. Default is 30. |
@@ -434,9 +434,9 @@ Get the list of all issues in a repository,This can be a pull request or a gener
 | Task ID (required) | `task` | string | `TASK_LIST_ISSUES` |
 | Owner (required) | `owner` | string | Owner of the repository. |
 | Repository (required) | `repository` | string | Repository name. |
-| State | `state` | string | State of the issues, can be one of: open, closed, all. Default is open. |
-| Sort | `sort` | string | Sort the issues by created, updated, popularity, or long-running. Default is created. |
-| Direction | `direction` | string | Direction of the sort, can be one of: asc, desc. Default is desc. |
+| State | `state` | string | State of the issues, can be one of: open, closed, all. Default is open. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open`</li><li>`closed`</li><li>`all`</li></ul></details>  |
+| Sort | `sort` | string | Sort the issues by created, updated, popularity, or long-running. Default is created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`created`</li><li>`updated`</li><li>`popularity`</li><li>`long-running`</li></ul></details>  |
+| Direction | `direction` | string | Direction of the sort, can be one of: asc, desc. Default is desc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details>  |
 | Since | `since` | string | Date (in `YYYY-MM-DD` format) from which issues will start to be fetched. The date will be in the UTC timezone. |
 | No Pull Request | `no-pull-request` | boolean | Whether to `not` include pull requests in the response. Since issue and pr use the same indexing system in GitHub, the API returns all relevant objects (issues and pr). Default is false. |
 | Page | `page` | integer | Page number of the results to fetch. Default is 1. |
@@ -561,7 +561,7 @@ Create a webhook for a repository.
 | Webhook URL (required) | `hook-url` | string | URL to send the payload to. |
 | Events (required) | `events` | array[string] | Events to trigger the webhook. Please see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads">the github document</a> for more information. |
 | Active | `active` | boolean | Whether the webhook is active. Default is false. |
-| Content Type | `content-type` | string | Content type of the webhook, can be one of: json, form. Default is json. |
+| Content Type | `content-type` | string | Content type of the webhook, can be one of: json, form. Default is json. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`json`</li><li>`form`</li></ul></details>  |
 | Hook Secret | `hook-secret` | string | If provided, the secret will be used as the key to generate the HMAC hex digest value for delivery signature headers. (see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#delivery-headers">the document</a>). |
 </div>
 

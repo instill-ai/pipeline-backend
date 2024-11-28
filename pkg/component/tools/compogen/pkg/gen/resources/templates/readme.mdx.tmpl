@@ -90,7 +90,7 @@ ${connection.<my-connection-id>}`.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `{{ $task.ID }}` |
 {{- range $task.Input }}
-| {{ anchorTaskObject . $task }}{{ if .Required }} (required){{ end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} |
+| {{ anchorTaskObject . $task }}{{ if .Required }} (required){{ end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} {{- if .Enum }} {{ enumValues .Enum }} {{ end }} |
 {{- end }}
 </div>
 {{- end }}

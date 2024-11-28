@@ -1,0 +1,955 @@
+---
+title: "Smartlead"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Smartlead component https://github.com/instill-ai/instill-core"
+---
+
+The Smartlead component is an application component that allows users to smartlead is a sales automation tool that organizes your leads and helps you close more deals.
+It can carry out the following tasks:
+- [Create Campaign](#create-campaign)
+- [Setup Campaign](#setup-campaign)
+- [Save Sequences](#save-sequences)
+- [Get Sequences](#get-sequences)
+- [Add Leads](#add-leads)
+- [Add Sender Email](#add-sender-email)
+- [Update Campaign Status](#update-campaign-status)
+- [Get Campaign Metric](#get-campaign-metric)
+- [List Leads Status](#list-leads-status)
+
+## Use Cases
+
+To achieve the basic use case that creating a campaign from scratch, you need to follow the steps below:
+
+1. Create campaign by `TASK_CREATE_CAMPAIGN`.
+2. Update campaign schedule & update campaign general settings by `TASK_SETUP_CAMPAIGN`.
+3. Save sequences by `TASK_SAVE_SEQUENCES`.
+4. Add leads to the campaign by `TASK_ADD_LEADS`.
+5. Add sender email by `TASK_ADD_SENDER_EMAIL`. Please notice that you need to create a sender email and configure in Smartlead console before adding it to the campaign.
+6. Start campaign by `TASK_UPDATE_CAMPAIGN_STATUS`.
+
+## Release Stage
+
+`Alpha`
+
+
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/smartlead/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/smartlead/v0/config/tasks.json) files respectively.
+
+
+
+
+## Setup
+
+
+In order to communicate with Smartlead, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| API Key (required) | `api-key` | string | Fill in your Smartlead API key. You can generate one from your [Smartlead account](https://app.smartlead.ai/app/settings/profile).  |
+
+</div>
+
+
+
+
+## Supported Tasks
+
+### Create Campaign
+
+Create a new campaign. You have to create a campaign before you can start adding leads to it. Please check [Smartlead API document](https://api.smartlead.ai/reference/references#campaign).
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CREATE_CAMPAIGN` |
+| Name (required) | `name` | string | Name of the campaign. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| ID | `id` | string | ID of the campaign. |
+| Created At | `created-at` | string | Created at timestamp of the campaign. |
+</div>
+
+
+### Setup Campaign
+
+Setup a campaign. You can update campaign settings to this campaign. For Smartlead campaign, you will need to setup the schedule settings and general settings.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SETUP_CAMPAIGN` |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
+| Timezone (required) | `timezone` | string | Timezone of the campaign. Please choose the value in [List of Timezones](https://help.smartlead.ai/Timezones-20fcff9ddbb5441790c7c8e5ce0e9233). |
+| Days of the Week | `days-of-the-week` | array[number] | Days of the week when the campaign will run. A number value ranging from 0 to 6; i.e [0,1,2,3,4,5,6]. 0 is Sunday, 1 is Monday, and so on. |
+| Start Hour (required) | `start-hour` | string | Start hour of the campaign. Time to start the campaign in 24-hour format (HH:MM). |
+| End Hour (required) | `end-hour` | string | End hour of the campaign. Time to end the campaign in 24-hour format (HH:MM). |
+| Minimum Time Between Emails (required) | `min-time-btw-emails` | number | Minimum time between emails in minutes. The minimum value is 3 minutes. |
+| Maximum New Leads per Day (required) | `max-new-leads-per-day` | number | Maximum new leads per day. |
+| Schedule Start Time (required) | `schedule-start-time` | string | Schedule start time of the campaign. Please specify the campaign start time in standard ISO 8601 format. e.g. 2024-11-27T07:29:25.978Z. |
+| Track Settings | `track-settings` | array[string] | Tracking settings like not tracking opens or link clicks. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`DONT_TRACK_EMAIL_OPEN`</li><li>`DONT_TRACK_LINK_CLICK`</li><li>`DONT_TRACK_REPLY_TO_AN_EMAIL`</li></ul></details>  |
+| Stop Lead Settings | `stop-lead-settings` | string | Stops lead if they do the action specified. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`CLICK_ON_A_LINK`</li><li>`OPEN_AN_EMAIL`</li></ul></details>  |
+| Send As Plain Text | `send-as-plain-text` | boolean | Send emails as plain text. |
+| Follow up Percentage | `follow-up-percentage` | number | Specifies the percentage of leads in a campaign who should receive follow-up emails. |
+| Add Unsubscribe Tag | `add-unsubscribe-tag` | boolean | Add an unsubscribe tag to the email. |
+| Ignore Mailbox Sending Limit | `ignore-ss-mailbox-sending-limit` | boolean | Ignore mailbox sending limits, used when creating a subsequence. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Result (optional) | `result` | string | Result of setting up a campaign. |
+</div>
+
+
+### Save Sequences
+
+Save sequences to a campaign. A Smartlead sequence is a series of automated emails sent to potential customers based on specific actions, or triggers.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SAVE_SEQUENCES` |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
+| [Sequences](#save-sequences-sequences) (required) | `sequences` | array[object] | A Smartlead sequence is a series of automated emails sent to potential customers based on specific actions, or triggers. |
+</div>
+
+
+<details>
+<summary> Input Objects in Save Sequences</summary>
+
+<h4 id="save-sequences-sequences">Sequences</h4>
+
+A Smartlead sequence is a series of automated emails sent to potential customers based on specific actions, or triggers.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Email Body | `email-body` | string | Body of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be replaced by the actual value from the lead.  |
+| Sequence Number | `seq-number` | number | Sequence number means the order of the sequence.  |
+| Sequence Delay Days | `sequence-delay-days` | number | Number of days to wait before sending the next email.  |
+| Subject | `subject` | string | Subject of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be replaced by the actual value from the lead.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Result | `result` | string | Result of saving sequences. |
+</div>
+
+
+### Get Sequences
+
+Get sequences of a campaign. If you want to add more sequences to the campaign, you can get the existing sequences and add new sequences to them. And, you can execute `TASK_SAVE_SEQUENCES` to save the sequences.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_SEQUENCES` |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Sequences](#get-sequences-sequences) | `sequences` | array[object] | Sequences of the campaign. |
+</div>
+
+<details>
+<summary> Output Objects in Get Sequences</summary>
+
+<h4 id="get-sequences-sequences">Sequences</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Email Body | `email-body` | string | Body of the email when you save the sequence. |
+| Sequence ID | `seq-id` | string | ID of the sequence. |
+| Sequence Number | `seq-number` | number | Sequence number means the order of the sequence. |
+| Sequence Delay Days | `sequence-delay-days` | number | Number of days to wait before sending the next email. |
+| Subject | `subject` | string | Subject of the email when you save the sequence. |
+</div>
+</details>
+
+
+### Add Leads
+
+Add leads to a campaign.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_ADD_LEADS` |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
+| [Leads](#add-leads-leads) (required) | `leads` | array[object] | Leads to add to the campaign. |
+| [Settings](#add-leads-settings) | `settings` | object | Settings for adding leads. |
+</div>
+
+
+<details>
+<summary> Input Objects in Add Leads</summary>
+
+<h4 id="add-leads-leads">Leads</h4>
+
+Leads to add to the campaign.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Company | `company` | string | Company name of the lead.  |
+| Custom Fields | `custom-fields` | array | Custom fields of the lead. You can use custom fields to store additional information about the lead, which can be used in the variable in the sequence email template.  |
+| Email | `email` | string | Email of the lead.  |
+| First Name | `first-name` | string | First name of the lead.  |
+| Last Name | `last-name` | string | Last name of the lead.  |
+| Location | `location` | string | Location of the lead.  |
+</div>
+<h4 id="add-leads-settings">Settings</h4>
+
+Settings for adding leads.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Ignore Community Bounce List | `ignore-community-bounce-list` | boolean | Ignore the community bounce list and add the lead. If true, uploaded leads will BYPASS any leads that bounced across Smartlead entire user base and be uploaded to the campaign.  |
+| Ignore Duplicate Leads in Other Campaign | `ignore-duplicate-leads-in-other-campaign` | boolean | Ignore duplicate leads in other campaigns and add the lead. If true, leads will NOT BYPASS the comparison with other campaigns and NOT be added to the campaign if they are part of any other campaign.   |
+| Ignore Global Block List | `ignore-global-block-list` | boolean | Ignore the global block list and add the lead. If true, uploaded leads will BYPASS the global block list and be uploaded to the campaign.  |
+| Ignore Unsubscribe List | `ignore-unsubscribe-list` | boolean | Ignore the unsubscribe list and add the lead. If true, leads will BYPASS the comparison with unsubscribed leads and be uploaded to the campaign.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Upload Count | `upload-count` | number | Number of leads uploaded. |
+| Total Leads | `total-leads` | number | Total number of leads in the campaign. |
+| Already Added to Campaign | `already-added-to-campaign` | number | Number of leads already added to the campaign. |
+| Invalid Email Count | `invalid-email-count` | number | Number of leads with invalid email. |
+| Error (optional) | `error` | string | Error message from Smartlead if any. |
+</div>
+
+
+### Add Sender Email
+
+Add a sender email to the campaign. You have to configure the sender email in Smartlead console before adding it to the campaign.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_ADD_SENDER_EMAIL` |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
+| Sender Email (required) | `sender-email` | string | Email address of the sender. You need to configure the sender email in [Smartlead console](https://app.smartlead.ai/app/email-accounts) before adding it to the campaign. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Result | `result` | string | Result of adding a sender email. If you don't configure your sender email in Smartlead console, you will get an error. |
+</div>
+
+
+### Update Campaign Status
+
+Update the status of a campaign. You need to start a campaign to send the emails to the leads.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_UPDATE_CAMPAIGN_STATUS` |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
+| Status (required) | `status` | string | Status of the campaign. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`START`</li><li>`PAUSED`</li><li>`STOPPED`</li></ul></details>  |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Result | `result` | string | Result of updating the status of a campaign. |
+</div>
+
+
+### Get Campaign Metric
+
+Get the metrics of a campaign. You can get the metrics like open count, click count, and reply count of the campaign.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_CAMPAIGN_METRIC` |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Sent Count (optional) | `sent-count` | number | Number of emails sent. |
+| Unique Sent Count (optional) | `unique-sent-count` | number | Number of unique emails sent. |
+| Open Count (optional) | `open-count` | number | Number of emails opened. |
+| Unique Open Count (optional) | `unique-open-count` | number | Number of unique emails opened. |
+| Click Count (optional) | `click-count` | number | Number of emails clicked. |
+| Unique Click Count (optional) | `unique-click-count` | number | Number of unique emails clicked. |
+| Reply Count (optional) | `reply-count` | number | Number of emails replied. |
+| Total Count (optional) | `total-count` | number | Total number of emails. |
+| Bounce Count (optional) | `bounce-count` | number | Number of emails bounced. |
+</div>
+
+
+### List Leads Status
+
+List the status of leads in a campaign. You can get the status of leads like 'STARTED', 'INPROGRESS', 'COMPLETED', 'PAUSED', 'STOPPED'.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_LIST_LEADS_STATUS` |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
+| Limit (required) | `limit` | number | Number of leads to list. The minimum value is 1. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Leads](#list-leads-status-leads) | `leads` | array[object] | Lead status in the campaign. |
+</div>
+
+<details>
+<summary> Output Objects in List Leads Status</summary>
+
+<h4 id="list-leads-status-leads">Leads</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Email | `email` | string | Email of the lead. |
+| Status | `status` | string | Status of the lead. |
+</div>
+</details>
+
+
+
+## Example Recipes Based on Basic Use Cases
+
+### Step 1: Create and setup a campaign
+
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  timezone:
+    title: Timezone
+    format: string
+  days-of-week:
+    title: Days of Week
+    format: array:string
+  start-hour:
+    title: Start Hour
+    format: string
+  end-hour:
+    title: End Hour
+    format: string
+  schedule-start-time:
+    title: Schedule Start Time
+    format: string
+  stop-lead-settings:
+    title: Stop Lead Settings
+    format: string
+  send-as-plain-text:
+    title: Send as Plain Text
+    format: boolean
+  min-time-btw-emails:
+    title: Min Time Between Emails
+    format: number
+  max-new-leads-per-day:
+    title: Max New Leads Per Days
+    format: number
+  email-body:
+    title: Email Body
+    format: string
+  subject:
+    title: Subject
+    format: string
+
+component:
+  create-campaign:
+    type: smartlead
+    task: TASK_CREATE_CAMPAIGN
+    input:
+      name: ${variable.campaign-name}
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+  setup-campaign:
+    type: smartlead
+    task: TASK_SETUP_CAMPAIGN
+    input:
+      campaign-name: ${variable.campaign-name}
+      timezone: ${variable.timezone}
+      days-of-the-week: ${variable.days-of-week}
+      start-hour: ${variable.start-hour}
+      end-hour: ${variable.end-hour}
+      min-time-btw-emails: ${variable.min-time-btw-emails}
+      max-new-leads-per-day: ${variable.max-new-leads-per-day}
+      schedule-start-time: ${variable.schedule-start-time}
+      track-settings:
+      stop-lead-settings: ${variable.stop-lead-settings}
+      send-as-plain-text: ${variable.send-as-plain-text}
+      follow-up-percentage:
+      add-unsubscribe-tag:
+      ignore-ss-mailbox-sending-limit:
+    condition: ${create-campaign.status.completed}
+    setup:
+      api-key: ${secret.smartlead}
+  add-sequences:
+    type: smartlead
+    task: TASK_SAVE_SEQUENCES
+    input:
+      campaign-name: ${variable.campaign-name}
+      sequences:
+        - subject: ${variable.subject}
+          email-body: ${variable.email-body}
+          seq-number: 1
+          sequence-delay-days: 2
+        ## You can add more sequences here
+        # - email-body: ${variable.email-body}
+        #   seq-number: 2
+        #   sequence-delay-days: 3
+        #   subject: ${variable.subject}
+    condition: ${create-campaign.status.completed}
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  create-campaign:
+    title: create-campaign Result
+    value: ${create-campaign.output}
+  setup-campaign:
+    title: setup-campaign
+    value: ${setup-campaign.output}
+  add-sequences:
+    title: add-sequences Result
+    value: ${add-sequences.output}
+```
+
+### Step 2: Add leads to the campaign
+
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  company:
+    title: Company
+    format: string
+  custom-keys:
+    title: Custom Keys
+    format: array:string
+  custom-values:
+    title: Custom Values
+    format: array:string
+  emails:
+    title: Emails
+    format: array:string
+  first-names:
+    title: First Names
+    format: array:string
+  last-names:
+    title: Last Names
+    format: array:string
+
+
+component:
+  add-leads:
+    type: smartlead
+    task: TASK_ADD_LEADS
+    input:
+      campaign-name: ${variable.campaign-name}
+      leads:
+        # You can use iterator to build more leads.
+        - company: ${variable.company}
+          email: ${variable.emails[0]}
+          first-name: ${variable.first-names[0]}
+          last-name: ${variable.last-names[0]}
+          # You can use iterator to build more columns. For the basic use case, we can use this way.
+          custom-fields:
+            - key: ${variable.custom-keys[0]}
+              value: ${variable.custom-values[0]}
+            - key: ${variable.custom-keys[1]}
+              value: ${variable.custom-values[1]}
+      settings:
+        ignore-global-block-list: false
+        ignore-unsubscribe-list: false
+        ignore-community-bounce-list: false
+        # Please be aware of this. Please set it false to add an email to multiple campaigns
+        ignore-duplicate-leads-in-other-campaign: false
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  add-leads-result:
+    title: add-leads Result
+    value: ${add-leads.output}
+```
+
+
+### Step 3: Add sender email to the campaign and update the campaign status
+
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  email:
+    title: Email
+    format: string
+  status:
+    title: Status
+    format: string
+
+component:
+  add-sender:
+    type: smartlead
+    task: TASK_ADD_SENDER_EMAIL
+    input:
+      campaign-name: ${variable.campaign-name}
+      sender-email: ${variable.email}
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+  update-campaign-status:
+    type: smartlead
+    task: TASK_UPDATE_CAMPAIGN_STATUS
+    input:
+      campaign-name: ${variable.campaign-name}
+      status: ${variable.status}
+    condition: ${add-sender.status.completed}
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  add-sender-result:
+    title: add-sender Result
+    value: ${add-sender.output}
+  update-campaign-status-result:
+    title: update-campaign-status Result
+    value: ${update-campaign-status.output}
+```
+
+
+## Example Recipes
+
+Create Campaign
+
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+
+component:
+  create-campaign:
+    type: smartlead
+    task: TASK_CREATE_CAMPAIGN
+    input:
+      name: ${variable.campaign-name}
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+
+
+output:
+  create-campaign-result:
+    title: Create Campaign Result
+    value: ${create-campaign.output}
+```
+
+
+Setup Campaign
+
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  timezone:
+    title: Timezone
+    format: string
+  days-of-week:
+    title: Days of Week
+    format: array:string
+  start-hour:
+    title: Start Hour
+    format: string
+  end-hour:
+    title: End Hour
+    format: string
+  schedule-start-time:
+    title: Schedule Start Time
+    format: string
+  stop-lead-settings:
+    title: Stop Lead Settings
+    format: string
+  send-as-plain-text:
+    title: Send as Plain Text
+    format: boolean
+  min-time-btw-emails:
+    title: Min Time Between Emails
+    format: number
+  max-new-leads-per-day:
+    title: Max New Leads Per Days
+    format: number
+
+component:
+  setup-campaign:
+    type: smartlead
+    task: TASK_SETUP_CAMPAIGN
+    input:
+      campaign-name: ${variable.campaign-name}
+      timezone: ${variable.timezone}
+      days-of-the-week: ${variable.days-of-week}
+      start-hour: ${variable.start-hour}
+      end-hour: ${variable.end-hour}
+      min-time-btw-emails: ${variable.min-time-btw-emails}
+      max-new-leads-per-day: ${variable.max-new-leads-per-day}
+      schedule-start-time: ${variable.schedule-start-time}
+      track-settings:
+      stop-lead-settings: ${variable.stop-lead-settings}
+      send-as-plain-text: ${variable.send-as-plain-text}
+      follow-up-percentage:
+      add-unsubscribe-tag:
+      ignore-ss-mailbox-sending-limit:
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${setup-campaign.output}
+```
+
+Get Sequence
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+
+component:
+  get-sequence:
+    type: smartlead
+    task: TASK_GET_SEQUENCES
+    input:
+      campaign-name: ${variable.campaign-name}
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  sequences:
+    title: Sequences
+    value: ${get-sequence.output}
+
+```
+
+Save Sequence
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  email-body:
+    title: Email Body
+    format: string
+  subject:
+    title: Subject
+    format: string
+
+component:
+  save-sequence:
+    type: smartlead
+    task: TASK_SAVE_SEQUENCES
+    input:
+      campaign-name: ${variable.campaign-name}
+      sequences:
+        - email-body: ${variable.email-body}
+          seq-number: 1
+          sequence-delay-days: 2
+          subject: ${variable.subject}
+        - email-body: ${variable.email-body}
+          seq-number: 2
+          sequence-delay-days: 3
+          subject: ${variable.subject}
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${save-sequence.output}
+```
+
+Add Leads
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  company:
+    title: Company
+    format: string
+  subject:
+    title: Subject
+    format: string
+  body:
+    title: Body
+    format: string
+
+component:
+  add-leads:
+    type: smartlead
+    task: TASK_ADD_LEADS
+    input:
+      campaign-name: ${variable.campaign-name}
+      leads:
+        - company: ${variable.company}
+          email: chunhao.huang@instill.tech
+          first-name: Huang
+          last-name: ChunHao
+          custom-fields:
+            - key: subject
+              value: ${variable.subject}
+            - key: body
+              value: ${variable.body}
+      settings:
+        ignore-global-block-list: false
+        ignore-unsubscribe-list: false
+        ignore-community-bounce-list: false
+        ignore-duplicate-leads-in-other-campaign: false
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${add-leads.output}
+```
+
+
+Add Sender Email
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  email:
+    title: Email
+    format: string
+
+component:
+  add-sender:
+    type: smartlead
+    task: TASK_ADD_SENDER_EMAIL
+    input:
+      campaign-name: ${variable.campaign-name}
+      sender-email: ${variable.email}
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${add-sender.output}
+```
+
+Update Campaign Status
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  status:
+    title: Status
+    format: string
+
+component:
+  update-campaign-status:
+    type: smartlead
+    task: TASK_UPDATE_CAMPAIGN_STATUS
+    input:
+      campaign-name: ${variable.campaign-name}
+      status: ${variable.status}
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${update-campaign-status.output}
+```
+
+Get Campaign Analytics Data
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+
+
+component:
+  get-metric:
+    type: smartlead
+    task: TASK_GET_CAMPAIGN_METRIC
+    input:
+      campaign-name: ${variable.campaign-name}
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${get-metric.output}
+```
+
+Get Leads Status Data
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  limit:
+    title: Limit
+    format: number
+
+component:
+  get-leads:
+    type: smartlead
+    task: TASK_LIST_LEADS_STATUS
+    input:
+      campaign-name: ${variable.campaign-name}
+      limit: ${variable.limit}
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${get-leads.output}
+```
+
