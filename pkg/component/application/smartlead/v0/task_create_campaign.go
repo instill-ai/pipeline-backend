@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+
 	"go.uber.org/zap"
 )
 

@@ -28,8 +28,7 @@ type setupCampaignInput struct {
 }
 
 type setupCampaignOutput struct {
-	ScheduleSettingResult string `instill:"schedule-setting-result"`
-	GeneralSettingResult  string `instill:"general-setting-result"`
+	Result string `instill:"result"`
 }
 
 type saveSequencesInput struct {
@@ -138,7 +137,6 @@ type listLeadsStatusOutput struct {
 }
 
 type leadStatus struct {
-	Email      string `instill:"email"`
-	Status     string `instill:"status"`
-	LastSeqNum int    `instill:"last-seq-num"`
+	Email  string `instill:"email"`
+	Status string `instill:"status"`
 }

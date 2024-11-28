@@ -50,7 +50,7 @@
   },
   "TASK_SETUP_CAMPAIGN": {
     "title": "Setup Campaign",
-    "description": "Setup a campaign. You can update campaign settings and add sequences to this campaign. Please check [Smartlead API document](https://api.smartlead.ai/reference/references#campaign).",
+    "description": "Setup a campaign. You can update campaign settings to this campaign. For Smartlead campaign, you will need to setup the schedule settings and general settings.",
     "input": {
       "title": "Input",
       "description": "Input parameters for setting up a campaign.",
@@ -133,7 +133,7 @@
         },
         "schedule-start-time": {
           "title": "Schedule Start Time",
-          "description": "Schedule start time of the campaign. Time to start the campaign in 24-hour format (HH:MM). e.g. 2024-11-27T07:29:25.978Z.",
+          "description": "Schedule start time of the campaign. Please specify the campaign start time in standard ISO 8601 format. e.g. 2024-11-27T07:29:25.978Z.",
           "type": "string",
           "instillFormat": "string",
           "instillAcceptFormats": [
@@ -148,7 +148,7 @@
             "DONT_TRACK_LINK_CLICK",
             "DONT_TRACK_REPLY_TO_AN_EMAIL"
           ],
-          "description": "Tracking settings; options like not tracking opens or link clicks.",
+          "description": "Tracking settings like not tracking opens or link clicks.",
           "type": "array",
           "instillFormat": "array:string",
           "items": {
@@ -193,7 +193,7 @@
           "instillUIOrder": 12
         },
         "ignore-ss-mailbox-sending-limit": {
-          "title": "Ignore SS Mailbox Sending Limit",
+          "title": "Ignore Mailbox Sending Limit",
           "description": "Ignore mailbox sending limits, used when creating a subsequence.",
           "type": "boolean",
           "instillFormat": "boolean",
@@ -215,19 +215,12 @@
       "description": "Output for setting up a campaign.",
       "type": "object",
       "properties": {
-        "schedule-setting-result": {
-          "title": "Schedule Setting Result",
-          "description": "Result of setting up the fields related to schedule.",
+        "result": {
+          "title": "Result",
+          "description": "Result of setting up a campaign.",
           "type": "string",
           "instillFormat": "string",
           "instillUIOrder": 0
-        },
-        "general-setting-result": {
-          "title": "General Setting Result",
-          "description": "Result of setting up the general fields.",
-          "type": "string",
-          "instillFormat": "string",
-          "instillUIOrder": 1
         }
       },
       "required": [
@@ -405,7 +398,7 @@
               },
               "subject": {
                 "title": "Subject",
-                "description": "Subject of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be replaced by the actual value from the lead.",
+                "description": "Subject of the email when you save the sequence.",
                 "type": "string",
                 "instillFormat": "string",
                 "instillAcceptFormats": [
@@ -415,7 +408,7 @@
               },
               "email-body": {
                 "title": "Email Body",
-                "description": "Body of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be replaced by the actual value from the lead.",
+                "description": "Body of the email when you save the sequence.",
                 "type": "string",
                 "instillFormat": "string",
                 "instillAcceptFormats": [
@@ -683,7 +676,7 @@
         },
         "sender-email": {
           "title": "Sender Email",
-          "description": "Email address of the sender. You need to configure the sender email in Smartlead console before adding it to the campaign.",
+          "description": "Email address of the sender. You need to configure the sender email in [Smartlead console](https://app.smartlead.ai/app/email-accounts) before adding it to the campaign.",
           "type": "string",
           "instillFormat": "string",
           "instillAcceptFormats": [
@@ -866,7 +859,7 @@
   },
   "TASK_LIST_LEADS_STATUS": {
     "title": "List Leads Status",
-    "description": "List the status of leads in a campaign. You can get the status of leads like sent, opened, clicked, and replied.",
+    "description": "List the status of leads in a campaign. You can get the status of leads like 'STARTED', 'INPROGRESS', 'COMPLETED', 'PAUSED', 'STOPPED'.",
     "input": {
       "title": "Input",
       "description": "Input parameters for listing the status of leads.",
@@ -926,19 +919,11 @@
                 "type": "string",
                 "instillFormat": "string",
                 "instillUIOrder": 1
-              },
-              "last-seq-num": {
-                "title": "Last Sequence Number",
-                "description": "Last sequence number of the lead.",
-                "type": "number",
-                "instillFormat": "number",
-                "instillUIOrder": 2
               }
             },
             "required": [
               "email",
-              "status",
-              "last-seq-num"
+              "status"
             ]
           },
           "instillUIOrder": 0

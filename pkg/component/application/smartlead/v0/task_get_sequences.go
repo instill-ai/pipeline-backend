@@ -3,7 +3,6 @@ package smartlead
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"go.uber.org/zap"
 
@@ -45,9 +44,6 @@ func (e *execution) getSequences(ctx context.Context, job *base.Job) error {
 	req := client.R().SetResult(&sequenceResp)
 
 	res, err := req.Get(getSequencesPath)
-
-	log.Println("Sending request to get sequences", req.Body)
-	log.Println("sequenceResp", sequenceResp)
 
 	if err != nil {
 		err = fmt.Errorf("get sequences: %w", err)
@@ -101,5 +97,6 @@ type sequenceResp struct {
 
 type delayInDays struct {
 	// It is different from Smartlead API documentation.
+	// It is delayInDays in get sequence response.
 	DelayInDays int `json:"delayInDays"`
 }

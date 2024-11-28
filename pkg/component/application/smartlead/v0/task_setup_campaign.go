@@ -82,8 +82,7 @@ func (e *execution) setupCampaign(ctx context.Context, job *base.Job) error {
 	}
 
 	outputStruct := setupCampaignOutput{
-		ScheduleSettingResult: "updated",
-		GeneralSettingResult:  "updated",
+		Result: "success",
 	}
 
 	err = job.Output.WriteData(ctx, outputStruct)

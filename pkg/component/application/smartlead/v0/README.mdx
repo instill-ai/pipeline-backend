@@ -92,7 +92,7 @@ Create a new campaign. You have to create a campaign before you can start adding
 
 ### Setup Campaign
 
-Setup a campaign. You can update campaign settings and add sequences to this campaign. Please check [Smartlead API document](https://api.smartlead.ai/reference/references#campaign).
+Setup a campaign. You can update campaign settings to this campaign. For Smartlead campaign, you will need to setup the schedule settings and general settings.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -106,13 +106,13 @@ Setup a campaign. You can update campaign settings and add sequences to this cam
 | End Hour (required) | `end-hour` | string | End hour of the campaign. Time to end the campaign in 24-hour format (HH:MM). |
 | Minimum Time Between Emails (required) | `min-time-btw-emails` | number | Minimum time between emails in minutes. The minimum value is 3 minutes. |
 | Maximum New Leads per Day (required) | `max-new-leads-per-day` | number | Maximum new leads per day. |
-| Schedule Start Time (required) | `schedule-start-time` | string | Schedule start time of the campaign. Time to start the campaign in 24-hour format (HH:MM). e.g. 2024-11-27T07:29:25.978Z. |
-| Track Settings | `track-settings` | array[string] | Tracking settings; options like not tracking opens or link clicks. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`DONT_TRACK_EMAIL_OPEN`</li><li>`DONT_TRACK_LINK_CLICK`</li><li>`DONT_TRACK_REPLY_TO_AN_EMAIL`</li></ul></details>  |
+| Schedule Start Time (required) | `schedule-start-time` | string | Schedule start time of the campaign. Please specify the campaign start time in standard ISO 8601 format. e.g. 2024-11-27T07:29:25.978Z. |
+| Track Settings | `track-settings` | array[string] | Tracking settings like not tracking opens or link clicks. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`DONT_TRACK_EMAIL_OPEN`</li><li>`DONT_TRACK_LINK_CLICK`</li><li>`DONT_TRACK_REPLY_TO_AN_EMAIL`</li></ul></details>  |
 | Stop Lead Settings | `stop-lead-settings` | string | Stops lead if they do the action specified. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`CLICK_ON_A_LINK`</li><li>`OPEN_AN_EMAIL`</li></ul></details>  |
 | Send As Plain Text | `send-as-plain-text` | boolean | Send emails as plain text. |
 | Follow up Percentage | `follow-up-percentage` | number | Specifies the percentage of leads in a campaign who should receive follow-up emails. |
 | Add Unsubscribe Tag | `add-unsubscribe-tag` | boolean | Add an unsubscribe tag to the email. |
-| Ignore Ss Mailbox Sending Limit | `ignore-ss-mailbox-sending-limit` | boolean | Ignore mailbox sending limits, used when creating a subsequence. |
+| Ignore Mailbox Sending Limit | `ignore-ss-mailbox-sending-limit` | boolean | Ignore mailbox sending limits, used when creating a subsequence. |
 </div>
 
 
@@ -124,8 +124,7 @@ Setup a campaign. You can update campaign settings and add sequences to this cam
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Schedule Setting Result | `schedule-setting-result` | string | Result of setting up the fields related to schedule. |
-| General Setting Result | `general-setting-result` | string | Result of setting up the general fields. |
+| Result (optional) | `result` | string | Result of setting up a campaign. |
 </div>
 
 
@@ -204,11 +203,11 @@ Get sequences of a campaign. If you want to add more sequences to the campaign, 
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Email Body | `email-body` | string | Body of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be replaced by the actual value from the lead. |
+| Email Body | `email-body` | string | Body of the email when you save the sequence. |
 | Sequence ID | `seq-id` | string | ID of the sequence. |
 | Sequence Number | `seq-number` | number | Sequence number means the order of the sequence. |
 | Sequence Delay Days | `sequence-delay-days` | number | Number of days to wait before sending the next email. |
-| Subject | `subject` | string | Subject of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be replaced by the actual value from the lead. |
+| Subject | `subject` | string | Subject of the email when you save the sequence. |
 </div>
 </details>
 
@@ -285,7 +284,7 @@ Add a sender email to the campaign. You have to configure the sender email in Sm
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_ADD_SENDER_EMAIL` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
-| Sender Email (required) | `sender-email` | string | Email address of the sender. You need to configure the sender email in Smartlead console before adding it to the campaign. |
+| Sender Email (required) | `sender-email` | string | Email address of the sender. You need to configure the sender email in [Smartlead console](https://app.smartlead.ai/app/email-accounts) before adding it to the campaign. |
 </div>
 
 
@@ -362,7 +361,7 @@ Get the metrics of a campaign. You can get the metrics like open count, click co
 
 ### List Leads Status
 
-List the status of leads in a campaign. You can get the status of leads like sent, opened, clicked, and replied.
+List the status of leads in a campaign. You can get the status of leads like 'STARTED', 'INPROGRESS', 'COMPLETED', 'PAUSED', 'STOPPED'.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -395,7 +394,6 @@ List the status of leads in a campaign. You can get the status of leads like sen
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Email | `email` | string | Email of the lead. |
-| Last Sequence Number | `last-seq-num` | number | Last sequence number of the lead. |
 | Status | `status` | string | Status of the lead. |
 </div>
 </details>

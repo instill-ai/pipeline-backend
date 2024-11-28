@@ -3,7 +3,6 @@ package smartlead
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"go.uber.org/zap"
 
@@ -44,8 +43,6 @@ func (e *execution) saveSequences(ctx context.Context, job *base.Job) error {
 
 	var respStruct saveSequencesResp
 	req := client.R().SetBody(requestIn).SetResult(&respStruct)
-
-	log.Println("Sending request to save sequences", req.Body)
 
 	res, err := req.Post(saveSequencesPath)
 
@@ -109,7 +106,8 @@ type sequenceReq struct {
 }
 
 type sequenceDelayDetails struct {
-	DelayInDays int `json:"delay_in_days"` // Delay in days
+	// It is delay_in_days in save sequence request.
+	DelayInDays int `json:"delay_in_days"`
 }
 
 type saveSequencesResp struct {
