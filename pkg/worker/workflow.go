@@ -1143,6 +1143,60 @@ func (w *worker) LoadRecipeActivity(ctx context.Context, param *LoadRecipeActivi
 	return nil
 }
 
+// loadConnectionFromComponent looks for a connection references in a component
+// and, when one is found, fetches the connection from the owner's namespace
+// and loads it to the connection map.
+func (w *worker) loadConnectionFromComponent(
+	ctx context.Context,
+	ownerPermalink string,
+	component *datamodel.Component,
+	connections data.Map,
+) error {
+	// We're only looking for connection references, so we skip components
+	// whose setup is defined explicitly in the recipe.
+	connRef, hasConnRef := component.Setup.(string)
+	if !hasConnRef {
+		return nil
+	}
+
+	connID, err := recipe.ConnectionIDFromReference(connRef)
+	if err != nil {
+		return fmt.Errorf("resolving connection reference: %w", err)
+	}
+
+	if _, connAlreadyLoaded := connections[connID]; connAlreadyLoaded {
+		return nil
+	}
+
+	nsUID, err := resource.GetRscPermalinkUID(ownerPermalink)
+	if err != nil {
+		return fmt.Errorf("extracting owner UID: %w", err)
+	}
+
+	conn, err := w.repository.GetNamespaceConnectionByID(ctx, nsUID, connID)
+	if err != nil {
+		if errors.Is(err, errdomain.ErrNotFound) {
+			err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
+		}
+
+		return fmt.Errorf("fetching connection: %w", err)
+	}
+
+	var setup map[string]any
+	if err := json.Unmarshal(conn.Setup, &setup); err != nil {
+		return fmt.Errorf("unmarshaling setup: %w", err)
+	}
+
+	setupVal, err := data.NewValue(setup)
+	if err != nil {
+		return fmt.Errorf("transforming connection setup to value: %w", err)
+	}
+
+	connections[connID] = setupVal
+
+	return nil
+}
+
 // InitComponentsActivity sets up the component information and loads it into
 // memory.
 //   - Secrets and connections are resolved and loaded into memory.
@@ -1183,79 +1237,14 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 	triggerRecipe := wfm.GetRecipe()
 	connections := data.Map{}
 	for _, comp := range triggerRecipe.Component {
-		if connRef, ok := comp.Setup.(string); ok {
-			connID, err := recipe.ConnectionIDFromReference(connRef)
-			if err != nil {
-				return handleErr(fmt.Errorf("resolving connection reference: %w", err))
-			}
-
-			if _, connAlreadyLoaded := connections[connID]; connAlreadyLoaded {
-				continue
-			}
-
-			nsUID, err := resource.GetRscPermalinkUID(ownerPermalink)
-			if err != nil {
-				return handleErr(fmt.Errorf("extracting owner UID: %w", err))
-			}
-
-			conn, err := w.repository.GetNamespaceConnectionByID(ctx, nsUID, connID)
-			if err != nil {
-				if errors.Is(err, errdomain.ErrNotFound) {
-					err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
-				}
-
-				return handleErr(fmt.Errorf("fetching connection: %w", err))
-			}
-
-			var setup map[string]any
-			if err := json.Unmarshal(conn.Setup, &setup); err != nil {
-				return handleErr(fmt.Errorf("unmarshaling setup: %w", err))
-			}
-
-			setupVal, err := data.NewValue(setup)
-			if err != nil {
-				return handleErr(fmt.Errorf("transforming connection setup to value: %w", err))
-			}
-
-			connections[connID] = setupVal
+		if err := w.loadConnectionFromComponent(ctx, ownerPermalink, comp, connections); err != nil {
+			return handleErr(fmt.Errorf("loading connections: %w", err))
 		}
+
 		if comp.Type == datamodel.Iterator {
 			for _, nestedComp := range comp.Component {
-				if connRef, ok := nestedComp.Setup.(string); ok {
-					connID, err := recipe.ConnectionIDFromReference(connRef)
-					if err != nil {
-						return handleErr(fmt.Errorf("resolving connection reference: %w", err))
-					}
-
-					if _, connAlreadyLoaded := connections[connID]; connAlreadyLoaded {
-						continue
-					}
-
-					nsUID, err := resource.GetRscPermalinkUID(ownerPermalink)
-					if err != nil {
-						return handleErr(fmt.Errorf("extracting owner UID: %w", err))
-					}
-
-					conn, err := w.repository.GetNamespaceConnectionByID(ctx, nsUID, connID)
-					if err != nil {
-						if errors.Is(err, errdomain.ErrNotFound) {
-							err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
-						}
-
-						return handleErr(fmt.Errorf("fetching connection: %w", err))
-					}
-
-					var setup map[string]any
-					if err := json.Unmarshal(conn.Setup, &setup); err != nil {
-						return handleErr(fmt.Errorf("unmarshaling setup: %w", err))
-					}
-
-					setupVal, err := data.NewValue(setup)
-					if err != nil {
-						return handleErr(fmt.Errorf("transforming connection setup to value: %w", err))
-					}
-
-					connections[connID] = setupVal
+				if err := w.loadConnectionFromComponent(ctx, ownerPermalink, nestedComp, connections); err != nil {
+					return handleErr(fmt.Errorf("loading connections: %w", err))
 				}
 			}
 		}
