@@ -337,8 +337,6 @@ Get the metrics of a campaign. You can get the metrics like open count, click co
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_CAMPAIGN_METRIC` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
-| Start Date | `start-date` | string | Start date of the metrics. The format should be in `YYYY-MM-DD`. |
-| End Date | `end-date` | string | End date of the metrics. The format should be in `YYYY-MM-DD`. |
 </div>
 
 
@@ -350,10 +348,8 @@ Get the metrics of a campaign. You can get the metrics like open count, click co
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Start Date (optional) | `start-date` | string | Start date of the metrics. |
-| End Date (optional) | `end-date` | string | End date of the metrics. |
-| Send Count (optional) | `send-count` | number | Number of emails sent. |
-| Unique Send Count (optional) | `unique-send-count` | number | Number of unique emails sent. |
+| Sent Count (optional) | `sent-count` | number | Number of emails sent. |
+| Unique Sent Count (optional) | `unique-sent-count` | number | Number of unique emails sent. |
 | Open Count (optional) | `open-count` | number | Number of emails opened. |
 | Unique Open Count (optional) | `unique-open-count` | number | Number of unique emails opened. |
 | Click Count (optional) | `click-count` | number | Number of emails clicked. |
@@ -673,3 +669,31 @@ output:
     title: Result
     value: ${update-campaign-status.output}
 ```
+
+Get Campaign Analytics Data
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+
+
+component:
+  get-metric:
+    type: smartlead
+    task: TASK_GET_CAMPAIGN_METRIC
+    input:
+      campaign-name: ${variable.campaign-name}
+    condition:  
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${get-metric.output}
+```
+

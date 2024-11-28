@@ -265,3 +265,31 @@ output:
     title: Result
     value: ${update-campaign-status.output}
 ```
+
+Get Campaign Analytics Data
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+
+
+component:
+  get-metric:
+    type: smartlead
+    task: TASK_GET_CAMPAIGN_METRIC
+    input:
+      campaign-name: ${variable.campaign-name}
+    condition:  
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${get-metric.output}
+```
+

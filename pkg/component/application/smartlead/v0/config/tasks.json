@@ -786,26 +786,6 @@
             "string"
           ],
           "instillUIOrder": 0
-        },
-        "start-date": {
-          "title": "Start Date",
-          "description": "Start date of the metrics. The format should be in `YYYY-MM-DD`.",
-          "type": "string",
-          "instillFormat": "string",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUIOrder": 1
-        },
-        "end-date": {
-          "title": "End Date",
-          "description": "End date of the metrics. The format should be in `YYYY-MM-DD`.",
-          "type": "string",
-          "instillFormat": "string",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUIOrder": 2
         }
       },
       "required": [
@@ -817,82 +797,68 @@
       "description": "Output for getting the metrics of a campaign.",
       "type": "object",
       "properties": {
-        "start-date": {
-          "title": "Start Date",
-          "description": "Start date of the metrics.",
-          "type": "string",
-          "instillFormat": "string",
-          "instillUIOrder": 0
-        },
-        "end-date": {
-          "title": "End Date",
-          "description": "End date of the metrics.",
-          "type": "string",
-          "instillFormat": "string",
-          "instillUIOrder": 1
-        },
-        "send-count": {
-          "title": "Send Count",
+        "sent-count": {
+          "title": "Sent Count",
           "description": "Number of emails sent.",
           "type": "number",
           "instillFormat": "number",
-          "instillUIOrder": 2
+          "instillUIOrder": 0
         },
-        "unique-send-count": {
-          "title": "Unique Send Count",
+        "unique-sent-count": {
+          "title": "Unique Sent Count",
           "description": "Number of unique emails sent.",
           "type": "number",
           "instillFormat": "number",
-          "instillUIOrder": 3
+          "instillUIOrder": 1
         },
         "open-count": {
           "title": "Open Count",
           "description": "Number of emails opened.",
           "type": "number",
           "instillFormat": "number",
-          "instillUIOrder": 4
+          "instillUIOrder": 2
         },
         "unique-open-count": {
           "title": "Unique Open Count",
           "description": "Number of unique emails opened.",
           "type": "number",
           "instillFormat": "number",
-          "instillUIOrder": 5
+          "instillUIOrder": 3
         },
         "click-count": {
           "title": "Click Count",
           "description": "Number of emails clicked.",
           "type": "number",
           "instillFormat": "number",
-          "instillUIOrder": 6
+          "instillUIOrder": 4
         },
         "unique-click-count": {
           "title": "Unique Click Count",
           "description": "Number of unique emails clicked.",
           "type": "number",
           "instillFormat": "number",
-          "instillUIOrder": 7
+          "instillUIOrder": 5
         },
         "reply-count": {
           "title": "Reply Count",
           "description": "Number of emails replied.",
           "type": "number",
           "instillFormat": "number",
-          "instillUIOrder": 8
+          "instillUIOrder": 6
         },
         "total-count": {
           "title": "Total Count",
           "description": "Total number of emails.",
           "type": "number",
           "instillFormat": "number",
-          "instillUIOrder": 9
+          "instillUIOrder": 7
         },
         "bounce-count": {
           "title": "Bounce Count",
           "description": "Number of emails bounced.",
           "type": "number",
           "instillFormat": "number",
-          "instillUIOrder": 10
+          "instillUIOrder": 8
         }
       },
       "required": []

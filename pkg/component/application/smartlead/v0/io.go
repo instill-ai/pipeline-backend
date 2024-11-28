@@ -117,17 +117,15 @@ type getCampaignMetricInput struct {
 }
 
 type getCampaignMetricOutput struct {
-	StartDate        string `instill:"start-date"`
-	EndDate          string `instill:"end-date"`
-	SendCount        int    `instill:"send-count"`
-	UniqueSendCount  int    `instill:"unique-send-count"`
-	OpenCount        int    `instill:"open-count"`
-	UniqueOpenCount  int    `instill:"unique-open-count"`
-	ClickCount       int    `instill:"click-count"`
-	UniqueClickCount int    `instill:"unique-click-count"`
-	ReplyCount       int    `instill:"reply-count"`
-	TotalCount       int    `instill:"total-count"`
-	BounceCount      int    `instill:"bounce-count"`
+	SentCount        int `instill:"sent-count"`
+	UniqueSentCount  int `instill:"unique-sent-count"`
+	OpenCount        int `instill:"open-count"`
+	UniqueOpenCount  int `instill:"unique-open-count"`
+	ClickCount       int `instill:"click-count"`
+	UniqueClickCount int `instill:"unique-click-count"`
+	ReplyCount       int `instill:"reply-count"`
+	TotalCount       int `instill:"total-count"`
+	BounceCount      int `instill:"bounce-count"`
 }
 
 type listLeadsStatusInput struct {
