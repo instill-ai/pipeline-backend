@@ -6,7 +6,9 @@
     "TASK_GET_SEQUENCES",
     "TASK_ADD_LEADS",
     "TASK_ADD_SENDER_EMAIL",
-    "TASK_UPDATE_CAMPAIGN_STATUS"
+    "TASK_UPDATE_CAMPAIGN_STATUS",
+    "TASK_GET_CAMPAIGN_METRIC",
+    "TASK_LIST_LEADS_STATUS"
   ],
   "documentationUrl": "https://www.instill.tech/docs/component/application/smartlead",
   "icon": "assets/smartlead.svg",

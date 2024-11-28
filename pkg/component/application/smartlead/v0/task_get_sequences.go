@@ -3,6 +3,7 @@ package smartlead
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"go.uber.org/zap"
 
@@ -25,38 +26,10 @@ func (e *execution) getSequences(ctx context.Context, job *base.Job) error {
 
 	client := newClient(e.GetSetup(), logger, nil)
 
-	campaignResp := []campaignResp{}
-	req := client.R().SetResult(&campaignResp)
-
-	res, err := req.Get(getCampaignPath)
+	campaignID, err := getCampaignID(client, logger, inputStruct.CampaignName)
 
 	if err != nil {
-		err = fmt.Errorf("get campaign: %w", err)
-		job.Error.Error(ctx, err)
-		return err
-	}
-
-	if res.StatusCode() != 200 {
-		err = fmt.Errorf("get campaign: %s", res.String())
-		logger.Error("Failed to get campaign",
-			zap.String("response", res.String()),
-			zap.Int("status", res.StatusCode()),
-		)
-		job.Error.Error(ctx, err)
-		return err
-	}
-
-	var campaignID string
-
-	for _, c := range campaignResp {
-		if c.Name == inputStruct.CampaignName {
-			campaignID = fmt.Sprintf("%d", c.ID)
-			break
-		}
-	}
-
-	if campaignID == "" {
-		err = fmt.Errorf("campaign not found: %s", inputStruct.CampaignName)
+		err = fmt.Errorf("getting campaign ID: %w", err)
 		job.Error.Error(ctx, err)
 		return err
 	}
@@ -69,9 +42,12 @@ func (e *execution) getSequences(ctx context.Context, job *base.Job) error {
 
 	var sequenceResp []sequenceResp
 
-	req = client.R().SetResult(&sequenceResp)
+	req := client.R().SetResult(&sequenceResp)
 
-	res, err = req.Get(getSequencesPath)
+	res, err := req.Get(getSequencesPath)
+
+	log.Println("Sending request to get sequences", req.Body)
+	log.Println("sequenceResp", sequenceResp)
 
 	if err != nil {
 		err = fmt.Errorf("get sequences: %w", err)
@@ -92,10 +68,11 @@ func (e *execution) getSequences(ctx context.Context, job *base.Job) error {
 	var sequences []sequence
 	for _, s := range sequenceResp {
 		sequences = append(sequences, sequence{
-			SeqID:     fmt.Sprintf("%d", s.ID),
-			SeqNumber: s.SeqNumber,
-			Subject:   s.Subject,
-			EmailBody: s.EmailBody,
+			SeqID:             fmt.Sprintf("%d", s.ID),
+			SeqNumber:         s.SeqNumber,
+			Subject:           s.Subject,
+			EmailBody:         s.EmailBody,
+			SequenceDelayDays: s.SeqDelayDetails.DelayInDays,
 		})
 	}
 
@@ -115,8 +92,14 @@ func (e *execution) getSequences(ctx context.Context, job *base.Job) error {
 }
 
 type sequenceResp struct {
-	ID        int    `json:"id"`
-	SeqNumber int    `json:"seq-number"`
-	Subject   string `json:"subject"`
-	EmailBody string `json:"email_body"`
+	ID              int         `json:"id"`
+	SeqNumber       int         `json:"seq_number"`
+	Subject         string      `json:"subject"`
+	EmailBody       string      `json:"email_body"`
+	SeqDelayDetails delayInDays `json:"seq_delay_details"`
+}
+
+type delayInDays struct {
+	// It is different from Smartlead API documentation.
+	DelayInDays int `json:"delayInDays"`
 }

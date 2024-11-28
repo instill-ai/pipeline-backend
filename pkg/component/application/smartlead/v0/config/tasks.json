@@ -143,17 +143,17 @@
         },
         "track-settings": {
           "title": "Track Settings",
+          "enum": [
+              "DONT_TRACK_EMAIL_OPEN",
+              "DONT_TRACK_LINK_CLICK",
+              "DONT_TRACK_REPLY_TO_AN_EMAIL"
+          ],
           "description": "Tracking settings; options like not tracking opens or link clicks.",
           "type": "array",
           "instillFormat": "array:string",
           "items": {
             "type": "string",
-            "instillFormat": "string",
-            "enum": [
-              "DONT_TRACK_EMAIL_OPEN",
-              "DONT_TRACK_LINK_CLICK",
-              "DONT_TRACK_REPLY_TO_AN_EMAIL"
-            ]
+            "instillFormat": "string"
           },
           "instillUIOrder": 8
         },
@@ -201,7 +201,13 @@
         }
       },
       "required": [
-        "id"
+        "campaign-name", 
+        "timezone", 
+        "start-hour", 
+        "end-hour", 
+        "min-time-btw-emails", 
+        "max-new-leads-per-day", 
+        "schedule-start-time"
       ]
     },
     "output": {
@@ -249,7 +255,7 @@
           "instillUIOrder": 0
         },
         "sequences": {
-          "title": "Sequence",
+          "title": "Sequences",
           "description": "A Smartlead sequence is a series of automated emails sent to potential customers based on specific actions, or triggers.",
           "type": "array",
           "instillFormat": "array:object",
@@ -623,7 +629,10 @@
         }
       },
       "required": [
-        "upload-count", "total-leads", "already-added-to-campaign", "invalid-email-count"
+        "upload-count",
+        "total-leads",
+        "already-added-to-campaign",
+        "invalid-email-count"
       ]
     }
   },
@@ -730,6 +739,220 @@
       },
       "required": [
         "result"
+      ]
+    }
+  },
+  "TASK_GET_CAMPAIGN_METRIC": {
+    "title": "Get Campaign Metric",
+    "description": "Get the metrics of a campaign. You can get the metrics like open count, click count, and reply count of the campaign.",
+    "input": {
+      "title": "Input",
+      "description": "Input parameters for getting the metrics of a campaign.",
+      "type": "object",
+      "properties": {
+        "campaign-name": {
+          "title": "Campaign Name",
+          "description": "Name of the campaign.",
+          "type": "string",
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0
+        },
+        "start-date": {
+          "title": "Start Date",
+          "description": "Start date of the metrics. The format should be in `YYYY-MM-DD`.",
+          "type": "string",
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1
+        },
+        "end-date": {
+          "title": "End Date",
+          "description": "End date of the metrics. The format should be in `YYYY-MM-DD`.",
+          "type": "string",
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 2
+        }
+      },
+      "required": [
+        "campaign-name"
+      ]
+    },
+    "output": {
+      "title": "Output",
+      "description": "Output for getting the metrics of a campaign.",
+      "type": "object",
+      "properties": {
+        "start-date": {
+          "title": "Start Date",
+          "description": "Start date of the metrics.",
+          "type": "string",
+          "instillFormat": "string",
+          "instillUIOrder": 0
+        },
+        "end-date": {
+          "title": "End Date",
+          "description": "End date of the metrics.",
+          "type": "string",
+          "instillFormat": "string",
+          "instillUIOrder": 1
+        },
+        "send-count": {
+          "title": "Send Count",
+          "description": "Number of emails sent.",
+          "type": "number",
+          "instillFormat": "number",
+          "instillUIOrder": 2
+        },
+        "unique-send-count": {
+          "title": "Unique Send Count",
+          "description": "Number of unique emails sent.",
+          "type": "number",
+          "instillFormat": "number",
+          "instillUIOrder": 3
+        },
+        "open-count": {
+          "title": "Open Count",
+          "description": "Number of emails opened.",
+          "type": "number",
+          "instillFormat": "number",
+          "instillUIOrder": 4
+        },
+        "unique-open-count": {
+          "title": "Unique Open Count",
+          "description": "Number of unique emails opened.",
+          "type": "number",
+          "instillFormat": "number",
+          "instillUIOrder": 5
+        },
+        "click-count": {
+          "title": "Click Count",
+          "description": "Number of emails clicked.",
+          "type": "number",
+          "instillFormat": "number",
+          "instillUIOrder": 6
+        },
+        "unique-click-count": {
+          "title": "Unique Click Count",
+          "description": "Number of unique emails clicked.",
+          "type": "number",
+          "instillFormat": "number",
+          "instillUIOrder": 7
+        },
+        "reply-count": {
+          "title": "Reply Count",
+          "description": "Number of emails replied.",
+          "type": "number",
+          "instillFormat": "number",
+          "instillUIOrder": 8
+        },
+        "total-count": {
+          "title": "Total Count",
+          "description": "Total number of emails.",
+          "type": "number",
+          "instillFormat": "number",
+          "instillUIOrder": 9
+        },
+        "bounce-count": {
+          "title": "Bounce Count",
+          "description": "Number of emails bounced.",
+          "type": "number",
+          "instillFormat": "number",
+          "instillUIOrder": 10
+        }
+      },
+      "required": []
+    }
+  },
+  "TASK_LIST_LEADS_STATUS": {
+    "title": "List Leads Status",
+    "description": "List the status of leads in a campaign. You can get the status of leads like sent, opened, clicked, and replied.",
+    "input": {
+      "title": "Input",
+      "description": "Input parameters for listing the status of leads.",
+      "type": "object",
+      "properties": {
+        "campaign-name": {
+          "title": "Campaign Name",
+          "description": "Name of the campaign.",
+          "type": "string",
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0
+        },
+        "limit": {
+          "title": "Limit",
+          "description": "Number of leads to list. The minimum value is 1.",
+          "type": "number",
+          "instillFormat": "number",
+          "minimum": 1,
+          "instillAcceptFormats": [
+            "number"
+          ],
+          "instillUIOrder": 1
+        }
+      },
+      "required": [
+        "campaign-name",
+        "limit"
+      ]
+    },
+    "output": {
+      "title": "Output",
+      "description": "Output for listing the status of leads.",
+      "type": "object",
+      "properties": {
+        "leads": {
+          "title": "Leads",
+          "description": "Lead status in the campaign.",
+          "type": "array",
+          "instillFormat": "array:object",
+          "items": {
+            "type": "object",
+            "instillFormat": "object",
+            "properties": {
+              "email": {
+                "title": "Email",
+                "description": "Email of the lead.",
+                "type": "string",
+                "instillFormat": "string",
+                "instillUIOrder": 0
+              },
+              "status": {
+                "title": "Status",
+                "description": "Status of the lead.",
+                "type": "string",
+                "instillFormat": "string",
+                "instillUIOrder": 1
+              },
+              "last-seq-num": {
+                "title": "Last Sequence Number",
+                "description": "Last sequence number of the lead.",
+                "type": "number",
+                "instillFormat": "number",
+                "instillUIOrder": 2
+              }
+            },
+            "required": [
+              "email",
+              "status",
+              "last-seq-num"
+            ]
+          },
+          "instillUIOrder": 0
+        }
+      },
+      "required": [
+        "leads"
       ]
     }
   }

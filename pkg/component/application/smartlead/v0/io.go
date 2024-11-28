@@ -9,8 +9,8 @@ type createCampaignOutput struct {
 	CreatedAt string `instill:"created-at"`
 }
 
-type setupCampaign struct {
-	CampaignName    string   `instill:"campaign-name"`
+type setupCampaignInput struct {
+	CampaignName  string   `instill:"campaign-name"`
 	Timezone      string   `instill:"timezone"`
 	DaysOfTheWeek []string `instill:"days-of-the-week"`
 	// With (HH:MM) format
@@ -34,7 +34,7 @@ type setupCampaignOutput struct {
 
 type saveSequencesInput struct {
 	CampaignName string     `instill:"campaign-name"`
-	Sequences  []sequence `instill:"sequences"`
+	Sequences    []sequence `instill:"sequences"`
 }
 
 type sequence struct {
@@ -59,8 +59,8 @@ type getSequencesOutput struct {
 
 type addLeadsInput struct {
 	CampaignName string   `instill:"campaign-name"`
-	Leads      []lead   `instill:"leads"`
-	Settings   settings `instill:"settings"`
+	Leads        []lead   `instill:"leads"`
+	Settings     settings `instill:"settings"`
 }
 
 type lead struct {
@@ -88,8 +88,8 @@ type addLeadsOutput struct {
 }
 
 type addSenderEmailInput struct {
-	CampaignName  string `instill:"campaign-name"`
-	SenderEmail string `instill:"sender-email"`
+	CampaignName string `instill:"campaign-name"`
+	SenderEmail  string `instill:"sender-email"`
 }
 
 type addSenderEmailOutput struct {
@@ -98,9 +98,44 @@ type addSenderEmailOutput struct {
 
 type updateCampaignStatusInput struct {
 	CampaignName string `instill:"campaign-name"`
-	Status     string `instill:"status"`
+	Status       string `instill:"status"`
 }
 
 type updateCampaignStatusOutput struct {
 	Result string `instill:"result"`
+}
+
+type getCampaignMetricInput struct {
+	CampaignName string `instill:"campaign-name"`
+	StartDate    string `instill:"start-date"`
+	EndDate      string `instill:"end-date"`
+}
+
+type getCampaignMetricOutput struct {
+	StartDate        string `instill:"start-date"`
+	EndDate          string `instill:"end-date"`
+	SendCount        int    `instill:"send-count"`
+	UniqueSendCount  int    `instill:"unique-send-count"`
+	OpenCount        int    `instill:"open-count"`
+	UniqueOpenCount  int    `instill:"unique-open-count"`
+	ClickCount       int    `instill:"click-count"`
+	UniqueClickCount int    `instill:"unique-click-count"`
+	ReplyCount       int    `instill:"reply-count"`
+	TotalCount       int    `instill:"total-count"`
+	BounceCount      int    `instill:"bounce-count"`
+}
+
+type listLeadsStatusInput struct {
+	CampaignName string `instill:"campaign-name"`
+	Limit        int    `instill:"limit"`
+}
+
+type listLeadsStatusOutput struct {
+	Leads []leadStatus `instill:"leads"`
+}
+
+type leadStatus struct {
+	Email      string `instill:"email"`
+	Status     string `instill:"status"`
+	LastSeqNum int    `instill:"last-seq-num"`
 }

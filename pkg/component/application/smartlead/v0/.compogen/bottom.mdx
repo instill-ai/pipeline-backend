@@ -1,6 +1,166 @@
 ## Example Recipes
 
+Create Campaign
 
 ```yaml
+# VDP Version
+version: v1beta
 
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+
+component:
+  create-campaign:
+    type: smartlead
+    task: TASK_CREATE_CAMPAIGN
+    input:
+      name: ${variable.campaign-name}
+    condition:  
+    setup:
+      api-key: ${secret.smartlead}
+  
+
+output:
+  create-campaign-result:
+    title: Create Campaign Result
+    value: ${create-campaign.output}
 ```
+
+
+Setup Campaign
+
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  timezone:
+    title: Timezone
+    format: string
+  days-of-week:
+    title: Days of Week
+    format: array:string
+  start-hour:
+    title: Start Hour
+    format: string
+  end-hour:
+    title: End Hour
+    format: string
+  schedule-start-time:
+    title: Schedule Start Time
+    format: string
+  stop-lead-settings:
+    title: Stop Lead Settings
+    format: string
+  send-as-plain-text:
+    title: Send as Plain Text
+    format: boolean
+  min-time-btw-emails:
+    title: Min Time Between Emails
+    format: number
+  max-new-leads-per-day:
+    title: Max New Leads Per Days
+    format: number
+
+component:
+  setup-campaign:
+    type: smartlead
+    task: TASK_SETUP_CAMPAIGN
+    input:
+      campaign-name: ${variable.campaign-name}
+      timezone: ${variable.timezone}
+      days-of-the-week: ${variable.days-of-week}
+      start-hour: ${variable.start-hour}
+      end-hour: ${variable.end-hour}
+      min-time-btw-emails: ${variable.min-time-btw-emails}
+      max-new-leads-per-day: ${variable.max-new-leads-per-day}
+      schedule-start-time: ${variable.schedule-start-time}
+      track-settings: 
+      stop-lead-settings: ${variable.stop-lead-settings}
+      send-as-plain-text: ${variable.send-as-plain-text}
+      follow-up-percentage:
+      add-unsubscribe-tag:
+      ignore-ss-mailbox-sending-limit:
+    condition:
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${setup-campaign.output}
+```
+
+Get Sequence
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+
+component:
+  get-sequence:
+    type: smartlead
+    task: TASK_GET_SEQUENCES
+    input:
+      campaign-name: ${variable.campaign-name}
+    condition:  
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  sequences:
+    title: Sequences
+    value: ${get-sequence.output}
+    
+```
+
+Save Sequence
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  email-body:
+    title: Email Body
+    format: string
+  subject:
+    title: Subject
+    format: string
+
+component:
+  save-sequence:
+    type: smartlead
+    task: TASK_SAVE_SEQUENCES
+    input:
+      campaign-name: ${variable.campaign-name}
+      sequences:
+        - email-body: ${variable.email-body}
+          seq-number: 1
+          sequence-delay-days: 2
+          subject: ${variable.subject} 
+        - email-body: ${variable.email-body}
+          seq-number: 2
+          sequence-delay-days: 3
+          subject: ${variable.subject}
+    condition:  
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${save-sequence.output}
+```
+

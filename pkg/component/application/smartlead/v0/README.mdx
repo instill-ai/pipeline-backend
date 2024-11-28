@@ -14,6 +14,8 @@ It can carry out the following tasks:
 - [Add Leads](#add-leads)
 - [Add Sender Email](#add-sender-email)
 - [Update Campaign Status](#update-campaign-status)
+- [Get Campaign Metric](#get-campaign-metric)
+- [List Leads Status](#list-leads-status)
 
 ## Use Cases
 
@@ -97,14 +99,14 @@ Setup a campaign. You can update campaign settings and add sequences to this cam
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SETUP_CAMPAIGN` |
-| Campaign Name | `campaign-name` | string | Name of the campaign. |
-| Timezone | `timezone` | string | Timezone of the campaign. Please choose the value in [List of Timezones](https://help.smartlead.ai/Timezones-20fcff9ddbb5441790c7c8e5ce0e9233). |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
+| Timezone (required) | `timezone` | string | Timezone of the campaign. Please choose the value in [List of Timezones](https://help.smartlead.ai/Timezones-20fcff9ddbb5441790c7c8e5ce0e9233). |
 | Days of the Week | `days-of-the-week` | array[number] | Days of the week when the campaign will run. A number value ranging from 0 to 6; i.e [0,1,2,3,4,5,6]. 0 is Sunday, 1 is Monday, and so on. |
-| Start Hour | `start-hour` | string | Start hour of the campaign. Time to start the campaign in 24-hour format (HH:MM). |
-| End Hour | `end-hour` | string | End hour of the campaign. Time to end the campaign in 24-hour format (HH:MM). |
-| Minimum Time Between Emails | `min-time-btw-emails` | number | Minimum time between emails in minutes. The minimum value is 3 minutes. |
-| Maximum New Leads per Day | `max-new-leads-per-day` | number | Maximum new leads per day. |
-| Schedule Start Time | `schedule-start-time` | string | Schedule start time of the campaign. Time to start the campaign in 24-hour format (HH:MM). e.g. 2024-11-27T07:29:25.978Z. |
+| Start Hour (required) | `start-hour` | string | Start hour of the campaign. Time to start the campaign in 24-hour format (HH:MM). |
+| End Hour (required) | `end-hour` | string | End hour of the campaign. Time to end the campaign in 24-hour format (HH:MM). |
+| Minimum Time Between Emails (required) | `min-time-btw-emails` | number | Minimum time between emails in minutes. The minimum value is 3 minutes. |
+| Maximum New Leads per Day (required) | `max-new-leads-per-day` | number | Maximum new leads per day. |
+| Schedule Start Time (required) | `schedule-start-time` | string | Schedule start time of the campaign. Time to start the campaign in 24-hour format (HH:MM). e.g. 2024-11-27T07:29:25.978Z. |
 | Track Settings | `track-settings` | array[string] | Tracking settings; options like not tracking opens or link clicks. |
 | Stop Lead Settings | `stop-lead-settings` | string | Stops lead if they do the action specified. |
 | Send As Plain Text | `send-as-plain-text` | boolean | Send emails as plain text. |
@@ -323,6 +325,84 @@ Update the status of a campaign. You need to start a campaign to send the emails
 | :--- | :--- | :--- | :--- |
 | Result | `result` | string | Result of updating the status of a campaign. |
 </div>
+
+
+### Get Campaign Metric
+
+Get the metrics of a campaign. You can get the metrics like open count, click count, and reply count of the campaign.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_CAMPAIGN_METRIC` |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
+| Start Date | `start-date` | string | Start date of the metrics. The format should be in `YYYY-MM-DD`. |
+| End Date | `end-date` | string | End date of the metrics. The format should be in `YYYY-MM-DD`. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Start Date (optional) | `start-date` | string | Start date of the metrics. |
+| End Date (optional) | `end-date` | string | End date of the metrics. |
+| Send Count (optional) | `send-count` | number | Number of emails sent. |
+| Unique Send Count (optional) | `unique-send-count` | number | Number of unique emails sent. |
+| Open Count (optional) | `open-count` | number | Number of emails opened. |
+| Unique Open Count (optional) | `unique-open-count` | number | Number of unique emails opened. |
+| Click Count (optional) | `click-count` | number | Number of emails clicked. |
+| Unique Click Count (optional) | `unique-click-count` | number | Number of unique emails clicked. |
+| Reply Count (optional) | `reply-count` | number | Number of emails replied. |
+| Total Count (optional) | `total-count` | number | Total number of emails. |
+| Bounce Count (optional) | `bounce-count` | number | Number of emails bounced. |
+</div>
+
+
+### List Leads Status
+
+List the status of leads in a campaign. You can get the status of leads like sent, opened, clicked, and replied.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_LIST_LEADS_STATUS` |
+| Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
+| Limit (required) | `limit` | number | Number of leads to list. The minimum value is 1. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Leads](#list-leads-status-leads) | `leads` | array[object] | Lead status in the campaign. |
+</div>
+
+<details>
+<summary> Output Objects in List Leads Status</summary>
+
+<h4 id="list-leads-status-leads">Leads</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Email | `email` | string | Email of the lead. |
+| Last Sequence Number | `last-seq-num` | number | Last sequence number of the lead. |
+| Status | `status` | string | Status of the lead. |
+</div>
+</details>
 
 
 

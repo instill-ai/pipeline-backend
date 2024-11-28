@@ -24,9 +24,10 @@ const (
 	taskAddLeads             = "TASK_ADD_LEADS"
 	taskAddSenderEmail       = "TASK_ADD_SENDER_EMAIL"
 	taskUpdateCampaignStatus = "TASK_UPDATE_CAMPAIGN_STATUS"
+	taskGetCampaignMetric    = "TASK_GET_CAMPAIGN_METRIC"
+	taskListLeadsStatus      = "TASK_LIST_LEADS_STATUS"
 
-	getCampaignPath = "campaigns?api_key={apiKey}"
-	baseURL         = "https://server.smartlead.ai/api/v1/"
+	baseURL = "https://server.smartlead.ai/api/v1/"
 )
 
 var (
@@ -85,6 +86,10 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 		e.execute = e.addSenderEmail
 	case taskUpdateCampaignStatus:
 		e.execute = e.updateCampaignStatus
+	case taskGetCampaignMetric:
+		e.execute = e.getCampaignMetric
+	case taskListLeadsStatus:
+		e.execute = e.listLeadsStatus
 	default:
 		return nil, errmsg.AddMessage(
 			fmt.Errorf("not supported task: %s", x.Task),
@@ -126,9 +131,4 @@ func newClient(setup *structpb.Struct, logger *zap.Logger, pathParams map[string
 
 func getAPIKey(setup *structpb.Struct) string {
 	return setup.GetFields()["api-key"].GetStringValue()
-}
-
-type campaignResp struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
 }
