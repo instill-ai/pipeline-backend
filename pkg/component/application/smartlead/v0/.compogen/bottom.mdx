@@ -206,3 +206,35 @@ output:
 ```
 
 
+Add Sender Email
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  email:
+    title: Email
+    format: string
+
+component:
+  add-sender:
+    type: smartlead
+    task: TASK_ADD_SENDER_EMAIL
+    input:
+      campaign-name: ${variable.campaign-name}
+      sender-email: ${variable.email}
+    condition:  
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${add-sender.output}
+```
+
+
+
