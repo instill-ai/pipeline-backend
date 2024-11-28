@@ -107,8 +107,8 @@ Setup a campaign. You can update campaign settings and add sequences to this cam
 | Minimum Time Between Emails (required) | `min-time-btw-emails` | number | Minimum time between emails in minutes. The minimum value is 3 minutes. |
 | Maximum New Leads per Day (required) | `max-new-leads-per-day` | number | Maximum new leads per day. |
 | Schedule Start Time (required) | `schedule-start-time` | string | Schedule start time of the campaign. Time to start the campaign in 24-hour format (HH:MM). e.g. 2024-11-27T07:29:25.978Z. |
-| Track Settings | `track-settings` | array[string] | Tracking settings; options like not tracking opens or link clicks. |
-| Stop Lead Settings | `stop-lead-settings` | string | Stops lead if they do the action specified. |
+| Track Settings | `track-settings` | array[string] | Tracking settings; options like not tracking opens or link clicks. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`DONT_TRACK_EMAIL_OPEN`</li><li>`DONT_TRACK_LINK_CLICK`</li><li>`DONT_TRACK_REPLY_TO_AN_EMAIL`</li></ul></details>  |
+| Stop Lead Settings | `stop-lead-settings` | string | Stops lead if they do the action specified. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`CLICK_ON_A_LINK`</li><li>`OPEN_AN_EMAIL`</li></ul></details>  |
 | Send As Plain Text | `send-as-plain-text` | boolean | Send emails as plain text. |
 | Follow up Percentage | `follow-up-percentage` | number | Specifies the percentage of leads in a campaign who should receive follow-up emails. |
 | Add Unsubscribe Tag | `add-unsubscribe-tag` | boolean | Add an unsubscribe tag to the email. |
@@ -311,7 +311,7 @@ Update the status of a campaign. You need to start a campaign to send the emails
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE_CAMPAIGN_STATUS` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
-| Status (required) | `status` | string | Status of the campaign. |
+| Status (required) | `status` | string | Status of the campaign. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`START`</li><li>`PAUSED`</li><li>`STOPPED`</li></ul></details>  |
 </div>
 
 

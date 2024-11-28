@@ -67,7 +67,7 @@ List all boards in Jira
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_BOARDS` |
 | Project Key or ID | `project-key-or-id` | string | This filters results to boards that are relevant to a project. Relevance meaning that the JQL filter defined in board contains a reference to a project. |
-| Board Type | `board-type` | string | The type of board, can be: scrum, kanban, simple. Default is simple. |
+| Board Type | `board-type` | string | The type of board, can be: scrum, kanban, simple. Default is simple. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`scrum`</li><li>`kanban`</li><li>`simple`</li></ul></details>  |
 | Name | `name` | string | Name filters results to boards that match or partially match the specified name. Default is empty. |
 | Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. Default is 0. |
 | Max Results | `max-results` | integer | The maximum number of boards to return. Default is 50. |
