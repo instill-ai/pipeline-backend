@@ -1243,11 +1243,31 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 			return err
 		}
 
+		// Each batch may overwrite the secret and connection references in the
+		// recipe by providing a new value (secret) or reference (connection)
+		// in the trigger data. For secrets, the value will be read from the
+		// trigger data instead of from the namespace's secrets. In the case of
+		// connections, this works as aliasing an existing connection with the
+		// ID defined in the recipe.
+		//
+		// This is useful for parametrizing pipeline triggers and for
+		// triggering pipelines owned by other namespaces (which might
+		// reference secrets or connections that exist in their namespaces).
 		secret := data.Map{}
 		for k, v := range d.Secret {
 			secret[k] = data.NewString(v)
 		}
 		err = wfm.Set(ctx, idx, constant.SegSecret, secret)
+		if err != nil {
+			return err
+		}
+
+		connRefs := data.Map{}
+		for k, v := range d.ConnectionReferences {
+			connRefs[k] = data.NewString(v)
+		}
+
+		err = wfm.Set(ctx, idx, constant.SegConnection, connRefs)
 		if err != nil {
 			return err
 		}
