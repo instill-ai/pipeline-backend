@@ -144,9 +144,9 @@
         "track-settings": {
           "title": "Track Settings",
           "enum": [
-              "DONT_TRACK_EMAIL_OPEN",
-              "DONT_TRACK_LINK_CLICK",
-              "DONT_TRACK_REPLY_TO_AN_EMAIL"
+            "DONT_TRACK_EMAIL_OPEN",
+            "DONT_TRACK_LINK_CLICK",
+            "DONT_TRACK_REPLY_TO_AN_EMAIL"
           ],
           "description": "Tracking settings; options like not tracking opens or link clicks.",
           "type": "array",
@@ -201,12 +201,12 @@
         }
       },
       "required": [
-        "campaign-name", 
-        "timezone", 
-        "start-hour", 
-        "end-hour", 
-        "min-time-btw-emails", 
-        "max-new-leads-per-day", 
+        "campaign-name",
+        "timezone",
+        "start-hour",
+        "end-hour",
+        "min-time-btw-emails",
+        "max-new-leads-per-day",
         "schedule-start-time"
       ]
     },
@@ -516,9 +516,36 @@
               "custom-fields": {
                 "title": "Custom Fields",
                 "description": "Custom fields of the lead. You can use custom fields to store additional information about the lead, which can be used in the variable in the sequence email template.",
-                "type": "object",
-                "instillFormat": "semi-structured/json",
-                "properties": {},
+                "type": "array",
+                "instillFormat": "array:object",
+                "items": {
+                  "properties": {
+                    "key": {
+                      "title": "Key",
+                      "description": "Key of the custom field.",
+                      "type": "string",
+                      "instillFormat": "string",
+                      "instillAcceptFormats": [
+                        "string"
+                      ],
+                      "instillUIOrder": 0
+                    },
+                    "value": {
+                      "title": "Value",
+                      "description": "Value of the custom field.",
+                      "type": "string",
+                      "instillFormat": "string",
+                      "instillAcceptFormats": [
+                        "string"
+                      ],
+                      "instillUIOrder": 1
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "value"
+                  ]
+                },
                 "required": [],
                 "instillUIOrder": 5
               }

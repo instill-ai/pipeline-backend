@@ -164,3 +164,45 @@ output:
     value: ${save-sequence.output}
 ```
 
+Add Leads
+```yaml
+# VDP Version
+version: v1beta
+
+variable:
+  campaign-name:
+    title: Campaign Name
+    format: string
+  email-body:
+    title: Email Body
+    format: string
+  subject:
+    title: Subject
+    format: string
+
+component:
+  save-sequence:
+    type: smartlead
+    task: TASK_SAVE_SEQUENCES
+    input:
+      campaign-name: ${variable.campaign-name}
+      sequences:
+        - email-body: ${variable.email-body}
+          seq-number: 1
+          sequence-delay-days: 2
+          subject: ${variable.subject} 
+        - email-body: ${variable.email-body}
+          seq-number: 2
+          sequence-delay-days: 3
+          subject: ${variable.subject}
+    condition:  
+    setup:
+      api-key: ${secret.smartlead}
+
+output:
+  result:
+    title: Result
+    value: ${save-sequence.output}
+```
+
+

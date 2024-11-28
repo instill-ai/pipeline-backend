@@ -64,12 +64,17 @@ type addLeadsInput struct {
 }
 
 type lead struct {
-	Email        string            `instill:"email"`
-	FirstName    string            `instill:"first-name"`
-	LastName     string            `instill:"last-name"`
-	Company      string            `instill:"company"`
-	Location     string            `instill:"location"`
-	CustomFields map[string]string `instill:"custom-fields"`
+	Email        string        `instill:"email"`
+	FirstName    string        `instill:"first-name"`
+	LastName     string        `instill:"last-name"`
+	Company      string        `instill:"company"`
+	Location     string        `instill:"location"`
+	CustomFields []customField `instill:"custom-fields"`
+}
+
+type customField struct {
+	Key   string `instill:"key"`
+	Value string `instill:"value"`
 }
 
 type settings struct {
