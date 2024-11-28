@@ -889,8 +889,11 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 			}
 
 			if v == nil {
+				// If the field has no value and no default value is specified,
+				// represent it as null, we treat null as missing value
 				if d, ok := defaultValueMap[k]; !ok || d == nil {
-					return fmt.Errorf("%w: missing or invalid value for %s field \"%s\"", errdomain.ErrInvalidArgument, formatMap[k], k)
+					variable[k] = data.NewNull()
+					continue
 				}
 			}
 

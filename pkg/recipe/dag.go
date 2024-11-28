@@ -160,14 +160,6 @@ func (d *dag) TopologicalSort() ([]datamodel.ComponentMap, error) {
 	return ans, nil
 }
 
-func resolveReference(ctx context.Context, wfm memory.WorkflowMemory, batchIdx int, path string) (format.Value, error) {
-	v, err := wfm.Get(ctx, batchIdx, path)
-	if err != nil {
-		return nil, err
-	}
-	return v, err
-}
-
 func Render(ctx context.Context, template format.Value, batchIdx int, wfm memory.WorkflowMemory, allowUnresolved bool) (format.Value, error) {
 	if input, ok := template.(format.ReferenceString); ok {
 		s := input.String()
@@ -178,7 +170,7 @@ func Render(ctx context.Context, template format.Value, batchIdx int, wfm memory
 			if s == constant.SegSecret+"."+constant.GlobalSecretKey {
 				return data.NewString(componentbase.SecretKeyword), nil
 			}
-			val, err := resolveReference(ctx, wfm, batchIdx, s)
+			val, err := wfm.Get(ctx, batchIdx, s)
 			if err != nil {
 				if allowUnresolved {
 					return data.NewNull(), nil
@@ -207,7 +199,7 @@ func Render(ctx context.Context, template format.Value, batchIdx int, wfm memory
 			}
 
 			ref := strings.TrimSpace(s[2:endIdx])
-			v, err := resolveReference(ctx, wfm, batchIdx, ref)
+			v, err := wfm.Get(ctx, batchIdx, ref)
 			if err != nil {
 				if allowUnresolved {
 					return data.NewNull(), nil
