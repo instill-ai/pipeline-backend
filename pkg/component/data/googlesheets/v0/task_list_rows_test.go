@@ -42,6 +42,25 @@ func TestListRows(t *testing.T) {
 			}`))
 			return
 		}
+		if r.URL.Path == "/v4/spreadsheets/test-id" && r.Method == "GET" {
+			// Return mock spreadsheet response
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{
+				"sheets": [
+					{
+						"properties": {
+							"sheetId": 0,
+							"title": "sheet1",
+							"gridProperties": {
+								"rowCount": 3
+							}
+						}
+					}
+				]
+			}`))
+			return
+		}
+
 		if r.URL.Path == "/v4/spreadsheets/test-id/values/sheet1" && r.Method == "GET" {
 			// Return mock sheet data response
 			w.Header().Set("Content-Type", "application/json")
