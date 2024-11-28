@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"google.golang.org/api/sheets/v4"
+
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
-func (e *execution) listRowsHelper(ctx context.Context, sharedLink string, sheetName string, startRow int, endRow int) ([]Row, error) {
+func (e *execution) listRowsHelper(ctx context.Context, sharedLink string, sheetName string, startRow *int, endRow *int) ([]Row, error) {
 	spreadsheetID, err := e.extractSpreadsheetID(sharedLink)
 	if err != nil {
 		return nil, err
@@ -29,9 +31,37 @@ func (e *execution) listRowsHelper(ctx context.Context, sharedLink string, sheet
 	}
 
 	headers := headerResp.Values[0]
+	// Get spreadsheet metadata to find total rows
+	spreadsheet, err := e.sheetService.Spreadsheets.Get(spreadsheetID).Context(ctx).Do()
+	if err != nil {
+		return nil, err
+	}
+
+	var targetSheet *sheets.Sheet
+	for _, sheet := range spreadsheet.Sheets {
+		if sheet.Properties.Title == sheetName {
+			targetSheet = sheet
+			break
+		}
+	}
+
+	if targetSheet == nil {
+		return nil, fmt.Errorf("sheet %s not found", sheetName)
+	}
+
+	maxRows := targetSheet.Properties.GridProperties.RowCount
+
+	// If endRow is not specified or exceeds maxRows, set it to maxRows
+	if endRow == nil || *endRow > int(maxRows) {
+		maxRowsInt := int(maxRows)
+		endRow = &maxRowsInt
+	}
+	if startRow == nil {
+		startRow = func() *int { startRow := 2; return &startRow }()
+	}
 
 	// Get data rows
-	dataRange := fmt.Sprintf("%s!%d:%d", sheetName, startRow, endRow)
+	dataRange := fmt.Sprintf("%s!%d:%d", sheetName, *startRow, *endRow)
 	dataResp, err := e.sheetService.Spreadsheets.Values.Get(
 		spreadsheetID,
 		dataRange,
@@ -59,7 +89,7 @@ func (e *execution) listRowsHelper(ctx context.Context, sharedLink string, sheet
 		}
 		rows = append(rows, Row{
 			RowValue:  rowMap,
-			RowNumber: i + startRow,
+			RowNumber: i + *startRow,
 		})
 	}
 	return rows, nil

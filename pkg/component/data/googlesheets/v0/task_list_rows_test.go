@@ -70,8 +70,8 @@ func TestListRows(t *testing.T) {
 			input: taskListRowsInput{
 				SharedLink: "https://docs.google.com/spreadsheets/d/test-id",
 				SheetName:  "sheet1",
-				StartRow:   2,
-				EndRow:     3,
+				StartRow:   func() *int { startRow := 2; return &startRow }(),
+				EndRow:     func() *int { endRow := 3; return &endRow }(),
 			},
 			expectedOutput: taskListRowsOutput{
 				Rows: []Row{
