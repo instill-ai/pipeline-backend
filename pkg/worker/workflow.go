@@ -1175,11 +1175,14 @@ func (w *worker) loadConnectionFromComponent(
 
 	conn, err := w.repository.GetNamespaceConnectionByID(ctx, nsUID, connID)
 	if err != nil {
-		if errors.Is(err, errdomain.ErrNotFound) {
-			err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
+		// The connection ID might not exist in the requester's namespace, but
+		// they can still provide it it in the trigger params.
+		if !errors.Is(err, errdomain.ErrNotFound) {
+			return fmt.Errorf("fetching connection: %w", err)
 		}
 
-		return fmt.Errorf("fetching connection: %w", err)
+		connections[connID] = data.NewNull()
+		return nil
 	}
 
 	var setup map[string]any
@@ -1264,7 +1267,19 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 			}
 		}
 
-		if err := wfm.Set(ctx, idx, constant.SegConnection, connections); err != nil {
+		batchConns := data.Map{}
+		for connID, conn := range connections {
+			if conn.Equal(data.NewNull()) {
+				return handleErr(errmsg.AddMessage(
+					fmt.Errorf("connection doesn't exist"),
+					fmt.Sprintf("Connection %s doesn't exist.", connID),
+				))
+			}
+
+			batchConns[connID] = conn
+		}
+
+		if err := wfm.Set(ctx, idx, constant.SegConnection, batchConns); err != nil {
 			return handleErr(fmt.Errorf("setting connections in memory: %w", err))
 		}
 
