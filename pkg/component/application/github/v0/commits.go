@@ -40,23 +40,24 @@ func (client *Client) extractCommitFile(file *github.CommitFile) CommitFile {
 	}
 }
 
-func (client *Client) extractCommitInformation(ctx context.Context, owner, repository string, originalCommit *github.RepositoryCommit, needCommitDetails bool) Commit {
+func (client *Client) extractCommitInformation(ctx context.Context, owner, repository string, originalCommit *github.RepositoryCommit, needCommitDetails bool) (Commit, error) {
 	if !needCommitDetails {
 		return Commit{
 			SHA:     originalCommit.GetSHA(),
 			Message: originalCommit.GetCommit().GetMessage(),
-		}
+		}, nil
 	}
 	stats := originalCommit.GetStats()
 	commitFiles := originalCommit.Files
 	if stats == nil || commitFiles == nil {
-		commit, err := client.getCommitFunc(ctx, owner, repository, originalCommit.GetSHA())
-		if err == nil {
-			// only update stats and files if there is no error
-			// otherwise, we will maintain the original commit information
-			stats = commit.GetStats()
-			commitFiles = commit.Files
+		commit, _, err := client.Repositories.GetCommit(ctx, owner, repository, originalCommit.GetSHA(), nil)
+		if err != nil {
+			return Commit{}, addErrMsgToClientError(err)
 		}
+		// only update stats and files if there is no error
+		// otherwise, we will maintain the original commit information
+		stats = commit.GetStats()
+		commitFiles = commit.Files
 	}
 	files := make([]CommitFile, len(commitFiles))
 	for idx, file := range commitFiles {
@@ -71,10 +72,5 @@ func (client *Client) extractCommitInformation(ctx context.Context, owner, repos
 			Changes:   stats.GetTotal(),
 		},
 		Files: files,
-	}
-}
-
-func (client *Client) getCommitFunc(ctx context.Context, owner string, repository string, sha string) (*github.RepositoryCommit, error) {
-	commit, _, err := client.Repositories.GetCommit(ctx, owner, repository, sha, nil)
-	return commit, addErrMsgToClientError(err)
+	}, nil
 }

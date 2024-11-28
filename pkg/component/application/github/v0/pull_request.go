@@ -6,7 +6,8 @@ import (
 	"github.com/google/go-github/v62/github"
 )
 
-type PullRequestService interface {
+// PullRequestsService is the interface for the GitHub pull request service.
+type PullRequestsService interface {
 	List(context.Context, string, string, *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error)
 	Get(context.Context, string, string, int) (*github.PullRequest, *github.Response, error)
 	ListComments(context.Context, string, string, int, *github.PullRequestListCommentsOptions) ([]*github.PullRequestComment, *github.Response, error)
@@ -14,6 +15,7 @@ type PullRequestService interface {
 	ListCommits(context.Context, string, string, int, *github.ListOptions) ([]*github.RepositoryCommit, *github.Response, error)
 }
 
+// PullRequest is the GitHub pull request object.
 type PullRequest struct {
 	ID                int64    `json:"id"`
 	Number            int      `json:"number"`
@@ -51,12 +53,16 @@ func (client *Client) extractPullRequestInformation(ctx context.Context, owner s
 		}
 		resp.Commits = make([]Commit, len(commits))
 		for idx, commit := range commits {
-			resp.Commits[idx] = client.extractCommitInformation(ctx, owner, repository, commit, needCommitDetails)
+			resp.Commits[idx], err = client.extractCommitInformation(ctx, owner, repository, commit, needCommitDetails)
+			if err != nil {
+				return PullRequest{}, err
+			}
 		}
 	}
 	return resp, nil
 }
 
+// ListPullRequestsInput is the input for the ListPullRequests task.
 type ListPullRequestsInput struct {
 	RepoInfo
 	State     string `json:"state"`

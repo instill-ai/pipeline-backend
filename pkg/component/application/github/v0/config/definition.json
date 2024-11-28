@@ -1,14 +1,16 @@
 {
   "availableTasks": [
-    "TASK_LIST_PULL_REQUESTS",
-    "TASK_GET_PULL_REQUEST",
-    "TASK_GET_COMMIT",
-    "TASK_LIST_REVIEW_COMMENTS",
-    "TASK_CREATE_REVIEW_COMMENT",
-    "TASK_LIST_ISSUES",
-    "TASK_GET_ISSUE",
     "TASK_CREATE_ISSUE",
-    "TASK_CREATE_WEBHOOK"
+    "TASK_CREATE_REVIEW_COMMENT",
+    "TASK_CREATE_WEBHOOK",
+    "TASK_GET_COMMIT",
+    "TASK_GET_ISSUE",
+    "TASK_GET_ORGANIZATION",
+    "TASK_GET_PULL_REQUEST",
+    "TASK_GET_USER",
+    "TASK_LIST_ISSUES",
+    "TASK_LIST_PULL_REQUESTS",
+    "TASK_LIST_REVIEW_COMMENTS"
   ],
   "documentationUrl": "https://www.instill.tech/docs/component/application/github",
   "icon": "assets/github.svg",

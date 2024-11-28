@@ -1,6 +1,695 @@
 {
   "$defs": {
-    "pullRequest": {
+    "user": {
+      "oneOf": [
+        {
+          "title": "Private User",
+          "description": "Private User",
+          "type": "object",
+          "properties": {
+            "login": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "user-view-type": {
+              "type": "string"
+            },
+            "node-id": {
+              "type": "string"
+            },
+            "avatar-url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "gravatar-id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "html-url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "followers-url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "following-url": {
+              "type": "string"
+            },
+            "gists-url": {
+              "type": "string"
+            },
+            "starred-url": {
+              "type": "string"
+            },
+            "subscriptions-url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "organizations-url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "repos-url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "events-url": {
+              "type": "string"
+            },
+            "received-events-url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "type": {
+              "type": "string"
+            },
+            "site-admin": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "company": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "blog": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "location": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "email": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "email"
+            },
+            "notification-email": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "email"
+            },
+            "hireable": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "bio": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "twitter-username": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "public-repos": {
+              "type": "integer"
+            },
+            "public-gists": {
+              "type": "integer"
+            },
+            "followers": {
+              "type": "integer"
+            },
+            "following": {
+              "type": "integer"
+            },
+            "created-at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated-at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "private-gists": {
+              "type": "integer"
+            },
+            "total-private-repos": {
+              "type": "integer"
+            },
+            "owned-private-repos": {
+              "type": "integer"
+            },
+            "disk-usage": {
+              "type": "integer"
+            },
+            "collaborators": {
+              "type": "integer"
+            },
+            "two-factor-authentication": {
+              "type": "boolean"
+            },
+            "plan": {
+              "type": "object",
+              "properties": {
+                "collaborators": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "space": {
+                  "type": "integer"
+                },
+                "private-repos": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "collaborators",
+                "name",
+                "space",
+                "private-repos"
+              ]
+            },
+            "business-plus": {
+              "type": "boolean"
+            },
+            "ldap-dn": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "avatar-url",
+            "events-url",
+            "followers-url",
+            "following-url",
+            "gists-url",
+            "gravatar-id",
+            "html-url",
+            "id",
+            "node-id",
+            "login",
+            "organizations-url",
+            "received-events-url",
+            "repos-url",
+            "site-admin",
+            "starred-url",
+            "subscriptions-url",
+            "type",
+            "url",
+            "bio",
+            "blog",
+            "company",
+            "email",
+            "followers",
+            "following",
+            "hireable",
+            "location",
+            "name",
+            "public-gists",
+            "public-repos",
+            "created-at",
+            "updated-at"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "organization": {
+      "title": "Organization Full",
+      "description": "Organization Full",
+      "type": "object",
+      "properties": {
+        "login": {
+          "type": "string",
+          "examples": [
+            "github"
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "examples": [
+            1
+          ]
+        },
+        "node-id": {
+          "type": "string",
+          "examples": [
+            "MDEyOk9yZ2FuaXphdGlvbjE="
+          ]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "examples": [
+            "https://api.github.com/orgs/github"
+          ]
+        },
+        "repos-url": {
+          "type": "string",
+          "format": "uri",
+          "examples": [
+            "https://api.github.com/orgs/github/repos"
+          ]
+        },
+        "events-url": {
+          "type": "string",
+          "format": "uri",
+          "examples": [
+            "https://api.github.com/orgs/github/events"
+          ]
+        },
+        "hooks-url": {
+          "type": "string",
+          "examples": [
+            "https://api.github.com/orgs/github/hooks"
+          ]
+        },
+        "issues-url": {
+          "type": "string",
+          "examples": [
+            "https://api.github.com/orgs/github/issues"
+          ]
+        },
+        "members-url": {
+          "type": "string",
+          "examples": [
+            "https://api.github.com/orgs/github/members{/member}"
+          ]
+        },
+        "public-members-url": {
+          "type": "string",
+          "examples": [
+            "https://api.github.com/orgs/github/public_members{/member}"
+          ]
+        },
+        "avatar-url": {
+          "type": "string",
+          "examples": [
+            "https://github.com/images/error/octocat_happy.gif"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "examples": [
+            "A great organization"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "examples": [
+            "github"
+          ]
+        },
+        "company": {
+          "type": "string",
+          "examples": [
+            "GitHub"
+          ]
+        },
+        "blog": {
+          "type": "string",
+          "format": "uri",
+          "examples": [
+            "https://github.com/blog"
+          ]
+        },
+        "location": {
+          "type": "string",
+          "examples": [
+            "San Francisco"
+          ]
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "examples": [
+            "octocat@github.com"
+          ]
+        },
+        "twitter-username": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "examples": [
+            "github"
+          ]
+        },
+        "is-verified": {
+          "type": "boolean",
+          "examples": [
+            true
+          ]
+        },
+        "has-organization-projects": {
+          "type": "boolean",
+          "examples": [
+            true
+          ]
+        },
+        "has-repository-projects": {
+          "type": "boolean",
+          "examples": [
+            true
+          ]
+        },
+        "public-repos": {
+          "type": "integer",
+          "examples": [
+            2
+          ]
+        },
+        "public-gists": {
+          "type": "integer",
+          "examples": [
+            1
+          ]
+        },
+        "followers": {
+          "type": "integer",
+          "examples": [
+            20
+          ]
+        },
+        "following": {
+          "type": "integer",
+          "examples": [
+            0
+          ]
+        },
+        "html-url": {
+          "type": "string",
+          "format": "uri",
+          "examples": [
+            "https://github.com/octocat"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "examples": [
+            "Organization"
+          ]
+        },
+        "total-private-repos": {
+          "type": "integer",
+          "examples": [
+            100
+          ]
+        },
+        "owned-private-repos": {
+          "type": "integer",
+          "examples": [
+            100
+          ]
+        },
+        "private-gists": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "examples": [
+            81
+          ]
+        },
+        "disk-usage": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "examples": [
+            10000
+          ]
+        },
+        "collaborators": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "The number of collaborators on private repositories.\n\nThis field may be null if the number of private repositories is over 50,000.",
+          "examples": [
+            8
+          ]
+        },
+        "billing-email": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "email",
+          "examples": [
+            "org@example.com"
+          ]
+        },
+        "plan": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "space": {
+              "type": "integer"
+            },
+            "private-repos": {
+              "type": "integer"
+            },
+            "filled-seats": {
+              "type": "integer"
+            },
+            "seats": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "name",
+            "space",
+            "private-repos"
+          ]
+        },
+        "default-repository-permission": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "members-can-create-repositories": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "examples": [
+            true
+          ]
+        },
+        "two-factor-requirement-enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "examples": [
+            true
+          ]
+        },
+        "members-allowed-repository-creation-type": {
+          "type": "string",
+          "examples": [
+            "all"
+          ]
+        },
+        "members-can-create-public-repositories": {
+          "type": "boolean",
+          "examples": [
+            true
+          ]
+        },
+        "members-can-create-private-repositories": {
+          "type": "boolean",
+          "examples": [
+            true
+          ]
+        },
+        "members-can-create-internal-repositories": {
+          "type": "boolean",
+          "examples": [
+            true
+          ]
+        },
+        "members-can-create-pages": {
+          "type": "boolean",
+          "examples": [
+            true
+          ]
+        },
+        "members-can-create-public-pages": {
+          "type": "boolean",
+          "examples": [
+            true
+          ]
+        },
+        "members-can-create-private-pages": {
+          "type": "boolean",
+          "examples": [
+            true
+          ]
+        },
+        "members-can-fork-private-repositories": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "examples": [
+            false
+          ]
+        },
+        "web-commit-signoff-required": {
+          "type": "boolean",
+          "examples": [
+            false
+          ]
+        },
+        "advanced-security-enabled-for-new-repositories": {
+          "type": "boolean",
+          "description": "**Endpoint closing down notice.** Please use [code security configurations](https://docs.github.com/rest/code-security/configurations) instead.\n\nWhether GitHub Advanced Security is enabled for new repositories and repositories transferred to this organization.\n\nThis field is only visible to organization owners or members of a team with the security manager role.",
+          "examples": [
+            false
+          ],
+          "deprecated": true
+        },
+        "dependabot-alerts-enabled-for-new-repositories": {
+          "type": "boolean",
+          "description": "**Endpoint closing down notice.** Please use [code security configurations](https://docs.github.com/rest/code-security/configurations) instead.\n\nWhether Dependabot alerts are automatically enabled for new repositories and repositories transferred to this organization.\n\nThis field is only visible to organization owners or members of a team with the security manager role.",
+          "examples": [
+            false
+          ],
+          "deprecated": true
+        },
+        "dependabot-security-updates-enabled-for-new-repositories": {
+          "type": "boolean",
+          "description": "**Endpoint closing down notice.** Please use [code security configurations](https://docs.github.com/rest/code-security/configurations) instead.\n\nWhether Dependabot security updates are automatically enabled for new repositories and repositories transferred to this organization.\n\nThis field is only visible to organization owners or members of a team with the security manager role.",
+          "examples": [
+            false
+          ],
+          "deprecated": true
+        },
+        "dependency-graph-enabled-for-new-repositories": {
+          "type": "boolean",
+          "description": "**Endpoint closing down notice.** Please use [code security configurations](https://docs.github.com/rest/code-security/configurations) instead.\n\nWhether dependency graph is automatically enabled for new repositories and repositories transferred to this organization.\n\nThis field is only visible to organization owners or members of a team with the security manager role.",
+          "examples": [
+            false
+          ],
+          "deprecated": true
+        },
+        "secret-scanning-enabled-for-new-repositories": {
+          "type": "boolean",
+          "description": "**Endpoint closing down notice.** Please use [code security configurations](https://docs.github.com/rest/code-security/configurations) instead.\n\nWhether secret scanning is automatically enabled for new repositories and repositories transferred to this organization.\n\nThis field is only visible to organization owners or members of a team with the security manager role.",
+          "examples": [
+            false
+          ],
+          "deprecated": true
+        },
+        "secret-scanning-push-protection-enabled-for-new-repositories": {
+          "type": "boolean",
+          "description": "**Endpoint closing down notice.** Please use [code security configurations](https://docs.github.com/rest/code-security/configurations) instead.\n\nWhether secret scanning push protection is automatically enabled for new repositories and repositories transferred to this organization.\n\nThis field is only visible to organization owners or members of a team with the security manager role.",
+          "examples": [
+            false
+          ],
+          "deprecated": true
+        },
+        "secret-scanning-push-protection-custom-link-enabled": {
+          "type": "boolean",
+          "description": "Whether a custom link is shown to contributors who are blocked from pushing a secret by push protection.",
+          "examples": [
+            false
+          ]
+        },
+        "secret-scanning-push-protection-custom-link": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "An optional URL string to display to contributors who are blocked from pushing a secret.",
+          "examples": [
+            "https://github.com/test-org/test-repo/blob/main/README.md"
+          ]
+        },
+        "created-at": {
+          "type": "string",
+          "format": "date-time",
+          "examples": [
+            "2008-01-14T04:33:35Z"
+          ]
+        },
+        "updated-at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "archived_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "deploy-keys-enabled-for-repositories": {
+          "type": "boolean",
+          "description": "Controls whether or not deploy keys may be added and used for repositories in the organization.",
+          "examples": [
+            false
+          ]
+        }
+      },
+      "required": [
+        "login",
+        "url",
+        "id",
+        "node-id",
+        "repos-url",
+        "events-url",
+        "hooks-url",
+        "issues-url",
+        "members-url",
+        "public-members-url",
+        "avatar-url",
+        "description",
+        "html-url",
+        "has-organization-projects",
+        "has-repository-projects",
+        "public-repos",
+        "public-gists",
+        "followers",
+        "following",
+        "type",
+        "created-at",
+        "updated-at",
+        "archived-at"
+      ]
+    },
+    "pull-request": {
       "description": "A pull request object.",
       "properties": {
         "id": {
@@ -116,7 +805,7 @@
         },
         "stats": {
           "instillUIOrder": 3,
-          "$ref": "#/$defs/commitStats",
+          "$ref": "#/$defs/commit-stats",
           "required": []
         },
         "files": {
@@ -126,7 +815,7 @@
           "instillFormat": "array:object",
           "type": "array",
           "items": {
-            "$ref": "#/$defs/commitFile",
+            "$ref": "#/$defs/commit-file",
             "required": [],
             "description": "A file in the commit."
           }
@@ -136,7 +825,7 @@
       "title": "Commit",
       "type": "object"
     },
-    "commitStats": {
+    "commit-stats": {
       "description": "Stats of changes.",
       "instillUIOrder": 1,
       "properties": {
@@ -166,7 +855,7 @@
       "title": "Commit stats",
       "type": "object"
     },
-    "commitFile": {
+    "commit-file": {
       "description": "A commit file object.",
       "properties": {
         "filename": {
@@ -176,7 +865,7 @@
           "instillFormat": "string",
           "type": "string"
         },
-        "$ref": "#/$defs/commitStats/properties",
+        "$ref": "#/$defs/commit-stats/properties",
         "patch": {
           "description": "Patch of the file.",
           "instillUIOrder": 3,
@@ -189,7 +878,7 @@
       "title": "Commit File",
       "type": "object"
     },
-    "repositoryInfo": {
+    "repository-info": {
       "owner": {
         "description": "Owner of the repository.",
         "instillUIMultiline": false,
@@ -223,7 +912,7 @@
         "type": "string"
       }
     },
-    "reviewComments": {
+    "review-comments": {
       "description": "A review comment object.",
       "properties": {
         "id": {
@@ -429,7 +1118,7 @@
       "title": "Issue",
       "type": "object"
     },
-    "pageOptions": {
+    "page-options": {
       "title": "Page Options",
       "description": "Options for listing pages.",
       "instillFormat": "object",
@@ -479,7 +1168,7 @@
         "body"
       ],
       "properties": {
-        "$ref": "#/$defs/repositoryInfo",
+        "$ref": "#/$defs/repository-info",
         "title": {
           "$ref": "#/$defs/issue/properties/title",
           "instillAcceptFormats": [
@@ -571,7 +1260,7 @@
         "pr-number"
       ],
       "properties": {
-        "$ref": "#/$defs/repositoryInfo",
+        "$ref": "#/$defs/repository-info",
         "pr-number": {
           "title": "PR Number",
           "description": "Number of the PR.",
@@ -594,7 +1283,7 @@
           "type": "object",
           "properties": {
             "commit-id": {
-              "$ref": "#/$defs/reviewComments/properties/commit-id",
+              "$ref": "#/$defs/review-comments/properties/commit-id",
               "instillAcceptFormats": [
                 "string"
               ],
@@ -605,7 +1294,7 @@
               "instillUIOrder": 0
             },
             "body": {
-              "$ref": "#/$defs/reviewComments/properties/body",
+              "$ref": "#/$defs/review-comments/properties/body",
               "instillAcceptFormats": [
                 "string"
               ],
@@ -617,7 +1306,7 @@
               "instillUIOrder": 1
             },
             "path": {
-              "$ref": "#/$defs/reviewComments/properties/path",
+              "$ref": "#/$defs/review-comments/properties/path",
               "instillAcceptFormats": [
                 "string"
               ],
@@ -629,7 +1318,7 @@
               "instillUIOrder": 2
             },
             "start-line": {
-              "$ref": "#/$defs/reviewComments/properties/start-line",
+              "$ref": "#/$defs/review-comments/properties/start-line",
               "instillAcceptFormats": [
                 "integer"
               ],
@@ -640,7 +1329,7 @@
               "instillUIOrder": 3
             },
             "line": {
-              "$ref": "#/$defs/reviewComments/properties/line",
+              "$ref": "#/$defs/review-comments/properties/line",
               "instillAcceptFormats": [
                 "integer"
               ],
@@ -651,7 +1340,7 @@
               "instillUIOrder": 4
             },
             "start-side": {
-              "$ref": "#/$defs/reviewComments/properties/start-side",
+              "$ref": "#/$defs/review-comments/properties/start-side",
               "instillAcceptFormats": [
                 "string"
               ],
@@ -661,7 +1350,7 @@
               "instillUIOrder": 5
             },
             "side": {
-              "$ref": "#/$defs/reviewComments/properties/side",
+              "$ref": "#/$defs/review-comments/properties/side",
               "instillAcceptFormats": [
                 "string"
               ],
@@ -671,7 +1360,7 @@
               "instillUIOrder": 6
             },
             "subject-type": {
-              "$ref": "#/$defs/reviewComments/properties/subject-type",
+              "$ref": "#/$defs/review-comments/properties/subject-type",
               "instillAcceptFormats": [
                 "string"
               ],
@@ -702,7 +1391,7 @@
       "description": "The created comment.",
       "instillUIOrder": 0,
       "properties": {
-        "$ref": "#/$defs/reviewComments/properties"
+        "$ref": "#/$defs/review-comments/properties"
       },
       "required": [],
       "title": "Output",
@@ -722,7 +1411,7 @@
         "events"
       ],
       "properties": {
-        "$ref": "#/$defs/repositoryInfo",
+        "$ref": "#/$defs/repository-info",
         "hook-url": {
           "title": "Webhook URL",
           "description": "URL to send the payload to.",
@@ -901,7 +1590,7 @@
         "sha"
       ],
       "properties": {
-        "$ref": "#/$defs/repositoryInfo",
+        "$ref": "#/$defs/repository-info",
         "sha": {
           "$ref": "#/$defs/commit/properties/sha",
           "instillAcceptFormats": [
@@ -947,7 +1636,7 @@
         "issue-number"
       ],
       "properties": {
-        "$ref": "#/$defs/repositoryInfo",
+        "$ref": "#/$defs/repository-info",
         "issue-number": {
           "default": 0,
           "title": "Issue Number",
@@ -985,6 +1674,65 @@
       "type": "object"
     }
   },
+  "TASK_GET_ORGANIZATION": {
+    "description": "Get an organization by name or ID.",
+    "instillShortDescription": "Get an organization by name or ID.",
+    "input": {
+      "description": "Please input either the organization name or organization ID.",
+      "instillUIOrder": 0,
+      "instillEditOnNodeFields": [
+        "name",
+        "id"
+      ],
+      "properties": {
+        "name": {
+          "title": "Name",
+          "description": "The GitHub organization name.",
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "instillUIOrder": 1,
+          "type": "string"
+        },
+        "id": {
+          "title": "ID",
+          "description": "The GitHub organization ID. If both `name` and `id` are provided, `id` takes precedence.",
+          "instillFormat": "integer",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "instillUIOrder": 2,
+          "type": "integer"
+        }
+      },
+      "required": [],
+      "title": "Input",
+      "instillFormat": "object",
+      "type": "object"
+    },
+    "output": {
+      "description": "The GitHub organization information.",
+      "instillUIOrder": 0,
+      "properties": {
+        "organization": {
+          "$ref": "#/$defs/organization"
+        }
+      },
+      "required": [],
+      "title": "Output",
+      "instillFormat": "object",
+      "type": "object"
+    }
+  },
   "TASK_GET_PULL_REQUEST": {
     "instillShortDescription": "Get a pull request from a repository, given the PR number. This will default to the latest PR if no PR number is provided.",
     "input": {
@@ -996,7 +1744,7 @@
         "pr-number"
       ],
       "properties": {
-        "$ref": "#/$defs/repositoryInfo",
+        "$ref": "#/$defs/repository-info",
         "pr-number": {
           "default": 0,
           "title": "PR Number",
@@ -1024,7 +1772,66 @@
     "output": {
       "description": "The specific pr in GitHub repository.",
       "instillUIOrder": 0,
-      "$ref": "#/$defs/pullRequest",
+      "$ref": "#/$defs/pull-request",
+      "required": [],
+      "title": "Output",
+      "instillFormat": "object",
+      "type": "object"
+    }
+  },
+  "TASK_GET_USER": {
+    "description": "Get a user by name or ID.",
+    "instillShortDescription": "Get a user by name or ID.",
+    "input": {
+      "description": "Please input either the username or user ID.",
+      "instillUIOrder": 0,
+      "instillEditOnNodeFields": [
+        "name",
+        "id"
+      ],
+      "properties": {
+        "name": {
+          "title": "Name",
+          "description": "The GitHub username of the user.",
+          "instillFormat": "string",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "instillUIOrder": 1,
+          "type": "string"
+        },
+        "id": {
+          "title": "ID",
+          "description": "The GitHub user ID. If both `name` and `id` are provided, `id` takes precedence.",
+          "instillFormat": "integer",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "instillUIOrder": 2,
+          "type": "integer"
+        }
+      },
+      "required": [],
+      "title": "Input",
+      "instillFormat": "object",
+      "type": "object"
+    },
+    "output": {
+      "description": "The GitHub user information.",
+      "instillUIOrder": 0,
+      "properties": {
+        "user": {
+          "$ref": "#/$defs/user"
+        }
+      },
       "required": [],
       "title": "Output",
       "instillFormat": "object",
@@ -1042,7 +1849,7 @@
         "repository"
       ],
       "properties": {
-        "$ref": "#/$defs/repositoryInfo",
+        "$ref": "#/$defs/repository-info",
         "state": {
           "default": "open",
           "title": "State",
@@ -1204,7 +2011,7 @@
         "repository"
       ],
       "properties": {
-        "$ref": "#/$defs/repositoryInfo",
+        "$ref": "#/$defs/repository-info",
         "state": {
           "default": "open",
           "title": "State",
@@ -1318,7 +2125,7 @@
           "instillFormat": "array:object",
           "type": "array",
           "items": {
-            "$ref": "#/$defs/pullRequest",
+            "$ref": "#/$defs/pull-request",
             "required": [],
             "description": "A pull request in GitHub."
           }
@@ -1344,7 +2151,7 @@
         "pr-number"
       ],
       "properties": {
-        "$ref": "#/$defs/repositoryInfo",
+        "$ref": "#/$defs/repository-info",
         "pr-number": {
           "default": 0,
           "title": "PR Number",
@@ -1462,7 +2269,7 @@
           "instillFormat": "array:object",
           "type": "array",
           "items": {
-            "$ref": "#/$defs/reviewComments",
+            "$ref": "#/$defs/review-comments",
             "required": [],
             "instillUIOrder": 1,
             "description": "Comments in the PR."
