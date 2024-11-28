@@ -1144,11 +1144,11 @@ func (w *worker) LoadRecipeActivity(ctx context.Context, param *LoadRecipeActivi
 }
 
 // loadConnectionFromComponent looks for a connection references in a component
-// and, when one is found, fetches the connection from the owner's namespace
-// and loads it to the connection map.
+// and, when one is found, fetches the connection from the requester's
+// namespace and loads it to the connection map.
 func (w *worker) loadConnectionFromComponent(
 	ctx context.Context,
-	ownerPermalink string,
+	requesterUID uuid.UUID,
 	component *datamodel.Component,
 	connections data.Map,
 ) error {
@@ -1168,12 +1168,7 @@ func (w *worker) loadConnectionFromComponent(
 		return nil
 	}
 
-	nsUID, err := resource.GetRscPermalinkUID(ownerPermalink)
-	if err != nil {
-		return fmt.Errorf("extracting owner UID: %w", err)
-	}
-
-	conn, err := w.repository.GetNamespaceConnectionByID(ctx, nsUID, connID)
+	conn, err := w.repository.GetNamespaceConnectionByID(ctx, requesterUID, connID)
 	if err != nil {
 		// The connection ID might not exist in the requester's namespace, but
 		// they can still provide it it in the trigger params.
@@ -1237,16 +1232,17 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 		}
 	}
 
+	requesterUID := param.SystemVariables.PipelineRequesterUID
 	triggerRecipe := wfm.GetRecipe()
 	connections := data.Map{}
 	for _, comp := range triggerRecipe.Component {
-		if err := w.loadConnectionFromComponent(ctx, ownerPermalink, comp, connections); err != nil {
+		if err := w.loadConnectionFromComponent(ctx, requesterUID, comp, connections); err != nil {
 			return handleErr(fmt.Errorf("loading connections: %w", err))
 		}
 
 		if comp.Type == datamodel.Iterator {
 			for _, nestedComp := range comp.Component {
-				if err := w.loadConnectionFromComponent(ctx, ownerPermalink, nestedComp, connections); err != nil {
+				if err := w.loadConnectionFromComponent(ctx, requesterUID, nestedComp, connections); err != nil {
 					return handleErr(fmt.Errorf("loading connections: %w", err))
 				}
 			}
