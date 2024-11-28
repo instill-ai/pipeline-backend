@@ -24,6 +24,13 @@ type AppPublicServiceServerMock struct {
 	beforeChatCounter uint64
 	ChatMock          mAppPublicServiceServerMockChat
 
+	funcCreateAgent          func(ctx context.Context, cp1 *mm_appv1alpha.CreateAgentRequest) (cp2 *mm_appv1alpha.CreateAgentResponse, err error)
+	funcCreateAgentOrigin    string
+	inspectFuncCreateAgent   func(ctx context.Context, cp1 *mm_appv1alpha.CreateAgentRequest)
+	afterCreateAgentCounter  uint64
+	beforeCreateAgentCounter uint64
+	CreateAgentMock          mAppPublicServiceServerMockCreateAgent
+
 	funcCreateApp          func(ctx context.Context, cp1 *mm_appv1alpha.CreateAppRequest) (cp2 *mm_appv1alpha.CreateAppResponse, err error)
 	funcCreateAppOrigin    string
 	inspectFuncCreateApp   func(ctx context.Context, cp1 *mm_appv1alpha.CreateAppRequest)
@@ -51,6 +58,13 @@ type AppPublicServiceServerMock struct {
 	afterCreateMessageCounter  uint64
 	beforeCreateMessageCounter uint64
 	CreateMessageMock          mAppPublicServiceServerMockCreateMessage
+
+	funcDeleteAgent          func(ctx context.Context, dp1 *mm_appv1alpha.DeleteAgentRequest) (dp2 *mm_appv1alpha.DeleteAgentResponse, err error)
+	funcDeleteAgentOrigin    string
+	inspectFuncDeleteAgent   func(ctx context.Context, dp1 *mm_appv1alpha.DeleteAgentRequest)
+	afterDeleteAgentCounter  uint64
+	beforeDeleteAgentCounter uint64
+	DeleteAgentMock          mAppPublicServiceServerMockDeleteAgent
 
 	funcDeleteApp          func(ctx context.Context, dp1 *mm_appv1alpha.DeleteAppRequest) (dp2 *mm_appv1alpha.DeleteAppResponse, err error)
 	funcDeleteAppOrigin    string
@@ -87,6 +101,13 @@ type AppPublicServiceServerMock struct {
 	beforeGetPlaygroundConversationCounter uint64
 	GetPlaygroundConversationMock          mAppPublicServiceServerMockGetPlaygroundConversation
 
+	funcListAgents          func(ctx context.Context, lp1 *mm_appv1alpha.ListAgentsRequest) (lp2 *mm_appv1alpha.ListAgentsResponse, err error)
+	funcListAgentsOrigin    string
+	inspectFuncListAgents   func(ctx context.Context, lp1 *mm_appv1alpha.ListAgentsRequest)
+	afterListAgentsCounter  uint64
+	beforeListAgentsCounter uint64
+	ListAgentsMock          mAppPublicServiceServerMockListAgents
+
 	funcListApps          func(ctx context.Context, lp1 *mm_appv1alpha.ListAppsRequest) (lp2 *mm_appv1alpha.ListAppsResponse, err error)
 	funcListAppsOrigin    string
 	inspectFuncListApps   func(ctx context.Context, lp1 *mm_appv1alpha.ListAppsRequest)
@@ -122,6 +143,13 @@ type AppPublicServiceServerMock struct {
 	beforeListMessagesCounter uint64
 	ListMessagesMock          mAppPublicServiceServerMockListMessages
 
+	funcListTools          func(ctx context.Context, lp1 *mm_appv1alpha.ListToolsRequest) (lp2 *mm_appv1alpha.ListToolsResponse, err error)
+	funcListToolsOrigin    string
+	inspectFuncListTools   func(ctx context.Context, lp1 *mm_appv1alpha.ListToolsRequest)
+	afterListToolsCounter  uint64
+	beforeListToolsCounter uint64
+	ListToolsMock          mAppPublicServiceServerMockListTools
+
 	funcLiveness          func(ctx context.Context, lp1 *mm_appv1alpha.LivenessRequest) (lp2 *mm_appv1alpha.LivenessResponse, err error)
 	funcLivenessOrigin    string
 	inspectFuncLiveness   func(ctx context.Context, lp1 *mm_appv1alpha.LivenessRequest)
@@ -142,6 +170,13 @@ type AppPublicServiceServerMock struct {
 	afterRestartPlaygroundConversationCounter  uint64
 	beforeRestartPlaygroundConversationCounter uint64
 	RestartPlaygroundConversationMock          mAppPublicServiceServerMockRestartPlaygroundConversation
+
+	funcUpdateAgent          func(ctx context.Context, up1 *mm_appv1alpha.UpdateAgentRequest) (up2 *mm_appv1alpha.UpdateAgentResponse, err error)
+	funcUpdateAgentOrigin    string
+	inspectFuncUpdateAgent   func(ctx context.Context, up1 *mm_appv1alpha.UpdateAgentRequest)
+	afterUpdateAgentCounter  uint64
+	beforeUpdateAgentCounter uint64
+	UpdateAgentMock          mAppPublicServiceServerMockUpdateAgent
 
 	funcUpdateApp          func(ctx context.Context, up1 *mm_appv1alpha.UpdateAppRequest) (up2 *mm_appv1alpha.UpdateAppResponse, err error)
 	funcUpdateAppOrigin    string
@@ -183,6 +218,9 @@ func NewAppPublicServiceServerMock(t minimock.Tester) *AppPublicServiceServerMoc
 	m.ChatMock = mAppPublicServiceServerMockChat{mock: m}
 	m.ChatMock.callArgs = []*AppPublicServiceServerMockChatParams{}
 
+	m.CreateAgentMock = mAppPublicServiceServerMockCreateAgent{mock: m}
+	m.CreateAgentMock.callArgs = []*AppPublicServiceServerMockCreateAgentParams{}
+
 	m.CreateAppMock = mAppPublicServiceServerMockCreateApp{mock: m}
 	m.CreateAppMock.callArgs = []*AppPublicServiceServerMockCreateAppParams{}
 
@@ -194,6 +232,9 @@ func NewAppPublicServiceServerMock(t minimock.Tester) *AppPublicServiceServerMoc
 
 	m.CreateMessageMock = mAppPublicServiceServerMockCreateMessage{mock: m}
 	m.CreateMessageMock.callArgs = []*AppPublicServiceServerMockCreateMessageParams{}
+
+	m.DeleteAgentMock = mAppPublicServiceServerMockDeleteAgent{mock: m}
+	m.DeleteAgentMock.callArgs = []*AppPublicServiceServerMockDeleteAgentParams{}
 
 	m.DeleteAppMock = mAppPublicServiceServerMockDeleteApp{mock: m}
 	m.DeleteAppMock.callArgs = []*AppPublicServiceServerMockDeleteAppParams{}
@@ -210,6 +251,9 @@ func NewAppPublicServiceServerMock(t minimock.Tester) *AppPublicServiceServerMoc
 	m.GetPlaygroundConversationMock = mAppPublicServiceServerMockGetPlaygroundConversation{mock: m}
 	m.GetPlaygroundConversationMock.callArgs = []*AppPublicServiceServerMockGetPlaygroundConversationParams{}
 
+	m.ListAgentsMock = mAppPublicServiceServerMockListAgents{mock: m}
+	m.ListAgentsMock.callArgs = []*AppPublicServiceServerMockListAgentsParams{}
+
 	m.ListAppsMock = mAppPublicServiceServerMockListApps{mock: m}
 	m.ListAppsMock.callArgs = []*AppPublicServiceServerMockListAppsParams{}
 
@@ -225,6 +269,9 @@ func NewAppPublicServiceServerMock(t minimock.Tester) *AppPublicServiceServerMoc
 	m.ListMessagesMock = mAppPublicServiceServerMockListMessages{mock: m}
 	m.ListMessagesMock.callArgs = []*AppPublicServiceServerMockListMessagesParams{}
 
+	m.ListToolsMock = mAppPublicServiceServerMockListTools{mock: m}
+	m.ListToolsMock.callArgs = []*AppPublicServiceServerMockListToolsParams{}
+
 	m.LivenessMock = mAppPublicServiceServerMockLiveness{mock: m}
 	m.LivenessMock.callArgs = []*AppPublicServiceServerMockLivenessParams{}
 
@@ -233,6 +280,9 @@ func NewAppPublicServiceServerMock(t minimock.Tester) *AppPublicServiceServerMoc
 
 	m.RestartPlaygroundConversationMock = mAppPublicServiceServerMockRestartPlaygroundConversation{mock: m}
 	m.RestartPlaygroundConversationMock.callArgs = []*AppPublicServiceServerMockRestartPlaygroundConversationParams{}
+
+	m.UpdateAgentMock = mAppPublicServiceServerMockUpdateAgent{mock: m}
+	m.UpdateAgentMock.callArgs = []*AppPublicServiceServerMockUpdateAgentParams{}
 
 	m.UpdateAppMock = mAppPublicServiceServerMockUpdateApp{mock: m}
 	m.UpdateAppMock.callArgs = []*AppPublicServiceServerMockUpdateAppParams{}
@@ -591,6 +641,349 @@ func (m *AppPublicServiceServerMock) MinimockChatInspect() {
 	if !m.ChatMock.invocationsDone() && afterChatCounter > 0 {
 		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.Chat at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.ChatMock.expectedInvocations), m.ChatMock.expectedInvocationsOrigin, afterChatCounter)
+	}
+}
+
+type mAppPublicServiceServerMockCreateAgent struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockCreateAgentExpectation
+	expectations       []*AppPublicServiceServerMockCreateAgentExpectation
+
+	callArgs []*AppPublicServiceServerMockCreateAgentParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockCreateAgentExpectation specifies expectation struct of the AppPublicServiceServer.CreateAgent
+type AppPublicServiceServerMockCreateAgentExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockCreateAgentParams
+	paramPtrs          *AppPublicServiceServerMockCreateAgentParamPtrs
+	expectationOrigins AppPublicServiceServerMockCreateAgentExpectationOrigins
+	results            *AppPublicServiceServerMockCreateAgentResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockCreateAgentParams contains parameters of the AppPublicServiceServer.CreateAgent
+type AppPublicServiceServerMockCreateAgentParams struct {
+	ctx context.Context
+	cp1 *mm_appv1alpha.CreateAgentRequest
+}
+
+// AppPublicServiceServerMockCreateAgentParamPtrs contains pointers to parameters of the AppPublicServiceServer.CreateAgent
+type AppPublicServiceServerMockCreateAgentParamPtrs struct {
+	ctx *context.Context
+	cp1 **mm_appv1alpha.CreateAgentRequest
+}
+
+// AppPublicServiceServerMockCreateAgentResults contains results of the AppPublicServiceServer.CreateAgent
+type AppPublicServiceServerMockCreateAgentResults struct {
+	cp2 *mm_appv1alpha.CreateAgentResponse
+	err error
+}
+
+// AppPublicServiceServerMockCreateAgentOrigins contains origins of expectations of the AppPublicServiceServer.CreateAgent
+type AppPublicServiceServerMockCreateAgentExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originCp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmCreateAgent *mAppPublicServiceServerMockCreateAgent) Optional() *mAppPublicServiceServerMockCreateAgent {
+	mmCreateAgent.optional = true
+	return mmCreateAgent
+}
+
+// Expect sets up expected params for AppPublicServiceServer.CreateAgent
+func (mmCreateAgent *mAppPublicServiceServerMockCreateAgent) Expect(ctx context.Context, cp1 *mm_appv1alpha.CreateAgentRequest) *mAppPublicServiceServerMockCreateAgent {
+	if mmCreateAgent.mock.funcCreateAgent != nil {
+		mmCreateAgent.mock.t.Fatalf("AppPublicServiceServerMock.CreateAgent mock is already set by Set")
+	}
+
+	if mmCreateAgent.defaultExpectation == nil {
+		mmCreateAgent.defaultExpectation = &AppPublicServiceServerMockCreateAgentExpectation{}
+	}
+
+	if mmCreateAgent.defaultExpectation.paramPtrs != nil {
+		mmCreateAgent.mock.t.Fatalf("AppPublicServiceServerMock.CreateAgent mock is already set by ExpectParams functions")
+	}
+
+	mmCreateAgent.defaultExpectation.params = &AppPublicServiceServerMockCreateAgentParams{ctx, cp1}
+	mmCreateAgent.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmCreateAgent.expectations {
+		if minimock.Equal(e.params, mmCreateAgent.defaultExpectation.params) {
+			mmCreateAgent.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreateAgent.defaultExpectation.params)
+		}
+	}
+
+	return mmCreateAgent
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.CreateAgent
+func (mmCreateAgent *mAppPublicServiceServerMockCreateAgent) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockCreateAgent {
+	if mmCreateAgent.mock.funcCreateAgent != nil {
+		mmCreateAgent.mock.t.Fatalf("AppPublicServiceServerMock.CreateAgent mock is already set by Set")
+	}
+
+	if mmCreateAgent.defaultExpectation == nil {
+		mmCreateAgent.defaultExpectation = &AppPublicServiceServerMockCreateAgentExpectation{}
+	}
+
+	if mmCreateAgent.defaultExpectation.params != nil {
+		mmCreateAgent.mock.t.Fatalf("AppPublicServiceServerMock.CreateAgent mock is already set by Expect")
+	}
+
+	if mmCreateAgent.defaultExpectation.paramPtrs == nil {
+		mmCreateAgent.defaultExpectation.paramPtrs = &AppPublicServiceServerMockCreateAgentParamPtrs{}
+	}
+	mmCreateAgent.defaultExpectation.paramPtrs.ctx = &ctx
+	mmCreateAgent.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmCreateAgent
+}
+
+// ExpectCp1Param2 sets up expected param cp1 for AppPublicServiceServer.CreateAgent
+func (mmCreateAgent *mAppPublicServiceServerMockCreateAgent) ExpectCp1Param2(cp1 *mm_appv1alpha.CreateAgentRequest) *mAppPublicServiceServerMockCreateAgent {
+	if mmCreateAgent.mock.funcCreateAgent != nil {
+		mmCreateAgent.mock.t.Fatalf("AppPublicServiceServerMock.CreateAgent mock is already set by Set")
+	}
+
+	if mmCreateAgent.defaultExpectation == nil {
+		mmCreateAgent.defaultExpectation = &AppPublicServiceServerMockCreateAgentExpectation{}
+	}
+
+	if mmCreateAgent.defaultExpectation.params != nil {
+		mmCreateAgent.mock.t.Fatalf("AppPublicServiceServerMock.CreateAgent mock is already set by Expect")
+	}
+
+	if mmCreateAgent.defaultExpectation.paramPtrs == nil {
+		mmCreateAgent.defaultExpectation.paramPtrs = &AppPublicServiceServerMockCreateAgentParamPtrs{}
+	}
+	mmCreateAgent.defaultExpectation.paramPtrs.cp1 = &cp1
+	mmCreateAgent.defaultExpectation.expectationOrigins.originCp1 = minimock.CallerInfo(1)
+
+	return mmCreateAgent
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.CreateAgent
+func (mmCreateAgent *mAppPublicServiceServerMockCreateAgent) Inspect(f func(ctx context.Context, cp1 *mm_appv1alpha.CreateAgentRequest)) *mAppPublicServiceServerMockCreateAgent {
+	if mmCreateAgent.mock.inspectFuncCreateAgent != nil {
+		mmCreateAgent.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.CreateAgent")
+	}
+
+	mmCreateAgent.mock.inspectFuncCreateAgent = f
+
+	return mmCreateAgent
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.CreateAgent
+func (mmCreateAgent *mAppPublicServiceServerMockCreateAgent) Return(cp2 *mm_appv1alpha.CreateAgentResponse, err error) *AppPublicServiceServerMock {
+	if mmCreateAgent.mock.funcCreateAgent != nil {
+		mmCreateAgent.mock.t.Fatalf("AppPublicServiceServerMock.CreateAgent mock is already set by Set")
+	}
+
+	if mmCreateAgent.defaultExpectation == nil {
+		mmCreateAgent.defaultExpectation = &AppPublicServiceServerMockCreateAgentExpectation{mock: mmCreateAgent.mock}
+	}
+	mmCreateAgent.defaultExpectation.results = &AppPublicServiceServerMockCreateAgentResults{cp2, err}
+	mmCreateAgent.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmCreateAgent.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.CreateAgent method
+func (mmCreateAgent *mAppPublicServiceServerMockCreateAgent) Set(f func(ctx context.Context, cp1 *mm_appv1alpha.CreateAgentRequest) (cp2 *mm_appv1alpha.CreateAgentResponse, err error)) *AppPublicServiceServerMock {
+	if mmCreateAgent.defaultExpectation != nil {
+		mmCreateAgent.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.CreateAgent method")
+	}
+
+	if len(mmCreateAgent.expectations) > 0 {
+		mmCreateAgent.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.CreateAgent method")
+	}
+
+	mmCreateAgent.mock.funcCreateAgent = f
+	mmCreateAgent.mock.funcCreateAgentOrigin = minimock.CallerInfo(1)
+	return mmCreateAgent.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.CreateAgent which will trigger the result defined by the following
+// Then helper
+func (mmCreateAgent *mAppPublicServiceServerMockCreateAgent) When(ctx context.Context, cp1 *mm_appv1alpha.CreateAgentRequest) *AppPublicServiceServerMockCreateAgentExpectation {
+	if mmCreateAgent.mock.funcCreateAgent != nil {
+		mmCreateAgent.mock.t.Fatalf("AppPublicServiceServerMock.CreateAgent mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockCreateAgentExpectation{
+		mock:               mmCreateAgent.mock,
+		params:             &AppPublicServiceServerMockCreateAgentParams{ctx, cp1},
+		expectationOrigins: AppPublicServiceServerMockCreateAgentExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmCreateAgent.expectations = append(mmCreateAgent.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.CreateAgent return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockCreateAgentExpectation) Then(cp2 *mm_appv1alpha.CreateAgentResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockCreateAgentResults{cp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.CreateAgent should be invoked
+func (mmCreateAgent *mAppPublicServiceServerMockCreateAgent) Times(n uint64) *mAppPublicServiceServerMockCreateAgent {
+	if n == 0 {
+		mmCreateAgent.mock.t.Fatalf("Times of AppPublicServiceServerMock.CreateAgent mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmCreateAgent.expectedInvocations, n)
+	mmCreateAgent.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmCreateAgent
+}
+
+func (mmCreateAgent *mAppPublicServiceServerMockCreateAgent) invocationsDone() bool {
+	if len(mmCreateAgent.expectations) == 0 && mmCreateAgent.defaultExpectation == nil && mmCreateAgent.mock.funcCreateAgent == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmCreateAgent.mock.afterCreateAgentCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmCreateAgent.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// CreateAgent implements mm_appv1alpha.AppPublicServiceServer
+func (mmCreateAgent *AppPublicServiceServerMock) CreateAgent(ctx context.Context, cp1 *mm_appv1alpha.CreateAgentRequest) (cp2 *mm_appv1alpha.CreateAgentResponse, err error) {
+	mm_atomic.AddUint64(&mmCreateAgent.beforeCreateAgentCounter, 1)
+	defer mm_atomic.AddUint64(&mmCreateAgent.afterCreateAgentCounter, 1)
+
+	mmCreateAgent.t.Helper()
+
+	if mmCreateAgent.inspectFuncCreateAgent != nil {
+		mmCreateAgent.inspectFuncCreateAgent(ctx, cp1)
+	}
+
+	mm_params := AppPublicServiceServerMockCreateAgentParams{ctx, cp1}
+
+	// Record call args
+	mmCreateAgent.CreateAgentMock.mutex.Lock()
+	mmCreateAgent.CreateAgentMock.callArgs = append(mmCreateAgent.CreateAgentMock.callArgs, &mm_params)
+	mmCreateAgent.CreateAgentMock.mutex.Unlock()
+
+	for _, e := range mmCreateAgent.CreateAgentMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.cp2, e.results.err
+		}
+	}
+
+	if mmCreateAgent.CreateAgentMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmCreateAgent.CreateAgentMock.defaultExpectation.Counter, 1)
+		mm_want := mmCreateAgent.CreateAgentMock.defaultExpectation.params
+		mm_want_ptrs := mmCreateAgent.CreateAgentMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockCreateAgentParams{ctx, cp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmCreateAgent.t.Errorf("AppPublicServiceServerMock.CreateAgent got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreateAgent.CreateAgentMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.cp1 != nil && !minimock.Equal(*mm_want_ptrs.cp1, mm_got.cp1) {
+				mmCreateAgent.t.Errorf("AppPublicServiceServerMock.CreateAgent got unexpected parameter cp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreateAgent.CreateAgentMock.defaultExpectation.expectationOrigins.originCp1, *mm_want_ptrs.cp1, mm_got.cp1, minimock.Diff(*mm_want_ptrs.cp1, mm_got.cp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmCreateAgent.t.Errorf("AppPublicServiceServerMock.CreateAgent got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmCreateAgent.CreateAgentMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmCreateAgent.CreateAgentMock.defaultExpectation.results
+		if mm_results == nil {
+			mmCreateAgent.t.Fatal("No results are set for the AppPublicServiceServerMock.CreateAgent")
+		}
+		return (*mm_results).cp2, (*mm_results).err
+	}
+	if mmCreateAgent.funcCreateAgent != nil {
+		return mmCreateAgent.funcCreateAgent(ctx, cp1)
+	}
+	mmCreateAgent.t.Fatalf("Unexpected call to AppPublicServiceServerMock.CreateAgent. %v %v", ctx, cp1)
+	return
+}
+
+// CreateAgentAfterCounter returns a count of finished AppPublicServiceServerMock.CreateAgent invocations
+func (mmCreateAgent *AppPublicServiceServerMock) CreateAgentAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreateAgent.afterCreateAgentCounter)
+}
+
+// CreateAgentBeforeCounter returns a count of AppPublicServiceServerMock.CreateAgent invocations
+func (mmCreateAgent *AppPublicServiceServerMock) CreateAgentBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreateAgent.beforeCreateAgentCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.CreateAgent.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmCreateAgent *mAppPublicServiceServerMockCreateAgent) Calls() []*AppPublicServiceServerMockCreateAgentParams {
+	mmCreateAgent.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockCreateAgentParams, len(mmCreateAgent.callArgs))
+	copy(argCopy, mmCreateAgent.callArgs)
+
+	mmCreateAgent.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockCreateAgentDone returns true if the count of the CreateAgent invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockCreateAgentDone() bool {
+	if m.CreateAgentMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.CreateAgentMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.CreateAgentMock.invocationsDone()
+}
+
+// MinimockCreateAgentInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockCreateAgentInspect() {
+	for _, e := range m.CreateAgentMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.CreateAgent at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterCreateAgentCounter := mm_atomic.LoadUint64(&m.afterCreateAgentCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.CreateAgentMock.defaultExpectation != nil && afterCreateAgentCounter < 1 {
+		if m.CreateAgentMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.CreateAgent at\n%s", m.CreateAgentMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.CreateAgent at\n%s with params: %#v", m.CreateAgentMock.defaultExpectation.expectationOrigins.origin, *m.CreateAgentMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcCreateAgent != nil && afterCreateAgentCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.CreateAgent at\n%s", m.funcCreateAgentOrigin)
+	}
+
+	if !m.CreateAgentMock.invocationsDone() && afterCreateAgentCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.CreateAgent at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.CreateAgentMock.expectedInvocations), m.CreateAgentMock.expectedInvocationsOrigin, afterCreateAgentCounter)
 	}
 }
 
@@ -1963,6 +2356,349 @@ func (m *AppPublicServiceServerMock) MinimockCreateMessageInspect() {
 	if !m.CreateMessageMock.invocationsDone() && afterCreateMessageCounter > 0 {
 		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.CreateMessage at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.CreateMessageMock.expectedInvocations), m.CreateMessageMock.expectedInvocationsOrigin, afterCreateMessageCounter)
+	}
+}
+
+type mAppPublicServiceServerMockDeleteAgent struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockDeleteAgentExpectation
+	expectations       []*AppPublicServiceServerMockDeleteAgentExpectation
+
+	callArgs []*AppPublicServiceServerMockDeleteAgentParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockDeleteAgentExpectation specifies expectation struct of the AppPublicServiceServer.DeleteAgent
+type AppPublicServiceServerMockDeleteAgentExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockDeleteAgentParams
+	paramPtrs          *AppPublicServiceServerMockDeleteAgentParamPtrs
+	expectationOrigins AppPublicServiceServerMockDeleteAgentExpectationOrigins
+	results            *AppPublicServiceServerMockDeleteAgentResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockDeleteAgentParams contains parameters of the AppPublicServiceServer.DeleteAgent
+type AppPublicServiceServerMockDeleteAgentParams struct {
+	ctx context.Context
+	dp1 *mm_appv1alpha.DeleteAgentRequest
+}
+
+// AppPublicServiceServerMockDeleteAgentParamPtrs contains pointers to parameters of the AppPublicServiceServer.DeleteAgent
+type AppPublicServiceServerMockDeleteAgentParamPtrs struct {
+	ctx *context.Context
+	dp1 **mm_appv1alpha.DeleteAgentRequest
+}
+
+// AppPublicServiceServerMockDeleteAgentResults contains results of the AppPublicServiceServer.DeleteAgent
+type AppPublicServiceServerMockDeleteAgentResults struct {
+	dp2 *mm_appv1alpha.DeleteAgentResponse
+	err error
+}
+
+// AppPublicServiceServerMockDeleteAgentOrigins contains origins of expectations of the AppPublicServiceServer.DeleteAgent
+type AppPublicServiceServerMockDeleteAgentExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originDp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmDeleteAgent *mAppPublicServiceServerMockDeleteAgent) Optional() *mAppPublicServiceServerMockDeleteAgent {
+	mmDeleteAgent.optional = true
+	return mmDeleteAgent
+}
+
+// Expect sets up expected params for AppPublicServiceServer.DeleteAgent
+func (mmDeleteAgent *mAppPublicServiceServerMockDeleteAgent) Expect(ctx context.Context, dp1 *mm_appv1alpha.DeleteAgentRequest) *mAppPublicServiceServerMockDeleteAgent {
+	if mmDeleteAgent.mock.funcDeleteAgent != nil {
+		mmDeleteAgent.mock.t.Fatalf("AppPublicServiceServerMock.DeleteAgent mock is already set by Set")
+	}
+
+	if mmDeleteAgent.defaultExpectation == nil {
+		mmDeleteAgent.defaultExpectation = &AppPublicServiceServerMockDeleteAgentExpectation{}
+	}
+
+	if mmDeleteAgent.defaultExpectation.paramPtrs != nil {
+		mmDeleteAgent.mock.t.Fatalf("AppPublicServiceServerMock.DeleteAgent mock is already set by ExpectParams functions")
+	}
+
+	mmDeleteAgent.defaultExpectation.params = &AppPublicServiceServerMockDeleteAgentParams{ctx, dp1}
+	mmDeleteAgent.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmDeleteAgent.expectations {
+		if minimock.Equal(e.params, mmDeleteAgent.defaultExpectation.params) {
+			mmDeleteAgent.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmDeleteAgent.defaultExpectation.params)
+		}
+	}
+
+	return mmDeleteAgent
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.DeleteAgent
+func (mmDeleteAgent *mAppPublicServiceServerMockDeleteAgent) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockDeleteAgent {
+	if mmDeleteAgent.mock.funcDeleteAgent != nil {
+		mmDeleteAgent.mock.t.Fatalf("AppPublicServiceServerMock.DeleteAgent mock is already set by Set")
+	}
+
+	if mmDeleteAgent.defaultExpectation == nil {
+		mmDeleteAgent.defaultExpectation = &AppPublicServiceServerMockDeleteAgentExpectation{}
+	}
+
+	if mmDeleteAgent.defaultExpectation.params != nil {
+		mmDeleteAgent.mock.t.Fatalf("AppPublicServiceServerMock.DeleteAgent mock is already set by Expect")
+	}
+
+	if mmDeleteAgent.defaultExpectation.paramPtrs == nil {
+		mmDeleteAgent.defaultExpectation.paramPtrs = &AppPublicServiceServerMockDeleteAgentParamPtrs{}
+	}
+	mmDeleteAgent.defaultExpectation.paramPtrs.ctx = &ctx
+	mmDeleteAgent.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmDeleteAgent
+}
+
+// ExpectDp1Param2 sets up expected param dp1 for AppPublicServiceServer.DeleteAgent
+func (mmDeleteAgent *mAppPublicServiceServerMockDeleteAgent) ExpectDp1Param2(dp1 *mm_appv1alpha.DeleteAgentRequest) *mAppPublicServiceServerMockDeleteAgent {
+	if mmDeleteAgent.mock.funcDeleteAgent != nil {
+		mmDeleteAgent.mock.t.Fatalf("AppPublicServiceServerMock.DeleteAgent mock is already set by Set")
+	}
+
+	if mmDeleteAgent.defaultExpectation == nil {
+		mmDeleteAgent.defaultExpectation = &AppPublicServiceServerMockDeleteAgentExpectation{}
+	}
+
+	if mmDeleteAgent.defaultExpectation.params != nil {
+		mmDeleteAgent.mock.t.Fatalf("AppPublicServiceServerMock.DeleteAgent mock is already set by Expect")
+	}
+
+	if mmDeleteAgent.defaultExpectation.paramPtrs == nil {
+		mmDeleteAgent.defaultExpectation.paramPtrs = &AppPublicServiceServerMockDeleteAgentParamPtrs{}
+	}
+	mmDeleteAgent.defaultExpectation.paramPtrs.dp1 = &dp1
+	mmDeleteAgent.defaultExpectation.expectationOrigins.originDp1 = minimock.CallerInfo(1)
+
+	return mmDeleteAgent
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.DeleteAgent
+func (mmDeleteAgent *mAppPublicServiceServerMockDeleteAgent) Inspect(f func(ctx context.Context, dp1 *mm_appv1alpha.DeleteAgentRequest)) *mAppPublicServiceServerMockDeleteAgent {
+	if mmDeleteAgent.mock.inspectFuncDeleteAgent != nil {
+		mmDeleteAgent.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.DeleteAgent")
+	}
+
+	mmDeleteAgent.mock.inspectFuncDeleteAgent = f
+
+	return mmDeleteAgent
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.DeleteAgent
+func (mmDeleteAgent *mAppPublicServiceServerMockDeleteAgent) Return(dp2 *mm_appv1alpha.DeleteAgentResponse, err error) *AppPublicServiceServerMock {
+	if mmDeleteAgent.mock.funcDeleteAgent != nil {
+		mmDeleteAgent.mock.t.Fatalf("AppPublicServiceServerMock.DeleteAgent mock is already set by Set")
+	}
+
+	if mmDeleteAgent.defaultExpectation == nil {
+		mmDeleteAgent.defaultExpectation = &AppPublicServiceServerMockDeleteAgentExpectation{mock: mmDeleteAgent.mock}
+	}
+	mmDeleteAgent.defaultExpectation.results = &AppPublicServiceServerMockDeleteAgentResults{dp2, err}
+	mmDeleteAgent.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmDeleteAgent.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.DeleteAgent method
+func (mmDeleteAgent *mAppPublicServiceServerMockDeleteAgent) Set(f func(ctx context.Context, dp1 *mm_appv1alpha.DeleteAgentRequest) (dp2 *mm_appv1alpha.DeleteAgentResponse, err error)) *AppPublicServiceServerMock {
+	if mmDeleteAgent.defaultExpectation != nil {
+		mmDeleteAgent.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.DeleteAgent method")
+	}
+
+	if len(mmDeleteAgent.expectations) > 0 {
+		mmDeleteAgent.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.DeleteAgent method")
+	}
+
+	mmDeleteAgent.mock.funcDeleteAgent = f
+	mmDeleteAgent.mock.funcDeleteAgentOrigin = minimock.CallerInfo(1)
+	return mmDeleteAgent.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.DeleteAgent which will trigger the result defined by the following
+// Then helper
+func (mmDeleteAgent *mAppPublicServiceServerMockDeleteAgent) When(ctx context.Context, dp1 *mm_appv1alpha.DeleteAgentRequest) *AppPublicServiceServerMockDeleteAgentExpectation {
+	if mmDeleteAgent.mock.funcDeleteAgent != nil {
+		mmDeleteAgent.mock.t.Fatalf("AppPublicServiceServerMock.DeleteAgent mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockDeleteAgentExpectation{
+		mock:               mmDeleteAgent.mock,
+		params:             &AppPublicServiceServerMockDeleteAgentParams{ctx, dp1},
+		expectationOrigins: AppPublicServiceServerMockDeleteAgentExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmDeleteAgent.expectations = append(mmDeleteAgent.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.DeleteAgent return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockDeleteAgentExpectation) Then(dp2 *mm_appv1alpha.DeleteAgentResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockDeleteAgentResults{dp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.DeleteAgent should be invoked
+func (mmDeleteAgent *mAppPublicServiceServerMockDeleteAgent) Times(n uint64) *mAppPublicServiceServerMockDeleteAgent {
+	if n == 0 {
+		mmDeleteAgent.mock.t.Fatalf("Times of AppPublicServiceServerMock.DeleteAgent mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmDeleteAgent.expectedInvocations, n)
+	mmDeleteAgent.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmDeleteAgent
+}
+
+func (mmDeleteAgent *mAppPublicServiceServerMockDeleteAgent) invocationsDone() bool {
+	if len(mmDeleteAgent.expectations) == 0 && mmDeleteAgent.defaultExpectation == nil && mmDeleteAgent.mock.funcDeleteAgent == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmDeleteAgent.mock.afterDeleteAgentCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmDeleteAgent.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// DeleteAgent implements mm_appv1alpha.AppPublicServiceServer
+func (mmDeleteAgent *AppPublicServiceServerMock) DeleteAgent(ctx context.Context, dp1 *mm_appv1alpha.DeleteAgentRequest) (dp2 *mm_appv1alpha.DeleteAgentResponse, err error) {
+	mm_atomic.AddUint64(&mmDeleteAgent.beforeDeleteAgentCounter, 1)
+	defer mm_atomic.AddUint64(&mmDeleteAgent.afterDeleteAgentCounter, 1)
+
+	mmDeleteAgent.t.Helper()
+
+	if mmDeleteAgent.inspectFuncDeleteAgent != nil {
+		mmDeleteAgent.inspectFuncDeleteAgent(ctx, dp1)
+	}
+
+	mm_params := AppPublicServiceServerMockDeleteAgentParams{ctx, dp1}
+
+	// Record call args
+	mmDeleteAgent.DeleteAgentMock.mutex.Lock()
+	mmDeleteAgent.DeleteAgentMock.callArgs = append(mmDeleteAgent.DeleteAgentMock.callArgs, &mm_params)
+	mmDeleteAgent.DeleteAgentMock.mutex.Unlock()
+
+	for _, e := range mmDeleteAgent.DeleteAgentMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.dp2, e.results.err
+		}
+	}
+
+	if mmDeleteAgent.DeleteAgentMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmDeleteAgent.DeleteAgentMock.defaultExpectation.Counter, 1)
+		mm_want := mmDeleteAgent.DeleteAgentMock.defaultExpectation.params
+		mm_want_ptrs := mmDeleteAgent.DeleteAgentMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockDeleteAgentParams{ctx, dp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmDeleteAgent.t.Errorf("AppPublicServiceServerMock.DeleteAgent got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteAgent.DeleteAgentMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.dp1 != nil && !minimock.Equal(*mm_want_ptrs.dp1, mm_got.dp1) {
+				mmDeleteAgent.t.Errorf("AppPublicServiceServerMock.DeleteAgent got unexpected parameter dp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteAgent.DeleteAgentMock.defaultExpectation.expectationOrigins.originDp1, *mm_want_ptrs.dp1, mm_got.dp1, minimock.Diff(*mm_want_ptrs.dp1, mm_got.dp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmDeleteAgent.t.Errorf("AppPublicServiceServerMock.DeleteAgent got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmDeleteAgent.DeleteAgentMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmDeleteAgent.DeleteAgentMock.defaultExpectation.results
+		if mm_results == nil {
+			mmDeleteAgent.t.Fatal("No results are set for the AppPublicServiceServerMock.DeleteAgent")
+		}
+		return (*mm_results).dp2, (*mm_results).err
+	}
+	if mmDeleteAgent.funcDeleteAgent != nil {
+		return mmDeleteAgent.funcDeleteAgent(ctx, dp1)
+	}
+	mmDeleteAgent.t.Fatalf("Unexpected call to AppPublicServiceServerMock.DeleteAgent. %v %v", ctx, dp1)
+	return
+}
+
+// DeleteAgentAfterCounter returns a count of finished AppPublicServiceServerMock.DeleteAgent invocations
+func (mmDeleteAgent *AppPublicServiceServerMock) DeleteAgentAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteAgent.afterDeleteAgentCounter)
+}
+
+// DeleteAgentBeforeCounter returns a count of AppPublicServiceServerMock.DeleteAgent invocations
+func (mmDeleteAgent *AppPublicServiceServerMock) DeleteAgentBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteAgent.beforeDeleteAgentCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.DeleteAgent.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmDeleteAgent *mAppPublicServiceServerMockDeleteAgent) Calls() []*AppPublicServiceServerMockDeleteAgentParams {
+	mmDeleteAgent.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockDeleteAgentParams, len(mmDeleteAgent.callArgs))
+	copy(argCopy, mmDeleteAgent.callArgs)
+
+	mmDeleteAgent.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockDeleteAgentDone returns true if the count of the DeleteAgent invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockDeleteAgentDone() bool {
+	if m.DeleteAgentMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.DeleteAgentMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.DeleteAgentMock.invocationsDone()
+}
+
+// MinimockDeleteAgentInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockDeleteAgentInspect() {
+	for _, e := range m.DeleteAgentMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteAgent at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterDeleteAgentCounter := mm_atomic.LoadUint64(&m.afterDeleteAgentCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.DeleteAgentMock.defaultExpectation != nil && afterDeleteAgentCounter < 1 {
+		if m.DeleteAgentMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteAgent at\n%s", m.DeleteAgentMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteAgent at\n%s with params: %#v", m.DeleteAgentMock.defaultExpectation.expectationOrigins.origin, *m.DeleteAgentMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcDeleteAgent != nil && afterDeleteAgentCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteAgent at\n%s", m.funcDeleteAgentOrigin)
+	}
+
+	if !m.DeleteAgentMock.invocationsDone() && afterDeleteAgentCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.DeleteAgent at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.DeleteAgentMock.expectedInvocations), m.DeleteAgentMock.expectedInvocationsOrigin, afterDeleteAgentCounter)
 	}
 }
 
@@ -3681,6 +4417,349 @@ func (m *AppPublicServiceServerMock) MinimockGetPlaygroundConversationInspect() 
 	}
 }
 
+type mAppPublicServiceServerMockListAgents struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockListAgentsExpectation
+	expectations       []*AppPublicServiceServerMockListAgentsExpectation
+
+	callArgs []*AppPublicServiceServerMockListAgentsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockListAgentsExpectation specifies expectation struct of the AppPublicServiceServer.ListAgents
+type AppPublicServiceServerMockListAgentsExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockListAgentsParams
+	paramPtrs          *AppPublicServiceServerMockListAgentsParamPtrs
+	expectationOrigins AppPublicServiceServerMockListAgentsExpectationOrigins
+	results            *AppPublicServiceServerMockListAgentsResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockListAgentsParams contains parameters of the AppPublicServiceServer.ListAgents
+type AppPublicServiceServerMockListAgentsParams struct {
+	ctx context.Context
+	lp1 *mm_appv1alpha.ListAgentsRequest
+}
+
+// AppPublicServiceServerMockListAgentsParamPtrs contains pointers to parameters of the AppPublicServiceServer.ListAgents
+type AppPublicServiceServerMockListAgentsParamPtrs struct {
+	ctx *context.Context
+	lp1 **mm_appv1alpha.ListAgentsRequest
+}
+
+// AppPublicServiceServerMockListAgentsResults contains results of the AppPublicServiceServer.ListAgents
+type AppPublicServiceServerMockListAgentsResults struct {
+	lp2 *mm_appv1alpha.ListAgentsResponse
+	err error
+}
+
+// AppPublicServiceServerMockListAgentsOrigins contains origins of expectations of the AppPublicServiceServer.ListAgents
+type AppPublicServiceServerMockListAgentsExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originLp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListAgents *mAppPublicServiceServerMockListAgents) Optional() *mAppPublicServiceServerMockListAgents {
+	mmListAgents.optional = true
+	return mmListAgents
+}
+
+// Expect sets up expected params for AppPublicServiceServer.ListAgents
+func (mmListAgents *mAppPublicServiceServerMockListAgents) Expect(ctx context.Context, lp1 *mm_appv1alpha.ListAgentsRequest) *mAppPublicServiceServerMockListAgents {
+	if mmListAgents.mock.funcListAgents != nil {
+		mmListAgents.mock.t.Fatalf("AppPublicServiceServerMock.ListAgents mock is already set by Set")
+	}
+
+	if mmListAgents.defaultExpectation == nil {
+		mmListAgents.defaultExpectation = &AppPublicServiceServerMockListAgentsExpectation{}
+	}
+
+	if mmListAgents.defaultExpectation.paramPtrs != nil {
+		mmListAgents.mock.t.Fatalf("AppPublicServiceServerMock.ListAgents mock is already set by ExpectParams functions")
+	}
+
+	mmListAgents.defaultExpectation.params = &AppPublicServiceServerMockListAgentsParams{ctx, lp1}
+	mmListAgents.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmListAgents.expectations {
+		if minimock.Equal(e.params, mmListAgents.defaultExpectation.params) {
+			mmListAgents.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListAgents.defaultExpectation.params)
+		}
+	}
+
+	return mmListAgents
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.ListAgents
+func (mmListAgents *mAppPublicServiceServerMockListAgents) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockListAgents {
+	if mmListAgents.mock.funcListAgents != nil {
+		mmListAgents.mock.t.Fatalf("AppPublicServiceServerMock.ListAgents mock is already set by Set")
+	}
+
+	if mmListAgents.defaultExpectation == nil {
+		mmListAgents.defaultExpectation = &AppPublicServiceServerMockListAgentsExpectation{}
+	}
+
+	if mmListAgents.defaultExpectation.params != nil {
+		mmListAgents.mock.t.Fatalf("AppPublicServiceServerMock.ListAgents mock is already set by Expect")
+	}
+
+	if mmListAgents.defaultExpectation.paramPtrs == nil {
+		mmListAgents.defaultExpectation.paramPtrs = &AppPublicServiceServerMockListAgentsParamPtrs{}
+	}
+	mmListAgents.defaultExpectation.paramPtrs.ctx = &ctx
+	mmListAgents.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmListAgents
+}
+
+// ExpectLp1Param2 sets up expected param lp1 for AppPublicServiceServer.ListAgents
+func (mmListAgents *mAppPublicServiceServerMockListAgents) ExpectLp1Param2(lp1 *mm_appv1alpha.ListAgentsRequest) *mAppPublicServiceServerMockListAgents {
+	if mmListAgents.mock.funcListAgents != nil {
+		mmListAgents.mock.t.Fatalf("AppPublicServiceServerMock.ListAgents mock is already set by Set")
+	}
+
+	if mmListAgents.defaultExpectation == nil {
+		mmListAgents.defaultExpectation = &AppPublicServiceServerMockListAgentsExpectation{}
+	}
+
+	if mmListAgents.defaultExpectation.params != nil {
+		mmListAgents.mock.t.Fatalf("AppPublicServiceServerMock.ListAgents mock is already set by Expect")
+	}
+
+	if mmListAgents.defaultExpectation.paramPtrs == nil {
+		mmListAgents.defaultExpectation.paramPtrs = &AppPublicServiceServerMockListAgentsParamPtrs{}
+	}
+	mmListAgents.defaultExpectation.paramPtrs.lp1 = &lp1
+	mmListAgents.defaultExpectation.expectationOrigins.originLp1 = minimock.CallerInfo(1)
+
+	return mmListAgents
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.ListAgents
+func (mmListAgents *mAppPublicServiceServerMockListAgents) Inspect(f func(ctx context.Context, lp1 *mm_appv1alpha.ListAgentsRequest)) *mAppPublicServiceServerMockListAgents {
+	if mmListAgents.mock.inspectFuncListAgents != nil {
+		mmListAgents.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.ListAgents")
+	}
+
+	mmListAgents.mock.inspectFuncListAgents = f
+
+	return mmListAgents
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.ListAgents
+func (mmListAgents *mAppPublicServiceServerMockListAgents) Return(lp2 *mm_appv1alpha.ListAgentsResponse, err error) *AppPublicServiceServerMock {
+	if mmListAgents.mock.funcListAgents != nil {
+		mmListAgents.mock.t.Fatalf("AppPublicServiceServerMock.ListAgents mock is already set by Set")
+	}
+
+	if mmListAgents.defaultExpectation == nil {
+		mmListAgents.defaultExpectation = &AppPublicServiceServerMockListAgentsExpectation{mock: mmListAgents.mock}
+	}
+	mmListAgents.defaultExpectation.results = &AppPublicServiceServerMockListAgentsResults{lp2, err}
+	mmListAgents.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmListAgents.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.ListAgents method
+func (mmListAgents *mAppPublicServiceServerMockListAgents) Set(f func(ctx context.Context, lp1 *mm_appv1alpha.ListAgentsRequest) (lp2 *mm_appv1alpha.ListAgentsResponse, err error)) *AppPublicServiceServerMock {
+	if mmListAgents.defaultExpectation != nil {
+		mmListAgents.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.ListAgents method")
+	}
+
+	if len(mmListAgents.expectations) > 0 {
+		mmListAgents.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.ListAgents method")
+	}
+
+	mmListAgents.mock.funcListAgents = f
+	mmListAgents.mock.funcListAgentsOrigin = minimock.CallerInfo(1)
+	return mmListAgents.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.ListAgents which will trigger the result defined by the following
+// Then helper
+func (mmListAgents *mAppPublicServiceServerMockListAgents) When(ctx context.Context, lp1 *mm_appv1alpha.ListAgentsRequest) *AppPublicServiceServerMockListAgentsExpectation {
+	if mmListAgents.mock.funcListAgents != nil {
+		mmListAgents.mock.t.Fatalf("AppPublicServiceServerMock.ListAgents mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockListAgentsExpectation{
+		mock:               mmListAgents.mock,
+		params:             &AppPublicServiceServerMockListAgentsParams{ctx, lp1},
+		expectationOrigins: AppPublicServiceServerMockListAgentsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmListAgents.expectations = append(mmListAgents.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.ListAgents return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockListAgentsExpectation) Then(lp2 *mm_appv1alpha.ListAgentsResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockListAgentsResults{lp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.ListAgents should be invoked
+func (mmListAgents *mAppPublicServiceServerMockListAgents) Times(n uint64) *mAppPublicServiceServerMockListAgents {
+	if n == 0 {
+		mmListAgents.mock.t.Fatalf("Times of AppPublicServiceServerMock.ListAgents mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListAgents.expectedInvocations, n)
+	mmListAgents.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmListAgents
+}
+
+func (mmListAgents *mAppPublicServiceServerMockListAgents) invocationsDone() bool {
+	if len(mmListAgents.expectations) == 0 && mmListAgents.defaultExpectation == nil && mmListAgents.mock.funcListAgents == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListAgents.mock.afterListAgentsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListAgents.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListAgents implements mm_appv1alpha.AppPublicServiceServer
+func (mmListAgents *AppPublicServiceServerMock) ListAgents(ctx context.Context, lp1 *mm_appv1alpha.ListAgentsRequest) (lp2 *mm_appv1alpha.ListAgentsResponse, err error) {
+	mm_atomic.AddUint64(&mmListAgents.beforeListAgentsCounter, 1)
+	defer mm_atomic.AddUint64(&mmListAgents.afterListAgentsCounter, 1)
+
+	mmListAgents.t.Helper()
+
+	if mmListAgents.inspectFuncListAgents != nil {
+		mmListAgents.inspectFuncListAgents(ctx, lp1)
+	}
+
+	mm_params := AppPublicServiceServerMockListAgentsParams{ctx, lp1}
+
+	// Record call args
+	mmListAgents.ListAgentsMock.mutex.Lock()
+	mmListAgents.ListAgentsMock.callArgs = append(mmListAgents.ListAgentsMock.callArgs, &mm_params)
+	mmListAgents.ListAgentsMock.mutex.Unlock()
+
+	for _, e := range mmListAgents.ListAgentsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.lp2, e.results.err
+		}
+	}
+
+	if mmListAgents.ListAgentsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListAgents.ListAgentsMock.defaultExpectation.Counter, 1)
+		mm_want := mmListAgents.ListAgentsMock.defaultExpectation.params
+		mm_want_ptrs := mmListAgents.ListAgentsMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockListAgentsParams{ctx, lp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListAgents.t.Errorf("AppPublicServiceServerMock.ListAgents got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListAgents.ListAgentsMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.lp1 != nil && !minimock.Equal(*mm_want_ptrs.lp1, mm_got.lp1) {
+				mmListAgents.t.Errorf("AppPublicServiceServerMock.ListAgents got unexpected parameter lp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListAgents.ListAgentsMock.defaultExpectation.expectationOrigins.originLp1, *mm_want_ptrs.lp1, mm_got.lp1, minimock.Diff(*mm_want_ptrs.lp1, mm_got.lp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListAgents.t.Errorf("AppPublicServiceServerMock.ListAgents got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmListAgents.ListAgentsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListAgents.ListAgentsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListAgents.t.Fatal("No results are set for the AppPublicServiceServerMock.ListAgents")
+		}
+		return (*mm_results).lp2, (*mm_results).err
+	}
+	if mmListAgents.funcListAgents != nil {
+		return mmListAgents.funcListAgents(ctx, lp1)
+	}
+	mmListAgents.t.Fatalf("Unexpected call to AppPublicServiceServerMock.ListAgents. %v %v", ctx, lp1)
+	return
+}
+
+// ListAgentsAfterCounter returns a count of finished AppPublicServiceServerMock.ListAgents invocations
+func (mmListAgents *AppPublicServiceServerMock) ListAgentsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListAgents.afterListAgentsCounter)
+}
+
+// ListAgentsBeforeCounter returns a count of AppPublicServiceServerMock.ListAgents invocations
+func (mmListAgents *AppPublicServiceServerMock) ListAgentsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListAgents.beforeListAgentsCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.ListAgents.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListAgents *mAppPublicServiceServerMockListAgents) Calls() []*AppPublicServiceServerMockListAgentsParams {
+	mmListAgents.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockListAgentsParams, len(mmListAgents.callArgs))
+	copy(argCopy, mmListAgents.callArgs)
+
+	mmListAgents.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListAgentsDone returns true if the count of the ListAgents invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockListAgentsDone() bool {
+	if m.ListAgentsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListAgentsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListAgentsMock.invocationsDone()
+}
+
+// MinimockListAgentsInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockListAgentsInspect() {
+	for _, e := range m.ListAgentsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListAgents at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterListAgentsCounter := mm_atomic.LoadUint64(&m.afterListAgentsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListAgentsMock.defaultExpectation != nil && afterListAgentsCounter < 1 {
+		if m.ListAgentsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListAgents at\n%s", m.ListAgentsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListAgents at\n%s with params: %#v", m.ListAgentsMock.defaultExpectation.expectationOrigins.origin, *m.ListAgentsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListAgents != nil && afterListAgentsCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.ListAgents at\n%s", m.funcListAgentsOrigin)
+	}
+
+	if !m.ListAgentsMock.invocationsDone() && afterListAgentsCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.ListAgents at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.ListAgentsMock.expectedInvocations), m.ListAgentsMock.expectedInvocationsOrigin, afterListAgentsCounter)
+	}
+}
+
 type mAppPublicServiceServerMockListApps struct {
 	optional           bool
 	mock               *AppPublicServiceServerMock
@@ -5396,6 +6475,349 @@ func (m *AppPublicServiceServerMock) MinimockListMessagesInspect() {
 	}
 }
 
+type mAppPublicServiceServerMockListTools struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockListToolsExpectation
+	expectations       []*AppPublicServiceServerMockListToolsExpectation
+
+	callArgs []*AppPublicServiceServerMockListToolsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockListToolsExpectation specifies expectation struct of the AppPublicServiceServer.ListTools
+type AppPublicServiceServerMockListToolsExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockListToolsParams
+	paramPtrs          *AppPublicServiceServerMockListToolsParamPtrs
+	expectationOrigins AppPublicServiceServerMockListToolsExpectationOrigins
+	results            *AppPublicServiceServerMockListToolsResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockListToolsParams contains parameters of the AppPublicServiceServer.ListTools
+type AppPublicServiceServerMockListToolsParams struct {
+	ctx context.Context
+	lp1 *mm_appv1alpha.ListToolsRequest
+}
+
+// AppPublicServiceServerMockListToolsParamPtrs contains pointers to parameters of the AppPublicServiceServer.ListTools
+type AppPublicServiceServerMockListToolsParamPtrs struct {
+	ctx *context.Context
+	lp1 **mm_appv1alpha.ListToolsRequest
+}
+
+// AppPublicServiceServerMockListToolsResults contains results of the AppPublicServiceServer.ListTools
+type AppPublicServiceServerMockListToolsResults struct {
+	lp2 *mm_appv1alpha.ListToolsResponse
+	err error
+}
+
+// AppPublicServiceServerMockListToolsOrigins contains origins of expectations of the AppPublicServiceServer.ListTools
+type AppPublicServiceServerMockListToolsExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originLp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListTools *mAppPublicServiceServerMockListTools) Optional() *mAppPublicServiceServerMockListTools {
+	mmListTools.optional = true
+	return mmListTools
+}
+
+// Expect sets up expected params for AppPublicServiceServer.ListTools
+func (mmListTools *mAppPublicServiceServerMockListTools) Expect(ctx context.Context, lp1 *mm_appv1alpha.ListToolsRequest) *mAppPublicServiceServerMockListTools {
+	if mmListTools.mock.funcListTools != nil {
+		mmListTools.mock.t.Fatalf("AppPublicServiceServerMock.ListTools mock is already set by Set")
+	}
+
+	if mmListTools.defaultExpectation == nil {
+		mmListTools.defaultExpectation = &AppPublicServiceServerMockListToolsExpectation{}
+	}
+
+	if mmListTools.defaultExpectation.paramPtrs != nil {
+		mmListTools.mock.t.Fatalf("AppPublicServiceServerMock.ListTools mock is already set by ExpectParams functions")
+	}
+
+	mmListTools.defaultExpectation.params = &AppPublicServiceServerMockListToolsParams{ctx, lp1}
+	mmListTools.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmListTools.expectations {
+		if minimock.Equal(e.params, mmListTools.defaultExpectation.params) {
+			mmListTools.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListTools.defaultExpectation.params)
+		}
+	}
+
+	return mmListTools
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.ListTools
+func (mmListTools *mAppPublicServiceServerMockListTools) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockListTools {
+	if mmListTools.mock.funcListTools != nil {
+		mmListTools.mock.t.Fatalf("AppPublicServiceServerMock.ListTools mock is already set by Set")
+	}
+
+	if mmListTools.defaultExpectation == nil {
+		mmListTools.defaultExpectation = &AppPublicServiceServerMockListToolsExpectation{}
+	}
+
+	if mmListTools.defaultExpectation.params != nil {
+		mmListTools.mock.t.Fatalf("AppPublicServiceServerMock.ListTools mock is already set by Expect")
+	}
+
+	if mmListTools.defaultExpectation.paramPtrs == nil {
+		mmListTools.defaultExpectation.paramPtrs = &AppPublicServiceServerMockListToolsParamPtrs{}
+	}
+	mmListTools.defaultExpectation.paramPtrs.ctx = &ctx
+	mmListTools.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmListTools
+}
+
+// ExpectLp1Param2 sets up expected param lp1 for AppPublicServiceServer.ListTools
+func (mmListTools *mAppPublicServiceServerMockListTools) ExpectLp1Param2(lp1 *mm_appv1alpha.ListToolsRequest) *mAppPublicServiceServerMockListTools {
+	if mmListTools.mock.funcListTools != nil {
+		mmListTools.mock.t.Fatalf("AppPublicServiceServerMock.ListTools mock is already set by Set")
+	}
+
+	if mmListTools.defaultExpectation == nil {
+		mmListTools.defaultExpectation = &AppPublicServiceServerMockListToolsExpectation{}
+	}
+
+	if mmListTools.defaultExpectation.params != nil {
+		mmListTools.mock.t.Fatalf("AppPublicServiceServerMock.ListTools mock is already set by Expect")
+	}
+
+	if mmListTools.defaultExpectation.paramPtrs == nil {
+		mmListTools.defaultExpectation.paramPtrs = &AppPublicServiceServerMockListToolsParamPtrs{}
+	}
+	mmListTools.defaultExpectation.paramPtrs.lp1 = &lp1
+	mmListTools.defaultExpectation.expectationOrigins.originLp1 = minimock.CallerInfo(1)
+
+	return mmListTools
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.ListTools
+func (mmListTools *mAppPublicServiceServerMockListTools) Inspect(f func(ctx context.Context, lp1 *mm_appv1alpha.ListToolsRequest)) *mAppPublicServiceServerMockListTools {
+	if mmListTools.mock.inspectFuncListTools != nil {
+		mmListTools.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.ListTools")
+	}
+
+	mmListTools.mock.inspectFuncListTools = f
+
+	return mmListTools
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.ListTools
+func (mmListTools *mAppPublicServiceServerMockListTools) Return(lp2 *mm_appv1alpha.ListToolsResponse, err error) *AppPublicServiceServerMock {
+	if mmListTools.mock.funcListTools != nil {
+		mmListTools.mock.t.Fatalf("AppPublicServiceServerMock.ListTools mock is already set by Set")
+	}
+
+	if mmListTools.defaultExpectation == nil {
+		mmListTools.defaultExpectation = &AppPublicServiceServerMockListToolsExpectation{mock: mmListTools.mock}
+	}
+	mmListTools.defaultExpectation.results = &AppPublicServiceServerMockListToolsResults{lp2, err}
+	mmListTools.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmListTools.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.ListTools method
+func (mmListTools *mAppPublicServiceServerMockListTools) Set(f func(ctx context.Context, lp1 *mm_appv1alpha.ListToolsRequest) (lp2 *mm_appv1alpha.ListToolsResponse, err error)) *AppPublicServiceServerMock {
+	if mmListTools.defaultExpectation != nil {
+		mmListTools.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.ListTools method")
+	}
+
+	if len(mmListTools.expectations) > 0 {
+		mmListTools.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.ListTools method")
+	}
+
+	mmListTools.mock.funcListTools = f
+	mmListTools.mock.funcListToolsOrigin = minimock.CallerInfo(1)
+	return mmListTools.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.ListTools which will trigger the result defined by the following
+// Then helper
+func (mmListTools *mAppPublicServiceServerMockListTools) When(ctx context.Context, lp1 *mm_appv1alpha.ListToolsRequest) *AppPublicServiceServerMockListToolsExpectation {
+	if mmListTools.mock.funcListTools != nil {
+		mmListTools.mock.t.Fatalf("AppPublicServiceServerMock.ListTools mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockListToolsExpectation{
+		mock:               mmListTools.mock,
+		params:             &AppPublicServiceServerMockListToolsParams{ctx, lp1},
+		expectationOrigins: AppPublicServiceServerMockListToolsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmListTools.expectations = append(mmListTools.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.ListTools return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockListToolsExpectation) Then(lp2 *mm_appv1alpha.ListToolsResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockListToolsResults{lp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.ListTools should be invoked
+func (mmListTools *mAppPublicServiceServerMockListTools) Times(n uint64) *mAppPublicServiceServerMockListTools {
+	if n == 0 {
+		mmListTools.mock.t.Fatalf("Times of AppPublicServiceServerMock.ListTools mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListTools.expectedInvocations, n)
+	mmListTools.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmListTools
+}
+
+func (mmListTools *mAppPublicServiceServerMockListTools) invocationsDone() bool {
+	if len(mmListTools.expectations) == 0 && mmListTools.defaultExpectation == nil && mmListTools.mock.funcListTools == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListTools.mock.afterListToolsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListTools.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListTools implements mm_appv1alpha.AppPublicServiceServer
+func (mmListTools *AppPublicServiceServerMock) ListTools(ctx context.Context, lp1 *mm_appv1alpha.ListToolsRequest) (lp2 *mm_appv1alpha.ListToolsResponse, err error) {
+	mm_atomic.AddUint64(&mmListTools.beforeListToolsCounter, 1)
+	defer mm_atomic.AddUint64(&mmListTools.afterListToolsCounter, 1)
+
+	mmListTools.t.Helper()
+
+	if mmListTools.inspectFuncListTools != nil {
+		mmListTools.inspectFuncListTools(ctx, lp1)
+	}
+
+	mm_params := AppPublicServiceServerMockListToolsParams{ctx, lp1}
+
+	// Record call args
+	mmListTools.ListToolsMock.mutex.Lock()
+	mmListTools.ListToolsMock.callArgs = append(mmListTools.ListToolsMock.callArgs, &mm_params)
+	mmListTools.ListToolsMock.mutex.Unlock()
+
+	for _, e := range mmListTools.ListToolsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.lp2, e.results.err
+		}
+	}
+
+	if mmListTools.ListToolsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListTools.ListToolsMock.defaultExpectation.Counter, 1)
+		mm_want := mmListTools.ListToolsMock.defaultExpectation.params
+		mm_want_ptrs := mmListTools.ListToolsMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockListToolsParams{ctx, lp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListTools.t.Errorf("AppPublicServiceServerMock.ListTools got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListTools.ListToolsMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.lp1 != nil && !minimock.Equal(*mm_want_ptrs.lp1, mm_got.lp1) {
+				mmListTools.t.Errorf("AppPublicServiceServerMock.ListTools got unexpected parameter lp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListTools.ListToolsMock.defaultExpectation.expectationOrigins.originLp1, *mm_want_ptrs.lp1, mm_got.lp1, minimock.Diff(*mm_want_ptrs.lp1, mm_got.lp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListTools.t.Errorf("AppPublicServiceServerMock.ListTools got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmListTools.ListToolsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListTools.ListToolsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListTools.t.Fatal("No results are set for the AppPublicServiceServerMock.ListTools")
+		}
+		return (*mm_results).lp2, (*mm_results).err
+	}
+	if mmListTools.funcListTools != nil {
+		return mmListTools.funcListTools(ctx, lp1)
+	}
+	mmListTools.t.Fatalf("Unexpected call to AppPublicServiceServerMock.ListTools. %v %v", ctx, lp1)
+	return
+}
+
+// ListToolsAfterCounter returns a count of finished AppPublicServiceServerMock.ListTools invocations
+func (mmListTools *AppPublicServiceServerMock) ListToolsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListTools.afterListToolsCounter)
+}
+
+// ListToolsBeforeCounter returns a count of AppPublicServiceServerMock.ListTools invocations
+func (mmListTools *AppPublicServiceServerMock) ListToolsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListTools.beforeListToolsCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.ListTools.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListTools *mAppPublicServiceServerMockListTools) Calls() []*AppPublicServiceServerMockListToolsParams {
+	mmListTools.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockListToolsParams, len(mmListTools.callArgs))
+	copy(argCopy, mmListTools.callArgs)
+
+	mmListTools.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListToolsDone returns true if the count of the ListTools invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockListToolsDone() bool {
+	if m.ListToolsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListToolsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListToolsMock.invocationsDone()
+}
+
+// MinimockListToolsInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockListToolsInspect() {
+	for _, e := range m.ListToolsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListTools at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterListToolsCounter := mm_atomic.LoadUint64(&m.afterListToolsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListToolsMock.defaultExpectation != nil && afterListToolsCounter < 1 {
+		if m.ListToolsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListTools at\n%s", m.ListToolsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListTools at\n%s with params: %#v", m.ListToolsMock.defaultExpectation.expectationOrigins.origin, *m.ListToolsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListTools != nil && afterListToolsCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.ListTools at\n%s", m.funcListToolsOrigin)
+	}
+
+	if !m.ListToolsMock.invocationsDone() && afterListToolsCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.ListTools at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.ListToolsMock.expectedInvocations), m.ListToolsMock.expectedInvocationsOrigin, afterListToolsCounter)
+	}
+}
+
 type mAppPublicServiceServerMockLiveness struct {
 	optional           bool
 	mock               *AppPublicServiceServerMock
@@ -6422,6 +7844,349 @@ func (m *AppPublicServiceServerMock) MinimockRestartPlaygroundConversationInspec
 	if !m.RestartPlaygroundConversationMock.invocationsDone() && afterRestartPlaygroundConversationCounter > 0 {
 		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.RestartPlaygroundConversation at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.RestartPlaygroundConversationMock.expectedInvocations), m.RestartPlaygroundConversationMock.expectedInvocationsOrigin, afterRestartPlaygroundConversationCounter)
+	}
+}
+
+type mAppPublicServiceServerMockUpdateAgent struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockUpdateAgentExpectation
+	expectations       []*AppPublicServiceServerMockUpdateAgentExpectation
+
+	callArgs []*AppPublicServiceServerMockUpdateAgentParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockUpdateAgentExpectation specifies expectation struct of the AppPublicServiceServer.UpdateAgent
+type AppPublicServiceServerMockUpdateAgentExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockUpdateAgentParams
+	paramPtrs          *AppPublicServiceServerMockUpdateAgentParamPtrs
+	expectationOrigins AppPublicServiceServerMockUpdateAgentExpectationOrigins
+	results            *AppPublicServiceServerMockUpdateAgentResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockUpdateAgentParams contains parameters of the AppPublicServiceServer.UpdateAgent
+type AppPublicServiceServerMockUpdateAgentParams struct {
+	ctx context.Context
+	up1 *mm_appv1alpha.UpdateAgentRequest
+}
+
+// AppPublicServiceServerMockUpdateAgentParamPtrs contains pointers to parameters of the AppPublicServiceServer.UpdateAgent
+type AppPublicServiceServerMockUpdateAgentParamPtrs struct {
+	ctx *context.Context
+	up1 **mm_appv1alpha.UpdateAgentRequest
+}
+
+// AppPublicServiceServerMockUpdateAgentResults contains results of the AppPublicServiceServer.UpdateAgent
+type AppPublicServiceServerMockUpdateAgentResults struct {
+	up2 *mm_appv1alpha.UpdateAgentResponse
+	err error
+}
+
+// AppPublicServiceServerMockUpdateAgentOrigins contains origins of expectations of the AppPublicServiceServer.UpdateAgent
+type AppPublicServiceServerMockUpdateAgentExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originUp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdateAgent *mAppPublicServiceServerMockUpdateAgent) Optional() *mAppPublicServiceServerMockUpdateAgent {
+	mmUpdateAgent.optional = true
+	return mmUpdateAgent
+}
+
+// Expect sets up expected params for AppPublicServiceServer.UpdateAgent
+func (mmUpdateAgent *mAppPublicServiceServerMockUpdateAgent) Expect(ctx context.Context, up1 *mm_appv1alpha.UpdateAgentRequest) *mAppPublicServiceServerMockUpdateAgent {
+	if mmUpdateAgent.mock.funcUpdateAgent != nil {
+		mmUpdateAgent.mock.t.Fatalf("AppPublicServiceServerMock.UpdateAgent mock is already set by Set")
+	}
+
+	if mmUpdateAgent.defaultExpectation == nil {
+		mmUpdateAgent.defaultExpectation = &AppPublicServiceServerMockUpdateAgentExpectation{}
+	}
+
+	if mmUpdateAgent.defaultExpectation.paramPtrs != nil {
+		mmUpdateAgent.mock.t.Fatalf("AppPublicServiceServerMock.UpdateAgent mock is already set by ExpectParams functions")
+	}
+
+	mmUpdateAgent.defaultExpectation.params = &AppPublicServiceServerMockUpdateAgentParams{ctx, up1}
+	mmUpdateAgent.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUpdateAgent.expectations {
+		if minimock.Equal(e.params, mmUpdateAgent.defaultExpectation.params) {
+			mmUpdateAgent.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdateAgent.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdateAgent
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.UpdateAgent
+func (mmUpdateAgent *mAppPublicServiceServerMockUpdateAgent) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockUpdateAgent {
+	if mmUpdateAgent.mock.funcUpdateAgent != nil {
+		mmUpdateAgent.mock.t.Fatalf("AppPublicServiceServerMock.UpdateAgent mock is already set by Set")
+	}
+
+	if mmUpdateAgent.defaultExpectation == nil {
+		mmUpdateAgent.defaultExpectation = &AppPublicServiceServerMockUpdateAgentExpectation{}
+	}
+
+	if mmUpdateAgent.defaultExpectation.params != nil {
+		mmUpdateAgent.mock.t.Fatalf("AppPublicServiceServerMock.UpdateAgent mock is already set by Expect")
+	}
+
+	if mmUpdateAgent.defaultExpectation.paramPtrs == nil {
+		mmUpdateAgent.defaultExpectation.paramPtrs = &AppPublicServiceServerMockUpdateAgentParamPtrs{}
+	}
+	mmUpdateAgent.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUpdateAgent.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUpdateAgent
+}
+
+// ExpectUp1Param2 sets up expected param up1 for AppPublicServiceServer.UpdateAgent
+func (mmUpdateAgent *mAppPublicServiceServerMockUpdateAgent) ExpectUp1Param2(up1 *mm_appv1alpha.UpdateAgentRequest) *mAppPublicServiceServerMockUpdateAgent {
+	if mmUpdateAgent.mock.funcUpdateAgent != nil {
+		mmUpdateAgent.mock.t.Fatalf("AppPublicServiceServerMock.UpdateAgent mock is already set by Set")
+	}
+
+	if mmUpdateAgent.defaultExpectation == nil {
+		mmUpdateAgent.defaultExpectation = &AppPublicServiceServerMockUpdateAgentExpectation{}
+	}
+
+	if mmUpdateAgent.defaultExpectation.params != nil {
+		mmUpdateAgent.mock.t.Fatalf("AppPublicServiceServerMock.UpdateAgent mock is already set by Expect")
+	}
+
+	if mmUpdateAgent.defaultExpectation.paramPtrs == nil {
+		mmUpdateAgent.defaultExpectation.paramPtrs = &AppPublicServiceServerMockUpdateAgentParamPtrs{}
+	}
+	mmUpdateAgent.defaultExpectation.paramPtrs.up1 = &up1
+	mmUpdateAgent.defaultExpectation.expectationOrigins.originUp1 = minimock.CallerInfo(1)
+
+	return mmUpdateAgent
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.UpdateAgent
+func (mmUpdateAgent *mAppPublicServiceServerMockUpdateAgent) Inspect(f func(ctx context.Context, up1 *mm_appv1alpha.UpdateAgentRequest)) *mAppPublicServiceServerMockUpdateAgent {
+	if mmUpdateAgent.mock.inspectFuncUpdateAgent != nil {
+		mmUpdateAgent.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.UpdateAgent")
+	}
+
+	mmUpdateAgent.mock.inspectFuncUpdateAgent = f
+
+	return mmUpdateAgent
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.UpdateAgent
+func (mmUpdateAgent *mAppPublicServiceServerMockUpdateAgent) Return(up2 *mm_appv1alpha.UpdateAgentResponse, err error) *AppPublicServiceServerMock {
+	if mmUpdateAgent.mock.funcUpdateAgent != nil {
+		mmUpdateAgent.mock.t.Fatalf("AppPublicServiceServerMock.UpdateAgent mock is already set by Set")
+	}
+
+	if mmUpdateAgent.defaultExpectation == nil {
+		mmUpdateAgent.defaultExpectation = &AppPublicServiceServerMockUpdateAgentExpectation{mock: mmUpdateAgent.mock}
+	}
+	mmUpdateAgent.defaultExpectation.results = &AppPublicServiceServerMockUpdateAgentResults{up2, err}
+	mmUpdateAgent.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUpdateAgent.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.UpdateAgent method
+func (mmUpdateAgent *mAppPublicServiceServerMockUpdateAgent) Set(f func(ctx context.Context, up1 *mm_appv1alpha.UpdateAgentRequest) (up2 *mm_appv1alpha.UpdateAgentResponse, err error)) *AppPublicServiceServerMock {
+	if mmUpdateAgent.defaultExpectation != nil {
+		mmUpdateAgent.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.UpdateAgent method")
+	}
+
+	if len(mmUpdateAgent.expectations) > 0 {
+		mmUpdateAgent.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.UpdateAgent method")
+	}
+
+	mmUpdateAgent.mock.funcUpdateAgent = f
+	mmUpdateAgent.mock.funcUpdateAgentOrigin = minimock.CallerInfo(1)
+	return mmUpdateAgent.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.UpdateAgent which will trigger the result defined by the following
+// Then helper
+func (mmUpdateAgent *mAppPublicServiceServerMockUpdateAgent) When(ctx context.Context, up1 *mm_appv1alpha.UpdateAgentRequest) *AppPublicServiceServerMockUpdateAgentExpectation {
+	if mmUpdateAgent.mock.funcUpdateAgent != nil {
+		mmUpdateAgent.mock.t.Fatalf("AppPublicServiceServerMock.UpdateAgent mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockUpdateAgentExpectation{
+		mock:               mmUpdateAgent.mock,
+		params:             &AppPublicServiceServerMockUpdateAgentParams{ctx, up1},
+		expectationOrigins: AppPublicServiceServerMockUpdateAgentExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUpdateAgent.expectations = append(mmUpdateAgent.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.UpdateAgent return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockUpdateAgentExpectation) Then(up2 *mm_appv1alpha.UpdateAgentResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockUpdateAgentResults{up2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.UpdateAgent should be invoked
+func (mmUpdateAgent *mAppPublicServiceServerMockUpdateAgent) Times(n uint64) *mAppPublicServiceServerMockUpdateAgent {
+	if n == 0 {
+		mmUpdateAgent.mock.t.Fatalf("Times of AppPublicServiceServerMock.UpdateAgent mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdateAgent.expectedInvocations, n)
+	mmUpdateAgent.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUpdateAgent
+}
+
+func (mmUpdateAgent *mAppPublicServiceServerMockUpdateAgent) invocationsDone() bool {
+	if len(mmUpdateAgent.expectations) == 0 && mmUpdateAgent.defaultExpectation == nil && mmUpdateAgent.mock.funcUpdateAgent == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdateAgent.mock.afterUpdateAgentCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdateAgent.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdateAgent implements mm_appv1alpha.AppPublicServiceServer
+func (mmUpdateAgent *AppPublicServiceServerMock) UpdateAgent(ctx context.Context, up1 *mm_appv1alpha.UpdateAgentRequest) (up2 *mm_appv1alpha.UpdateAgentResponse, err error) {
+	mm_atomic.AddUint64(&mmUpdateAgent.beforeUpdateAgentCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdateAgent.afterUpdateAgentCounter, 1)
+
+	mmUpdateAgent.t.Helper()
+
+	if mmUpdateAgent.inspectFuncUpdateAgent != nil {
+		mmUpdateAgent.inspectFuncUpdateAgent(ctx, up1)
+	}
+
+	mm_params := AppPublicServiceServerMockUpdateAgentParams{ctx, up1}
+
+	// Record call args
+	mmUpdateAgent.UpdateAgentMock.mutex.Lock()
+	mmUpdateAgent.UpdateAgentMock.callArgs = append(mmUpdateAgent.UpdateAgentMock.callArgs, &mm_params)
+	mmUpdateAgent.UpdateAgentMock.mutex.Unlock()
+
+	for _, e := range mmUpdateAgent.UpdateAgentMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.up2, e.results.err
+		}
+	}
+
+	if mmUpdateAgent.UpdateAgentMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdateAgent.UpdateAgentMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdateAgent.UpdateAgentMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdateAgent.UpdateAgentMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockUpdateAgentParams{ctx, up1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpdateAgent.t.Errorf("AppPublicServiceServerMock.UpdateAgent got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateAgent.UpdateAgentMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.up1 != nil && !minimock.Equal(*mm_want_ptrs.up1, mm_got.up1) {
+				mmUpdateAgent.t.Errorf("AppPublicServiceServerMock.UpdateAgent got unexpected parameter up1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateAgent.UpdateAgentMock.defaultExpectation.expectationOrigins.originUp1, *mm_want_ptrs.up1, mm_got.up1, minimock.Diff(*mm_want_ptrs.up1, mm_got.up1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdateAgent.t.Errorf("AppPublicServiceServerMock.UpdateAgent got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUpdateAgent.UpdateAgentMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdateAgent.UpdateAgentMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdateAgent.t.Fatal("No results are set for the AppPublicServiceServerMock.UpdateAgent")
+		}
+		return (*mm_results).up2, (*mm_results).err
+	}
+	if mmUpdateAgent.funcUpdateAgent != nil {
+		return mmUpdateAgent.funcUpdateAgent(ctx, up1)
+	}
+	mmUpdateAgent.t.Fatalf("Unexpected call to AppPublicServiceServerMock.UpdateAgent. %v %v", ctx, up1)
+	return
+}
+
+// UpdateAgentAfterCounter returns a count of finished AppPublicServiceServerMock.UpdateAgent invocations
+func (mmUpdateAgent *AppPublicServiceServerMock) UpdateAgentAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateAgent.afterUpdateAgentCounter)
+}
+
+// UpdateAgentBeforeCounter returns a count of AppPublicServiceServerMock.UpdateAgent invocations
+func (mmUpdateAgent *AppPublicServiceServerMock) UpdateAgentBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateAgent.beforeUpdateAgentCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.UpdateAgent.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdateAgent *mAppPublicServiceServerMockUpdateAgent) Calls() []*AppPublicServiceServerMockUpdateAgentParams {
+	mmUpdateAgent.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockUpdateAgentParams, len(mmUpdateAgent.callArgs))
+	copy(argCopy, mmUpdateAgent.callArgs)
+
+	mmUpdateAgent.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdateAgentDone returns true if the count of the UpdateAgent invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockUpdateAgentDone() bool {
+	if m.UpdateAgentMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdateAgentMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdateAgentMock.invocationsDone()
+}
+
+// MinimockUpdateAgentInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockUpdateAgentInspect() {
+	for _, e := range m.UpdateAgentMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateAgent at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUpdateAgentCounter := mm_atomic.LoadUint64(&m.afterUpdateAgentCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdateAgentMock.defaultExpectation != nil && afterUpdateAgentCounter < 1 {
+		if m.UpdateAgentMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateAgent at\n%s", m.UpdateAgentMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateAgent at\n%s with params: %#v", m.UpdateAgentMock.defaultExpectation.expectationOrigins.origin, *m.UpdateAgentMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdateAgent != nil && afterUpdateAgentCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateAgent at\n%s", m.funcUpdateAgentOrigin)
+	}
+
+	if !m.UpdateAgentMock.invocationsDone() && afterUpdateAgentCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.UpdateAgent at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdateAgentMock.expectedInvocations), m.UpdateAgentMock.expectedInvocationsOrigin, afterUpdateAgentCounter)
 	}
 }
 
@@ -7803,6 +9568,8 @@ func (m *AppPublicServiceServerMock) MinimockFinish() {
 		if !m.minimockDone() {
 			m.MinimockChatInspect()
 
+			m.MinimockCreateAgentInspect()
+
 			m.MinimockCreateAppInspect()
 
 			m.MinimockCreateChatInspect()
@@ -7810,6 +9577,8 @@ func (m *AppPublicServiceServerMock) MinimockFinish() {
 			m.MinimockCreateConversationInspect()
 
 			m.MinimockCreateMessageInspect()
+
+			m.MinimockDeleteAgentInspect()
 
 			m.MinimockDeleteAppInspect()
 
@@ -7821,6 +9590,8 @@ func (m *AppPublicServiceServerMock) MinimockFinish() {
 
 			m.MinimockGetPlaygroundConversationInspect()
 
+			m.MinimockListAgentsInspect()
+
 			m.MinimockListAppsInspect()
 
 			m.MinimockListChatMessagesInspect()
@@ -7831,11 +9602,15 @@ func (m *AppPublicServiceServerMock) MinimockFinish() {
 
 			m.MinimockListMessagesInspect()
 
+			m.MinimockListToolsInspect()
+
 			m.MinimockLivenessInspect()
 
 			m.MinimockReadinessInspect()
 
 			m.MinimockRestartPlaygroundConversationInspect()
+
+			m.MinimockUpdateAgentInspect()
 
 			m.MinimockUpdateAppInspect()
 
@@ -7868,23 +9643,28 @@ func (m *AppPublicServiceServerMock) minimockDone() bool {
 	done := true
 	return done &&
 		m.MinimockChatDone() &&
+		m.MinimockCreateAgentDone() &&
 		m.MinimockCreateAppDone() &&
 		m.MinimockCreateChatDone() &&
 		m.MinimockCreateConversationDone() &&
 		m.MinimockCreateMessageDone() &&
+		m.MinimockDeleteAgentDone() &&
 		m.MinimockDeleteAppDone() &&
 		m.MinimockDeleteChatDone() &&
 		m.MinimockDeleteConversationDone() &&
 		m.MinimockDeleteMessageDone() &&
 		m.MinimockGetPlaygroundConversationDone() &&
+		m.MinimockListAgentsDone() &&
 		m.MinimockListAppsDone() &&
 		m.MinimockListChatMessagesDone() &&
 		m.MinimockListChatsDone() &&
 		m.MinimockListConversationsDone() &&
 		m.MinimockListMessagesDone() &&
+		m.MinimockListToolsDone() &&
 		m.MinimockLivenessDone() &&
 		m.MinimockReadinessDone() &&
 		m.MinimockRestartPlaygroundConversationDone() &&
+		m.MinimockUpdateAgentDone() &&
 		m.MinimockUpdateAppDone() &&
 		m.MinimockUpdateChatDone() &&
 		m.MinimockUpdateConversationDone() &&
