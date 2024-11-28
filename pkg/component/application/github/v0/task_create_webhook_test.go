@@ -18,7 +18,7 @@ func TestComponent_CreateWebHook(t *testing.T) {
 			input: createWebHookInput{
 				RepoInfo: RepoInfo{
 					Owner:      "test_owner",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				Events:      []string{"push"},
 				Active:      *github.Bool(true),
@@ -45,7 +45,7 @@ func TestComponent_CreateWebHook(t *testing.T) {
 			input: createWebHookInput{
 				RepoInfo: RepoInfo{
 					Owner:      "rate_limit",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				Events:      []string{"push"},
 				Active:      *github.Bool(true),
@@ -60,7 +60,7 @@ func TestComponent_CreateWebHook(t *testing.T) {
 			input: createWebHookInput{
 				RepoInfo: RepoInfo{
 					Owner:      "not_found",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				Events:      []string{"push"},
 				Active:      *github.Bool(true),

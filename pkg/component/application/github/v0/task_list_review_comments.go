@@ -15,7 +15,7 @@ import (
 //
 // * This only works for public repositories.
 func (client *Client) listReviewComments(ctx context.Context, job *base.Job) error {
-	var input listReviewCommentsInput
+	var 		input listReviewCommentsInput
 	if err := job.Input.ReadData(ctx, &input); err != nil {
 		return fmt.Errorf("reading input data: %w", err)
 	}
@@ -41,7 +41,7 @@ func (client *Client) listReviewComments(ctx context.Context, job *base.Job) err
 		opts.Since = sinceTime
 	}
 	number := input.PRNumber
-	comments, _, err := client.PullRequests.ListComments(ctx, owner, repository, number, opts)
+	comments, resp, err := client.PullRequests.ListComments(ctx, owner, repository, number, opts)
 	if err != nil {
 		return addErrMsgToClientError(err)
 	}
@@ -50,8 +50,10 @@ func (client *Client) listReviewComments(ctx context.Context, job *base.Job) err
 	for i, comment := range comments {
 		reviewComments[i] = extractReviewCommentInformation(comment)
 	}
-	var output listReviewCommentsOutput
-	output.ReviewComments = reviewComments
+	output := listReviewCommentsOutput{
+		ReviewComments: reviewComments,
+		Response:       client.extractResponse(resp),
+	}
 	if err := job.Output.WriteData(ctx, output); err != nil {
 		return err
 	}

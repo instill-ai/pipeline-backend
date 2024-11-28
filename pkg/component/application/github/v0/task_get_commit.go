@@ -17,12 +17,15 @@ func (client *Client) getCommit(ctx context.Context, job *base.Job) error {
 		return err
 	}
 	sha := input.SHA
-	commit, err := client.getCommitFunc(ctx, owner, repository, sha)
+	commit, _, err := client.Repositories.GetCommit(ctx, owner, repository, sha, nil)
+	if err != nil {
+		return addErrMsgToClientError(err)
+	}
+	var output getCommitOutput
+	output.Commit, err = client.extractCommitInformation(ctx, owner, repository, commit, true)
 	if err != nil {
 		return err
 	}
-	var output getCommitOutput
-	output.Commit = client.extractCommitInformation(ctx, owner, repository, commit, true)
 	if err := job.Output.WriteData(ctx, output); err != nil {
 		return err
 	}

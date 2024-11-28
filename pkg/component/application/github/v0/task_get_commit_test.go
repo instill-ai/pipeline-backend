@@ -17,7 +17,7 @@ func TestComponent_GetCommitTask(t *testing.T) {
 			input: getCommitInput{
 				RepoInfo: RepoInfo{
 					Owner:      "test_owner",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				SHA: "commitSHA",
 			},
@@ -50,7 +50,7 @@ func TestComponent_GetCommitTask(t *testing.T) {
 			input: getCommitInput{
 				RepoInfo: RepoInfo{
 					Owner:      "rate_limit",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				SHA: "commitSHA",
 			},

@@ -18,9 +18,9 @@ func (client *Client) getIssue(ctx context.Context, job *base.Job) error {
 	}
 
 	issueNumber := input.IssueNumber
-	issue, err := client.getIssueFunc(ctx, owner, repository, issueNumber)
+	issue, _, err := client.Issues.Get(ctx, owner, repository, issueNumber)
 	if err != nil {
-		return err
+		return addErrMsgToClientError(err)
 	}
 
 	var output getIssueOutput

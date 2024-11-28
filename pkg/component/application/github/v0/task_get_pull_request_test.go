@@ -17,7 +17,7 @@ func TestComponent_GetPullRequestTask(t *testing.T) {
 			input: getPullRequestInput{
 				RepoInfo: RepoInfo{
 					Owner:      "test_owner",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				PRNumber: 1,
 			},
@@ -47,7 +47,7 @@ func TestComponent_GetPullRequestTask(t *testing.T) {
 							},
 						},
 					},
-					DiffURL:           "https://fake-github.com/test_owner/test_repo/pull/1.diff",
+					DiffURL:           "https://fake-github.com/test_owner/test-repo/pull/1.diff",
 					Head:              "headSHA",
 					ID:                1,
 					Number:            1,
@@ -65,7 +65,7 @@ func TestComponent_GetPullRequestTask(t *testing.T) {
 			input: getPullRequestInput{
 				RepoInfo: RepoInfo{
 					Owner:      "test_owner",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				PRNumber: 0,
 			},
@@ -95,7 +95,7 @@ func TestComponent_GetPullRequestTask(t *testing.T) {
 							},
 						},
 					},
-					DiffURL:           "https://fake-github.com/test_owner/test_repo/pull/1.diff",
+					DiffURL:           "https://fake-github.com/test_owner/test-repo/pull/1.diff",
 					Head:              "headSHA",
 					ID:                1,
 					Number:            1,
@@ -113,7 +113,7 @@ func TestComponent_GetPullRequestTask(t *testing.T) {
 			input: getPullRequestInput{
 				RepoInfo: RepoInfo{
 					Owner:      "rate_limit",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				PRNumber: 1,
 			},
@@ -125,7 +125,7 @@ func TestComponent_GetPullRequestTask(t *testing.T) {
 			input: getPullRequestInput{
 				RepoInfo: RepoInfo{
 					Owner:      "not_found",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				PRNumber: 1,
 			},

@@ -17,7 +17,7 @@ func TestComponent_CreateIssueTask(t *testing.T) {
 			input: createIssueInput{
 				RepoInfo: RepoInfo{
 					Owner:      "test_owner",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				Title: "This is a fake Issue",
 				Body:  "Issue Body",
@@ -41,7 +41,7 @@ func TestComponent_CreateIssueTask(t *testing.T) {
 			input: createIssueInput{
 				RepoInfo: RepoInfo{
 					Owner:      "rate_limit",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				Title: "This is a fake Issue",
 				Body:  "Issue Body",
@@ -54,7 +54,7 @@ func TestComponent_CreateIssueTask(t *testing.T) {
 			input: createIssueInput{
 				RepoInfo: RepoInfo{
 					Owner:      "not_found",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				Title: "This is a fake Issue",
 				Body:  "Issue Body",

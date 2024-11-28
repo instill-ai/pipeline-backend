@@ -20,7 +20,7 @@ EVENT_STAR_CREATED:
         format: string
       starred-at:
         format: string
-        description: 'The time the star was created. This is a timestamp in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. Will be `null` for the `deleted` action.'
+        description: "The time the star was created. This is a timestamp in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. Will be `null` for the `deleted` action."
       repository:
         $schema: http://json-schema.org/draft-07/schema
         description: A git repository
@@ -151,7 +151,7 @@ EVENT_STAR_CREATED:
               email:
                 format:
                   - string
-                  - 'null'
+                  - "null"
               avatar-url:
                 format: string
               gravatar-id:
@@ -196,7 +196,7 @@ EVENT_STAR_CREATED:
             description: The repository description.
             format:
               - string
-              - 'null'
+              - "null"
           fork:
             description: Whether the repository is a fork.
             format: boolean
@@ -321,7 +321,7 @@ EVENT_STAR_CREATED:
             oneOf:
               - format: integer
               - format: string
-              - format: 'null'
+              - format: "null"
           git-url:
             format: string
           ssh-url:
@@ -333,7 +333,7 @@ EVENT_STAR_CREATED:
           homepage:
             format:
               - string
-              - 'null'
+              - "null"
           size:
             format: integer
           stargazers-count:
@@ -343,7 +343,7 @@ EVENT_STAR_CREATED:
           language:
             format:
               - string
-              - 'null'
+              - "null"
           has-issues:
             description: Whether issues are enabled.
             default: true
@@ -371,7 +371,7 @@ EVENT_STAR_CREATED:
           mirror-url:
             format:
               - string
-              - 'null'
+              - "null"
           archived:
             description: Whether the repository is archived.
             default: false
@@ -400,13 +400,13 @@ EVENT_STAR_CREATED:
                   url:
                     format:
                       - string
-                      - 'null'
+                      - "null"
                   node-id:
                     format: string
                 additionalProperties: false
                 title: License
                 format: object
-              - format: 'null'
+              - format: "null"
           forks:
             format: integer
           open-issues:
@@ -494,7 +494,7 @@ EVENT_STAR_CREATED:
           custom-properties:
             additionalProperties:
               oneOf:
-                - format: 'null'
+                - format: "null"
                 - format: string
                 - items:
                     format: string
@@ -536,7 +536,7 @@ EVENT_STAR_CREATED:
           email:
             format:
               - string
-              - 'null'
+              - "null"
           avatar-url:
             format: string
           gravatar-id:
@@ -617,7 +617,7 @@ EVENT_STAR_CREATED:
           description:
             format:
               - string
-              - 'null'
+              - "null"
         additionalProperties: false
         title: Organization
         format: object
@@ -641,7 +641,7 @@ EVENT_STAR_CREATED:
     format: object
   messageExamples:
     - action: created
-      starred-at: '2019-05-15T15:20:40Z'
+      starred-at: "2019-05-15T15:20:40Z"
       repository:
         id: 186853002
         node-id: MDEwOlJlcG9zaXRvcnkxODY4NTMwMDI=
@@ -653,7 +653,7 @@ EVENT_STAR_CREATED:
           id: 21031067
           node-id: MDQ6VXNlcjIxMDMxMDY3
           avatar-url: https://avatars1.githubusercontent.com/u/21031067?v=4
-          gravatar-id: ''
+          gravatar-id: ""
           url: https://api.github.com/users/Codertocat
           html-url: https://github.com/Codertocat
           followers-url: https://api.github.com/users/Codertocat/followers
@@ -707,9 +707,9 @@ EVENT_STAR_CREATED:
         labels-url: https://api.github.com/repos/Codertocat/Hello-World/labels{/name}
         releases-url: https://api.github.com/repos/Codertocat/Hello-World/releases{/id}
         deployments-url: https://api.github.com/repos/Codertocat/Hello-World/deployments
-        created-at: '2019-05-15T15:19:25Z'
-        updated-at: '2019-05-15T15:20:40Z'
-        pushed-at: '2019-05-15T15:20:33Z'
+        created-at: "2019-05-15T15:19:25Z"
+        updated-at: "2019-05-15T15:20:40Z"
+        pushed-at: "2019-05-15T15:20:33Z"
         git-url: git://github.com/Codertocat/Hello-World.git
         ssh-url: git@github.com:Codertocat/Hello-World.git
         clone-url: https://github.com/Codertocat/Hello-World.git
@@ -744,7 +744,7 @@ EVENT_STAR_CREATED:
         id: 21031067
         node-id: MDQ6VXNlcjIxMDMxMDY3
         avatar-url: https://avatars1.githubusercontent.com/u/21031067?v=4
-        gravatar-id: ''
+        gravatar-id: ""
         url: https://api.github.com/users/Codertocat
         html-url: https://github.com/Codertocat
         followers-url: https://api.github.com/users/Codertocat/followers

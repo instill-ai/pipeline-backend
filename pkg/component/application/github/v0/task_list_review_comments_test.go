@@ -14,11 +14,11 @@ func TestComponent_ListReviewCommentsTask(t *testing.T) {
 	testCases := []TaskCase[listReviewCommentsInput, listReviewCommentsOutput]{
 		{
 			_type: "ok",
-			name:  "get review comments",
+			name:  "list review comments",
 			input: listReviewCommentsInput{
 				RepoInfo: RepoInfo{
-					Owner:      "test_owner",
-					Repository: "test_repo",
+					Owner:      "non-paginated",
+					Repository: "test-repo",
 				},
 				PRNumber:  1,
 				Sort:      "created",
@@ -34,6 +34,119 @@ func TestComponent_ListReviewCommentsTask(t *testing.T) {
 						},
 					},
 				},
+				Response: &Response{},
+			},
+		},
+		{
+			_type: "ok",
+			name:  "non-paginated review comments",
+			input: listReviewCommentsInput{
+				RepoInfo: RepoInfo{
+					Owner:      "non-paginated",
+					Repository: "test-repo",
+				},
+				PRNumber:  1,
+				Sort:      "created",
+				Direction: "asc",
+				Since:     "2021-01-01",
+			},
+			wantOutput: listReviewCommentsOutput{
+				ReviewComments: []ReviewComment{
+					{
+						PullRequestComment: github.PullRequestComment{
+							Body: github.String("This is a fake comment"),
+							ID:   github.Int64(1),
+						},
+					},
+				},
+				Response: &Response{},
+			},
+		},
+		{
+			_type: "ok",
+			name:  "paginated review comments",
+			input: listReviewCommentsInput{
+				RepoInfo: RepoInfo{
+					Owner:      "paginated",
+					Repository: "test-repo",
+				},
+				PRNumber:  1,
+				Sort:      "created",
+				Direction: "asc",
+				Since:     "2021-01-01",
+				PageOptions: PageOptions{
+					Page:    2,
+					PerPage: 2,
+				},
+			},
+			wantOutput: listReviewCommentsOutput{
+				ReviewComments: []ReviewComment{
+					{
+						PullRequestComment: github.PullRequestComment{
+							Body: github.String("This is a fake comment #3"),
+							ID:   github.Int64(3),
+						},
+					},
+					{
+						PullRequestComment: github.PullRequestComment{
+							Body: github.String("This is a fake comment #4"),
+							ID:   github.Int64(4),
+						},
+					},
+				},
+				Response: &Response{
+					NextPage:      3,
+					PrevPage:      1,
+					FirstPage:     1,
+					LastPage:      5,
+					NextPageToken: "page_3",
+					Cursor:        "cursor_2",
+					Before:        "before_2",
+					After:         "after_2",
+				},
+			},
+		},
+		{
+			_type: "ok",
+			name:  "paginated review comments last page",
+			input: listReviewCommentsInput{
+				RepoInfo: RepoInfo{
+					Owner:      "paginated",
+					Repository: "test-repo",
+				},
+				PRNumber:  1,
+				Sort:      "created",
+				Direction: "asc",
+				Since:     "2021-01-01",
+				PageOptions: PageOptions{
+					Page:    5,
+					PerPage: 2,
+				},
+			},
+			wantOutput: listReviewCommentsOutput{
+				ReviewComments: []ReviewComment{
+					{
+						PullRequestComment: github.PullRequestComment{
+							Body: github.String("This is a fake comment #9"),
+							ID:   github.Int64(9),
+						},
+					},
+					{
+						PullRequestComment: github.PullRequestComment{
+							Body: github.String("This is a fake comment #10"),
+							ID:   github.Int64(10),
+						},
+					},
+				},
+				Response: &Response{
+					NextPage:  0,
+					PrevPage:  4,
+					FirstPage: 1,
+					LastPage:  5,
+					Cursor:    "cursor_5",
+					Before:    "before_5",
+					After:     "after_5",
+				},
 			},
 		},
 		{
@@ -42,7 +155,7 @@ func TestComponent_ListReviewCommentsTask(t *testing.T) {
 			input: listReviewCommentsInput{
 				RepoInfo: RepoInfo{
 					Owner:      "rate_limit",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				PRNumber:  1,
 				Sort:      "created",
@@ -57,7 +170,7 @@ func TestComponent_ListReviewCommentsTask(t *testing.T) {
 			input: listReviewCommentsInput{
 				RepoInfo: RepoInfo{
 					Owner:      "not_found",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				PRNumber:  1,
 				Sort:      "created",
@@ -72,7 +185,7 @@ func TestComponent_ListReviewCommentsTask(t *testing.T) {
 			input: listReviewCommentsInput{
 				RepoInfo: RepoInfo{
 					Owner:      "not_found",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				PRNumber:  1,
 				Sort:      "created",
