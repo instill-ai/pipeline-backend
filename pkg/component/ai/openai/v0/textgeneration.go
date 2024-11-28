@@ -60,13 +60,6 @@ type textCompletionStreamResp struct {
 	Choices []streamChoices `json:"choices"`
 	Usage   usageOpenAI     `json:"usage"`
 }
-type textCompletionResp struct {
-	ID      string      `json:"id"`
-	Object  string      `json:"object"`
-	Created int         `json:"created"`
-	Choices []choices   `json:"choices"`
-	Usage   usageOpenAI `json:"usage"`
-}
 
 type outputMessage struct {
 	Role    string `json:"role"`
@@ -77,12 +70,6 @@ type streamChoices struct {
 	Index        int           `json:"index"`
 	FinishReason string        `json:"finish_reason"`
 	Delta        outputMessage `json:"delta"`
-}
-
-type choices struct {
-	Index        int           `json:"index"`
-	FinishReason string        `json:"finish_reason"`
-	Message      outputMessage `json:"message"`
 }
 
 type usageOpenAI struct {
