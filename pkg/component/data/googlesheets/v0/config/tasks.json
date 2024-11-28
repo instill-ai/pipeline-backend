@@ -432,9 +432,7 @@
       },
       "required": [
         "shared-link",
-        "sheet-name",
-        "start-row",
-        "end-row"
+        "sheet-name"
       ],
       "title": "Input",
       "type": "object"
