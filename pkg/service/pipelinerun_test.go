@@ -561,7 +561,7 @@ func TestService_ListPipelineRunsByRequester(t *testing.T) {
 	c.Check(resp.TotalSize, qt.Equals, int32(1))
 	c.Check(resp.GetPipelineRuns(), qt.HasLen, 1)
 	c.Check(resp.GetPipelineRuns()[0].GetPipelineRunUid(), qt.Equals, pipelineRun.PipelineTriggerUID.String())
-	c.Check(resp.GetPipelineRuns()[0].GetNamespaceId(), qt.Equals, got.NamespaceID)
+	c.Check(resp.GetPipelineRuns()[0].GetPipelineNamespaceId(), qt.Equals, got.NamespaceID)
 
 	pipelineRun = &datamodel.PipelineRun{
 		PipelineTriggerUID: uuid.Must(uuid.NewV4()),
