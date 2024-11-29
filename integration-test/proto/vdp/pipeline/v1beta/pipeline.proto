@@ -1035,12 +1035,30 @@ message TriggerUserPipelineWithStreamResponse {
   TriggerMetadata metadata = 2;
 }
 
-// Data
+// TriggerData contains the input data for a pipeline run.
 message TriggerData {
-  // Variables
+  // The values of the pipeline variables.
   google.protobuf.Struct variable = 1 [(google.api.field_behavior) = OPTIONAL];
-  // Variables
+  // A collection of secrets. By default, if a pipeline references any secret
+  // (`${secret.<id>}`), its value is read from the namespace's secrets.
+  // This object provides a way to override these secret values: if one of its
+  // keys matches the ID of a reference secret, its value will be read from
+  // here instead of from the namespace secret collection.
   map<string, string> secret = 2 [(google.api.field_behavior) = OPTIONAL];
+  // A collection of connection references. By default, connection references
+  // (`${connection.<id>}`) in a pipeline will be resolved by fetching the
+  // value from the requester's connections. Connections contain sensitive data
+  // and can't be shared across namespaces, so this means that, in order to
+  // successfully run a pipeline owned by another namespace, the requester will
+  // need to have a connection with the same ID.
+  // This object provides a way to override the connection references with
+  // connections that the requester owns. Each element in the object maps a
+  // connection ID present in the pipeline (key) to the ID of a connection
+  // owned by the requester (value).
+  // Note that, since only references are accepted (this object shouldn't
+  // contain connection **values**), the reference syntax shouldn't be used
+  // here.
+  map<string, string> connection_references = 3 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // TriggerUserPipelineRequest represents a request to trigger a user-owned
