@@ -40,17 +40,21 @@ import (
 //   - For Audio: "audio/mpeg", "audio/wav", etc
 //   - For Document: "application/pdf", "text/plain", etc
 
+// Marshaler is used to marshal a struct into a Map.
 type Marshaler struct {
 }
 
+// Unmarshaler is used to unmarshal data into a struct.
 type Unmarshaler struct {
 	binaryFetcher external.BinaryFetcher
 }
 
+// NewMarshaler creates a new Marshaler.
 func NewMarshaler() *Marshaler {
 	return &Marshaler{}
 }
 
+// NewUnmarshaler creates a new Unmarshaler with a binary fetcher.
 func NewUnmarshaler(binaryFetcher external.BinaryFetcher) *Unmarshaler {
 	return &Unmarshaler{binaryFetcher}
 }
@@ -58,30 +62,73 @@ func NewUnmarshaler(binaryFetcher external.BinaryFetcher) *Unmarshaler {
 // Unmarshal converts a Map value into the provided struct s using `instill` tags.
 func (u *Unmarshaler) Unmarshal(ctx context.Context, d format.Value, s any) error {
 	v := reflect.ValueOf(s)
-	if v.Kind() != reflect.Ptr || v.Elem().Kind() != reflect.Struct {
-		return errors.New("input must be a pointer to a struct")
+	if v.Kind() != reflect.Ptr {
+		return errors.New("input must be a pointer")
 	}
-	m, ok := d.(Map)
-	if !ok {
-		return errors.New("input value must be a Map")
+
+	elem := v.Elem()
+
+	// Handle both direct structs and embedded structs
+	switch elem.Kind() {
+	case reflect.Struct:
+		// Direct struct case
+		m, ok := d.(Map)
+		if !ok {
+			return errors.New("input value must be a Map")
+		}
+		return u.unmarshalStruct(ctx, m, elem)
+	case reflect.Interface:
+		// Handle interface case
+		if elem.IsNil() {
+			return errors.New("input interface is nil")
+		}
+		return u.Unmarshal(ctx, d, elem.Interface())
+	default:
+		return fmt.Errorf("input must be a pointer to a struct, got pointer to %v", elem.Kind())
 	}
-	return u.unmarshalStruct(ctx, m, v.Elem())
 }
 
 // unmarshalStruct iterates through struct fields and unmarshals corresponding values.
 func (u *Unmarshaler) unmarshalStruct(ctx context.Context, m Map, v reflect.Value) error {
 	t := v.Type()
+
 	for i := 0; i < v.NumField(); i++ {
 		field := t.Field(i)
 		fieldValue := v.Field(i)
+
+		// Handle embedded structs by flattening their fields
+		if field.Anonymous && fieldValue.Kind() == reflect.Struct {
+			// Iterate through the embedded struct's fields
+			for j := 0; j < fieldValue.NumField(); j++ {
+				embField := fieldValue.Type().Field(j)
+
+				embValue := fieldValue.Field(j)
+
+				if !embValue.CanSet() {
+					continue
+				}
+
+				// Get the field name from the embedded struct's field
+				embFieldName := u.getFieldName(embField)
+				if val, ok := m[embFieldName]; ok {
+					if err := u.unmarshalValue(ctx, val, embValue, embField); err != nil {
+						return fmt.Errorf("error unmarshaling embedded field %s: %w", embFieldName, err)
+					}
+				}
+			}
+			continue
+		}
+
 		if !fieldValue.CanSet() {
 			continue
 		}
+
 		fieldName := u.getFieldName(field)
 		val, ok := m[fieldName]
 		if !ok {
 			continue
 		}
+
 		if err := u.unmarshalValue(ctx, val, fieldValue, field); err != nil {
 			return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
 		}
