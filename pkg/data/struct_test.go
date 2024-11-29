@@ -198,13 +198,13 @@ func TestUnmarshal(t *testing.T) {
 		c.Run("Non-pointer input", func(c *qt.C) {
 			var s struct{}
 			err := unmarshaler.Unmarshal(context.Background(), Map{}, s)
-			c.Assert(err, qt.ErrorMatches, "input must be a pointer to a struct")
+			c.Assert(err, qt.ErrorMatches, "input must be a pointer")
 		})
 
 		c.Run("Non-struct input", func(c *qt.C) {
 			var i int
 			err := unmarshaler.Unmarshal(context.Background(), Map{}, &i)
-			c.Assert(err, qt.ErrorMatches, "input must be a pointer to a struct")
+			c.Assert(err, qt.ErrorMatches, "input must be a pointer to a struct, got pointer to int")
 		})
 
 		c.Run("Non-Map input", func(c *qt.C) {
@@ -322,6 +322,29 @@ func TestUnmarshal(t *testing.T) {
 		err = unmarshaler.Unmarshal(context.Background(), boolInput, &boolResult)
 		c.Assert(err, qt.IsNil)
 		c.Assert(boolResult.Value.(format.Boolean).Boolean(), qt.Equals, true)
+	})
+
+	c.Run("Compositional struct", func(c *qt.C) {
+		type BaseStruct struct {
+			BaseField format.String `instill:"base-field"`
+		}
+
+		type ComposedStruct struct {
+			BaseStruct
+			ExtraField format.Number `instill:"extra-field"`
+		}
+
+		input := Map{
+			"base-field":  NewString("base value"),
+			"extra-field": NewNumberFromFloat(123),
+		}
+
+		var result ComposedStruct
+		err := unmarshaler.Unmarshal(context.Background(), input, &result)
+
+		c.Assert(err, qt.IsNil)
+		c.Assert(result.BaseField.String(), qt.Equals, "base value")
+		c.Assert(result.ExtraField.Float64(), qt.Equals, 123.0)
 	})
 }
 
@@ -595,5 +618,41 @@ func TestMarshal(t *testing.T) {
 		m, ok := result.(Map)
 		c.Assert(ok, qt.IsTrue)
 		c.Assert(len(m), qt.Equals, 0)
+	})
+
+	c.Run("Compositional struct", func(c *qt.C) {
+		type BaseStruct struct {
+			BaseField format.String `instill:"base-field"`
+		}
+
+		type ComposedStruct struct {
+			BaseStruct
+			ExtraField format.Number `instill:"extra-field"`
+		}
+
+		input := ComposedStruct{
+			BaseStruct: BaseStruct{
+				BaseField: NewString("base value"),
+			},
+			ExtraField: NewNumberFromFloat(123),
+		}
+
+		result, err := marshaler.Marshal(input)
+		c.Assert(err, qt.IsNil)
+
+		m, ok := result.(Map)
+		c.Assert(ok, qt.IsTrue)
+
+		// Test embedded struct field
+		embeddedMap, exists := m["BaseStruct"].(Map)
+		c.Assert(exists, qt.IsTrue)
+		baseField, ok := embeddedMap["base-field"].(format.String)
+		c.Assert(ok, qt.IsTrue)
+		c.Assert(baseField.String(), qt.Equals, "base value")
+
+		// Test regular field
+		extraField, ok := m["extra-field"].(format.Number)
+		c.Assert(ok, qt.IsTrue)
+		c.Assert(extraField.Float64(), qt.Equals, 123.0)
 	})
 }
