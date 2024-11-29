@@ -6,8 +6,6 @@
 include .env
 export
 
-GOTEST_FLAGS := CFG_DATABASE_HOST=${TEST_DBHOST} CFG_DATABASE_NAME=${TEST_DBNAME}
-
 #============================================================================
 
 .PHONY: dev
@@ -65,19 +63,27 @@ go-gen: ## Generate codes
 
 .PHONY: dbtest-pre
 dbtest-pre:
-	@${GOTEST_FLAGS} go run ./cmd/migration
+	@# Requires a local running instance of PostgreSQL at localhost:5432
+	@CFG_DATABASE_NAME=${TEST_DBNAME} CFG_DATABASE_HOST=localhost go run ./cmd/migration
 
 .PHONY: coverage
 coverage: ## Generate coverage report
 	@if [ "${DBTEST}" = "true" ]; then  make dbtest-pre; fi
-	@docker run --rm \
+	@TAGS=$$([ "${DBTEST}" = "true" ] && echo "dbtest"); \
+	if [ -n "$$TAGS" ]; then \
+		echo "Running coverage with tags: $$TAGS"; \
+	else \
+		echo "Running standard coverage"; \
+	fi; \
+	docker run --rm \
 		-v $(PWD):/${SERVICE_NAME} \
-		-e GOTEST_FLAGS="${GOTEST_FLAGS}" \
+		-e CFG_DATABASE_HOST=host.docker.internal \
+		-e CFG_DATABASE_NAME=${TEST_DBNAME} \
 		--user $(id -u):$(id -g) \
 		--entrypoint= \
 		instill/${SERVICE_NAME}:dev \
-			go test -v -race ${GOTEST_TAGS} -coverpkg=./... -coverprofile=coverage.out -covermode=atomic -timeout 30m ./...
-	@if [ "${HTML}" = "true" ]; then  \
+			go test -v -race $$([ -n "$$TAGS" ] && echo "-tags=$$TAGS") -coverpkg=./... -coverprofile=coverage.out -covermode=atomic -timeout 30m ./...; \
+	if [ "${HTML}" = "true" ]; then  \
 		docker run --rm \
 			-v $(PWD):/${SERVICE_NAME} \
 			--user $(id -u):$(id -g) \
