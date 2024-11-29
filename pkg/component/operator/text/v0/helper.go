@@ -153,9 +153,11 @@ func processMergingChunks(mergingChunks []mergingChunks, inputStruct ChunkTextIn
 		currentMergingChunk := mergingChunks[mergingIdx]
 
 		if len(previousMergingChunk.Chunks) > 1 {
-			overlapText, overlapPosition := getOverlap(previousMergingChunk, &inputStruct.Strategy.Setting, tkm)
-			currentMergingChunk.Chunks[0].Chunk = overlapText + currentMergingChunk.Chunks[0].Chunk
-			currentMergingChunk.Chunks[0].ContentStartPosition = overlapPosition
+			overlapText, overlapPosition := getOverlapForSameHeader(previousMergingChunk, currentMergingChunk, &inputStruct.Strategy.Setting, tkm)
+			if overlapText != "" {
+				currentMergingChunk.Chunks[0].Chunk = overlapText + currentMergingChunk.Chunks[0].Chunk
+				currentMergingChunk.Chunks[0].ContentStartPosition = overlapPosition
+			}
 		}
 
 		mergedChunk := mergeMergingChunks(currentMergingChunk)
@@ -214,27 +216,28 @@ func headerDiff(currentChunkHeader, nextChunkHeader string) string {
 	return ""
 }
 
-// getOverlap returns the overlap text and the position of the overlap part
-func getOverlap(previousMergingChunk mergingChunks, setting *Setting, tkm *tiktoken.Tiktoken) (string, int) {
+func getOverlapForSameHeader(previousMergingChunk mergingChunks, currentMergingChunks mergingChunks, setting *Setting, tkm *tiktoken.Tiktoken) (string, int) {
 	overlapText := ""
 	overlapSize := setting.ChunkOverlap
+	var overlapPosition int
 
 	i := len(previousMergingChunk.Chunks) - 1
+	currentMergingChunk := currentMergingChunks.Chunks[0]
 	for i >= 0 {
-		runes := []rune(previousMergingChunk.Chunks[i].Chunk)
-		j := len(runes) - 1
-		for j >= 0 {
-			currentRune := string(runes[j])
-			overlapText = currentRune + overlapText
-			j--
+		if previousMergingChunk.Chunks[i].PrependHeader == currentMergingChunk.PrependHeader {
+			sizeChecker := previousMergingChunk.Chunks[i].Chunk + overlapText
+			if getTokenSize(sizeChecker, setting, tkm) > overlapSize {
+				return overlapText, overlapPosition
+			}
+			overlapText = previousMergingChunk.Chunks[i].Chunk + "\n" + overlapText
+			overlapPosition = previousMergingChunk.Chunks[i].ContentStartPosition
 		}
-		// TODO: need to check overlap chunk by chunk
-		// if getTokenSize(overlapText+currentRune, setting, tkm) >= overlapSize {
-		// 	return overlapText, previousMergingChunk.Chunks[i].ContentEndPosition - (len(runes) - j) + 2
-		// }
+		if overlapText == "" {
+			return "", 0
+		}
 		i--
 	}
-	panic("no overlap found")
+	return overlapText, overlapPosition
 }
 
 // getTokenSize returns the token size of the text

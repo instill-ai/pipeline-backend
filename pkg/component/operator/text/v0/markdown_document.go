@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+// This markdown document parser is used to build the document structure for the chunking process.
+
 // Document Implementation
 const (
 	ListStarters = "-*+"
@@ -316,13 +318,28 @@ func parseTableFromBlock(block string) Table {
 
 // List Section //
 // Helper function to determine if a block is a list
+
+// For list, it will be benefit for the users when the hierarchy is complicated.
+// So, to make the chunk logic clean, we won't judge the list as a list if the hierarchy is not too complicated.
+// Now, we temporarily set the hierarchy should be over 3 and the list count should be over 5.
+// If the list hierarchy is over 3 or the list count is over 5, we will judge it as a list.
+// If not, it will be judged as a plain text.
 func isList(block string) bool {
 	lines := strings.Split(block, "\n")
-	for i, line := range lines {
-		if i < 5 && isListStart(line) {
-			return true
+	listLevelCount := 0
+	listCount := 0
+
+	for _, line := range lines {
+		if isListStart(line) {
+			listCount++
+			listLevelCount += countIndent(line)
 		}
 	}
+
+	if listCount > 5 && listLevelCount > 3 {
+		return true
+	}
+
 	return false
 }
 

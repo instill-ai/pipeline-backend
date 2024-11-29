@@ -112,8 +112,8 @@ func Test_PositionChecker(t *testing.T) {
 				},
 				{
 					PrependHeader:        "# 個案泌尿道感染判定\n",
-					Chunk:                "1. 沒有導尿管或導尿管留置未超過2天\n2. 病患有UTI感染症狀:解尿困難或疼痛(dysuria)、Lower Urinary Tract Symptoms  \n=> **判斷為:非導尿管相關泌尿道感染(Non-CAUTI)**\n\n",
-					ContentStartPosition: 160,
+					Chunk:                "1. 沒有導尿管或導尿管留置未超過2天\n2. 病患有UTI感染症狀:解尿困難或疼痛(dysuria)、Lower Urinary Tract Symptoms  \n=> **判斷為:非導尿管相關泌尿道感染(Non-CAUTI)**",
+					ContentStartPosition: 161,
 					ContentEndPosition:   275,
 				},
 			},

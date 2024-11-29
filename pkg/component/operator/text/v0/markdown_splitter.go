@@ -166,17 +166,17 @@ func (sp MarkdownTextSplitter) chunkTable(content Content, headers []Header) ([]
 	return chunks, nil
 }
 
-func (sp MarkdownTextSplitter) chunkList(content Content, _ []Header) ([]ContentChunk, error) {
+func (sp MarkdownTextSplitter) chunkList(content Content, headers []Header) ([]ContentChunk, error) {
 	var chunks []ContentChunk
 
 	lists := content.Lists
 
-	chunks = sp.processChunks(lists)
+	chunks = sp.processChunks(lists, headers)
 
 	return chunks, nil
 }
 
-func (sp MarkdownTextSplitter) processChunks(lists []List) []ContentChunk {
+func (sp MarkdownTextSplitter) processChunks(lists []List, headers []Header) []ContentChunk {
 	contentChunks := []ContentChunk{}
 	currentChunk := ""
 	currentChunkSize := 0
@@ -184,6 +184,15 @@ func (sp MarkdownTextSplitter) processChunks(lists []List) []ContentChunk {
 	currentEndPosition := 0
 	isPrepended := false
 	shouldOverlapPreviousList := false
+
+	documentHeaderString := ""
+	for _, header := range headers {
+		trimmedHeader := strings.TrimSpace(header.Text)
+		if len(trimmedHeader) == 0 {
+			continue
+		}
+		documentHeaderString += header.Text + "\n"
+	}
 
 	addListCount := 0
 	countI := map[int]int{}
@@ -197,9 +206,9 @@ func (sp MarkdownTextSplitter) processChunks(lists []List) []ContentChunk {
 
 		// Add the title
 		var headerString string
-		if addListCount == 1 && sizeOfString(currentChunk)+sizeOfString(list.HeaderText) < sp.ChunkSize {
-			headerString = list.HeaderText
-			currentChunkSize += sizeOfString(list.Text) + 1
+		if addListCount == 1 && sizeOfString(documentHeaderString)+sizeOfString(currentChunk)+sizeOfString(list.HeaderText) < sp.ChunkSize {
+			headerString = documentHeaderString + list.HeaderText
+			currentChunkSize += sizeOfString(documentHeaderString) + sizeOfString(list.HeaderText) + 1
 		}
 
 		if sizeOfString(list.Text) > sp.ChunkSize {
