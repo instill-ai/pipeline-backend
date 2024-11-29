@@ -4,6 +4,7 @@ package vdp.pipeline.v1beta;
 
 // OpenAPI definition
 import "protoc-gen-openapiv2/options/annotations.proto";
+import "../../../vdp/pipeline/v1beta/integration.proto";
 import "../../../vdp/pipeline/v1beta/pipeline.proto";
 
 // PipelinePrivateService defines private methods to interact with Pipeline
@@ -13,19 +14,24 @@ service PipelinePrivateService {
 
   // List pipelines (admin only)
   //
-  // This is a *private* method that allows admin users and internal clients to
-  // list *all* pipeline resources.
+  // This *private* method allows internal clients to list *all* pipeline
+  // resources.
   rpc ListPipelinesAdmin(ListPipelinesAdminRequest) returns (ListPipelinesAdminResponse) {}
 
   // Get a pipeline by UID (admin only)
   //
-  // This is a *private* method that allows admin users to access any pipeline
-  // resource by its UID.
+  // This *private* method allows internal clients to access any pipeline
+  // resource by UID.
   rpc LookUpPipelineAdmin(LookUpPipelineAdminRequest) returns (LookUpPipelineAdminResponse) {}
 
   // List pipeline releases (admin only)
   //
-  // This is a *private* method that allows admin users to list *all* pipeline
-  // releases.
+  // This *private* method allows admin users to list *all* pipeline releases.
   rpc ListPipelineReleasesAdmin(ListPipelineReleasesAdminRequest) returns (ListPipelineReleasesAdminResponse) {}
+
+  // Get a connection by UID (admin only)
+  //
+  // This *private* method allows internal clients to access any connection
+  // resource by UID.
+  rpc LookUpConnectionAdmin(LookUpConnectionAdminRequest) returns (LookUpConnectionAdminResponse) {}
 }

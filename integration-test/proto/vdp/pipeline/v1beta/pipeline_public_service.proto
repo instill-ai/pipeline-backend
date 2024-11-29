@@ -232,26 +232,6 @@ service PipelinePublicService {
     };
   }
 
-  // HandleNamespacePipelineWebhookEvent
-  rpc HandleNamespacePipelineWebhookEvent(HandleNamespacePipelineWebhookEventRequest) returns (HandleNamespacePipelineWebhookEventResponse) {
-    option (google.api.http) = {
-      post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/webhooks"
-      body: "data"
-      response_body: "data"
-    };
-    option (google.api.method_visibility).restriction = "INTERNAL";
-  }
-
-  // HandleNamespacePipelineReleaseWebhookEvent
-  rpc HandleNamespacePipelineReleaseWebhookEvent(HandleNamespacePipelineReleaseWebhookEventRequest) returns (HandleNamespacePipelineReleaseWebhookEventResponse) {
-    option (google.api.http) = {
-      post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/releases/{release_id}/webhooks"
-      body: "data"
-      response_body: "data"
-    };
-    option (google.api.method_visibility).restriction = "INTERNAL";
-  }
-
   // Dispatch Pipeline Webhook Event
   //
   // Handles webhook events by routing them to the appropriate pipeline based on the webhook type and message.
