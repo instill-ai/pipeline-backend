@@ -20,9 +20,9 @@ type setupCampaignInput struct {
 	MaxNewLeadsPerDay           int      `instill:"max-new-leads-per-day"`
 	ScheduleStartTime           string   `instill:"schedule-start-time"`
 	TrackSettings               []string `instill:"track-settings"`
-	StopLeadSettings            string   `instill:"stop-lead-settings"`
+	StopLeadSettings            *string  `instill:"stop-lead-settings"`
 	SendAsPlainText             bool     `instill:"send-as-plain-text"`
-	FollowUpPercentage          int      `instill:"follow-up-percentage"`
+	FollowUpPercentage          *int     `instill:"follow-up-percentage"`
 	AddUnsubscribeTag           bool     `instill:"add-unsubscribe-tag"`
 	IgnoreSsMailboxSendingLimit bool     `instill:"ignore-ss-mailbox-sending-limit"`
 }
@@ -37,11 +37,11 @@ type saveSequencesInput struct {
 }
 
 type sequence struct {
-	SeqID             string `instill:"seq-id"`
-	SeqNumber         int    `instill:"seq-number"`
-	SequenceDelayDays int    `instill:"sequence-delay-days"`
-	Subject           string `instill:"subject"`
-	EmailBody         string `instill:"email-body"`
+	SeqID             *string `instill:"seq-id"`
+	SeqNumber         *int    `instill:"seq-number"`
+	SequenceDelayDays *int    `instill:"sequence-delay-days"`
+	Subject           string  `instill:"subject"`
+	EmailBody         string  `instill:"email-body"`
 }
 
 type saveSequencesOutput struct {
@@ -64,10 +64,10 @@ type addLeadsInput struct {
 
 type lead struct {
 	Email        string        `instill:"email"`
-	FirstName    string        `instill:"first-name"`
-	LastName     string        `instill:"last-name"`
-	Company      string        `instill:"company"`
-	Location     string        `instill:"location"`
+	FirstName    *string       `instill:"first-name"`
+	LastName     *string       `instill:"last-name"`
+	Company      *string       `instill:"company"`
+	Location     *string       `instill:"location"`
 	CustomFields []customField `instill:"custom-fields"`
 }
 
@@ -111,8 +111,6 @@ type updateCampaignStatusOutput struct {
 
 type getCampaignMetricInput struct {
 	CampaignName string `instill:"campaign-name"`
-	StartDate    string `instill:"start-date"`
-	EndDate      string `instill:"end-date"`
 }
 
 type getCampaignMetricOutput struct {

@@ -101,7 +101,7 @@ Setup a campaign. You can update campaign settings to this campaign. For Smartle
 | Task ID (required) | `task` | string | `TASK_SETUP_CAMPAIGN` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
 | Timezone (required) | `timezone` | string | Timezone of the campaign. Please choose the value in [List of Timezones](https://help.smartlead.ai/Timezones-20fcff9ddbb5441790c7c8e5ce0e9233). |
-| Days of the Week | `days-of-the-week` | array[number] | Days of the week when the campaign will run. A number value ranging from 0 to 6; i.e [0,1,2,3,4,5,6]. 0 is Sunday, 1 is Monday, and so on. |
+| Days of the Week (required) | `days-of-the-week` | array[number] | Days of the week when the campaign will run. A number value ranging from 0 to 6; i.e [0,1,2,3,4,5,6]. 0 is Sunday, 1 is Monday, and so on. |
 | Start Hour (required) | `start-hour` | string | Start hour of the campaign. Time to start the campaign in 24-hour format (HH:MM). |
 | End Hour (required) | `end-hour` | string | End hour of the campaign. Time to end the campaign in 24-hour format (HH:MM). |
 | Minimum Time Between Emails (required) | `min-time-btw-emails` | number | Minimum time between emails in minutes. The minimum value is 3 minutes. |
@@ -154,8 +154,8 @@ A Smartlead sequence is a series of automated emails sent to potential customers
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Email Body | `email-body` | string | Body of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be replaced by the actual value from the lead.  |
-| Sequence Number | `seq-number` | number | Sequence number means the order of the sequence.  |
-| Sequence Delay Days | `sequence-delay-days` | number | Number of days to wait before sending the next email.  |
+| Sequence Number | `seq-number` | number | Sequence number means the order of the sequence. If you don't specify this, it will be automatically assigned by the order of the sequences.  |
+| Sequence Delay Days | `sequence-delay-days` | number | Number of days to wait before sending the next email. If you don't specify this, the default value is 1 day.  |
 | Subject | `subject` | string | Subject of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be replaced by the actual value from the lead.  |
 </div>
 </details>

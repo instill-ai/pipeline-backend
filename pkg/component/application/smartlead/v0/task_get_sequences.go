@@ -63,12 +63,13 @@ func (e *execution) getSequences(ctx context.Context, job *base.Job) error {
 
 	var sequences []sequence
 	for _, s := range sequenceResp {
+		seqID := fmt.Sprintf("%d", s.ID)
 		sequences = append(sequences, sequence{
-			SeqID:             fmt.Sprintf("%d", s.ID),
-			SeqNumber:         s.SeqNumber,
+			SeqID:             &seqID,
+			SeqNumber:         &s.SeqNumber,
 			Subject:           s.Subject,
 			EmailBody:         s.EmailBody,
-			SequenceDelayDays: s.SeqDelayDetails.DelayInDays,
+			SequenceDelayDays: &s.SeqDelayDetails.DelayInDays,
 		})
 	}
 

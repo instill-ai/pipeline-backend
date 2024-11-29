@@ -79,14 +79,28 @@ func (e *execution) saveSequences(ctx context.Context, job *base.Job) error {
 
 func buildSaveSequenceReq(input saveSequencesInput) saveSequencesReq {
 	var sequences []sequenceReq
-	for _, seq := range input.Sequences {
+	for i, seq := range input.Sequences {
+		var seqDelayDetails sequenceDelayDetails
+		if seq.SequenceDelayDays != nil {
+			seqDelayDetails = sequenceDelayDetails{
+				DelayInDays: *seq.SequenceDelayDays,
+			}
+		} else {
+			seqDelayDetails = sequenceDelayDetails{
+				DelayInDays: 1,
+			}
+		}
+		var seqNumber int
+		if seq.SeqNumber != nil {
+			seqNumber = *seq.SeqNumber
+		} else {
+			seqNumber = i + 1
+		}
 		sequences = append(sequences, sequenceReq{
-			SeqNumber: seq.SeqNumber,
-			SeqDelayDetails: sequenceDelayDetails{
-				DelayInDays: seq.SequenceDelayDays,
-			},
-			Subject:   seq.Subject,
-			EmailBody: seq.EmailBody,
+			SeqNumber:       &seqNumber,
+			SeqDelayDetails: seqDelayDetails,
+			Subject:         seq.Subject,
+			EmailBody:       seq.EmailBody,
 		})
 	}
 	return saveSequencesReq{
@@ -99,7 +113,7 @@ type saveSequencesReq struct {
 }
 
 type sequenceReq struct {
-	SeqNumber       int                  `json:"seq_number"`
+	SeqNumber       *int                 `json:"seq_number,omitempty"`
 	SeqDelayDetails sequenceDelayDetails `json:"seq_delay_details"`
 	Subject         string               `json:"subject"`
 	EmailBody       string               `json:"email_body"`

@@ -203,6 +203,7 @@
       "required": [
         "campaign-name",
         "timezone",
+        "days-of-the-week",
         "start-hour",
         "end-hour",
         "min-time-btw-emails",
@@ -260,7 +261,7 @@
             "properties": {
               "seq-number": {
                 "title": "Sequence Number",
-                "description": "Sequence number means the order of the sequence.",
+                "description": "Sequence number means the order of the sequence. If you don't specify this, it will be automatically assigned by the order of the sequences.",
                 "type": "number",
                 "instillFormat": "number",
                 "instillAcceptFormats": [
@@ -270,13 +271,14 @@
               },
               "sequence-delay-days": {
                 "title": "Sequence Delay Days",
-                "description": "Number of days to wait before sending the next email.",
+                "description": "Number of days to wait before sending the next email. If you don't specify this, the default value is 1 day.",
                 "type": "number",
                 "instillFormat": "number",
                 "instillAcceptFormats": [
                   "number"
                 ],
-                "instillUIOrder": 1
+                "instillUIOrder": 1,
+                "default": 1
               },
               "subject": {
                 "title": "Subject",
