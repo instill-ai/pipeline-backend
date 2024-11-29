@@ -2,14 +2,14 @@ package anthropic
 
 type MessagesInput struct {
 	ChatHistory  []ChatMessage `instill:"chat-history"`
-	MaxNewTokens int           `instill:"max-new-tokens"`
+	MaxNewTokens int           `instill:"max-new-tokens,default=50"`
 	ModelName    string        `instill:"model-name"`
 	Prompt       string        `instill:"prompt"`
 	PromptImages []string      `instill:"prompt-images"`
 	Seed         int           `instill:"seed"`
-	SystemMsg    string        `instill:"system-message"`
-	Temperature  float32       `instill:"temperature"`
-	TopK         int           `instill:"top-k"`
+	SystemMsg    string        `instill:"system-message,default=You are a helpful assistant."`
+	Temperature  float32       `instill:"temperature,default=0.7"`
+	TopK         int           `instill:"top-k,default=10"`
 }
 
 type ChatMessage struct {

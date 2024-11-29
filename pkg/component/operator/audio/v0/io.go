@@ -11,8 +11,8 @@ type segmentData struct {
 
 type detectActivityInput struct {
 	Audio              format.Audio `instill:"audio"`
-	MinSilenceDuration int          `instill:"min-silence-duration"`
-	SpeechPad          int          `instill:"speech-pad"`
+	MinSilenceDuration int          `instill:"min-silence-duration,default=100"`
+	SpeechPad          int          `instill:"speech-pad,default=30"`
 }
 
 type detectActivityOutput struct {

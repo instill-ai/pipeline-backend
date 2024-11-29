@@ -42,13 +42,13 @@ type Content struct {
 // Parameter contains the input parameter.
 type Parameter struct {
 	// MaxTokens is the maximum number of tokens to generate.
-	MaxTokens int `instill:"max-tokens"`
+	MaxTokens int `instill:"max-tokens,default=50"`
 	// Temperature is the temperature of the model.
-	Temperature float64 `instill:"temperature"`
+	Temperature float64 `instill:"temperature,default=0.2"`
 	// TopP is the top-p value of the model.
-	TopP float64 `instill:"top-p"`
+	TopP float64 `instill:"top-p,default=0.9"`
 	// Stream is whether to stream the output.
-	Stream bool `instill:"stream"`
+	Stream bool `instill:"stream,default=false"`
 	// SearchDomainFilter gives the list of domains,
 	// limit the citations used by the online model to URLs from the specified
 	// domains. Currently limited to only 3 domains for whitelisting and
@@ -59,17 +59,17 @@ type Parameter struct {
 	// - does not apply to images. Values include `month`, `week`, `day`, `hour`."
 	SearchRecencyFilter string `instill:"search-recency-filter"`
 	// TopK is the top-k value of the model.
-	TopK int `instill:"top-k"`
+	TopK int `instill:"top-k,default=0"`
 	// PresencePenalty is a value between -2.0 and 2.0. Positive values penalize new
 	// tokens based on whether they appear in the text so far, increasing the
 	// model's likelihood to talk about new topics. Incompatible with
 	// `frequency_penalty`.
-	PresencePenalty float64 `instill:"presence-penalty"`
+	PresencePenalty float64 `instill:"presence-penalty,default=0"`
 	// FrequencyPenalty is a multiplicative penalty greater than 0. Values greater
 	// than 1.0 penalize new tokens based on their existing frequency in the text so
 	// far, decreasing the model's likelihood to repeat the same line verbatim. A
 	// value of 1.0 means no penalty. Incompatible with `presence_penalty`.
-	FrequencyPenalty float64 `instill:"frequency-penalty"`
+	FrequencyPenalty float64 `instill:"frequency-penalty,default=1"`
 }
 
 // TextChatOutput is the output for the TASK_CHAT task.

@@ -4,10 +4,10 @@ import "github.com/instill-ai/pipeline-backend/pkg/data/format"
 
 type ConvertDocumentToMarkdownInput struct {
 	Document            format.Document `instill:"document"`
-	DisplayImageTag     bool            `instill:"display-image-tag"`
+	DisplayImageTag     bool            `instill:"display-image-tag,default=false"`
 	Filename            string          `instill:"filename"`
-	DisplayAllPageImage bool            `instill:"display-all-page-image"`
-	Resolution          int             `instill:"resolution"`
+	DisplayAllPageImage bool            `instill:"display-all-page-image,default=false"`
+	Resolution          int             `instill:"resolution,default=300"`
 }
 
 type ConvertDocumentToMarkdownOutput struct {
@@ -22,7 +22,7 @@ type ConvertDocumentToMarkdownOutput struct {
 type ConvertDocumentToImagesInput struct {
 	Document   format.Document `instill:"document"`
 	Filename   string          `instill:"filename"`
-	Resolution int             `instill:"resolution"`
+	Resolution int             `instill:"resolution,default=300"`
 }
 
 type ConvertDocumentToImagesOutput struct {

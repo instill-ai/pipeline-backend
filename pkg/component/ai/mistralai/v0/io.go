@@ -4,6 +4,7 @@ type ChatMessage struct {
 	Role    string              `instill:"role"`
 	Content []MultiModalContent `instill:"content"`
 }
+
 type URL struct {
 	URL string `instill:"url"`
 }
@@ -16,15 +17,15 @@ type MultiModalContent struct {
 
 type TextGenerationInput struct {
 	ChatHistory  []ChatMessage `instill:"chat-history"`
-	MaxNewTokens int           `instill:"max-new-tokens"`
+	MaxNewTokens int           `instill:"max-new-tokens,default=50"`
 	ModelName    string        `instill:"model-name"`
 	Prompt       string        `instill:"prompt"`
 	PromptImages []string      `instill:"prompt-images"`
 	Seed         int           `instill:"seed"`
-	SystemMsg    string        `instill:"system-message"`
-	Temperature  float64       `instill:"temperature"`
-	TopK         int           `instill:"top-k"`
-	TopP         float64       `instill:"top-p"`
+	SystemMsg    string        `instill:"system-message,default=You are a helpful assistant."`
+	Temperature  float64       `instill:"temperature,default=0.7"`
+	TopK         int           `instill:"top-k,default=10"`
+	TopP         float64       `instill:"top-p,default=0.5"`
 	Safe         bool          `instill:"safe"`
 }
 

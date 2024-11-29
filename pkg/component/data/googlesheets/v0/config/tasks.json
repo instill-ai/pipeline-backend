@@ -417,6 +417,7 @@
           "description": "The starting row number to retrieve (1-based index).",
           "instillFormat": "number",
           "minimum": 1,
+          "default": 2,
           "title": "Start Row",
           "type": "integer",
           "instillUIOrder": 0
