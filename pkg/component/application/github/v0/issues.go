@@ -6,6 +6,7 @@ import (
 	"github.com/google/go-github/v62/github"
 )
 
+// IssuesService is the interface for the GitHub issues service.
 type IssuesService interface {
 	ListByRepo(context.Context, string, string, *github.IssueListByRepoOptions) ([]*github.Issue, *github.Response, error)
 	Get(context.Context, string, string, int) (*github.Issue, *github.Response, error)
@@ -13,6 +14,7 @@ type IssuesService interface {
 	// Edit(context.Context, string, string, int, *github.IssueRequest) (*github.Issue, *github.Response, error)
 }
 
+// Issue is the GitHub issue object.
 type Issue struct {
 	Number        int      `json:"number"`
 	Title         string   `json:"title"`
@@ -53,13 +55,6 @@ func extractLabels(labels []*github.Label) []string {
 	return labelList
 }
 
-func (client *Client) getIssueFunc(ctx context.Context, owner, repository string, issueNumber int) (*github.Issue, error) {
-	issue, _, err := client.Issues.Get(ctx, owner, repository, issueNumber)
-	if err != nil {
-		return nil, addErrMsgToClientError(err)
-	}
-	return issue, nil
-}
 func filterOutPullRequests(issues []Issue) []Issue {
 	filteredIssues := make([]Issue, 0)
 	for _, issue := range issues {

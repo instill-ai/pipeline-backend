@@ -53,6 +53,7 @@ func (client *Client) listIssues(ctx context.Context, job *base.Job) error {
 	if input.NoPullRequest {
 		issueList = filterOutPullRequests(issueList)
 	}
+
 	var output listIssuesOutput
 	output.Issues = issueList
 	if err := job.Output.WriteData(ctx, output); err != nil {

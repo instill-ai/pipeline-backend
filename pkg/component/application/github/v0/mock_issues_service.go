@@ -7,8 +7,10 @@ import (
 	"github.com/google/go-github/v62/github"
 )
 
+// MockIssuesService is a mock implementation of the IssuesService interface.
 type MockIssuesService struct{}
 
+// ListByRepo is a mock implementation of the ListByRepo method for the IssuesService.
 func (m *MockIssuesService) ListByRepo(ctx context.Context, owner, repo string, opt *github.IssueListByRepoOptions) ([]*github.Issue, *github.Response, error) {
 	switch middleWare(owner) {
 	case 403:
@@ -51,6 +53,7 @@ func (m *MockIssuesService) ListByRepo(ctx context.Context, owner, repo string, 
 	return issues, resp, nil
 }
 
+// Get is a mock implementation of the Get method for the IssuesService.
 func (m *MockIssuesService) Get(ctx context.Context, owner, repo string, number int) (*github.Issue, *github.Response, error) {
 	switch middleWare(owner) {
 	case 403:
@@ -91,6 +94,7 @@ func (m *MockIssuesService) Get(ctx context.Context, owner, repo string, number 
 	return issue, resp, nil
 }
 
+// Create is a mock implementation of the Create method for the IssuesService.
 func (m *MockIssuesService) Create(ctx context.Context, owner, repo string, issue *github.IssueRequest) (*github.Issue, *github.Response, error) {
 	switch middleWare(owner) {
 	case 403:

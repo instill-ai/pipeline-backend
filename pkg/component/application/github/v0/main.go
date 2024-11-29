@@ -25,7 +25,9 @@ const (
 	taskCreateWebhook       = "TASK_CREATE_WEBHOOK"
 	taskGetCommit           = "TASK_GET_COMMIT"
 	taskGetIssue            = "TASK_GET_ISSUE"
+	taskGetOrganization     = "TASK_GET_ORGANIZATION"
 	taskGetPullRequest      = "TASK_GET_PULL_REQUEST"
+	taskGetUser             = "TASK_GET_USER"
 	taskListIssues          = "TASK_LIST_ISSUES"
 	taskListPullRequests    = "TASK_LIST_PULL_REQUESTS"
 	taskListReviewComments  = "TASK_LIST_REVIEW_COMMENTS"
@@ -91,8 +93,12 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 		e.execute = e.client.getCommit
 	case taskGetIssue:
 		e.execute = e.client.getIssue
+	case taskGetOrganization:
+		e.execute = e.client.getOrganization
 	case taskGetPullRequest:
 		e.execute = e.client.getPullRequest
+	case taskGetUser:
+		e.execute = e.client.getUser
 	case taskListIssues:
 		e.execute = e.client.listIssues
 	case taskListPullRequests:
@@ -122,8 +128,12 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 		input = &getCommitInput{}
 	case taskGetIssue:
 		input = &getIssueInput{}
+	case taskGetOrganization:
+		input = &getOrganizationInput{}
 	case taskGetPullRequest:
 		input = &getPullRequestInput{}
+	case taskGetUser:
+		input = &getUserInput{}
 	case taskListIssues:
 		input = &listIssuesInput{}
 	case taskListPullRequests:

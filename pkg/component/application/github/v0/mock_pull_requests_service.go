@@ -7,31 +7,13 @@ import (
 	"github.com/google/go-github/v62/github"
 )
 
-const (
-	fakeHost = "https://fake-github.com"
-)
-
-func middleWare(req string) int {
-	if req == "rate_limit" {
-		return 403
-	}
-	if req == "not_found" {
-		return 404
-	}
-	if req == "unprocessable_entity" {
-		return 422
-	}
-	if req == "no_pr" {
-		return 201
-	}
-	return 200
-}
-
-type MockPullRequestService struct {
+// MockPullRequestsService is a mock implementation of the PullRequestService interface.
+type MockPullRequestsService struct {
 	Client *github.Client
 }
 
-func (m *MockPullRequestService) List(ctx context.Context, owner, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error) {
+// List is a mock implementation of the List method for the PullRequestService.
+func (m *MockPullRequestsService) List(ctx context.Context, owner, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error) {
 	switch middleWare(owner) {
 	case 403:
 		return nil, nil, fmt.Errorf("403 API rate limit exceeded")
@@ -65,7 +47,9 @@ func (m *MockPullRequestService) List(ctx context.Context, owner, repo string, o
 	})
 	return prs, resp, nil
 }
-func (m *MockPullRequestService) Get(ctx context.Context, owner, repo string, number int) (*github.PullRequest, *github.Response, error) {
+
+// Get is a mock implementation of the Get method for the PullRequestService.
+func (m *MockPullRequestsService) Get(ctx context.Context, owner, repo string, number int) (*github.PullRequest, *github.Response, error) {
 	switch middleWare(owner) {
 	case 403:
 		return nil, nil, fmt.Errorf("403 API rate limit exceeded")
@@ -97,7 +81,9 @@ func (m *MockPullRequestService) Get(ctx context.Context, owner, repo string, nu
 	}
 	return prs, resp, nil
 }
-func (m *MockPullRequestService) ListComments(ctx context.Context, owner, repo string, number int, opts *github.PullRequestListCommentsOptions) ([]*github.PullRequestComment, *github.Response, error) {
+
+// ListComments is a mock implementation of the ListComments method for the PullRequestService.
+func (m *MockPullRequestsService) ListComments(ctx context.Context, owner, repo string, number int, opts *github.PullRequestListCommentsOptions) ([]*github.PullRequestComment, *github.Response, error) {
 	switch middleWare(owner) {
 	case 403:
 		return nil, nil, fmt.Errorf("403 API rate limit exceeded")
@@ -114,7 +100,9 @@ func (m *MockPullRequestService) ListComments(ctx context.Context, owner, repo s
 	})
 	return comments, resp, nil
 }
-func (m *MockPullRequestService) CreateComment(ctx context.Context, owner, repo string, number int, comment *github.PullRequestComment) (*github.PullRequestComment, *github.Response, error) {
+
+// CreateComment is a mock implementation of the CreateComment method for the PullRequestService.
+func (m *MockPullRequestsService) CreateComment(ctx context.Context, owner, repo string, number int, comment *github.PullRequestComment) (*github.PullRequestComment, *github.Response, error) {
 	switch middleWare(owner) {
 	case 403:
 		return nil, nil, fmt.Errorf("403 API rate limit exceeded")
@@ -133,7 +121,9 @@ func (m *MockPullRequestService) CreateComment(ctx context.Context, owner, repo 
 	comment.ID = github.Int64(1)
 	return comment, resp, nil
 }
-func (m *MockPullRequestService) ListCommits(ctx context.Context, owner, repo string, number int, opts *github.ListOptions) ([]*github.RepositoryCommit, *github.Response, error) {
+
+// ListCommits is a mock implementation of the ListCommits method for the PullRequestService.
+func (m *MockPullRequestsService) ListCommits(ctx context.Context, owner, repo string, number int, opts *github.ListOptions) ([]*github.RepositoryCommit, *github.Response, error) {
 	switch middleWare(owner) {
 	case 403:
 		return nil, nil, fmt.Errorf("403 API rate limit exceeded")

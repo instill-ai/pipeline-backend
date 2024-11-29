@@ -55,6 +55,15 @@ type getIssueOutput struct {
 	Issue
 }
 
+type getOrganizationInput struct {
+	OrgName string `instill:"name"`
+	OrgID   int64  `instill:"id"`
+}
+
+type getOrganizationOutput struct {
+	Organization Organization `instill:"organization"`
+}
+
 type getPullRequestInput struct {
 	RepoInfo
 	PRNumber float64 `instill:"pr-number"`
@@ -64,14 +73,23 @@ type getPullRequestOutput struct {
 	PullRequest
 }
 
+type getUserInput struct {
+	Username string `instill:"name"`
+	UserID   int64  `instill:"id"`
+}
+
+type getUserOutput struct {
+	User User `instill:"user"`
+}
+
 type listIssuesInput struct {
 	RepoInfo
+	PageOptions
 	State         string `instill:"state"`
 	Sort          string `instill:"sort"`
 	Direction     string `instill:"direction"`
 	Since         string `instill:"since"`
 	NoPullRequest bool   `instill:"no-pull-request"`
-	PageOptions
 }
 
 type listIssuesOutput struct {
@@ -92,11 +110,11 @@ type listPullRequestsOutput struct {
 
 type listReviewCommentsInput struct {
 	RepoInfo
+	PageOptions
 	PRNumber  int    `instill:"pr-number"`
 	Sort      string `instill:"sort"`
 	Direction string `instill:"direction"`
 	Since     string `instill:"since"`
-	PageOptions
 }
 
 type listReviewCommentsOutput struct {

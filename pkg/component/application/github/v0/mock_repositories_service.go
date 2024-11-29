@@ -7,8 +7,10 @@ import (
 	"github.com/google/go-github/v62/github"
 )
 
+// MockRepositoriesService is a mock implementation of the RepositoryService interface.
 type MockRepositoriesService struct{}
 
+// GetCommit is a mock implementation of the GetCommit method for the RepositoryService.
 func (m *MockRepositoriesService) GetCommit(ctx context.Context, owner, repo, sha string, opts *github.ListOptions) (*github.RepositoryCommit, *github.Response, error) {
 	switch middleWare(owner) {
 	case 403:
@@ -45,6 +47,7 @@ func (m *MockRepositoriesService) GetCommit(ctx context.Context, owner, repo, sh
 	return commit, resp, nil
 }
 
+// ListCommits is a mock implementation of the ListCommits method for the RepositoryService.
 func (m *MockRepositoriesService) ListCommits(ctx context.Context, owner, repo string, opts *github.CommitsListOptions) ([]*github.RepositoryCommit, *github.Response, error) {
 	switch middleWare(owner) {
 	case 403:
