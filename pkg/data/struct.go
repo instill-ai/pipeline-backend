@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
@@ -32,6 +33,7 @@ import (
 //     FirstName string `instill:"first_name"`           // Will use "first_name" as the key
 //     LastName  string                                  // Will use "LastName" as the key
 //     Avatar   format.Image `instill:"photo,image/png"` // Will use "photo" as key and convert to PNG
+//     Age      *int `instill:"age,default=18"`          // Will use 18 as default if nil
 //   }
 //
 // The format portion of the tag supports:
@@ -39,6 +41,7 @@ import (
 //   - For Video: "video/mp4", "video/webm", etc
 //   - For Audio: "audio/mpeg", "audio/wav", etc
 //   - For Document: "application/pdf", "text/plain", etc
+//   - For pointers: "default=value" to specify default value when nil
 
 // Marshaler is used to marshal a struct into a Map.
 type Marshaler struct {
@@ -126,6 +129,20 @@ func (u *Unmarshaler) unmarshalStruct(ctx context.Context, m Map, v reflect.Valu
 		fieldName := u.getFieldName(field)
 		val, ok := m[fieldName]
 		if !ok {
+			// Check for default value if field is nil pointer or zero value
+			if (fieldValue.Kind() == reflect.Ptr && fieldValue.IsNil()) ||
+				fieldValue.IsZero() {
+				tag := field.Tag.Get("instill")
+				parts := strings.Split(tag, ",")
+				for _, part := range parts {
+					if strings.HasPrefix(part, "default=") {
+						defaultVal := strings.TrimPrefix(part, "default=")
+						if err := u.setDefaultValue(fieldValue, defaultVal); err != nil {
+							return fmt.Errorf("error setting default value for field %s: %w", fieldName, err)
+						}
+					}
+				}
+			}
 			continue
 		}
 
@@ -133,6 +150,74 @@ func (u *Unmarshaler) unmarshalStruct(ctx context.Context, m Map, v reflect.Valu
 			return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
 		}
 	}
+	return nil
+}
+
+// setDefaultValue sets the default value for a nil pointer field
+func (u *Unmarshaler) setDefaultValue(field reflect.Value, defaultVal string) error {
+	// Handle format.Value types first
+	if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
+		elemType := field.Type()
+		if elemType == reflect.TypeOf((*format.String)(nil)).Elem() {
+			field.Set(reflect.ValueOf(NewString(defaultVal)))
+			return nil
+		} else if elemType == reflect.TypeOf((*format.Number)(nil)).Elem() {
+			f, err := strconv.ParseFloat(defaultVal, 64)
+			if err != nil {
+				return err
+			}
+			field.Set(reflect.ValueOf(NewNumberFromFloat(f)))
+			return nil
+		} else if elemType == reflect.TypeOf((*format.Boolean)(nil)).Elem() {
+			b, err := strconv.ParseBool(defaultVal)
+			if err != nil {
+				return err
+			}
+			field.Set(reflect.ValueOf(NewBoolean(b)))
+			return nil
+		}
+		return fmt.Errorf("unsupported format.Value type: %v", elemType)
+	}
+
+	// Handle pointer types
+	if field.Kind() == reflect.Ptr {
+		if field.IsNil() {
+			field.Set(reflect.New(field.Type().Elem()))
+		}
+		field = field.Elem()
+	}
+
+	switch field.Kind() {
+	case reflect.String:
+		field.SetString(defaultVal)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		i, err := strconv.ParseInt(defaultVal, 10, 64)
+		if err != nil {
+			return err
+		}
+		field.SetInt(i)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		i, err := strconv.ParseUint(defaultVal, 10, 64)
+		if err != nil {
+			return err
+		}
+		field.SetUint(i)
+	case reflect.Float32, reflect.Float64:
+		f, err := strconv.ParseFloat(defaultVal, 64)
+		if err != nil {
+			return err
+		}
+		field.SetFloat(f)
+	case reflect.Bool:
+		b, err := strconv.ParseBool(defaultVal)
+		if err != nil {
+			return err
+		}
+		field.SetBool(b)
+	default:
+		return fmt.Errorf("unsupported default value type: %v", field.Kind())
+	}
+
 	return nil
 }
 

@@ -194,6 +194,57 @@ func TestUnmarshal(t *testing.T) {
 		c.Assert(result.NullField, qt.IsNil)
 	})
 
+	c.Run("Default value", func(c *qt.C) {
+		type TestStruct struct {
+			StringField   format.String  `instill:"string-field,default=hello"`
+			NumberField   format.Number  `instill:"number-field,default=42"`
+			BooleanField  format.Boolean `instill:"boolean-field,default=true"`
+			IntField      int            `instill:"int-field,default=123"`
+			UintField     uint           `instill:"uint-field,default=456"`
+			FloatField    float64        `instill:"float-field,default=3.14"`
+			BoolField     bool           `instill:"bool-field,default=true"`
+			StrField      string         `instill:"string-field,default=world"`
+			IntPtrField   *int           `instill:"int-ptr-field,default=123"`
+			UintPtrField  *uint          `instill:"uint-ptr-field,default=456"`
+			FloatPtrField *float64       `instill:"float-ptr-field,default=3.14"`
+			BoolPtrField  *bool          `instill:"bool-ptr-field,default=true"`
+			StrPtrField   *string        `instill:"string-ptr-field,default=world"`
+		}
+
+		input := Map{}
+		var result TestStruct
+		err := unmarshaler.Unmarshal(context.Background(), input, &result)
+
+		c.Assert(err, qt.IsNil)
+
+		// Test format.Value types
+		c.Assert(result.StringField.String(), qt.Equals, "hello")
+		c.Assert(result.NumberField.Float64(), qt.Equals, 42.0)
+		c.Assert(result.BooleanField.Boolean(), qt.Equals, true)
+
+		// Test primitive types
+		c.Assert(result.IntField, qt.Equals, 123)
+		c.Assert(result.UintField, qt.Equals, uint(456))
+		c.Assert(result.FloatField, qt.Equals, 3.14)
+		c.Assert(result.BoolField, qt.Equals, true)
+		c.Assert(result.StrField, qt.Equals, "world")
+
+		// Test pointer primitive types
+		c.Assert(*result.IntPtrField, qt.Equals, 123)
+		c.Assert(*result.UintPtrField, qt.Equals, uint(456))
+		c.Assert(*result.FloatPtrField, qt.Equals, 3.14)
+		c.Assert(*result.BoolPtrField, qt.Equals, true)
+		c.Assert(*result.StrPtrField, qt.Equals, "world")
+
+		// Test invalid default values
+		type InvalidStruct struct {
+			BadInt *int `instill:"bad-int,default=not-a-number"`
+		}
+		var invalid InvalidStruct
+		err = unmarshaler.Unmarshal(context.Background(), Map{}, &invalid)
+		c.Assert(err, qt.ErrorMatches, "error setting default value for field bad-int:.*")
+	})
+
 	c.Run("Error cases", func(c *qt.C) {
 		c.Run("Non-pointer input", func(c *qt.C) {
 			var s struct{}
