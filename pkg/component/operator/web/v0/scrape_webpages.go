@@ -101,12 +101,15 @@ func (e *execution) ScrapeWebpages(input *structpb.Struct) (*structpb.Struct, er
 
 func getDocAfterRequestURL(urls []string, timeout int, scrapeMethod string) ([]*goquery.Document, error) {
 	var wg sync.WaitGroup
-	docCh := make(chan *goquery.Document, len(urls))
+	docCh := make(chan struct {
+		index int
+		doc   *goquery.Document
+	}, len(urls))
 	errCh := make(chan error, len(urls))
 
-	for _, url := range urls {
+	for i, url := range urls {
 		wg.Add(1)
-		go func(url string) {
+		go func(url string, i int) {
 			defer wg.Done()
 			var doc *goquery.Document
 			var err error
@@ -125,8 +128,11 @@ func getDocAfterRequestURL(urls []string, timeout int, scrapeMethod string) ([]*
 				return
 			}
 
-			docCh <- doc
-		}(url)
+			docCh <- struct {
+				index int
+				doc   *goquery.Document
+			}{i, doc}
+		}(url, i)
 	}
 
 	go func() {
@@ -135,9 +141,9 @@ func getDocAfterRequestURL(urls []string, timeout int, scrapeMethod string) ([]*
 		close(errCh)
 	}()
 
-	docs := []*goquery.Document{}
+	docs := make([]*goquery.Document, len(urls))
 	for doc := range docCh {
-		docs = append(docs, doc)
+		docs[doc.index] = doc.doc
 	}
 
 	// When pipeline combines crawler and scraper, there may be some urls not able to get the doc.
