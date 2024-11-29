@@ -177,19 +177,11 @@ func TestService_ListPipelineRuns(t *testing.T) {
 
 			repo := repository.NewRepository(tx, redisClient)
 
-			svc := NewService(
-				repo,
-				nil,
-				nil,
-				nil,
-				nil,
-				mgmtPrivateClient,
-				mockMinio,
-				nil,
-				nil,
-				uuid.UUID{},
-				nil,
-			)
+			svc := NewService(ServiceConfig{
+				Repository:               repo,
+				MgmtPrivateServiceClient: mgmtPrivateClient,
+				MinioClient:              mockMinio,
+			})
 
 			ctx := context.Background()
 
@@ -397,19 +389,12 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 
 			repo := repository.NewRepository(tx, redisClient)
 
-			svc := NewService(
-				repo,
-				redisClient,
-				nil,
-				nil,
-				nil,
-				mgmtPrivateClient,
-				mockMinio,
-				nil,
-				nil,
-				uuid.UUID{},
-				nil,
-			)
+			svc := NewService(ServiceConfig{
+				Repository:               repo,
+				RedisClient:              redisClient,
+				MgmtPrivateServiceClient: mgmtPrivateClient,
+				MinioClient:              mockMinio,
+			})
 
 			ctx := context.Background()
 
@@ -504,19 +489,11 @@ func TestService_ListPipelineRunsByRequester(t *testing.T) {
 
 	repo := repository.NewRepository(tx, redisClient)
 
-	svc := NewService(
-		repo,
-		nil,
-		nil,
-		nil,
-		nil,
-		mgmtPrivateClient,
-		mockMinio,
-		nil,
-		nil,
-		uuid.UUID{},
-		nil,
-	)
+	svc := NewService(ServiceConfig{
+		Repository:               repo,
+		MgmtPrivateServiceClient: mgmtPrivateClient,
+		MinioClient:              mockMinio,
+	})
 
 	ctx := context.Background()
 
@@ -561,7 +538,7 @@ func TestService_ListPipelineRunsByRequester(t *testing.T) {
 	c.Check(resp.TotalSize, qt.Equals, int32(1))
 	c.Check(resp.GetPipelineRuns(), qt.HasLen, 1)
 	c.Check(resp.GetPipelineRuns()[0].GetPipelineRunUid(), qt.Equals, pipelineRun.PipelineTriggerUID.String())
-	c.Check(resp.GetPipelineRuns()[0].GetNamespaceId(), qt.Equals, got.NamespaceID)
+	c.Check(resp.GetPipelineRuns()[0].GetPipelineNamespaceId(), qt.Equals, got.NamespaceID)
 
 	pipelineRun = &datamodel.PipelineRun{
 		PipelineTriggerUID: uuid.Must(uuid.NewV4()),

@@ -695,3 +695,17 @@ func (s *service) ListPipelineIDsByConnectionID(ctx context.Context, req *pb.Lis
 		TotalSize:     page.TotalSize,
 	}, nil
 }
+
+func (s *service) GetConnectionByUIDAdmin(ctx context.Context, uid uuid.UUID, view pb.View) (*pb.Connection, error) {
+	inDB, err := s.repository.GetConnectionByUID(ctx, uid)
+	if err != nil {
+		return nil, fmt.Errorf("fetching connection: %w", err)
+	}
+
+	ns, err := s.GetNamespaceByUID(ctx, inDB.NamespaceUID)
+	if err != nil {
+		return nil, fmt.Errorf("fetching namespace: %w", err)
+	}
+
+	return s.connectionToPB(inDB, ns.NsID, view)
+}

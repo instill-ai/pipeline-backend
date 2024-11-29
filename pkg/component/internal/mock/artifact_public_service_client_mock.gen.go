@@ -123,6 +123,20 @@ type ArtifactPublicServiceClientMock struct {
 	beforeReadinessCounter uint64
 	ReadinessMock          mArtifactPublicServiceClientMockReadiness
 
+	funcSearchChunks          func(ctx context.Context, in *mm_artifactv1alpha.SearchChunksRequest, opts ...grpc.CallOption) (sp1 *mm_artifactv1alpha.SearchChunksResponse, err error)
+	funcSearchChunksOrigin    string
+	inspectFuncSearchChunks   func(ctx context.Context, in *mm_artifactv1alpha.SearchChunksRequest, opts ...grpc.CallOption)
+	afterSearchChunksCounter  uint64
+	beforeSearchChunksCounter uint64
+	SearchChunksMock          mArtifactPublicServiceClientMockSearchChunks
+
+	funcSearchSourceFiles          func(ctx context.Context, in *mm_artifactv1alpha.SearchSourceFilesRequest, opts ...grpc.CallOption) (sp1 *mm_artifactv1alpha.SearchSourceFilesResponse, err error)
+	funcSearchSourceFilesOrigin    string
+	inspectFuncSearchSourceFiles   func(ctx context.Context, in *mm_artifactv1alpha.SearchSourceFilesRequest, opts ...grpc.CallOption)
+	afterSearchSourceFilesCounter  uint64
+	beforeSearchSourceFilesCounter uint64
+	SearchSourceFilesMock          mArtifactPublicServiceClientMockSearchSourceFiles
+
 	funcSimilarityChunksSearch          func(ctx context.Context, in *mm_artifactv1alpha.SimilarityChunksSearchRequest, opts ...grpc.CallOption) (sp1 *mm_artifactv1alpha.SimilarityChunksSearchResponse, err error)
 	funcSimilarityChunksSearchOrigin    string
 	inspectFuncSimilarityChunksSearch   func(ctx context.Context, in *mm_artifactv1alpha.SimilarityChunksSearchRequest, opts ...grpc.CallOption)
@@ -204,6 +218,12 @@ func NewArtifactPublicServiceClientMock(t minimock.Tester) *ArtifactPublicServic
 
 	m.ReadinessMock = mArtifactPublicServiceClientMockReadiness{mock: m}
 	m.ReadinessMock.callArgs = []*ArtifactPublicServiceClientMockReadinessParams{}
+
+	m.SearchChunksMock = mArtifactPublicServiceClientMockSearchChunks{mock: m}
+	m.SearchChunksMock.callArgs = []*ArtifactPublicServiceClientMockSearchChunksParams{}
+
+	m.SearchSourceFilesMock = mArtifactPublicServiceClientMockSearchSourceFiles{mock: m}
+	m.SearchSourceFilesMock.callArgs = []*ArtifactPublicServiceClientMockSearchSourceFilesParams{}
 
 	m.SimilarityChunksSearchMock = mArtifactPublicServiceClientMockSimilarityChunksSearch{mock: m}
 	m.SimilarityChunksSearchMock.callArgs = []*ArtifactPublicServiceClientMockSimilarityChunksSearchParams{}
@@ -5832,6 +5852,754 @@ func (m *ArtifactPublicServiceClientMock) MinimockReadinessInspect() {
 	}
 }
 
+type mArtifactPublicServiceClientMockSearchChunks struct {
+	optional           bool
+	mock               *ArtifactPublicServiceClientMock
+	defaultExpectation *ArtifactPublicServiceClientMockSearchChunksExpectation
+	expectations       []*ArtifactPublicServiceClientMockSearchChunksExpectation
+
+	callArgs []*ArtifactPublicServiceClientMockSearchChunksParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// ArtifactPublicServiceClientMockSearchChunksExpectation specifies expectation struct of the ArtifactPublicServiceClient.SearchChunks
+type ArtifactPublicServiceClientMockSearchChunksExpectation struct {
+	mock               *ArtifactPublicServiceClientMock
+	params             *ArtifactPublicServiceClientMockSearchChunksParams
+	paramPtrs          *ArtifactPublicServiceClientMockSearchChunksParamPtrs
+	expectationOrigins ArtifactPublicServiceClientMockSearchChunksExpectationOrigins
+	results            *ArtifactPublicServiceClientMockSearchChunksResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// ArtifactPublicServiceClientMockSearchChunksParams contains parameters of the ArtifactPublicServiceClient.SearchChunks
+type ArtifactPublicServiceClientMockSearchChunksParams struct {
+	ctx  context.Context
+	in   *mm_artifactv1alpha.SearchChunksRequest
+	opts []grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockSearchChunksParamPtrs contains pointers to parameters of the ArtifactPublicServiceClient.SearchChunks
+type ArtifactPublicServiceClientMockSearchChunksParamPtrs struct {
+	ctx  *context.Context
+	in   **mm_artifactv1alpha.SearchChunksRequest
+	opts *[]grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockSearchChunksResults contains results of the ArtifactPublicServiceClient.SearchChunks
+type ArtifactPublicServiceClientMockSearchChunksResults struct {
+	sp1 *mm_artifactv1alpha.SearchChunksResponse
+	err error
+}
+
+// ArtifactPublicServiceClientMockSearchChunksOrigins contains origins of expectations of the ArtifactPublicServiceClient.SearchChunks
+type ArtifactPublicServiceClientMockSearchChunksExpectationOrigins struct {
+	origin     string
+	originCtx  string
+	originIn   string
+	originOpts string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmSearchChunks *mArtifactPublicServiceClientMockSearchChunks) Optional() *mArtifactPublicServiceClientMockSearchChunks {
+	mmSearchChunks.optional = true
+	return mmSearchChunks
+}
+
+// Expect sets up expected params for ArtifactPublicServiceClient.SearchChunks
+func (mmSearchChunks *mArtifactPublicServiceClientMockSearchChunks) Expect(ctx context.Context, in *mm_artifactv1alpha.SearchChunksRequest, opts ...grpc.CallOption) *mArtifactPublicServiceClientMockSearchChunks {
+	if mmSearchChunks.mock.funcSearchChunks != nil {
+		mmSearchChunks.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchChunks mock is already set by Set")
+	}
+
+	if mmSearchChunks.defaultExpectation == nil {
+		mmSearchChunks.defaultExpectation = &ArtifactPublicServiceClientMockSearchChunksExpectation{}
+	}
+
+	if mmSearchChunks.defaultExpectation.paramPtrs != nil {
+		mmSearchChunks.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchChunks mock is already set by ExpectParams functions")
+	}
+
+	mmSearchChunks.defaultExpectation.params = &ArtifactPublicServiceClientMockSearchChunksParams{ctx, in, opts}
+	mmSearchChunks.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmSearchChunks.expectations {
+		if minimock.Equal(e.params, mmSearchChunks.defaultExpectation.params) {
+			mmSearchChunks.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmSearchChunks.defaultExpectation.params)
+		}
+	}
+
+	return mmSearchChunks
+}
+
+// ExpectCtxParam1 sets up expected param ctx for ArtifactPublicServiceClient.SearchChunks
+func (mmSearchChunks *mArtifactPublicServiceClientMockSearchChunks) ExpectCtxParam1(ctx context.Context) *mArtifactPublicServiceClientMockSearchChunks {
+	if mmSearchChunks.mock.funcSearchChunks != nil {
+		mmSearchChunks.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchChunks mock is already set by Set")
+	}
+
+	if mmSearchChunks.defaultExpectation == nil {
+		mmSearchChunks.defaultExpectation = &ArtifactPublicServiceClientMockSearchChunksExpectation{}
+	}
+
+	if mmSearchChunks.defaultExpectation.params != nil {
+		mmSearchChunks.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchChunks mock is already set by Expect")
+	}
+
+	if mmSearchChunks.defaultExpectation.paramPtrs == nil {
+		mmSearchChunks.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockSearchChunksParamPtrs{}
+	}
+	mmSearchChunks.defaultExpectation.paramPtrs.ctx = &ctx
+	mmSearchChunks.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmSearchChunks
+}
+
+// ExpectInParam2 sets up expected param in for ArtifactPublicServiceClient.SearchChunks
+func (mmSearchChunks *mArtifactPublicServiceClientMockSearchChunks) ExpectInParam2(in *mm_artifactv1alpha.SearchChunksRequest) *mArtifactPublicServiceClientMockSearchChunks {
+	if mmSearchChunks.mock.funcSearchChunks != nil {
+		mmSearchChunks.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchChunks mock is already set by Set")
+	}
+
+	if mmSearchChunks.defaultExpectation == nil {
+		mmSearchChunks.defaultExpectation = &ArtifactPublicServiceClientMockSearchChunksExpectation{}
+	}
+
+	if mmSearchChunks.defaultExpectation.params != nil {
+		mmSearchChunks.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchChunks mock is already set by Expect")
+	}
+
+	if mmSearchChunks.defaultExpectation.paramPtrs == nil {
+		mmSearchChunks.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockSearchChunksParamPtrs{}
+	}
+	mmSearchChunks.defaultExpectation.paramPtrs.in = &in
+	mmSearchChunks.defaultExpectation.expectationOrigins.originIn = minimock.CallerInfo(1)
+
+	return mmSearchChunks
+}
+
+// ExpectOptsParam3 sets up expected param opts for ArtifactPublicServiceClient.SearchChunks
+func (mmSearchChunks *mArtifactPublicServiceClientMockSearchChunks) ExpectOptsParam3(opts ...grpc.CallOption) *mArtifactPublicServiceClientMockSearchChunks {
+	if mmSearchChunks.mock.funcSearchChunks != nil {
+		mmSearchChunks.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchChunks mock is already set by Set")
+	}
+
+	if mmSearchChunks.defaultExpectation == nil {
+		mmSearchChunks.defaultExpectation = &ArtifactPublicServiceClientMockSearchChunksExpectation{}
+	}
+
+	if mmSearchChunks.defaultExpectation.params != nil {
+		mmSearchChunks.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchChunks mock is already set by Expect")
+	}
+
+	if mmSearchChunks.defaultExpectation.paramPtrs == nil {
+		mmSearchChunks.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockSearchChunksParamPtrs{}
+	}
+	mmSearchChunks.defaultExpectation.paramPtrs.opts = &opts
+	mmSearchChunks.defaultExpectation.expectationOrigins.originOpts = minimock.CallerInfo(1)
+
+	return mmSearchChunks
+}
+
+// Inspect accepts an inspector function that has same arguments as the ArtifactPublicServiceClient.SearchChunks
+func (mmSearchChunks *mArtifactPublicServiceClientMockSearchChunks) Inspect(f func(ctx context.Context, in *mm_artifactv1alpha.SearchChunksRequest, opts ...grpc.CallOption)) *mArtifactPublicServiceClientMockSearchChunks {
+	if mmSearchChunks.mock.inspectFuncSearchChunks != nil {
+		mmSearchChunks.mock.t.Fatalf("Inspect function is already set for ArtifactPublicServiceClientMock.SearchChunks")
+	}
+
+	mmSearchChunks.mock.inspectFuncSearchChunks = f
+
+	return mmSearchChunks
+}
+
+// Return sets up results that will be returned by ArtifactPublicServiceClient.SearchChunks
+func (mmSearchChunks *mArtifactPublicServiceClientMockSearchChunks) Return(sp1 *mm_artifactv1alpha.SearchChunksResponse, err error) *ArtifactPublicServiceClientMock {
+	if mmSearchChunks.mock.funcSearchChunks != nil {
+		mmSearchChunks.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchChunks mock is already set by Set")
+	}
+
+	if mmSearchChunks.defaultExpectation == nil {
+		mmSearchChunks.defaultExpectation = &ArtifactPublicServiceClientMockSearchChunksExpectation{mock: mmSearchChunks.mock}
+	}
+	mmSearchChunks.defaultExpectation.results = &ArtifactPublicServiceClientMockSearchChunksResults{sp1, err}
+	mmSearchChunks.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmSearchChunks.mock
+}
+
+// Set uses given function f to mock the ArtifactPublicServiceClient.SearchChunks method
+func (mmSearchChunks *mArtifactPublicServiceClientMockSearchChunks) Set(f func(ctx context.Context, in *mm_artifactv1alpha.SearchChunksRequest, opts ...grpc.CallOption) (sp1 *mm_artifactv1alpha.SearchChunksResponse, err error)) *ArtifactPublicServiceClientMock {
+	if mmSearchChunks.defaultExpectation != nil {
+		mmSearchChunks.mock.t.Fatalf("Default expectation is already set for the ArtifactPublicServiceClient.SearchChunks method")
+	}
+
+	if len(mmSearchChunks.expectations) > 0 {
+		mmSearchChunks.mock.t.Fatalf("Some expectations are already set for the ArtifactPublicServiceClient.SearchChunks method")
+	}
+
+	mmSearchChunks.mock.funcSearchChunks = f
+	mmSearchChunks.mock.funcSearchChunksOrigin = minimock.CallerInfo(1)
+	return mmSearchChunks.mock
+}
+
+// When sets expectation for the ArtifactPublicServiceClient.SearchChunks which will trigger the result defined by the following
+// Then helper
+func (mmSearchChunks *mArtifactPublicServiceClientMockSearchChunks) When(ctx context.Context, in *mm_artifactv1alpha.SearchChunksRequest, opts ...grpc.CallOption) *ArtifactPublicServiceClientMockSearchChunksExpectation {
+	if mmSearchChunks.mock.funcSearchChunks != nil {
+		mmSearchChunks.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchChunks mock is already set by Set")
+	}
+
+	expectation := &ArtifactPublicServiceClientMockSearchChunksExpectation{
+		mock:               mmSearchChunks.mock,
+		params:             &ArtifactPublicServiceClientMockSearchChunksParams{ctx, in, opts},
+		expectationOrigins: ArtifactPublicServiceClientMockSearchChunksExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmSearchChunks.expectations = append(mmSearchChunks.expectations, expectation)
+	return expectation
+}
+
+// Then sets up ArtifactPublicServiceClient.SearchChunks return parameters for the expectation previously defined by the When method
+func (e *ArtifactPublicServiceClientMockSearchChunksExpectation) Then(sp1 *mm_artifactv1alpha.SearchChunksResponse, err error) *ArtifactPublicServiceClientMock {
+	e.results = &ArtifactPublicServiceClientMockSearchChunksResults{sp1, err}
+	return e.mock
+}
+
+// Times sets number of times ArtifactPublicServiceClient.SearchChunks should be invoked
+func (mmSearchChunks *mArtifactPublicServiceClientMockSearchChunks) Times(n uint64) *mArtifactPublicServiceClientMockSearchChunks {
+	if n == 0 {
+		mmSearchChunks.mock.t.Fatalf("Times of ArtifactPublicServiceClientMock.SearchChunks mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmSearchChunks.expectedInvocations, n)
+	mmSearchChunks.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmSearchChunks
+}
+
+func (mmSearchChunks *mArtifactPublicServiceClientMockSearchChunks) invocationsDone() bool {
+	if len(mmSearchChunks.expectations) == 0 && mmSearchChunks.defaultExpectation == nil && mmSearchChunks.mock.funcSearchChunks == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmSearchChunks.mock.afterSearchChunksCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmSearchChunks.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// SearchChunks implements mm_artifactv1alpha.ArtifactPublicServiceClient
+func (mmSearchChunks *ArtifactPublicServiceClientMock) SearchChunks(ctx context.Context, in *mm_artifactv1alpha.SearchChunksRequest, opts ...grpc.CallOption) (sp1 *mm_artifactv1alpha.SearchChunksResponse, err error) {
+	mm_atomic.AddUint64(&mmSearchChunks.beforeSearchChunksCounter, 1)
+	defer mm_atomic.AddUint64(&mmSearchChunks.afterSearchChunksCounter, 1)
+
+	mmSearchChunks.t.Helper()
+
+	if mmSearchChunks.inspectFuncSearchChunks != nil {
+		mmSearchChunks.inspectFuncSearchChunks(ctx, in, opts...)
+	}
+
+	mm_params := ArtifactPublicServiceClientMockSearchChunksParams{ctx, in, opts}
+
+	// Record call args
+	mmSearchChunks.SearchChunksMock.mutex.Lock()
+	mmSearchChunks.SearchChunksMock.callArgs = append(mmSearchChunks.SearchChunksMock.callArgs, &mm_params)
+	mmSearchChunks.SearchChunksMock.mutex.Unlock()
+
+	for _, e := range mmSearchChunks.SearchChunksMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.sp1, e.results.err
+		}
+	}
+
+	if mmSearchChunks.SearchChunksMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmSearchChunks.SearchChunksMock.defaultExpectation.Counter, 1)
+		mm_want := mmSearchChunks.SearchChunksMock.defaultExpectation.params
+		mm_want_ptrs := mmSearchChunks.SearchChunksMock.defaultExpectation.paramPtrs
+
+		mm_got := ArtifactPublicServiceClientMockSearchChunksParams{ctx, in, opts}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmSearchChunks.t.Errorf("ArtifactPublicServiceClientMock.SearchChunks got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmSearchChunks.SearchChunksMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.in != nil && !minimock.Equal(*mm_want_ptrs.in, mm_got.in) {
+				mmSearchChunks.t.Errorf("ArtifactPublicServiceClientMock.SearchChunks got unexpected parameter in, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmSearchChunks.SearchChunksMock.defaultExpectation.expectationOrigins.originIn, *mm_want_ptrs.in, mm_got.in, minimock.Diff(*mm_want_ptrs.in, mm_got.in))
+			}
+
+			if mm_want_ptrs.opts != nil && !minimock.Equal(*mm_want_ptrs.opts, mm_got.opts) {
+				mmSearchChunks.t.Errorf("ArtifactPublicServiceClientMock.SearchChunks got unexpected parameter opts, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmSearchChunks.SearchChunksMock.defaultExpectation.expectationOrigins.originOpts, *mm_want_ptrs.opts, mm_got.opts, minimock.Diff(*mm_want_ptrs.opts, mm_got.opts))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmSearchChunks.t.Errorf("ArtifactPublicServiceClientMock.SearchChunks got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmSearchChunks.SearchChunksMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmSearchChunks.SearchChunksMock.defaultExpectation.results
+		if mm_results == nil {
+			mmSearchChunks.t.Fatal("No results are set for the ArtifactPublicServiceClientMock.SearchChunks")
+		}
+		return (*mm_results).sp1, (*mm_results).err
+	}
+	if mmSearchChunks.funcSearchChunks != nil {
+		return mmSearchChunks.funcSearchChunks(ctx, in, opts...)
+	}
+	mmSearchChunks.t.Fatalf("Unexpected call to ArtifactPublicServiceClientMock.SearchChunks. %v %v %v", ctx, in, opts)
+	return
+}
+
+// SearchChunksAfterCounter returns a count of finished ArtifactPublicServiceClientMock.SearchChunks invocations
+func (mmSearchChunks *ArtifactPublicServiceClientMock) SearchChunksAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmSearchChunks.afterSearchChunksCounter)
+}
+
+// SearchChunksBeforeCounter returns a count of ArtifactPublicServiceClientMock.SearchChunks invocations
+func (mmSearchChunks *ArtifactPublicServiceClientMock) SearchChunksBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmSearchChunks.beforeSearchChunksCounter)
+}
+
+// Calls returns a list of arguments used in each call to ArtifactPublicServiceClientMock.SearchChunks.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmSearchChunks *mArtifactPublicServiceClientMockSearchChunks) Calls() []*ArtifactPublicServiceClientMockSearchChunksParams {
+	mmSearchChunks.mutex.RLock()
+
+	argCopy := make([]*ArtifactPublicServiceClientMockSearchChunksParams, len(mmSearchChunks.callArgs))
+	copy(argCopy, mmSearchChunks.callArgs)
+
+	mmSearchChunks.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockSearchChunksDone returns true if the count of the SearchChunks invocations corresponds
+// the number of defined expectations
+func (m *ArtifactPublicServiceClientMock) MinimockSearchChunksDone() bool {
+	if m.SearchChunksMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.SearchChunksMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.SearchChunksMock.invocationsDone()
+}
+
+// MinimockSearchChunksInspect logs each unmet expectation
+func (m *ArtifactPublicServiceClientMock) MinimockSearchChunksInspect() {
+	for _, e := range m.SearchChunksMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.SearchChunks at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterSearchChunksCounter := mm_atomic.LoadUint64(&m.afterSearchChunksCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.SearchChunksMock.defaultExpectation != nil && afterSearchChunksCounter < 1 {
+		if m.SearchChunksMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.SearchChunks at\n%s", m.SearchChunksMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.SearchChunks at\n%s with params: %#v", m.SearchChunksMock.defaultExpectation.expectationOrigins.origin, *m.SearchChunksMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcSearchChunks != nil && afterSearchChunksCounter < 1 {
+		m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.SearchChunks at\n%s", m.funcSearchChunksOrigin)
+	}
+
+	if !m.SearchChunksMock.invocationsDone() && afterSearchChunksCounter > 0 {
+		m.t.Errorf("Expected %d calls to ArtifactPublicServiceClientMock.SearchChunks at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.SearchChunksMock.expectedInvocations), m.SearchChunksMock.expectedInvocationsOrigin, afterSearchChunksCounter)
+	}
+}
+
+type mArtifactPublicServiceClientMockSearchSourceFiles struct {
+	optional           bool
+	mock               *ArtifactPublicServiceClientMock
+	defaultExpectation *ArtifactPublicServiceClientMockSearchSourceFilesExpectation
+	expectations       []*ArtifactPublicServiceClientMockSearchSourceFilesExpectation
+
+	callArgs []*ArtifactPublicServiceClientMockSearchSourceFilesParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// ArtifactPublicServiceClientMockSearchSourceFilesExpectation specifies expectation struct of the ArtifactPublicServiceClient.SearchSourceFiles
+type ArtifactPublicServiceClientMockSearchSourceFilesExpectation struct {
+	mock               *ArtifactPublicServiceClientMock
+	params             *ArtifactPublicServiceClientMockSearchSourceFilesParams
+	paramPtrs          *ArtifactPublicServiceClientMockSearchSourceFilesParamPtrs
+	expectationOrigins ArtifactPublicServiceClientMockSearchSourceFilesExpectationOrigins
+	results            *ArtifactPublicServiceClientMockSearchSourceFilesResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// ArtifactPublicServiceClientMockSearchSourceFilesParams contains parameters of the ArtifactPublicServiceClient.SearchSourceFiles
+type ArtifactPublicServiceClientMockSearchSourceFilesParams struct {
+	ctx  context.Context
+	in   *mm_artifactv1alpha.SearchSourceFilesRequest
+	opts []grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockSearchSourceFilesParamPtrs contains pointers to parameters of the ArtifactPublicServiceClient.SearchSourceFiles
+type ArtifactPublicServiceClientMockSearchSourceFilesParamPtrs struct {
+	ctx  *context.Context
+	in   **mm_artifactv1alpha.SearchSourceFilesRequest
+	opts *[]grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockSearchSourceFilesResults contains results of the ArtifactPublicServiceClient.SearchSourceFiles
+type ArtifactPublicServiceClientMockSearchSourceFilesResults struct {
+	sp1 *mm_artifactv1alpha.SearchSourceFilesResponse
+	err error
+}
+
+// ArtifactPublicServiceClientMockSearchSourceFilesOrigins contains origins of expectations of the ArtifactPublicServiceClient.SearchSourceFiles
+type ArtifactPublicServiceClientMockSearchSourceFilesExpectationOrigins struct {
+	origin     string
+	originCtx  string
+	originIn   string
+	originOpts string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmSearchSourceFiles *mArtifactPublicServiceClientMockSearchSourceFiles) Optional() *mArtifactPublicServiceClientMockSearchSourceFiles {
+	mmSearchSourceFiles.optional = true
+	return mmSearchSourceFiles
+}
+
+// Expect sets up expected params for ArtifactPublicServiceClient.SearchSourceFiles
+func (mmSearchSourceFiles *mArtifactPublicServiceClientMockSearchSourceFiles) Expect(ctx context.Context, in *mm_artifactv1alpha.SearchSourceFilesRequest, opts ...grpc.CallOption) *mArtifactPublicServiceClientMockSearchSourceFiles {
+	if mmSearchSourceFiles.mock.funcSearchSourceFiles != nil {
+		mmSearchSourceFiles.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchSourceFiles mock is already set by Set")
+	}
+
+	if mmSearchSourceFiles.defaultExpectation == nil {
+		mmSearchSourceFiles.defaultExpectation = &ArtifactPublicServiceClientMockSearchSourceFilesExpectation{}
+	}
+
+	if mmSearchSourceFiles.defaultExpectation.paramPtrs != nil {
+		mmSearchSourceFiles.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchSourceFiles mock is already set by ExpectParams functions")
+	}
+
+	mmSearchSourceFiles.defaultExpectation.params = &ArtifactPublicServiceClientMockSearchSourceFilesParams{ctx, in, opts}
+	mmSearchSourceFiles.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmSearchSourceFiles.expectations {
+		if minimock.Equal(e.params, mmSearchSourceFiles.defaultExpectation.params) {
+			mmSearchSourceFiles.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmSearchSourceFiles.defaultExpectation.params)
+		}
+	}
+
+	return mmSearchSourceFiles
+}
+
+// ExpectCtxParam1 sets up expected param ctx for ArtifactPublicServiceClient.SearchSourceFiles
+func (mmSearchSourceFiles *mArtifactPublicServiceClientMockSearchSourceFiles) ExpectCtxParam1(ctx context.Context) *mArtifactPublicServiceClientMockSearchSourceFiles {
+	if mmSearchSourceFiles.mock.funcSearchSourceFiles != nil {
+		mmSearchSourceFiles.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchSourceFiles mock is already set by Set")
+	}
+
+	if mmSearchSourceFiles.defaultExpectation == nil {
+		mmSearchSourceFiles.defaultExpectation = &ArtifactPublicServiceClientMockSearchSourceFilesExpectation{}
+	}
+
+	if mmSearchSourceFiles.defaultExpectation.params != nil {
+		mmSearchSourceFiles.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchSourceFiles mock is already set by Expect")
+	}
+
+	if mmSearchSourceFiles.defaultExpectation.paramPtrs == nil {
+		mmSearchSourceFiles.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockSearchSourceFilesParamPtrs{}
+	}
+	mmSearchSourceFiles.defaultExpectation.paramPtrs.ctx = &ctx
+	mmSearchSourceFiles.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmSearchSourceFiles
+}
+
+// ExpectInParam2 sets up expected param in for ArtifactPublicServiceClient.SearchSourceFiles
+func (mmSearchSourceFiles *mArtifactPublicServiceClientMockSearchSourceFiles) ExpectInParam2(in *mm_artifactv1alpha.SearchSourceFilesRequest) *mArtifactPublicServiceClientMockSearchSourceFiles {
+	if mmSearchSourceFiles.mock.funcSearchSourceFiles != nil {
+		mmSearchSourceFiles.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchSourceFiles mock is already set by Set")
+	}
+
+	if mmSearchSourceFiles.defaultExpectation == nil {
+		mmSearchSourceFiles.defaultExpectation = &ArtifactPublicServiceClientMockSearchSourceFilesExpectation{}
+	}
+
+	if mmSearchSourceFiles.defaultExpectation.params != nil {
+		mmSearchSourceFiles.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchSourceFiles mock is already set by Expect")
+	}
+
+	if mmSearchSourceFiles.defaultExpectation.paramPtrs == nil {
+		mmSearchSourceFiles.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockSearchSourceFilesParamPtrs{}
+	}
+	mmSearchSourceFiles.defaultExpectation.paramPtrs.in = &in
+	mmSearchSourceFiles.defaultExpectation.expectationOrigins.originIn = minimock.CallerInfo(1)
+
+	return mmSearchSourceFiles
+}
+
+// ExpectOptsParam3 sets up expected param opts for ArtifactPublicServiceClient.SearchSourceFiles
+func (mmSearchSourceFiles *mArtifactPublicServiceClientMockSearchSourceFiles) ExpectOptsParam3(opts ...grpc.CallOption) *mArtifactPublicServiceClientMockSearchSourceFiles {
+	if mmSearchSourceFiles.mock.funcSearchSourceFiles != nil {
+		mmSearchSourceFiles.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchSourceFiles mock is already set by Set")
+	}
+
+	if mmSearchSourceFiles.defaultExpectation == nil {
+		mmSearchSourceFiles.defaultExpectation = &ArtifactPublicServiceClientMockSearchSourceFilesExpectation{}
+	}
+
+	if mmSearchSourceFiles.defaultExpectation.params != nil {
+		mmSearchSourceFiles.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchSourceFiles mock is already set by Expect")
+	}
+
+	if mmSearchSourceFiles.defaultExpectation.paramPtrs == nil {
+		mmSearchSourceFiles.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockSearchSourceFilesParamPtrs{}
+	}
+	mmSearchSourceFiles.defaultExpectation.paramPtrs.opts = &opts
+	mmSearchSourceFiles.defaultExpectation.expectationOrigins.originOpts = minimock.CallerInfo(1)
+
+	return mmSearchSourceFiles
+}
+
+// Inspect accepts an inspector function that has same arguments as the ArtifactPublicServiceClient.SearchSourceFiles
+func (mmSearchSourceFiles *mArtifactPublicServiceClientMockSearchSourceFiles) Inspect(f func(ctx context.Context, in *mm_artifactv1alpha.SearchSourceFilesRequest, opts ...grpc.CallOption)) *mArtifactPublicServiceClientMockSearchSourceFiles {
+	if mmSearchSourceFiles.mock.inspectFuncSearchSourceFiles != nil {
+		mmSearchSourceFiles.mock.t.Fatalf("Inspect function is already set for ArtifactPublicServiceClientMock.SearchSourceFiles")
+	}
+
+	mmSearchSourceFiles.mock.inspectFuncSearchSourceFiles = f
+
+	return mmSearchSourceFiles
+}
+
+// Return sets up results that will be returned by ArtifactPublicServiceClient.SearchSourceFiles
+func (mmSearchSourceFiles *mArtifactPublicServiceClientMockSearchSourceFiles) Return(sp1 *mm_artifactv1alpha.SearchSourceFilesResponse, err error) *ArtifactPublicServiceClientMock {
+	if mmSearchSourceFiles.mock.funcSearchSourceFiles != nil {
+		mmSearchSourceFiles.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchSourceFiles mock is already set by Set")
+	}
+
+	if mmSearchSourceFiles.defaultExpectation == nil {
+		mmSearchSourceFiles.defaultExpectation = &ArtifactPublicServiceClientMockSearchSourceFilesExpectation{mock: mmSearchSourceFiles.mock}
+	}
+	mmSearchSourceFiles.defaultExpectation.results = &ArtifactPublicServiceClientMockSearchSourceFilesResults{sp1, err}
+	mmSearchSourceFiles.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmSearchSourceFiles.mock
+}
+
+// Set uses given function f to mock the ArtifactPublicServiceClient.SearchSourceFiles method
+func (mmSearchSourceFiles *mArtifactPublicServiceClientMockSearchSourceFiles) Set(f func(ctx context.Context, in *mm_artifactv1alpha.SearchSourceFilesRequest, opts ...grpc.CallOption) (sp1 *mm_artifactv1alpha.SearchSourceFilesResponse, err error)) *ArtifactPublicServiceClientMock {
+	if mmSearchSourceFiles.defaultExpectation != nil {
+		mmSearchSourceFiles.mock.t.Fatalf("Default expectation is already set for the ArtifactPublicServiceClient.SearchSourceFiles method")
+	}
+
+	if len(mmSearchSourceFiles.expectations) > 0 {
+		mmSearchSourceFiles.mock.t.Fatalf("Some expectations are already set for the ArtifactPublicServiceClient.SearchSourceFiles method")
+	}
+
+	mmSearchSourceFiles.mock.funcSearchSourceFiles = f
+	mmSearchSourceFiles.mock.funcSearchSourceFilesOrigin = minimock.CallerInfo(1)
+	return mmSearchSourceFiles.mock
+}
+
+// When sets expectation for the ArtifactPublicServiceClient.SearchSourceFiles which will trigger the result defined by the following
+// Then helper
+func (mmSearchSourceFiles *mArtifactPublicServiceClientMockSearchSourceFiles) When(ctx context.Context, in *mm_artifactv1alpha.SearchSourceFilesRequest, opts ...grpc.CallOption) *ArtifactPublicServiceClientMockSearchSourceFilesExpectation {
+	if mmSearchSourceFiles.mock.funcSearchSourceFiles != nil {
+		mmSearchSourceFiles.mock.t.Fatalf("ArtifactPublicServiceClientMock.SearchSourceFiles mock is already set by Set")
+	}
+
+	expectation := &ArtifactPublicServiceClientMockSearchSourceFilesExpectation{
+		mock:               mmSearchSourceFiles.mock,
+		params:             &ArtifactPublicServiceClientMockSearchSourceFilesParams{ctx, in, opts},
+		expectationOrigins: ArtifactPublicServiceClientMockSearchSourceFilesExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmSearchSourceFiles.expectations = append(mmSearchSourceFiles.expectations, expectation)
+	return expectation
+}
+
+// Then sets up ArtifactPublicServiceClient.SearchSourceFiles return parameters for the expectation previously defined by the When method
+func (e *ArtifactPublicServiceClientMockSearchSourceFilesExpectation) Then(sp1 *mm_artifactv1alpha.SearchSourceFilesResponse, err error) *ArtifactPublicServiceClientMock {
+	e.results = &ArtifactPublicServiceClientMockSearchSourceFilesResults{sp1, err}
+	return e.mock
+}
+
+// Times sets number of times ArtifactPublicServiceClient.SearchSourceFiles should be invoked
+func (mmSearchSourceFiles *mArtifactPublicServiceClientMockSearchSourceFiles) Times(n uint64) *mArtifactPublicServiceClientMockSearchSourceFiles {
+	if n == 0 {
+		mmSearchSourceFiles.mock.t.Fatalf("Times of ArtifactPublicServiceClientMock.SearchSourceFiles mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmSearchSourceFiles.expectedInvocations, n)
+	mmSearchSourceFiles.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmSearchSourceFiles
+}
+
+func (mmSearchSourceFiles *mArtifactPublicServiceClientMockSearchSourceFiles) invocationsDone() bool {
+	if len(mmSearchSourceFiles.expectations) == 0 && mmSearchSourceFiles.defaultExpectation == nil && mmSearchSourceFiles.mock.funcSearchSourceFiles == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmSearchSourceFiles.mock.afterSearchSourceFilesCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmSearchSourceFiles.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// SearchSourceFiles implements mm_artifactv1alpha.ArtifactPublicServiceClient
+func (mmSearchSourceFiles *ArtifactPublicServiceClientMock) SearchSourceFiles(ctx context.Context, in *mm_artifactv1alpha.SearchSourceFilesRequest, opts ...grpc.CallOption) (sp1 *mm_artifactv1alpha.SearchSourceFilesResponse, err error) {
+	mm_atomic.AddUint64(&mmSearchSourceFiles.beforeSearchSourceFilesCounter, 1)
+	defer mm_atomic.AddUint64(&mmSearchSourceFiles.afterSearchSourceFilesCounter, 1)
+
+	mmSearchSourceFiles.t.Helper()
+
+	if mmSearchSourceFiles.inspectFuncSearchSourceFiles != nil {
+		mmSearchSourceFiles.inspectFuncSearchSourceFiles(ctx, in, opts...)
+	}
+
+	mm_params := ArtifactPublicServiceClientMockSearchSourceFilesParams{ctx, in, opts}
+
+	// Record call args
+	mmSearchSourceFiles.SearchSourceFilesMock.mutex.Lock()
+	mmSearchSourceFiles.SearchSourceFilesMock.callArgs = append(mmSearchSourceFiles.SearchSourceFilesMock.callArgs, &mm_params)
+	mmSearchSourceFiles.SearchSourceFilesMock.mutex.Unlock()
+
+	for _, e := range mmSearchSourceFiles.SearchSourceFilesMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.sp1, e.results.err
+		}
+	}
+
+	if mmSearchSourceFiles.SearchSourceFilesMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmSearchSourceFiles.SearchSourceFilesMock.defaultExpectation.Counter, 1)
+		mm_want := mmSearchSourceFiles.SearchSourceFilesMock.defaultExpectation.params
+		mm_want_ptrs := mmSearchSourceFiles.SearchSourceFilesMock.defaultExpectation.paramPtrs
+
+		mm_got := ArtifactPublicServiceClientMockSearchSourceFilesParams{ctx, in, opts}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmSearchSourceFiles.t.Errorf("ArtifactPublicServiceClientMock.SearchSourceFiles got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmSearchSourceFiles.SearchSourceFilesMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.in != nil && !minimock.Equal(*mm_want_ptrs.in, mm_got.in) {
+				mmSearchSourceFiles.t.Errorf("ArtifactPublicServiceClientMock.SearchSourceFiles got unexpected parameter in, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmSearchSourceFiles.SearchSourceFilesMock.defaultExpectation.expectationOrigins.originIn, *mm_want_ptrs.in, mm_got.in, minimock.Diff(*mm_want_ptrs.in, mm_got.in))
+			}
+
+			if mm_want_ptrs.opts != nil && !minimock.Equal(*mm_want_ptrs.opts, mm_got.opts) {
+				mmSearchSourceFiles.t.Errorf("ArtifactPublicServiceClientMock.SearchSourceFiles got unexpected parameter opts, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmSearchSourceFiles.SearchSourceFilesMock.defaultExpectation.expectationOrigins.originOpts, *mm_want_ptrs.opts, mm_got.opts, minimock.Diff(*mm_want_ptrs.opts, mm_got.opts))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmSearchSourceFiles.t.Errorf("ArtifactPublicServiceClientMock.SearchSourceFiles got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmSearchSourceFiles.SearchSourceFilesMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmSearchSourceFiles.SearchSourceFilesMock.defaultExpectation.results
+		if mm_results == nil {
+			mmSearchSourceFiles.t.Fatal("No results are set for the ArtifactPublicServiceClientMock.SearchSourceFiles")
+		}
+		return (*mm_results).sp1, (*mm_results).err
+	}
+	if mmSearchSourceFiles.funcSearchSourceFiles != nil {
+		return mmSearchSourceFiles.funcSearchSourceFiles(ctx, in, opts...)
+	}
+	mmSearchSourceFiles.t.Fatalf("Unexpected call to ArtifactPublicServiceClientMock.SearchSourceFiles. %v %v %v", ctx, in, opts)
+	return
+}
+
+// SearchSourceFilesAfterCounter returns a count of finished ArtifactPublicServiceClientMock.SearchSourceFiles invocations
+func (mmSearchSourceFiles *ArtifactPublicServiceClientMock) SearchSourceFilesAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmSearchSourceFiles.afterSearchSourceFilesCounter)
+}
+
+// SearchSourceFilesBeforeCounter returns a count of ArtifactPublicServiceClientMock.SearchSourceFiles invocations
+func (mmSearchSourceFiles *ArtifactPublicServiceClientMock) SearchSourceFilesBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmSearchSourceFiles.beforeSearchSourceFilesCounter)
+}
+
+// Calls returns a list of arguments used in each call to ArtifactPublicServiceClientMock.SearchSourceFiles.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmSearchSourceFiles *mArtifactPublicServiceClientMockSearchSourceFiles) Calls() []*ArtifactPublicServiceClientMockSearchSourceFilesParams {
+	mmSearchSourceFiles.mutex.RLock()
+
+	argCopy := make([]*ArtifactPublicServiceClientMockSearchSourceFilesParams, len(mmSearchSourceFiles.callArgs))
+	copy(argCopy, mmSearchSourceFiles.callArgs)
+
+	mmSearchSourceFiles.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockSearchSourceFilesDone returns true if the count of the SearchSourceFiles invocations corresponds
+// the number of defined expectations
+func (m *ArtifactPublicServiceClientMock) MinimockSearchSourceFilesDone() bool {
+	if m.SearchSourceFilesMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.SearchSourceFilesMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.SearchSourceFilesMock.invocationsDone()
+}
+
+// MinimockSearchSourceFilesInspect logs each unmet expectation
+func (m *ArtifactPublicServiceClientMock) MinimockSearchSourceFilesInspect() {
+	for _, e := range m.SearchSourceFilesMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.SearchSourceFiles at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterSearchSourceFilesCounter := mm_atomic.LoadUint64(&m.afterSearchSourceFilesCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.SearchSourceFilesMock.defaultExpectation != nil && afterSearchSourceFilesCounter < 1 {
+		if m.SearchSourceFilesMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.SearchSourceFiles at\n%s", m.SearchSourceFilesMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.SearchSourceFiles at\n%s with params: %#v", m.SearchSourceFilesMock.defaultExpectation.expectationOrigins.origin, *m.SearchSourceFilesMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcSearchSourceFiles != nil && afterSearchSourceFilesCounter < 1 {
+		m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.SearchSourceFiles at\n%s", m.funcSearchSourceFilesOrigin)
+	}
+
+	if !m.SearchSourceFilesMock.invocationsDone() && afterSearchSourceFilesCounter > 0 {
+		m.t.Errorf("Expected %d calls to ArtifactPublicServiceClientMock.SearchSourceFiles at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.SearchSourceFilesMock.expectedInvocations), m.SearchSourceFilesMock.expectedInvocationsOrigin, afterSearchSourceFilesCounter)
+	}
+}
+
 type mArtifactPublicServiceClientMockSimilarityChunksSearch struct {
 	optional           bool
 	mock               *ArtifactPublicServiceClientMock
@@ -7362,6 +8130,10 @@ func (m *ArtifactPublicServiceClientMock) MinimockFinish() {
 
 			m.MinimockReadinessInspect()
 
+			m.MinimockSearchChunksInspect()
+
+			m.MinimockSearchSourceFilesInspect()
+
 			m.MinimockSimilarityChunksSearchInspect()
 
 			m.MinimockUpdateCatalogInspect()
@@ -7407,6 +8179,8 @@ func (m *ArtifactPublicServiceClientMock) minimockDone() bool {
 		m.MinimockProcessCatalogFilesDone() &&
 		m.MinimockQuestionAnsweringDone() &&
 		m.MinimockReadinessDone() &&
+		m.MinimockSearchChunksDone() &&
+		m.MinimockSearchSourceFilesDone() &&
 		m.MinimockSimilarityChunksSearchDone() &&
 		m.MinimockUpdateCatalogDone() &&
 		m.MinimockUpdateChunkDone() &&

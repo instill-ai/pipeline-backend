@@ -122,15 +122,14 @@ func (s *service) GetNamespaceByID(ctx context.Context, namespaceID string) (res
 // Helper methods
 func (s *service) convertPipelineRunToPB(run datamodel.PipelineRun) (*pipelinepb.PipelineRun, error) {
 	result := &pipelinepb.PipelineRun{
-		PipelineUid:     run.PipelineUID.String(),
-		PipelineId:      &run.Pipeline.ID,
-		NamespaceId:     run.Pipeline.NamespaceID,
-		PipelineRunUid:  run.PipelineTriggerUID.String(),
-		PipelineVersion: run.PipelineVersion,
-		Status:          runpb.RunStatus(run.Status),
-		Source:          runpb.RunSource(run.Source),
-		StartTime:       timestamppb.New(run.StartedTime),
-		Error:           run.Error.Ptr(),
+		PipelineId:          &run.Pipeline.ID,
+		PipelineNamespaceId: run.Pipeline.NamespaceID,
+		PipelineRunUid:      run.PipelineTriggerUID.String(),
+		PipelineVersion:     run.PipelineVersion,
+		Status:              runpb.RunStatus(run.Status),
+		Source:              runpb.RunSource(run.Source),
+		StartTime:           timestamppb.New(run.StartedTime),
+		Error:               run.Error.Ptr(),
 	}
 
 	if run.TotalDuration.Valid {

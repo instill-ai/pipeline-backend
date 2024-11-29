@@ -87,6 +87,7 @@ type Service interface {
 	GetNamespaceConnection(context.Context, *pb.GetNamespaceConnectionRequest) (*pb.Connection, error)
 	ListNamespaceConnections(context.Context, *pb.ListNamespaceConnectionsRequest) (*pb.ListNamespaceConnectionsResponse, error)
 	ListPipelineIDsByConnectionID(context.Context, *pb.ListPipelineIDsByConnectionIDRequest) (*pb.ListPipelineIDsByConnectionIDResponse, error)
+	GetConnectionByUIDAdmin(context.Context, uuid.UUID, pb.View) (*pb.Connection, error)
 }
 
 // TriggerResult defines a new type to encapsulate the stream data
