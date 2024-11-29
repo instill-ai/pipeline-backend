@@ -25,6 +25,7 @@ type IExecution interface {
 	GetComponent() IComponent
 	GetComponentID() string
 	UsesInstillCredentials() bool
+	FillInDefaultValues(input any) error
 
 	Execute(context.Context, []*Job) error
 }
