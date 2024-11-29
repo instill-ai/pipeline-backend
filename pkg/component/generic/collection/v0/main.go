@@ -13,13 +13,14 @@ import (
 )
 
 const (
-	taskAssign       = "TASK_ASSIGN"
-	taskUnion        = "TASK_UNION"
-	taskIntersection = "TASK_INTERSECTION"
-	taskDifference   = "TASK_DIFFERENCE"
-	taskAppend       = "TASK_APPEND"
-	taskConcat       = "TASK_CONCAT"
-	taskSplit        = "TASK_SPLIT"
+	taskAppend              = "TASK_APPEND"
+	taskAssign              = "TASK_ASSIGN"
+	taskConcat              = "TASK_CONCAT"
+	taskDifference          = "TASK_DIFFERENCE"
+	taskIntersection        = "TASK_INTERSECTION"
+	taskSplit               = "TASK_SPLIT"
+	taskSymmetricDifference = "TASK_SYMMETRIC_DIFFERENCE"
+	taskUnion               = "TASK_UNION"
 )
 
 var (
@@ -60,20 +61,22 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	e := &execution{ComponentExecution: x}
 
 	switch x.Task {
-	case taskAssign:
-		e.execute = e.assign
-	case taskUnion:
-		e.execute = e.union
-	case taskIntersection:
-		e.execute = e.intersection
-	case taskDifference:
-		e.execute = e.difference
 	case taskAppend:
 		e.execute = e.append
+	case taskAssign:
+		e.execute = e.assign
 	case taskConcat:
 		e.execute = e.concat
+	case taskDifference:
+		e.execute = e.difference
+	case taskIntersection:
+		e.execute = e.intersection
 	case taskSplit:
 		e.execute = e.split
+	case taskSymmetricDifference:
+		e.execute = e.symmetricDifference
+	case taskUnion:
+		e.execute = e.union
 	default:
 		return nil, errmsg.AddMessage(
 			fmt.Errorf("not supported task: %s", x.Task),

@@ -1,15 +1,16 @@
 {
-  "TASK_ASSIGN": {
-    "instillShortDescription": "Assign the data.",
+  "TASK_APPEND": {
+    "instillShortDescription": "Append values to create or extend an array, or add key-value pairs to an object.",
     "input": {
-      "description": "Input.",
+      "description": "Input parameters for append operation.",
       "instillEditOnNodeFields": [
-        "data"
+        "data",
+        "value"
       ],
       "instillUIOrder": 0,
       "properties": {
         "data": {
-          "description": "Specify the data you want to assign.",
+          "description": "The input data. If it's an array, the value will be appended. If it's an object, the key-value pairs from value will be added. If it's a primitive type (string, number, boolean), it will be converted to a single-element array before appending.",
           "instillAcceptFormats": [
             "*"
           ],
@@ -20,25 +21,39 @@
             "reference",
             "template"
           ],
-          "required": [],
           "title": "Data"
+        },
+        "value": {
+          "description": "The value to append. For arrays: the value will be appended as a new element. For objects: if value is an object, its key-value pairs will be added to the input object. For primitives: value will be appended to create/extend an array.",
+          "instillAcceptFormats": [
+            "*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Value"
         }
       },
       "required": [
-        "data"
+        "data",
+        "value"
       ],
       "title": "Input",
       "type": "object"
     },
     "output": {
-      "description": "Output.",
+      "description": "Output containing the modified data structure.",
       "instillEditOnNodeFields": [
         "data"
       ],
       "instillUIOrder": 0,
       "properties": {
         "data": {
-          "description": "The data you assign.",
+          "description": "The resulting data structure after the append operation. Will be either an array (if input was array or primitive) or an object (if input was object). Examples: [1,2,3], {'name':'John', 'age':25}, or ['hello','world'].",
           "instillEditOnNodeFields": [],
           "instillFormat": "*",
           "instillUIOrder": 0,
@@ -53,35 +68,19 @@
       "type": "object"
     }
   },
-  "TASK_APPEND": {
-    "instillShortDescription": "Add data to the end of an array.",
+  "TASK_ASSIGN": {
+    "instillShortDescription": "Assign a value to a specific path in a data structure.",
     "input": {
-      "description": "Input.",
+      "description": "Input parameters for assign operation.",
       "instillEditOnNodeFields": [
-        "array",
-        "element"
+        "data",
+        "path",
+        "value"
       ],
       "instillUIOrder": 0,
       "properties": {
-        "array": {
-          "description": "Specify the array you want to append to.",
-          "instillAcceptFormats": [
-            "array:*"
-          ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "items": {},
-          "required": [],
-          "title": "Array",
-          "type": "array"
-        },
-        "element": {
-          "description": "Specify the data you want to append.",
+        "data": {
+          "description": "The input data structure to modify. Can be an array, object, or primitive value.",
           "instillAcceptFormats": [
             "*"
           ],
@@ -92,244 +91,133 @@
             "reference",
             "template"
           ],
-          "required": [],
+          "title": "Data"
+        },
+        "path": {
+          "description": "The path where to assign the value. Use dot notation for nested objects and [n] for array indices. Examples: 'users.[0].name', '.[0].key', 'metadata.tags.[2]'.",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "type": "string",
+          "title": "Path"
+        },
+        "value": {
+          "description": "The value to assign at the specified path. Can be any type (string, number, boolean, array, or object).",
+          "instillAcceptFormats": [
+            "*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "data",
+        "path",
+        "value"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output containing the modified data structure.",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "The resulting data structure after the assign operation.",
+          "instillEditOnNodeFields": [],
+          "instillFormat": "*",
+          "instillUIOrder": 0,
           "title": "Data"
         }
       },
       "required": [
-        "array",
-        "element"
-      ],
-      "title": "Input",
-      "type": "object"
-    },
-    "output": {
-      "description": "Output.",
-      "instillEditOnNodeFields": [
-        "array"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "array": {
-          "description": "A updated array with the specified data appended to the end of it.",
-          "instillEditOnNodeFields": [],
-          "instillFormat": "array:*",
-          "instillUIOrder": 0,
-          "required": [],
-          "title": "Array",
-          "type": "array"
-        }
-      },
-      "required": [
-        "array"
-      ],
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_UNION": {
-    "instillShortDescription": "Find the union of the sets",
-    "input": {
-      "description": "Input.",
-      "instillEditOnNodeFields": [
-        "sets"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "sets": {
-          "description": "Specify the sets you want to union.",
-          "instillAcceptFormats": [
-            "array:array:*"
-          ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "items": {},
-          "required": [],
-          "title": "Array",
-          "type": "array"
-        }
-      },
-      "required": [
-        "sets"
-      ],
-      "title": "Input",
-      "type": "object"
-    },
-    "output": {
-      "description": "Output.",
-      "instillEditOnNodeFields": [
-        "set"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "set": {
-          "description": "The union set.",
-          "instillEditOnNodeFields": [],
-          "instillFormat": "array:*",
-          "instillUIOrder": 0,
-          "required": [],
-          "title": "Array",
-          "type": "array"
-        }
-      },
-      "required": [
-        "set"
-      ],
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_INTERSECTION": {
-    "instillShortDescription": "Find the intersection of the sets",
-    "input": {
-      "description": "Input.",
-      "instillEditOnNodeFields": [
-        "sets"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "sets": {
-          "description": "Specify the sets you want to intersect.",
-          "instillAcceptFormats": [
-            "array:array:*"
-          ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "items": {},
-          "required": [],
-          "title": "Array",
-          "type": "array"
-        }
-      },
-      "required": [
-        "sets"
-      ],
-      "title": "Input",
-      "type": "object"
-    },
-    "output": {
-      "description": "Output.",
-      "instillEditOnNodeFields": [
-        "set"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "set": {
-          "description": "The intersection set.",
-          "instillEditOnNodeFields": [],
-          "instillFormat": "array:*",
-          "instillUIOrder": 0,
-          "required": [],
-          "title": "Array",
-          "type": "array"
-        }
-      },
-      "required": [
-        "set"
-      ],
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_DIFFERENCE": {
-    "instillShortDescription": "Find the difference between the two sets, i.e. `set-a` \\ `set-b`, identifying the elements that are in `set-a` but not in `set-b`.",
-    "input": {
-      "description": "Input.",
-      "instillEditOnNodeFields": [
-        "set-a",
-        "set-b"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "set-a": {
-          "description": "Specify the set-a.",
-          "instillAcceptFormats": [
-            "array:*"
-          ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "items": {},
-          "required": [],
-          "title": "Array",
-          "type": "array"
-        },
-        "set-b": {
-          "description": "Specify the set-b.",
-          "instillAcceptFormats": [
-            "array:*"
-          ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "items": {},
-          "required": [],
-          "title": "Array",
-          "type": "array"
-        }
-      },
-      "required": [
-        "set-a",
-        "set-b"
-      ],
-      "title": "Input",
-      "type": "object"
-    },
-    "output": {
-      "description": "Output.",
-      "instillEditOnNodeFields": [
-        "set"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "set": {
-          "description": "The difference set.",
-          "instillEditOnNodeFields": [],
-          "instillFormat": "array:*",
-          "instillUIOrder": 0,
-          "required": [],
-          "title": "Array",
-          "type": "array"
-        }
-      },
-      "required": [
-        "set"
+        "data"
       ],
       "title": "Output",
       "type": "object"
     }
   },
   "TASK_CONCAT": {
-    "instillShortDescription": "Concatenate the arrays. i.e. `[1, 2] + [3, 4] = [1, 2, 3, 4]`",
+    "instillShortDescription": "Concatenate multiple arrays or merge multiple objects into a single collection.",
     "input": {
-      "description": "Input.",
+      "description": "Input parameters for concat operation. Can handle both arrays and objects.",
       "instillEditOnNodeFields": [
-        "arrays"
+        "data"
       ],
       "instillUIOrder": 0,
       "properties": {
-        "arrays": {
-          "description": "The arrays to be concatenated.",
+        "data": {
+          "description": "An array of arrays or objects to be concatenated/merged. For arrays: [[1, 2], [3, 4]] becomes [1, 2, 3, 4]. For objects: [{'a': 1}, {'b': 2}] becomes {'a': 1, 'b': 2}. Later values override earlier ones for objects.",
           "instillAcceptFormats": [
-            "array:array:*"
+            "array:*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "items": {},
+          "title": "Data",
+          "type": "array"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output containing the concatenated/merged result.",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "The resulting array or object after concat operation.",
+          "instillEditOnNodeFields": [],
+          "instillFormat": "*",
+          "instillUIOrder": 0,
+          "title": "Data"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DIFFERENCE": {
+    "instillShortDescription": "Find elements that exist in the first array or object but not in any of the other arrays or objects.",
+    "input": {
+      "description": "Input parameters for difference operation. Can handle both arrays and objects.",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "properties": {
+        "data": {
+          "description": "An array of arrays or objects to find the difference. The first element is compared against all subsequent elements. For example, given arrays [[1, 2, 3], [2, 3, 4], [3, 4, 5]], the result will be [1]. For objects, given [{'a': 1, 'b': 2}, {'b': 2, 'c': 3}], the result will be {'a': 1}.",
+          "instillAcceptFormats": [
+            "array:*"
           ],
           "instillUIMultiline": true,
           "instillUIOrder": 0,
@@ -340,51 +228,53 @@
           ],
           "items": {},
           "required": [],
-          "title": "Arrays",
+          "title": "Data",
           "type": "array"
         }
       },
       "required": [
-        "arrays"
+        "data"
       ],
       "title": "Input",
       "type": "object"
     },
     "output": {
-      "description": "Output.",
+      "description": "Output containing the difference result.",
       "instillEditOnNodeFields": [
-        "array"
+        "data"
       ],
       "instillUIOrder": 0,
       "properties": {
-        "array": {
-          "description": "The concatenated arrays.",
+        "data": {
+          "description": "The resulting array or object after the difference operation.",
           "instillEditOnNodeFields": [],
-          "instillFormat": "array:*",
+          "instillFormat": "*",
           "instillUIOrder": 0,
-          "required": [],
-          "title": "Array",
-          "type": "array"
+          "title": "Data"
         }
       },
       "required": [
-        "array"
+        "data"
       ],
       "title": "Output",
       "type": "object"
     }
   },
-  "TASK_SPLIT": {
-    "instillShortDescription": "Split the array into an array of arrays with group size. i.e. `[1, 2, 3, 4, 5, 6]` with group size 2 = `[[1, 2], [3, 4], [5, 6]]`. If the array length is not divisible by the group size, the last group will have fewer elements.",
+  "TASK_INTERSECTION": {
+    "instillShortDescription": "Find common elements that exist in all input arrays or objects.",
     "input": {
-      "description": "Input.",
+      "description": "Input parameters for intersection operation. Can handle both arrays and objects.",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
       "instillUIOrder": 0,
       "properties": {
-        "array": {
-          "description": "The array to be split.",
+        "data": {
+          "description": "An array of arrays or objects to find common elements. For arrays: given [[1, 2, 3], [2, 3, 4]], the result will be [2, 3]. For objects: given [{'a': 1, 'b': 2}, {'b': 2, 'c': 3}], the result will be {'b': 2}.",
           "instillAcceptFormats": [
             "array:*"
           ],
+          "instillUIMultiline": true,
           "instillUIOrder": 0,
           "instillUpstreamTypes": [
             "value",
@@ -392,12 +282,59 @@
             "template"
           ],
           "items": {},
-          "required": [],
-          "title": "Array",
+          "title": "Data",
           "type": "array"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output containing the intersection result.",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "The resulting array or object after the intersection operation.",
+          "instillEditOnNodeFields": [],
+          "instillFormat": "*",
+          "instillUIOrder": 0,
+          "title": "Data"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_SPLIT": {
+    "instillShortDescription": "Split arrays or objects into smaller chunks.",
+    "input": {
+      "description": "Input parameters for split operation.",
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "The source data to be split. Can be: 1) An array to split into groups 2) An object to split by property count (keys are sorted alphabetically for consistent ordering)",
+          "instillAcceptFormats": [
+            "*"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Data"
         },
-        "group-size": {
-          "description": "The size of each group.",
+        "size": {
+          "description": "Number of elements per group",
           "instillUIOrder": 1,
           "instillAcceptFormats": [
             "integer"
@@ -407,32 +344,139 @@
             "reference",
             "template"
           ],
-          "title": "Group Size",
+          "title": "Size",
           "type": "integer"
         }
       },
       "required": [
-        "array",
-        "group-size"
+        "data",
+        "size"
       ],
       "title": "Input",
       "type": "object"
     },
     "output": {
-      "description": "Output.",
+      "description": "Output containing the split results. For objects, the properties in each chunk maintain alphabetical ordering of keys.",
       "instillUIOrder": 1,
       "properties": {
-        "arrays": {
-          "description": "The array of arrays with group size.",
-          "instillFormat": "array:array:*",
+        "data": {
+          "description": "The resulting array after splitting. For arrays: array of subarrays. For objects: array of smaller objects with alphabetically ordered keys",
+          "instillFormat": "array:*",
           "instillUIOrder": 0,
-          "required": [],
-          "title": "Arrays",
+          "title": "Data",
           "type": "array"
         }
       },
       "required": [
-        "arrays"
+        "data"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_SYMMETRIC_DIFFERENCE": {
+    "instillShortDescription": "Find elements that exist in exactly one of the input arrays or objects, but not in multiple inputs.",
+    "input": {
+      "description": "Input parameters for symmetric difference operation. Can handle both arrays and objects.",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "An array of arrays or objects to find symmetric difference. For arrays: given [[1, 2], [2, 3]], the result will be [1, 3]. For objects: given [{'a': 1, 'b': 2}, {'b': 2, 'c': 3}], the result will be {'a': 1, 'c': 3}.",
+          "instillAcceptFormats": [
+            "array:*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "items": {},
+          "title": "Data",
+          "type": "array"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output containing the symmetric difference result.",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "The resulting array or object after the symmetric difference operation.",
+          "instillEditOnNodeFields": [],
+          "instillFormat": "*",
+          "instillUIOrder": 0,
+          "title": "Data"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_UNION": {
+    "instillShortDescription": "Find unique elements that exist in any of the input arrays or objects.",
+    "input": {
+      "description": "Input parameters for union operation. Can handle both arrays and objects.",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "An array of arrays or objects to find unique elements. For arrays: given [[1, 2], [2, 3]], the result will be [1, 2, 3]. For objects: given [{'a': 1, 'b': 2}, {'b': 2, 'c': 3}], the result will be {'a': 1, 'b': 2, 'c': 3}.",
+          "instillAcceptFormats": [
+            "array:*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "items": {},
+          "title": "Data",
+          "type": "array"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output containing the union result.",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "The resulting array or object after the union operation.",
+          "instillEditOnNodeFields": [],
+          "instillFormat": "*",
+          "instillUIOrder": 0,
+          "title": "Data"
+        }
+      },
+      "required": [
+        "data"
       ],
       "title": "Output",
       "type": "object"

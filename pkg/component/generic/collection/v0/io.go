@@ -5,16 +5,18 @@ import (
 )
 
 type appendInput struct {
-	Array   []format.Value `instill:"array"`
-	Element format.Value   `instill:"element"`
+	Data  format.Value `instill:"data"`
+	Value format.Value `instill:"value"`
 }
 
 type appendOutput struct {
-	Array []format.Value `instill:"array"`
+	Data format.Value `instill:"data"`
 }
 
 type assignInput struct {
-	Data format.Value `instill:"data"`
+	Data  format.Value `instill:"data"`
+	Path  string       `instill:"path"`
+	Value format.Value `instill:"value"`
 }
 
 type assignOutput struct {
@@ -22,43 +24,50 @@ type assignOutput struct {
 }
 
 type concatInput struct {
-	Arrays [][]format.Value `instill:"arrays"`
+	Data []format.Value `instill:"data"`
 }
 
 type concatOutput struct {
-	Array []format.Value `instill:"array"`
+	Data format.Value `instill:"data"`
 }
 
 type differenceInput struct {
-	SetA []format.Value `instill:"set-a"`
-	SetB []format.Value `instill:"set-b"`
+	Data []format.Value `instill:"data"`
 }
 
 type differenceOutput struct {
-	Set []format.Value `instill:"set"`
+	Data format.Value `instill:"data"`
 }
 
 type intersectionInput struct {
-	Sets [][]format.Value `instill:"sets"`
+	Data []format.Value `instill:"data"`
 }
 
 type intersectionOutput struct {
-	Set []format.Value `instill:"set"`
+	Data format.Value `instill:"data"`
 }
 
 type splitInput struct {
-	Array     []format.Value `instill:"array"`
-	GroupSize int            `instill:"group-size"`
+	Data format.Value `instill:"data"`
+	Size int          `instill:"size"`
 }
 
 type splitOutput struct {
-	Arrays [][]format.Value `instill:"arrays"`
+	Data format.Value `instill:"data"`
+}
+
+type symmetricDifferenceInput struct {
+	Data []format.Value `instill:"data"`
+}
+
+type symmetricDifferenceOutput struct {
+	Data format.Value `instill:"data"`
 }
 
 type unionInput struct {
-	Sets [][]format.Value `instill:"sets"`
+	Data []format.Value `instill:"data"`
 }
 
 type unionOutput struct {
-	Set []format.Value `instill:"set"`
+	Data format.Value `instill:"data"`
 }
