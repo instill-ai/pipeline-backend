@@ -31,7 +31,7 @@ func NewSetupReader(wfm memory.WorkflowMemory, compID string, conditionMap map[i
 
 func (i *setupReader) Read(ctx context.Context) (setups []*structpb.Struct, err error) {
 	for idx := range len(i.conditionMap) {
-		setupTemplate, err := i.wfm.GetComponentData(ctx, i.conditionMap[idx], i.compID, memory.ComponentDataSetup)
+		setupTemplate, err := i.wfm.GetComponentData(ctx, i.conditionMap[idx], i.compID, memory.ComponentDataSetupTemplate)
 		if err != nil {
 			return nil, err
 		}
@@ -72,7 +72,7 @@ func NewInputReader(wfm memory.WorkflowMemory, compID string, originalIdx int, b
 // structpb is not suitable for handling binary data and will be phased out gradually.
 func (i *inputReader) read(ctx context.Context) (inputVal format.Value, err error) {
 
-	inputTemplate, err := i.wfm.GetComponentData(ctx, i.originalIdx, i.compID, memory.ComponentDataInput)
+	inputTemplate, err := i.wfm.GetComponentData(ctx, i.originalIdx, i.compID, memory.ComponentDataInputTemplate)
 	if err != nil {
 		return nil, err
 	}

@@ -991,10 +991,10 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 				childWFM.InitComponent(ctx, e, compID)
 
 				inputVal = setIteratorIndex(inputVal, param.Index, rangeIndex)
-				if err := childWFM.SetComponentData(ctx, e, compID, memory.ComponentDataInput, inputVal); err != nil {
+				if err := childWFM.SetComponentData(ctx, e, compID, memory.ComponentDataInputTemplate, inputVal); err != nil {
 					return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 				}
-				if err := childWFM.SetComponentData(ctx, e, compID, memory.ComponentDataSetup, setupVal); err != nil {
+				if err := childWFM.SetComponentData(ctx, e, compID, memory.ComponentDataSetupTemplate, setupVal); err != nil {
 					return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 				}
 			}
@@ -1287,7 +1287,7 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 			if err != nil {
 				return handleErr(fmt.Errorf("initializing pipeline input memory: %w", err))
 			}
-			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataInput, inputVal); err != nil {
+			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataInputTemplate, inputVal); err != nil {
 				return handleErr(fmt.Errorf("initializing pipeline input memory: %w", err))
 			}
 
@@ -1295,7 +1295,7 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 			if err != nil {
 				return handleErr(fmt.Errorf("initializing pipeline setup memory: %w", err))
 			}
-			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataSetup, setupVal); err != nil {
+			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataSetupTemplate, setupVal); err != nil {
 				return handleErr(fmt.Errorf("initializing pipeline setup memory: %w", err))
 			}
 		}

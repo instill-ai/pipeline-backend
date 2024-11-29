@@ -46,6 +46,11 @@ const (
 )
 
 const (
+	// Templates originate from the recipe and are used to render the actual
+	// input or setup data.
+	ComponentDataInputTemplate ComponentDataType = "input-template"
+	ComponentDataSetupTemplate ComponentDataType = "setup-template"
+
 	ComponentDataInput   ComponentDataType = "input"
 	ComponentDataOutput  ComponentDataType = "output"
 	ComponentDataElement ComponentDataType = "element"
@@ -258,9 +263,11 @@ func (wfm *workflowMemory) InitComponent(ctx context.Context, batchIdx int, comp
 
 	compMemory := data.Map{
 
-		string(ComponentDataInput):  data.Map{},
-		string(ComponentDataOutput): data.Map{},
-		string(ComponentDataSetup):  data.Map{},
+		string(ComponentDataInputTemplate): data.Map{},
+		string(ComponentDataSetupTemplate): data.Map{},
+		string(ComponentDataInput):         data.Map{},
+		string(ComponentDataOutput):        data.Map{},
+		string(ComponentDataSetup):         data.Map{},
 		string(ComponentDataError): data.Map{
 			"message": data.NewString(""),
 		},
