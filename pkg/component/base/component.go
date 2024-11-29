@@ -206,46 +206,100 @@ func convertDataSpecToCompSpec(dataSpec *structpb.Struct) (*structpb.Struct, err
 
 	isFreeform := checkFreeForm(compSpec)
 
-	if _, ok := compSpec.Fields["type"]; !ok && !isFreeform {
-		return nil, fmt.Errorf("type missing: %+v", compSpec)
-	} else if _, ok := compSpec.Fields["instillUpstreamTypes"]; !ok && compSpec.Fields["type"].GetStringValue() == "object" {
+	// Check if we have anyOf/allOf/oneOf before requiring type field
+	hasCompositeSchema := false
+	for _, field := range []string{"anyOf", "allOf", "oneOf"} {
+		if _, ok := compSpec.Fields[field]; ok {
+			hasCompositeSchema = true
+			break
+		}
+	}
 
-		if _, ok := compSpec.Fields["instillUIOrder"]; !ok {
-			compSpec.Fields["instillUIOrder"] = structpb.NewNumberValue(0)
+	if _, ok := compSpec.Fields["type"]; !ok && !isFreeform && !hasCompositeSchema {
+		return nil, fmt.Errorf("type missing: %+v", compSpec)
+	}
+
+	// Handle composite schemas (anyOf/allOf/oneOf)
+	for _, target := range []string{"allOf", "anyOf", "oneOf"} {
+		if fields, ok := compSpec.Fields[target]; ok {
+			for idx, schema := range fields.GetListValue().GetValues() {
+				converted, err := convertDataSpecToCompSpec(schema.GetStructValue())
+				if err != nil {
+					return nil, err
+				}
+				fields.GetListValue().Values[idx] = structpb.NewStructValue(converted)
+			}
 		}
+	}
+
+	if compSpec.Fields["type"] != nil && compSpec.Fields["type"].GetStringValue() == "object" {
+		// Always add required field for object type if missing
 		if _, ok := compSpec.Fields["required"]; !ok {
-			return nil, fmt.Errorf("required missing: %+v", compSpec)
+			compSpec.Fields["required"] = structpb.NewListValue(&structpb.ListValue{Values: []*structpb.Value{}})
 		}
+
 		if _, ok := compSpec.Fields["instillEditOnNodeFields"]; !ok {
 			compSpec.Fields["instillEditOnNodeFields"] = compSpec.Fields["required"]
 		}
 
 		if _, ok := compSpec.Fields["properties"]; ok {
 			for k, v := range compSpec.Fields["properties"].GetStructValue().AsMap() {
-				s, err := structpb.NewStruct(v.(map[string]any))
-				if err != nil {
-					return nil, err
+				switch val := v.(type) {
+				case map[string]any:
+					s, err := structpb.NewStruct(val)
+					if err != nil {
+						return nil, err
+					}
+					converted, err := convertDataSpecToCompSpec(s)
+					if err != nil {
+						return nil, err
+					}
+					compSpec.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(converted)
+				case []interface{}:
+					listValue := &structpb.ListValue{
+						Values: make([]*structpb.Value, len(val)),
+					}
+					for i, item := range val {
+						value, err := structpb.NewValue(item)
+						if err != nil {
+							return nil, err
+						}
+						listValue.Values[i] = value
+					}
+					compSpec.Fields["properties"].GetStructValue().Fields[k] = structpb.NewListValue(listValue)
+				case string, bool, float64, int64:
+					value, err := structpb.NewValue(val)
+					if err != nil {
+						return nil, err
+					}
+					compSpec.Fields["properties"].GetStructValue().Fields[k] = value
+				default:
+					return nil, fmt.Errorf("unsupported type: %T", v)
 				}
-				converted, err := convertDataSpecToCompSpec(s)
-				if err != nil {
-					return nil, err
-				}
-				compSpec.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(converted)
-
 			}
 		}
 		if _, ok := compSpec.Fields["patternProperties"]; ok {
 			for k, v := range compSpec.Fields["patternProperties"].GetStructValue().AsMap() {
-				s, err := structpb.NewStruct(v.(map[string]any))
-				if err != nil {
-					return nil, err
+				switch val := v.(type) {
+				case map[string]any:
+					s, err := structpb.NewStruct(val)
+					if err != nil {
+						return nil, err
+					}
+					converted, err := convertDataSpecToCompSpec(s)
+					if err != nil {
+						return nil, err
+					}
+					compSpec.Fields["patternProperties"].GetStructValue().Fields[k] = structpb.NewStructValue(converted)
+				case string, bool, float64, int64:
+					value, err := structpb.NewValue(val)
+					if err != nil {
+						return nil, err
+					}
+					compSpec.Fields["patternProperties"].GetStructValue().Fields[k] = value
+				default:
+					return nil, fmt.Errorf("unsupported type: %T", v)
 				}
-				converted, err := convertDataSpecToCompSpec(s)
-				if err != nil {
-					return nil, err
-				}
-				compSpec.Fields["patternProperties"].GetStructValue().Fields[k] = structpb.NewStructValue(converted)
-
 			}
 		}
 		for _, target := range []string{"allOf", "anyOf", "oneOf"} {
@@ -428,7 +482,6 @@ func generateComponentSpec(title string, tasks []*pb.ComponentTask, taskStructs 
 }
 
 func formatDataSpec(dataSpec *structpb.Struct) (*structpb.Struct, error) {
-	// var err error
 	compSpec := proto.Clone(dataSpec).(*structpb.Struct)
 	if compSpec == nil {
 		return compSpec, nil
@@ -446,40 +499,51 @@ func formatDataSpec(dataSpec *structpb.Struct) (*structpb.Struct, error) {
 	if _, ok := compSpec.Fields["type"]; !ok && !isFreeform {
 		return nil, fmt.Errorf("type missing: %+v", compSpec)
 	} else if compSpec.Fields["type"].GetStringValue() == "array" {
-
 		if _, ok := compSpec.Fields["instillUIOrder"]; !ok {
 			compSpec.Fields["instillUIOrder"] = structpb.NewNumberValue(0)
 		}
 
-		converted, err := formatDataSpec(compSpec.Fields["items"].GetStructValue())
-		if err != nil {
-			return nil, err
+		if items, ok := compSpec.Fields["items"]; ok {
+			switch items.Kind.(type) {
+			case *structpb.Value_StructValue:
+				converted, err := formatDataSpec(items.GetStructValue())
+				if err != nil {
+					return nil, err
+				}
+				compSpec.Fields["items"] = structpb.NewStructValue(converted)
+			case *structpb.Value_ListValue:
+				compSpec.Fields["items"] = items
+			default:
+				return nil, fmt.Errorf("unsupported type for items: %T", items.Kind)
+			}
 		}
-		compSpec.Fields["items"] = structpb.NewStructValue(converted)
 	} else if compSpec.Fields["type"].GetStringValue() == "object" {
-
 		if _, ok := compSpec.Fields["instillUIOrder"]; !ok {
 			compSpec.Fields["instillUIOrder"] = structpb.NewNumberValue(0)
 		}
 		if _, ok := compSpec.Fields["required"]; !ok {
-			return nil, fmt.Errorf("required missing: %+v", compSpec)
+			compSpec.Fields["required"] = structpb.NewListValue(&structpb.ListValue{Values: []*structpb.Value{}})
 		}
 		if _, ok := compSpec.Fields["instillEditOnNodeFields"]; !ok {
 			compSpec.Fields["instillEditOnNodeFields"] = compSpec.Fields["required"]
 		}
 
 		if _, ok := compSpec.Fields["properties"]; ok {
-			for k, v := range compSpec.Fields["properties"].GetStructValue().AsMap() {
-				s, err := structpb.NewStruct(v.(map[string]any))
-				if err != nil {
-					return nil, err
+			for k, v := range compSpec.Fields["properties"].GetStructValue().Fields {
+				switch v.Kind.(type) {
+				case *structpb.Value_StructValue:
+					converted, err := formatDataSpec(v.GetStructValue())
+					if err != nil {
+						return nil, err
+					}
+					compSpec.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(converted)
+				case *structpb.Value_ListValue:
+					// Keep list values as they are
+					compSpec.Fields["properties"].GetStructValue().Fields[k] = v
+				case *structpb.Value_StringValue, *structpb.Value_NumberValue, *structpb.Value_BoolValue:
+					// Keep primitive values as they are
+					compSpec.Fields["properties"].GetStructValue().Fields[k] = v
 				}
-				converted, err := formatDataSpec(s)
-				if err != nil {
-					return nil, err
-				}
-				compSpec.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(converted)
-
 			}
 		}
 		if _, ok := compSpec.Fields["patternProperties"]; ok {
@@ -892,36 +956,9 @@ func (c *Component) refineResourceSpec(resourceSpec *structpb.Struct) (*structpb
 
 	if _, ok := spec.Fields["properties"]; ok {
 		for k, v := range spec.Fields["properties"].GetStructValue().AsMap() {
-			s, err := structpb.NewStruct(v.(map[string]any))
-			if err != nil {
-				return nil, err
-			}
-			converted, err := c.refineResourceSpec(s)
-			if err != nil {
-				return nil, err
-			}
-			spec.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(converted)
-
-		}
-	}
-	if _, ok := spec.Fields["patternProperties"]; ok {
-		for k, v := range spec.Fields["patternProperties"].GetStructValue().AsMap() {
-			s, err := structpb.NewStruct(v.(map[string]any))
-			if err != nil {
-				return nil, err
-			}
-			converted, err := c.refineResourceSpec(s)
-			if err != nil {
-				return nil, err
-			}
-			spec.Fields["patternProperties"].GetStructValue().Fields[k] = structpb.NewStructValue(converted)
-
-		}
-	}
-	for _, target := range []string{"allOf", "anyOf", "oneOf"} {
-		if _, ok := spec.Fields[target]; ok {
-			for idx, item := range spec.Fields[target].GetListValue().AsSlice() {
-				s, err := structpb.NewStruct(item.(map[string]any))
+			switch val := v.(type) {
+			case map[string]any:
+				s, err := structpb.NewStruct(val)
 				if err != nil {
 					return nil, err
 				}
@@ -929,7 +966,68 @@ func (c *Component) refineResourceSpec(resourceSpec *structpb.Struct) (*structpb
 				if err != nil {
 					return nil, err
 				}
-				spec.Fields[target].GetListValue().AsSlice()[idx] = structpb.NewStructValue(converted)
+				spec.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(converted)
+			case string, bool, float64, int64:
+				// Handle primitive types directly
+				value, err := structpb.NewValue(val)
+				if err != nil {
+					return nil, err
+				}
+				spec.Fields["properties"].GetStructValue().Fields[k] = value
+			default:
+				return nil, fmt.Errorf("unsupported type: %T", v)
+			}
+		}
+	}
+	if _, ok := spec.Fields["patternProperties"]; ok {
+		for k, v := range spec.Fields["patternProperties"].GetStructValue().AsMap() {
+			switch val := v.(type) {
+			case map[string]any:
+				s, err := structpb.NewStruct(val)
+				if err != nil {
+					return nil, err
+				}
+				converted, err := c.refineResourceSpec(s)
+				if err != nil {
+					return nil, err
+				}
+				spec.Fields["patternProperties"].GetStructValue().Fields[k] = structpb.NewStructValue(converted)
+			case string, bool, float64, int64:
+				// Handle primitive types directly
+				value, err := structpb.NewValue(val)
+				if err != nil {
+					return nil, err
+				}
+				spec.Fields["patternProperties"].GetStructValue().Fields[k] = value
+			default:
+				return nil, fmt.Errorf("unsupported type: %T", v)
+			}
+		}
+	}
+	for _, target := range []string{"allOf", "anyOf", "oneOf"} {
+		if _, ok := spec.Fields[target]; ok {
+			for idx, item := range spec.Fields[target].GetListValue().AsSlice() {
+				switch val := item.(type) {
+				case map[string]any:
+					s, err := structpb.NewStruct(val)
+					if err != nil {
+						return nil, err
+					}
+					converted, err := c.refineResourceSpec(s)
+					if err != nil {
+						return nil, err
+					}
+					spec.Fields[target].GetListValue().AsSlice()[idx] = structpb.NewStructValue(converted)
+				case string, bool, float64, int64:
+					// Handle primitive types directly
+					value, err := structpb.NewValue(val)
+					if err != nil {
+						return nil, err
+					}
+					spec.Fields[target].GetListValue().AsSlice()[idx] = value
+				default:
+					return nil, fmt.Errorf("unsupported type: %T", item)
+				}
 			}
 		}
 	}
