@@ -20,21 +20,21 @@ type FindProspectsInput struct {
 // Company is the company information to find prospects for.
 type Company struct {
 	// Name is the name of the company.
-	Names []string `instill:"names,omitempty"`
+	Names []*string `instill:"names"`
 	// RevenueSize is the revenue size of the company.
-	RevenueSize RevenueSize `instill:"revenue-size,omitempty"`
+	RevenueSize *RevenueSize `instill:"revenue-size"`
 	// Countries is the list of countries the company operates in.
-	Countries []string `instill:"countries,omitempty"`
+	Countries []*string `instill:"countries"`
 	// States is the list of states the company operates in.
-	States []string `instill:"states,omitempty"`
+	States []*string `instill:"states"`
 	// Cities is the list of cities the company operates in.
-	Cities []string `instill:"cities,omitempty"`
+	Cities []*string `instill:"cities"`
 	// Industries is the list of industries the company are.
-	Industries []string `instill:"industries,omitempty"`
+	Industries []*string `instill:"industries"`
 	// Descriptions is the list of descriptions of the company.
-	Descriptions []string `instill:"descriptions,omitempty"`
+	Descriptions []*string `instill:"descriptions"`
 	// Technologies is the list of technologies the company uses.
-	Technologies []string `instill:"technologies,omitempty"`
+	Technologies []*string `instill:"technologies"`
 }
 
 // RevenueSize is the revenue size of the company.
@@ -44,17 +44,17 @@ type RevenueSize struct {
 	// Max is the maximum revenue size.
 	Max int `instill:"max"`
 	// Description is the description of the revenue size.
-	Description string `instill:"description,omitempty"`
+	Description *string `instill:"description"`
 }
 
 // FilterBy is the filter to apply to the prospects.
 type FilterBy struct {
 	// JobTitle is the job title to filter by.
-	JobTitle string `instill:"job-title,omitempty"`
+	JobTitle *string `instill:"job-title"`
 	// Seniorities is the seniorities to filter by.
-	Seniorities []string `instill:"seniorities,omitempty"`
+	Seniorities []*string `instill:"seniorities"`
 	// Function is the function to filter by.
-	Function string `instill:"function,omitempty"`
+	Function *string `instill:"function"`
 
 	jobTitleRegex *regexp.Regexp
 	functionRegex *regexp.Regexp

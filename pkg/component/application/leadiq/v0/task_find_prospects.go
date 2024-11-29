@@ -30,6 +30,7 @@ func (e *execution) executeFindProspects(ctx context.Context, job *base.Job) err
 	}
 
 	flatAdvancedSearchIn := buildFlatAdvancedSearchInput(inputStruct)
+
 	flatAdvancedSearchResp := flatAdvancedSearchResp{}
 	if err := e.sendRequest(ctx, client, logger, flatAdvancedSearchQuery, flatAdvancedSearchIn, &flatAdvancedSearchResp); err != nil {
 		msg := fmt.Sprintf("LeadIQ API result error: %v", err)
@@ -76,7 +77,7 @@ func (e *execution) executeFindProspects(ctx context.Context, job *base.Job) err
 			RevenueSize: RevenueSize{
 				Min:         person.Company.RevenueRange.Start,
 				Max:         person.Company.RevenueRange.End,
-				Description: person.Company.RevenueRange.Description,
+				Description: &person.Company.RevenueRange.Description,
 			},
 		}
 		prospects = append(prospects, prospect)
@@ -187,16 +188,15 @@ func (e *execution) sendRequest(ctx context.Context, client *graphql.Client, log
 func buildFlatAdvancedSearchInput(in FindProspectsInput) map[string]interface{} {
 	companyFilter := make(map[string]interface{})
 
-	// Now, we don't support optional fields in the Console/API input.
-	// So, we set the default value with the " " string.
-	// If it is the default value, it means the users don't provide any information.
-	// So, we won't add the field to the companyFilter.
-	filterNonBlank := func(slice []string) []string {
-		result := []string{}
+	filterNonBlank := func(slice []*string) []*string {
+		result := []*string{}
 		for _, s := range slice {
-			trimmed := strings.TrimSpace(s)
+			if s == nil {
+				continue
+			}
+			trimmed := strings.TrimSpace(*s)
 			if trimmed != "" {
-				result = append(result, trimmed)
+				result = append(result, &trimmed)
 			}
 		}
 		return result
@@ -262,14 +262,14 @@ func buildSearchPeopleInput(prospect Prospect) map[string]interface{} {
 
 func (f *FilterBy) compile() error {
 	var err error
-	if f.JobTitle != "" {
-		f.jobTitleRegex, err = regexp.Compile(f.JobTitle)
+	if f.JobTitle != nil {
+		f.jobTitleRegex, err = regexp.Compile(*f.JobTitle)
 		if err != nil {
 			return fmt.Errorf("compiling job title filter: %w", err)
 		}
 	}
-	if f.Function != "" {
-		f.functionRegex, err = regexp.Compile(f.Function)
+	if f.Function != nil {
+		f.functionRegex, err = regexp.Compile(*f.Function)
 		if err != nil {
 			return fmt.Errorf("compiling seniority filter: %w", err)
 		}
@@ -284,7 +284,7 @@ func (f *FilterBy) beforeAPICallingMatch(person person) bool {
 	if len(f.Seniorities) > 0 {
 		found := false
 		for _, seniority := range f.Seniorities {
-			if seniority == person.Seniority {
+			if *seniority == person.Seniority {
 				found = true
 				break
 			}

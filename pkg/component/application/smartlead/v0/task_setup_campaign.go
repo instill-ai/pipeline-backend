@@ -131,9 +131,9 @@ func buildGeneralSettingReq(input setupCampaignInput) setupGeneralCampaignReq {
 
 type setupGeneralCampaignReq struct {
 	TrackSettings               []string `json:"track_settings,omitempty"`
-	StopLeadSettings            string   `json:"stop_lead_settings,omitempty"`
+	StopLeadSettings            *string  `json:"stop_lead_settings,omitempty"`
 	SendAsPlainText             bool     `json:"send_as_plain_text,omitempty"`
-	FollowUpPercentage          int      `json:"follow_up_percentage,omitempty"`
+	FollowUpPercentage          *int     `json:"follow_up_percentage,omitempty"`
 	AddUnsubscribeTag           bool     `json:"add_unsubscribe_tag,omitempty"`
 	IgnoreSsMailboxSendingLimit bool     `json:"ignore_ss_mailbox_sending_limit,omitempty"`
 }

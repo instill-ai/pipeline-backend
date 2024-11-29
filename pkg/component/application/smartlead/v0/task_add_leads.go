@@ -119,11 +119,11 @@ type addLeadsReq struct {
 }
 
 type leadReq struct {
-	FirstName    string            `json:"first_name"`
-	LastName     string            `json:"last_name"`
+	FirstName    *string           `json:"first_name,omitempty"`
+	LastName     *string           `json:"last_name,omitempty"`
 	Email        string            `json:"email"`
-	CompanyName  string            `json:"company_name"`
-	Location     string            `json:"location"`
+	CompanyName  *string           `json:"company_name,omitempty"`
+	Location     *string           `json:"location,omitempty"`
 	CustomFields map[string]string `json:"custom_fields"`
 }
 

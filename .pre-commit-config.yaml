@@ -31,3 +31,10 @@ repos:
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
+  - repo: local
+    hooks:
+      - id: generate-docs
+        name: Generate Docs
+        entry: bash -c 'make gen-component-doc'
+        language: system
+        files: ^pkg/component/.*\.(json|mdx)$
