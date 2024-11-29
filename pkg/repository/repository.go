@@ -80,6 +80,7 @@ type Repository interface {
 	UpdateNamespaceConnectionByUID(context.Context, uuid.UUID, *datamodel.Connection) (*datamodel.Connection, error)
 	DeleteNamespaceConnectionByID(_ context.Context, nsUID uuid.UUID, id string) error
 	GetNamespaceConnectionByID(_ context.Context, nsUID uuid.UUID, id string) (*datamodel.Connection, error)
+	GetConnectionByUID(context.Context, uuid.UUID) (*datamodel.Connection, error)
 	ListNamespaceConnections(context.Context, ListNamespaceConnectionsParams) (ConnectionList, error)
 	ListPipelineIDsByConnectionID(context.Context, ListPipelineIDsByConnectionIDParams) (PipelinesByConnectionList, error)
 
@@ -1388,6 +1389,18 @@ func (r *repository) GetNamespaceConnectionByID(ctx context.Context, nsUID uuid.
 	q := db.Preload("Integration").Where("namespace_uid = ? AND id = ?", nsUID, id)
 	conn := new(datamodel.Connection)
 	if err := q.First(&conn).Error; err != nil {
+		return nil, r.toDomainErr(err)
+	}
+
+	return conn, nil
+}
+
+func (r *repository) GetConnectionByUID(ctx context.Context, uid uuid.UUID) (*datamodel.Connection, error) {
+	db := r.db.WithContext(ctx)
+
+	q := db.Preload("Integration")
+	conn := new(datamodel.Connection)
+	if err := q.First(&conn, uid).Error; err != nil {
 		return nil, r.toDomainErr(err)
 	}
 

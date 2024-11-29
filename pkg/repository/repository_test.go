@@ -224,7 +224,7 @@ func TestRepository_Connection(t *testing.T) {
 
 	// Need to load and store component definitions as they're referenced by
 	// connections.
-	cds := componentstore.Init(logger, nil, nil)
+	cds := componentstore.Init(logger, nil, nil, nil)
 	openAI, err := cds.GetDefinitionByID("openai", nil, nil)
 	c.Assert(err, qt.IsNil)
 
@@ -319,19 +319,23 @@ func TestRepository_Connection(t *testing.T) {
 			c.Check(inserted.Method, qt.ContentEquals, method)
 			c.Check(inserted.Integration.Title, qt.Not(qt.HasLen), 0)
 
-			fetched, err := repo.GetNamespaceConnectionByID(ctx, conn.NamespaceUID, conn.ID)
-			c.Check(err, qt.IsNil)
-
 			cmp := qt.CmpEquals(
 				cmpopts.EquateApproxTime(time.Millisecond),
 				cmpopts.IgnoreFields(datamodel.Connection{}, "Integration"),
 			)
-			c.Check(fetched, cmp, inserted)
+
+			fetchedByID, err := repo.GetNamespaceConnectionByID(ctx, conn.NamespaceUID, conn.ID)
+			c.Check(err, qt.IsNil)
+			c.Check(fetchedByID, cmp, inserted)
 
 			// Query should preload Integration to avoid fetching it later in order
 			// to build the integration title and ID.
-			c.Check(fetched.Integration.Title, qt.Equals, integration.GetTitle())
-			c.Check(fetched.Integration.ID, qt.Equals, integration.GetId())
+			c.Check(fetchedByID.Integration.Title, qt.Equals, integration.GetTitle())
+			c.Check(fetchedByID.Integration.ID, qt.Equals, integration.GetId())
+
+			fetchedByUID, err := repo.GetConnectionByUID(ctx, inserted.UID)
+			c.Check(err, qt.IsNil)
+			c.Check(fetchedByUID, qt.ContentEquals, fetchedByID)
 		}
 
 		// Page one

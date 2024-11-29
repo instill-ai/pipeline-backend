@@ -270,3 +270,19 @@ func (h *PublicHandler) ListNamespaceConnections(ctx context.Context, req *pb.Li
 	)))
 	return resp, nil
 }
+
+// LookUpConnectionAdmin fetches a connection by UID.
+func (h *PrivateHandler) LookUpConnectionAdmin(ctx context.Context, req *pb.LookUpConnectionAdminRequest) (*pb.LookUpConnectionAdminResponse, error) {
+	view := pb.View_VIEW_BASIC
+	if req.GetView() != pb.View_VIEW_UNSPECIFIED {
+		view = req.GetView()
+	}
+
+	uid := uuid.FromStringOrNil(req.GetUid())
+	conn, err := h.service.GetConnectionByUIDAdmin(ctx, uid, view)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.LookUpConnectionAdminResponse{Connection: conn}, nil
+}
