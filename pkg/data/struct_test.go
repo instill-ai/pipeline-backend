@@ -245,6 +245,49 @@ func TestUnmarshal(t *testing.T) {
 		c.Assert(err, qt.ErrorMatches, "error setting default value for field bad-int:.*")
 	})
 
+	c.Run("Without default value", func(c *qt.C) {
+		type TestStruct struct {
+			StringField   format.String  `instill:"string-field"`
+			NumberField   format.Number  `instill:"number-field"`
+			BooleanField  format.Boolean `instill:"boolean-field"`
+			IntField      int            `instill:"int-field"`
+			UintField     uint           `instill:"uint-field"`
+			FloatField    float64        `instill:"float-field"`
+			BoolField     bool           `instill:"bool-field"`
+			StrField      string         `instill:"str-field"`
+			IntPtrField   *int           `instill:"int-ptr-field"`
+			UintPtrField  *uint          `instill:"uint-ptr-field"`
+			FloatPtrField *float64       `instill:"float-ptr-field"`
+			BoolPtrField  *bool          `instill:"bool-ptr-field"`
+			StrPtrField   *string        `instill:"str-ptr-field"`
+		}
+
+		input := Map{}
+		var result TestStruct
+		err := unmarshaler.Unmarshal(context.Background(), input, &result)
+
+		c.Assert(err, qt.IsNil)
+
+		// Test format.Value types have zero values
+		c.Assert(result.StringField, qt.IsNil)
+		c.Assert(result.NumberField, qt.IsNil)
+		c.Assert(result.BooleanField, qt.IsNil)
+
+		// Test primitive types have zero values
+		c.Assert(result.IntField, qt.Equals, 0)
+		c.Assert(result.UintField, qt.Equals, uint(0))
+		c.Assert(result.FloatField, qt.Equals, 0.0)
+		c.Assert(result.BoolField, qt.Equals, false)
+		c.Assert(result.StrField, qt.Equals, "")
+
+		// Test pointer primitive types are nil
+		c.Assert(result.IntPtrField, qt.IsNil)
+		c.Assert(result.UintPtrField, qt.IsNil)
+		c.Assert(result.FloatPtrField, qt.IsNil)
+		c.Assert(result.BoolPtrField, qt.IsNil)
+		c.Assert(result.StrPtrField, qt.IsNil)
+	})
+
 	c.Run("Error cases", func(c *qt.C) {
 		c.Run("Non-pointer input", func(c *qt.C) {
 			var s struct{}
