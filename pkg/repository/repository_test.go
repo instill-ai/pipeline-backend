@@ -732,7 +732,7 @@ func TestRepository_GetPaginatedPipelineRunsByRequester(t *testing.T) {
 		Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
 		RunnerUID:          user1,
 		RequesterUID:       namespace1,
-		StartedTime:        now.Add(-1 * time.Hour),
+		StartedTime:        now.Add(-2 * time.Hour),
 		TotalDuration:      null.IntFrom(42),
 		Components:         nil,
 	}

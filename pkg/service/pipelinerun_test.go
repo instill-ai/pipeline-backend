@@ -177,19 +177,11 @@ func TestService_ListPipelineRuns(t *testing.T) {
 
 			repo := repository.NewRepository(tx, redisClient)
 
-			svc := NewService(
-				repo,
-				nil,
-				nil,
-				nil,
-				nil,
-				mgmtPrivateClient,
-				mockMinio,
-				nil,
-				nil,
-				uuid.UUID{},
-				nil,
-			)
+			svc := NewService(ServiceConfig{
+				Repository:               repo,
+				MgmtPrivateServiceClient: mgmtPrivateClient,
+				MinioClient:              mockMinio,
+			})
 
 			ctx := context.Background()
 
@@ -397,19 +389,12 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 
 			repo := repository.NewRepository(tx, redisClient)
 
-			svc := NewService(
-				repo,
-				redisClient,
-				nil,
-				nil,
-				nil,
-				mgmtPrivateClient,
-				mockMinio,
-				nil,
-				nil,
-				uuid.UUID{},
-				nil,
-			)
+			svc := NewService(ServiceConfig{
+				Repository:               repo,
+				RedisClient:              redisClient,
+				MgmtPrivateServiceClient: mgmtPrivateClient,
+				MinioClient:              mockMinio,
+			})
 
 			ctx := context.Background()
 
@@ -504,19 +489,11 @@ func TestService_ListPipelineRunsByRequester(t *testing.T) {
 
 	repo := repository.NewRepository(tx, redisClient)
 
-	svc := NewService(
-		repo,
-		nil,
-		nil,
-		nil,
-		nil,
-		mgmtPrivateClient,
-		mockMinio,
-		nil,
-		nil,
-		uuid.UUID{},
-		nil,
-	)
+	svc := NewService(ServiceConfig{
+		Repository:               repo,
+		MgmtPrivateServiceClient: mgmtPrivateClient,
+		MinioClient:              mockMinio,
+	})
 
 	ctx := context.Background()
 
