@@ -1818,15 +1818,6 @@ func (s *service) checkTriggerPermission(ctx context.Context, pipeline *datamode
 	return nil
 }
 
-func (s *service) CheckPipelineEventCode(ctx context.Context, ns resource.Namespace, id string, code string) (bool, error) {
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ns.Permalink(), id, false, true)
-	if err != nil {
-		return false, errdomain.ErrNotFound
-	}
-
-	return dbPipeline.ShareCode == code, nil
-}
-
 func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, data []*pipelinepb.TriggerData, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {
 	ownerPermalink := ns.Permalink()
 
