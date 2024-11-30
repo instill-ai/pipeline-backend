@@ -10,13 +10,13 @@ type taskTextGenerationInput struct {
 	ChatHistory      []*textMessage             `instill:"chat-history"`
 	Model            string                     `instill:"model"`
 	SystemMessage    *string                    `instill:"system-message"`
-	Temperature      *float32                   `instill:"temperature"`
-	TopP             *float32                   `instill:"top-p"`
-	N                *int                       `instill:"n"`
+	Temperature      *float32                   `instill:"temperature,default=1"`
+	TopP             *float32                   `instill:"top-p,default=1"`
+	N                *int                       `instill:"n,default=1"`
 	Stop             *string                    `instill:"stop"`
 	MaxTokens        *int                       `instill:"max-tokens"`
-	PresencePenalty  *float32                   `instill:"presence-penalty"`
-	FrequencyPenalty *float32                   `instill:"frequency-penalty"`
+	PresencePenalty  *float32                   `instill:"presence-penalty,default=0"`
+	FrequencyPenalty *float32                   `instill:"frequency-penalty,default=0"`
 	ResponseFormat   *responseFormatInputStruct `instill:"response-format"`
 }
 
@@ -55,7 +55,7 @@ type taskSpeechRecognitionInput struct {
 	Audio       format.Audio `instill:"audio"`
 	Model       string       `instill:"model"`
 	Prompt      *string      `instill:"prompt"`
-	Temperature *float32     `instill:"temperature"`
+	Temperature *float32     `instill:"temperature,default=0"`
 	Language    *string      `instill:"language"`
 }
 
@@ -66,10 +66,10 @@ type taskSpeechRecognitionOutput struct {
 
 type taskTextToSpeechInput struct {
 	Text           string   `instill:"text"`
-	Model          string   `instill:"model"`
-	Voice          string   `instill:"voice"`
-	ResponseFormat *string  `instill:"response-format"`
-	Speed          *float32 `instill:"speed"`
+	Model          string   `instill:"model,default=tts-1"`
+	Voice          string   `instill:"voice,default=alloy"`
+	ResponseFormat *string  `instill:"response-format,default=mp3"`
+	Speed          *float32 `instill:"speed,default=1"`
 }
 
 type taskTextToSpeechOutput struct {
@@ -79,10 +79,10 @@ type taskTextToSpeechOutput struct {
 type taskTextToImageInput struct {
 	Prompt  string  `instill:"prompt"`
 	Model   string  `instill:"model"`
-	N       *int    `instill:"n"`
-	Quality *string `instill:"quality"`
-	Size    *string `instill:"size"`
-	Style   *string `instill:"style"`
+	N       *int    `instill:"n,default=1"`
+	Quality *string `instill:"quality,default=standard"`
+	Size    *string `instill:"size,default=1024x1024"`
+	Style   *string `instill:"style,default=vivid"`
 }
 
 type taskTextToImageOutput struct {

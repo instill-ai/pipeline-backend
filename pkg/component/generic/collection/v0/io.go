@@ -49,7 +49,7 @@ type intersectionOutput struct {
 
 type splitInput struct {
 	Data format.Value `instill:"data"`
-	Size int          `instill:"size"`
+	Size int          `instill:"size,default=1"`
 }
 
 type splitOutput struct {

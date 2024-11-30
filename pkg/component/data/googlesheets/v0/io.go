@@ -81,7 +81,7 @@ type taskDeleteSpreadsheetColumnOutput struct {
 type taskListRowsInput struct {
 	SharedLink string `instill:"shared-link"`
 	SheetName  string `instill:"sheet-name"`
-	StartRow   *int   `instill:"start-row"`
+	StartRow   *int   `instill:"start-row,default=2"`
 	EndRow     *int   `instill:"end-row"`
 }
 

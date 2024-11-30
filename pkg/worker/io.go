@@ -2,11 +2,9 @@ package worker
 
 import (
 	"context"
-	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
@@ -54,16 +52,14 @@ type inputReader struct {
 	wfm           memory.WorkflowMemory
 	originalIdx   int
 	binaryFetcher external.BinaryFetcher
-	execution     base.IExecution
 }
 
-func NewInputReader(wfm memory.WorkflowMemory, compID string, originalIdx int, binaryFetcher external.BinaryFetcher, execution base.IExecution) *inputReader {
+func NewInputReader(wfm memory.WorkflowMemory, compID string, originalIdx int, binaryFetcher external.BinaryFetcher) *inputReader {
 	return &inputReader{
 		compID:        compID,
 		wfm:           wfm,
 		originalIdx:   originalIdx,
 		binaryFetcher: binaryFetcher,
-		execution:     execution,
 	}
 }
 
@@ -114,10 +110,6 @@ func (i *inputReader) ReadData(ctx context.Context, input any) (err error) {
 	unmarshaler := data.NewUnmarshaler(i.binaryFetcher)
 	if err := unmarshaler.Unmarshal(ctx, inputVal, input); err != nil {
 		return err
-	}
-
-	if err := i.execution.FillInDefaultValues(input); err != nil {
-		return fmt.Errorf("filling default values: %w", err)
 	}
 
 	return nil

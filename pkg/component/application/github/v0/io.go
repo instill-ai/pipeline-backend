@@ -66,9 +66,9 @@ type getPullRequestOutput struct {
 
 type listIssuesInput struct {
 	RepoInfo
-	State         string `instill:"state"`
-	Sort          string `instill:"sort"`
-	Direction     string `instill:"direction"`
+	State         string `instill:"state,default=open"`
+	Sort          string `instill:"sort,default=created"`
+	Direction     string `instill:"direction,default=desc"`
 	Since         string `instill:"since"`
 	NoPullRequest bool   `instill:"no-pull-request"`
 	PageOptions
@@ -81,9 +81,9 @@ type listIssuesOutput struct {
 type listPullRequestsInput struct {
 	RepoInfo
 	PageOptions
-	State     string `instill:"state"`
-	Sort      string `instill:"sort"`
-	Direction string `instill:"direction"`
+	State     string `instill:"state,default=open"`
+	Sort      string `instill:"sort,default=created"`
+	Direction string `instill:"direction,default=desc"`
 }
 
 type listPullRequestsOutput struct {
@@ -92,10 +92,10 @@ type listPullRequestsOutput struct {
 
 type listReviewCommentsInput struct {
 	RepoInfo
-	PRNumber  int    `instill:"pr-number"`
-	Sort      string `instill:"sort"`
-	Direction string `instill:"direction"`
-	Since     string `instill:"since"`
+	PRNumber  int    `instill:"pr-number,default=0"`
+	Sort      string `instill:"sort,default=created"`
+	Direction string `instill:"direction,default=desc"`
+	Since     string `instill:"since,default=2021-01-01"`
 	PageOptions
 }
 

@@ -12,7 +12,7 @@ type FindProspectsInput struct {
 	// Company is the company information to find prospects for.
 	Company Company `instill:"company"`
 	// Limit is the maximum number of prospects to return.
-	Limit int `instill:"limit"`
+	Limit int `instill:"limit,default=10"`
 	// FilterBy is the filter to apply to the prospects.
 	FilterBy FilterBy `instill:"filter-by"`
 }
