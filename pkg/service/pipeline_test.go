@@ -92,10 +92,10 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 
 	repo.GetNamespacePipelineByIDMock.Return(&dataPipeline, nil)
 	repo.UpdateNamespacePipelineByUIDMock.Return(nil)
+	repo.GetPipelineByUIDMock.Return(&dataPipeline, nil)
 	repo.DeletePipelineTagsMock.Expect(ctx, uid, []string{"tag3"}).Return(nil)
 	repo.CreatePipelineTagsMock.Expect(ctx, uid, []string{"tag2"}).Return(nil)
 	repo.ListPipelineRunOnsMock.Expect(ctx, uid).Return(repository.PipelineRunOnList{}, nil)
-	repo.DeletePipelineRunOnMock.Expect(ctx, uid).Return(nil)
 
 	converter.ConvertPipelineToDBMock.Return(&newDataPipeline, nil)
 
