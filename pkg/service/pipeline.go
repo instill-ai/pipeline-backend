@@ -368,9 +368,47 @@ func (s *service) marshalEventSettings(ctx context.Context, ns resource.Namespac
 	return cfg, st, nil
 }
 
+func (s *service) configureRunOn(ctx context.Context, params configureRunOnParams) error {
+
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, params.pipelineUID, false, true)
+	if err != nil {
+		return err
+	}
+
+	switch {
+
+	// Case 1: Update unversioned pipeline and there is no existing release
+	case params.releaseUID == uuid.Nil && len(dbPipeline.Releases) == 0:
+		if err := s.clearRunOn(ctx, params); err != nil {
+			return err
+		}
+		if err := s.updateRunOn(ctx, params); err != nil {
+			return err
+		}
+		return nil
+
+	// Case 2: Update versioned pipeline
+	case params.releaseUID != uuid.Nil:
+		if err := s.clearRunOn(ctx, params); err != nil {
+			return err
+		}
+		if err := s.updateRunOn(ctx, params); err != nil {
+			return err
+		}
+		return nil
+
+	// Case 3: Update unversioned pipeline but there are existing releases
+	default:
+		fmt.Println("Case 3")
+		// Do nothing
+		return nil
+	}
+
+}
+
 func (s *service) clearRunOn(ctx context.Context, params configureRunOnParams) error {
 	// Unregister all webhooks from vendor
-	runOn, err := s.repository.ListPipelineRunOns(ctx, params.pipelineUID, params.releaseUID)
+	runOn, err := s.repository.ListPipelineRunOns(ctx, params.pipelineUID)
 	if err != nil {
 		return err
 	}
@@ -398,17 +436,15 @@ func (s *service) clearRunOn(ctx context.Context, params configureRunOnParams) e
 
 			}
 		}
-	}
-
-	// Delete all run ons
-	err = s.repository.DeletePipelineRunOn(ctx, params.pipelineUID, params.releaseUID)
-	if err != nil {
-		return err
+		err = s.repository.DeletePipelineRunOn(ctx, r.PipelineUID)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func (s *service) configureRunOn(ctx context.Context, params configureRunOnParams) error {
+func (s *service) updateRunOn(ctx context.Context, params configureRunOnParams) error {
 
 	if params.recipe == nil {
 		return nil
@@ -543,15 +579,6 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	dbPipeline, err = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, toUpdPipeline.Id, false, true)
 	if err != nil {
-		return nil, err
-	}
-
-	if err := s.clearRunOn(ctx, configureRunOnParams{
-		Namespace:   ns,
-		pipelineUID: dbPipeline.UID,
-		releaseUID:  uuid.Nil,
-		recipe:      existingPipeline.Recipe,
-	}); err != nil {
 		return nil, err
 	}
 

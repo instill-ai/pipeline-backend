@@ -104,9 +104,9 @@ type Repository interface {
 	UpdateComponentRun(ctx context.Context, pipelineTriggerUID, componentID string, componentRun *datamodel.ComponentRun) error
 
 	ListPipelineRunOnsByIdentifier(ctx context.Context, ComponentType string, Identifier base.Identifier) (PipelineRunOnList, error)
-	ListPipelineRunOns(ctx context.Context, pipelineUID, releaseUID uuid.UUID) (PipelineRunOnList, error)
+	ListPipelineRunOns(ctx context.Context, pipelineUID uuid.UUID) (PipelineRunOnList, error)
 	CreatePipelineRunOn(context.Context, *datamodel.PipelineRunOn) error
-	DeletePipelineRunOn(ctx context.Context, pipelineUID, releaseUID uuid.UUID) error
+	DeletePipelineRunOn(ctx context.Context, pipelineUID uuid.UUID) error
 
 	GetPaginatedPipelineRunsWithPermissions(ctx context.Context, requesterUID, pipelineUID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, isOwner bool) ([]datamodel.PipelineRun, int64, error)
 	GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx context.Context, pipelineRunID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy) ([]datamodel.ComponentRun, int64, error)
@@ -1646,19 +1646,19 @@ func (r *repository) GetPipelineRunOn(ctx context.Context, pipelineUID, releaseU
 	return runOn, nil
 }
 
-func (r *repository) DeletePipelineRunOn(ctx context.Context, pipelineUID, releaseUID uuid.UUID) error {
+func (r *repository) DeletePipelineRunOn(ctx context.Context, pipelineUID uuid.UUID) error {
 	r.PinUser(ctx, "pipeline_run_on")
 	db := r.CheckPinnedUser(ctx, r.db, "pipeline_run_on")
 	return db.Model(&datamodel.PipelineRunOn{}).
-		Where("pipeline_uid = ? AND release_uid = ?", pipelineUID, releaseUID).
+		Where("pipeline_uid = ?", pipelineUID).
 		Delete(&datamodel.PipelineRunOn{}).Error
 }
 
-func (r *repository) ListPipelineRunOns(ctx context.Context, pipelineUID, releaseUID uuid.UUID) (PipelineRunOnList, error) {
+func (r *repository) ListPipelineRunOns(ctx context.Context, pipelineUID uuid.UUID) (PipelineRunOnList, error) {
 	db := r.CheckPinnedUser(ctx, r.db, "pipeline_run_on")
 
 	var runOns []*datamodel.PipelineRunOn
-	err := db.Model(&datamodel.PipelineRunOn{}).Where("pipeline_uid = ? AND release_uid = ?", pipelineUID, releaseUID).Find(&runOns).Error
+	err := db.Model(&datamodel.PipelineRunOn{}).Where("pipeline_uid = ?", pipelineUID).Find(&runOns).Error
 	if err != nil {
 		return PipelineRunOnList{}, err
 	}
