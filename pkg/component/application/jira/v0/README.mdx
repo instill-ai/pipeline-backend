@@ -7,14 +7,14 @@ description: "Learn about how to set up a VDP Jira component https://github.com/
 
 The Jira component is an application component that allows users to do anything available on Jira.
 It can carry out the following tasks:
+- [Create Issue](#create-issue)
+- [Create Sprint](#create-sprint)
+- [Get Issue](#get-issue)
+- [Get Sprint](#get-sprint)
 - [List Boards](#list-boards)
 - [List Issues](#list-issues)
 - [List Sprints](#list-sprints)
-- [Get Issue](#get-issue)
-- [Get Sprint](#get-sprint)
-- [Create Issue](#create-issue)
 - [Update Issue](#update-issue)
-- [Create Sprint](#create-sprint)
 - [Update Sprint](#update-sprint)
 
 
@@ -56,6 +56,196 @@ ${connection.<my-connection-id>}`.
 
 
 ## Supported Tasks
+
+### Create Issue
+
+Create an issue in Jira.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CREATE_ISSUE` |
+| Project Key (required) | `project-key` | string | The key of the project, e.g. `INS`. |
+| [Issue Type](#create-issue-issue-type) (required) | `issue-type` | object | The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc. |
+| Summary | `summary` | string | The summary of the issue. |
+| Description | `description` | string | The description of the issue. |
+</div>
+
+
+
+
+<details>
+<summary>The <code>issue-type</code> Object </summary>
+
+<h4 id="create-issue-issue-type">Issue Type</h4>
+
+`issue-type` must fulfill one of the following schemas:
+
+<h5 id="create-issue-epic"><code>Epic</code></h5>
+
+Epic.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Issue Type | `issue-type` | string |  Must be `"Epic"`   |
+</div>
+
+<h5 id="create-issue-task"><code>Task</code></h5>
+
+Task.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Issue Type | `issue-type` | string |  Must be `"Task"`   |
+</div>
+
+<h5 id="create-issue-subtask"><code>Subtask</code></h5>
+
+Subtask.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Issue Type | `issue-type` | string |  Must be `"Subtask"`   |
+| Parent Key | `parent-key` | string |  The key of the parent issue, e.g. `JRA-1330`.  |
+</div>
+
+<h5 id="create-issue-other"><code>Other</code></h5>
+
+Other.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Issue Type | `custom-issue-type` | string |  The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc.  |
+| Issue Type | `issue-type` | string |  Must be `"Other"`   |
+</div>
+</details>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| ID | `id` | string | The ID of the issue. |
+| Key | `key` | string | The key of the issue, e.g. `JRA-1330`. |
+| Self | `self` | string | The URL of the issue. |
+| Fields | `fields` | object | The fields of the issue. All navigable and Agile fields are returned. |
+| Issue Type (optional) | `issue-type` | string | The type of the issue, can be: `Task`, `Epic`. |
+| Summary (optional) | `summary` | string | The summary of the issue. |
+| Description (optional) | `description` | string | The description of the issue. |
+| Status (optional) | `status` | string | The status of the issue, can be: `To Do`, `In Progress`, `Done`. |
+</div>
+
+
+### Create Sprint
+
+Create a sprint in Jira.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CREATE_SPRINT` |
+| Board Name (required) | `board-name` | string | The name of the board. |
+| Name (required) | `name` | string | The name of the sprint. |
+| Goal (required) | `goal` | string | The goal of the sprint. |
+| Start Date (required) | `start-date` | string | The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
+| End Date (required) | `end-date` | string | The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| ID | `id` | integer | The ID of the sprint. |
+| Self | `self` | string | The URL of the sprint. |
+| State (optional) | `state` | string | The state of the sprint, can be: `active`, `closed`, `future`. |
+| Name (optional) | `name` | string | The name of the sprint. |
+| Start Date (optional) | `start-date` | string | The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
+| End Date (optional) | `end-date` | string | The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
+| Complete Date (optional) | `complete-date` | string | The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
+| Origin Board ID (optional) | `origin-board-id` | integer | The ID of the origin board. |
+| Goal (optional) | `goal` | string | The Goal of the sprint. |
+</div>
+
+
+### Get Issue
+
+Get an issue in Jira. The issue will only be returned if the user has permission to view it. Issues returned from this resource include Agile fields, like sprint, closedSprints, flagged, and epic.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_ISSUE` |
+| Issue Key (required) | `issue-key` | string | The key of the issue, e.g. `JRA-1330`. |
+| Update History | `update-history` | boolean | Whether the action taken is added to the user's Recent history, as shown under `Your Work` in Jira. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| ID | `id` | string | The ID of the issue. |
+| Key | `key` | string | The key of the issue, e.g. `JRA-1330`. |
+| Self | `self` | string | The URL of the issue. |
+| Fields | `fields` | object | The fields of the issue. All navigable and Agile fields are returned. |
+| Issue Type (optional) | `issue-type` | string | The type of the issue, can be: `Task`, `Epic`. |
+| Summary (optional) | `summary` | string | The summary of the issue. |
+| Description (optional) | `description` | string | The description of the issue. |
+| Status (optional) | `status` | string | The status of the issue, can be: `To Do`, `In Progress`, `Done`. |
+</div>
+
+
+### Get Sprint
+
+Get a sprint in Jira. The sprint will only be returned if the user can view the board that the sprint was created on, or view at least one of the issues in the sprint.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_SPRINT` |
+| Sprint ID (required) | `sprint-id` | integer | The ID of the sprint. The sprint will only be returned if you can view the board that the sprint was created on, or view at least one of the issues in the sprint. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| ID (optional) | `id` | integer | The ID of the sprint. |
+| Self (optional) | `self` | string | The URL of the sprint. |
+| State (optional) | `state` | string | The state of the sprint, can be: `active`, `closed`, `future`. |
+| Name (optional) | `name` | string | The name of the sprint. |
+| Start Date (optional) | `start-date` | string | The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
+| End Date (optional) | `end-date` | string | The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
+| Complete Date (optional) | `complete-date` | string | The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
+| Origin Board ID (optional) | `origin-board-id` | integer | The ID of the origin board. |
+| Goal (optional) | `goal` | string | The Goal of the sprint. |
+</div>
+
 
 ### List Boards
 
@@ -305,159 +495,6 @@ List sprints in Jira.
 </details>
 
 
-### Get Issue
-
-Get an issue in Jira. The issue will only be returned if the user has permission to view it. Issues returned from this resource include Agile fields, like sprint, closedSprints, flagged, and epic.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_GET_ISSUE` |
-| Issue Key (required) | `issue-key` | string | The key of the issue, e.g. `JRA-1330`. |
-| Update History | `update-history` | boolean | Whether the action taken is added to the user's Recent history, as shown under `Your Work` in Jira. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| ID | `id` | string | The ID of the issue. |
-| Key | `key` | string | The key of the issue, e.g. `JRA-1330`. |
-| Self | `self` | string | The URL of the issue. |
-| Fields | `fields` | object | The fields of the issue. All navigable and Agile fields are returned. |
-| Issue Type (optional) | `issue-type` | string | The type of the issue, can be: `Task`, `Epic`. |
-| Summary (optional) | `summary` | string | The summary of the issue. |
-| Description (optional) | `description` | string | The description of the issue. |
-| Status (optional) | `status` | string | The status of the issue, can be: `To Do`, `In Progress`, `Done`. |
-</div>
-
-
-### Get Sprint
-
-Get a sprint in Jira. The sprint will only be returned if the user can view the board that the sprint was created on, or view at least one of the issues in the sprint.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_GET_SPRINT` |
-| Sprint ID (required) | `sprint-id` | integer | The ID of the sprint. The sprint will only be returned if you can view the board that the sprint was created on, or view at least one of the issues in the sprint. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| ID (optional) | `id` | integer | The ID of the sprint. |
-| Self (optional) | `self` | string | The URL of the sprint. |
-| State (optional) | `state` | string | The state of the sprint, can be: `active`, `closed`, `future`. |
-| Name (optional) | `name` | string | The name of the sprint. |
-| Start Date (optional) | `start-date` | string | The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
-| End Date (optional) | `end-date` | string | The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
-| Complete Date (optional) | `complete-date` | string | The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
-| Origin Board ID (optional) | `origin-board-id` | integer | The ID of the origin board. |
-| Goal (optional) | `goal` | string | The Goal of the sprint. |
-</div>
-
-
-### Create Issue
-
-Create an issue in Jira.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CREATE_ISSUE` |
-| Project Key (required) | `project-key` | string | The key of the project, e.g. `INS`. |
-| [Issue Type](#create-issue-issue-type) (required) | `issue-type` | object | The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc. |
-| Summary | `summary` | string | The summary of the issue. |
-| Description | `description` | string | The description of the issue. |
-</div>
-
-
-
-
-<details>
-<summary>The <code>issue-type</code> Object </summary>
-
-<h4 id="create-issue-issue-type">Issue Type</h4>
-
-`issue-type` must fulfill one of the following schemas:
-
-<h5 id="create-issue-epic"><code>Epic</code></h5>
-
-Epic.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Issue Type | `issue-type` | string |  Must be `"Epic"`   |
-</div>
-
-<h5 id="create-issue-task"><code>Task</code></h5>
-
-Task.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Issue Type | `issue-type` | string |  Must be `"Task"`   |
-</div>
-
-<h5 id="create-issue-subtask"><code>Subtask</code></h5>
-
-Subtask.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Issue Type | `issue-type` | string |  Must be `"Subtask"`   |
-| Parent Key | `parent-key` | string |  The key of the parent issue, e.g. `JRA-1330`.  |
-</div>
-
-<h5 id="create-issue-other"><code>Other</code></h5>
-
-Other.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Issue Type | `custom-issue-type` | string |  The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc.  |
-| Issue Type | `issue-type` | string |  Must be `"Other"`   |
-</div>
-</details>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| ID | `id` | string | The ID of the issue. |
-| Key | `key` | string | The key of the issue, e.g. `JRA-1330`. |
-| Self | `self` | string | The URL of the issue. |
-| Fields | `fields` | object | The fields of the issue. All navigable and Agile fields are returned. |
-| Issue Type (optional) | `issue-type` | string | The type of the issue, can be: `Task`, `Epic`. |
-| Summary (optional) | `summary` | string | The summary of the issue. |
-| Description (optional) | `description` | string | The description of the issue. |
-| Status (optional) | `status` | string | The status of the issue, can be: `To Do`, `In Progress`, `Done`. |
-</div>
-
-
 ### Update Issue
 
 Update an issue in Jira.
@@ -519,43 +556,6 @@ Move issue to epic.
 | Summary (optional) | `summary` | string | The summary of the issue. |
 | Description (optional) | `description` | string | The description of the issue. |
 | Status (optional) | `status` | string | The status of the issue, can be: `To Do`, `In Progress`, `Done`. |
-</div>
-
-
-### Create Sprint
-
-Create a sprint in Jira.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CREATE_SPRINT` |
-| Board Name (required) | `board-name` | string | The name of the board. |
-| Name (required) | `name` | string | The name of the sprint. |
-| Goal (required) | `goal` | string | The goal of the sprint. |
-| Start Date (required) | `start-date` | string | The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
-| End Date (required) | `end-date` | string | The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| ID | `id` | integer | The ID of the sprint. |
-| Self | `self` | string | The URL of the sprint. |
-| State (optional) | `state` | string | The state of the sprint, can be: `active`, `closed`, `future`. |
-| Name (optional) | `name` | string | The name of the sprint. |
-| Start Date (optional) | `start-date` | string | The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
-| End Date (optional) | `end-date` | string | The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
-| Complete Date (optional) | `complete-date` | string | The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
-| Origin Board ID (optional) | `origin-board-id` | integer | The ID of the origin board. |
-| Goal (optional) | `goal` | string | The Goal of the sprint. |
 </div>
 
 

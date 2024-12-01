@@ -7,14 +7,14 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type MockUpdateIssueRequset struct {
+type mockUpdateIssueReq struct {
 	IssueKey    string                        `json:"issue-key"`
-	Update      map[string][]AdditionalFields `json:"update"`
+	Update      map[string][]additionalFields `json:"update"`
 	Fields      map[string]interface{}        `json:"fields"`
 	NotifyUsers bool                          `json:"notify-users" api:"notifyUsers"`
 	ReturnIssue bool                          `json:"return-issue" api:"returnIssue"`
 }
-type MockUpdateIssueResp struct {
+type mockUpdateIssueResp struct {
 	Issue
 	NotifyUsers bool `json:"notify-users" api:"notifyUsers"`
 	ReturnIssue bool `json:"return-issue" api:"returnIssue"`
@@ -22,8 +22,8 @@ type MockUpdateIssueResp struct {
 
 // UpdateIssue updates an issue in Jira.
 func mockUpdateIssue(res http.ResponseWriter, req *http.Request) {
-	var request MockUpdateIssueRequset
-	err := json.NewDecoder(req.Body).Decode(&request)
+	var mocUpdateIssueReq mockUpdateIssueReq
+	err := json.NewDecoder(req.Body).Decode(&mocUpdateIssueReq)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusBadRequest)
 		return
@@ -33,46 +33,46 @@ func mockUpdateIssue(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "issue key is required", http.StatusBadRequest)
 		return
 	}
-	var issue *FakeIssue
+	var fi *fakeIssue
 	for _, i := range fakeIssues {
 		if i.ID == issueKey || i.Key == issueKey {
-			issue = &i
-			issue.getSelf()
+			fi = &i
+			fi.getSelf()
 			break
 		}
 	}
-	if issue == nil {
+	if fi == nil {
 		http.Error(res, "issue not found", http.StatusNotFound)
 		return
 	}
 	opt := req.URL.Query()
 	notifyUsers := opt.Get("notifyUsers")
 	returnIssue := opt.Get("returnIssue")
-	for key, fields := range request.Update {
+	for key, fields := range mocUpdateIssueReq.Update {
 		for _, field := range fields {
 			if field.Set != "" {
-				issue.Fields[key] = field.Set
+				fi.Fields[key] = field.Set
 			}
 		}
 	}
-	for key, field := range request.Fields {
+	for key, field := range mocUpdateIssueReq.Fields {
 		if field != "" {
-			issue.Fields[key] = field
+			fi.Fields[key] = field
 		}
 	}
 	newIssue := Issue{
-		ID:          issue.ID,
-		Key:         issue.Key,
-		Self:        issue.Self,
-		Fields:      issue.Fields,
-		Description: issue.Fields["description"].(string),
-		IssueType:   issue.Fields["issuetype"].(map[string]interface{})["name"].(string),
-		Summary:     issue.Fields["summary"].(string),
-		Status:      issue.Fields["status"].(map[string]interface{})["name"].(string),
+		ID:          fi.ID,
+		Key:         fi.Key,
+		Self:        fi.Self,
+		Fields:      fi.Fields,
+		Description: fi.Fields["description"].(string),
+		IssueType:   fi.Fields["issuetype"].(map[string]interface{})["name"].(string),
+		Summary:     fi.Fields["summary"].(string),
+		Status:      fi.Fields["status"].(map[string]interface{})["name"].(string),
 	}
 	for issue := range fakeIssues {
 		if fakeIssues[issue].ID == newIssue.ID {
-			fakeIssues[issue] = FakeIssue{
+			fakeIssues[issue] = fakeIssue{
 				ID:     newIssue.ID,
 				Key:    newIssue.Key,
 				Self:   newIssue.Self,
@@ -81,7 +81,7 @@ func mockUpdateIssue(res http.ResponseWriter, req *http.Request) {
 			break
 		}
 	}
-	resp := MockUpdateIssueResp{
+	resp := mockUpdateIssueResp{
 		Issue:       newIssue,
 		NotifyUsers: notifyUsers == "true",
 		ReturnIssue: returnIssue == "true",
