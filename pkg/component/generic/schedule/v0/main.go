@@ -57,7 +57,6 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 
 func (c *component) ParseEvent(ctx context.Context, rawEvent *base.RawEvent) (parsedEvent *base.ParsedEvent, err error) {
 	// Currently only cron job triggered is supported
-	fmt.Println("ParseEvent", rawEvent)
 	return c.handleEventCronJobTriggered(ctx, rawEvent)
 }
 
@@ -105,7 +104,6 @@ func (c *component) IdentifyEvent(ctx context.Context, rawEvent *base.RawEvent) 
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("IdentifyEvent", r)
 
 	return &base.IdentifierResult{
 		Identifiers: []base.Identifier{{"uid": r.UID}},
