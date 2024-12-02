@@ -916,8 +916,14 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 			}
 
 			if v == nil {
+				// If the field is required but no value is provided, return an error.
+				if r.Variable[k].Required {
+					return fmt.Errorf("missing required variable: %s", k)
+				}
+
 				// If the field has no value and no default value is specified,
-				// represent it as null, we treat null as missing value
+				// represent it as null. A null value indicates that the field
+				// is missing and should be handled as such by components.
 				if d, ok := defaultValueMap[k]; !ok || d == nil {
 					variable[k] = data.NewNull()
 					continue
