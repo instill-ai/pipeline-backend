@@ -20,7 +20,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/mistralai/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/ollama/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/openai/v0"
-	"github.com/instill-ai/pipeline-backend/pkg/component/ai/perplexityai/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/ai/perplexity/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/stabilityai/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/universalai/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/asana/v0"
@@ -169,10 +169,9 @@ func Init(
 		}
 
 		{
-			// PerplexityAI
-			conn := perplexityai.Init(baseComp)
-			// Secret doesn't allow hyphens
-			conn = conn.WithInstillCredentials(secrets["perplexityai"])
+			// perplexity
+			conn := perplexity.Init(baseComp)
+			conn = conn.WithInstillCredentials(secrets[conn.GetDefinitionID()])
 			compStore.Import(conn)
 		}
 

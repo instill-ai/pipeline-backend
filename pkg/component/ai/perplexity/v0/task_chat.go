@@ -1,4 +1,4 @@
-package perplexityai
+package perplexity
 
 import (
 	"bufio"
@@ -65,7 +65,7 @@ func (e *execution) executeTextChat(ctx context.Context, job *base.Job) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("sending chat request to Perplexity AI: %w", err)
+		return fmt.Errorf("sending chat request to Perplexity: %w", err)
 	}
 
 	if chatReq.Stream {

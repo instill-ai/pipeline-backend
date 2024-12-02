@@ -1,4 +1,4 @@
-package perplexityai
+package perplexity
 
 // We expose them because we will use them to calculate the Instill Credit
 // after the IO struct is finished.

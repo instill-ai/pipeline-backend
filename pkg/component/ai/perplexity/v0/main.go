@@ -1,5 +1,5 @@
 //go:generate compogen readme ./config ./README.mdx --extraContents bottom=.compogen/bottom.mdx
-package perplexityai
+package perplexity
 
 import (
 	"context"
