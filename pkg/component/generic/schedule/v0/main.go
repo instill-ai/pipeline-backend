@@ -122,63 +122,6 @@ func (c *component) UnregisterEvent(ctx context.Context, settings *base.Unregist
 	return nil
 }
 
-// func (s *service) setSchedulePipeline(ctx context.Context, ns resource.Namespace, pipelineID, pipelineReleaseID string, pipelineUID, releaseUID uuid.UUID, recipe *datamodel.Recipe) error {
-// 	// TODO This check could be removed, as the receiver should be initialized
-// 	// at this point. However, some tests depend on it, so we would need to
-// 	// either mock this interface or (better) communicate with Temporal through
-// 	// our own interface.
-// 	if s.temporalClient == nil {
-// 		return nil
-// 	}
-
-// 	crons := []string{}
-// 	if recipe != nil && recipe.On != nil {
-// 		for _, v := range recipe.On {
-// 			// TODO: Introduce Schedule Component to define structured schema
-// 			// for schedule setup configuration
-// 			if v.Type == "schedule" {
-// 				crons = append(crons, v.Config["cron"].(string))
-// 			}
-// 		}
-// 	}
-
-// 	scheduleID := fmt.Sprintf("%s_%s_schedule", pipelineUID, releaseUID)
-
-// 	handle := s.temporalClient.ScheduleClient().GetHandle(ctx, scheduleID)
-// 	_ = handle.Delete(ctx)
-
-// 	if len(crons) > 0 {
-
-// 		param := &worker.SchedulePipelineWorkflowParam{
-// 			Namespace:          ns,
-// 			PipelineID:         pipelineID,
-// 			PipelineUID:        pipelineUID,
-// 			PipelineReleaseID:  pipelineReleaseID,
-// 			PipelineReleaseUID: releaseUID,
-// 		}
-// 		_, err := s.temporalClient.ScheduleClient().Create(ctx, client.ScheduleOptions{
-// 			ID: scheduleID,
-// 			Spec: client.ScheduleSpec{
-// 				CronExpressions: crons,
-// 			},
-// 			Action: &client.ScheduleWorkflowAction{
-// 				Args:      []any{param},
-// 				ID:        scheduleID,
-// 				Workflow:  "SchedulePipelineWorkflow",
-// 				TaskQueue: worker.TaskQueue,
-// 				RetryPolicy: &temporal.RetryPolicy{
-// 					MaximumAttempts: 1,
-// 				},
-// 			},
-// 		})
-
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-
-//		return nil
-//	}
 type SchedulePipelineWorkflowParam struct {
 	UID     uuid.UUID
 	EventID string
