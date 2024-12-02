@@ -770,6 +770,9 @@ func (r *repository) ListComponentDefinitionUIDs(_ context.Context, p ListCompon
 	if config.Config.Server.Edition == "local-ce:dev" {
 		skipComponentsInCE := []string{"instill-app"}
 		queryBuilder = queryBuilder.Where("id NOT IN (?)", skipComponentsInCE)
+	} else {
+		skipComponentsInCloud := []string{"google-drive"}
+		queryBuilder = queryBuilder.Where("id NOT IN (?)", skipComponentsInCloud)
 	}
 
 	queryBuilder.Count(&totalSize)
