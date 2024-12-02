@@ -28,3 +28,22 @@ The component definition and tasks are defined in the [definition.json](https://
 ## Supported Tasks
 
 
+## Supported events
+
+### Cron Job Triggered Event
+
+An event triggered on a cron job.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Configuration | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Cron Expression | `cron` | string | A cron expression in standard 5-field format (minute hour day-of-month month day-of-week) |
+</div>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Event Message | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Triggered At | `triggered-at` | string | The ISO 8601 timestamp when the cron job was triggered |
+</div>

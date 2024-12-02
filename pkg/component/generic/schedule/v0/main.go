@@ -1,6 +1,6 @@
 package schedule
 
-//go:generate compogen readme ./config ./README.mdx
+//go:generate compogen readme ./config ./README.mdx --extraContents bottom=.compogen/bottom.mdx
 
 import (
 	"context"
