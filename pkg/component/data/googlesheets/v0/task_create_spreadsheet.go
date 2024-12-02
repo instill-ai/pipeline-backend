@@ -2,6 +2,7 @@ package googlesheets
 
 import (
 	"context"
+	"strings"
 
 	"google.golang.org/api/sheets/v4"
 
@@ -28,8 +29,11 @@ func (e *execution) createSpreadsheet(ctx context.Context, job *base.Job) error 
 	}
 
 	// For each sheet in the input
+	hasSheet1 := false
 	for _, sheet := range input.Sheets {
-		if sheet.Name != "sheet1" {
+		if strings.EqualFold(sheet.Name, "sheet1") {
+			hasSheet1 = true
+		} else {
 			// Create the add sheet request
 			addSheetRequest := &sheets.Request{
 				AddSheet: &sheets.AddSheetRequest{
@@ -67,6 +71,25 @@ func (e *execution) createSpreadsheet(ctx context.Context, job *base.Job) error 
 			if err != nil {
 				return err
 			}
+		}
+	}
+
+	if !hasSheet1 {
+		// Remove sheet1 (sheetId 0) if user did not provide it in the input
+		deleteSheetRequest := &sheets.Request{
+			DeleteSheet: &sheets.DeleteSheetRequest{
+				SheetId: 0,
+			},
+		}
+
+		batchUpdateRequest := &sheets.BatchUpdateSpreadsheetRequest{
+			Requests: []*sheets.Request{deleteSheetRequest},
+		}
+
+		// Execute the batch update
+		_, err = e.sheetService.Spreadsheets.BatchUpdate(createdSpreadsheet.SpreadsheetId, batchUpdateRequest).Context(ctx).Do()
+		if err != nil {
+			return err
 		}
 	}
 
