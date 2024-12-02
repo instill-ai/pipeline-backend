@@ -1,8 +1,10 @@
 import grpc from "k6/net/grpc";
 import http from "k6/http";
 
-import { check, group } from "k6";
+import { check } from "k6";
+import { describe } from 'https://jslib.k6.io/k6chaijs/4.3.4.3/index.js';
 
+import * as integration from "./grpc-integration.js";
 import * as pipeline from "./grpc-pipeline-public.js";
 import * as pipelineWithJwt from "./grpc-pipeline-public-with-jwt.js";
 import * as pipelinePrivate from "./grpc-pipeline-private.js";
@@ -70,7 +72,7 @@ export default function (data) {
 
   // Health check
   {
-    group("Pipelines API: Health check", () => {
+    describe("Pipelines API: Health check", () => {
       client.connect(constant.pipelineGRPCPublicHost, {
         plaintext: true,
       });
@@ -109,10 +111,12 @@ export default function (data) {
 
   trigger.CheckTrigger(data);
   triggerAsync.CheckTrigger(data);
+
+  integration.CheckLookUpConnection(data);
 }
 
 export function teardown(data) {
-  group("Pipeline API: Delete all pipelines created by this test", () => {
+  describe("Pipeline API: Delete all pipelines created by this test", () => {
     client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true,
     });
@@ -141,6 +145,16 @@ export function teardown(data) {
     }
 
     client.close();
+  });
+
+  describe("Integration API: Delete all connections created by this test", () => {
+    var q = `DELETE FROM connection WHERE id LIKE '${constant.dbIDPrefix}%';`;
+    constant.db.exec(q);
+
+    q = `DELETE FROM pipeline WHERE id LIKE '${constant.dbIDPrefix}%';`;
+    constant.db.exec(q);
+
+    constant.db.close();
   });
 
   client.connect(constant.pipelineGRPCPublicHost, {
