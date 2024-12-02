@@ -66,13 +66,6 @@ func TestDefinition_Validate(t *testing.T) {
 			wantErr: "definition.ReleaseStage: ReleaseStage field is required",
 		},
 		{
-			name: "nok - zero tasks",
-			modifier: func(d *definition) {
-				d.AvailableTasks = []string{}
-			},
-			wantErr: "definition.AvailableTasks: AvailableTasks field doesn't reach the minimum value / number of elements",
-		},
-		{
 			name: "nok - invalid source URL",
 			modifier: func(d *definition) {
 				d.SourceURL = "github.com/instill-ai"

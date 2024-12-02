@@ -20,9 +20,11 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
 	"gopkg.in/guregu/null.v4"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/component/generic/schedule/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
@@ -41,6 +43,7 @@ import (
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 type TriggerPipelineWorkflowParam struct {
@@ -48,15 +51,6 @@ type TriggerPipelineWorkflowParam struct {
 	Mode            mgmtpb.Mode
 	TriggerFromAPI  bool
 	WorkerUID       uuid.UUID
-}
-
-type SchedulePipelineWorkflowParam struct {
-	Namespace          resource.Namespace
-	PipelineID         string
-	PipelineUID        uuid.UUID
-	PipelineReleaseID  string
-	PipelineReleaseUID uuid.UUID
-	ExpiryRuleTag      string
 }
 
 type SchedulePipelineLoaderActivityParam struct {
@@ -1631,40 +1625,41 @@ type EndUserErrorDetails struct {
 	Message string
 }
 
-func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *SchedulePipelineWorkflowParam) error {
+type scheduleEventMessage struct {
+	UID         string `json:"uid"`
+	TriggeredAt string `json:"triggered-at"`
+}
 
-	scheduleID := fmt.Sprintf("%s_%s_schedule", param.PipelineUID, param.PipelineReleaseUID)
+func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *schedule.SchedulePipelineWorkflowParam) error {
+	eventName := "SchedulePipelineWorkflow"
+	sCtx, span := tracer.Start(
+		context.Background(),
+		eventName,
+		trace.WithSpanKind(trace.SpanKindServer),
+	)
+	defer span.End()
 
-	// TODO: huitang - Handle pipeline release as well.
-	triggerParam := &TriggerPipelineWorkflowParam{
-		SystemVariables: recipe.SystemVariables{
-			PipelineTriggerID:    scheduleID,
-			PipelineID:           param.PipelineID,
-			PipelineUID:          param.PipelineUID,
-			PipelineReleaseID:    param.PipelineReleaseID,
-			PipelineReleaseUID:   param.PipelineReleaseUID,
-			PipelineUserUID:      param.Namespace.NsUID,
-			PipelineRequesterUID: param.Namespace.NsUID,
-			ExpiryRuleTag:        param.ExpiryRuleTag,
-		},
-		Mode: mgmtpb.Mode_MODE_ASYNC,
+	msg := scheduleEventMessage{
+		UID:         param.UID.String(),
+		TriggeredAt: time.Now().Format(time.RFC3339),
+	}
+	payload, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	structPayload := &structpb.Struct{}
+	err = protojson.Unmarshal(payload, structPayload)
+	if err != nil {
+		return err
 	}
 
-	wfUID, _ := uuid.NewV4()
-	childWorkflowOptions := workflow.ChildWorkflowOptions{
-		TaskQueue:                w.workerUID.String(),
-		WorkflowID:               wfUID.String(),
-		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-		RetryPolicy: &temporal.RetryPolicy{
-			MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
-		},
+	_, err = w.pipelinePublicServiceClient.DispatchPipelineWebhookEvent(sCtx, &pb.DispatchPipelineWebhookEventRequest{
+		WebhookType: "schedule",
+		Message:     structPayload,
+	})
+	if err != nil {
+		return err
 	}
-
-	_ = workflow.ExecuteChildWorkflow(
-		workflow.WithChildOptions(wfctx, childWorkflowOptions),
-		"TriggerPipelineWorkflow",
-		triggerParam,
-	).Get(wfctx, nil)
 
 	return nil
 }

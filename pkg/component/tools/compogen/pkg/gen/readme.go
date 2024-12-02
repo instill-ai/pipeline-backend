@@ -127,7 +127,7 @@ func (g *READMEGenerator) parseTasks(configDir string) (map[string]task, error) 
 		return nil, err
 	}
 
-	if err := g.validate.Var(tasks, "gt=0,dive"); err != nil {
+	if err := g.validate.Var(tasks, "dive"); err != nil {
 		return nil, fmt.Errorf("invalid tasks file:\n%w", asValidationError(err))
 	}
 

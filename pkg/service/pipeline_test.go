@@ -65,7 +65,10 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 	converter := mock.NewConverterMock(mc)
 	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
 
-	compStore := componentstore.Init(nil, config.Config.Component.Secrets, nil, external.NewBinaryFetcher())
+	compStore := componentstore.Init(componentstore.InitParams{
+		Secrets:       config.Config.Component.Secrets,
+		BinaryFetcher: external.NewBinaryFetcher(),
+	})
 
 	workerUID, _ := uuid.NewV4()
 	service := NewService(

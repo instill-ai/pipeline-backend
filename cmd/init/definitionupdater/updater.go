@@ -22,7 +22,9 @@ import (
 func UpdateComponentDefinitionIndex(ctx context.Context, repo repository.Repository) error {
 	logger, _ := logger.GetZapLogger(ctx)
 
-	defs := componentstore.Init(logger, nil, nil, nil).ListDefinitions(nil, true)
+	defs := componentstore.Init(componentstore.InitParams{
+		Logger: logger,
+	}).ListDefinitions(nil, true)
 	for _, def := range defs {
 
 		if err := updateComponentDefinition(ctx, def, repo); err != nil {

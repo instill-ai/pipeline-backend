@@ -37,7 +37,7 @@ type definition struct {
 	Title          string       `json:"title" validate:"required"`
 	Description    string       `json:"description" validate:"required"`
 	ReleaseStage   releaseStage `json:"releaseStage" validate:"required"`
-	AvailableTasks []string     `json:"availableTasks" validate:"gt=0"`
+	AvailableTasks []string     `json:"availableTasks"`
 	SourceURL      string       `json:"sourceUrl" validate:"url"`
 
 	Public        bool   `json:"public"`

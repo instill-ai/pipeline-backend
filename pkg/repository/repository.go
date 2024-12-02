@@ -106,7 +106,7 @@ type Repository interface {
 	ListPipelineRunOnsByIdentifier(ctx context.Context, ComponentType string, Identifier base.Identifier) (PipelineRunOnList, error)
 	ListPipelineRunOns(ctx context.Context, pipelineUID uuid.UUID) (PipelineRunOnList, error)
 	CreatePipelineRunOn(context.Context, *datamodel.PipelineRunOn) error
-	DeletePipelineRunOn(ctx context.Context, pipelineUID uuid.UUID) error
+	DeletePipelineRunOn(ctx context.Context, uid uuid.UUID) error
 
 	GetPaginatedPipelineRunsWithPermissions(ctx context.Context, requesterUID, pipelineUID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, isOwner bool) ([]datamodel.PipelineRun, int64, error)
 	GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx context.Context, pipelineRunID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy) ([]datamodel.ComponentRun, int64, error)
@@ -1651,11 +1651,11 @@ func (r *repository) GetPipelineRunOn(ctx context.Context, pipelineUID, releaseU
 	return runOn, nil
 }
 
-func (r *repository) DeletePipelineRunOn(ctx context.Context, pipelineUID uuid.UUID) error {
+func (r *repository) DeletePipelineRunOn(ctx context.Context, uid uuid.UUID) error {
 	r.PinUser(ctx, "pipeline_run_on")
 	db := r.CheckPinnedUser(ctx, r.db, "pipeline_run_on")
 	return db.Model(&datamodel.PipelineRunOn{}).
-		Where("pipeline_uid = ?", pipelineUID).
+		Where("uid = ?", uid).
 		Delete(&datamodel.PipelineRunOn{}).Error
 }
 
