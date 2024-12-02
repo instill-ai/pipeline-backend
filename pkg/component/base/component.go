@@ -16,6 +16,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	jsoniter "github.com/json-iterator/go"
+	temporalclient "go.temporal.io/sdk/client"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/jsonref"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
@@ -174,7 +175,8 @@ type Component struct {
 	inputAcceptFormatsFields map[string]map[string][]string
 	outputFormatsFields      map[string]map[string]string
 
-	BinaryFetcher external.BinaryFetcher
+	BinaryFetcher  external.BinaryFetcher
+	TemporalClient temporalclient.Client
 }
 
 // IdentifyEvent is not implemented for the base component.

@@ -630,4 +630,6 @@ type PipelineRunOn struct {
 	EventID     string
 	RunOnType   string
 	Identifier  datatypes.JSON `gorm:"type:jsonb"`
+	Config      datatypes.JSON `gorm:"type:jsonb"`
+	Setup       datatypes.JSON `gorm:"type:jsonb"`
 }

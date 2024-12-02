@@ -10,6 +10,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	temporalclient "go.temporal.io/sdk/client"
+
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/anthropic/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/cohere/v0"
@@ -54,6 +56,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/zilliz/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/generic/collection/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/generic/http/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/generic/schedule/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/audio/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/base64/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0"
@@ -83,19 +86,24 @@ type component struct {
 	comp base.IComponent
 }
 
+type InitParams struct {
+	Logger              *zap.Logger
+	Secrets             config.ComponentSecrets
+	UsageHandlerCreator base.UsageHandlerCreator
+	BinaryFetcher       external.BinaryFetcher
+	TemporalClient      temporalclient.Client
+}
+
 // Init initializes the components implemented in this repository and loads
 // their information to memory.
-func Init(
-	logger *zap.Logger,
-	secrets config.ComponentSecrets,
-	usageHandlerCreator base.UsageHandlerCreator,
-	binaryFetcher external.BinaryFetcher,
-) *Store {
+func Init(param InitParams) *Store {
 	baseComp := base.Component{
-		Logger:          logger,
-		NewUsageHandler: usageHandlerCreator,
-		BinaryFetcher:   binaryFetcher,
+		Logger:          param.Logger,
+		NewUsageHandler: param.UsageHandlerCreator,
+		BinaryFetcher:   param.BinaryFetcher,
+		TemporalClient:  param.TemporalClient,
 	}
+	secrets := param.Secrets
 
 	once.Do(func() {
 		compStore = &Store{
@@ -208,6 +216,7 @@ func Init(
 		compStore.Import(instillartifact.Init(baseComp))
 		compStore.Import(http.Init(baseComp))
 		compStore.Import(collection.Init(baseComp))
+		compStore.Import(schedule.Init(baseComp))
 		compStore.Import(web.Init(baseComp))
 		{
 			// GitHub

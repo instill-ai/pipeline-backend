@@ -9,6 +9,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 	"go.uber.org/zap"
 
+	"github.com/instill-ai/pipeline-backend/pkg/component/generic/schedule/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
@@ -17,6 +18,7 @@ import (
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 	miniox "github.com/instill-ai/x/minio"
 )
 
@@ -26,7 +28,7 @@ const TaskQueue = "pipeline-backend"
 // Worker interface
 type Worker interface {
 	TriggerPipelineWorkflow(workflow.Context, *TriggerPipelineWorkflowParam) error
-	SchedulePipelineWorkflow(workflow.Context, *SchedulePipelineWorkflowParam) error
+	SchedulePipelineWorkflow(workflow.Context, *schedule.SchedulePipelineWorkflowParam) error
 
 	ComponentActivity(context.Context, *ComponentActivityParam) error
 	OutputActivity(context.Context, *ComponentActivityParam) error
@@ -61,6 +63,7 @@ type WorkerConfig struct {
 	ArtifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	ArtifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
 	BinaryFetcher                external.BinaryFetcher
+	PipelinePublicServiceClient  pb.PipelinePublicServiceClient
 }
 
 // worker represents resources required to run Temporal workflow and activity
@@ -75,6 +78,7 @@ type worker struct {
 	workerUID                    uuid.UUID
 	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
+	pipelinePublicServiceClient  pb.PipelinePublicServiceClient
 	binaryFetcher                external.BinaryFetcher
 }
 
@@ -95,5 +99,6 @@ func NewWorker(
 		artifactPublicServiceClient:  workerConfig.ArtifactPublicServiceClient,
 		artifactPrivateServiceClient: workerConfig.ArtifactPrivateServiceClient,
 		binaryFetcher:                workerConfig.BinaryFetcher,
+		pipelinePublicServiceClient:  workerConfig.PipelinePublicServiceClient,
 	}
 }

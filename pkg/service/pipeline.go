@@ -336,34 +336,37 @@ func (s *service) marshalEventSettings(ctx context.Context, ns resource.Namespac
 	if err != nil {
 		return nil, nil, err
 	}
-	st, err := marshaler.Marshal(setup)
-	if err != nil {
-		return nil, nil, err
-	}
-	if connRef, ok := st.(format.ReferenceString); ok {
-		connID, err := recipe.ConnectionIDFromReference(connRef.String())
+	var st format.Value
+	if setup != nil {
+		st, err = marshaler.Marshal(setup)
 		if err != nil {
 			return nil, nil, err
 		}
-
-		conn, err := s.repository.GetNamespaceConnectionByID(ctx, ns.NsUID, connID)
-		if err != nil {
-			if errors.Is(err, errdomain.ErrNotFound) {
-				err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
+		if connRef, ok := st.(format.ReferenceString); ok {
+			connID, err := recipe.ConnectionIDFromReference(connRef.String())
+			if err != nil {
+				return nil, nil, err
 			}
-			return nil, nil, err
-		}
 
-		var s map[string]any
-		if err := json.Unmarshal(conn.Setup, &s); err != nil {
-			return nil, nil, err
-		}
+			conn, err := s.repository.GetNamespaceConnectionByID(ctx, ns.NsUID, connID)
+			if err != nil {
+				if errors.Is(err, errdomain.ErrNotFound) {
+					err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
+				}
+				return nil, nil, err
+			}
 
-		setupVal, err := data.NewValue(s)
-		if err != nil {
-			return nil, nil, err
+			var s map[string]any
+			if err := json.Unmarshal(conn.Setup, &s); err != nil {
+				return nil, nil, err
+			}
+
+			setupVal, err := data.NewValue(s)
+			if err != nil {
+				return nil, nil, err
+			}
+			st = setupVal
 		}
-		st = setupVal
 	}
 	return cfg, st, nil
 }
@@ -399,7 +402,6 @@ func (s *service) configureRunOn(ctx context.Context, params configureRunOnParam
 
 	// Case 3: Update unversioned pipeline but there are existing releases
 	default:
-		fmt.Println("Case 3")
 		// Do nothing
 		return nil
 	}
@@ -414,33 +416,44 @@ func (s *service) clearRunOn(ctx context.Context, params configureRunOnParams) e
 	}
 
 	for _, r := range runOn.PipelineRunOns {
-		for eventID, v := range params.recipe.On {
-			if r.EventID == eventID {
-				cfg, setup, err := s.marshalEventSettings(ctx, params.Namespace, v.Config, v.Setup)
-				if err == nil {
-					identifier := base.Identifier{}
-					err = json.Unmarshal(r.Identifier, &identifier)
-					if err != nil {
-						return err
-					}
-					err = s.component.UnregisterEvent(ctx, r.RunOnType, &base.UnregisterEventSettings{
-						EventSettings: base.EventSettings{
-							Config: cfg,
-							Setup:  setup,
-						},
-					}, []base.Identifier{identifier})
-					if err != nil {
-						return err
-					}
-				}
-
+		var origCfg any
+		var origSetup any
+		if r.Config != nil {
+			err = json.Unmarshal(r.Config, &origCfg)
+			if err != nil {
+				return err
 			}
 		}
-		err = s.repository.DeletePipelineRunOn(ctx, r.PipelineUID)
-		if err != nil {
-			return err
+		if r.Setup != nil {
+			err = json.Unmarshal(r.Setup, &origSetup)
+			if err != nil {
+				return err
+			}
 		}
+		cfg, setup, err := s.marshalEventSettings(ctx, params.Namespace, origCfg, origSetup)
+		if err == nil {
+			identifier := base.Identifier{}
+			err = json.Unmarshal(r.Identifier, &identifier)
+			if err != nil {
+				return err
+			}
+			err = s.component.UnregisterEvent(ctx, r.RunOnType, &base.UnregisterEventSettings{
+				EventSettings: base.EventSettings{
+					Config: cfg,
+					Setup:  setup,
+				},
+			}, []base.Identifier{identifier})
+			if err != nil {
+				return err
+			}
+			err = s.repository.DeletePipelineRunOn(ctx, r.UID)
+			if err != nil {
+				return err
+			}
+		}
+
 	}
+
 	return nil
 }
 
@@ -454,46 +467,48 @@ func (s *service) updateRunOn(ctx context.Context, params configureRunOnParams) 
 	if params.recipe != nil && len(params.recipe.On) > 0 {
 		for eventID, v := range params.recipe.On {
 			if v != nil {
-				switch v.Type {
-				case "":
-					return nil
-				case "schedule":
-					return fmt.Errorf("schedule is not supported yet")
-				default:
-					cfg, setup, err := s.marshalEventSettings(ctx, params.Namespace, v.Config, v.Setup)
-					if err == nil {
-						registrationUID := params.pipelineUID
-						if params.releaseUID != uuid.Nil {
-							registrationUID = params.releaseUID
+				cfg, setup, err := s.marshalEventSettings(ctx, params.Namespace, v.Config, v.Setup)
+				if err == nil {
+					registrationUID := params.pipelineUID
+					if params.releaseUID != uuid.Nil {
+						registrationUID = params.releaseUID
+					}
+					identifiers, err := s.component.RegisterEvent(ctx, v.Type, &base.RegisterEventSettings{
+						EventSettings: base.EventSettings{
+							Config: cfg,
+							Setup:  setup,
+						},
+						RegistrationUID: registrationUID,
+					})
+					if err != nil {
+						return err
+					}
+					for _, identifier := range identifiers {
+						jsonIdentifier, err := json.Marshal(identifier)
+						if err != nil {
+							return err
 						}
-						identifiers, err := s.component.RegisterEvent(ctx, v.Type, &base.RegisterEventSettings{
-							EventSettings: base.EventSettings{
-								Config: cfg,
-								Setup:  setup,
-							},
-							RegistrationUID: registrationUID,
+						jsonConfig, err := json.Marshal(v.Config)
+						if err != nil {
+							return err
+						}
+						jsonSetup, err := json.Marshal(v.Setup)
+						if err != nil {
+							return err
+						}
+						err = s.repository.CreatePipelineRunOn(ctx, &datamodel.PipelineRunOn{
+							RunOnType:   v.Type,
+							EventID:     eventID,
+							Identifier:  jsonIdentifier,
+							PipelineUID: params.pipelineUID,
+							ReleaseUID:  params.releaseUID,
+							Config:      jsonConfig,
+							Setup:       jsonSetup,
 						})
 						if err != nil {
 							return err
 						}
-						for _, identifier := range identifiers {
-							jsonIdentifier, err := json.Marshal(identifier)
-							if err != nil {
-								return err
-							}
-							err = s.repository.CreatePipelineRunOn(ctx, &datamodel.PipelineRunOn{
-								RunOnType:   v.Type,
-								EventID:     eventID,
-								Identifier:  jsonIdentifier,
-								PipelineUID: params.pipelineUID,
-								ReleaseUID:  params.releaseUID,
-							})
-							if err != nil {
-								return err
-							}
-						}
 					}
-
 				}
 			}
 		}

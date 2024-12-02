@@ -104,7 +104,10 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 	if err != nil {
 		return err
 	}
-	componentStore := store.Init(logger, config.Config.Component.Secrets, nil, nil)
+	componentStore := store.Init(store.InitParams{
+		Logger:  logger,
+		Secrets: config.Config.Component.Secrets,
+	})
 
 	converter := service.NewConverter(service.ConverterConfig{
 		MgmtClient:      mgmtPrivateServiceClient,

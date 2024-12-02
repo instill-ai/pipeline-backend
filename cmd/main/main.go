@@ -276,7 +276,12 @@ func main() {
 
 	binaryFetcher := external.NewArtifactBinaryFetcher(artifactPrivateServiceClient, minioxClientWrapper)
 
-	compStore := componentstore.Init(logger, config.Config.Component.Secrets, nil, binaryFetcher)
+	compStore := componentstore.Init(componentstore.InitParams{
+		Logger:         logger,
+		Secrets:        config.Config.Component.Secrets,
+		BinaryFetcher:  binaryFetcher,
+		TemporalClient: temporalClient,
+	})
 	workerUID, _ := uuid.NewV4()
 
 	service := service.NewService(
@@ -469,6 +474,7 @@ func main() {
 			ArtifactPublicServiceClient:  artifactPublicServiceClient,
 			ArtifactPrivateServiceClient: artifactPrivateServiceClient,
 			BinaryFetcher:                binaryFetcher,
+			PipelinePublicServiceClient:  pipelinePublicServiceClient,
 		},
 	)
 

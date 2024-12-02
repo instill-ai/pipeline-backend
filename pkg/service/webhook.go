@@ -93,40 +93,48 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 			}
 
 			marshaler := data.NewMarshaler()
-			cfg, err := marshaler.Marshal(event.Config)
-			if err != nil {
-				return DispatchPipelineWebhookEventResult{}, err
-			}
-			setup, err := marshaler.Marshal(event.Setup)
-			if err != nil {
-				return DispatchPipelineWebhookEventResult{}, err
-			}
-
-			// If the setup is a reference string, it means the setup is a connection
-			if connRef, ok := setup.(format.ReferenceString); ok {
-				connID, err := recipe.ConnectionIDFromReference(connRef.String())
+			var cfg format.Value
+			var setup format.Value
+			if event.Config != nil {
+				cfg, err = marshaler.Marshal(event.Config)
 				if err != nil {
 					return DispatchPipelineWebhookEventResult{}, err
 				}
-
-				conn, err := s.repository.GetNamespaceConnectionByID(ctx, loadPipelineResult.ns.NsUID, connID)
+			}
+			if event.Setup != nil {
+				setup, err = marshaler.Marshal(event.Setup)
 				if err != nil {
-					if errors.Is(err, errdomain.ErrNotFound) {
-						err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
+					return DispatchPipelineWebhookEventResult{}, err
+				}
+			}
+
+			if setup != nil {
+				// If the setup is a reference string, it means the setup is a connection
+				if connRef, ok := setup.(format.ReferenceString); ok {
+					connID, err := recipe.ConnectionIDFromReference(connRef.String())
+					if err != nil {
+						return DispatchPipelineWebhookEventResult{}, err
 					}
-					return DispatchPipelineWebhookEventResult{}, err
-				}
 
-				var s map[string]any
-				if err := json.Unmarshal(conn.Setup, &s); err != nil {
-					return DispatchPipelineWebhookEventResult{}, err
-				}
+					conn, err := s.repository.GetNamespaceConnectionByID(ctx, loadPipelineResult.ns.NsUID, connID)
+					if err != nil {
+						if errors.Is(err, errdomain.ErrNotFound) {
+							err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
+						}
+						return DispatchPipelineWebhookEventResult{}, err
+					}
 
-				setupVal, err := data.NewValue(s)
-				if err != nil {
-					return DispatchPipelineWebhookEventResult{}, err
+					var s map[string]any
+					if err := json.Unmarshal(conn.Setup, &s); err != nil {
+						return DispatchPipelineWebhookEventResult{}, err
+					}
+
+					setupVal, err := data.NewValue(s)
+					if err != nil {
+						return DispatchPipelineWebhookEventResult{}, err
+					}
+					setup = setupVal
 				}
-				setup = setupVal
 			}
 
 			// ParseEvent is used to parse the event and return the parsed message
@@ -153,20 +161,20 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 			if err != nil {
 				return DispatchPipelineWebhookEventResult{}, err
 			}
-			pipelineRun := s.logPipelineRunStart(ctx, logPipelineRunStartParams{
-				pipelineTriggerID: pipelineTriggerID.String(),
-				pipelineUID:       runOn.PipelineUID,
-				pipelineReleaseID: defaultPipelineReleaseID,
-				requesterUID:      loadPipelineResult.ns.NsUID,
-				userUID:           loadPipelineResult.ns.NsUID,
-			})
-			defer func() {
-				if err != nil {
-					s.logPipelineRunError(ctx, pipelineTriggerID.String(), err, pipelineRun.StartedTime)
-				}
-			}()
 
 			if runOn.ReleaseUID == uuid.Nil {
+				pipelineRun := s.logPipelineRunStart(ctx, logPipelineRunStartParams{
+					pipelineTriggerID: pipelineTriggerID.String(),
+					pipelineUID:       loadPipelineResult.pipeline.UID,
+					pipelineReleaseID: defaultPipelineReleaseID,
+					requesterUID:      loadPipelineResult.ns.NsUID,
+					userUID:           loadPipelineResult.ns.NsUID,
+				})
+				defer func() {
+					if err != nil {
+						s.logPipelineRunError(ctx, pipelineTriggerID.String(), err, pipelineRun.StartedTime)
+					}
+				}()
 				_, err = s.triggerAsyncPipeline(ctx, triggerParams{
 					ns:                loadPipelineResult.ns,
 					pipelineID:        loadPipelineResult.pipeline.ID,
@@ -179,6 +187,18 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 					return DispatchPipelineWebhookEventResult{}, err
 				}
 			} else {
+				pipelineRun := s.logPipelineRunStart(ctx, logPipelineRunStartParams{
+					pipelineTriggerID: pipelineTriggerID.String(),
+					pipelineUID:       loadPipelineResult.pipeline.UID,
+					pipelineReleaseID: loadPipelineResult.release.ID,
+					requesterUID:      loadPipelineResult.ns.NsUID,
+					userUID:           loadPipelineResult.ns.NsUID,
+				})
+				defer func() {
+					if err != nil {
+						s.logPipelineRunError(ctx, pipelineTriggerID.String(), err, pipelineRun.StartedTime)
+					}
+				}()
 				_, err = s.triggerAsyncPipeline(ctx, triggerParams{
 					ns:                 loadPipelineResult.ns,
 					pipelineID:         loadPipelineResult.pipeline.ID,

@@ -116,9 +116,9 @@ type RepositoryMock struct {
 	beforeDeleteNamespaceSecretByIDCounter uint64
 	DeleteNamespaceSecretByIDMock          mRepositoryMockDeleteNamespaceSecretByID
 
-	funcDeletePipelineRunOn          func(ctx context.Context, pipelineUID uuid.UUID) (err error)
+	funcDeletePipelineRunOn          func(ctx context.Context, uid uuid.UUID) (err error)
 	funcDeletePipelineRunOnOrigin    string
-	inspectFuncDeletePipelineRunOn   func(ctx context.Context, pipelineUID uuid.UUID)
+	inspectFuncDeletePipelineRunOn   func(ctx context.Context, uid uuid.UUID)
 	afterDeletePipelineRunOnCounter  uint64
 	beforeDeletePipelineRunOnCounter uint64
 	DeletePipelineRunOnMock          mRepositoryMockDeletePipelineRunOn
@@ -5372,14 +5372,14 @@ type RepositoryMockDeletePipelineRunOnExpectation struct {
 
 // RepositoryMockDeletePipelineRunOnParams contains parameters of the Repository.DeletePipelineRunOn
 type RepositoryMockDeletePipelineRunOnParams struct {
-	ctx         context.Context
-	pipelineUID uuid.UUID
+	ctx context.Context
+	uid uuid.UUID
 }
 
 // RepositoryMockDeletePipelineRunOnParamPtrs contains pointers to parameters of the Repository.DeletePipelineRunOn
 type RepositoryMockDeletePipelineRunOnParamPtrs struct {
-	ctx         *context.Context
-	pipelineUID *uuid.UUID
+	ctx *context.Context
+	uid *uuid.UUID
 }
 
 // RepositoryMockDeletePipelineRunOnResults contains results of the Repository.DeletePipelineRunOn
@@ -5389,9 +5389,9 @@ type RepositoryMockDeletePipelineRunOnResults struct {
 
 // RepositoryMockDeletePipelineRunOnOrigins contains origins of expectations of the Repository.DeletePipelineRunOn
 type RepositoryMockDeletePipelineRunOnExpectationOrigins struct {
-	origin            string
-	originCtx         string
-	originPipelineUID string
+	origin    string
+	originCtx string
+	originUid string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -5405,7 +5405,7 @@ func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) Optional() *mRe
 }
 
 // Expect sets up expected params for Repository.DeletePipelineRunOn
-func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) Expect(ctx context.Context, pipelineUID uuid.UUID) *mRepositoryMockDeletePipelineRunOn {
+func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) Expect(ctx context.Context, uid uuid.UUID) *mRepositoryMockDeletePipelineRunOn {
 	if mmDeletePipelineRunOn.mock.funcDeletePipelineRunOn != nil {
 		mmDeletePipelineRunOn.mock.t.Fatalf("RepositoryMock.DeletePipelineRunOn mock is already set by Set")
 	}
@@ -5418,7 +5418,7 @@ func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) Expect(ctx cont
 		mmDeletePipelineRunOn.mock.t.Fatalf("RepositoryMock.DeletePipelineRunOn mock is already set by ExpectParams functions")
 	}
 
-	mmDeletePipelineRunOn.defaultExpectation.params = &RepositoryMockDeletePipelineRunOnParams{ctx, pipelineUID}
+	mmDeletePipelineRunOn.defaultExpectation.params = &RepositoryMockDeletePipelineRunOnParams{ctx, uid}
 	mmDeletePipelineRunOn.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmDeletePipelineRunOn.expectations {
 		if minimock.Equal(e.params, mmDeletePipelineRunOn.defaultExpectation.params) {
@@ -5452,8 +5452,8 @@ func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) ExpectCtxParam1
 	return mmDeletePipelineRunOn
 }
 
-// ExpectPipelineUIDParam2 sets up expected param pipelineUID for Repository.DeletePipelineRunOn
-func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) ExpectPipelineUIDParam2(pipelineUID uuid.UUID) *mRepositoryMockDeletePipelineRunOn {
+// ExpectUidParam2 sets up expected param uid for Repository.DeletePipelineRunOn
+func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) ExpectUidParam2(uid uuid.UUID) *mRepositoryMockDeletePipelineRunOn {
 	if mmDeletePipelineRunOn.mock.funcDeletePipelineRunOn != nil {
 		mmDeletePipelineRunOn.mock.t.Fatalf("RepositoryMock.DeletePipelineRunOn mock is already set by Set")
 	}
@@ -5469,14 +5469,14 @@ func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) ExpectPipelineU
 	if mmDeletePipelineRunOn.defaultExpectation.paramPtrs == nil {
 		mmDeletePipelineRunOn.defaultExpectation.paramPtrs = &RepositoryMockDeletePipelineRunOnParamPtrs{}
 	}
-	mmDeletePipelineRunOn.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
-	mmDeletePipelineRunOn.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
+	mmDeletePipelineRunOn.defaultExpectation.paramPtrs.uid = &uid
+	mmDeletePipelineRunOn.defaultExpectation.expectationOrigins.originUid = minimock.CallerInfo(1)
 
 	return mmDeletePipelineRunOn
 }
 
 // Inspect accepts an inspector function that has same arguments as the Repository.DeletePipelineRunOn
-func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) Inspect(f func(ctx context.Context, pipelineUID uuid.UUID)) *mRepositoryMockDeletePipelineRunOn {
+func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) Inspect(f func(ctx context.Context, uid uuid.UUID)) *mRepositoryMockDeletePipelineRunOn {
 	if mmDeletePipelineRunOn.mock.inspectFuncDeletePipelineRunOn != nil {
 		mmDeletePipelineRunOn.mock.t.Fatalf("Inspect function is already set for RepositoryMock.DeletePipelineRunOn")
 	}
@@ -5501,7 +5501,7 @@ func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) Return(err erro
 }
 
 // Set uses given function f to mock the Repository.DeletePipelineRunOn method
-func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) Set(f func(ctx context.Context, pipelineUID uuid.UUID) (err error)) *RepositoryMock {
+func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) Set(f func(ctx context.Context, uid uuid.UUID) (err error)) *RepositoryMock {
 	if mmDeletePipelineRunOn.defaultExpectation != nil {
 		mmDeletePipelineRunOn.mock.t.Fatalf("Default expectation is already set for the Repository.DeletePipelineRunOn method")
 	}
@@ -5517,14 +5517,14 @@ func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) Set(f func(ctx 
 
 // When sets expectation for the Repository.DeletePipelineRunOn which will trigger the result defined by the following
 // Then helper
-func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) When(ctx context.Context, pipelineUID uuid.UUID) *RepositoryMockDeletePipelineRunOnExpectation {
+func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) When(ctx context.Context, uid uuid.UUID) *RepositoryMockDeletePipelineRunOnExpectation {
 	if mmDeletePipelineRunOn.mock.funcDeletePipelineRunOn != nil {
 		mmDeletePipelineRunOn.mock.t.Fatalf("RepositoryMock.DeletePipelineRunOn mock is already set by Set")
 	}
 
 	expectation := &RepositoryMockDeletePipelineRunOnExpectation{
 		mock:               mmDeletePipelineRunOn.mock,
-		params:             &RepositoryMockDeletePipelineRunOnParams{ctx, pipelineUID},
+		params:             &RepositoryMockDeletePipelineRunOnParams{ctx, uid},
 		expectationOrigins: RepositoryMockDeletePipelineRunOnExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
 	mmDeletePipelineRunOn.expectations = append(mmDeletePipelineRunOn.expectations, expectation)
@@ -5559,17 +5559,17 @@ func (mmDeletePipelineRunOn *mRepositoryMockDeletePipelineRunOn) invocationsDone
 }
 
 // DeletePipelineRunOn implements mm_repository.Repository
-func (mmDeletePipelineRunOn *RepositoryMock) DeletePipelineRunOn(ctx context.Context, pipelineUID uuid.UUID) (err error) {
+func (mmDeletePipelineRunOn *RepositoryMock) DeletePipelineRunOn(ctx context.Context, uid uuid.UUID) (err error) {
 	mm_atomic.AddUint64(&mmDeletePipelineRunOn.beforeDeletePipelineRunOnCounter, 1)
 	defer mm_atomic.AddUint64(&mmDeletePipelineRunOn.afterDeletePipelineRunOnCounter, 1)
 
 	mmDeletePipelineRunOn.t.Helper()
 
 	if mmDeletePipelineRunOn.inspectFuncDeletePipelineRunOn != nil {
-		mmDeletePipelineRunOn.inspectFuncDeletePipelineRunOn(ctx, pipelineUID)
+		mmDeletePipelineRunOn.inspectFuncDeletePipelineRunOn(ctx, uid)
 	}
 
-	mm_params := RepositoryMockDeletePipelineRunOnParams{ctx, pipelineUID}
+	mm_params := RepositoryMockDeletePipelineRunOnParams{ctx, uid}
 
 	// Record call args
 	mmDeletePipelineRunOn.DeletePipelineRunOnMock.mutex.Lock()
@@ -5588,7 +5588,7 @@ func (mmDeletePipelineRunOn *RepositoryMock) DeletePipelineRunOn(ctx context.Con
 		mm_want := mmDeletePipelineRunOn.DeletePipelineRunOnMock.defaultExpectation.params
 		mm_want_ptrs := mmDeletePipelineRunOn.DeletePipelineRunOnMock.defaultExpectation.paramPtrs
 
-		mm_got := RepositoryMockDeletePipelineRunOnParams{ctx, pipelineUID}
+		mm_got := RepositoryMockDeletePipelineRunOnParams{ctx, uid}
 
 		if mm_want_ptrs != nil {
 
@@ -5597,9 +5597,9 @@ func (mmDeletePipelineRunOn *RepositoryMock) DeletePipelineRunOn(ctx context.Con
 					mmDeletePipelineRunOn.DeletePipelineRunOnMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
 			}
 
-			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
-				mmDeletePipelineRunOn.t.Errorf("RepositoryMock.DeletePipelineRunOn got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmDeletePipelineRunOn.DeletePipelineRunOnMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
+			if mm_want_ptrs.uid != nil && !minimock.Equal(*mm_want_ptrs.uid, mm_got.uid) {
+				mmDeletePipelineRunOn.t.Errorf("RepositoryMock.DeletePipelineRunOn got unexpected parameter uid, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeletePipelineRunOn.DeletePipelineRunOnMock.defaultExpectation.expectationOrigins.originUid, *mm_want_ptrs.uid, mm_got.uid, minimock.Diff(*mm_want_ptrs.uid, mm_got.uid))
 			}
 
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
@@ -5614,9 +5614,9 @@ func (mmDeletePipelineRunOn *RepositoryMock) DeletePipelineRunOn(ctx context.Con
 		return (*mm_results).err
 	}
 	if mmDeletePipelineRunOn.funcDeletePipelineRunOn != nil {
-		return mmDeletePipelineRunOn.funcDeletePipelineRunOn(ctx, pipelineUID)
+		return mmDeletePipelineRunOn.funcDeletePipelineRunOn(ctx, uid)
 	}
-	mmDeletePipelineRunOn.t.Fatalf("Unexpected call to RepositoryMock.DeletePipelineRunOn. %v %v", ctx, pipelineUID)
+	mmDeletePipelineRunOn.t.Fatalf("Unexpected call to RepositoryMock.DeletePipelineRunOn. %v %v", ctx, uid)
 	return
 }
 
