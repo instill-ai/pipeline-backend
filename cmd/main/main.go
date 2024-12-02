@@ -511,7 +511,6 @@ func main() {
 	lw.RegisterActivity(cw.UpdatePipelineRunActivity)
 	lw.RegisterActivity(cw.UpsertComponentRunActivity)
 
-	mw.RegisterActivity(cw.UploadInputsToMinioActivity)
 	mw.RegisterActivity(cw.UploadOutputsToMinioActivity)
 	mw.RegisterActivity(cw.UploadRecipeToMinioActivity)
 	mw.RegisterActivity(cw.UploadComponentInputsActivity)

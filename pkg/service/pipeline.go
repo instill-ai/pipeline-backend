@@ -920,6 +920,11 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 		formats[k] = []string{v}
 	}
 
+	uploadingPipelineData := make([]map[string]any, len(pipelineData))
+	for idx := range uploadingPipelineData {
+		uploadingPipelineData[idx] = make(map[string]any)
+	}
+
 	// TODO(huitang): implement a structpb to format.Value converter
 	for idx, d := range pipelineData {
 
@@ -941,6 +946,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				// is missing and should be handled as such by components.
 				if d, ok := defaultValueMap[k]; !ok || d == nil {
 					variable[k] = data.NewNull()
+					uploadingPipelineData[idx][k] = nil
 					continue
 				}
 			}
@@ -949,106 +955,138 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 			case "boolean":
 				if v == nil {
 					variable[k] = data.NewBoolean(defaultValueMap[k].(bool))
+					uploadingPipelineData[idx][k] = defaultValueMap[k].(bool)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_BoolValue); !ok {
 						return fmt.Errorf("%w: invalid boolean value: %v", errdomain.ErrInvalidArgument, v)
 					}
 					variable[k] = data.NewBoolean(v.GetBoolValue())
+					uploadingPipelineData[idx][k] = v.GetBoolValue()
 				}
 			case "array:boolean":
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					uploadingDataArray := make([]any, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
 						array[idx] = data.NewBoolean(val.(bool))
+						uploadingDataArray[idx] = val.(bool)
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = uploadingDataArray
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
+					uploadingDataArray := make([]any, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_BoolValue); !ok {
 							return fmt.Errorf("%w: invalid boolean value: %v", errdomain.ErrInvalidArgument, val)
 						}
 						array[idx] = data.NewBoolean(val.GetBoolValue())
+						uploadingDataArray[idx] = val.GetBoolValue()
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = uploadingDataArray
 				}
 			case "string":
 				if v == nil {
 					variable[k] = data.NewString(defaultValueMap[k].(string))
+					uploadingPipelineData[idx][k] = defaultValueMap[k].(string)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
 						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
 					}
 					variable[k] = data.NewString(v.GetStringValue())
+					uploadingPipelineData[idx][k] = v.GetStringValue()
 				}
 			case "array:string":
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					uploadingDataArray := make([]any, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
 						array[idx] = data.NewString(val.(string))
+						uploadingDataArray[idx] = val.(string)
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = uploadingDataArray
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
+					uploadingDataArray := make([]any, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
 							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
 						}
 						array[idx] = data.NewString(val.GetStringValue())
+						uploadingDataArray[idx] = val.GetStringValue()
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = uploadingDataArray
 				}
 			case "integer":
 				if v == nil {
 					variable[k] = data.NewNumberFromFloat(defaultValueMap[k].(float64))
+					uploadingPipelineData[idx][k] = defaultValueMap[k].(float64)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_NumberValue); !ok {
 						return fmt.Errorf("%w: invalid number value: %v", errdomain.ErrInvalidArgument, v)
 					}
 					variable[k] = data.NewNumberFromFloat(v.GetNumberValue())
+					uploadingPipelineData[idx][k] = v.GetNumberValue()
 				}
 			case "array:integer":
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					uploadingDataArray := make([]any, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
 						array[idx] = data.NewNumberFromFloat(val.(float64))
+						uploadingDataArray[idx] = val.(float64)
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = uploadingDataArray
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
+					uploadingDataArray := make([]any, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_NumberValue); !ok {
 							return fmt.Errorf("%w: invalid number value: %v", errdomain.ErrInvalidArgument, val)
 						}
 						array[idx] = data.NewNumberFromFloat(val.GetNumberValue())
+						uploadingDataArray[idx] = val.GetNumberValue()
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = uploadingDataArray
 				}
 			case "number":
 				if v == nil {
 					variable[k] = data.NewNumberFromFloat(defaultValueMap[k].(float64))
+					uploadingPipelineData[idx][k] = defaultValueMap[k].(float64)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_NumberValue); !ok {
 						return fmt.Errorf("%w: invalid number value: %v", errdomain.ErrInvalidArgument, v)
 					}
 					variable[k] = data.NewNumberFromFloat(v.GetNumberValue())
+					uploadingPipelineData[idx][k] = v.GetNumberValue()
 				}
 			case "array:number":
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					uploadingDataArray := make([]any, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
 						array[idx] = data.NewNumberFromFloat(val.(float64))
+						uploadingDataArray[idx] = val.(float64)
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = uploadingDataArray
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
+					uploadingDataArray := make([]any, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_NumberValue); !ok {
 							return fmt.Errorf("%w: invalid number value: %v", errdomain.ErrInvalidArgument, val)
 						}
 						array[idx] = data.NewNumberFromFloat(val.GetNumberValue())
+						uploadingDataArray[idx] = val.GetNumberValue()
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = uploadingDataArray
 				}
 			case "image", "image/*":
 				if v == nil {
@@ -1056,6 +1094,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					if err != nil {
 						return err
 					}
+					uploadingPipelineData[idx][k] = defaultValueMap[k].(string)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
 						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
@@ -1064,19 +1103,24 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					if err != nil {
 						return err
 					}
+					uploadingPipelineData[idx][k] = v.GetStringValue()
 				}
 			case "array:image", "array:image/*":
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					arrayWithURL := make([]any, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
 						array[idx], err = data.NewImageFromURL(ctx, s.binaryFetcher, val.(string))
 						if err != nil {
 							return err
 						}
+						arrayWithURL[idx] = val.(string)
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = arrayWithURL
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
+					arrayWithURL := make([]any, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
 							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
@@ -1085,8 +1129,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						if err != nil {
 							return err
 						}
+						arrayWithURL[idx] = val.GetStringValue()
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = arrayWithURL
 				}
 			case "audio", "audio/*":
 				if v == nil {
@@ -1094,6 +1140,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					if err != nil {
 						return err
 					}
+					uploadingPipelineData[idx][k] = defaultValueMap[k].(string)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
 						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
@@ -1102,19 +1149,24 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					if err != nil {
 						return err
 					}
+					uploadingPipelineData[idx][k] = v.GetStringValue()
 				}
 			case "array:audio", "array:audio/*":
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					arrayWithURL := make([]any, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
 						array[idx], err = data.NewAudioFromURL(ctx, s.binaryFetcher, val.(string))
 						if err != nil {
 							return err
 						}
+						arrayWithURL[idx] = val.(string)
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = arrayWithURL
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
+					arrayWithURL := make([]any, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
 							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
@@ -1123,8 +1175,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						if err != nil {
 							return err
 						}
+						arrayWithURL[idx] = val.GetStringValue()
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = arrayWithURL
 				}
 			case "video", "video/*":
 				if v == nil {
@@ -1132,6 +1186,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					if err != nil {
 						return err
 					}
+					uploadingPipelineData[idx][k] = defaultValueMap[k].(string)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
 						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
@@ -1140,19 +1195,24 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					if err != nil {
 						return err
 					}
+					uploadingPipelineData[idx][k] = v.GetStringValue()
 				}
 			case "array:video", "array:video/*":
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					arrayWithURL := make([]any, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
 						array[idx], err = data.NewVideoFromURL(ctx, s.binaryFetcher, val.(string))
 						if err != nil {
 							return err
 						}
+						arrayWithURL[idx] = val.(string)
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = arrayWithURL
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
+					arrayWithURL := make([]any, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
 							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
@@ -1161,8 +1221,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						if err != nil {
 							return err
 						}
+						arrayWithURL[idx] = val.GetStringValue()
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = arrayWithURL
 				}
 
 			case "document":
@@ -1171,6 +1233,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					if err != nil {
 						return err
 					}
+					uploadingPipelineData[idx][k] = defaultValueMap[k].(string)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
 						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
@@ -1179,19 +1242,24 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					if err != nil {
 						return err
 					}
+					uploadingPipelineData[idx][k] = v.GetStringValue()
 				}
 			case "array:document":
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					arrayWithURL := make([]any, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
 						array[idx], err = data.NewDocumentFromURL(ctx, s.binaryFetcher, val.(string))
 						if err != nil {
 							return err
 						}
+						arrayWithURL[idx] = val.(string)
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = arrayWithURL
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
+					arrayWithURL := make([]any, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
 							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
@@ -1200,8 +1268,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						if err != nil {
 							return err
 						}
+						arrayWithURL[idx] = val.GetStringValue()
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = arrayWithURL
 				}
 			case "file", "*/*":
 				if v == nil {
@@ -1209,6 +1279,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					if err != nil {
 						return err
 					}
+					uploadingPipelineData[idx][k] = defaultValueMap[k].(string)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
 						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
@@ -1217,19 +1288,24 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					if err != nil {
 						return err
 					}
+					uploadingPipelineData[idx][k] = v.GetStringValue()
 				}
 			case "array:file", "array:*/*":
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					arrayWithURL := make([]any, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
 						array[idx], err = data.NewBinaryFromURL(ctx, s.binaryFetcher, val.(string))
 						if err != nil {
 							return err
 						}
+						arrayWithURL[idx] = val.(string)
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = arrayWithURL
 				} else {
 					array := make(data.Array, len(v.GetListValue().Values))
+					arrayWithURL := make([]any, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
 							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
@@ -1238,8 +1314,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						if err != nil {
 							return err
 						}
+						arrayWithURL[idx] = val.GetStringValue()
 					}
 					variable[k] = array
+					uploadingPipelineData[idx][k] = arrayWithURL
 				}
 			case "semi-structured/*", "semi-structured/json", "json":
 
@@ -1249,6 +1327,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						return err
 					}
 					variable[k] = jv
+					uploadingPipelineData[idx][k] = jv
 				} else {
 					switch v.Kind.(type) {
 					case *structpb.Value_StructValue:
@@ -1266,6 +1345,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 							return err
 						}
 						variable[k] = jv
+						uploadingPipelineData[idx][k] = jv
 					case *structpb.Value_ListValue:
 						j := []any{}
 						b, err := protojson.Marshal(v)
@@ -1281,6 +1361,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 							return err
 						}
 						variable[k] = jv
+						uploadingPipelineData[idx][k] = jv
 					}
 				}
 
@@ -1289,6 +1370,23 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				return err
 			}
 		}
+
+		requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
+
+		expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, requesterUID)
+		if err != nil {
+			return fmt.Errorf("get expiry rule tag: %w", err)
+		}
+
+		err = s.uploadPipelineRunInputsToMinio(ctx, uploadPipelineRunInputsToMinioParam{
+			PipelineTriggerID: pipelineTriggerID,
+			ExpiryRuleTag:     expiryRuleTag,
+			PipelineData:      uploadingPipelineData,
+		})
+		if err != nil {
+			return fmt.Errorf("pipeline run inputs to minio: %w", err)
+		}
+
 		err = wfm.Set(ctx, idx, constant.SegVariable, variable)
 		if err != nil {
 			return err

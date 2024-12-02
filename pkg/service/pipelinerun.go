@@ -14,12 +14,14 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	miniox "github.com/instill-ai/x/minio"
 	resourcex "github.com/instill-ai/x/resource"
 )
 
@@ -379,4 +381,48 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListP
 		Page:         int32(page),
 		PageSize:     int32(pageSize),
 	}, nil
+}
+
+type uploadPipelineRunInputsToMinioParam struct {
+	PipelineTriggerID string
+	ExpiryRuleTag     string
+	PipelineData      []map[string]any
+}
+
+func (s *service) uploadPipelineRunInputsToMinio(ctx context.Context, param uploadPipelineRunInputsToMinioParam) error {
+	logger, _ := logger.GetZapLogger(ctx)
+	minioClient := s.minioClient
+	objectName := fmt.Sprintf("pipeline-runs/input/%s.json", param.PipelineTriggerID)
+
+	logger.Info("uploadPipelineRunInputsToMinio started",
+		zap.String("objectName", objectName),
+		zap.Any("param.PipelineData", param.PipelineData),
+	)
+
+	url, objectInfo, err := minioClient.UploadFile(ctx, logger, &miniox.UploadFileParam{
+		FilePath:      objectName,
+		FileContent:   param.PipelineData,
+		FileMimeType:  constant.ContentTypeJSON,
+		ExpiryRuleTag: param.ExpiryRuleTag,
+	})
+	if err != nil {
+		return fmt.Errorf("upload pipeline run inputs to minio: %w", err)
+	}
+
+	inputs := datamodel.JSONB{{
+		Name: objectInfo.Key,
+		Type: objectInfo.ContentType,
+		Size: objectInfo.Size,
+		URL:  url,
+	}}
+
+	err = s.repository.UpdatePipelineRun(ctx, param.PipelineTriggerID, &datamodel.PipelineRun{Inputs: inputs})
+	if err != nil {
+		logger.Error("save pipeline run input data", zap.Error(err))
+		return err
+	}
+
+	logger.Info("uploadPipelineRunInputsToMinio finished")
+
+	return nil
 }

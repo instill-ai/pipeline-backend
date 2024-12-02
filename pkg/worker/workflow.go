@@ -248,16 +248,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}).Get(ctx, nil); err != nil {
 			return err
 		}
-
-		err := workflow.ExecuteActivity(minioCtx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
-			PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
-			ExpiryRuleTag:     param.SystemVariables.ExpiryRuleTag,
-		}).Get(ctx, nil)
-		if err != nil {
-			logger.Error("Failed to upload pipeline run input", zap.Error(err))
-		}
-
-		err = workflow.ExecuteActivity(minioCtx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
+		err := workflow.ExecuteActivity(minioCtx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
 			PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
 			ExpiryRuleTag:     param.SystemVariables.ExpiryRuleTag,
 		}).Get(ctx, nil)

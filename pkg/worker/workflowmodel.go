@@ -15,11 +15,6 @@ type UploadToMinioActivityResponse struct {
 	ObjectInfo *minio.ObjectInfo
 }
 
-type UploadInputsToMinioActivityParam struct {
-	PipelineTriggerID string
-	ExpiryRuleTag     string
-}
-
 type UploadOutputsToMinioActivityParam struct {
 	PipelineTriggerID string
 	ExpiryRuleTag     string
