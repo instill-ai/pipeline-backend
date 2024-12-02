@@ -17,6 +17,13 @@ import (
 	miniox "github.com/instill-ai/x/minio"
 )
 
+const (
+	EditionLocalCE      = "local-ce:dev"
+	EditionCloudDev     = "cloud:dev"
+	EditionCloudStaging = "cloud:staging"
+	EditionCloudProd    = "cloud:prod"
+)
+
 // Config - Global variable to export
 var Config AppConfig
 
