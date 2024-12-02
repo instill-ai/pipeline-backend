@@ -396,7 +396,7 @@ func (s *service) uploadPipelineRunInputsToMinio(ctx context.Context, param uplo
 
 	logger.Info("uploadPipelineRunInputsToMinio started",
 		zap.String("objectName", objectName),
-		zap.Any("param.PipelineData", param.PipelineData),
+		zap.Any("pipelineData", param.PipelineData),
 	)
 
 	url, objectInfo, err := minioClient.UploadFile(ctx, logger, &miniox.UploadFileParam{
