@@ -1364,7 +1364,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 
 		requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
 
-		expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, requesterUID)
+		expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, requesterUID.String())
 		if err != nil {
 			return fmt.Errorf("get expiry rule tag: %w", err)
 		}
@@ -1970,8 +1970,8 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 		pipelineTriggerID: pipelineTriggerID,
 		pipelineUID:       pipelineUID,
 		pipelineReleaseID: defaultPipelineReleaseID,
-		requesterUID:      uuid.FromStringOrNil(requesterUID),
-		userUID:           uuid.FromStringOrNil(userUID),
+		requesterUID:      requesterUID,
+		userUID:           userUID,
 	})
 	defer func() {
 		if err != nil {
@@ -1993,8 +1993,8 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 		pipelineID:        dbPipeline.ID,
 		pipelineUID:       pipelineUID,
 		pipelineTriggerID: pipelineTriggerID,
-		requesterUID:      uuid.FromStringOrNil(requesterUID),
-		userUID:           uuid.FromStringOrNil(userUID),
+		requesterUID:      requesterUID,
+		userUID:           userUID,
 	}, returnTraces)
 	if err != nil {
 		return nil, nil, err
@@ -2017,8 +2017,8 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 		pipelineTriggerID: pipelineTriggerID,
 		pipelineUID:       dbPipeline.UID,
 		pipelineReleaseID: defaultPipelineReleaseID,
-		requesterUID:      uuid.FromStringOrNil(requesterUID),
-		userUID:           uuid.FromStringOrNil(userUID),
+		requesterUID:      requesterUID,
+		userUID:           userUID,
 	})
 	defer func() {
 		if err != nil {
@@ -2039,8 +2039,8 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 		pipelineID:        dbPipeline.ID,
 		pipelineUID:       dbPipeline.UID,
 		pipelineTriggerID: pipelineTriggerID,
-		requesterUID:      uuid.FromStringOrNil(requesterUID),
-		userUID:           uuid.FromStringOrNil(userUID),
+		requesterUID:      requesterUID,
+		userUID:           userUID,
 	})
 	if err != nil {
 		return nil, err
@@ -2068,8 +2068,8 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		pipelineTriggerID: pipelineTriggerID,
 		pipelineUID:       pipelineUID,
 		pipelineReleaseID: dbPipelineRelease.ID,
-		requesterUID:      uuid.FromStringOrNil(requesterUID),
-		userUID:           uuid.FromStringOrNil(userUID),
+		requesterUID:      requesterUID,
+		userUID:           userUID,
 	})
 	defer func() {
 		if err != nil {
@@ -2093,8 +2093,8 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		pipelineReleaseID:  dbPipelineRelease.ID,
 		pipelineReleaseUID: dbPipelineRelease.UID,
 		pipelineTriggerID:  pipelineTriggerID,
-		requesterUID:       uuid.FromStringOrNil(requesterUID),
-		userUID:            uuid.FromStringOrNil(userUID),
+		requesterUID:       requesterUID,
+		userUID:            userUID,
 	}, returnTraces)
 	if err != nil {
 		return nil, nil, err
@@ -2122,8 +2122,8 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		pipelineTriggerID: pipelineTriggerID,
 		pipelineUID:       pipelineUID,
 		pipelineReleaseID: dbPipelineRelease.ID,
-		requesterUID:      uuid.FromStringOrNil(requesterUID),
-		userUID:           uuid.FromStringOrNil(userUID),
+		requesterUID:      requesterUID,
+		userUID:           userUID,
 	})
 	defer func() {
 		if err != nil {
@@ -2146,8 +2146,8 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		pipelineReleaseID:  dbPipelineRelease.ID,
 		pipelineReleaseUID: dbPipelineRelease.UID,
 		pipelineTriggerID:  pipelineTriggerID,
-		requesterUID:       uuid.FromStringOrNil(requesterUID),
-		userUID:            uuid.FromStringOrNil(userUID),
+		requesterUID:       requesterUID,
+		userUID:            userUID,
 	})
 	if err != nil {
 		return nil, err

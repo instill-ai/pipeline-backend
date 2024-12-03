@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gabriel-vasile/mimetype"
-	"github.com/gofrs/uuid"
 	"google.golang.org/grpc/metadata"
 
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
@@ -26,8 +25,7 @@ func (s *service) uploadBlobAndGetDownloadURL(ctx context.Context, ns resource.N
 		return "", fmt.Errorf("get mime type: %w", err)
 	}
 	artifactClient := s.artifactPublicServiceClient
-	requesterUIDStr, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
-	requesterUID := uuid.FromStringOrNil(requesterUIDStr)
+	requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
 
 	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
 

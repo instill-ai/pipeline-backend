@@ -93,9 +93,9 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 		return nil, err
 	}
 
-	isOwner := dbPipeline.OwnerUID().String() == requesterUID
+	isOwner := dbPipeline.OwnerUID().String() == requesterUID.String()
 
-	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsWithPermissions(ctx, requesterUID, dbPipeline.UID.String(),
+	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsWithPermissions(ctx, requesterUID.String(), dbPipeline.UID.String(),
 		page, pageSize, filter, orderBy, isOwner)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get pipeline runs: %w", err)
@@ -103,7 +103,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 
 	var referenceIDs []string
 	for _, pipelineRun := range pipelineRuns {
-		if CanViewPrivateData(pipelineRun.RequesterUID.String(), requesterUID) {
+		if CanViewPrivateData(pipelineRun.RequesterUID.String(), requesterUID.String()) {
 			for _, input := range pipelineRun.Inputs {
 				referenceIDs = append(referenceIDs, input.Name)
 			}
@@ -154,7 +154,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 			pbRun.RequesterId = *requesterID
 		}
 
-		if CanViewPrivateData(run.RequesterUID.String(), requesterUID) {
+		if CanViewPrivateData(run.RequesterUID.String(), requesterUID.String()) {
 			if len(run.Inputs) == 1 {
 				key := run.Inputs[0].Name
 				pbRun.Inputs, err = parseMetadataToStructArray(metadataMap, key)
@@ -213,9 +213,9 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 		return nil, fmt.Errorf("failed to get pipeline by UID: %s. error: %s", dbPipelineRun.PipelineUID.String(), err.Error())
 	}
 
-	isOwner := dbPipeline.OwnerUID().String() == requesterUID
+	isOwner := dbPipeline.OwnerUID().String() == requesterUID.String()
 
-	if !isOwner && requesterUID != dbPipelineRun.RequesterUID.String() {
+	if !isOwner && requesterUID.String() != dbPipelineRun.RequesterUID.String() {
 		return nil, fmt.Errorf("requester is not pipeline owner/credit owner. they are not allowed to view these component runs")
 	}
 
@@ -226,7 +226,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 
 	var referenceIDs []string
 	for _, pipelineRun := range componentRuns {
-		if CanViewPrivateData(dbPipelineRun.RequesterUID.String(), requesterUID) {
+		if CanViewPrivateData(dbPipelineRun.RequesterUID.String(), requesterUID.String()) {
 			for _, input := range pipelineRun.Inputs {
 				referenceIDs = append(referenceIDs, input.Name)
 			}
@@ -255,7 +255,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 			return nil, fmt.Errorf("failed to convert component run: %w", err)
 		}
 
-		if CanViewPrivateData(dbPipelineRun.RequesterUID.String(), requesterUID) {
+		if CanViewPrivateData(dbPipelineRun.RequesterUID.String(), requesterUID.String()) {
 			if len(run.Inputs) == 1 {
 				key := run.Inputs[0].Name
 				pbRun.Inputs, err = parseMetadataToStructArray(metadataMap, key)
