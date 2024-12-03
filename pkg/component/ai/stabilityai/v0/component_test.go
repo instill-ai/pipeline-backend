@@ -2,11 +2,13 @@ package stabilityai
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	_ "embed"
 
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -15,8 +17,13 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/x/errmsg"
 )
+
+//go:embed testdata/dog.png
+var dog []byte
 
 const (
 	apiKey        = "123"
@@ -27,18 +34,6 @@ const (
   "message": "Incorrect API key provided",
   "name": "unauthorized"
 }`
-
-	okResp = `
-{
-  "artifacts": [
-    {
-      "base64": "a",
-      "seed": 1234,
-      "finishReason": "SUCCESS"
-    }
-  ]
-}
-`
 )
 
 func TestComponent_ExecuteImageFromText(t *testing.T) {
@@ -52,20 +47,35 @@ func TestComponent_ExecuteImageFromText(t *testing.T) {
 	bc := base.Component{}
 	cmp := Init(bc).WithInstillCredentials(map[string]any{"apikey": instillSecret})
 
+	img, err := data.NewImageFromBytes(dog, "image/png", "")
+	c.Assert(err, qt.IsNil)
+
+	okResp := fmt.Sprintf(`
+	{
+		"artifacts": [
+			{
+				"base64": "%s",
+				"seed": 1234,
+				"finishReason": "SUCCESS"
+			}
+		]
+	}
+	`, base64.StdEncoding.EncodeToString(dog))
+
 	testcases := []struct {
 		name      string
 		gotStatus int
 		gotResp   string
-		wantResp  TextToImageOutput
+		wantResp  taskOutput
 		wantErr   string
 	}{
 		{
 			name:      "ok - 200",
 			gotStatus: http.StatusOK,
 			gotResp:   okResp,
-			wantResp: TextToImageOutput{
-				Images: []string{"data:image/png;base64,a"},
-				Seeds:  []uint32{1234},
+			wantResp: taskOutput{
+				Images: []format.Image{img},
+				Seeds:  []int{1234},
 			},
 		},
 		{
@@ -106,55 +116,69 @@ func TestComponent_ExecuteImageFromText(t *testing.T) {
 			})
 			c.Assert(err, qt.IsNil)
 
-			weights := []float64{weight}
-			pbIn, err := base.ConvertToStructpb(TextToImageInput{
-				Engine:  engine,
-				Prompts: []string{text},
-				Weights: &weights,
-			})
-			c.Assert(err, qt.IsNil)
-
+			// Generate mock job
 			ir, ow, eh, job := mock.GenerateMockJob(c)
-			ir.ReadMock.Return(pbIn, nil)
-			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
-				wantJSON, err := json.Marshal(tc.wantResp)
-				c.Assert(err, qt.IsNil)
-				c.Check(wantJSON, qt.JSONEquals, output.AsMap())
+
+			// Set up input mock
+			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
+				switch input := input.(type) {
+				case *taskTextToImageInput:
+					*input = taskTextToImageInput{
+						Engine:  engine,
+						Prompts: []string{text},
+						Weights: []float64{weight},
+					}
+				}
 				return nil
 			})
-			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
-				if tc.wantErr != "" {
-					c.Check(errmsg.Message(err), qt.Equals, tc.wantErr)
+
+			// Set up output capture
+			var capturedOutput taskOutput
+			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
+				switch output := output.(type) {
+				case *taskOutput:
+					capturedOutput = *output
+					for _, image := range capturedOutput.Images {
+						imgBae64, err := image.Base64()
+						c.Assert(err, qt.IsNil)
+						wantImgBae64, err := tc.wantResp.Images[0].Base64()
+						c.Assert(err, qt.IsNil)
+						c.Check(imgBae64.String(), qt.Equals, wantImgBae64.String())
+					}
 				}
+				return nil
 			})
+
+			// Set up error handling
+			var executionErr error
+			eh.ErrorMock.Set(func(ctx context.Context, err error) {
+				executionErr = err
+			})
+
+			if tc.wantErr == "" {
+				eh.ErrorMock.Optional()
+			} else {
+				ow.WriteDataMock.Optional()
+			}
 
 			err = exec.Execute(ctx, []*base.Job{job})
 			c.Assert(err, qt.IsNil)
 
+			if tc.wantErr != "" {
+				c.Assert(executionErr, qt.Not(qt.IsNil))
+				c.Check(errmsg.Message(executionErr), qt.Equals, tc.wantErr)
+			}
 		})
 	}
 
 	c.Run("nok - unsupported task", func(c *qt.C) {
 		task := "FOOBAR"
-		exec, err := cmp.CreateExecution(base.ComponentExecution{
+		_, err := cmp.CreateExecution(base.ComponentExecution{
 			Component: cmp,
 			Setup:     new(structpb.Struct),
 			Task:      task,
 		})
-		c.Assert(err, qt.IsNil)
-
-		pbIn := new(structpb.Struct)
-		ir, ow, eh, job := mock.GenerateMockJob(c)
-		ir.ReadMock.Return(pbIn, nil)
-		ow.WriteMock.Optional().Return(nil)
-		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
-			want := "FOOBAR task is not supported."
-			c.Check(errmsg.Message(err), qt.Equals, want)
-		})
-
-		err = exec.Execute(ctx, []*base.Job{job})
-		c.Check(err, qt.IsNil)
-
+		c.Check(err.Error(), qt.Equals, "unsupported task: FOOBAR")
 	})
 }
 
@@ -169,20 +193,35 @@ func TestComponent_ExecuteImageFromImage(t *testing.T) {
 	bc := base.Component{}
 	cmp := Init(bc).WithInstillCredentials(map[string]any{"apikey": instillSecret})
 
+	img, err := data.NewImageFromBytes(dog, "image/png", "")
+	c.Assert(err, qt.IsNil)
+
+	okResp := fmt.Sprintf(`
+	{
+		"artifacts": [
+			{
+				"base64": "%s",
+				"seed": 1234,
+				"finishReason": "SUCCESS"
+			}
+		]
+	}
+	`, base64.StdEncoding.EncodeToString(dog))
+
 	testcases := []struct {
 		name      string
 		gotStatus int
 		gotResp   string
-		wantResp  ImageToImageOutput
+		wantResp  taskOutput
 		wantErr   string
 	}{
 		{
 			name:      "ok - 200",
 			gotStatus: http.StatusOK,
 			gotResp:   okResp,
-			wantResp: ImageToImageOutput{
-				Images: []string{"data:image/png;base64,a"},
-				Seeds:  []uint32{1234},
+			wantResp: taskOutput{
+				Images: []format.Image{img},
+				Seeds:  []int{1234},
 			},
 		},
 		{
@@ -223,55 +262,71 @@ func TestComponent_ExecuteImageFromImage(t *testing.T) {
 			})
 			c.Assert(err, qt.IsNil)
 
-			weights := []float64{weight}
-			pbIn, err := base.ConvertToStructpb(ImageToImageInput{
-				Engine:  engine,
-				Prompts: []string{text},
-				Weights: &weights,
-			})
-			c.Assert(err, qt.IsNil)
-
+			// Generate mock job
 			ir, ow, eh, job := mock.GenerateMockJob(c)
-			ir.ReadMock.Return(pbIn, nil)
-			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
-				wantJSON, err := json.Marshal(tc.wantResp)
-				c.Assert(err, qt.IsNil)
-				c.Check(wantJSON, qt.JSONEquals, output.AsMap())
+
+			// Set up input mock
+			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
+				switch input := input.(type) {
+				case *taskImageToImageInput:
+					*input = taskImageToImageInput{
+						Engine:    engine,
+						Prompts:   []string{text},
+						Weights:   []float64{weight},
+						InitImage: img,
+					}
+				}
 				return nil
 			})
-			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
-				if tc.wantErr != "" {
-					c.Check(errmsg.Message(err), qt.Equals, tc.wantErr)
+
+			// Set up output capture
+			var capturedOutput taskOutput
+			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
+				switch output := output.(type) {
+				case *taskOutput:
+					capturedOutput = *output
+					for _, image := range capturedOutput.Images {
+						imgBae64, err := image.Base64()
+						c.Assert(err, qt.IsNil)
+						wantImgBae64, err := tc.wantResp.Images[0].Base64()
+						c.Assert(err, qt.IsNil)
+						c.Check(imgBae64.String(), qt.Equals, wantImgBae64.String())
+					}
+
 				}
+				return nil
 			})
+
+			// Set up error handling
+			var executionErr error
+			eh.ErrorMock.Set(func(ctx context.Context, err error) {
+				executionErr = err
+			})
+
+			if tc.wantErr == "" {
+				eh.ErrorMock.Optional()
+			} else {
+				ow.WriteDataMock.Optional()
+			}
 
 			err = exec.Execute(ctx, []*base.Job{job})
 			c.Assert(err, qt.IsNil)
 
+			if tc.wantErr != "" {
+				c.Assert(executionErr, qt.Not(qt.IsNil))
+				c.Check(errmsg.Message(executionErr), qt.Equals, tc.wantErr)
+			}
 		})
 	}
 
 	c.Run("nok - unsupported task", func(c *qt.C) {
 		task := "FOOBAR"
-		exec, err := cmp.CreateExecution(base.ComponentExecution{
+		_, err := cmp.CreateExecution(base.ComponentExecution{
 			Component: cmp,
 			Setup:     new(structpb.Struct),
 			Task:      task,
 		})
-		c.Assert(err, qt.IsNil)
-
-		pbIn := new(structpb.Struct)
-		ir, ow, eh, job := mock.GenerateMockJob(c)
-		ir.ReadMock.Return(pbIn, nil)
-		ow.WriteMock.Optional().Return(nil)
-		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
-			want := "FOOBAR task is not supported."
-			c.Check(errmsg.Message(err), qt.Equals, want)
-		})
-
-		err = exec.Execute(ctx, []*base.Job{job})
-		c.Check(err, qt.IsNil)
-
+		c.Check(err.Error(), qt.Equals, "unsupported task: FOOBAR")
 	})
 }
 

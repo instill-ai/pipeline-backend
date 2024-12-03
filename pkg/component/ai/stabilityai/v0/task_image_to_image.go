@@ -2,13 +2,15 @@ package stabilityai
 
 import (
 	"bytes"
+	"context"
+	"encoding/base64"
 	"fmt"
 	"mime/multipart"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
 const imageToImagePathTemplate = "/v1/generation/%s/image-to-image"
@@ -17,28 +19,41 @@ func imageToImagePath(engine string) string {
 	return fmt.Sprintf(imageToImagePathTemplate, engine)
 }
 
-type ImageToImageInput struct {
-	Task               string     `json:"task"`
-	Engine             string     `json:"engine"`
-	Prompts            []string   `json:"prompts"`
-	InitImage          string     `json:"init-image"`
-	Weights            *[]float64 `json:"weights,omitempty"`
-	InitImageMode      *string    `json:"init-image-mode,omitempty"`
-	ImageStrength      *float64   `json:"image-strength,omitempty"`
-	StepScheduleStart  *float64   `json:"step-schedule-start,omitempty"`
-	StepScheduleEnd    *float64   `json:"step-schedule-end,omitempty"`
-	CfgScale           *float64   `json:"cfg-scale,omitempty"`
-	ClipGuidancePreset *string    `json:"clip-guidance-preset,omitempty"`
-	Sampler            *string    `json:"sampler,omitempty"`
-	Samples            *uint32    `json:"samples,omitempty"`
-	Seed               *uint32    `json:"seed,omitempty"`
-	Steps              *uint32    `json:"steps,omitempty"`
-	StylePreset        *string    `json:"style-preset,omitempty"`
-}
+func (e *execution) handleImageToImage(ctx context.Context, job *base.Job) error {
+	input := &taskImageToImageInput{}
+	if err := job.Input.ReadData(ctx, input); err != nil {
+		return err
+	}
 
-type ImageToImageOutput struct {
-	Images []string `json:"images"`
-	Seeds  []uint32 `json:"seeds"`
+	params, err := parseImageToImageReq(input)
+	if err != nil {
+		return err
+	}
+
+	b, contentType, err := params.getBytes()
+	if err != nil {
+		return err
+	}
+
+	resp := ImageTaskRes{}
+	req := e.client.R().
+		SetResult(&resp).
+		SetBody(b).
+		SetHeader("Content-Type", contentType)
+
+	if _, err := req.Post(params.path); err != nil {
+		return err
+	}
+
+	output, err := imageToImageOutput(resp)
+	if err != nil {
+		return err
+	}
+
+	if err := job.Output.WriteData(ctx, output); err != nil {
+		return err
+	}
+	return nil
 }
 
 // ImageToImageReq represents the request body for image-to-image API
@@ -60,13 +75,7 @@ type ImageToImageReq struct {
 	path string
 }
 
-func parseImageToImageReq(from *structpb.Struct) (ImageToImageReq, error) {
-	// Parse from pb.
-	input := ImageToImageInput{}
-	if err := base.ConvertFromStructpb(from, &input); err != nil {
-		return ImageToImageReq{}, err
-	}
-
+func parseImageToImageReq(input *taskImageToImageInput) (ImageToImageReq, error) {
 	// Validate input.
 	nPrompts := len(input.Prompts)
 	if nPrompts <= 0 {
@@ -78,8 +87,15 @@ func parseImageToImageReq(from *structpb.Struct) (ImageToImageReq, error) {
 	}
 
 	// Convert to req.
+	if input.InitImage == nil {
+		return ImageToImageReq{}, fmt.Errorf("no init image provided")
+	}
+	initImage, err := input.InitImage.DataURI()
+	if err != nil {
+		return ImageToImageReq{}, fmt.Errorf("failed to get data URI: %w", err)
+	}
 	req := ImageToImageReq{
-		InitImage:          input.InitImage,
+		InitImage:          initImage.String(),
 		InitImageMode:      input.InitImageMode,
 		ImageStrength:      input.ImageStrength,
 		StepScheduleStart:  input.StepScheduleStart,
@@ -97,9 +113,10 @@ func parseImageToImageReq(from *structpb.Struct) (ImageToImageReq, error) {
 
 	req.TextPrompts = make([]TextPrompt, 0, nPrompts)
 	for index, t := range input.Prompts {
-		var w float64
-		if input.Weights != nil && len(*input.Weights) > index {
-			w = (*input.Weights)[index]
+		// If weight isn't provided, set to 1.
+		w := 1.0
+		if input.Weights != nil && len(input.Weights) > index {
+			w = input.Weights[index]
 		}
 
 		req.TextPrompts = append(req.TextPrompts, TextPrompt{
@@ -165,20 +182,28 @@ func (req ImageToImageReq) getBytes() (b *bytes.Reader, contentType string, err 
 	return bytes.NewReader(data.Bytes()), writer.FormDataContentType(), nil
 }
 
-func imageToImageOutput(from ImageTaskRes) (*structpb.Struct, error) {
-	output := ImageToImageOutput{
-		Images: []string{},
-		Seeds:  []uint32{},
+func imageToImageOutput(from ImageTaskRes) (*taskOutput, error) {
+	output := taskOutput{
+		Images: []format.Image{},
+		Seeds:  []int{},
 	}
 
 	for _, image := range from.Images {
 		if image.FinishReason != successFinishReason {
 			continue
 		}
+		imgBytes, err := base64.StdEncoding.DecodeString(image.Base64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode base64 image: %w", err)
+		}
+		img, err := data.NewImageFromBytes(imgBytes, "image/png", "")
+		if err != nil {
+			return nil, fmt.Errorf("failed to create image from bytes: %w", err)
+		}
 
-		output.Images = append(output.Images, fmt.Sprintf("data:image/png;base64,%s", image.Base64))
-		output.Seeds = append(output.Seeds, image.Seed)
-
+		output.Images = append(output.Images, img)
+		output.Seeds = append(output.Seeds, int(image.Seed))
 	}
-	return base.ConvertToStructpb(output)
+
+	return &output, nil
 }

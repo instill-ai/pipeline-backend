@@ -1,11 +1,13 @@
 package stabilityai
 
 import (
+	"context"
+	"encoding/base64"
 	"fmt"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
 const (
@@ -17,25 +19,32 @@ func textToImagePath(engine string) string {
 	return fmt.Sprintf(textToImagePathTemplate, engine)
 }
 
-type TextToImageInput struct {
-	Task               string     `json:"task"`
-	Prompts            []string   `json:"prompts"`
-	Engine             string     `json:"engine"`
-	Weights            *[]float64 `json:"weights,omitempty"`
-	Height             *uint32    `json:"height,omitempty"`
-	Width              *uint32    `json:"width,omitempty"`
-	CfgScale           *float64   `json:"cfg-scale,omitempty"`
-	ClipGuidancePreset *string    `json:"clip-guidance-preset,omitempty"`
-	Sampler            *string    `json:"sampler,omitempty"`
-	Samples            *uint32    `json:"samples,omitempty"`
-	Seed               *uint32    `json:"seed,omitempty"`
-	Steps              *uint32    `json:"steps,omitempty"`
-	StylePreset        *string    `json:"style-preset,omitempty"`
-}
+func (e *execution) handleTextToImage(ctx context.Context, job *base.Job) error {
+	input := &taskTextToImageInput{}
+	if err := job.Input.ReadData(ctx, input); err != nil {
+		return err
+	}
+	params, err := parseTextToImageReq(input)
+	if err != nil {
+		return err
+	}
 
-type TextToImageOutput struct {
-	Images []string `json:"images"`
-	Seeds  []uint32 `json:"seeds"`
+	resp := ImageTaskRes{}
+	req := e.client.R().SetResult(&resp).SetBody(params)
+
+	if _, err := req.Post(params.path); err != nil {
+		return err
+	}
+
+	output, err := textToImageOutput(resp)
+	if err != nil {
+		return err
+	}
+
+	if err := job.Output.WriteData(ctx, output); err != nil {
+		return err
+	}
+	return nil
 }
 
 // TextToImageReq represents the request body for text-to-image API
@@ -72,12 +81,7 @@ type ImageTaskRes struct {
 	Images []Image `json:"artifacts"`
 }
 
-func parseTextToImageReq(from *structpb.Struct) (TextToImageReq, error) {
-	// Parse from pb.
-	input := TextToImageInput{}
-	if err := base.ConvertFromStructpb(from, &input); err != nil {
-		return TextToImageReq{}, err
-	}
+func parseTextToImageReq(input *taskTextToImageInput) (TextToImageReq, error) {
 
 	// Validate input.
 	nPrompts := len(input.Prompts)
@@ -108,8 +112,8 @@ func parseTextToImageReq(from *structpb.Struct) (TextToImageReq, error) {
 	for index, t := range input.Prompts {
 		// If weight isn't provided, set to 1.
 		w := 1.0
-		if input.Weights != nil && len(*input.Weights) > index {
-			w = (*input.Weights)[index]
+		if input.Weights != nil && len(input.Weights) > index {
+			w = (input.Weights)[index]
 		}
 
 		req.TextPrompts = append(req.TextPrompts, TextPrompt{
@@ -121,20 +125,28 @@ func parseTextToImageReq(from *structpb.Struct) (TextToImageReq, error) {
 	return req, nil
 }
 
-func textToImageOutput(from ImageTaskRes) (*structpb.Struct, error) {
-	output := TextToImageOutput{
-		Images: []string{},
-		Seeds:  []uint32{},
+func textToImageOutput(from ImageTaskRes) (*taskOutput, error) {
+	output := taskOutput{
+		Images: []format.Image{},
+		Seeds:  []int{},
 	}
 
 	for _, image := range from.Images {
 		if image.FinishReason != successFinishReason {
 			continue
 		}
+		imgBytes, err := base64.StdEncoding.DecodeString(image.Base64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode base64 image: %w", err)
+		}
+		img, err := data.NewImageFromBytes(imgBytes, "image/png", "")
+		if err != nil {
+			return nil, fmt.Errorf("failed to create image from bytes: %w", err)
+		}
 
-		output.Images = append(output.Images, fmt.Sprintf("data:image/png;base64,%s", image.Base64))
-		output.Seeds = append(output.Seeds, image.Seed)
+		output.Images = append(output.Images, img)
+		output.Seeds = append(output.Seeds, int(image.Seed))
 	}
 
-	return base.ConvertToStructpb(output)
+	return &output, nil
 }
