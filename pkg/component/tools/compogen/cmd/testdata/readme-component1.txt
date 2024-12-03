@@ -209,6 +209,15 @@ cmp pkg/dummy/README.mdx want-readme.mdx
           "instillUIOrder": 0,
           "title": "Dummy File",
           "type": "*"
+        },
+        "dummy-array": {
+          "description": "this is an array",
+          "instillUIOrder": 0,
+          "title": "Dummy Array",
+          "type": "array",
+          "items": {
+            "type": "*"
+          }
         }
       },
       "required": [
@@ -377,6 +386,7 @@ Perform a dummy task.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DUMMY` |
+| Dummy Array | `dummy-array` | array[any] | this is an array |
 | Dummy File | `dummy-file` | any | this is a file |
 | Dummy String | `dummy-string` | string | `{{dummy_string}}` |
 | Durna (required) | `durna` | string | Lorem ipsum dolor sit amet, consectetur adipiscing elit |
