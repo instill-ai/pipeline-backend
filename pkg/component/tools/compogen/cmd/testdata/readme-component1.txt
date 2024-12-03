@@ -197,6 +197,12 @@ cmp pkg/dummy/README.mdx want-readme.mdx
             "setting"
           ],
           "type": "object"
+        },
+        "dummy-string": {
+          "description": "{{dummy_string}}",
+          "instillUIOrder": 0,
+          "title": "Dummy String",
+          "type": "string"
         }
       },
       "required": [
@@ -364,6 +370,7 @@ Perform a dummy task.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DUMMY` |
+| Dummy String | `dummy-string` | string | `{{dummy_string}}` |
 | Durna (required) | `durna` | string | Lorem ipsum dolor sit amet, consectetur adipiscing elit |
 | [Strategy](#dummy-strategy) | `strategy` | object | Chunking strategy |
 </div>
