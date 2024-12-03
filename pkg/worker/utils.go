@@ -6,12 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
-	"google.golang.org/grpc/metadata"
 )
 
 func (w *worker) writeNewDataPoint(ctx context.Context, data utils.PipelineUsageMetricData) error {
@@ -84,34 +82,4 @@ func setIteratorIndex(v format.Value, identifier string, index int) format.Value
 	default:
 		return v
 	}
-}
-
-// They are same logic in the some components like Instill Artifact, Instill Model.
-// We can extract this logic to the shared package.
-// But for now, we keep it here because we want to avoid that the components depend on pipeline shared package.
-func getRequestMetadata(vars map[string]any) metadata.MD {
-	md := metadata.Pairs(
-		"Authorization", getHeaderAuthorization(vars),
-		"Instill-User-Uid", getInstillUserUID(vars),
-		"Instill-Auth-Type", "user",
-	)
-
-	if requester := getInstillRequesterUID(vars); requester != "" {
-		md.Set("Instill-Requester-Uid", requester)
-	}
-	return md
-}
-
-func getHeaderAuthorization(vars map[string]any) string {
-	if v, ok := vars["__PIPELINE_HEADER_AUTHORIZATION"]; ok {
-		return v.(string)
-	}
-	return ""
-}
-func getInstillUserUID(vars map[string]any) string {
-	return vars["__PIPELINE_USER_UID"].(uuid.UUID).String()
-}
-
-func getInstillRequesterUID(vars map[string]any) string {
-	return vars["__PIPELINE_REQUESTER_UID"].(uuid.UUID).String()
 }

@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,7 +11,6 @@ import (
 	"time"
 
 	"cloud.google.com/go/longrunning/autogen/longrunningpb"
-	"github.com/gabriel-vasile/mimetype"
 	"github.com/gofrs/uuid"
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
@@ -866,38 +864,31 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 
 		// TODO: remove these conversions after the blob storage is fully rolled out
 		for k := range m {
-			switch s := m[k].(type) {
+			switch str := m[k].(type) {
 			case string:
 				if formatMap[k] != "string" && formatMap[k] != "number" && formatMap[k] != "boolean" && formatMap[k] != "json" {
 					// Skip the base64 decoding if the string is a URL
-					if strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://") {
+					if strings.HasPrefix(str, "http://") || strings.HasPrefix(str, "https://") {
 						continue
 					}
-					if !strings.HasPrefix(s, "data:") {
-						b, err := base64.StdEncoding.DecodeString(s)
-						if err != nil {
-							return fmt.Errorf("can not decode file %s, %s", formatMap[k], s)
-						}
-						mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
-						vars.Fields[k] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s))
+					downloadURL, err := s.uploadBlobAndGetDownloadURL(ctx, ns, str)
+					if err != nil {
+						return fmt.Errorf("upload blob and get download url: %w", err)
 					}
-
+					vars.Fields[k] = structpb.NewStringValue(downloadURL)
 				}
 			case []string:
 				if formatMap[k] != "array:string" && formatMap[k] != "array:number" && formatMap[k] != "array:boolean" {
-					for idx := range s {
+					for idx := range str {
 						// Skip the base64 decoding if the string is a URL
-						if strings.HasPrefix(s[idx], "http://") || strings.HasPrefix(s[idx], "https://") {
+						if strings.HasPrefix(str[idx], "http://") || strings.HasPrefix(str[idx], "https://") {
 							continue
 						}
-						if !strings.HasPrefix(s[idx], "data:") {
-							b, err := base64.StdEncoding.DecodeString(s[idx])
-							if err != nil {
-								return fmt.Errorf("can not decode file %s, %s", formatMap[k], s)
-							}
-							mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
-							vars.Fields[k].GetListValue().GetValues()[idx] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s[idx]))
+						downloadURL, err := s.uploadBlobAndGetDownloadURL(ctx, ns, str[idx])
+						if err != nil {
+							return fmt.Errorf("upload blob and get download url: %w", err)
 						}
+						vars.Fields[k] = structpb.NewStringValue(downloadURL)
 
 					}
 				}

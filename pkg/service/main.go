@@ -20,6 +20,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 	miniox "github.com/instill-ai/x/minio"
@@ -98,37 +99,41 @@ type TriggerResult struct {
 // However, we keep it here for now because we may need it in the future.
 // service is the implementation of the Service interface
 type service struct {
-	repository               repository.Repository
-	redisClient              *redis.Client
-	temporalClient           client.Client
-	component                *componentstore.Store
-	mgmtPublicServiceClient  mgmtpb.MgmtPublicServiceClient
-	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
-	aclClient                acl.ACLClientInterface
-	converter                Converter
-	minioClient              miniox.MinioI
-	memory                   memory.MemoryStore
-	log                      *zap.Logger
-	workerUID                uuid.UUID
-	retentionHandler         MetadataRetentionHandler
-	binaryFetcher            external.BinaryFetcher
+	repository                   repository.Repository
+	redisClient                  *redis.Client
+	temporalClient               client.Client
+	component                    *componentstore.Store
+	mgmtPublicServiceClient      mgmtpb.MgmtPublicServiceClient
+	mgmtPrivateServiceClient     mgmtpb.MgmtPrivateServiceClient
+	aclClient                    acl.ACLClientInterface
+	converter                    Converter
+	minioClient                  miniox.MinioI
+	memory                       memory.MemoryStore
+	log                          *zap.Logger
+	workerUID                    uuid.UUID
+	retentionHandler             MetadataRetentionHandler
+	binaryFetcher                external.BinaryFetcher
+	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
+	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
 }
 
 // ServiceConfig is the configuration for the service
 type ServiceConfig struct {
-	Repository               repository.Repository
-	RedisClient              *redis.Client
-	TemporalClient           client.Client
-	ACLClient                acl.ACLClientInterface
-	Converter                Converter
-	MgmtPublicServiceClient  mgmtpb.MgmtPublicServiceClient
-	MgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
-	MinioClient              miniox.MinioI
-	ComponentStore           *componentstore.Store
-	Memory                   memory.MemoryStore
-	WorkerUID                uuid.UUID
-	RetentionHandler         MetadataRetentionHandler
-	BinaryFetcher            external.BinaryFetcher
+	Repository                   repository.Repository
+	RedisClient                  *redis.Client
+	TemporalClient               client.Client
+	ACLClient                    acl.ACLClientInterface
+	Converter                    Converter
+	MgmtPublicServiceClient      mgmtpb.MgmtPublicServiceClient
+	MgmtPrivateServiceClient     mgmtpb.MgmtPrivateServiceClient
+	MinioClient                  miniox.MinioI
+	ComponentStore               *componentstore.Store
+	Memory                       memory.MemoryStore
+	WorkerUID                    uuid.UUID
+	RetentionHandler             MetadataRetentionHandler
+	BinaryFetcher                external.BinaryFetcher
+	ArtifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
+	ArtifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
 }
 
 // NewService initiates a service instance
@@ -141,19 +146,21 @@ func NewService(
 	}
 
 	return &service{
-		repository:               cfg.Repository,
-		redisClient:              cfg.RedisClient,
-		temporalClient:           cfg.TemporalClient,
-		mgmtPublicServiceClient:  cfg.MgmtPublicServiceClient,
-		mgmtPrivateServiceClient: cfg.MgmtPrivateServiceClient,
-		component:                cfg.ComponentStore,
-		aclClient:                cfg.ACLClient,
-		converter:                cfg.Converter,
-		minioClient:              cfg.MinioClient,
-		memory:                   cfg.Memory,
-		log:                      zapLogger,
-		workerUID:                cfg.WorkerUID,
-		retentionHandler:         cfg.RetentionHandler,
-		binaryFetcher:            cfg.BinaryFetcher,
+		repository:                   cfg.Repository,
+		redisClient:                  cfg.RedisClient,
+		temporalClient:               cfg.TemporalClient,
+		mgmtPublicServiceClient:      cfg.MgmtPublicServiceClient,
+		mgmtPrivateServiceClient:     cfg.MgmtPrivateServiceClient,
+		component:                    cfg.ComponentStore,
+		aclClient:                    cfg.ACLClient,
+		converter:                    cfg.Converter,
+		minioClient:                  cfg.MinioClient,
+		memory:                       cfg.Memory,
+		log:                          zapLogger,
+		workerUID:                    cfg.WorkerUID,
+		retentionHandler:             cfg.RetentionHandler,
+		binaryFetcher:                cfg.BinaryFetcher,
+		artifactPublicServiceClient:  cfg.ArtifactPublicServiceClient,
+		artifactPrivateServiceClient: cfg.ArtifactPrivateServiceClient,
 	}
 }
