@@ -76,7 +76,7 @@ func Init(bc base.Component) *component {
 	return comp
 }
 
-func getsheetService(ctx context.Context, setup *structpb.Struct, c *component) (*sheets.Service, error) {
+func getSheetsService(ctx context.Context, setup *structpb.Struct, c *component) (*sheets.Service, error) {
 	config := &oauth2.Config{
 		ClientID:     c.GetOAuthClientID(),
 		ClientSecret: c.GetOAuthClientSecret(),
@@ -134,7 +134,7 @@ func getDriveService(ctx context.Context, setup *structpb.Struct, c *component) 
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	ctx := context.Background()
 
-	sheetSrv, err := getsheetService(ctx, x.Setup, c)
+	sheetSrv, err := getSheetsService(ctx, x.Setup, c)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get sheets service: %w", err)
 	}

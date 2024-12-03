@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/x/errmsg"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
 )
 
 const (
@@ -95,16 +95,30 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	}
 
 	x.Setup = resolvedSetup
+	client := newClient(x.Setup, c.GetLogger())
 
-	return &execution{
+	e := &execution{
 		ComponentExecution:     x,
 		usesInstillCredentials: resolved,
-	}, nil
+		client:                 client,
+	}
+
+	switch x.Task {
+	case TextToImageTask:
+		e.execute = e.handleTextToImage
+	case ImageToImageTask:
+		e.execute = e.handleImageToImage
+	default:
+		return nil, fmt.Errorf("unsupported task: %s", x.Task)
+	}
+	return e, nil
 }
 
 type execution struct {
 	base.ComponentExecution
 	usesInstillCredentials bool
+	client                 *httpclient.Client
+	execute                func(context.Context, *base.Job) error
 }
 
 func (e *execution) UsesInstillCredentials() bool {
@@ -112,80 +126,7 @@ func (e *execution) UsesInstillCredentials() bool {
 }
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-
-	client := newClient(e.Setup, e.GetLogger())
-
-	for _, job := range jobs {
-		input, err := job.Input.Read(ctx)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
-		var output *structpb.Struct
-		switch e.Task {
-		case TextToImageTask:
-			params, err := parseTextToImageReq(input)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-
-			resp := ImageTaskRes{}
-			req := client.R().SetResult(&resp).SetBody(params)
-
-			if _, err := req.Post(params.path); err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-
-			output, err = textToImageOutput(resp)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-
-		case ImageToImageTask:
-			params, err := parseImageToImageReq(input)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-
-			data, ct, err := params.getBytes()
-			if err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-
-			resp := ImageTaskRes{}
-			req := client.R().SetBody(data).SetResult(&resp).SetHeader("Content-Type", ct)
-
-			if _, err := req.Post(params.path); err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-
-			output, err = imageToImageOutput(resp)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-
-		default:
-			job.Error.Error(ctx, errmsg.AddMessage(
-				fmt.Errorf("not supported task: %s", e.Task),
-				fmt.Sprintf("%s task is not supported.", e.Task),
-			))
-			continue
-		}
-		err = job.Output.Write(ctx, output)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
-
-	}
-	return nil
+	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }
 
 // Test checks the component state.
