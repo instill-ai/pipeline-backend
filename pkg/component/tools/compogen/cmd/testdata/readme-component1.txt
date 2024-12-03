@@ -203,6 +203,12 @@ cmp pkg/dummy/README.mdx want-readme.mdx
           "instillUIOrder": 0,
           "title": "Dummy String",
           "type": "string"
+        },
+        "dummy-file": {
+          "description": "this is a file",
+          "instillUIOrder": 0,
+          "title": "Dummy File",
+          "type": "*"
         }
       },
       "required": [
@@ -371,6 +377,7 @@ Perform a dummy task.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DUMMY` |
+| Dummy File | `dummy-file` | any | this is a file |
 | Dummy String | `dummy-string` | string | `{{dummy_string}}` |
 | Durna (required) | `durna` | string | Lorem ipsum dolor sit amet, consectetur adipiscing elit |
 | [Strategy](#dummy-strategy) | `strategy` | object | Chunking strategy |

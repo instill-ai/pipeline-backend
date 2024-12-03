@@ -332,6 +332,7 @@ func parseResourceProperties(o *objectSchema) []resourceProperty {
 			prop.Type = "any"
 		}
 		prop.replaceDescription()
+		prop.replaceType()
 
 		propMap[k] = prop
 	}
@@ -394,6 +395,7 @@ func (rt *readmeTask) parseObjectProperties(properties map[string]property, isIn
 		}
 
 		op.replaceDescription()
+		op.replaceType()
 
 		if op.Type == "object" {
 
@@ -420,6 +422,7 @@ func (rt *readmeTask) parseObjectProperties(properties map[string]property, isIn
 			for key := range props {
 				prop := props[key]
 				prop.replaceDescription()
+				prop.replaceType()
 				props[key] = prop
 			}
 
@@ -670,5 +673,11 @@ func (prop *property) replaceDescription() {
 		prop.Description = strings.ReplaceAll(prop.Description, "\n", " ")
 		prop.Description = strings.ReplaceAll(prop.Description, "{", "\\{")
 		prop.Description = strings.ReplaceAll(prop.Description, "}", "\\}")
+	}
+}
+
+func (prop *property) replaceType() {
+	if prop.Type == "*" {
+		prop.Type = "any"
 	}
 }
