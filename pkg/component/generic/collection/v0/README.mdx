@@ -45,8 +45,8 @@ Append values to create or extend an array, or add key-value pairs to an object.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_APPEND` |
-| Data (required) | `data` | * | The input data. If it's an array, the value will be appended. If it's an object, the key-value pairs from value will be added. If it's a primitive type (string, number, boolean), it will be converted to a single-element array before appending. |
-| Value (required) | `value` | * | The value to append. For arrays: the value will be appended as a new element. For objects: if value is an object, its key-value pairs will be added to the input object. For primitives: value will be appended to create/extend an array. |
+| Data (required) | `data` | any | The input data. If it's an array, the value will be appended. If it's an object, the key-value pairs from value will be added. If it's a primitive type (string, number, boolean), it will be converted to a single-element array before appending. |
+| Value (required) | `value` | any | The value to append. For arrays: the value will be appended as a new element. For objects: if value is an object, its key-value pairs will be added to the input object. For primitives: value will be appended to create/extend an array. |
 </div>
 
 
@@ -58,7 +58,7 @@ Append values to create or extend an array, or add key-value pairs to an object.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Data | `data` | * | The resulting data structure after the append operation. Will be either an array (if input was array or primitive) or an object (if input was object). Examples: [1,2,3], \{'name':'John', 'age':25\}, or ['hello','world']. |
+| Data | `data` | any | The resulting data structure after the append operation. Will be either an array (if input was array or primitive) or an object (if input was object). Examples: [1,2,3], \{'name':'John', 'age':25\}, or ['hello','world']. |
 </div>
 
 
@@ -71,9 +71,9 @@ Assign a value to a specific path in a data structure.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_ASSIGN` |
-| Data (required) | `data` | * | The input data structure to modify. Can be an array, object, or primitive value. |
+| Data (required) | `data` | any | The input data structure to modify. Can be an array, object, or primitive value. |
 | Path (required) | `path` | string | The path where to assign the value. Use dot notation for nested objects and [n] for array indices. Examples: 'users.[0].name', '.[0].key', 'metadata.tags.[2]'. |
-| Value (required) | `value` | * | The value to assign at the specified path. Can be any type (string, number, boolean, array, or object). |
+| Value (required) | `value` | any | The value to assign at the specified path. Can be any type (string, number, boolean, array, or object). |
 </div>
 
 
@@ -85,7 +85,7 @@ Assign a value to a specific path in a data structure.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Data | `data` | * | The resulting data structure after the assign operation. |
+| Data | `data` | any | The resulting data structure after the assign operation. |
 </div>
 
 
@@ -110,7 +110,7 @@ Concatenate multiple arrays or merge multiple objects into a single collection.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Data | `data` | * | The resulting array or object after concat operation. |
+| Data | `data` | any | The resulting array or object after concat operation. |
 </div>
 
 
@@ -135,7 +135,7 @@ Find elements that exist in the first array or object but not in any of the othe
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Data | `data` | * | The resulting array or object after the difference operation. |
+| Data | `data` | any | The resulting array or object after the difference operation. |
 </div>
 
 
@@ -160,7 +160,7 @@ Find common elements that exist in all input arrays or objects.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Data | `data` | * | The resulting array or object after the intersection operation. |
+| Data | `data` | any | The resulting array or object after the intersection operation. |
 </div>
 
 
@@ -173,7 +173,7 @@ Split arrays or objects into smaller chunks.
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SPLIT` |
-| Data (required) | `data` | * | The source data to be split. Can be: 1) An array to split into groups 2) An object to split by property count (keys are sorted alphabetically for consistent ordering) |
+| Data (required) | `data` | any | The source data to be split. Can be: 1) An array to split into groups 2) An object to split by property count (keys are sorted alphabetically for consistent ordering) |
 | Size (required) | `size` | integer | Number of elements per group |
 </div>
 
@@ -211,7 +211,7 @@ Find elements that exist in exactly one of the input arrays or objects, but not 
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Data | `data` | * | The resulting array or object after the symmetric difference operation. |
+| Data | `data` | any | The resulting array or object after the symmetric difference operation. |
 </div>
 
 
@@ -236,7 +236,7 @@ Find unique elements that exist in any of the input arrays or objects.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Data | `data` | * | The resulting array or object after the union operation. |
+| Data | `data` | any | The resulting array or object after the union operation. |
 </div>
 
 
