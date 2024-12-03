@@ -24,7 +24,6 @@ import (
 	"gopkg.in/guregu/null.v4"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/component/generic/schedule/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
@@ -38,6 +37,7 @@ import (
 	"github.com/instill-ai/x/errmsg"
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/generic/scheduler/v0"
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
@@ -1630,7 +1630,7 @@ type scheduleEventMessage struct {
 	TriggeredAt string `json:"triggered-at"`
 }
 
-func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *schedule.SchedulePipelineWorkflowParam) error {
+func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *scheduler.SchedulePipelineWorkflowParam) error {
 	eventName := "SchedulePipelineWorkflow"
 	sCtx, span := tracer.Start(
 		context.Background(),

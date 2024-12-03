@@ -56,7 +56,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/zilliz/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/generic/collection/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/generic/http/v0"
-	"github.com/instill-ai/pipeline-backend/pkg/component/generic/schedule/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/generic/scheduler/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/audio/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/base64/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0"
@@ -215,7 +215,7 @@ func Init(param InitParams) *Store {
 		compStore.Import(instillartifact.Init(baseComp))
 		compStore.Import(http.Init(baseComp))
 		compStore.Import(collection.Init(baseComp))
-		compStore.Import(schedule.Init(baseComp))
+		compStore.Import(scheduler.Init(baseComp))
 		compStore.Import(web.Init(baseComp))
 		{
 			// GitHub
