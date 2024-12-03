@@ -1,4 +1,4 @@
-package schedule
+package scheduler
 
 //go:generate compogen readme ./config ./README.mdx --extraContents bottom=.compogen/bottom.mdx
 

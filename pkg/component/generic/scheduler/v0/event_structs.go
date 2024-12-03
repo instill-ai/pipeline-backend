@@ -1,4 +1,4 @@
-package schedule
+package scheduler
 
 type EventCronJobTriggered struct {
 	Cron string `instill:"cron"`
