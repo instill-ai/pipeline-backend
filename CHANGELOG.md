@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.48.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.48.0-beta...v0.48.1-beta) (2024-12-03)
+
+
+### Features
+
+* **compogen:** add {{}} case for compogen ([#913](https://github.com/instill-ai/pipeline-backend/issues/913)) ([b976387](https://github.com/instill-ai/pipeline-backend/commit/b976387d62996f4140c8000a063b04259a8965ed))
+
+
+### Bug Fixes
+
+* **workflow:** fix wrong component id in SchedulePipelineWorkflow ([#916](https://github.com/instill-ai/pipeline-backend/issues/916)) ([934dc3d](https://github.com/instill-ai/pipeline-backend/commit/934dc3d9e299aabfea431a6d2f67536214f0814d))
+
+
+### Miscellaneous Chores
+
+* release v0.48.1-beta ([a448e4b](https://github.com/instill-ai/pipeline-backend/commit/a448e4bd96e7dd9bbff938fb8b42474a581090f0))
+
 ## [0.48.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.47.2-beta...v0.48.0-beta) (2024-12-03)
 
 
