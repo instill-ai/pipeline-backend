@@ -1,5 +1,8 @@
 {
   "availableTasks": [],
+  "availableEvents": [
+    "EVENT_CRON_JOB_TRIGGERED"
+  ],
   "documentationUrl": "https://www.instill.tech/docs/component/generic/schedule",
   "icon": "assets/schedule.svg",
   "id": "schedule",

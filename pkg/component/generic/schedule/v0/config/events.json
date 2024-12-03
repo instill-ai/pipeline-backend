@@ -1,6 +1,6 @@
 {
   "EVENT_CRON_JOB_TRIGGERED": {
-    "title": "Cron Job Triggered Event",
+    "title": "Cron Job Triggered",
     "description": "An event triggered on a cron job",
     "configSchema": {
       "type": "object",
