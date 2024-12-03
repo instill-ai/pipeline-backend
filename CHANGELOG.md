@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.48.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.47.2-beta...v0.48.0-beta) (2024-12-03)
+
+
+### Features
+
+* **component,data,base:** enhance component features ([#885](https://github.com/instill-ai/pipeline-backend/issues/885)) ([68b396f](https://github.com/instill-ai/pipeline-backend/commit/68b396fb014d5018e854eb1b1e2f0131670f6e1f))
+* **component,googlesheet:** implement the Google Sheet component ([#878](https://github.com/instill-ai/pipeline-backend/issues/878)) ([8a0ab93](https://github.com/instill-ai/pipeline-backend/commit/8a0ab93a5e3239c9bade1c7e9e0d106120852543))
+* **component,instillapp:** remove instill-app component ([#911](https://github.com/instill-ai/pipeline-backend/issues/911)) ([4a7c970](https://github.com/instill-ai/pipeline-backend/commit/4a7c970fa1a3183190d84d51faa98fafda49139f))
+* **component,openai:** support streaming for o1-mini and o1-preview models ([#882](https://github.com/instill-ai/pipeline-backend/issues/882)) ([367e957](https://github.com/instill-ai/pipeline-backend/commit/367e9577942992e754901163838c3b9d998f0e68))
+* **component,schedule:** introduce the `schedule` component ([#900](https://github.com/instill-ai/pipeline-backend/issues/900)) ([9582942](https://github.com/instill-ai/pipeline-backend/commit/9582942cd0ff0b131b3fb9c831242a1a351faa35))
+* **connection:** add lookup connection endpoint ([#888](https://github.com/instill-ai/pipeline-backend/issues/888)) ([86bffe8](https://github.com/instill-ai/pipeline-backend/commit/86bffe87de6e7d2c476eede73a4da45cbb722410))
+* **data:** add support for default value in `instill` Go tag ([#891](https://github.com/instill-ai/pipeline-backend/issues/891)) ([b9c2d05](https://github.com/instill-ai/pipeline-backend/commit/b9c2d057f6c15c8ca9b5948b1b21d49122a58409))
+* **leadiq:** implement leadiq component ([#874](https://github.com/instill-ai/pipeline-backend/issues/874)) ([78c2ec7](https://github.com/instill-ai/pipeline-backend/commit/78c2ec7020137ff25d8e1b4ac7ac4807896a1637))
+* **perplexity:** add perplexity component ([#861](https://github.com/instill-ai/pipeline-backend/issues/861)) ([1fc7dbe](https://github.com/instill-ai/pipeline-backend/commit/1fc7dbee9d46c2bba87127194c3fdc5ce2ee30c7))
+* **recipe:** separate the template and the rendered value for input and setup ([#886](https://github.com/instill-ai/pipeline-backend/issues/886)) ([3ec3dd6](https://github.com/instill-ai/pipeline-backend/commit/3ec3dd60a45c9f1358c29c09923fa221e91213b4))
+* **recipe:** support `required` attribute for variable ([#901](https://github.com/instill-ai/pipeline-backend/issues/901)) ([da7f0e9](https://github.com/instill-ai/pipeline-backend/commit/da7f0e97beb202312a6150394707184fbe902091))
+* **service:** add the file extension to the output filename ([#873](https://github.com/instill-ai/pipeline-backend/issues/873)) ([22b92b0](https://github.com/instill-ai/pipeline-backend/commit/22b92b03198bea0231e9780ef4f76b6552b88fc1))
+* **service:** trigger latest release version for pipeline with run-on-event setting ([#896](https://github.com/instill-ai/pipeline-backend/issues/896)) ([0b1c071](https://github.com/instill-ai/pipeline-backend/commit/0b1c0711ec5a130f8781caef89fc8cebc000134c))
+* **smartlead:** implement smartlead ([#879](https://github.com/instill-ai/pipeline-backend/issues/879)) ([f6baf2a](https://github.com/instill-ai/pipeline-backend/commit/f6baf2a898147a7504ce326dec015838ffd54b20))
+* **text:** improve markdown chunking ([#889](https://github.com/instill-ai/pipeline-backend/issues/889)) ([d48b3ec](https://github.com/instill-ai/pipeline-backend/commit/d48b3ec444ef5e83a46dd260d21181076cd5bdb2))
+* **trigger:** accept connection references in the pipeline trigger data ([#883](https://github.com/instill-ai/pipeline-backend/issues/883)) ([937bd01](https://github.com/instill-ai/pipeline-backend/commit/937bd01436091ec1cc303d07f84a2f257554a63c))
+* **trigger:** enable optional values for variables ([#884](https://github.com/instill-ai/pipeline-backend/issues/884)) ([187f5fd](https://github.com/instill-ai/pipeline-backend/commit/187f5fd60fba7b5d7b74bb7b6c63e04d77fb3742))
+* **vdp:** skip google drive for cloud version ([#899](https://github.com/instill-ai/pipeline-backend/issues/899)) ([5089397](https://github.com/instill-ai/pipeline-backend/commit/50893971ea8c6f1e1e18b8a886de9a4c890e1983))
+
+
+### Bug Fixes
+
+* **ci:** use xk6-sql driver and pin down versions ([#876](https://github.com/instill-ai/pipeline-backend/issues/876)) ([1f64d6c](https://github.com/instill-ai/pipeline-backend/commit/1f64d6c26a694a76831b53ccf69a2f0efae40915))
+* **component,openai:** enable the use of system messages with chat history ([#905](https://github.com/instill-ai/pipeline-backend/issues/905)) ([ef3e66f](https://github.com/instill-ai/pipeline-backend/commit/ef3e66fd4fd9360730d4da0cbfe65e0bc210c309))
+* **leadiq, smartlead:** change field to optional ([#892](https://github.com/instill-ai/pipeline-backend/issues/892)) ([9bd995d](https://github.com/instill-ai/pipeline-backend/commit/9bd995d001c019d2f54d87b977d2c702052b63ef))
+* **web:** fix url and markdown position ([#893](https://github.com/instill-ai/pipeline-backend/issues/893)) ([af8f412](https://github.com/instill-ai/pipeline-backend/commit/af8f41204f5cb6a66628677c633ec4fcef7fbd22))
+
 ## [0.47.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.47.0-beta...v0.47.2-beta) (2024-11-21)
 
 
