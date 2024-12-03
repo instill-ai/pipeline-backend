@@ -1654,7 +1654,7 @@ func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *schedul
 	}
 
 	_, err = w.pipelinePublicServiceClient.DispatchPipelineWebhookEvent(sCtx, &pb.DispatchPipelineWebhookEventRequest{
-		WebhookType: "schedule",
+		WebhookType: "scheduler",
 		Message:     structPayload,
 	})
 	if err != nil {
