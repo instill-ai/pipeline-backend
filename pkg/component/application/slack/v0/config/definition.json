@@ -3,6 +3,9 @@
     "TASK_READ_MESSAGE",
     "TASK_WRITE_MESSAGE"
   ],
+  "availableEvents": [
+    "EVENT_NEW_MESSAGE"
+  ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/application/slack",
   "icon": "assets/slack.svg",

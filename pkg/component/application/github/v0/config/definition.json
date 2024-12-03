@@ -10,6 +10,9 @@
     "TASK_CREATE_ISSUE",
     "TASK_CREATE_WEBHOOK"
   ],
+  "availableEvents": [
+    "EVENT_STAR_CREATED"
+  ],
   "documentationUrl": "https://www.instill.tech/docs/component/application/github",
   "icon": "assets/github.svg",
   "id": "github",

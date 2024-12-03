@@ -397,6 +397,16 @@ func TaskIDToTitle(id string) string {
 	return cases.Title(language.English).String(title)
 }
 
+const eventPrefix = "EVENT_"
+
+// EventIDToTitle builds a Event title from its ID. This is used when the `title`
+// key in the task definition isn't present.
+func EventIDToTitle(id string) string {
+	title := strings.ReplaceAll(id, eventPrefix, "")
+	title = strings.ReplaceAll(title, "_", " ")
+	return cases.Title(language.English).String(title)
+}
+
 func generateComponentTaskCards(tasks []string, taskStructs map[string]*structpb.Struct) []*pb.ComponentTask {
 	taskCards := make([]*pb.ComponentTask, 0, len(tasks))
 	for _, k := range tasks {
@@ -407,6 +417,9 @@ func generateComponentTaskCards(tasks []string, taskStructs map[string]*structpb
 			}
 
 			description := taskStructs[k].Fields["instillShortDescription"].GetStringValue()
+			if description == "" {
+				description = v.Fields["description"].GetStringValue()
+			}
 
 			taskCards = append(taskCards, &pb.ComponentTask{
 				Name:        k,
@@ -417,6 +430,30 @@ func generateComponentTaskCards(tasks []string, taskStructs map[string]*structpb
 	}
 
 	return taskCards
+}
+
+func generateComponentEventCards(events []string, eventStructs map[string]*structpb.Struct) []*pb.ComponentEvent {
+	eventCards := make([]*pb.ComponentEvent, 0, len(events))
+	for _, k := range events {
+		if v, ok := eventStructs[k]; ok {
+			title := v.Fields["title"].GetStringValue()
+			if title == "" {
+				title = TaskIDToTitle(k)
+			}
+
+			description := eventStructs[k].Fields["instillShortDescription"].GetStringValue()
+			if description == "" {
+				description = v.Fields["description"].GetStringValue()
+			}
+
+			eventCards = append(eventCards, &pb.ComponentEvent{
+				Name:        k,
+				Title:       title,
+				Description: description,
+			})
+		}
+	}
+	return eventCards
 }
 
 func generateComponentSpec(title string, tasks []*pb.ComponentTask, taskStructs map[string]*structpb.Struct) (*structpb.Struct, error) {
@@ -713,6 +750,29 @@ func loadTasks(availableTasks []string, tasksJSONBytes []byte) ([]*pb.ComponentT
 	return tasks, taskStructs, nil
 }
 
+func loadEvents(availableEvents []string, eventsJSONBytes []byte) ([]*pb.ComponentEvent, error) {
+	eventStructs := map[string]*structpb.Struct{}
+	var err error
+
+	eventsJSONMap := map[string]map[string]any{}
+	err = json.Unmarshal(eventsJSONBytes, &eventsJSONMap)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, t := range availableEvents {
+		if v, ok := eventsJSONMap[t]; ok {
+			eventStructs[t], err = structpb.NewStruct(v)
+			if err != nil {
+				return nil, err
+			}
+
+		}
+	}
+	events := generateComponentEventCards(availableEvents, eventStructs)
+	return events, nil
+}
+
 // ConvertFromStructpb converts from structpb.Struct to a struct
 func ConvertFromStructpb(from *structpb.Struct, to any) error {
 	inputJSON, err := protojson.Marshal(from)
@@ -930,6 +990,15 @@ func (c *Component) LoadDefinition(definitionJSONBytes, setupJSONBytes, tasksJSO
 	}
 
 	if eventsJSONBytes != nil {
+		availableEvents := []string{}
+		for _, availableEvent := range definitionJSON.(map[string]any)["availableEvents"].([]any) {
+			availableEvents = append(availableEvents, availableEvent.(string))
+		}
+		events, err := loadEvents(availableEvents, eventsJSONBytes)
+		if err != nil {
+			return err
+		}
+		c.definition.Events = events
 		c.definition.Spec.EventSpecifications, err = generateEventSpecs(eventsJSONBytes)
 		if err != nil {
 			return err

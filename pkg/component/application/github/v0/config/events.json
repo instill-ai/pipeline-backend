@@ -1,6 +1,6 @@
 {
   "EVENT_STAR_CREATED": {
-    "title": "Star Created Event",
+    "title": "Star Created",
     "description": "A star created event from GitHub",
     "configSchema": {
       "type": "object",

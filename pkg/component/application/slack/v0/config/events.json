@@ -1,6 +1,6 @@
 {
   "EVENT_NEW_MESSAGE": {
-    "title": "New Message Event",
+    "title": "New Message",
     "description": "A new message event from Slack.",
     "configSchema": {
       "type": "object",
