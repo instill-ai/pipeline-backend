@@ -1,7 +1,7 @@
 {
   "TASK_CREATE_CAMPAIGN": {
     "title": "Create Campaign",
-    "description": "Create a new campaign. You have to create a campaign before you can start adding leads to it. Please check [Smartlead API document](https://api.smartlead.ai/reference/references#campaign).",
+    "instillShortDescription": "Create a new campaign. You have to create a campaign before you can start adding leads to it. Please check [Smartlead API document](https://api.smartlead.ai/reference/references#campaign).",
     "input": {
       "title": "Input",
       "description": "Input parameters for creating a campaign.",
@@ -50,7 +50,7 @@
   },
   "TASK_SETUP_CAMPAIGN": {
     "title": "Setup Campaign",
-    "description": "Setup a campaign. You can update campaign settings to this campaign. For Smartlead campaign, you will need to setup the schedule settings and general settings.",
+    "instillShortDescription": "Setup a campaign. You can update campaign settings to this campaign. For Smartlead campaign, you will need to setup the schedule settings and general settings.",
     "input": {
       "title": "Input",
       "description": "Input parameters for setting up a campaign.",
@@ -232,7 +232,7 @@
   },
   "TASK_SAVE_SEQUENCES": {
     "title": "Save Sequences",
-    "description": "Save sequences to a campaign. A Smartlead sequence is a series of automated emails sent to potential customers based on specific actions, or triggers.",
+    "instillShortDescription": "Save sequences to a campaign. A Smartlead sequence is a series of automated emails sent to potential customers based on specific actions, or triggers.",
     "input": {
       "title": "Input",
       "description": "Input parameters for saving sequences.",
@@ -331,7 +331,7 @@
   },
   "TASK_GET_SEQUENCES": {
     "title": "Get Sequences",
-    "description": "Get sequences of a campaign. If you want to add more sequences to the campaign, you can get the existing sequences and add new sequences to them. And, you can execute `TASK_SAVE_SEQUENCES` to save the sequences.",
+    "instillShortDescription": "Get sequences of a campaign. If you want to add more sequences to the campaign, you can get the existing sequences and add new sequences to them. And, you can execute `TASK_SAVE_SEQUENCES` to save the sequences.",
     "input": {
       "title": "Input",
       "description": "Input parameters for getting sequences.",
@@ -431,7 +431,7 @@
   },
   "TASK_ADD_LEADS": {
     "title": "Add Leads",
-    "description": "Add leads to a campaign.",
+    "instillShortDescription": "Add leads to a campaign.",
     "input": {
       "title": "Input",
       "description": "Input parameters for adding leads.",
@@ -660,7 +660,7 @@
   },
   "TASK_ADD_SENDER_EMAIL": {
     "title": "Add Sender Email",
-    "description": "Add a sender email to the campaign. You have to configure the sender email in Smartlead console before adding it to the campaign.",
+    "instillShortDescription": "Add a sender email to the campaign. You have to configure the sender email in Smartlead console before adding it to the campaign.",
     "input": {
       "title": "Input",
       "description": "Input parameters for adding a sender email.",
@@ -712,7 +712,7 @@
   },
   "TASK_UPDATE_CAMPAIGN_STATUS": {
     "title": "Update Campaign Status",
-    "description": "Update the status of a campaign. You need to start a campaign to send the emails to the leads.",
+    "instillShortDescription": "Update the status of a campaign. You need to start a campaign to send the emails to the leads.",
     "input": {
       "title": "Input",
       "description": "Input parameters for updating the status of a campaign.",
@@ -766,7 +766,7 @@
   },
   "TASK_GET_CAMPAIGN_METRIC": {
     "title": "Get Campaign Metric",
-    "description": "Get the metrics of a campaign. You can get the metrics like open count, click count, and reply count of the campaign.",
+    "instillShortDescription": "Get the metrics of a campaign. You can get the metrics like open count, click count, and reply count of the campaign.",
     "input": {
       "title": "Input",
       "description": "Input parameters for getting the metrics of a campaign.",
@@ -861,7 +861,7 @@
   },
   "TASK_LIST_LEADS_STATUS": {
     "title": "List Leads Status",
-    "description": "List the status of leads in a campaign. You can get the status of leads like 'STARTED', 'INPROGRESS', 'COMPLETED', 'PAUSED', 'STOPPED'.",
+    "instillShortDescription": "List the status of leads in a campaign. You can get the status of leads like 'STARTED', 'INPROGRESS', 'COMPLETED', 'PAUSED', 'STOPPED'.",
     "input": {
       "title": "Input",
       "description": "Input parameters for listing the status of leads.",
