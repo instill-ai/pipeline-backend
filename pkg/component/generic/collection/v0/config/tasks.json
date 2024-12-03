@@ -21,9 +21,11 @@
             "reference",
             "template"
           ],
+          "type": "*",
           "title": "Data"
         },
         "value": {
+          "type": "*",
           "description": "The value to append. For arrays: the value will be appended as a new element. For objects: if value is an object, its key-value pairs will be added to the input object. For primitives: value will be appended to create/extend an array.",
           "instillAcceptFormats": [
             "*"
@@ -53,6 +55,7 @@
       "instillUIOrder": 0,
       "properties": {
         "data": {
+          "type": "*",
           "description": "The resulting data structure after the append operation. Will be either an array (if input was array or primitive) or an object (if input was object). Examples: [1,2,3], {'name':'John', 'age':25}, or ['hello','world'].",
           "instillEditOnNodeFields": [],
           "instillFormat": "*",
@@ -80,6 +83,7 @@
       "instillUIOrder": 0,
       "properties": {
         "data": {
+          "type": "*",
           "description": "The input data structure to modify. Can be an array, object, or primitive value.",
           "instillAcceptFormats": [
             "*"
@@ -108,6 +112,7 @@
           "title": "Path"
         },
         "value": {
+          "type": "*",
           "description": "The value to assign at the specified path. Can be any type (string, number, boolean, array, or object).",
           "instillAcceptFormats": [
             "*"
@@ -138,6 +143,7 @@
       "instillUIOrder": 0,
       "properties": {
         "data": {
+          "type": "*",
           "description": "The resulting data structure after the assign operation.",
           "instillEditOnNodeFields": [],
           "instillFormat": "*",
@@ -173,7 +179,9 @@
             "reference",
             "template"
           ],
-          "items": {},
+          "items": {
+            "type": "*"
+          },
           "title": "Data",
           "type": "array"
         }
@@ -196,6 +204,7 @@
           "instillEditOnNodeFields": [],
           "instillFormat": "*",
           "instillUIOrder": 0,
+          "type": "*",
           "title": "Data"
         }
       },
@@ -226,7 +235,9 @@
             "reference",
             "template"
           ],
-          "items": {},
+          "items": {
+            "type": "*"
+          },
           "required": [],
           "title": "Data",
           "type": "array"
@@ -246,6 +257,7 @@
       "instillUIOrder": 0,
       "properties": {
         "data": {
+          "type": "*",
           "description": "The resulting array or object after the difference operation.",
           "instillEditOnNodeFields": [],
           "instillFormat": "*",
@@ -281,7 +293,9 @@
             "reference",
             "template"
           ],
-          "items": {},
+          "items": {
+            "type": "*"
+          },
           "title": "Data",
           "type": "array"
         }
@@ -300,6 +314,7 @@
       "instillUIOrder": 0,
       "properties": {
         "data": {
+          "type": "*",
           "description": "The resulting array or object after the intersection operation.",
           "instillEditOnNodeFields": [],
           "instillFormat": "*",
@@ -321,6 +336,7 @@
       "instillUIOrder": 0,
       "properties": {
         "data": {
+          "type": "*",
           "description": "The source data to be split. Can be: 1) An array to split into groups 2) An object to split by property count (keys are sorted alphabetically for consistent ordering)",
           "instillAcceptFormats": [
             "*"
@@ -363,6 +379,9 @@
           "description": "The resulting array after splitting. For arrays: array of subarrays. For objects: array of smaller objects with alphabetically ordered keys",
           "instillFormat": "array:*",
           "instillUIOrder": 0,
+          "items": {
+            "type": "*"
+          },
           "title": "Data",
           "type": "array"
         }
@@ -395,7 +414,9 @@
             "reference",
             "template"
           ],
-          "items": {},
+          "items": {
+            "type": "*"
+          },
           "title": "Data",
           "type": "array"
         }
@@ -418,6 +439,7 @@
           "instillEditOnNodeFields": [],
           "instillFormat": "*",
           "instillUIOrder": 0,
+          "type": "*",
           "title": "Data"
         }
       },
@@ -449,7 +471,9 @@
             "reference",
             "template"
           ],
-          "items": {},
+          "items": {
+            "type": "*"
+          },
           "title": "Data",
           "type": "array"
         }
@@ -472,6 +496,7 @@
           "instillEditOnNodeFields": [],
           "instillFormat": "*",
           "instillUIOrder": 0,
+          "type": "*",
           "title": "Data"
         }
       },
