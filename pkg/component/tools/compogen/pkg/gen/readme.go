@@ -321,18 +321,22 @@ func parseResourceProperties(o *objectSchema) []resourceProperty {
 		}
 
 		prop.Title = titleCase(prop.Title)
+		prop.replaceType()
 
 		// If type is map, extend the type with the element type.
 		switch prop.Type {
 		case "array":
 			if prop.Items.Type != "" {
-				prop.Type += fmt.Sprintf("[%s]", prop.Items.Type)
+				if prop.Items.Type == "*" {
+					prop.Type = "array[any]"
+				} else {
+					prop.Type += fmt.Sprintf("[%s]", prop.Items.Type)
+				}
 			}
 		case "":
 			prop.Type = "any"
 		}
 		prop.replaceDescription()
-		prop.replaceType()
 
 		propMap[k] = prop
 	}
@@ -679,5 +683,8 @@ func (prop *property) replaceDescription() {
 func (prop *property) replaceType() {
 	if prop.Type == "*" {
 		prop.Type = "any"
+	}
+	if prop.Type == "array" && prop.Items.Type == "*" {
+		prop.Type = "array[any]"
 	}
 }
