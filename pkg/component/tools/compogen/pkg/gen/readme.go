@@ -416,6 +416,13 @@ func (rt *readmeTask) parseObjectProperties(properties map[string]property, isIn
 			}
 		} else { // op.Type == "array[object]" || (op.Type == "array" || op.Items.Type == "object")
 
+			props := op.Items.Properties
+			for key := range props {
+				prop := props[key]
+				prop.replaceDescription()
+				props[key] = prop
+			}
+
 			if isInput {
 				rt.InputObjects = append(rt.InputObjects, map[string]objectSchema{
 					op.Title: {
@@ -656,7 +663,12 @@ func insertHeaderByConstValue(option objectSchema, taskOrString interface{}) str
 }
 
 func (prop *property) replaceDescription() {
-	prop.Description = strings.ReplaceAll(prop.Description, "\n", " ")
-	prop.Description = strings.ReplaceAll(prop.Description, "{", "\\{")
-	prop.Description = strings.ReplaceAll(prop.Description, "}", "\\}")
+	if strings.Contains(prop.Description, "{{") && strings.Contains(prop.Description, "}}") {
+		prop.Description = strings.ReplaceAll(prop.Description, "{{", "`{{")
+		prop.Description = strings.ReplaceAll(prop.Description, "}}", "}}`")
+	} else {
+		prop.Description = strings.ReplaceAll(prop.Description, "\n", " ")
+		prop.Description = strings.ReplaceAll(prop.Description, "{", "\\{")
+		prop.Description = strings.ReplaceAll(prop.Description, "}", "\\}")
+	}
 }
