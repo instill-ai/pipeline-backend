@@ -270,3 +270,53 @@ func UploadBlobData(ctx context.Context, uploadURL string, fileContentType strin
 
 	return nil
 }
+
+// UploadBlobDataAndReplaceWithURL uploads the unstructured data in the structs to minio and replaces the data with the URL.
+func UploadBlobDataAndReplaceWithURL(ctx context.Context, ns resource.Namespace, dataStructs []*structpb.Struct) ([]*structpb.Struct, error) {
+	updatedDataStructs := make([]*structpb.Struct, len(dataStructs))
+	for i, dataStruct := range dataStructs {
+		updatedDataStruct, err := uploadBlobDataAndReplaceWithURL(ctx, ns, dataStruct)
+		if err != nil {
+			return nil, err
+		}
+		updatedDataStructs[i] = updatedDataStruct
+	}
+	return updatedDataStructs, nil
+}
+
+func uploadBlobDataAndReplaceWithURL(ctx context.Context, ns resource.Namespace, dataStruct *structpb.Struct) (*structpb.Struct, error) {
+
+	for key, value := range dataStruct.GetFields() {
+		switch v := value.GetKind().(type) {
+		case *structpb.Value_StringValue:
+			if isUnstructuredData(v.StringValue) {
+				// upload data to minio
+				// copy the uploadBlobAndGetDownloadURL from service/blobstorage.go
+			}
+		case *structpb.Value_ListValue:
+			for _, item := range v.ListValue.Values {
+				structData := item.GetStructValue()
+				updatedStructData, err := uploadBlobDataAndReplaceWithURL(ctx, ns, structData)
+				if err != nil {
+					return nil, err
+				}
+				dataStruct.GetFields()[key] = &structpb.Value{Kind: &structpb.Value_StructValue{StructValue: updatedStructData}}
+			}
+		case *structpb.Value_StructValue:
+			for _, item := range v.StructValue.GetFields() {
+				structData := item.GetStructValue()
+				updatedStructData, err := uploadBlobDataAndReplaceWithURL(ctx, ns, structData)
+				if err != nil {
+					return nil, err
+				}
+				dataStruct.GetFields()[key] = &structpb.Value{Kind: &structpb.Value_StructValue{StructValue: updatedStructData}}
+			}
+		}
+	}
+
+	return dataStruct, nil
+}
+
+func isUnstructuredData(data string) bool {
+	return strings.HasPrefix(data, "data:") && strings.Contains(data, "base64,")
+}

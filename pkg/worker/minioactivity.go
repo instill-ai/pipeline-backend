@@ -11,6 +11,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	miniox "github.com/instill-ai/x/minio"
 )
@@ -148,6 +149,13 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 		compInputs[i] = varStr.GetStructValue()
 	}
 
+	compInputs, err = utils.UploadBlobDataAndReplaceWithURL(ctx, param.SystemVariables.PipelineOwner, compInputs)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("=========== compInputs ===========", compInputs)
+
 	objectName := fmt.Sprintf("component-runs/%s/input/%s.json", param.ID, pipelineTriggerID)
 
 	url, objectInfo, err := w.minioClient.UploadFile(ctx, log, &miniox.UploadFileParam{
@@ -202,6 +210,13 @@ func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *Comp
 		}
 		compOutputs[i] = varStr.GetStructValue()
 	}
+
+	compOutputs, err = utils.UploadBlobDataAndReplaceWithURL(ctx, param.SystemVariables.PipelineOwner, compOutputs)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("=========== compOutputs ===========", compOutputs)
 
 	url, objectInfo, err := w.minioClient.UploadFile(ctx, log, &miniox.UploadFileParam{
 		FilePath:      objectName,
