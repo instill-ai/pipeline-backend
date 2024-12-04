@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.48.3-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.48.2-beta...v0.48.3-beta) (2024-12-04)
+
+
+### Bug Fixes
+
+* **repository:** fix edition filter ([#921](https://github.com/instill-ai/pipeline-backend/issues/921)) ([634cacd](https://github.com/instill-ai/pipeline-backend/commit/634cacdcff0f976ef4e2c79db906eed3cdcabda9))
+
 ## [0.48.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.48.1-beta...v0.48.2-beta) (2024-12-04)
 
 
