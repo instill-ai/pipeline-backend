@@ -853,13 +853,6 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 		defaultValueMap[k] = v.Default
 	}
 
-	requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
-
-	expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, requesterUID.String())
-	if err != nil {
-		return fmt.Errorf("get expiry rule tag: %w", err)
-	}
-
 	errors := []string{}
 
 	for idx, data := range pipelineData {
@@ -1375,6 +1368,13 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 			if err != nil {
 				return err
 			}
+		}
+
+		requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
+
+		expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, requesterUID.String())
+		if err != nil {
+			return fmt.Errorf("get expiry rule tag: %w", err)
 		}
 
 		err = s.uploadPipelineRunInputsToMinio(ctx, uploadPipelineRunInputsToMinioParam{
