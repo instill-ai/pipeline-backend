@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.48.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.48.1-beta...v0.48.2-beta) (2024-12-04)
+
+
+### Features
+
+* **compogen:** replace * to any ([#917](https://github.com/instill-ai/pipeline-backend/issues/917)) ([87ca33a](https://github.com/instill-ai/pipeline-backend/commit/87ca33ab08de355040463af4ee1eb528eb6c5407))
+* **compogen:** replace array[*] to array[any] ([#919](https://github.com/instill-ai/pipeline-backend/issues/919)) ([9990f0e](https://github.com/instill-ai/pipeline-backend/commit/9990f0ecd708099501eb55207df959fb7d647497))
+
+
+### Miscellaneous Chores
+
+* release v0.48.2-beta ([4989887](https://github.com/instill-ai/pipeline-backend/commit/4989887a703513329a6495e338434cdf816b3ece))
+
 ## [0.48.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.48.0-beta...v0.48.1-beta) (2024-12-03)
 
 
