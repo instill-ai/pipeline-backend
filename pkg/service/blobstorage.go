@@ -38,6 +38,8 @@ func (s *service) uploadBlobAndGetDownloadURL(ctx context.Context, ns resource.N
 	timestamp := time.Now().Format(time.RFC3339)
 	objectName := fmt.Sprintf("%s-%s%s", requesterUID.String(), timestamp, getFileExtension(mimeType))
 
+	// TODO: We will need to add the expiry days for the blob data.
+	// This will be addressed in ins-6857
 	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
 		NamespaceId:      ns.NsID,
 		ObjectName:       objectName,

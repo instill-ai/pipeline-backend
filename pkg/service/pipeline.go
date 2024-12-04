@@ -839,6 +839,9 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 //     2-3. Upload "uploading pipeline data" to minio for pipeline run logger.
 //  3. Map the settings in recipe to the format in workflow memory.
 //  4. Enable the streaming mode when the header contains "text/event-stream"
+//
+// We upload User Input Data by `uploadBlobAndGetDownloadURL`, which exposes the public URL because it will be used by `console` & external users.
+// We upload Pipeline Input Data by `uploadPipelineRunInputsToMinio`, which does not expose the public URL. The URL will be used by pipeline run logger.
 func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace, r *datamodel.Recipe, pipelineTriggerID string, pipelineData []*pipelinepb.TriggerData) error {
 	batchSize := len(pipelineData)
 	if batchSize > constant.MaxBatchSize {
