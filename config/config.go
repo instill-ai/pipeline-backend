@@ -21,7 +21,7 @@ const (
 	EditionLocalCE      = "local-ce:dev"
 	EditionCloudDev     = "cloud:dev"
 	EditionCloudStaging = "cloud:staging"
-	EditionCloudProd    = "cloud:prod"
+	EditionCloudProd    = "cloud"
 )
 
 // Config - Global variable to export
