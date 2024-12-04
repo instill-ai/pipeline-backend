@@ -831,6 +831,14 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, pipelinepb.Pipeline_VIEW_FULL, true, true)
 }
 
+// preTriggerPipeline does the following:
+//  1. Upload pipeline input data to minio if the data is blob data.
+//  2. New workflow memory.
+//     2-1. Set the default values for the variables for memory data and uploading pipeline data.
+//     2-2. Set the data with data.Value for the memory data, which will be used for pipeline running.
+//     2-3. Upload "uploading pipeline data" to minio for pipeline run logger.
+//  3. Map the settings in recipe to the format in workflow memory.
+//  4. Enable the streaming mode when the header contains "text/event-stream"
 func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace, r *datamodel.Recipe, pipelineTriggerID string, pipelineData []*pipelinepb.TriggerData) error {
 	batchSize := len(pipelineData)
 	if batchSize > constant.MaxBatchSize {
@@ -843,6 +851,13 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 	for k, v := range r.Variable {
 		formatMap[k] = v.Format
 		defaultValueMap[k] = v.Default
+	}
+
+	requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
+
+	expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, requesterUID.String())
+	if err != nil {
+		return fmt.Errorf("get expiry rule tag: %w", err)
 	}
 
 	errors := []string{}
@@ -1362,17 +1377,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 			}
 		}
 
-		requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
-
-		expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, requesterUID.String())
-		if err != nil {
-			return fmt.Errorf("get expiry rule tag: %w", err)
-		}
-
 		err = s.uploadPipelineRunInputsToMinio(ctx, uploadPipelineRunInputsToMinioParam{
-			PipelineTriggerID: pipelineTriggerID,
-			ExpiryRuleTag:     expiryRuleTag,
-			PipelineData:      uploadingPipelineData,
+			pipelineTriggerID: pipelineTriggerID,
+			expiryRuleTag:     expiryRuleTag,
+			pipelineData:      uploadingPipelineData,
 		})
 		if err != nil {
 			return fmt.Errorf("pipeline run inputs to minio: %w", err)

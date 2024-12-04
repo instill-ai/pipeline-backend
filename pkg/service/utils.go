@@ -179,8 +179,7 @@ func (s *service) convertComponentRunToPB(run datamodel.ComponentRun) (*pipeline
 	return result, nil
 }
 
-// CanViewPrivateData - only with requester ns could users see their input/output data
-func CanViewPrivateData(namespace, requesterUID string) bool {
+func canViewPrivateData(namespace, requesterUID uuid.UUID) bool {
 	return namespace == requesterUID
 }
 
