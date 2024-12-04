@@ -877,7 +877,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 		for k := range m {
 			switch str := m[k].(type) {
 			case string:
-				if formatMap[k] != "string" && formatMap[k] != "number" && formatMap[k] != "boolean" && formatMap[k] != "json" {
+				if isUnstructuredFormat(formatMap[k]) {
 					// Skip the base64 decoding if the string is a URL
 					if strings.HasPrefix(str, "http://") || strings.HasPrefix(str, "https://") {
 						continue
@@ -889,7 +889,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					vars.Fields[k] = structpb.NewStringValue(downloadURL)
 				}
 			case []string:
-				if formatMap[k] != "array:string" && formatMap[k] != "array:number" && formatMap[k] != "array:boolean" {
+				if isUnstructuredFormat(formatMap[k]) {
 					for idx := range str {
 						// Skip the base64 decoding if the string is a URL
 						if strings.HasPrefix(str[idx], "http://") || strings.HasPrefix(str[idx], "https://") {

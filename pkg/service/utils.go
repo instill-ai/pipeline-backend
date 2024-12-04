@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -226,4 +227,16 @@ func parseRecipeMetadata(ctx context.Context, metadataMap map[string][]byte, con
 	// Some recipes cannot generate a DataSpecification, so we can ignore the error.
 	dataSpec, _ := converter.GeneratePipelineDataSpec(dbRecipe.Variable, dbRecipe.Output, dbRecipe.Component)
 	return pbStruct, dataSpec, nil
+}
+
+func isUnstructuredFormat(format string) bool {
+	if strings.HasPrefix(format, "array:") {
+		return format != "array:string" &&
+			format != "array:number" &&
+			format != "array:boolean"
+	}
+	return format != "string" &&
+		format != "number" &&
+		format != "boolean" &&
+		format != "json"
 }
