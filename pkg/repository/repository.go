@@ -767,12 +767,8 @@ func (r *repository) ListComponentDefinitionUIDs(_ context.Context, p ListCompon
 		Where(where, whereArgs...).
 		Where("is_visible IS TRUE")
 
-
 	// TODO: refactor it with store.go in ins-7031
-	if config.Config.Server.Edition == config.EditionLocalCE {
-		skipComponentsInCE := []string{"instill-app"}
-		queryBuilder = queryBuilder.Where("id NOT IN (?)", skipComponentsInCE)
-	} else if config.Config.Server.Edition == config.EditionCloudStaging || config.Config.Server.Edition == config.EditionCloudProd {
+	if config.Config.Server.Edition == config.EditionCloudStaging || config.Config.Server.Edition == config.EditionCloudProd {
 		skipComponentsInCloud := []string{"google-drive", "google-sheets"}
 		queryBuilder = queryBuilder.Where("id NOT IN (?)", skipComponentsInCloud)
 	}
@@ -877,6 +873,11 @@ func (r *repository) ListIntegrations(ctx context.Context, p ListIntegrationsPar
 	queryBuilder := db.Model(&datamodel.ComponentDefinition{}).
 		Where(where, whereArgs...).
 		Where("is_visible IS TRUE AND has_integration IS TRUE")
+
+	if config.Config.Server.Edition == config.EditionCloudStaging || config.Config.Server.Edition == config.EditionCloudProd {
+		skipComponentsInCloud := []string{"google-drive", "google-sheets"}
+		queryBuilder = queryBuilder.Where("id NOT IN (?)", skipComponentsInCloud)
+	}
 
 	var count int64
 	queryBuilder.Count(&count)
