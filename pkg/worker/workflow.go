@@ -317,8 +317,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					SystemVariables: param.SystemVariables,
 				}
 
-				componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(minioCtx, w.UploadComponentInputsActivity, args))
-
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.ComponentActivity, args))
 				futureArgs = append(futureArgs, args)
 
@@ -401,6 +399,11 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				continue
 			}
 			componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(minioCtx, w.UploadComponentOutputsActivity, futureArgs[idx]))
+
+			// There is time difference between the workflow memory update and upload component inputs activity.
+			// If we upload the inputs before the component activity, some of the input will not be set in the workflow memory.
+			// So, we have to execute this worker activity after the component activity.
+			componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(minioCtx, w.UploadComponentInputsActivity, futureArgs[idx]))
 		}
 	}
 
