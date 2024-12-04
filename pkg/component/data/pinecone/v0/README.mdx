@@ -124,7 +124,35 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Upserted Count | `upserted-count` | integer | Number of records modified or added |
+| Upserted Count | `upserted-count` | integer | Number of records modified or added. |
+</div>
+
+
+### Rerank
+
+Rerank documents, such as text passages, according to their relevance to a query. The input is a list of documents and a query. The output is a list of documents, sorted by relevance to the query.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_RERANK` |
+| Query (required) | `query` | string | The query to rerank the documents. |
+| Documents (required) | `documents` | array[string] | The documents to rerank. |
+| Top N | `top-n` | integer | The number of results to return sorted by relevance. Defaults to the number of inputs. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Reranked Documents. | `documents` | array[string] | Reranked documents. |
+| Scores | `scores` | array[number] | The relevance score of the documents normalized between 0 and 1. |
 </div>
 
 

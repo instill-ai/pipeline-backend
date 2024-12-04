@@ -299,7 +299,7 @@
       "instillUIOrder": 0,
       "properties": {
         "query": {
-          "description": "The query to rerank the documents",
+          "description": "The query to rerank the documents.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -314,7 +314,7 @@
           "type": "string"
         },
         "documents": {
-          "description": "The documents to rerank",
+          "description": "The documents to rerank.",
           "instillUIOrder": 1,
           "instillUpstreamTypes": [
             "value",
@@ -328,7 +328,7 @@
           "type": "array"
         },
         "top-n": {
-          "description": "The number of results to return sorted by relevance. Defaults to the number of inputs.\n\n",
+          "description": "The number of results to return sorted by relevance. Defaults to the number of inputs.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -352,7 +352,7 @@
       "instillUIOrder": 0,
       "properties": {
         "documents": {
-          "description": "Reranked documents",
+          "description": "Reranked documents.",
           "instillFormat": "array:string",
           "items": {
             "instillFormat": "string",
@@ -360,7 +360,7 @@
             "type": "string"
           },
           "instillUIOrder": 0,
-          "title": "Reranked documents",
+          "title": "Reranked documents.",
           "type": "array"
         },
         "scores": {

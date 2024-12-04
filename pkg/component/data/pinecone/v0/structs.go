@@ -101,6 +101,7 @@ func (r *rerankInput) asRequest() *rerankReq {
 		reqDocuments = append(reqDocuments, Document{Text: doc})
 	}
 
+	// TODO: make model configurable in tasks.json
 	return &rerankReq{
 		Model:     "bge-reranker-v2-m3",
 		Query:     r.Query,
