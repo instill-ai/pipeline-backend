@@ -215,7 +215,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 
 	isOwner := dbPipeline.OwnerUID() == requesterUID
 
-	if !isOwner && requesterUID.String() != dbPipelineRun.RequesterUID.String() {
+	if !isOwner && requesterUID != dbPipelineRun.RequesterUID {
 		return nil, fmt.Errorf("requester is not pipeline owner/credit owner. they are not allowed to view these component runs")
 	}
 
