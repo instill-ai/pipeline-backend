@@ -151,10 +151,8 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 	}
 
 	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
-	fmt.Println("3. Inputs =========== sysVarJSON ===========", sysVarJSON)
-	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
 
-	fmt.Println("3. Outputs =========== param.SystemVariables.PipelineOwner ===========", param.SystemVariables.PipelineOwner)
+	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
 
 	paramsForUpload := utils.UploadBlobDataAndReplaceWithURLsParams{
 		NamespaceID:    param.SystemVariables.PipelineOwner.NsID,
@@ -164,14 +162,10 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 		ArtifactClient: &w.artifactPublicServiceClient,
 	}
 
-	fmt.Println("=========== paramsForUpload ===========", paramsForUpload)
-
 	compInputs, err = utils.UploadBlobDataAndReplaceWithURLs(ctx, paramsForUpload)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("=========== compInputs ===========", compInputs)
 
 	objectName := fmt.Sprintf("component-runs/%s/input/%s.json", param.ID, pipelineTriggerID)
 
@@ -243,8 +237,6 @@ func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *Comp
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("=========== compOutputs ===========", compOutputs)
 
 	url, objectInfo, err := w.minioClient.UploadFile(ctx, log, &miniox.UploadFileParam{
 		FilePath:      objectName,

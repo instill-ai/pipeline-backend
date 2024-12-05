@@ -46,9 +46,11 @@ func UploadBlobDataAndReplaceWithURLs(ctx context.Context, params UploadBlobData
 			artifactClient: params.ArtifactClient,
 		})
 		if err != nil {
-			return nil, err
+			// Note: we don't want to fail the whole process if one of the data structs fails to upload.
+			updatedDataStructs[i] = dataStruct
+		} else {
+			updatedDataStructs[i] = updatedDataStruct
 		}
-		updatedDataStructs[i] = updatedDataStruct
 	}
 	return updatedDataStructs, nil
 }
@@ -65,47 +67,64 @@ func uploadBlobDataAndReplaceWithURL(ctx context.Context, params uploadBlobDataA
 
 	dataStruct := params.dataStruct
 	for key, value := range dataStruct.GetFields() {
-		switch v := value.GetKind().(type) {
-		case *structpb.Value_StringValue:
-			if isUnstructuredData(v.StringValue) {
-				downloadURL, err := UploadBlobAndGetDownloadURL(ctx, UploadBlobAndGetDownloadURLParams{
-					NamespaceID:    params.namespaceID,
-					RequesterUID:   params.requesterUID,
-					Data:           v.StringValue,
-					Logger:         params.logger,
-					ArtifactClient: params.artifactClient,
-				})
-				if err != nil {
-					return nil, err
-				}
-				dataStruct.GetFields()[key] = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: downloadURL}}
-			}
-		case *structpb.Value_ListValue:
-			for _, item := range v.ListValue.Values {
-				structData := item.GetStructValue()
-				newParams := params
-				newParams.dataStruct = structData
-				updatedStructData, err := uploadBlobDataAndReplaceWithURL(ctx, newParams)
-				if err != nil {
-					return nil, err
-				}
-				dataStruct.GetFields()[key] = &structpb.Value{Kind: &structpb.Value_StructValue{StructValue: updatedStructData}}
-			}
-		case *structpb.Value_StructValue:
-			for _, item := range v.StructValue.GetFields() {
-				structData := item.GetStructValue()
-				newParams := params
-				newParams.dataStruct = structData
-				updatedStructData, err := uploadBlobDataAndReplaceWithURL(ctx, newParams)
-				if err != nil {
-					return nil, err
-				}
-				dataStruct.GetFields()[key] = &structpb.Value{Kind: &structpb.Value_StructValue{StructValue: updatedStructData}}
-			}
+		updatedValue, err := processValue(ctx, params, value)
+		if err == nil {
+			dataStruct.GetFields()[key] = updatedValue
 		}
 	}
 
 	return dataStruct, nil
+}
+
+func processValue(ctx context.Context, params uploadBlobDataAndReplaceWithURLParams, value *structpb.Value) (*structpb.Value, error) {
+
+	switch v := value.GetKind().(type) {
+	case *structpb.Value_StringValue:
+		if isUnstructuredData(v.StringValue) {
+			downloadURL, err := UploadBlobAndGetDownloadURL(ctx, UploadBlobAndGetDownloadURLParams{
+				NamespaceID:    params.namespaceID,
+				RequesterUID:   params.requesterUID,
+				Data:           v.StringValue,
+				Logger:         params.logger,
+				ArtifactClient: params.artifactClient,
+			})
+			if err != nil {
+				return nil, err
+			}
+			return &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: downloadURL}}, nil
+		}
+	case *structpb.Value_ListValue:
+		listValue := v.ListValue
+		updatedListValue, err := processList(ctx, params, listValue)
+		if err == nil {
+			return &structpb.Value{Kind: &structpb.Value_ListValue{ListValue: updatedListValue}}, nil
+		}
+	case *structpb.Value_StructValue:
+		for _, item := range v.StructValue.GetFields() {
+			structData := item.GetStructValue()
+			newParams := params
+			newParams.dataStruct = structData
+			updatedStructData, err := uploadBlobDataAndReplaceWithURL(ctx, newParams)
+			// Note: we don't want to fail the whole process if one of the data structs fails to upload.
+			if err == nil {
+				return &structpb.Value{Kind: &structpb.Value_StructValue{StructValue: updatedStructData}}, nil
+			}
+		}
+	}
+
+	return value, nil
+}
+
+func processList(ctx context.Context, params uploadBlobDataAndReplaceWithURLParams, list *structpb.ListValue) (*structpb.ListValue, error) {
+
+	for i, item := range list.Values {
+		updatedItem, err := processValue(ctx, params, item)
+		if err == nil {
+			list.Values[i] = updatedItem
+		}
+	}
+
+	return list, nil
 }
 
 func isUnstructuredData(data string) bool {
