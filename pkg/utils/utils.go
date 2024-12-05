@@ -1,16 +1,24 @@
 package utils
 
 import (
+	"context"
+	"fmt"
+	"net/url"
 	"reflect"
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
+	"go.uber.org/zap"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
+	"github.com/instill-ai/x/blobstorage"
 
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
@@ -188,4 +196,77 @@ func StructToMap(s interface{}, tag string) map[string]interface{} {
 		}
 	}
 	return out
+}
+
+// They are same logic in the some components like Instill Artifact, Instill Model.
+// We can extract this logic to the shared package.
+// But for now, we keep it here because we want to avoid that the components depend on pipeline shared package.
+func GetRequestMetadata(vars map[string]any) metadata.MD {
+	md := metadata.Pairs(
+		"Authorization", getHeaderAuthorization(vars),
+		"Instill-User-Uid", getInstillUserUID(vars),
+		"Instill-Auth-Type", "user",
+	)
+
+	if requester := getInstillRequesterUID(vars); requester != "" {
+		md.Set("Instill-Requester-Uid", requester)
+	}
+	return md
+}
+
+func getHeaderAuthorization(vars map[string]any) string {
+	if v, ok := vars["__PIPELINE_HEADER_AUTHORIZATION"]; ok {
+		return v.(string)
+	}
+	return ""
+}
+func getInstillUserUID(vars map[string]any) string {
+	if v, ok := vars["__PIPELINE_USER_UID"]; ok {
+		switch uid := v.(type) {
+		case uuid.UUID:
+			return uid.String()
+		case string:
+			return uid
+		}
+	}
+	return ""
+}
+
+func getInstillRequesterUID(vars map[string]any) string {
+	if v, ok := vars["__PIPELINE_REQUESTER_UID"]; ok {
+		switch uid := v.(type) {
+		case uuid.UUID:
+			return uid.String()
+		case string:
+			return uid
+		}
+	}
+	return ""
+}
+
+// UploadBlobData uploads the blob data to the given upload URL.
+func UploadBlobData(ctx context.Context, uploadURL string, fileContentType string, fileBytes []byte, logger *zap.Logger) error {
+	if uploadURL == "" {
+		return fmt.Errorf("empty upload URL provided")
+	}
+
+	parsedURL, err := url.Parse(uploadURL)
+	if err != nil {
+		return fmt.Errorf("parsing upload URL: %w", err)
+	}
+	if config.Config.APIGateway.TLSEnabled {
+		parsedURL.Scheme = "https"
+	} else {
+		parsedURL.Scheme = "http"
+	}
+	parsedURL.Host = fmt.Sprintf("%s:%d", config.Config.APIGateway.Host, config.Config.APIGateway.PublicPort)
+	fullURL := parsedURL.String()
+
+	err = blobstorage.UploadFile(ctx, logger, fullURL, fileBytes, fileContentType)
+
+	if err != nil {
+		return fmt.Errorf("uploading blob: %w", err)
+	}
+
+	return nil
 }

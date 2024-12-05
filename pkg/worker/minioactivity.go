@@ -15,59 +15,6 @@ import (
 	miniox "github.com/instill-ai/x/minio"
 )
 
-func (w *worker) UploadInputsToMinioActivity(ctx context.Context, param *UploadInputsToMinioActivityParam) error {
-	log := w.log.With(zap.String("PipelineTriggerID", param.PipelineTriggerID))
-	log.Info("UploadInputsToMinioActivity started")
-
-	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.PipelineTriggerID)
-	if err != nil {
-		return err
-	}
-
-	pipelineData := make([]*structpb.Struct, wfm.GetBatchSize())
-
-	for i := range wfm.GetBatchSize() {
-		val, err := wfm.GetPipelineData(ctx, i, memory.PipelineVariable)
-		if err != nil {
-			return err
-		}
-		varStr, err := val.ToStructValue()
-		if err != nil {
-			return err
-		}
-		pipelineData[i] = varStr.GetStructValue()
-	}
-
-	objectName := fmt.Sprintf("pipeline-runs/input/%s.json", param.PipelineTriggerID)
-
-	url, objectInfo, err := w.minioClient.UploadFile(ctx, log, &miniox.UploadFileParam{
-		FilePath:      objectName,
-		FileContent:   pipelineData,
-		FileMimeType:  constant.ContentTypeJSON,
-		ExpiryRuleTag: param.ExpiryRuleTag,
-	})
-	if err != nil {
-		log.Error("failed to upload pipeline run inputs to minio", zap.Error(err))
-		return err
-	}
-
-	inputs := datamodel.JSONB{{
-		Name: objectInfo.Key,
-		Type: objectInfo.ContentType,
-		Size: objectInfo.Size,
-		URL:  url,
-	}}
-
-	err = w.repository.UpdatePipelineRun(ctx, param.PipelineTriggerID, &datamodel.PipelineRun{Inputs: inputs})
-	if err != nil {
-		log.Error("failed to save pipeline run input data", zap.Error(err))
-		return err
-	}
-
-	log.Info("UploadInputsToMinioActivity finished")
-	return nil
-}
-
 func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadRecipeToMinioActivityParam) error {
 	log := w.log.With(zap.String("PipelineTriggerUID", param.PipelineTriggerID))
 	log.Info("UploadRecipeToMinioActivity started")

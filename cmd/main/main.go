@@ -298,14 +298,16 @@ func main() {
 				InstillCoreHost: config.Config.Server.InstillCoreHost,
 				ComponentStore:  compStore,
 			}),
-			MgmtPublicServiceClient:  mgmtPublicServiceClient,
-			MgmtPrivateServiceClient: mgmtPrivateServiceClient,
-			MinioClient:              minioClient,
-			ComponentStore:           compStore,
-			Memory:                   ms,
-			WorkerUID:                workerUID,
-			RetentionHandler:         nil,
-			BinaryFetcher:            binaryFetcher,
+			MgmtPublicServiceClient:      mgmtPublicServiceClient,
+			MgmtPrivateServiceClient:     mgmtPrivateServiceClient,
+			MinioClient:                  minioClient,
+			ComponentStore:               compStore,
+			Memory:                       ms,
+			WorkerUID:                    workerUID,
+			RetentionHandler:             nil,
+			BinaryFetcher:                binaryFetcher,
+			ArtifactPublicServiceClient:  artifactPublicServiceClient,
+			ArtifactPrivateServiceClient: artifactPrivateServiceClient,
 		},
 	)
 
@@ -511,7 +513,6 @@ func main() {
 	lw.RegisterActivity(cw.UpdatePipelineRunActivity)
 	lw.RegisterActivity(cw.UpsertComponentRunActivity)
 
-	mw.RegisterActivity(cw.UploadInputsToMinioActivity)
 	mw.RegisterActivity(cw.UploadOutputsToMinioActivity)
 	mw.RegisterActivity(cw.UploadRecipeToMinioActivity)
 	mw.RegisterActivity(cw.UploadComponentInputsActivity)

@@ -138,15 +138,24 @@ func GetFileTypeByFilename(filename string) (string, error) {
 
 func GetContentTypeFromBase64(base64String string) (string, error) {
 	// Remove the "data:" prefix and split at the first semicolon
-	contentType := strings.TrimPrefix(base64String, "data:")
+	if hasDataPrefix(base64String) {
+		contentType := strings.TrimPrefix(base64String, "data:")
 
-	parts := strings.SplitN(contentType, ";", 2)
-	if len(parts) != 2 {
-		return "", fmt.Errorf("invalid format")
+		parts := strings.SplitN(contentType, ";", 2)
+		if len(parts) != 2 {
+			return "", fmt.Errorf("invalid format")
+		}
+
+		// The first part is the content type
+		return parts[0], nil
 	}
 
-	// The first part is the content type
-	return parts[0], nil
+	b, err := base64.StdEncoding.DecodeString(base64String)
+	if err != nil {
+		return "", fmt.Errorf("decode base64 string: %w", err)
+	}
+	mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
+	return mimeType, nil
 }
 
 func GetFileBase64Content(base64String string) string {

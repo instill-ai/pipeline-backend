@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"go/parser"
-	"net/url"
 	"strings"
 	"time"
 
@@ -33,7 +32,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
-	"github.com/instill-ai/x/blobstorage"
 	"github.com/instill-ai/x/errmsg"
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
@@ -248,16 +246,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}).Get(ctx, nil); err != nil {
 			return err
 		}
-
-		err := workflow.ExecuteActivity(minioCtx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
-			PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
-			ExpiryRuleTag:     param.SystemVariables.ExpiryRuleTag,
-		}).Get(ctx, nil)
-		if err != nil {
-			logger.Error("Failed to upload pipeline run input", zap.Error(err))
-		}
-
-		err = workflow.ExecuteActivity(minioCtx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
+		err := workflow.ExecuteActivity(minioCtx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
 			PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
 			ExpiryRuleTag:     param.SystemVariables.ExpiryRuleTag,
 		}).Get(ctx, nil)
@@ -692,9 +681,12 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 
 	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
 
-	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(sysVarJSON))
+	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
 
 	objectName := fmt.Sprintf("%s/%s", requesterID, value.Filename())
+
+	// TODO: We will need to add the expiry days for the blob data.
+	// This will be addressed in ins-6857
 	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
 		NamespaceId:      requesterID,
 		ObjectName:       objectName,
@@ -707,7 +699,12 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 
 	uploadURL := resp.GetUploadUrl()
 
-	err = uploadBlobData(ctx, uploadURL, value, w.log)
+	fileBytes, err := value.Binary()
+	if err != nil {
+		return "", fmt.Errorf("getting file bytes: %w", err)
+	}
+
+	err = utils.UploadBlobData(ctx, uploadURL, value.ContentType().String(), fileBytes.ByteArray(), w.log)
 	if err != nil {
 		return "", fmt.Errorf("upload blob data: %w", err)
 	}
@@ -721,38 +718,6 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 	}
 
 	return respDownloadURL.GetDownloadUrl(), nil
-}
-
-func uploadBlobData(ctx context.Context, uploadURL string, value format.File, logger *zap.Logger) error {
-	if uploadURL == "" {
-		return fmt.Errorf("empty upload URL provided")
-	}
-
-	parsedURL, err := url.Parse(uploadURL)
-	if err != nil {
-		return fmt.Errorf("parsing upload URL: %w", err)
-	}
-	if config.Config.APIGateway.TLSEnabled {
-		parsedURL.Scheme = "https"
-	} else {
-		parsedURL.Scheme = "http"
-	}
-	parsedURL.Host = fmt.Sprintf("%s:%d", config.Config.APIGateway.Host, config.Config.APIGateway.PublicPort)
-	fullURL := parsedURL.String()
-	contentType := value.ContentType().String()
-	fileBytes, err := value.Binary()
-
-	if err != nil {
-		return fmt.Errorf("getting file bytes: %w", err)
-	}
-
-	err = blobstorage.UploadFile(ctx, logger, fullURL, fileBytes.ByteArray(), contentType)
-
-	if err != nil {
-		return fmt.Errorf("uploading blob: %w", err)
-	}
-
-	return nil
 }
 
 // TODO: complete iterator

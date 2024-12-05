@@ -14,12 +14,14 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	miniox "github.com/instill-ai/x/minio"
 	resourcex "github.com/instill-ai/x/resource"
 )
 
@@ -91,9 +93,9 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 		return nil, err
 	}
 
-	isOwner := dbPipeline.OwnerUID().String() == requesterUID
+	isOwner := dbPipeline.OwnerUID() == requesterUID
 
-	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsWithPermissions(ctx, requesterUID, dbPipeline.UID.String(),
+	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsWithPermissions(ctx, requesterUID.String(), dbPipeline.UID.String(),
 		page, pageSize, filter, orderBy, isOwner)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get pipeline runs: %w", err)
@@ -101,7 +103,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 
 	var referenceIDs []string
 	for _, pipelineRun := range pipelineRuns {
-		if CanViewPrivateData(pipelineRun.RequesterUID.String(), requesterUID) {
+		if canViewPrivateData(pipelineRun.RequesterUID, requesterUID) {
 			for _, input := range pipelineRun.Inputs {
 				referenceIDs = append(referenceIDs, input.Name)
 			}
@@ -152,7 +154,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 			pbRun.RequesterId = *requesterID
 		}
 
-		if CanViewPrivateData(run.RequesterUID.String(), requesterUID) {
+		if canViewPrivateData(run.RequesterUID, requesterUID) {
 			if len(run.Inputs) == 1 {
 				key := run.Inputs[0].Name
 				pbRun.Inputs, err = parseMetadataToStructArray(metadataMap, key)
@@ -211,9 +213,9 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 		return nil, fmt.Errorf("failed to get pipeline by UID: %s. error: %s", dbPipelineRun.PipelineUID.String(), err.Error())
 	}
 
-	isOwner := dbPipeline.OwnerUID().String() == requesterUID
+	isOwner := dbPipeline.OwnerUID() == requesterUID
 
-	if !isOwner && requesterUID != dbPipelineRun.RequesterUID.String() {
+	if !isOwner && requesterUID != dbPipelineRun.RequesterUID {
 		return nil, fmt.Errorf("requester is not pipeline owner/credit owner. they are not allowed to view these component runs")
 	}
 
@@ -224,7 +226,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 
 	var referenceIDs []string
 	for _, pipelineRun := range componentRuns {
-		if CanViewPrivateData(dbPipelineRun.RequesterUID.String(), requesterUID) {
+		if canViewPrivateData(dbPipelineRun.RequesterUID, requesterUID) {
 			for _, input := range pipelineRun.Inputs {
 				referenceIDs = append(referenceIDs, input.Name)
 			}
@@ -253,7 +255,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 			return nil, fmt.Errorf("failed to convert component run: %w", err)
 		}
 
-		if CanViewPrivateData(dbPipelineRun.RequesterUID.String(), requesterUID) {
+		if canViewPrivateData(dbPipelineRun.RequesterUID, requesterUID) {
 			if len(run.Inputs) == 1 {
 				key := run.Inputs[0].Name
 				pbRun.Inputs, err = parseMetadataToStructArray(metadataMap, key)
@@ -379,4 +381,48 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListP
 		Page:         int32(page),
 		PageSize:     int32(pageSize),
 	}, nil
+}
+
+type uploadPipelineRunInputsToMinioParam struct {
+	pipelineTriggerID string
+	expiryRuleTag     string
+	pipelineData      []map[string]any
+}
+
+func (s *service) uploadPipelineRunInputsToMinio(ctx context.Context, param uploadPipelineRunInputsToMinioParam) error {
+	logger, _ := logger.GetZapLogger(ctx)
+	minioClient := s.minioClient
+	objectName := fmt.Sprintf("pipeline-runs/input/%s.json", param.pipelineTriggerID)
+
+	logger.Info("uploadPipelineRunInputsToMinio started",
+		zap.String("objectName", objectName),
+		zap.Any("pipelineData", param.pipelineData),
+	)
+
+	url, objectInfo, err := minioClient.UploadFile(ctx, logger, &miniox.UploadFileParam{
+		FilePath:      objectName,
+		FileContent:   param.pipelineData,
+		FileMimeType:  constant.ContentTypeJSON,
+		ExpiryRuleTag: param.expiryRuleTag,
+	})
+	if err != nil {
+		return fmt.Errorf("upload pipeline run inputs to minio: %w", err)
+	}
+
+	inputs := datamodel.JSONB{{
+		Name: objectInfo.Key,
+		Type: objectInfo.ContentType,
+		Size: objectInfo.Size,
+		URL:  url,
+	}}
+
+	err = s.repository.UpdatePipelineRun(ctx, param.pipelineTriggerID, &datamodel.PipelineRun{Inputs: inputs})
+	if err != nil {
+		logger.Error("save pipeline run input data", zap.Error(err))
+		return err
+	}
+
+	logger.Info("uploadPipelineRunInputsToMinio finished")
+
+	return nil
 }
