@@ -19,6 +19,7 @@ import (
 	resourcex "github.com/instill-ai/x/resource"
 )
 
+// TODO: remove it when utils.UploadBlobDataAndReplaceWithURL is done.
 func (s *service) uploadBlobAndGetDownloadURL(ctx context.Context, ns resource.Namespace, data string) (string, error) {
 	mimeType, err := getMimeType(data)
 	if err != nil {

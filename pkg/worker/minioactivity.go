@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
@@ -149,7 +150,23 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 		compInputs[i] = varStr.GetStructValue()
 	}
 
-	compInputs, err = utils.UploadBlobDataAndReplaceWithURL(ctx, param.SystemVariables.PipelineOwner, compInputs)
+	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
+	fmt.Println("3. Inputs =========== sysVarJSON ===========", sysVarJSON)
+	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
+
+	fmt.Println("3. Outputs =========== param.SystemVariables.PipelineOwner ===========", param.SystemVariables.PipelineOwner)
+
+	paramsForUpload := utils.UploadBlobDataAndReplaceWithURLsParams{
+		NamespaceID:    param.SystemVariables.PipelineOwner.NsID,
+		RequesterUID:   param.SystemVariables.PipelineRequesterUID,
+		DataStructs:    compInputs,
+		Logger:         log,
+		ArtifactClient: &w.artifactPublicServiceClient,
+	}
+
+	fmt.Println("=========== paramsForUpload ===========", paramsForUpload)
+
+	compInputs, err = utils.UploadBlobDataAndReplaceWithURLs(ctx, paramsForUpload)
 	if err != nil {
 		return err
 	}
@@ -211,7 +228,18 @@ func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *Comp
 		compOutputs[i] = varStr.GetStructValue()
 	}
 
-	compOutputs, err = utils.UploadBlobDataAndReplaceWithURL(ctx, param.SystemVariables.PipelineOwner, compOutputs)
+	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
+	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
+
+	paramsForUpload := utils.UploadBlobDataAndReplaceWithURLsParams{
+		NamespaceID:    param.SystemVariables.PipelineOwner.NsID,
+		RequesterUID:   param.SystemVariables.PipelineRequesterUID,
+		DataStructs:    compOutputs,
+		Logger:         log,
+		ArtifactClient: &w.artifactPublicServiceClient,
+	}
+
+	compOutputs, err = utils.UploadBlobDataAndReplaceWithURLs(ctx, paramsForUpload)
 	if err != nil {
 		return err
 	}
