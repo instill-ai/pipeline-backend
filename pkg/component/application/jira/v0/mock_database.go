@@ -4,18 +4,18 @@ import (
 	"fmt"
 )
 
-type FakeBoard struct {
+type fakeBoard struct {
 	Board
 }
 
-func (f *FakeBoard) getSelf() string {
+func (f *fakeBoard) getSelf() string {
 	if f.Self == "" {
 		f.Self = fmt.Sprintf("https://test.atlassian.net/rest/agile/1.0/board/%d", f.ID)
 	}
 	return f.Self
 }
 
-var fakeBoards = []FakeBoard{
+var fakeBoards = []fakeBoard{
 	{
 		Board: Board{
 			ID:        1,
@@ -39,21 +39,21 @@ var fakeBoards = []FakeBoard{
 	},
 }
 
-type FakeIssue struct {
+type fakeIssue struct {
 	ID     string                 `json:"id"`
 	Key    string                 `json:"key"`
 	Self   string                 `json:"self"`
 	Fields map[string]interface{} `json:"fields"`
 }
 
-func (f *FakeIssue) getSelf() string {
+func (f *fakeIssue) getSelf() string {
 	if f.Self == "" {
 		f.Self = fmt.Sprintf("https://test.atlassian.net/rest/agile/1.0/issue/%s", f.ID)
 	}
 	return f.Self
 }
 
-var fakeIssues = []FakeIssue{
+var fakeIssues = []fakeIssue{
 	{
 		ID:  "1",
 		Key: "TST-1",
@@ -126,7 +126,7 @@ var fakeIssues = []FakeIssue{
 	},
 }
 
-type FakeSprint struct {
+type fakeSprint struct {
 	ID            int    `json:"id"`
 	Self          string `json:"self"`
 	State         string `json:"state"`
@@ -138,14 +138,14 @@ type FakeSprint struct {
 	Goal          string `json:"goal"`
 }
 
-func (f *FakeSprint) getSelf() string {
+func (f *fakeSprint) getSelf() string {
 	if f.Self == "" {
 		f.Self = fmt.Sprintf("https://test.atlassian.net/rest/agile/1.0/sprint/%d", f.ID)
 	}
 	return f.Self
 }
 
-var fakeSprints = []FakeSprint{
+var fakeSprints = []fakeSprint{
 	{
 		ID:            1,
 		State:         "active",

@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-type mockCreateSprintRequest struct {
+type mockCreateSprintReq struct {
 	Name          string `json:"name"`
 	Goal          string `json:"goal"`
 	StartDate     string `json:"startDate"`
@@ -20,14 +20,14 @@ func mockCreateSprint(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	body := mockCreateSprintRequest{}
+	body := mockCreateSprintReq{}
 	err = json.NewDecoder(req.Body).Decode(&body)
 	if err != nil {
 		http.Error(res, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	var newSprint = FakeSprint{
-		ID:            1,
+	var newSprint = fakeSprint{
+		ID:            2,
 		Self:          "https://test.atlassian.net/rest/agile/1.0/sprint/1",
 		State:         "active",
 		Name:          body.Name,
@@ -37,7 +37,6 @@ func mockCreateSprint(res http.ResponseWriter, req *http.Request) {
 		OriginBoardID: body.OriginBoardID,
 		Goal:          body.Goal,
 	}
-	fakeSprints = append(fakeSprints, newSprint)
 
 	res.WriteHeader(http.StatusCreated)
 	err = json.NewEncoder(res).Encode(newSprint)
