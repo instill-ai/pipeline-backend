@@ -83,6 +83,66 @@ type upsertOutput struct {
 	RecordsUpserted int64 `json:"upserted-count"`
 }
 
+type Document struct {
+	Text string `json:"text"`
+}
+
+type rerankInput struct {
+	// not taking model as input for now as only one model is supported for rerank task: https://docs.pinecone.io/guides/inference/understanding-inference#models
+	//ModelName string   `json:"model-name"`
+	Query     string   `json:"query"`
+	Documents []string `json:"documents"`
+	TopN      int      `json:"top-n"`
+}
+
+func (r *rerankInput) asRequest() *rerankReq {
+	reqDocuments := make([]Document, 0, len(r.Documents))
+	for _, doc := range r.Documents {
+		reqDocuments = append(reqDocuments, Document{Text: doc})
+	}
+
+	// TODO: make model configurable in tasks.json
+	return &rerankReq{
+		Model:     "bge-reranker-v2-m3",
+		Query:     r.Query,
+		TopN:      r.TopN,
+		Documents: reqDocuments,
+	}
+}
+
+type rerankReq struct {
+	Model     string     `json:"model"`
+	Query     string     `json:"query"`
+	TopN      int        `json:"top_n,omitempty"`
+	Documents []Document `json:"documents"`
+}
+
+type rerankResp struct {
+	Data []struct {
+		Index    int      `json:"index"`
+		Document Document `json:"document"`
+		Score    float64  `json:"score"`
+	} `json:"data"`
+}
+
+func (r *rerankResp) toOutput() rerankOutput {
+	documents := make([]string, 0, len(r.Data))
+	scores := make([]float64, 0, len(r.Data))
+	for _, d := range r.Data {
+		documents = append(documents, d.Document.Text)
+		scores = append(scores, d.Score)
+	}
+	return rerankOutput{
+		Documents: documents,
+		Scores:    scores,
+	}
+}
+
+type rerankOutput struct {
+	Documents []string  `json:"documents"`
+	Scores    []float64 `json:"scores"`
+}
+
 type errBody struct {
 	Msg string `json:"message"`
 }

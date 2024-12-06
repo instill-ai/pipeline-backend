@@ -16,7 +16,7 @@
       "type": "string"
     },
     "url": {
-      "description": "Fill in your Pinecone base URL. It is in the form.",
+      "description": "Fill in your Pinecone index URL. It is in the form.",
       "instillUpstreamTypes": [
         "value"
       ],
@@ -25,17 +25,15 @@
       ],
       "instillSecret": false,
       "instillUIOrder": 1,
-      "title": "Pinecone Base URL",
+      "title": "Pinecone Index URL",
       "type": "string"
     }
   },
   "required": [
-    "api-key",
-    "url"
+    "api-key"
   ],
   "instillEditOnNodeFields": [
-    "api-key",
-    "url"
+    "api-key"
   ],
   "title": "Pinecone Connection",
   "type": "object"

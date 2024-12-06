@@ -17,9 +17,11 @@ import (
 const (
 	taskQuery  = "TASK_QUERY"
 	taskUpsert = "TASK_UPSERT"
+	taskRerank = "TASK_RERANK"
 
 	upsertPath = "/vectors/upsert"
 	queryPath  = "/query"
+	rerankPath = "/rerank"
 )
 
 //go:embed config/definition.json
@@ -59,7 +61,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	}, nil
 }
 
-func newClient(setup *structpb.Struct, logger *zap.Logger) *httpclient.Client {
+// newIndexClient creates a new httpclient.Client with the index URL provided in setup
+func newIndexClient(setup *structpb.Struct, logger *zap.Logger) *httpclient.Client {
 	c := httpclient.New("Pinecone", getURL(setup),
 		httpclient.WithLogger(logger),
 		httpclient.WithEndUserError(new(errBody)),
@@ -67,6 +70,23 @@ func newClient(setup *structpb.Struct, logger *zap.Logger) *httpclient.Client {
 
 	c.SetHeader("Api-Key", getAPIKey(setup))
 	c.SetHeader("User-Agent", "source_tag=instillai")
+
+	return c
+}
+
+// newBaseClient creates a new httpclient.Client with the default Pinecone API URL.
+func newBaseClient(setup *structpb.Struct, logger *zap.Logger) *httpclient.Client {
+	c := httpclient.New("Pinecone", "https://api.pinecone.io",
+		httpclient.WithLogger(logger),
+		httpclient.WithEndUserError(new(errBody)),
+	)
+
+	c.SetHeader("Api-Key", getAPIKey(setup))
+	c.SetHeader("User-Agent", "source_tag=instillai")
+
+	// Currently, by default Pinecone API redirects request to OLDEST stable version i.e. 2024-04 right now and does not support Rerank
+	// It is recommended by Pinecone to specify API version to use: https://docs.pinecone.io/reference/api/versioning#specify-an-api-version
+	c.SetHeader("X-Pinecone-API-Version", "2024-10")
 
 	return c
 }
@@ -81,8 +101,6 @@ func getURL(setup *structpb.Struct) string {
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 
-	req := newClient(e.Setup, e.GetLogger()).R()
-
 	for _, job := range jobs {
 		input, err := job.Input.Read(ctx)
 		if err != nil {
@@ -92,6 +110,8 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 		var output *structpb.Struct
 		switch e.Task {
 		case taskQuery:
+			req := newIndexClient(e.Setup, e.GetLogger()).R()
+
 			inputStruct := queryInput{}
 			err := base.ConvertFromStructpb(input, &inputStruct)
 			if err != nil {
@@ -122,6 +142,8 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 				continue
 			}
 		case taskUpsert:
+			req := newIndexClient(e.Setup, e.GetLogger()).R()
+
 			v := upsertInput{}
 			err := base.ConvertFromStructpb(input, &v)
 			if err != nil {
@@ -145,7 +167,34 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 				job.Error.Error(ctx, err)
 				continue
 			}
+		case taskRerank:
+			// rerank task does not need index URL, so using the base client with the default pinecone API URL.
+			req := newBaseClient(e.Setup, e.GetLogger()).R()
+
+			// parse input struct
+			inputStruct := rerankInput{}
+			err := base.ConvertFromStructpb(input, &inputStruct)
+			if err != nil {
+				job.Error.Error(ctx, err)
+				continue
+			}
+
+			// make API request to rerank task
+			resp := rerankResp{}
+			req.SetResult(&resp).SetBody(inputStruct.asRequest())
+			if _, err := req.Post(rerankPath); err != nil {
+				job.Error.Error(ctx, httpclient.WrapURLError(err))
+				continue
+			}
+
+			// convert response to output struct
+			output, err = base.ConvertToStructpb(resp.toOutput())
+			if err != nil {
+				job.Error.Error(ctx, err)
+				continue
+			}
 		}
+
 		err = job.Output.Write(ctx, output)
 		if err != nil {
 			job.Error.Error(ctx, err)
