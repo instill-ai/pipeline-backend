@@ -7,8 +7,7 @@
     "TASK_GET_FILE_IN_MARKDOWN",
     "TASK_MATCH_FILE_STATUS",
     "TASK_RETRIEVE",
-    "TASK_ASK",
-    "TASK_SYNC_FILES"
+    "TASK_ASK"
   ],
   "documentationUrl": "https://www.instill.tech/docs/component/data/instill-artifact",
   "icon": "assets/instill-artifact.svg",
