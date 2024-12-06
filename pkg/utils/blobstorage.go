@@ -1,3 +1,9 @@
+// TODO:
+// We should arrange the logic for blob storage in the pipeline-backend.
+// Now, we use blob storage in worker and service. The logic are close but not the same.
+// We should refactor the logic to make it more compact and easier to maintain for worker and service.
+// This will be addressed in ins-7091
+
 package utils
 
 import (
@@ -196,7 +202,6 @@ func UploadBlobAndGetDownloadURL(ctx context.Context, params UploadBlobAndGetDow
 	return respDownloadURL.GetDownloadUrl(), nil
 }
 
-// TODO: make it unexported when everything is migrated to utils package.
 // UploadBlobData uploads the blob data to the given upload URL.
 func UploadBlobData(ctx context.Context, uploadURL string, fileContentType string, fileBytes []byte, logger *zap.Logger) error {
 	if uploadURL == "" {

@@ -1,3 +1,9 @@
+// TODO:
+// We should arrange the logic for blob storage in the pipeline-backend.
+// Now, we use blob storage in worker and service. The logic are close but not the same.
+// We should refactor the logic to make it more compact and easier to maintain for worker and service.
+// This will be addressed in ins-7091
+
 package service
 
 import (
@@ -19,7 +25,6 @@ import (
 	resourcex "github.com/instill-ai/x/resource"
 )
 
-// TODO: remove it when utils.UploadBlobDataAndReplaceWithURL is done.
 func (s *service) uploadBlobAndGetDownloadURL(ctx context.Context, ns resource.Namespace, data string) (string, error) {
 	mimeType, err := getMimeType(data)
 	if err != nil {
