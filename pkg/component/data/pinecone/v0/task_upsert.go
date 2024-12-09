@@ -57,30 +57,3 @@ func convertOutput(resp upsertResp) *taskUpsertOutput {
 		upsertedCount: resp.RecordsUpserted,
 	}
 }
-
-// case taskUpsert:
-// 	req := newIndexClient(e.Setup, e.GetLogger()).R()
-
-// 	v := upsertInput{}
-// 	err := base.ConvertFromStructpb(input, &v)
-// 	if err != nil {
-// 		job.Error.Error(ctx, err)
-// 		continue
-// 	}
-
-// 	resp := upsertResp{}
-// 	req.SetResult(&resp).SetBody(upsertReq{
-// 		Vectors:   []vector{v.vector},
-// 		Namespace: v.Namespace,
-// 	})
-
-// 	if _, err := req.Post(upsertPath); err != nil {
-// 		job.Error.Error(ctx, httpclient.WrapURLError(err))
-// 		continue
-// 	}
-
-// 	output, err = base.ConvertToStructpb(upsertOutput(resp))
-// 	if err != nil {
-// 		job.Error.Error(ctx, err)
-// 		continue
-// 	}
