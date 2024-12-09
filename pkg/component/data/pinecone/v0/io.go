@@ -2,12 +2,12 @@
 package pinecone
 
 type taskUpsertInput struct {
-	id        string    `instill:"id"`
-	metadata  string    `instill:"metadata"`
-	values    []float64 `instill:"values"`
-	namespace string    `instill:"namespace"`
+	ID        string    `instill:"id"`
+	Metadata  string    `instill:"metadata"`
+	Values    []float64 `instill:"values"`
+	Namespace string    `instill:"namespace"`
 }
 
 type taskUpsertOutput struct {
-	upsertedCount int64 `instill:"upserted-count"`
+	UpsertedCount int64 `instill:"upserted-count"`
 }
