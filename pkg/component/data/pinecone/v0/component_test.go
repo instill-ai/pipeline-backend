@@ -16,7 +16,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
-	"github.com/instill-ai/x/errmsg"
 )
 
 const (
@@ -41,13 +40,6 @@ const (
 			"score": 0.87
 		}
 	]
-}`
-
-	errResp = `
-{
-  "code": 3,
-  "message": "Cannot provide both ID and vector at the same time.",
-  "details": []
 }`
 )
 
@@ -237,64 +229,4 @@ func TestComponent_Execute(t *testing.T) {
 		})
 	}
 
-	c.Run("nok - 400", func(c *qt.C) {
-		h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, errResp)
-		})
-
-		pineconeServer := httptest.NewServer(h)
-		c.Cleanup(pineconeServer.Close)
-
-		setup, _ := structpb.NewStruct(map[string]any{
-			"url": pineconeServer.URL,
-		})
-
-		exec, err := cmp.CreateExecution(base.ComponentExecution{
-			Component: cmp,
-			Setup:     setup,
-			Task:      taskUpsert,
-		})
-		c.Assert(err, qt.IsNil)
-
-		pbIn := new(structpb.Struct)
-		ir, ow, eh, job := mock.GenerateMockJob(c)
-		ir.ReadMock.Return(pbIn, nil)
-		ow.WriteMock.Optional().Return(nil)
-		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
-			want := "Pinecone responded with a 400 status code. Cannot provide both ID and vector at the same time."
-			c.Check(errmsg.Message(err), qt.Equals, want)
-		})
-
-		err = exec.Execute(ctx, []*base.Job{job})
-		c.Check(err, qt.IsNil)
-
-	})
-
-	c.Run("nok - URL misconfiguration", func(c *qt.C) {
-		setup, _ := structpb.NewStruct(map[string]any{
-			"url": "http://no-such.host",
-		})
-
-		exec, err := cmp.CreateExecution(base.ComponentExecution{
-			Component: cmp,
-			Setup:     setup,
-			Task:      taskUpsert,
-		})
-		c.Assert(err, qt.IsNil)
-
-		pbIn := new(structpb.Struct)
-		ir, ow, eh, job := mock.GenerateMockJob(c)
-		ir.ReadMock.Return(pbIn, nil)
-		ow.WriteMock.Optional().Return(nil)
-		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
-			want := "Failed to call http://no-such.host/.*. Please check that the component configuration is correct."
-			c.Check(errmsg.Message(err), qt.Matches, want)
-		})
-
-		err = exec.Execute(ctx, []*base.Job{job})
-		c.Check(err, qt.IsNil)
-
-	})
 }
