@@ -153,7 +153,7 @@ func (e *execution) executeHTTP(ctx context.Context, job *base.Job) error {
 	// An API error is a valid output in this component.
 	req := e.client.R()
 	if in.Body != nil {
-		req.SetBody(in.Body)
+		req.SetBody(in.Body.String())
 	}
 
 	resp, err := req.Execute(taskMethod[e.Task], in.EndpointURL)
