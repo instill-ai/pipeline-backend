@@ -292,6 +292,105 @@
       "type": "object"
     }
   },
+  "TASK_BATCH_UPSERT": {
+    "instillShortDescription": "Writes vectors into a namespace in batch. If a new value is upserted for an existing vector id, it will overwrite the previous value.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "ids": {
+          "description": "The ids of the vectors to upsert.",
+          "instillUIOrder": 0,
+          "instillFormat": "array:string",
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "IDs",
+          "type": "array"
+        },
+        "array-metadata": {
+          "instillShortDescription": "The metadata of the vectors to upsert",
+          "description": "The metadata of the vectors to upsert.",
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "items": {
+            "type": "object"
+          },
+          "instillFormat": "array:semi-structured/object",
+          "minItems": 1,
+          "title": "Array of Metadata",
+          "type": "array"
+        },
+        "array-values": {
+          "description": "The values of the vectors to upsert. The type will be array of array of number.",
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "items": {
+            "instillFormat": "array:number",
+            "instillAcceptFormats": [
+              "array:number",
+              "array:integer"
+            ],
+            "type": "array"
+          },
+          "instillFormat": "array:array:number",
+          "instillAcceptFormats": [
+            "array:array:number",
+            "array:array:integer"
+          ],
+          "minItems": 1,
+          "title": "Array of Values",
+          "type": "array"
+        },
+        "namespace": {
+          "description": "The namespace to upsert the vectors into.",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Namespace",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ids",
+        "array-values"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "upserted-count": {
+          "description": "Number of records modified or added.",
+          "instillFormat": "integer",
+          "instillUIOrder": 0,
+          "title": "Upserted Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "upserted-count"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
   "TASK_RERANK": {
     "instillShortDescription": "Rerank documents, such as text passages, according to their relevance to a query.",
     "description": "Rerank documents, such as text passages, according to their relevance to a query. The input is a list of documents and a query. The output is a list of documents, sorted by relevance to the query.",
