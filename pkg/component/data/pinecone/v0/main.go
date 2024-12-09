@@ -15,9 +15,10 @@ import (
 )
 
 const (
-	taskQuery  = "TASK_QUERY"
-	taskUpsert = "TASK_UPSERT"
-	taskRerank = "TASK_RERANK"
+	taskQuery       = "TASK_QUERY"
+	taskUpsert      = "TASK_UPSERT"
+	taskRerank      = "TASK_RERANK"
+	taskBatchUpsert = "TASK_BATCH_UPSERT"
 
 	upsertPath = "/vectors/upsert"
 	queryPath  = "/query"
@@ -72,6 +73,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	// Now, only upsert task is refactored, the rest will be addressed in ins-7102
 	case taskUpsert:
 		e.execute = e.upsert
+	case taskBatchUpsert:
+		e.execute = e.batchUpsert
 	}
 
 	return e, nil
@@ -117,7 +120,7 @@ func getURL(setup *structpb.Struct) string {
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	// TODO: We will need to migrate other tasks to use the new logic.
-	if e.Task == taskUpsert {
+	if e.Task == taskUpsert || e.Task == taskBatchUpsert {
 		return base.ConcurrentExecutor(ctx, jobs, e.execute)
 	}
 
