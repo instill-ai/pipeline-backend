@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.48.4-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.48.3-beta...v0.48.4-beta) (2024-12-09)
+
+
+### Features
+
+* **pinecone:** Add rerank task for Pinecone component ([#773](https://github.com/instill-ai/pipeline-backend/issues/773)) ([e1fd611](https://github.com/instill-ai/pipeline-backend/commit/e1fd611b55a11798e5d1b5b6f52152392fe6f00f))
+* **vdp:** upload raw inputs for run log ([#904](https://github.com/instill-ai/pipeline-backend/issues/904)) ([960f4c2](https://github.com/instill-ai/pipeline-backend/commit/960f4c2c131eff9dfcfb11cc1a90237f2179192c))
+
+
+### Bug Fixes
+
+* **component,http:** fix the request body marshalling ([#928](https://github.com/instill-ai/pipeline-backend/issues/928)) ([b47cc71](https://github.com/instill-ai/pipeline-backend/commit/b47cc71bff76b569ce7e19d934697ff7bdaf41a7))
+
+
+### Miscellaneous Chores
+
+* release v0.48.4-beta ([b08878e](https://github.com/instill-ai/pipeline-backend/commit/b08878ebf309ff18272538120dda06db2ef718f9))
+
 ## [0.48.3-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.48.2-beta...v0.48.3-beta) (2024-12-04)
 
 
