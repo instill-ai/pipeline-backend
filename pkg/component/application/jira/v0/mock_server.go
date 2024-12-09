@@ -54,7 +54,7 @@ func mockListBoards(res http.ResponseWriter, req *http.Request) {
 	name := opt.Get("name")
 	projectKeyOrID := opt.Get("projectKeyOrId")
 	// filter boards
-	var boards []FakeBoard
+	var boards []fakeBoard
 	pjNotFound := projectKeyOrID != ""
 	for _, board := range fakeBoards {
 		if boardType != "" && board.BoardType != boardType {
@@ -71,6 +71,7 @@ func mockListBoards(res http.ResponseWriter, req *http.Request) {
 		}
 		boards = append(boards, board)
 	}
+
 	if pjNotFound {
 		res.WriteHeader(http.StatusBadRequest)
 		_, _ = res.Write([]byte(`{"errorMessages":["No project could be found with key or id"]}`))
@@ -97,7 +98,7 @@ func mockListBoards(res http.ResponseWriter, req *http.Request) {
 	}
 	// response
 	res.WriteHeader(http.StatusOK)
-	respText := `{"values":[`
+	respText := `{"boards":[`
 	if len(boards) != 0 {
 		for i, board := range boards[start:end] {
 			if i > 0 {
@@ -115,7 +116,7 @@ func mockGetBoard(res http.ResponseWriter, req *http.Request) {
 	var err error
 	boardID := chi.URLParam(req, "boardId")
 	// filter boards
-	var board *FakeBoard
+	var board *fakeBoard
 	for _, b := range fakeBoards {
 		if boardID != "" && strconv.Itoa(b.ID) != boardID {
 			continue
@@ -146,7 +147,7 @@ func mockGetIssue(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// find issue
-	var issue *FakeIssue
+	var issue *fakeIssue
 	for _, i := range fakeIssues {
 		if i.ID == issueID || i.Key == issueID {
 			issue = &i
@@ -177,7 +178,7 @@ func mockGetSprint(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// find sprint
-	var sprint *FakeSprint
+	var sprint *fakeSprint
 	for _, s := range fakeSprints {
 		if strconv.Itoa(s.ID) == sprintID {
 			sprint = &s
@@ -199,8 +200,8 @@ func mockGetSprint(res http.ResponseWriter, req *http.Request) {
 	_, _ = res.Write(respText)
 }
 
-type MockListIssuesResponse struct {
-	Issues     []FakeIssue `json:"issues"`
+type mockListIssuesResponse struct {
+	Issues     []fakeIssue `json:"issues"`
 	Total      int         `json:"total"`
 	StartAt    int         `json:"startAt"`
 	MaxResults int         `json:"maxResults"`
@@ -214,7 +215,7 @@ func mockListIssues(res http.ResponseWriter, req *http.Request) {
 	startAt := opt.Get("startAt")
 	maxResults := opt.Get("maxResults")
 	// find board
-	var board *FakeBoard
+	var board *fakeBoard
 	for _, b := range fakeBoards {
 		if strconv.Itoa(b.ID) == boardID {
 			board = &b
@@ -227,7 +228,7 @@ func mockListIssues(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// filter issues
-	var issues []FakeIssue
+	var issues []fakeIssue
 	for _, issue := range fakeIssues {
 		prefix := strings.Split(issue.Key, "-")[0]
 		if board.Name != "" && prefix != board.Name {
@@ -253,7 +254,7 @@ func mockListIssues(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		return
 	}
-	resp := MockListIssuesResponse{
+	resp := mockListIssuesResponse{
 		Issues:     issues,
 		Total:      len(issues),
 		StartAt:    startAtNum,
@@ -266,8 +267,8 @@ func mockListIssues(res http.ResponseWriter, req *http.Request) {
 	_, _ = res.Write([]byte(respText))
 }
 
-type MockListSprintsResponse struct {
-	Values     []FakeSprint `json:"values"`
+type mockListSprintsResponse struct {
+	Sprints    []fakeSprint `json:"sprints"`
 	StartAt    int          `json:"startAt"`
 	MaxResults int          `json:"maxResults"`
 	Total      int          `json:"total"`
@@ -281,7 +282,7 @@ func mockListSprints(res http.ResponseWriter, req *http.Request) {
 	startAt := opt.Get("startAt")
 	maxResults := opt.Get("maxResults")
 	// find board
-	var board *FakeBoard
+	var board *fakeBoard
 	for _, b := range fakeBoards {
 		if strconv.Itoa(b.ID) == boardID {
 			board = &b
@@ -294,7 +295,7 @@ func mockListSprints(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// filter sprints
-	var sprints []FakeSprint
+	var sprints []fakeSprint
 	for _, sprint := range fakeSprints {
 		if sprint.ID != board.ID {
 			continue
@@ -326,15 +327,15 @@ func mockListSprints(res http.ResponseWriter, req *http.Request) {
 	// response
 	res.WriteHeader(http.StatusOK)
 
-	resp := MockListSprintsResponse{
-		Values:     sprints[start:end],
+	resp := mockListSprintsResponse{
+		Sprints:    sprints[start:end],
 		StartAt:    start,
 		MaxResults: maxResultsNum,
 		Total:      len(sprints),
 	}
-	for i := range resp.Values {
-		resp.Values[i].getSelf()
 
+	for i := range resp.Sprints {
+		resp.Sprints[i].getSelf()
 	}
 	respText, err := json.Marshal(resp)
 	if err != nil {
@@ -343,7 +344,7 @@ func mockListSprints(res http.ResponseWriter, req *http.Request) {
 	_, _ = res.Write([]byte(respText))
 }
 
-type MockIssuesSearchRequest struct {
+type mockIssuesSearchReq struct {
 	JQL        string `json:"jql"`
 	StartAt    int    `json:"startAt"`
 	MaxResults int    `json:"maxResults"`
@@ -363,7 +364,7 @@ func mockIssuesSearch(res http.ResponseWriter, req *http.Request) {
 		startAt = opt.Get("startAt")
 		maxResults = opt.Get("maxResults")
 	} else if req.Method == http.MethodPost {
-		body := MockIssuesSearchRequest{}
+		body := mockIssuesSearchReq{}
 		err = json.NewDecoder(req.Body).Decode(&body)
 		if err != nil {
 			fmt.Println(err)
@@ -378,7 +379,7 @@ func mockIssuesSearch(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// filter issues
-	var issues []FakeIssue
+	var issues []fakeIssue
 	for _, issue := range fakeIssues {
 		if jql != "" {
 			// Skip JQL filter as there is no need to implement it
@@ -400,7 +401,7 @@ func mockIssuesSearch(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		return
 	}
-	resp := MockListIssuesResponse{
+	resp := mockListIssuesResponse{
 		Issues:     issues,
 		Total:      len(issues),
 		StartAt:    startAtNum,

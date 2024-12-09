@@ -8,22 +8,19 @@ import (
 
 	_ "embed"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/x/errmsg"
 )
 
 const (
-	apiBaseURL       = "https://api.atlassian.com"
+	taskCreateIssue  = "TASK_CREATE_ISSUE"
+	taskCreateSprint = "TASK_CREATE_SPRINT"
+	taskGetIssue     = "TASK_GET_ISSUE"
+	taskGetSprint    = "TASK_GET_SPRINT"
 	taskListBoards   = "TASK_LIST_BOARDS"
 	taskListIssues   = "TASK_LIST_ISSUES"
 	taskListSprints  = "TASK_LIST_SPRINTS"
-	taskGetIssue     = "TASK_GET_ISSUE"
-	taskGetSprint    = "TASK_GET_SPRINT"
-	taskCreateIssue  = "TASK_CREATE_ISSUE"
 	taskUpdateIssue  = "TASK_UPDATE_ISSUE"
-	taskCreateSprint = "TASK_CREATE_SPRINT"
 	taskUpdateSprint = "TASK_UPDATE_SPRINT"
 )
 
@@ -45,8 +42,8 @@ type component struct {
 
 type execution struct {
 	base.ComponentExecution
-	execute func(context.Context, *structpb.Struct) (*structpb.Struct, error)
-	client  Client
+	execute func(context.Context, *base.Job) error
+	client  client
 }
 
 // Init returns an implementation of IComponent that interacts with Slack.
@@ -64,34 +61,34 @@ func Init(bc base.Component) *component {
 
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	ctx := context.Background()
-	jiraClient, err := newClient(ctx, x.Setup, c.Logger)
+	client, err := newClient(ctx, x.Setup, c.Logger)
 	if err != nil {
 		return nil, err
 	}
 	e := &execution{
 		ComponentExecution: x,
-		client:             *jiraClient,
+		client:             *client,
 	}
 	// docs: https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/#about
 	switch x.Task {
 	case taskListBoards:
-		e.execute = e.client.listBoardsTask
+		e.execute = e.client.listBoards
 	case taskListIssues:
-		e.execute = e.client.listIssuesTask
+		e.execute = e.client.listIssues
 	case taskListSprints:
-		e.execute = e.client.listSprintsTask
+		e.execute = e.client.listSprints
 	case taskGetIssue:
-		e.execute = e.client.getIssueTask
+		e.execute = e.client.getIssue
 	case taskGetSprint:
-		e.execute = e.client.getSprintTask
+		e.execute = e.client.getSprint
 	case taskCreateIssue:
-		e.execute = e.client.createIssueTask
+		e.execute = e.client.createIssue
 	case taskUpdateIssue:
-		e.execute = e.client.updateIssueTask
+		e.execute = e.client.updateIssue
 	case taskCreateSprint:
-		e.execute = e.client.createSprintTask
+		e.execute = e.client.createSprint
 	case taskUpdateSprint:
-		e.execute = e.client.updateSprintTask
+		e.execute = e.client.updateSprint
 	default:
 		return nil, errmsg.AddMessage(
 			fmt.Errorf("not supported task: %s", x.Task),
@@ -103,30 +100,5 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 }
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-	for _, job := range jobs {
-		input, err := job.Input.Read(ctx)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
-
-		// TODO: use FillInDefaultValues for all components
-		if err := e.FillInDefaultValues(input); err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
-
-		output, err := e.execute(ctx, input)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
-
-		err = job.Output.Write(ctx, output)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
-	}
-	return nil
+	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }

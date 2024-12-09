@@ -6,12 +6,12 @@ import (
 	"net/http"
 )
 
-type mockCreateIssueRequest struct {
+type mockCreateIssueReq struct {
 	Fields map[string]interface{}        `json:"fields"`
-	Update map[string][]AdditionalFields `json:"update"`
+	Update map[string][]additionalFields `json:"update"`
 }
 
-type mockCreateIssueResponse struct {
+type mockCreateIssueResp struct {
 	ID         string `json:"id"`
 	Key        string `json:"key"`
 	Self       string `json:"self"`
@@ -30,7 +30,7 @@ func mockCreateIssue(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	body := mockCreateIssueRequest{}
+	body := mockCreateIssueReq{}
 	err = json.NewDecoder(req.Body).Decode(&body)
 	if err != nil {
 		fmt.Println(err)
@@ -43,7 +43,7 @@ func mockCreateIssue(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "Invalid project", http.StatusBadRequest)
 		return
 	}
-	badResp := mockCreateIssueResponse{
+	badResp := mockCreateIssueResp{
 		ID:   "",
 		Key:  "",
 		Self: "",
@@ -75,7 +75,7 @@ func mockCreateIssue(res http.ResponseWriter, req *http.Request) {
 	}
 	key := project + "-1"
 	ID := "30000"
-	successResp := mockCreateIssueResponse{
+	successResp := mockCreateIssueResp{
 		ID:   ID,
 		Key:  key,
 		Self: "http://localhost:8080/rest/api/2/issue/10000",
@@ -103,7 +103,7 @@ func mockCreateIssue(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fakeIssues = append(fakeIssues, FakeIssue{
+	fakeIssues = append(fakeIssues, fakeIssue{
 		ID:     ID,
 		Key:    key,
 		Fields: fields,

@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type MockUpdateSprintRequset struct {
+type mockUpdateSprintReq struct {
 	Name          string `json:"name,omitempty"`
 	State         string `json:"state,omitempty"`
 	OriginBoardID int    `json:"originBoardId,omitempty"`
@@ -17,15 +17,15 @@ type MockUpdateSprintRequset struct {
 	EndDate       string `json:"endDate,omitempty"`
 	CompleteDate  string `json:"completeDate,omitempty"`
 }
-type MockUpdateSprintResp struct {
-	FakeSprint
+type mockUpdateSprintResp struct {
+	fakeSprint
 }
 
 // UpdateSprint updates an issue in Jira.
 func mockUpdateSprint(res http.ResponseWriter, req *http.Request) {
-	var request MockUpdateSprintRequset
+	var updateSprintReq mockUpdateSprintReq
 
-	err := json.NewDecoder(req.Body).Decode(&request)
+	err := json.NewDecoder(req.Body).Decode(&updateSprintReq)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusBadRequest)
 		return
@@ -38,15 +38,15 @@ func mockUpdateSprint(res http.ResponseWriter, req *http.Request) {
 
 	mockSprint := Sprint{
 		ID:            sprintID,
-		Name:          request.Name,
-		State:         request.State,
-		OriginBoardID: request.OriginBoardID,
-		Goal:          request.Goal,
-		StartDate:     request.StartDate,
-		EndDate:       request.EndDate,
-		CompleteDate:  request.CompleteDate,
+		Name:          updateSprintReq.Name,
+		State:         updateSprintReq.State,
+		OriginBoardID: updateSprintReq.OriginBoardID,
+		Goal:          updateSprintReq.Goal,
+		StartDate:     updateSprintReq.StartDate,
+		EndDate:       updateSprintReq.EndDate,
+		CompleteDate:  updateSprintReq.CompleteDate,
 	}
-	var resp MockUpdateSprintResp
+	var resp mockUpdateSprintResp
 	for i, s := range fakeSprints {
 		if s.ID == mockSprint.ID {
 			if mockSprint.Name != "" {
@@ -70,8 +70,8 @@ func mockUpdateSprint(res http.ResponseWriter, req *http.Request) {
 			if mockSprint.OriginBoardID != 0 {
 				fakeSprints[i].OriginBoardID = mockSprint.OriginBoardID
 			}
-			resp = MockUpdateSprintResp{
-				FakeSprint: FakeSprint{
+			resp = mockUpdateSprintResp{
+				fakeSprint: fakeSprint{
 					ID:            fakeSprints[i].ID,
 					Self:          fakeSprints[i].Self,
 					Name:          fakeSprints[i].Name,
@@ -83,7 +83,7 @@ func mockUpdateSprint(res http.ResponseWriter, req *http.Request) {
 					CompleteDate:  fakeSprints[i].CompleteDate,
 				},
 			}
-			resp.FakeSprint.getSelf()
+			resp.fakeSprint.getSelf()
 			break
 		}
 	}
