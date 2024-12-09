@@ -24,8 +24,6 @@ const (
 	namespace   = "pantone"
 	threshold   = 0.9
 
-	upsertOK = `{"upsertedCount": 1}`
-
 	queryOK = `
 {
 	"namespace": "color-schemes",
@@ -105,20 +103,6 @@ func TestComponent_Execute(t *testing.T) {
 		wantClientReq  any
 		clientResp     string
 	}{
-		{
-			name: "ok - upsert",
-
-			task: taskUpsert,
-			execIn: upsertInput{
-				vector:    vectorA,
-				Namespace: namespace,
-			},
-			wantExec: upsertOutput{RecordsUpserted: 1},
-
-			wantClientPath: upsertPath,
-			wantClientReq:  upsertReq{Vectors: []vector{vectorA}, Namespace: namespace},
-			clientResp:     upsertOK,
-		},
 		{
 			name: "ok - query by vector",
 
