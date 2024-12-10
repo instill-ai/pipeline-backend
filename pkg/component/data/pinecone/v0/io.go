@@ -2,10 +2,8 @@
 package pinecone
 
 type taskUpsertInput struct {
-	ID        string      `instill:"id"`
-	Metadata  interface{} `instill:"metadata"`
-	Values    []float64   `instill:"values"`
-	Namespace string      `instill:"namespace"`
+	vector
+	Namespace string `instill:"namespace"`
 }
 
 type taskUpsertOutput struct {
