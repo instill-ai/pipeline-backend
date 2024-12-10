@@ -6,11 +6,13 @@ import (
 	"fmt"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	miniox "github.com/instill-ai/x/minio"
 )
@@ -148,6 +150,23 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 		compInputs[i] = varStr.GetStructValue()
 	}
 
+	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
+
+	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
+
+	paramsForUpload := utils.UploadBlobDataAndReplaceWithURLsParams{
+		NamespaceID:    param.SystemVariables.PipelineOwner.NsID,
+		RequesterUID:   param.SystemVariables.PipelineRequesterUID,
+		DataStructs:    compInputs,
+		Logger:         log,
+		ArtifactClient: &w.artifactPublicServiceClient,
+	}
+
+	compInputs, err = utils.UploadBlobDataAndReplaceWithURLs(ctx, paramsForUpload)
+	if err != nil {
+		return err
+	}
+
 	objectName := fmt.Sprintf("component-runs/%s/input/%s.json", param.ID, pipelineTriggerID)
 
 	url, objectInfo, err := w.minioClient.UploadFile(ctx, log, &miniox.UploadFileParam{
@@ -201,6 +220,22 @@ func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *Comp
 			return err
 		}
 		compOutputs[i] = varStr.GetStructValue()
+	}
+
+	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
+	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
+
+	paramsForUpload := utils.UploadBlobDataAndReplaceWithURLsParams{
+		NamespaceID:    param.SystemVariables.PipelineOwner.NsID,
+		RequesterUID:   param.SystemVariables.PipelineRequesterUID,
+		DataStructs:    compOutputs,
+		Logger:         log,
+		ArtifactClient: &w.artifactPublicServiceClient,
+	}
+
+	compOutputs, err = utils.UploadBlobDataAndReplaceWithURLs(ctx, paramsForUpload)
+	if err != nil {
+		return err
 	}
 
 	url, objectInfo, err := w.minioClient.UploadFile(ctx, log, &miniox.UploadFileParam{

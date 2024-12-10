@@ -17,7 +17,6 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 	"go.uber.org/zap"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"gopkg.in/guregu/null.v4"
@@ -38,7 +37,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/generic/scheduler/v0"
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -317,8 +315,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					SystemVariables: param.SystemVariables,
 				}
 
-				componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(minioCtx, w.UploadComponentInputsActivity, args))
-
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.ComponentActivity, args))
 				futureArgs = append(futureArgs, args)
 
@@ -401,6 +397,13 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				continue
 			}
 			componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(minioCtx, w.UploadComponentOutputsActivity, futureArgs[idx]))
+		}
+
+		for idx := range futures {
+			// There is time difference between the workflow memory update and upload component inputs activity.
+			// If we upload the inputs before the component activity, some of the input will not be set in the workflow memory.
+			// So, we have to execute this worker activity after the component activity.
+			componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(minioCtx, w.UploadComponentInputsActivity, futureArgs[idx]))
 		}
 	}
 
@@ -644,80 +647,6 @@ func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityPar
 
 	logger.Info("OutputActivity completed")
 	return nil
-}
-func (w *worker) uploadFileAndReplaceWithURL(ctx context.Context, param *ComponentActivityParam, value *format.Value) format.Value {
-	logger, _ := logger.GetZapLogger(ctx)
-	if value == nil {
-		return nil
-	}
-	switch v := (*value).(type) {
-	case format.File:
-		downloadURL, err := w.uploadBlobDataAndGetDownloadURL(ctx, param, v)
-		if err != nil || downloadURL == "" {
-			logger.Warn("uploading blob data", zap.Error(err))
-			return v
-		}
-		return data.NewString(downloadURL)
-	case data.Array:
-		newArray := make(data.Array, len(v))
-		for i, item := range v {
-			newArray[i] = w.uploadFileAndReplaceWithURL(ctx, param, &item)
-		}
-		return newArray
-	case data.Map:
-		newMap := make(data.Map)
-		for k, v := range v {
-			newMap[k] = w.uploadFileAndReplaceWithURL(ctx, param, &v)
-		}
-		return newMap
-	default:
-		return v
-	}
-}
-
-func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *ComponentActivityParam, value format.File) (string, error) {
-	artifactClient := w.artifactPublicServiceClient
-	requesterID := param.SystemVariables.PipelineRequesterID
-
-	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
-
-	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
-
-	objectName := fmt.Sprintf("%s/%s", requesterID, value.Filename())
-
-	// TODO: We will need to add the expiry days for the blob data.
-	// This will be addressed in ins-6857
-	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
-		NamespaceId:      requesterID,
-		ObjectName:       objectName,
-		ObjectExpireDays: 0,
-	})
-
-	if err != nil {
-		return "", fmt.Errorf("get upload url: %w", err)
-	}
-
-	uploadURL := resp.GetUploadUrl()
-
-	fileBytes, err := value.Binary()
-	if err != nil {
-		return "", fmt.Errorf("getting file bytes: %w", err)
-	}
-
-	err = utils.UploadBlobData(ctx, uploadURL, value.ContentType().String(), fileBytes.ByteArray(), w.log)
-	if err != nil {
-		return "", fmt.Errorf("upload blob data: %w", err)
-	}
-
-	respDownloadURL, err := artifactClient.GetObjectDownloadURL(ctx, &artifactpb.GetObjectDownloadURLRequest{
-		NamespaceId: requesterID,
-		ObjectUid:   resp.GetObject().GetUid(),
-	})
-	if err != nil {
-		return "", fmt.Errorf("get object download url: %w", err)
-	}
-
-	return respDownloadURL.GetDownloadUrl(), nil
 }
 
 // TODO: complete iterator
