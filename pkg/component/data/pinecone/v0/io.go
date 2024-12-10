@@ -22,3 +22,9 @@ type taskBatchUpsertInput struct {
 type taskBatchUpsertOutput struct {
 	UpsertedCount int64 `instill:"upserted-count"`
 }
+
+type vector struct {
+	ID       string      `instill:"id" json:"id"`
+	Values   []float64   `instill:"values" json:"values,omitempty"`
+	Metadata interface{} `instill:"metadata" json:"metadata,omitempty"`
+}

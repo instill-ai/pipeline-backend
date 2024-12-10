@@ -64,12 +64,6 @@ type upsertReq struct {
 	Namespace string   `json:"namespace,omitempty"`
 }
 
-type vector struct {
-	ID       string      `json:"id"`
-	Values   []float64   `json:"values,omitempty"`
-	Metadata interface{} `json:"metadata,omitempty"`
-}
-
 type upsertResp struct {
 	RecordsUpserted int64 `json:"upsertedCount"`
 }

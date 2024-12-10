@@ -298,7 +298,7 @@
       "instillUIOrder": 0,
       "properties": {
         "ids": {
-          "description": "The ids of the vectors to upsert.",
+          "description": "The IDs of the vectors to upsert.",
           "instillUIOrder": 0,
           "instillFormat": "array:string",
           "instillUpstreamTypes": [
