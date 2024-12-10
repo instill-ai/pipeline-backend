@@ -24,7 +24,7 @@ const (
 	namespace   = "pantone"
 	threshold   = 0.9
 
-	// upsertOK = `{"upsertedCount": 1}`
+	upsertOK = `{"upsertedCount": 2}`
 
 	queryOK = `
 {
@@ -58,12 +58,12 @@ var (
 	vectorA = vector{
 		ID:       "A",
 		Values:   []float64{2.23},
-		Metadata: map[string]any{"color": "pumpkin"},
+		Metadata: map[string]string{"color": "pumpkin"},
 	}
 	vectorB = vector{
 		ID:       "B",
 		Values:   []float64{3.32},
-		Metadata: map[string]any{"color": "cerulean"},
+		Metadata: map[string]string{"color": "cerulean"},
 	}
 	queryByVector = queryInput{
 		Namespace:       "color-schemes",
@@ -106,21 +106,20 @@ func TestComponent_Execute(t *testing.T) {
 		wantClientReq  any
 		clientResp     string
 	}{
-		// TODO: #927 removed the `taskUpsert` testcase. Reintroduce it in INS-7102.
-		// {
-		// 	name: "ok - upsert",
+		{
+			name: "ok - upsert",
 
-		// 	task: taskUpsert,
-		// 	execIn: upsertInput{
-		// 		vector:    vectorA,
-		// 		Namespace: namespace,
-		// 	},
-		// 	wantExec: upsertOutput{RecordsUpserted: 1},
+			task: taskBatchUpsert,
+			execIn: taskBatchUpsertInput{
+				Vectors:   []vector{vectorA, vectorB},
+				Namespace: namespace,
+			},
+			wantExec: taskUpsertOutput{UpsertedCount: 2},
 
-		// 	wantClientPath: upsertPath,
-		// 	wantClientReq:  upsertReq{Vectors: []vector{vectorA}, Namespace: namespace},
-		// 	clientResp:     upsertOK,
-		// },
+			wantClientPath: upsertPath,
+			wantClientReq:  upsertReq{Vectors: []vector{vectorA, vectorB}, Namespace: namespace},
+			clientResp:     upsertOK,
+		},
 		{
 			name: "ok - query by vector",
 
@@ -236,22 +235,39 @@ func TestComponent_Execute(t *testing.T) {
 			})
 			c.Assert(err, qt.IsNil)
 
-			pbIn, err := base.ConvertToStructpb(tc.execIn)
-			c.Assert(err, qt.IsNil)
+			wantJSON, err := json.Marshal(tc.wantExec)
 
 			ir, ow, eh, job := mock.GenerateMockJob(c)
-			ir.ReadMock.Return(pbIn, nil)
-			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
-				wantJSON, err := json.Marshal(tc.wantExec)
-				c.Assert(err, qt.IsNil)
-				c.Check(wantJSON, qt.JSONEquals, output.AsMap())
-				return nil
-			})
-			eh.ErrorMock.Optional()
-
-			err = exec.Execute(ctx, []*base.Job{job})
 			c.Assert(err, qt.IsNil)
 
+			switch tc.task {
+			case taskBatchUpsert:
+				ir.ReadDataMock.Set(func(ctx context.Context, in any) error {
+					switch in := in.(type) {
+					case *taskBatchUpsertInput:
+						*in = tc.execIn.(taskBatchUpsertInput)
+					}
+					return nil
+				})
+
+				ow.WriteDataMock.Optional().Set(func(ctx context.Context, output any) error {
+					c.Check(wantJSON, qt.JSONEquals, output)
+					return nil
+				})
+			default:
+				pbIn, err := base.ConvertToStructpb(tc.execIn)
+				c.Assert(err, qt.IsNil)
+
+				ir.ReadMock.Return(pbIn, nil)
+				ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
+					c.Check(wantJSON, qt.JSONEquals, output.AsMap())
+					return nil
+				})
+			}
+
+			eh.ErrorMock.Optional()
+			err = exec.Execute(ctx, []*base.Job{job})
+			c.Assert(err, qt.IsNil)
 		})
 	}
 

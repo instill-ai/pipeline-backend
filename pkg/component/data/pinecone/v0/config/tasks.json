@@ -201,6 +201,7 @@
   },
   "TASK_UPSERT": {
     "instillShortDescription": "Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value.",
+    "description": "Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value. This task will be soon replaced by `TASK_BATCH_UPSERT`, which extends its functionality.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
@@ -293,70 +294,79 @@
     }
   },
   "TASK_BATCH_UPSERT": {
-    "instillShortDescription": "Writes vectors into a namespace in batch. If a new value is upserted for an existing vector id, it will overwrite the previous value.",
+    "instillShortDescription": "Writes vectors into a namespace. If a new value is upserted for an existing vector ID, it will overwrite the previous value.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
-        "ids": {
-          "description": "The IDs of the vectors to upsert.",
+        "vectors": {
+          "description": "Array of vectors to upsert",
           "instillUIOrder": 0,
-          "instillFormat": "array:string",
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "type": "array",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "The unique ID of the vector.",
+                "instillUIOrder": 0,
+                "instillAcceptFormats": [
+                  "string"
+                ],
+                "instillUpstreamTypes": [
+                  "value",
+                  "reference",
+                  "template"
+                ],
+                "title": "ID",
+                "type": "string"
+              },
+              "metadata": {
+                "description": "The vector metadata. This is a set of key-value pairs that can be used to store additional information about the vector. The values can have the following types: string, number, boolean, or array of strings.",
+                "instillUIOrder": 1,
+                "instillAcceptFormats": [
+                  "semi-structured/object"
+                ],
+                "instillShortDescription": "The vector metadata",
+                "instillUpstreamTypes": [
+                  "reference"
+                ],
+                "required": [],
+                "title": "Metadata",
+                "type": "object"
+              },
+              "values": {
+                "description": "An array of dimensions for the vector to be saved.",
+                "instillUIOrder": 2,
+                "instillAcceptFormats": [
+                  "array:number",
+                  "array:integer"
+                ],
+                "instillUpstreamTypes": [
+                  "reference"
+                ],
+                "items": {
+                  "description": "A dimension of the vector.",
+                  "example": 0.8167237,
+                  "type": "number"
+                },
+                "minItems": 1,
+                "title": "Values",
+                "type": "array"
+              }
+            },
+            "required": [
+              "id",
+              "values"
+            ]
           },
           "minItems": 1,
-          "title": "IDs",
-          "type": "array"
-        },
-        "array-metadata": {
-          "instillShortDescription": "The metadata of the vectors to upsert",
-          "description": "The metadata of the vectors to upsert.",
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
-          "items": {
-            "type": "object"
-          },
-          "instillFormat": "array:semi-structured/object",
-          "minItems": 1,
-          "title": "Array of Metadata",
-          "type": "array"
-        },
-        "array-values": {
-          "description": "The values of the vectors to upsert. The type will be array of array of number.",
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
-          "items": {
-            "instillFormat": "array:number",
-            "instillAcceptFormats": [
-              "array:number",
-              "array:integer"
-            ],
-            "type": "array"
-          },
-          "instillFormat": "array:array:number",
-          "instillAcceptFormats": [
-            "array:array:number",
-            "array:array:integer"
-          ],
-          "minItems": 1,
-          "title": "Array of Values",
-          "type": "array"
+          "title": "Vectors"
         },
         "namespace": {
-          "description": "The namespace to upsert the vectors into.",
+          "description": "The namespace to query.",
           "instillAcceptFormats": [
             "string"
           ],
-          "instillUIOrder": 3,
+          "instillUIOrder": 1,
           "instillUpstreamTypes": [
             "value",
             "reference",
@@ -367,14 +377,13 @@
         }
       },
       "required": [
-        "ids",
-        "array-values"
+        "vectors"
       ],
       "title": "Input",
       "type": "object"
     },
     "output": {
-      "instillUIOrder": 1,
+      "instillUIOrder": 0,
       "properties": {
         "upserted-count": {
           "description": "Number of records modified or added.",

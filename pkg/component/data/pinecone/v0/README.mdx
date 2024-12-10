@@ -103,7 +103,7 @@ Retrieve the ids of the most similar items in a namespace, along with their simi
 
 ### Upsert
 
-Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value.
+Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value. This task will be soon replaced by `TASK_BATCH_UPSERT`, which extends its functionality.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -131,21 +131,34 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 
 ### Batch Upsert
 
-Writes vectors into a namespace in batch. If a new value is upserted for an existing vector id, it will overwrite the previous value.
+Writes vectors into a namespace. If a new value is upserted for an existing vector ID, it will overwrite the previous value.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
-| IDs (required) | `ids` | array[string] | The IDs of the vectors to upsert. |
-| [Array of Metadata](#batch-upsert-array-of-metadata) | `array-metadata` | array[object] | The metadata of the vectors to upsert. |
-| Array of Values (required) | `array-values` | array[array] | The values of the vectors to upsert. The type will be array of array of number. |
-| Namespace | `namespace` | string | The namespace to upsert the vectors into. |
+| [Vectors](#batch-upsert-vectors) (required) | `vectors` | array[object] | Array of vectors to upsert |
+| Namespace | `namespace` | string | The namespace to query. |
 </div>
 
 
+<details>
+<summary> Input Objects in Batch Upsert</summary>
 
+<h4 id="batch-upsert-vectors">Vectors</h4>
+
+Array of vectors to upsert
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| ID | `id` | string | The unique ID of the vector.  |
+| Metadata | `metadata` | object | The vector metadata. This is a set of key-value pairs that can be used to store additional information about the vector. The values can have the following types: string, number, boolean, or array of strings.  |
+| Values | `values` | array | An array of dimensions for the vector to be saved.  |
+</div>
+</details>
 
 
 
