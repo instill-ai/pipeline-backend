@@ -15,9 +15,10 @@ import (
 )
 
 const (
-	taskQuery  = "TASK_QUERY"
-	taskUpsert = "TASK_UPSERT"
-	taskRerank = "TASK_RERANK"
+	taskQuery       = "TASK_QUERY"
+	taskUpsert      = "TASK_UPSERT"
+	taskRerank      = "TASK_RERANK"
+	taskBatchUpsert = "TASK_BATCH_UPSERT"
 
 	upsertPath = "/vectors/upsert"
 	queryPath  = "/query"
@@ -42,8 +43,11 @@ type component struct {
 
 type execution struct {
 	base.ComponentExecution
+
+	execute func(context.Context, *base.Job) error
 }
 
+// Init initializes the component and loads the definition, setup, and tasks.
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
@@ -55,10 +59,25 @@ func Init(bc base.Component) *component {
 	return comp
 }
 
+// CreateExecution creates a new execution for the component.
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
-	return &execution{
+	e := &execution{
 		ComponentExecution: x,
-	}, nil
+	}
+
+	switch x.Task {
+	case taskQuery:
+		e.execute = e.query
+	case taskRerank:
+		e.execute = e.rerank
+	// Now, only upsert task is refactored, the rest will be addressed in ins-7102
+	case taskUpsert:
+		e.execute = e.upsert
+	case taskBatchUpsert:
+		e.execute = e.batchUpsert
+	}
+
+	return e, nil
 }
 
 // newIndexClient creates a new httpclient.Client with the index URL provided in setup
@@ -100,6 +119,10 @@ func getURL(setup *structpb.Struct) string {
 }
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
+	// TODO: We will need to migrate other tasks to use the new logic.
+	if e.Task == taskUpsert || e.Task == taskBatchUpsert {
+		return base.ConcurrentExecutor(ctx, jobs, e.execute)
+	}
 
 	for _, job := range jobs {
 		input, err := job.Input.Read(ctx)
@@ -137,32 +160,6 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 			resp = resp.filterOutBelowThreshold(inputStruct.MinScore)
 
 			output, err = base.ConvertToStructpb(resp)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-		case taskUpsert:
-			req := newIndexClient(e.Setup, e.GetLogger()).R()
-
-			v := upsertInput{}
-			err := base.ConvertFromStructpb(input, &v)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-
-			resp := upsertResp{}
-			req.SetResult(&resp).SetBody(upsertReq{
-				Vectors:   []vector{v.vector},
-				Namespace: v.Namespace,
-			})
-
-			if _, err := req.Post(upsertPath); err != nil {
-				job.Error.Error(ctx, httpclient.WrapURLError(err))
-				continue
-			}
-
-			output, err = base.ConvertToStructpb(upsertOutput(resp))
 			if err != nil {
 				job.Error.Error(ctx, err)
 				continue

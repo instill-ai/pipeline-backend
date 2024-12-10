@@ -9,6 +9,7 @@ The Pinecone component is a data component that allows users to build and search
 It can carry out the following tasks:
 - [Query](#query)
 - [Upsert](#upsert)
+- [Batch Upsert](#batch-upsert)
 - [Rerank](#rerank)
 
 
@@ -113,6 +114,34 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 | Values (required) | `values` | array[number] | An array of dimensions for the vector to be saved. |
 | Namespace | `namespace` | string | The namespace to query. |
 | Metadata | `metadata` | object | The vector metadata. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Upserted Count | `upserted-count` | integer | Number of records modified or added. |
+</div>
+
+
+### Batch Upsert
+
+Writes vectors into a namespace in batch. If a new value is upserted for an existing vector id, it will overwrite the previous value.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
+| IDs (required) | `ids` | array[string] | The ids of the vectors to upsert. |
+| [Array of Metadata](#batch-upsert-array-of-metadata) | `array-metadata` | array[object] | The metadata of the vectors to upsert. |
+| Array of Values (required) | `array-values` | array[array] | The values of the vectors to upsert. The type will be array of array of number. |
+| Namespace | `namespace` | string | The namespace to upsert the vectors into. |
 </div>
 
 
