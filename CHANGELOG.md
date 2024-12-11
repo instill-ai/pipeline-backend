@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.48.5-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.48.4-beta...v0.48.5-beta) (2024-12-11)
+
+
+### Features
+
+* **pinecone:** pinecone batch upsert ([#927](https://github.com/instill-ai/pipeline-backend/issues/927)) ([398adf9](https://github.com/instill-ai/pipeline-backend/commit/398adf90954ad4df27bf9228e97bdc106dd25464))
+* **vdp:** upload component input output data ([#923](https://github.com/instill-ai/pipeline-backend/issues/923)) ([8b6caab](https://github.com/instill-ai/pipeline-backend/commit/8b6caab5b9add954cc56e1a400839a0e29ff2446))
+
+
+### Bug Fixes
+
+* **trigger:** add component intermediate data in the trigger stream/response ([#932](https://github.com/instill-ai/pipeline-backend/issues/932)) ([2077ae7](https://github.com/instill-ai/pipeline-backend/commit/2077ae7167eb0d4e1f06dfe8f599104eee37a206))
+* **trigger:** resolve issue where default value for number cannot be an integer ([#933](https://github.com/instill-ai/pipeline-backend/issues/933)) ([134032a](https://github.com/instill-ai/pipeline-backend/commit/134032a26174e033b2b30983949b2e5858017eeb))
+
+
+### Miscellaneous Chores
+
+* release v0.48.5-beta ([043788d](https://github.com/instill-ai/pipeline-backend/commit/043788d091a758a97fc6be453c3211fe1cbfb26d))
+
 ## [0.48.4-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.48.3-beta...v0.48.4-beta) (2024-12-09)
 
 
