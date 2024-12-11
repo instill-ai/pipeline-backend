@@ -285,30 +285,28 @@ func main() {
 	workerUID, _ := uuid.NewV4()
 
 	service := service.NewService(
-		service.ServiceConfig{
-			Repository:     repo,
-			RedisClient:    redisClient,
-			TemporalClient: temporalClient,
-			ACLClient:      &aclClient,
-			Converter: service.NewConverter(service.ConverterConfig{
-				MgmtClient:      mgmtPrivateServiceClient,
-				RedisClient:     redisClient,
-				ACLClient:       &aclClient,
-				Repository:      repo,
-				InstillCoreHost: config.Config.Server.InstillCoreHost,
-				ComponentStore:  compStore,
-			}),
-			MgmtPublicServiceClient:      mgmtPublicServiceClient,
-			MgmtPrivateServiceClient:     mgmtPrivateServiceClient,
-			MinioClient:                  minioClient,
-			ComponentStore:               compStore,
-			Memory:                       ms,
-			WorkerUID:                    workerUID,
-			RetentionHandler:             nil,
-			BinaryFetcher:                binaryFetcher,
-			ArtifactPublicServiceClient:  artifactPublicServiceClient,
-			ArtifactPrivateServiceClient: artifactPrivateServiceClient,
-		},
+		repo,
+		redisClient,
+		temporalClient,
+		&aclClient,
+		service.NewConverter(service.ConverterConfig{
+			MgmtClient:      mgmtPrivateServiceClient,
+			RedisClient:     redisClient,
+			ACLClient:       &aclClient,
+			Repository:      repo,
+			InstillCoreHost: config.Config.Server.InstillCoreHost,
+			ComponentStore:  compStore,
+		}),
+		mgmtPublicServiceClient,
+		mgmtPrivateServiceClient,
+		minioClient,
+		compStore,
+		ms,
+		workerUID,
+		nil,
+		binaryFetcher,
+		artifactPublicServiceClient,
+		artifactPrivateServiceClient,
 	)
 
 	privateGrpcS := grpc.NewServer(grpcServerOpts...)
