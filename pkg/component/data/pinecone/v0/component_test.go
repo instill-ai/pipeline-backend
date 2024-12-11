@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/pinecone-io/go-pinecone/pinecone"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	qt "github.com/frankban/quicktest"
@@ -16,6 +17,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/x/errmsg"
 )
 
@@ -24,7 +27,7 @@ const (
 	namespace   = "pantone"
 	threshold   = 0.9
 
-	upsertOK = `{"upsertedCount": 1}`
+	upsertOK = `{"upsertedCount": 2}`
 
 	queryOK = `
 {
@@ -46,23 +49,29 @@ const (
 }`
 
 	errResp = `
-{
-  "code": 3,
-  "message": "Cannot provide both ID and vector at the same time.",
-  "details": []
-}`
+
+	{
+	  "code": 3,
+	  "message": "Cannot provide both ID and vector at the same time.",
+	  "details": []
+	}`
 )
+
+func newValue(in any) format.Value {
+	v, _ := data.NewValue(in)
+	return v
+}
 
 var (
 	vectorA = vector{
 		ID:       "A",
-		Values:   []float64{2.23},
-		Metadata: map[string]any{"color": "pumpkin"},
+		Values:   []float32{2.23},
+		Metadata: map[string]format.Value{"color": newValue("pumpkin")},
 	}
 	vectorB = vector{
 		ID:       "B",
-		Values:   []float64{3.32},
-		Metadata: map[string]any{"color": "cerulean"},
+		Values:   []float32{3.32},
+		Metadata: map[string]format.Value{"color": newValue("cerulean")},
 	}
 	queryByVector = queryInput{
 		Namespace:       "color-schemes",
@@ -94,6 +103,11 @@ func TestComponent_Execute(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 
+	pvA, err := vectorA.toPinecone()
+	c.Assert(err, qt.IsNil)
+	pvB, err := vectorB.toPinecone()
+	c.Assert(err, qt.IsNil)
+
 	testcases := []struct {
 		name string
 
@@ -108,15 +122,15 @@ func TestComponent_Execute(t *testing.T) {
 		{
 			name: "ok - upsert",
 
-			task: taskUpsert,
-			execIn: upsertInput{
-				vector:    vectorA,
+			task: taskBatchUpsert,
+			execIn: taskBatchUpsertInput{
+				Vectors:   []vector{vectorA, vectorB},
 				Namespace: namespace,
 			},
-			wantExec: upsertOutput{RecordsUpserted: 1},
+			wantExec: taskUpsertOutput{UpsertedCount: 2},
 
 			wantClientPath: upsertPath,
-			wantClientReq:  upsertReq{Vectors: []vector{vectorA}, Namespace: namespace},
+			wantClientReq:  upsertReq{Vectors: []*pinecone.Vector{pvA, pvB}, Namespace: namespace},
 			clientResp:     upsertOK,
 		},
 		{
@@ -128,11 +142,11 @@ func TestComponent_Execute(t *testing.T) {
 				Namespace: "color-schemes",
 				Matches: []match{
 					{
-						vector: vectorA,
+						Vector: pvA,
 						Score:  0.99,
 					},
 					{
-						vector: vectorB,
+						Vector: pvB,
 						Score:  0.87,
 					},
 				},
@@ -151,7 +165,7 @@ func TestComponent_Execute(t *testing.T) {
 				Namespace: "color-schemes",
 				Matches: []match{
 					{
-						vector: vectorA,
+						Vector: pvA,
 						Score:  0.99,
 					},
 				},
@@ -170,11 +184,11 @@ func TestComponent_Execute(t *testing.T) {
 				Namespace: "color-schemes",
 				Matches: []match{
 					{
-						vector: vectorA,
+						Vector: pvA,
 						Score:  0.99,
 					},
 					{
-						vector: vectorB,
+						Vector: pvB,
 						Score:  0.87,
 					},
 				},
@@ -234,22 +248,39 @@ func TestComponent_Execute(t *testing.T) {
 			})
 			c.Assert(err, qt.IsNil)
 
-			pbIn, err := base.ConvertToStructpb(tc.execIn)
-			c.Assert(err, qt.IsNil)
+			wantJSON, err := json.Marshal(tc.wantExec)
 
 			ir, ow, eh, job := mock.GenerateMockJob(c)
-			ir.ReadMock.Return(pbIn, nil)
-			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
-				wantJSON, err := json.Marshal(tc.wantExec)
-				c.Assert(err, qt.IsNil)
-				c.Check(wantJSON, qt.JSONEquals, output.AsMap())
-				return nil
-			})
-			eh.ErrorMock.Optional()
-
-			err = exec.Execute(ctx, []*base.Job{job})
 			c.Assert(err, qt.IsNil)
 
+			switch tc.task {
+			case taskBatchUpsert:
+				ir.ReadDataMock.Set(func(ctx context.Context, in any) error {
+					switch in := in.(type) {
+					case *taskBatchUpsertInput:
+						*in = tc.execIn.(taskBatchUpsertInput)
+					}
+					return nil
+				})
+
+				ow.WriteDataMock.Optional().Set(func(ctx context.Context, output any) error {
+					c.Check(wantJSON, qt.JSONEquals, output)
+					return nil
+				})
+			default:
+				pbIn, err := base.ConvertToStructpb(tc.execIn)
+				c.Assert(err, qt.IsNil)
+
+				ir.ReadMock.Return(pbIn, nil)
+				ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
+					c.Check(wantJSON, qt.JSONEquals, output.AsMap())
+					return nil
+				})
+			}
+
+			eh.ErrorMock.Optional()
+			err = exec.Execute(ctx, []*base.Job{job})
+			c.Assert(err, qt.IsNil)
 		})
 	}
 
@@ -270,7 +301,7 @@ func TestComponent_Execute(t *testing.T) {
 		exec, err := cmp.CreateExecution(base.ComponentExecution{
 			Component: cmp,
 			Setup:     setup,
-			Task:      taskUpsert,
+			Task:      taskQuery,
 		})
 		c.Assert(err, qt.IsNil)
 
@@ -296,7 +327,7 @@ func TestComponent_Execute(t *testing.T) {
 		exec, err := cmp.CreateExecution(base.ComponentExecution{
 			Component: cmp,
 			Setup:     setup,
-			Task:      taskUpsert,
+			Task:      taskQuery,
 		})
 		c.Assert(err, qt.IsNil)
 
