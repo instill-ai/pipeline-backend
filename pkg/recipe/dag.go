@@ -628,6 +628,8 @@ func GenerateTraces(ctx context.Context, wfm memory.WorkflowMemory, full bool) (
 
 	for compID := range wfm.GetRecipe().Component {
 
+		inputs := make([]*structpb.Struct, batchSize)
+		outputs := make([]*structpb.Struct, batchSize)
 		errors := make([]*structpb.Struct, batchSize)
 		traceStatuses := make([]pb.Trace_Status, batchSize)
 
@@ -657,10 +659,31 @@ func GenerateTraces(ctx context.Context, wfm memory.WorkflowMemory, full bool) (
 				errors[dataIdx] = structVal.GetStructValue()
 			}
 
+			// TODO: For binary data fields, we should return a URL to access the blob instead of the raw data
+			if full {
+				if input, err := wfm.GetComponentData(ctx, dataIdx, compID, memory.ComponentDataInput); err == nil {
+					structVal, err := input.ToStructValue()
+					if err != nil {
+						return nil, err
+					}
+					inputs[dataIdx] = structVal.GetStructValue()
+				}
+
+				if output, err := wfm.GetComponentData(ctx, dataIdx, compID, memory.ComponentDataOutput); err == nil {
+					structVal, err := output.ToStructValue()
+					if err != nil {
+						return nil, err
+					}
+					outputs[dataIdx] = structVal.GetStructValue()
+				}
+			}
 		}
 
 		trace[compID] = &pb.Trace{
 			Statuses: traceStatuses,
+			Inputs:   inputs,
+			Outputs:  outputs,
+
 			// Note: Currently, all errors in a batch are the same.
 			Error: errors[0],
 		}
