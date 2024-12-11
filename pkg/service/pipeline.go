@@ -1058,8 +1058,21 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				}
 			case "number":
 				if v == nil {
-					variable[k] = data.NewNumberFromFloat(defaultValueMap[k].(float64))
-					uploadingPipelineData[idx][k] = defaultValueMap[k].(float64)
+
+					// TODO: this is a temporary solution to handle the default
+					// value of integer type, we will implement a better
+					// solution for conversion JSON betweeen instill format
+					switch num := defaultValueMap[k].(type) {
+					case int:
+						variable[k] = data.NewNumberFromFloat(float64(num))
+						uploadingPipelineData[idx][k] = float64(num)
+					case float64:
+						variable[k] = data.NewNumberFromFloat(num)
+						uploadingPipelineData[idx][k] = num
+					default:
+						return fmt.Errorf("invalid number value: %v", defaultValueMap[k])
+					}
+
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_NumberValue); !ok {
 						return fmt.Errorf("%w: invalid number value: %v", errdomain.ErrInvalidArgument, v)
@@ -1071,9 +1084,21 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					uploadingDataArray := make([]any, len(defaultValueMap[k].([]any)))
+
+					// TODO: this is a temporary solution to handle the default
+					// value of integer type, we will implement a better
+					// solution for conversion JSON betweeen instill format
 					for i, val := range defaultValueMap[k].([]any) {
-						array[i] = data.NewNumberFromFloat(val.(float64))
-						uploadingDataArray[i] = val.(float64)
+						switch num := val.(type) {
+						case int:
+							array[i] = data.NewNumberFromFloat(float64(num))
+							uploadingDataArray[i] = float64(num)
+						case float64:
+							array[i] = data.NewNumberFromFloat(num)
+							uploadingDataArray[i] = num
+						default:
+							return fmt.Errorf("invalid number value: %v", val)
+						}
 					}
 					variable[k] = array
 					uploadingPipelineData[idx][k] = uploadingDataArray
