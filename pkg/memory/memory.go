@@ -290,6 +290,17 @@ func (wfm *workflowMemory) SetComponentData(ctx context.Context, batchIdx int, c
 	}
 	wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)[string(t)] = value
 
+	// TODO: For binary data fields, we should return a URL to access the blob instead of the raw data
+	if t == ComponentDataInput {
+		if err := wfm.sendComponentEvent(ctx, batchIdx, componentID, ComponentInputUpdated); err != nil {
+			return err
+		}
+	} else if t == ComponentDataOutput {
+		if err := wfm.sendComponentEvent(ctx, batchIdx, componentID, ComponentOutputUpdated); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 func (wfm *workflowMemory) GetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType) (value format.Value, err error) {
