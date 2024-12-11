@@ -8,17 +8,22 @@ import (
 	"github.com/go-redis/redismock/v9"
 	"github.com/gofrs/uuid"
 	"github.com/gojuno/minimock/v3"
+	"github.com/redis/go-redis/v9"
 	"go.temporal.io/sdk/client"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
+	miniox "github.com/instill-ai/x/minio"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -71,19 +76,17 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 	})
 
 	workerUID, _ := uuid.NewV4()
-	service := NewService(
-		ServiceConfig{
-			Repository:               repo,
-			RedisClient:              redisClient,
-			TemporalClient:           temporalClient,
-			ACLClient:                aclClient,
-			Converter:                converter,
-			MgmtPrivateServiceClient: mgmtPrivateClient,
-			MinioClient:              nil,
-			ComponentStore:           compStore,
-			Memory:                   memory.NewMemoryStore(),
-			WorkerUID:                workerUID,
-			RetentionHandler:         nil,
+	service := newService(
+		serviceConfig{
+			repository:               repo,
+			redisClient:              redisClient,
+			temporalClient:           temporalClient,
+			aCLClient:                aclClient,
+			converter:                converter,
+			mgmtPrivateServiceClient: mgmtPrivateClient,
+			componentStore:           compStore,
+			memory:                   memory.NewMemoryStore(),
+			workerUID:                workerUID,
 		},
 	)
 
@@ -118,4 +121,47 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 
 	c.Assert(err, quicktest.IsNil)
 	c.Assert(updatedPbPipeline, quicktest.IsNotNil)
+}
+
+type serviceConfig struct {
+	repository                   repository.Repository
+	redisClient                  *redis.Client
+	temporalClient               client.Client
+	aCLClient                    acl.ACLClientInterface
+	converter                    Converter
+	mgmtPublicServiceClient      mgmtpb.MgmtPublicServiceClient
+	mgmtPrivateServiceClient     mgmtpb.MgmtPrivateServiceClient
+	minioClient                  miniox.MinioI
+	componentStore               *componentstore.Store
+	memory                       memory.MemoryStore
+	workerUID                    uuid.UUID
+	retentionHandler             MetadataRetentionHandler
+	binaryFetcher                external.BinaryFetcher
+	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
+	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
+}
+
+// newService is a compact helper to instantiate a new service, which allows us
+// to only define the dependencies we'll use in a test. This approach shouldn't
+// be used in production code, where we want every dependency to be injected
+// every time, so we rely on the compiler to guard us against missing
+// dependency injections.
+func newService(cfg serviceConfig) Service {
+	return NewService(
+		cfg.repository,
+		cfg.redisClient,
+		cfg.temporalClient,
+		cfg.aCLClient,
+		cfg.converter,
+		cfg.mgmtPublicServiceClient,
+		cfg.mgmtPrivateServiceClient,
+		cfg.minioClient,
+		cfg.componentStore,
+		cfg.memory,
+		cfg.workerUID,
+		cfg.retentionHandler,
+		cfg.binaryFetcher,
+		cfg.artifactPublicServiceClient,
+		cfg.artifactPrivateServiceClient,
+	)
 }
