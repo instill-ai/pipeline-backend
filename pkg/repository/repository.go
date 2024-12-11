@@ -769,7 +769,7 @@ func (r *repository) ListComponentDefinitionUIDs(_ context.Context, p ListCompon
 
 	// TODO: refactor it with store.go in ins-7031
 	if config.Config.Server.Edition == config.EditionCloudStaging || config.Config.Server.Edition == config.EditionCloudProd {
-		skipComponentsInCloud := []string{"google-drive", "google-sheets"}
+		skipComponentsInCloud := []string{"google-drive"}
 		queryBuilder = queryBuilder.Where("id NOT IN (?)", skipComponentsInCloud)
 	}
 
@@ -875,7 +875,7 @@ func (r *repository) ListIntegrations(ctx context.Context, p ListIntegrationsPar
 		Where("is_visible IS TRUE AND has_integration IS TRUE")
 
 	if config.Config.Server.Edition == config.EditionCloudStaging || config.Config.Server.Edition == config.EditionCloudProd {
-		skipComponentsInCloud := []string{"google-drive", "google-sheets"}
+		skipComponentsInCloud := []string{"google-drive"}
 		queryBuilder = queryBuilder.Where("id NOT IN (?)", skipComponentsInCloud)
 	}
 
