@@ -1,24 +1,18 @@
 package utils
 
 import (
-	"context"
-	"fmt"
-	"net/url"
 	"reflect"
 	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
-	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
-	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	"github.com/instill-ai/x/blobstorage"
 
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
@@ -183,6 +177,7 @@ func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *stru
 	)
 }
 
+// StructToMap converts a struct to a map with the given tag.
 func StructToMap(s interface{}, tag string) map[string]interface{} {
 	out := make(map[string]interface{})
 	v := reflect.ValueOf(s)
@@ -242,31 +237,4 @@ func getInstillRequesterUID(vars map[string]any) string {
 		}
 	}
 	return ""
-}
-
-// UploadBlobData uploads the blob data to the given upload URL.
-func UploadBlobData(ctx context.Context, uploadURL string, fileContentType string, fileBytes []byte, logger *zap.Logger) error {
-	if uploadURL == "" {
-		return fmt.Errorf("empty upload URL provided")
-	}
-
-	parsedURL, err := url.Parse(uploadURL)
-	if err != nil {
-		return fmt.Errorf("parsing upload URL: %w", err)
-	}
-	if config.Config.APIGateway.TLSEnabled {
-		parsedURL.Scheme = "https"
-	} else {
-		parsedURL.Scheme = "http"
-	}
-	parsedURL.Host = fmt.Sprintf("%s:%d", config.Config.APIGateway.Host, config.Config.APIGateway.PublicPort)
-	fullURL := parsedURL.String()
-
-	err = blobstorage.UploadFile(ctx, logger, fullURL, fileBytes, fileContentType)
-
-	if err != nil {
-		return fmt.Errorf("uploading blob: %w", err)
-	}
-
-	return nil
 }
