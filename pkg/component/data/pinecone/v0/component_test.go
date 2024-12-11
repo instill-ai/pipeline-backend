@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/pinecone-io/go-pinecone/pinecone"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	qt "github.com/frankban/quicktest"
@@ -16,6 +17,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/x/errmsg"
 )
 
@@ -54,16 +57,21 @@ const (
 	}`
 )
 
+func newValue(in any) format.Value {
+	v, _ := data.NewValue(in)
+	return v
+}
+
 var (
 	vectorA = vector{
 		ID:       "A",
-		Values:   []float64{2.23},
-		Metadata: map[string]string{"color": "pumpkin"},
+		Values:   []float32{2.23},
+		Metadata: map[string]format.Value{"color": newValue("pumpkin")},
 	}
 	vectorB = vector{
 		ID:       "B",
-		Values:   []float64{3.32},
-		Metadata: map[string]string{"color": "cerulean"},
+		Values:   []float32{3.32},
+		Metadata: map[string]format.Value{"color": newValue("cerulean")},
 	}
 	queryByVector = queryInput{
 		Namespace:       "color-schemes",
@@ -95,6 +103,11 @@ func TestComponent_Execute(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 
+	pvA, err := vectorA.toPinecone()
+	c.Assert(err, qt.IsNil)
+	pvB, err := vectorB.toPinecone()
+	c.Assert(err, qt.IsNil)
+
 	testcases := []struct {
 		name string
 
@@ -117,7 +130,7 @@ func TestComponent_Execute(t *testing.T) {
 			wantExec: taskUpsertOutput{UpsertedCount: 2},
 
 			wantClientPath: upsertPath,
-			wantClientReq:  upsertReq{Vectors: []vector{vectorA, vectorB}, Namespace: namespace},
+			wantClientReq:  upsertReq{Vectors: []*pinecone.Vector{pvA, pvB}, Namespace: namespace},
 			clientResp:     upsertOK,
 		},
 		{
@@ -129,11 +142,11 @@ func TestComponent_Execute(t *testing.T) {
 				Namespace: "color-schemes",
 				Matches: []match{
 					{
-						vector: vectorA,
+						Vector: pvA,
 						Score:  0.99,
 					},
 					{
-						vector: vectorB,
+						Vector: pvB,
 						Score:  0.87,
 					},
 				},
@@ -152,7 +165,7 @@ func TestComponent_Execute(t *testing.T) {
 				Namespace: "color-schemes",
 				Matches: []match{
 					{
-						vector: vectorA,
+						Vector: pvA,
 						Score:  0.99,
 					},
 				},
@@ -171,11 +184,11 @@ func TestComponent_Execute(t *testing.T) {
 				Namespace: "color-schemes",
 				Matches: []match{
 					{
-						vector: vectorA,
+						Vector: pvA,
 						Score:  0.99,
 					},
 					{
-						vector: vectorB,
+						Vector: pvB,
 						Score:  0.87,
 					},
 				},

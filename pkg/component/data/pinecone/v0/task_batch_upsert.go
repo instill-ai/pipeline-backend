@@ -17,13 +17,16 @@ func (e *execution) batchUpsert(ctx context.Context, job *base.Job) error {
 	}
 
 	resp := upsertResp{}
-	_, err := newIndexClient(e.Setup, e.GetLogger()).
+	body, err := input.asRequest()
+	if err != nil {
+		job.Error.Error(ctx, err)
+		return err
+	}
+
+	_, err = newIndexClient(e.Setup, e.GetLogger()).
 		R().
 		SetResult(&resp).
-		SetBody(upsertReq{
-			Vectors:   input.Vectors,
-			Namespace: input.Namespace,
-		}).
+		SetBody(body).
 		Post(upsertPath)
 	if err != nil {
 		err = httpclient.WrapURLError(fmt.Errorf("upserting vectors: %w", err))

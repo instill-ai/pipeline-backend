@@ -1,9 +1,11 @@
 package pinecone
 
+import "github.com/pinecone-io/go-pinecone/pinecone"
+
 type queryInput struct {
 	Namespace       string      `json:"namespace"`
 	TopK            int64       `json:"top-k"`
-	Vector          []float64   `json:"vector"`
+	Vector          []float32   `json:"vector"`
 	IncludeValues   bool        `json:"include-values"`
 	IncludeMetadata bool        `json:"include-metadata"`
 	ID              string      `json:"id"`
@@ -14,7 +16,7 @@ type queryInput struct {
 type queryReq struct {
 	Namespace       string      `json:"namespace"`
 	TopK            int64       `json:"topK"`
-	Vector          []float64   `json:"vector,omitempty"`
+	Vector          []float32   `json:"vector,omitempty"`
 	IncludeValues   bool        `json:"includeValues"`
 	IncludeMetadata bool        `json:"includeMetadata"`
 	ID              string      `json:"id,omitempty"`
@@ -55,17 +57,8 @@ func (r queryResp) filterOutBelowThreshold(th float64) queryResp {
 }
 
 type match struct {
-	vector
+	*pinecone.Vector
 	Score float64 `json:"score"`
-}
-
-type upsertReq struct {
-	Vectors   []vector `json:"vectors"`
-	Namespace string   `json:"namespace,omitempty"`
-}
-
-type upsertResp struct {
-	RecordsUpserted int64 `json:"upsertedCount"`
 }
 
 type Document struct {
