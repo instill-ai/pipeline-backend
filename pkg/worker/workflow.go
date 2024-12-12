@@ -379,10 +379,8 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					OutputElements:  comp.OutputElements,
 					SystemVariables: param.SystemVariables,
 				}).Get(ctx, nil); err != nil {
-					if err != nil {
-						errs = append(errs, err)
-						continue
-					}
+					errs = append(errs, err)
+					continue
 				}
 			}
 		}
