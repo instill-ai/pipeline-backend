@@ -22,16 +22,16 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	miniox "github.com/instill-ai/x/minio"
 	resourcex "github.com/instill-ai/x/resource"
 )
 
-func (s *service) uploadBlobAndGetDownloadURL(ctx context.Context, ns resource.Namespace, data string) (string, error) {
+func (s *service) uploadBlobAndGetDownloadURL(ctx context.Context, data string, ns resource.Namespace, expiryRule miniox.ExpiryRule) (string, error) {
 	mimeType, err := getMimeType(data)
 	if err != nil {
 		return "", fmt.Errorf("get mime type: %w", err)
 	}
 	artifactClient := s.artifactPublicServiceClient
-	requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
 
 	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
 
@@ -41,15 +41,14 @@ func (s *service) uploadBlobAndGetDownloadURL(ctx context.Context, ns resource.N
 
 	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(vars))
 
+	requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
 	timestamp := time.Now().Format(time.RFC3339)
 	objectName := fmt.Sprintf("%s-%s%s", requesterUID.String(), timestamp, getFileExtension(mimeType))
 
-	// TODO: We will need to add the expiry days for the blob data.
-	// This will be addressed in ins-6857
 	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
-		NamespaceId:      ns.NsID,
+		NamespaceId:      ns.NsID, // TODO jvallesm: should be the requester's NamespaceID
 		ObjectName:       objectName,
-		ObjectExpireDays: 0,
+		ObjectExpireDays: int32(expiryRule.ExpirationDays),
 	})
 
 	if err != nil {

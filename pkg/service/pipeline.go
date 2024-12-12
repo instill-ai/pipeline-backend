@@ -834,14 +834,18 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 // preTriggerPipeline does the following:
 //  1. Upload pipeline input data to minio if the data is blob data.
 //  2. New workflow memory.
-//     2-1. Set the default values for the variables for memory data and uploading pipeline data.
-//     2-2. Set the data with data.Value for the memory data, which will be used for pipeline running.
-//     2-3. Upload "uploading pipeline data" to minio for pipeline run logger.
+//     a. Set the default values for the variables for memory data and
+//     uploading pipeline data.
+//     b. Set the data with data.Value for the memory data, which will be
+//     used for pipeline running.
+//     c. Upload "uploading pipeline data" to minio for pipeline run logger.
 //  3. Map the settings in recipe to the format in workflow memory.
 //  4. Enable the streaming mode when the header contains "text/event-stream"
 //
-// We upload User Input Data by `uploadBlobAndGetDownloadURL`, which exposes the public URL because it will be used by `console` & external users.
-// We upload Pipeline Input Data by `uploadPipelineRunInputsToMinio`, which does not expose the public URL. The URL will be used by pipeline run logger.
+// We upload User Input Data by `uploadBlobAndGetDownloadURL`, which exposes
+// the public URL because it will be used by `console` & external users.
+// We upload Pipeline Input Data by `uploadPipelineRunInputsToMinio`, which
+// does not expose the public URL. The URL will be used by pipeline run logger.
 func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace, r *datamodel.Recipe, pipelineTriggerID string, pipelineData []*pipelinepb.TriggerData) error {
 	batchSize := len(pipelineData)
 	if batchSize > constant.MaxBatchSize {
@@ -854,6 +858,13 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 	for k, v := range r.Variable {
 		formatMap[k] = v.Format
 		defaultValueMap[k] = v.Default
+	}
+
+	requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
+	// TODO jvallesm: should be passed to preTriggerPipeline
+	expiryRule, err := s.retentionHandler.GetExpiryRuleByNamespace(ctx, requesterUID)
+	if err != nil {
+		return fmt.Errorf("accessing expiry rule: %w", err)
 	}
 
 	errors := []string{}
@@ -873,16 +884,17 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 
 		m := i.(map[string]any)
 
-		// TODO: remove these conversions after the blob storage is fully rolled out
+		// TODO: remove these conversions after the blob storage is fully
+		// rolled out.
 		for k := range m {
 			switch str := m[k].(type) {
 			case string:
 				if isUnstructuredFormat(formatMap[k]) {
-					// Skip the base64 decoding if the string is a URL
+					// Skip the base64 decoding if the string is a URL.
 					if strings.HasPrefix(str, "http://") || strings.HasPrefix(str, "https://") {
 						continue
 					}
-					downloadURL, err := s.uploadBlobAndGetDownloadURL(ctx, ns, str)
+					downloadURL, err := s.uploadBlobAndGetDownloadURL(ctx, str, ns, expiryRule)
 					if err != nil {
 						return fmt.Errorf("upload blob and get download url: %w", err)
 					}
@@ -895,7 +907,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						if strings.HasPrefix(str[idx], "http://") || strings.HasPrefix(str[idx], "https://") {
 							continue
 						}
-						downloadURL, err := s.uploadBlobAndGetDownloadURL(ctx, ns, str[idx])
+						downloadURL, err := s.uploadBlobAndGetDownloadURL(ctx, str[idx], ns, expiryRule)
 						if err != nil {
 							return fmt.Errorf("upload blob and get download url: %w", err)
 						}
@@ -1373,16 +1385,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 			}
 		}
 
-		requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
-
-		expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, requesterUID.String())
-		if err != nil {
-			return fmt.Errorf("get expiry rule tag: %w", err)
-		}
-
 		err = s.uploadPipelineRunInputsToMinio(ctx, uploadPipelineRunInputsToMinioParam{
 			pipelineTriggerID: pipelineTriggerID,
-			expiryRuleTag:     expiryRuleTag,
+			expiryRule:        expiryRule,
 			pipelineData:      uploadingPipelineData,
 		})
 		if err != nil {
@@ -1696,7 +1701,8 @@ func (s *service) triggerPipeline(
 		return nil, nil, err
 	}
 
-	expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, triggerParams.requesterUID.String())
+	// TODO jvallesm: should be part of triggerParams.
+	expiryRule, err := s.retentionHandler.GetExpiryRuleByNamespace(ctx, triggerParams.requesterUID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1718,7 +1724,7 @@ func (s *service) triggerPipeline(
 				PipelineRequesterUID: requester.NsUID,
 				PipelineRequesterID:  requester.NsID,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
-				ExpiryRuleTag:        expiryRuleTag,
+				ExpiryRule:           expiryRule,
 			},
 			Mode:      mgmtpb.Mode_MODE_SYNC,
 			WorkerUID: s.workerUID,
@@ -1787,7 +1793,8 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 		return nil, err
 	}
 
-	expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, params.requesterUID.String())
+	// TODO jvallesm: should be part of triggerParams.
+	expiryRule, err := s.retentionHandler.GetExpiryRuleByNamespace(ctx, params.requesterUID)
 	if err != nil {
 		return nil, err
 	}
@@ -1808,7 +1815,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 				PipelineRequesterUID: requester.NsUID,
 				PipelineRequesterID:  requester.NsID,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
-				ExpiryRuleTag:        expiryRuleTag,
+				ExpiryRule:           expiryRule,
 			},
 			Mode:           mgmtpb.Mode_MODE_ASYNC,
 			TriggerFromAPI: true,

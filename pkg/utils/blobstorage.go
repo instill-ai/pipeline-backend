@@ -23,31 +23,30 @@ import (
 	"github.com/instill-ai/x/blobstorage"
 
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	miniox "github.com/instill-ai/x/minio"
 )
 
-// UploadBlobDataAndReplaceWithURLsParams is the parameters for the UploadBlobDataAndReplaceWithURLs function.
+// UploadBlobDataAndReplaceWithURLsParams ...
 type UploadBlobDataAndReplaceWithURLsParams struct {
-	// NamespaceID is the namespace ID.
-	NamespaceID string
-	// RequesterUID is the requester UID.
-	RequesterUID uuid.UUID
-	// DataStructs are the data structs to be uploaded.
-	DataStructs []*structpb.Struct
-	// Logger is the logger.
-	Logger *zap.Logger
-	// ArtifactClient is the artifact public service client.
+	NamespaceID    string
+	RequesterUID   uuid.UUID
+	DataStructs    []*structpb.Struct
+	ExpiryRule     miniox.ExpiryRule
+	Logger         *zap.Logger
 	ArtifactClient *artifactpb.ArtifactPublicServiceClient
 }
 
-// UploadBlobDataAndReplaceWithURL uploads the unstructured data in the structs to minio and replaces the data with the URL.
-// Before calling this function, ctx should have been set with the request metadata.
+// UploadBlobDataAndReplaceWithURLs uploads the unstructured data in the
+// structs to minio and replaces the data with the URL.
+// Before calling this function, ctx should have been set with the request
+// metadata.
 func UploadBlobDataAndReplaceWithURLs(ctx context.Context, params UploadBlobDataAndReplaceWithURLsParams) ([]*structpb.Struct, error) {
 	updatedDataStructs := make([]*structpb.Struct, len(params.DataStructs))
 	for i, dataStruct := range params.DataStructs {
-		updatedDataStruct, err := uploadBlobDataAndReplaceWithURL(ctx, uploadBlobDataAndReplaceWithURLParams{
+		updatedDataStruct, err := uploadBlobDataAndReplaceWithURL(ctx, dataStruct, uploadBlobParams{
 			namespaceID:    params.NamespaceID,
 			requesterUID:   params.RequesterUID,
-			dataStruct:     dataStruct,
+			expiryRule:     params.ExpiryRule,
 			logger:         params.Logger,
 			artifactClient: params.ArtifactClient,
 		})
@@ -61,17 +60,15 @@ func UploadBlobDataAndReplaceWithURLs(ctx context.Context, params UploadBlobData
 	return updatedDataStructs, nil
 }
 
-type uploadBlobDataAndReplaceWithURLParams struct {
+type uploadBlobParams struct {
 	namespaceID    string
 	requesterUID   uuid.UUID
-	dataStruct     *structpb.Struct
+	expiryRule     miniox.ExpiryRule
 	logger         *zap.Logger
 	artifactClient *artifactpb.ArtifactPublicServiceClient
 }
 
-func uploadBlobDataAndReplaceWithURL(ctx context.Context, params uploadBlobDataAndReplaceWithURLParams) (*structpb.Struct, error) {
-
-	dataStruct := params.dataStruct
+func uploadBlobDataAndReplaceWithURL(ctx context.Context, dataStruct *structpb.Struct, params uploadBlobParams) (*structpb.Struct, error) {
 	for key, value := range dataStruct.GetFields() {
 		updatedValue, err := processValue(ctx, params, value)
 		if err == nil {
@@ -82,18 +79,11 @@ func uploadBlobDataAndReplaceWithURL(ctx context.Context, params uploadBlobDataA
 	return dataStruct, nil
 }
 
-func processValue(ctx context.Context, params uploadBlobDataAndReplaceWithURLParams, value *structpb.Value) (*structpb.Value, error) {
-
+func processValue(ctx context.Context, params uploadBlobParams, value *structpb.Value) (*structpb.Value, error) {
 	switch v := value.GetKind().(type) {
 	case *structpb.Value_StringValue:
 		if isUnstructuredData(v.StringValue) {
-			downloadURL, err := UploadBlobAndGetDownloadURL(ctx, UploadBlobAndGetDownloadURLParams{
-				NamespaceID:    params.namespaceID,
-				RequesterUID:   params.requesterUID,
-				Data:           v.StringValue,
-				Logger:         params.logger,
-				ArtifactClient: params.artifactClient,
-			})
+			downloadURL, err := uploadBlobAndGetDownloadURL(ctx, v.StringValue, params)
 			if err != nil {
 				return nil, err
 			}
@@ -108,9 +98,7 @@ func processValue(ctx context.Context, params uploadBlobDataAndReplaceWithURLPar
 	case *structpb.Value_StructValue:
 		for _, item := range v.StructValue.GetFields() {
 			structData := item.GetStructValue()
-			newParams := params
-			newParams.dataStruct = structData
-			updatedStructData, err := uploadBlobDataAndReplaceWithURL(ctx, newParams)
+			updatedStructData, err := uploadBlobDataAndReplaceWithURL(ctx, structData, params)
 			// Note: we don't want to fail the whole process if one of the data structs fails to upload.
 			if err == nil {
 				return &structpb.Value{Kind: &structpb.Value_StructValue{StructValue: updatedStructData}}, nil
@@ -121,8 +109,7 @@ func processValue(ctx context.Context, params uploadBlobDataAndReplaceWithURLPar
 	return value, nil
 }
 
-func processList(ctx context.Context, params uploadBlobDataAndReplaceWithURLParams, list *structpb.ListValue) (*structpb.ListValue, error) {
-
+func processList(ctx context.Context, params uploadBlobParams, list *structpb.ListValue) (*structpb.ListValue, error) {
 	for i, item := range list.Values {
 		updatedItem, err := processValue(ctx, params, item)
 		if err == nil {
@@ -137,42 +124,24 @@ func isUnstructuredData(data string) bool {
 	return strings.HasPrefix(data, "data:") && strings.Contains(data, ";base64,")
 }
 
-// UploadBlobAndGetDownloadURLParams is the parameters for the UploadBlobAndGetDownloadURL function.
-type UploadBlobAndGetDownloadURLParams struct {
-	// NamespaceID is the namespace ID.
-	NamespaceID string
-	// RequesterUID is the requester UID.
-	RequesterUID uuid.UUID
-	// Data is the data to be uploaded.
-	Data string
-	// Logger is the logger.
-	Logger *zap.Logger
-	// ArtifactClient is the artifact public service client.
-	ArtifactClient *artifactpb.ArtifactPublicServiceClient
-}
-
-// UploadBlobAndGetDownloadURL uploads the unstructured data to minio and returns the public download URL.
-func UploadBlobAndGetDownloadURL(ctx context.Context, params UploadBlobAndGetDownloadURLParams) (string, error) {
-	mimeType, err := getMimeType(params.Data)
+func uploadBlobAndGetDownloadURL(ctx context.Context, data string, params uploadBlobParams) (string, error) {
+	mimeType, err := getMimeType(data)
 	if err != nil {
 		return "", fmt.Errorf("get mime type: %w", err)
 	}
 
 	uid, err := uuid.NewV4()
-
 	if err != nil {
 		return "", fmt.Errorf("generate uuid: %w", err)
 	}
-	objectName := fmt.Sprintf("%s/%s%s", params.RequesterUID.String(), uid.String(), getFileExtension(mimeType))
 
-	artifactClient := *params.ArtifactClient
+	objectName := fmt.Sprintf("%s/%s%s", params.requesterUID.String(), uid.String(), getFileExtension(mimeType))
 
-	// TODO: We will need to add the expiry days for the blob data.
-	// This will be addressed in ins-6857
+	artifactClient := *params.artifactClient
 	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
-		NamespaceId:      params.NamespaceID,
+		NamespaceId:      params.namespaceID, // TODO should be the requester ID
 		ObjectName:       objectName,
-		ObjectExpireDays: 0,
+		ObjectExpireDays: int32(params.expiryRule.ExpirationDays),
 	})
 
 	if err != nil {
@@ -180,19 +149,19 @@ func UploadBlobAndGetDownloadURL(ctx context.Context, params UploadBlobAndGetDow
 	}
 
 	uploadURL := resp.GetUploadUrl()
-	data := removePrefix(params.Data)
+	data = removePrefix(data)
 	b, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
 		return "", fmt.Errorf("decode base64 string: %w", err)
 	}
 
-	err = UploadBlobData(ctx, uploadURL, mimeType, b, params.Logger)
+	err = UploadBlobData(ctx, uploadURL, mimeType, b, params.logger)
 	if err != nil {
 		return "", fmt.Errorf("upload blob data: %w", err)
 	}
 
 	respDownloadURL, err := artifactClient.GetObjectDownloadURL(ctx, &artifactpb.GetObjectDownloadURLRequest{
-		NamespaceId: params.NamespaceID,
+		NamespaceId: params.namespaceID,
 		ObjectUid:   resp.GetObject().GetUid(),
 	})
 	if err != nil {

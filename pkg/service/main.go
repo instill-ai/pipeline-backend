@@ -136,9 +136,6 @@ func NewService(
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient,
 ) Service {
 	zapLogger, _ := logger.GetZapLogger(context.Background())
-	if retentionHandler == nil {
-		retentionHandler = NewRetentionHandler()
-	}
 
 	return &service{
 		repository:                   repository,

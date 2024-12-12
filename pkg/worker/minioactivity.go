@@ -158,6 +158,7 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 		NamespaceID:    param.SystemVariables.PipelineOwner.NsID,
 		RequesterUID:   param.SystemVariables.PipelineRequesterUID,
 		DataStructs:    compInputs,
+		ExpiryRule:     param.SystemVariables.ExpiryRule,
 		Logger:         log,
 		ArtifactClient: &w.artifactPublicServiceClient,
 	}
@@ -173,7 +174,7 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 		FilePath:      objectName,
 		FileContent:   compInputs,
 		FileMimeType:  constant.ContentTypeJSON,
-		ExpiryRuleTag: param.SystemVariables.ExpiryRuleTag,
+		ExpiryRuleTag: param.SystemVariables.ExpiryRule.Tag,
 	})
 	if err != nil {
 		log.Error("failed to upload component run inputs to minio", zap.Error(err))
@@ -229,6 +230,7 @@ func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *Comp
 		NamespaceID:    param.SystemVariables.PipelineOwner.NsID,
 		RequesterUID:   param.SystemVariables.PipelineRequesterUID,
 		DataStructs:    compOutputs,
+		ExpiryRule:     param.SystemVariables.ExpiryRule,
 		Logger:         log,
 		ArtifactClient: &w.artifactPublicServiceClient,
 	}
@@ -242,7 +244,7 @@ func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *Comp
 		FilePath:      objectName,
 		FileContent:   compOutputs,
 		FileMimeType:  constant.ContentTypeJSON,
-		ExpiryRuleTag: param.SystemVariables.ExpiryRuleTag,
+		ExpiryRuleTag: param.SystemVariables.ExpiryRule.Tag,
 	})
 	if err != nil {
 		log.Error("failed to upload component run outputs to minio", zap.Error(err))

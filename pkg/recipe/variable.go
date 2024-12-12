@@ -10,19 +10,23 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
+
+	miniox "github.com/instill-ai/x/minio"
 )
 
 // SystemVariables contain information about a pipeline trigger.
+// TODO jvallesm: we should remove the __ prefix from the fields as it's an
+// outdated convention.
 type SystemVariables struct {
 	PipelineTriggerID  string    `json:"__PIPELINE_TRIGGER_ID"`
 	PipelineID         string    `json:"__PIPELINE_ID"`
 	PipelineUID        uuid.UUID `json:"__PIPELINE_UID"`
 	PipelineReleaseID  string    `json:"__PIPELINE_RELEASE_ID"`
 	PipelineReleaseUID uuid.UUID `json:"__PIPELINE_RELEASE_UID"`
-	ExpiryRuleTag      string    `json:"__EXPIRY_RULE_TAG"`
 
 	// PipelineOwner represents the namespace that owns the pipeline. This is typically
 	// the namespace where the pipeline was created and is stored.
+	// TODO: we should use resource.Namespace for PipelineOwner and PipelineRequester
 	PipelineOwner resource.Namespace `json:"__PIPELINE_OWNER"`
 	// PipelineUserUID is the unique identifier of the authenticated user who is
 	// executing the pipeline. This is used for access control and audit logging.
@@ -35,7 +39,10 @@ type SystemVariables struct {
 	// that initiated the pipeline execution. This may differ from PipelineUserUID
 	// when the pipeline is triggered by on behalf of an organization.
 	PipelineRequesterUID uuid.UUID `json:"__PIPELINE_REQUESTER_UID"`
-	// TODO: we should use resource.Namespace for PipelineOwner and PipelineRequester
+
+	// ExpiryRule defines the tag and object expiration for the blob storage
+	// associated to the pipeline run data (e.g. recipe, input, output).
+	ExpiryRule miniox.ExpiryRule `json:"__EXPIRY_RULE"`
 
 	HeaderAuthorization string `json:"__PIPELINE_HEADER_AUTHORIZATION"`
 	ModelBackend        string `json:"__MODEL_BACKEND"`

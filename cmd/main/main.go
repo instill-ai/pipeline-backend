@@ -255,7 +255,8 @@ func main() {
 	ms := memory.NewMemoryStore()
 
 	// Initialize Minio client
-	minioClient, err := miniox.NewMinioClientAndInitBucket(ctx, &config.Config.Minio, logger, service.MetadataExpiryRules...)
+	retentionHandler := service.NewRetentionHandler()
+	minioClient, err := miniox.NewMinioClientAndInitBucket(ctx, &config.Config.Minio, logger, retentionHandler.ListExpiryRules()...)
 	if err != nil {
 		logger.Fatal("failed to create minio client", zap.Error(err))
 	}
@@ -303,7 +304,7 @@ func main() {
 		compStore,
 		ms,
 		workerUID,
-		nil,
+		retentionHandler,
 		binaryFetcher,
 		artifactPublicServiceClient,
 		artifactPrivateServiceClient,

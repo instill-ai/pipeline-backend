@@ -385,7 +385,7 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListP
 
 type uploadPipelineRunInputsToMinioParam struct {
 	pipelineTriggerID string
-	expiryRuleTag     string
+	expiryRule        miniox.ExpiryRule
 	pipelineData      []map[string]any
 }
 
@@ -403,7 +403,7 @@ func (s *service) uploadPipelineRunInputsToMinio(ctx context.Context, param uplo
 		FilePath:      objectName,
 		FileContent:   param.pipelineData,
 		FileMimeType:  constant.ContentTypeJSON,
-		ExpiryRuleTag: param.expiryRuleTag,
+		ExpiryRuleTag: param.expiryRule.Tag,
 	})
 	if err != nil {
 		return fmt.Errorf("upload pipeline run inputs to minio: %w", err)
