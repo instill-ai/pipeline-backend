@@ -119,10 +119,6 @@ type PostTriggerActivityParam struct {
 	SystemVariables recipe.SystemVariables
 }
 
-type UpsertPipelineRunActivityParam struct {
-	PipelineRun *datamodel.PipelineRun
-}
-
 type UpdatePipelineRunActivityParam struct {
 	PipelineTriggerID string
 	PipelineRun       *datamodel.PipelineRun

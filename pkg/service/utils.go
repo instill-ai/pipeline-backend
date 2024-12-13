@@ -140,6 +140,9 @@ func (s *service) convertPipelineRunToPB(run datamodel.PipelineRun) (*pipelinepb
 	if run.CompletedTime.Valid {
 		result.CompleteTime = timestamppb.New(run.CompletedTime.Time)
 	}
+	if run.BlobDataExpirationTime.Valid {
+		result.BlobDataExpirationTime = timestamppb.New(run.BlobDataExpirationTime.Time)
+	}
 
 	return result, nil
 }
@@ -159,6 +162,9 @@ func (s *service) convertComponentRunToPB(run datamodel.ComponentRun) (*pipeline
 	}
 	if run.CompletedTime.Valid {
 		result.CompleteTime = timestamppb.New(run.CompletedTime.Time)
+	}
+	if run.BlobDataExpirationTime.Valid {
+		result.BlobDataExpirationTime = timestamppb.New(run.BlobDataExpirationTime.Time)
 	}
 
 	for _, fileReference := range run.Inputs {

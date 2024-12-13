@@ -64,33 +64,36 @@ func (j *JSONB) Scan(value interface{}) error {
 
 // PipelineRun represents the metadata and execution details for each pipeline run.
 type PipelineRun struct {
-	PipelineTriggerUID uuid.UUID      `gorm:"primaryKey" json:"pipeline-trigger-uid"`                                        // Unique identifier for each run
-	PipelineUID        uuid.UUID      `gorm:"type:uuid;index" json:"pipeline-uid"`                                           // Pipeline unique ID used in the run
-	Pipeline           Pipeline       `gorm:"foreignKey:PipelineUID;references:UID"`                                         // Pipeline instance referenced in the run
-	PipelineVersion    string         `gorm:"type:varchar(255)" json:"pipeline-version"`                                     // Pipeline version used in the run
-	Status             RunStatus      `gorm:"type:valid_trigger_status;index" json:"status"`                                 // Current status of the run (e.g., Running, Completed, Failed)
-	Source             RunSource      `gorm:"type:valid_trigger_source" json:"source"`                                       // Origin of the run (e.g., Web click, API)
-	TotalDuration      null.Int       `gorm:"type:bigint" json:"total-duration"`                                             // Time taken to complete the run in nanoseconds
-	RunnerUID          uuid.UUID      `gorm:"type:uuid" json:"runner-uid"`                                                   // Identity of the user who initiated the run
-	RequesterUID       uuid.UUID      `gorm:"type:uuid" json:"requester-uid"`                                                // Namespace used for the run, which is the requester
-	Inputs             JSONB          `gorm:"type:jsonb" json:"inputs"`                                                      // Input files for the run
-	Outputs            JSONB          `gorm:"type:jsonb" json:"outputs"`                                                     // Output files from the run
-	RecipeSnapshot     JSONB          `gorm:"type:jsonb" json:"recipe-snapshot"`                                             // Snapshot of the pipeline recipe used for this run
-	StartedTime        time.Time      `gorm:"type:timestamp with time zone;index" json:"started-time,omitempty"`             // Time when the run started execution
-	CompletedTime      null.Time      `gorm:"type:timestamp with time zone;index" json:"completed-time,omitempty"`           // Time when the run completed
-	Error              null.String    `gorm:"type:text" json:"error-msg"`                                                    // Error message if the run failed
-	Components         []ComponentRun `gorm:"foreignKey:PipelineTriggerUID;references:PipelineTriggerUID" json:"components"` // Execution details for each component in the pipeline
+	PipelineTriggerUID     uuid.UUID `gorm:"primaryKey" json:"pipeline-trigger-uid"`                                   // Unique identifier for each run
+	PipelineUID            uuid.UUID `gorm:"type:uuid;index" json:"pipeline-uid"`                                      // Pipeline unique ID used in the run
+	Pipeline               Pipeline  `gorm:"foreignKey:PipelineUID;references:UID"`                                    // Pipeline instance referenced in the run
+	PipelineVersion        string    `gorm:"type:varchar(255)" json:"pipeline-version"`                                // Pipeline version used in the run
+	Status                 RunStatus `gorm:"type:valid_trigger_status;index" json:"status"`                            // Current status of the run (e.g., Running, Completed, Failed)
+	Source                 RunSource `gorm:"type:valid_trigger_source" json:"source"`                                  // Origin of the run (e.g., Web click, API)
+	TotalDuration          null.Int  `gorm:"type:bigint" json:"total-duration"`                                        // Time taken to complete the run in nanoseconds
+	RunnerUID              uuid.UUID `gorm:"type:uuid" json:"runner-uid"`                                              // Identity of the user who initiated the run
+	RequesterUID           uuid.UUID `gorm:"type:uuid" json:"requester-uid"`                                           // Namespace used for the run, which is the requester
+	Inputs                 JSONB     `gorm:"type:jsonb" json:"inputs"`                                                 // Input files for the run
+	Outputs                JSONB     `gorm:"type:jsonb" json:"outputs"`                                                // Output files from the run
+	RecipeSnapshot         JSONB     `gorm:"type:jsonb" json:"recipe-snapshot"`                                        // Snapshot of the pipeline recipe used for this run
+	StartedTime            time.Time `gorm:"type:timestamp with time zone;index" json:"started-time,omitempty"`        // Time when the run started execution
+	CompletedTime          null.Time `gorm:"type:timestamp with time zone;index" json:"completed-time,omitempty"`      // Time when the run completed
+	BlobDataExpirationTime null.Time `gorm:"type:timestamp with time zone" json:"blob-data-expiration-time,omitempty"` // Time when the blob data (e.g. input or recipe) will expire.
+
+	Error      null.String    `gorm:"type:text" json:"error-msg"`                                                    // Error message if the run failed
+	Components []ComponentRun `gorm:"foreignKey:PipelineTriggerUID;references:PipelineTriggerUID" json:"components"` // Execution details for each component in the pipeline
 }
 
 // ComponentRun represents the execution details of a single component within a pipeline run.
 type ComponentRun struct {
-	PipelineTriggerUID uuid.UUID   `gorm:"type:uuid;primaryKey;index" json:"pipeline-trigger-uid"`    // Links to the parent PipelineRun
-	ComponentID        string      `gorm:"type:varchar(255);primaryKey" json:"component-id"`          // Unique identifier for each pipeline component
-	Status             RunStatus   `gorm:"type:varchar(50);index" json:"status"`                      // Completion status of the component (e.g., Completed, Errored)
-	TotalDuration      null.Int    `gorm:"type:bigint" json:"total-duration"`                         // Time taken to execute the component in nanoseconds
-	StartedTime        time.Time   `gorm:"type:timestamp with time zone;index" json:"started-time"`   // Time when the component started execution
-	CompletedTime      null.Time   `gorm:"type:timestamp with time zone;index" json:"completed-time"` // Time when the component finished execution
-	Error              null.String `gorm:"type:text" json:"error-msg"`                                // Error message if the component failed
-	Inputs             JSONB       `gorm:"type:jsonb" json:"inputs"`                                  // Input files for the component
-	Outputs            JSONB       `gorm:"type:jsonb" json:"outputs"`                                 // Output files from the component
+	PipelineTriggerUID     uuid.UUID   `gorm:"type:uuid;primaryKey;index" json:"pipeline-trigger-uid"`                   // Links to the parent PipelineRun
+	ComponentID            string      `gorm:"type:varchar(255);primaryKey" json:"component-id"`                         // Unique identifier for each pipeline component
+	Status                 RunStatus   `gorm:"type:varchar(50);index" json:"status"`                                     // Completion status of the component (e.g., Completed, Errored)
+	TotalDuration          null.Int    `gorm:"type:bigint" json:"total-duration"`                                        // Time taken to execute the component in nanoseconds
+	StartedTime            time.Time   `gorm:"type:timestamp with time zone;index" json:"started-time"`                  // Time when the component started execution
+	CompletedTime          null.Time   `gorm:"type:timestamp with time zone;index" json:"completed-time"`                // Time when the component finished execution
+	BlobDataExpirationTime null.Time   `gorm:"type:timestamp with time zone" json:"blob-data-expiration-time,omitempty"` // Time when the blob data (e.g. input or recipe) will expire.
+	Error                  null.String `gorm:"type:text" json:"error-msg"`                                               // Error message if the component failed
+	Inputs                 JSONB       `gorm:"type:jsonb" json:"inputs"`                                                 // Input files for the component
+	Outputs                JSONB       `gorm:"type:jsonb" json:"outputs"`                                                // Output files from the component
 }
