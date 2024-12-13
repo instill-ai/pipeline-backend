@@ -154,16 +154,15 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 
 	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
 
-	paramsForUpload := utils.UploadBlobDataAndReplaceWithURLsParams{
-		NamespaceID:    param.SystemVariables.PipelineOwner.NsID,
-		RequesterUID:   param.SystemVariables.PipelineRequesterUID,
-		DataStructs:    compInputs,
+	paramsForUpload := utils.UploadBlobParams{
+		NamespaceID:    param.SystemVariables.PipelineRequesterID,
+		NamespaceUID:   param.SystemVariables.PipelineRequesterUID,
 		ExpiryRule:     param.SystemVariables.ExpiryRule,
 		Logger:         log,
 		ArtifactClient: &w.artifactPublicServiceClient,
 	}
 
-	compInputs, err = utils.UploadBlobDataAndReplaceWithURLs(ctx, paramsForUpload)
+	compInputs, err = utils.UploadBlobDataAndReplaceWithURLs(ctx, compInputs, paramsForUpload)
 	if err != nil {
 		return err
 	}
@@ -226,16 +225,15 @@ func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *Comp
 	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
 	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
 
-	paramsForUpload := utils.UploadBlobDataAndReplaceWithURLsParams{
-		NamespaceID:    param.SystemVariables.PipelineOwner.NsID,
-		RequesterUID:   param.SystemVariables.PipelineRequesterUID,
-		DataStructs:    compOutputs,
+	paramsForUpload := utils.UploadBlobParams{
+		NamespaceID:    param.SystemVariables.PipelineRequesterID,
+		NamespaceUID:   param.SystemVariables.PipelineRequesterUID,
 		ExpiryRule:     param.SystemVariables.ExpiryRule,
 		Logger:         log,
 		ArtifactClient: &w.artifactPublicServiceClient,
 	}
 
-	compOutputs, err = utils.UploadBlobDataAndReplaceWithURLs(ctx, paramsForUpload)
+	compOutputs, err = utils.UploadBlobDataAndReplaceWithURLs(ctx, compOutputs, paramsForUpload)
 	if err != nil {
 		return err
 	}

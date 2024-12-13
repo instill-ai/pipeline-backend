@@ -59,7 +59,7 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 
 	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
 
-	objectName := fmt.Sprintf("%s/%s", requesterID, value.Filename())
+	objectName := fmt.Sprintf("%s/%s", param.SystemVariables.PipelineRequesterUID.String(), value.Filename())
 
 	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
 		NamespaceId:      requesterID,

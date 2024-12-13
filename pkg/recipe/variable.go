@@ -26,7 +26,6 @@ type SystemVariables struct {
 
 	// PipelineOwner represents the namespace that owns the pipeline. This is typically
 	// the namespace where the pipeline was created and is stored.
-	// TODO: we should use resource.Namespace for PipelineOwner and PipelineRequester
 	PipelineOwner resource.Namespace `json:"__PIPELINE_OWNER"`
 	// PipelineUserUID is the unique identifier of the authenticated user who is
 	// executing the pipeline. This is used for access control and audit logging.
@@ -34,6 +33,7 @@ type SystemVariables struct {
 	// PipelineRequesterID is the ID of the entity (user or organization)
 	// that initiated the pipeline execution. This may differ from PipelineUserUID
 	// when the pipeline is triggered by on behalf of an organization.
+	// TODO: we should use resource.Namespace for PipelineRequester
 	PipelineRequesterID string `json:"__PIPELINE_REQUESTER_ID"`
 	// PipelineRequesterUID is the unique identifier of the entity (user or organization)
 	// that initiated the pipeline execution. This may differ from PipelineUserUID

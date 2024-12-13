@@ -23,7 +23,6 @@ import (
 
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	miniox "github.com/instill-ai/x/minio"
-	resourcex "github.com/instill-ai/x/resource"
 )
 
 func (s *service) uploadBlobAndGetDownloadURL(ctx context.Context, data string, ns resource.Namespace, expiryRule miniox.ExpiryRule) (string, error) {
@@ -41,12 +40,11 @@ func (s *service) uploadBlobAndGetDownloadURL(ctx context.Context, data string, 
 
 	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(vars))
 
-	requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
 	timestamp := time.Now().Format(time.RFC3339)
-	objectName := fmt.Sprintf("%s-%s%s", requesterUID.String(), timestamp, getFileExtension(mimeType))
+	objectName := fmt.Sprintf("%s/%s%s", ns.NsUID.String(), timestamp, getFileExtension(mimeType))
 
 	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
-		NamespaceId:      ns.NsID, // TODO jvallesm: should be the requester's NamespaceID
+		NamespaceId:      ns.NsID,
 		ObjectName:       objectName,
 		ObjectExpireDays: int32(expiryRule.ExpirationDays),
 	})
