@@ -102,6 +102,13 @@ type ArtifactPublicServiceClientMock struct {
 	beforeLivenessCounter uint64
 	LivenessMock          mArtifactPublicServiceClientMockLiveness
 
+	funcMoveFileToCatalog          func(ctx context.Context, in *mm_artifactv1alpha.MoveFileToCatalogRequest, opts ...grpc.CallOption) (mp1 *mm_artifactv1alpha.MoveFileToCatalogResponse, err error)
+	funcMoveFileToCatalogOrigin    string
+	inspectFuncMoveFileToCatalog   func(ctx context.Context, in *mm_artifactv1alpha.MoveFileToCatalogRequest, opts ...grpc.CallOption)
+	afterMoveFileToCatalogCounter  uint64
+	beforeMoveFileToCatalogCounter uint64
+	MoveFileToCatalogMock          mArtifactPublicServiceClientMockMoveFileToCatalog
+
 	funcProcessCatalogFiles          func(ctx context.Context, in *mm_artifactv1alpha.ProcessCatalogFilesRequest, opts ...grpc.CallOption) (pp1 *mm_artifactv1alpha.ProcessCatalogFilesResponse, err error)
 	funcProcessCatalogFilesOrigin    string
 	inspectFuncProcessCatalogFiles   func(ctx context.Context, in *mm_artifactv1alpha.ProcessCatalogFilesRequest, opts ...grpc.CallOption)
@@ -209,6 +216,9 @@ func NewArtifactPublicServiceClientMock(t minimock.Tester) *ArtifactPublicServic
 
 	m.LivenessMock = mArtifactPublicServiceClientMockLiveness{mock: m}
 	m.LivenessMock.callArgs = []*ArtifactPublicServiceClientMockLivenessParams{}
+
+	m.MoveFileToCatalogMock = mArtifactPublicServiceClientMockMoveFileToCatalog{mock: m}
+	m.MoveFileToCatalogMock.callArgs = []*ArtifactPublicServiceClientMockMoveFileToCatalogParams{}
 
 	m.ProcessCatalogFilesMock = mArtifactPublicServiceClientMockProcessCatalogFiles{mock: m}
 	m.ProcessCatalogFilesMock.callArgs = []*ArtifactPublicServiceClientMockProcessCatalogFilesParams{}
@@ -4730,6 +4740,380 @@ func (m *ArtifactPublicServiceClientMock) MinimockLivenessInspect() {
 	}
 }
 
+type mArtifactPublicServiceClientMockMoveFileToCatalog struct {
+	optional           bool
+	mock               *ArtifactPublicServiceClientMock
+	defaultExpectation *ArtifactPublicServiceClientMockMoveFileToCatalogExpectation
+	expectations       []*ArtifactPublicServiceClientMockMoveFileToCatalogExpectation
+
+	callArgs []*ArtifactPublicServiceClientMockMoveFileToCatalogParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// ArtifactPublicServiceClientMockMoveFileToCatalogExpectation specifies expectation struct of the ArtifactPublicServiceClient.MoveFileToCatalog
+type ArtifactPublicServiceClientMockMoveFileToCatalogExpectation struct {
+	mock               *ArtifactPublicServiceClientMock
+	params             *ArtifactPublicServiceClientMockMoveFileToCatalogParams
+	paramPtrs          *ArtifactPublicServiceClientMockMoveFileToCatalogParamPtrs
+	expectationOrigins ArtifactPublicServiceClientMockMoveFileToCatalogExpectationOrigins
+	results            *ArtifactPublicServiceClientMockMoveFileToCatalogResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// ArtifactPublicServiceClientMockMoveFileToCatalogParams contains parameters of the ArtifactPublicServiceClient.MoveFileToCatalog
+type ArtifactPublicServiceClientMockMoveFileToCatalogParams struct {
+	ctx  context.Context
+	in   *mm_artifactv1alpha.MoveFileToCatalogRequest
+	opts []grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockMoveFileToCatalogParamPtrs contains pointers to parameters of the ArtifactPublicServiceClient.MoveFileToCatalog
+type ArtifactPublicServiceClientMockMoveFileToCatalogParamPtrs struct {
+	ctx  *context.Context
+	in   **mm_artifactv1alpha.MoveFileToCatalogRequest
+	opts *[]grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockMoveFileToCatalogResults contains results of the ArtifactPublicServiceClient.MoveFileToCatalog
+type ArtifactPublicServiceClientMockMoveFileToCatalogResults struct {
+	mp1 *mm_artifactv1alpha.MoveFileToCatalogResponse
+	err error
+}
+
+// ArtifactPublicServiceClientMockMoveFileToCatalogOrigins contains origins of expectations of the ArtifactPublicServiceClient.MoveFileToCatalog
+type ArtifactPublicServiceClientMockMoveFileToCatalogExpectationOrigins struct {
+	origin     string
+	originCtx  string
+	originIn   string
+	originOpts string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmMoveFileToCatalog *mArtifactPublicServiceClientMockMoveFileToCatalog) Optional() *mArtifactPublicServiceClientMockMoveFileToCatalog {
+	mmMoveFileToCatalog.optional = true
+	return mmMoveFileToCatalog
+}
+
+// Expect sets up expected params for ArtifactPublicServiceClient.MoveFileToCatalog
+func (mmMoveFileToCatalog *mArtifactPublicServiceClientMockMoveFileToCatalog) Expect(ctx context.Context, in *mm_artifactv1alpha.MoveFileToCatalogRequest, opts ...grpc.CallOption) *mArtifactPublicServiceClientMockMoveFileToCatalog {
+	if mmMoveFileToCatalog.mock.funcMoveFileToCatalog != nil {
+		mmMoveFileToCatalog.mock.t.Fatalf("ArtifactPublicServiceClientMock.MoveFileToCatalog mock is already set by Set")
+	}
+
+	if mmMoveFileToCatalog.defaultExpectation == nil {
+		mmMoveFileToCatalog.defaultExpectation = &ArtifactPublicServiceClientMockMoveFileToCatalogExpectation{}
+	}
+
+	if mmMoveFileToCatalog.defaultExpectation.paramPtrs != nil {
+		mmMoveFileToCatalog.mock.t.Fatalf("ArtifactPublicServiceClientMock.MoveFileToCatalog mock is already set by ExpectParams functions")
+	}
+
+	mmMoveFileToCatalog.defaultExpectation.params = &ArtifactPublicServiceClientMockMoveFileToCatalogParams{ctx, in, opts}
+	mmMoveFileToCatalog.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmMoveFileToCatalog.expectations {
+		if minimock.Equal(e.params, mmMoveFileToCatalog.defaultExpectation.params) {
+			mmMoveFileToCatalog.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmMoveFileToCatalog.defaultExpectation.params)
+		}
+	}
+
+	return mmMoveFileToCatalog
+}
+
+// ExpectCtxParam1 sets up expected param ctx for ArtifactPublicServiceClient.MoveFileToCatalog
+func (mmMoveFileToCatalog *mArtifactPublicServiceClientMockMoveFileToCatalog) ExpectCtxParam1(ctx context.Context) *mArtifactPublicServiceClientMockMoveFileToCatalog {
+	if mmMoveFileToCatalog.mock.funcMoveFileToCatalog != nil {
+		mmMoveFileToCatalog.mock.t.Fatalf("ArtifactPublicServiceClientMock.MoveFileToCatalog mock is already set by Set")
+	}
+
+	if mmMoveFileToCatalog.defaultExpectation == nil {
+		mmMoveFileToCatalog.defaultExpectation = &ArtifactPublicServiceClientMockMoveFileToCatalogExpectation{}
+	}
+
+	if mmMoveFileToCatalog.defaultExpectation.params != nil {
+		mmMoveFileToCatalog.mock.t.Fatalf("ArtifactPublicServiceClientMock.MoveFileToCatalog mock is already set by Expect")
+	}
+
+	if mmMoveFileToCatalog.defaultExpectation.paramPtrs == nil {
+		mmMoveFileToCatalog.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockMoveFileToCatalogParamPtrs{}
+	}
+	mmMoveFileToCatalog.defaultExpectation.paramPtrs.ctx = &ctx
+	mmMoveFileToCatalog.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmMoveFileToCatalog
+}
+
+// ExpectInParam2 sets up expected param in for ArtifactPublicServiceClient.MoveFileToCatalog
+func (mmMoveFileToCatalog *mArtifactPublicServiceClientMockMoveFileToCatalog) ExpectInParam2(in *mm_artifactv1alpha.MoveFileToCatalogRequest) *mArtifactPublicServiceClientMockMoveFileToCatalog {
+	if mmMoveFileToCatalog.mock.funcMoveFileToCatalog != nil {
+		mmMoveFileToCatalog.mock.t.Fatalf("ArtifactPublicServiceClientMock.MoveFileToCatalog mock is already set by Set")
+	}
+
+	if mmMoveFileToCatalog.defaultExpectation == nil {
+		mmMoveFileToCatalog.defaultExpectation = &ArtifactPublicServiceClientMockMoveFileToCatalogExpectation{}
+	}
+
+	if mmMoveFileToCatalog.defaultExpectation.params != nil {
+		mmMoveFileToCatalog.mock.t.Fatalf("ArtifactPublicServiceClientMock.MoveFileToCatalog mock is already set by Expect")
+	}
+
+	if mmMoveFileToCatalog.defaultExpectation.paramPtrs == nil {
+		mmMoveFileToCatalog.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockMoveFileToCatalogParamPtrs{}
+	}
+	mmMoveFileToCatalog.defaultExpectation.paramPtrs.in = &in
+	mmMoveFileToCatalog.defaultExpectation.expectationOrigins.originIn = minimock.CallerInfo(1)
+
+	return mmMoveFileToCatalog
+}
+
+// ExpectOptsParam3 sets up expected param opts for ArtifactPublicServiceClient.MoveFileToCatalog
+func (mmMoveFileToCatalog *mArtifactPublicServiceClientMockMoveFileToCatalog) ExpectOptsParam3(opts ...grpc.CallOption) *mArtifactPublicServiceClientMockMoveFileToCatalog {
+	if mmMoveFileToCatalog.mock.funcMoveFileToCatalog != nil {
+		mmMoveFileToCatalog.mock.t.Fatalf("ArtifactPublicServiceClientMock.MoveFileToCatalog mock is already set by Set")
+	}
+
+	if mmMoveFileToCatalog.defaultExpectation == nil {
+		mmMoveFileToCatalog.defaultExpectation = &ArtifactPublicServiceClientMockMoveFileToCatalogExpectation{}
+	}
+
+	if mmMoveFileToCatalog.defaultExpectation.params != nil {
+		mmMoveFileToCatalog.mock.t.Fatalf("ArtifactPublicServiceClientMock.MoveFileToCatalog mock is already set by Expect")
+	}
+
+	if mmMoveFileToCatalog.defaultExpectation.paramPtrs == nil {
+		mmMoveFileToCatalog.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockMoveFileToCatalogParamPtrs{}
+	}
+	mmMoveFileToCatalog.defaultExpectation.paramPtrs.opts = &opts
+	mmMoveFileToCatalog.defaultExpectation.expectationOrigins.originOpts = minimock.CallerInfo(1)
+
+	return mmMoveFileToCatalog
+}
+
+// Inspect accepts an inspector function that has same arguments as the ArtifactPublicServiceClient.MoveFileToCatalog
+func (mmMoveFileToCatalog *mArtifactPublicServiceClientMockMoveFileToCatalog) Inspect(f func(ctx context.Context, in *mm_artifactv1alpha.MoveFileToCatalogRequest, opts ...grpc.CallOption)) *mArtifactPublicServiceClientMockMoveFileToCatalog {
+	if mmMoveFileToCatalog.mock.inspectFuncMoveFileToCatalog != nil {
+		mmMoveFileToCatalog.mock.t.Fatalf("Inspect function is already set for ArtifactPublicServiceClientMock.MoveFileToCatalog")
+	}
+
+	mmMoveFileToCatalog.mock.inspectFuncMoveFileToCatalog = f
+
+	return mmMoveFileToCatalog
+}
+
+// Return sets up results that will be returned by ArtifactPublicServiceClient.MoveFileToCatalog
+func (mmMoveFileToCatalog *mArtifactPublicServiceClientMockMoveFileToCatalog) Return(mp1 *mm_artifactv1alpha.MoveFileToCatalogResponse, err error) *ArtifactPublicServiceClientMock {
+	if mmMoveFileToCatalog.mock.funcMoveFileToCatalog != nil {
+		mmMoveFileToCatalog.mock.t.Fatalf("ArtifactPublicServiceClientMock.MoveFileToCatalog mock is already set by Set")
+	}
+
+	if mmMoveFileToCatalog.defaultExpectation == nil {
+		mmMoveFileToCatalog.defaultExpectation = &ArtifactPublicServiceClientMockMoveFileToCatalogExpectation{mock: mmMoveFileToCatalog.mock}
+	}
+	mmMoveFileToCatalog.defaultExpectation.results = &ArtifactPublicServiceClientMockMoveFileToCatalogResults{mp1, err}
+	mmMoveFileToCatalog.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmMoveFileToCatalog.mock
+}
+
+// Set uses given function f to mock the ArtifactPublicServiceClient.MoveFileToCatalog method
+func (mmMoveFileToCatalog *mArtifactPublicServiceClientMockMoveFileToCatalog) Set(f func(ctx context.Context, in *mm_artifactv1alpha.MoveFileToCatalogRequest, opts ...grpc.CallOption) (mp1 *mm_artifactv1alpha.MoveFileToCatalogResponse, err error)) *ArtifactPublicServiceClientMock {
+	if mmMoveFileToCatalog.defaultExpectation != nil {
+		mmMoveFileToCatalog.mock.t.Fatalf("Default expectation is already set for the ArtifactPublicServiceClient.MoveFileToCatalog method")
+	}
+
+	if len(mmMoveFileToCatalog.expectations) > 0 {
+		mmMoveFileToCatalog.mock.t.Fatalf("Some expectations are already set for the ArtifactPublicServiceClient.MoveFileToCatalog method")
+	}
+
+	mmMoveFileToCatalog.mock.funcMoveFileToCatalog = f
+	mmMoveFileToCatalog.mock.funcMoveFileToCatalogOrigin = minimock.CallerInfo(1)
+	return mmMoveFileToCatalog.mock
+}
+
+// When sets expectation for the ArtifactPublicServiceClient.MoveFileToCatalog which will trigger the result defined by the following
+// Then helper
+func (mmMoveFileToCatalog *mArtifactPublicServiceClientMockMoveFileToCatalog) When(ctx context.Context, in *mm_artifactv1alpha.MoveFileToCatalogRequest, opts ...grpc.CallOption) *ArtifactPublicServiceClientMockMoveFileToCatalogExpectation {
+	if mmMoveFileToCatalog.mock.funcMoveFileToCatalog != nil {
+		mmMoveFileToCatalog.mock.t.Fatalf("ArtifactPublicServiceClientMock.MoveFileToCatalog mock is already set by Set")
+	}
+
+	expectation := &ArtifactPublicServiceClientMockMoveFileToCatalogExpectation{
+		mock:               mmMoveFileToCatalog.mock,
+		params:             &ArtifactPublicServiceClientMockMoveFileToCatalogParams{ctx, in, opts},
+		expectationOrigins: ArtifactPublicServiceClientMockMoveFileToCatalogExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmMoveFileToCatalog.expectations = append(mmMoveFileToCatalog.expectations, expectation)
+	return expectation
+}
+
+// Then sets up ArtifactPublicServiceClient.MoveFileToCatalog return parameters for the expectation previously defined by the When method
+func (e *ArtifactPublicServiceClientMockMoveFileToCatalogExpectation) Then(mp1 *mm_artifactv1alpha.MoveFileToCatalogResponse, err error) *ArtifactPublicServiceClientMock {
+	e.results = &ArtifactPublicServiceClientMockMoveFileToCatalogResults{mp1, err}
+	return e.mock
+}
+
+// Times sets number of times ArtifactPublicServiceClient.MoveFileToCatalog should be invoked
+func (mmMoveFileToCatalog *mArtifactPublicServiceClientMockMoveFileToCatalog) Times(n uint64) *mArtifactPublicServiceClientMockMoveFileToCatalog {
+	if n == 0 {
+		mmMoveFileToCatalog.mock.t.Fatalf("Times of ArtifactPublicServiceClientMock.MoveFileToCatalog mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmMoveFileToCatalog.expectedInvocations, n)
+	mmMoveFileToCatalog.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmMoveFileToCatalog
+}
+
+func (mmMoveFileToCatalog *mArtifactPublicServiceClientMockMoveFileToCatalog) invocationsDone() bool {
+	if len(mmMoveFileToCatalog.expectations) == 0 && mmMoveFileToCatalog.defaultExpectation == nil && mmMoveFileToCatalog.mock.funcMoveFileToCatalog == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmMoveFileToCatalog.mock.afterMoveFileToCatalogCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmMoveFileToCatalog.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// MoveFileToCatalog implements mm_artifactv1alpha.ArtifactPublicServiceClient
+func (mmMoveFileToCatalog *ArtifactPublicServiceClientMock) MoveFileToCatalog(ctx context.Context, in *mm_artifactv1alpha.MoveFileToCatalogRequest, opts ...grpc.CallOption) (mp1 *mm_artifactv1alpha.MoveFileToCatalogResponse, err error) {
+	mm_atomic.AddUint64(&mmMoveFileToCatalog.beforeMoveFileToCatalogCounter, 1)
+	defer mm_atomic.AddUint64(&mmMoveFileToCatalog.afterMoveFileToCatalogCounter, 1)
+
+	mmMoveFileToCatalog.t.Helper()
+
+	if mmMoveFileToCatalog.inspectFuncMoveFileToCatalog != nil {
+		mmMoveFileToCatalog.inspectFuncMoveFileToCatalog(ctx, in, opts...)
+	}
+
+	mm_params := ArtifactPublicServiceClientMockMoveFileToCatalogParams{ctx, in, opts}
+
+	// Record call args
+	mmMoveFileToCatalog.MoveFileToCatalogMock.mutex.Lock()
+	mmMoveFileToCatalog.MoveFileToCatalogMock.callArgs = append(mmMoveFileToCatalog.MoveFileToCatalogMock.callArgs, &mm_params)
+	mmMoveFileToCatalog.MoveFileToCatalogMock.mutex.Unlock()
+
+	for _, e := range mmMoveFileToCatalog.MoveFileToCatalogMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.mp1, e.results.err
+		}
+	}
+
+	if mmMoveFileToCatalog.MoveFileToCatalogMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmMoveFileToCatalog.MoveFileToCatalogMock.defaultExpectation.Counter, 1)
+		mm_want := mmMoveFileToCatalog.MoveFileToCatalogMock.defaultExpectation.params
+		mm_want_ptrs := mmMoveFileToCatalog.MoveFileToCatalogMock.defaultExpectation.paramPtrs
+
+		mm_got := ArtifactPublicServiceClientMockMoveFileToCatalogParams{ctx, in, opts}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmMoveFileToCatalog.t.Errorf("ArtifactPublicServiceClientMock.MoveFileToCatalog got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmMoveFileToCatalog.MoveFileToCatalogMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.in != nil && !minimock.Equal(*mm_want_ptrs.in, mm_got.in) {
+				mmMoveFileToCatalog.t.Errorf("ArtifactPublicServiceClientMock.MoveFileToCatalog got unexpected parameter in, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmMoveFileToCatalog.MoveFileToCatalogMock.defaultExpectation.expectationOrigins.originIn, *mm_want_ptrs.in, mm_got.in, minimock.Diff(*mm_want_ptrs.in, mm_got.in))
+			}
+
+			if mm_want_ptrs.opts != nil && !minimock.Equal(*mm_want_ptrs.opts, mm_got.opts) {
+				mmMoveFileToCatalog.t.Errorf("ArtifactPublicServiceClientMock.MoveFileToCatalog got unexpected parameter opts, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmMoveFileToCatalog.MoveFileToCatalogMock.defaultExpectation.expectationOrigins.originOpts, *mm_want_ptrs.opts, mm_got.opts, minimock.Diff(*mm_want_ptrs.opts, mm_got.opts))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmMoveFileToCatalog.t.Errorf("ArtifactPublicServiceClientMock.MoveFileToCatalog got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmMoveFileToCatalog.MoveFileToCatalogMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmMoveFileToCatalog.MoveFileToCatalogMock.defaultExpectation.results
+		if mm_results == nil {
+			mmMoveFileToCatalog.t.Fatal("No results are set for the ArtifactPublicServiceClientMock.MoveFileToCatalog")
+		}
+		return (*mm_results).mp1, (*mm_results).err
+	}
+	if mmMoveFileToCatalog.funcMoveFileToCatalog != nil {
+		return mmMoveFileToCatalog.funcMoveFileToCatalog(ctx, in, opts...)
+	}
+	mmMoveFileToCatalog.t.Fatalf("Unexpected call to ArtifactPublicServiceClientMock.MoveFileToCatalog. %v %v %v", ctx, in, opts)
+	return
+}
+
+// MoveFileToCatalogAfterCounter returns a count of finished ArtifactPublicServiceClientMock.MoveFileToCatalog invocations
+func (mmMoveFileToCatalog *ArtifactPublicServiceClientMock) MoveFileToCatalogAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmMoveFileToCatalog.afterMoveFileToCatalogCounter)
+}
+
+// MoveFileToCatalogBeforeCounter returns a count of ArtifactPublicServiceClientMock.MoveFileToCatalog invocations
+func (mmMoveFileToCatalog *ArtifactPublicServiceClientMock) MoveFileToCatalogBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmMoveFileToCatalog.beforeMoveFileToCatalogCounter)
+}
+
+// Calls returns a list of arguments used in each call to ArtifactPublicServiceClientMock.MoveFileToCatalog.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmMoveFileToCatalog *mArtifactPublicServiceClientMockMoveFileToCatalog) Calls() []*ArtifactPublicServiceClientMockMoveFileToCatalogParams {
+	mmMoveFileToCatalog.mutex.RLock()
+
+	argCopy := make([]*ArtifactPublicServiceClientMockMoveFileToCatalogParams, len(mmMoveFileToCatalog.callArgs))
+	copy(argCopy, mmMoveFileToCatalog.callArgs)
+
+	mmMoveFileToCatalog.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockMoveFileToCatalogDone returns true if the count of the MoveFileToCatalog invocations corresponds
+// the number of defined expectations
+func (m *ArtifactPublicServiceClientMock) MinimockMoveFileToCatalogDone() bool {
+	if m.MoveFileToCatalogMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.MoveFileToCatalogMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.MoveFileToCatalogMock.invocationsDone()
+}
+
+// MinimockMoveFileToCatalogInspect logs each unmet expectation
+func (m *ArtifactPublicServiceClientMock) MinimockMoveFileToCatalogInspect() {
+	for _, e := range m.MoveFileToCatalogMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.MoveFileToCatalog at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterMoveFileToCatalogCounter := mm_atomic.LoadUint64(&m.afterMoveFileToCatalogCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.MoveFileToCatalogMock.defaultExpectation != nil && afterMoveFileToCatalogCounter < 1 {
+		if m.MoveFileToCatalogMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.MoveFileToCatalog at\n%s", m.MoveFileToCatalogMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.MoveFileToCatalog at\n%s with params: %#v", m.MoveFileToCatalogMock.defaultExpectation.expectationOrigins.origin, *m.MoveFileToCatalogMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcMoveFileToCatalog != nil && afterMoveFileToCatalogCounter < 1 {
+		m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.MoveFileToCatalog at\n%s", m.funcMoveFileToCatalogOrigin)
+	}
+
+	if !m.MoveFileToCatalogMock.invocationsDone() && afterMoveFileToCatalogCounter > 0 {
+		m.t.Errorf("Expected %d calls to ArtifactPublicServiceClientMock.MoveFileToCatalog at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.MoveFileToCatalogMock.expectedInvocations), m.MoveFileToCatalogMock.expectedInvocationsOrigin, afterMoveFileToCatalogCounter)
+	}
+}
+
 type mArtifactPublicServiceClientMockProcessCatalogFiles struct {
 	optional           bool
 	mock               *ArtifactPublicServiceClientMock
@@ -8124,6 +8508,8 @@ func (m *ArtifactPublicServiceClientMock) MinimockFinish() {
 
 			m.MinimockLivenessInspect()
 
+			m.MinimockMoveFileToCatalogInspect()
+
 			m.MinimockProcessCatalogFilesInspect()
 
 			m.MinimockQuestionAnsweringInspect()
@@ -8176,6 +8562,7 @@ func (m *ArtifactPublicServiceClientMock) minimockDone() bool {
 		m.MinimockListCatalogsDone() &&
 		m.MinimockListChunksDone() &&
 		m.MinimockLivenessDone() &&
+		m.MinimockMoveFileToCatalogDone() &&
 		m.MinimockProcessCatalogFilesDone() &&
 		m.MinimockQuestionAnsweringDone() &&
 		m.MinimockReadinessDone() &&
