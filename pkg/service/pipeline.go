@@ -884,9 +884,6 @@ func (s *service) preTriggerPipeline(
 		}
 
 		m := i.(map[string]any)
-
-		// TODO: remove these conversions after the blob storage is fully
-		// rolled out.
 		for k := range m {
 			switch str := m[k].(type) {
 			case string:
