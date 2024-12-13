@@ -37,6 +37,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
 	"github.com/instill-ai/x/errmsg"
+	miniox "github.com/instill-ai/x/minio"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
@@ -834,15 +835,26 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 // preTriggerPipeline does the following:
 //  1. Upload pipeline input data to minio if the data is blob data.
 //  2. New workflow memory.
-//     2-1. Set the default values for the variables for memory data and uploading pipeline data.
-//     2-2. Set the data with data.Value for the memory data, which will be used for pipeline running.
-//     2-3. Upload "uploading pipeline data" to minio for pipeline run logger.
+//     a. Set the default values for the variables for memory data and
+//     uploading pipeline data.
+//     b. Set the data with data.Value for the memory data, which will be
+//     used for pipeline running.
+//     c. Upload "uploading pipeline data" to minio for pipeline run logger.
 //  3. Map the settings in recipe to the format in workflow memory.
 //  4. Enable the streaming mode when the header contains "text/event-stream"
 //
-// We upload User Input Data by `uploadBlobAndGetDownloadURL`, which exposes the public URL because it will be used by `console` & external users.
-// We upload Pipeline Input Data by `uploadPipelineRunInputsToMinio`, which does not expose the public URL. The URL will be used by pipeline run logger.
-func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace, r *datamodel.Recipe, pipelineTriggerID string, pipelineData []*pipelinepb.TriggerData) error {
+// We upload User Input Data by `uploadBlobAndGetDownloadURL`, which exposes
+// the public URL because it will be used by `console` & external users.
+// We upload Pipeline Input Data by `uploadPipelineRunInputsToMinio`, which
+// does not expose the public URL. The URL will be used by pipeline run logger.
+func (s *service) preTriggerPipeline(
+	ctx context.Context,
+	requester resource.Namespace,
+	r *datamodel.Recipe,
+	pipelineTriggerID string,
+	pipelineData []*pipelinepb.TriggerData,
+	expiryRule miniox.ExpiryRule,
+) error {
 	batchSize := len(pipelineData)
 	if batchSize > constant.MaxBatchSize {
 		return ErrExceedMaxBatchSize
@@ -872,17 +884,15 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 		}
 
 		m := i.(map[string]any)
-
-		// TODO: remove these conversions after the blob storage is fully rolled out
 		for k := range m {
 			switch str := m[k].(type) {
 			case string:
 				if isUnstructuredFormat(formatMap[k]) {
-					// Skip the base64 decoding if the string is a URL
+					// Skip the base64 decoding if the string is a URL.
 					if strings.HasPrefix(str, "http://") || strings.HasPrefix(str, "https://") {
 						continue
 					}
-					downloadURL, err := s.uploadBlobAndGetDownloadURL(ctx, ns, str)
+					downloadURL, err := s.uploadBlobAndGetDownloadURL(ctx, str, requester, expiryRule)
 					if err != nil {
 						return fmt.Errorf("upload blob and get download url: %w", err)
 					}
@@ -895,7 +905,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						if strings.HasPrefix(str[idx], "http://") || strings.HasPrefix(str[idx], "https://") {
 							continue
 						}
-						downloadURL, err := s.uploadBlobAndGetDownloadURL(ctx, ns, str[idx])
+						downloadURL, err := s.uploadBlobAndGetDownloadURL(ctx, str[idx], requester, expiryRule)
 						if err != nil {
 							return fmt.Errorf("upload blob and get download url: %w", err)
 						}
@@ -1398,16 +1408,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 			}
 		}
 
-		requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
-
-		expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, requesterUID.String())
-		if err != nil {
-			return fmt.Errorf("get expiry rule tag: %w", err)
-		}
-
 		err = s.uploadPipelineRunInputsToMinio(ctx, uploadPipelineRunInputsToMinioParam{
 			pipelineTriggerID: pipelineTriggerID,
-			expiryRuleTag:     expiryRuleTag,
+			expiryRule:        expiryRule,
 			pipelineData:      uploadingPipelineData,
 		})
 		if err != nil {
@@ -1685,7 +1688,7 @@ func (s *service) RestoreNamespacePipelineReleaseByID(ctx context.Context, ns re
 	existingPipeline.Recipe = dbPipelineRelease.Recipe
 
 	if err := s.repository.UpdateNamespacePipelineByUID(ctx, existingPipeline.UID, existingPipeline); err != nil {
-		return err
+		return fmt.Errorf("updating pipeline: %w", err)
 	}
 
 	return nil
@@ -1721,11 +1724,6 @@ func (s *service) triggerPipeline(
 		return nil, nil, err
 	}
 
-	expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, triggerParams.requesterUID.String())
-	if err != nil {
-		return nil, nil, err
-	}
-
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1743,7 +1741,7 @@ func (s *service) triggerPipeline(
 				PipelineRequesterUID: requester.NsUID,
 				PipelineRequesterID:  requester.NsID,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
-				ExpiryRuleTag:        expiryRuleTag,
+				ExpiryRule:           triggerParams.expiryRule,
 			},
 			Mode:      mgmtpb.Mode_MODE_SYNC,
 			WorkerUID: s.workerUID,
@@ -1780,6 +1778,7 @@ type triggerParams struct {
 	pipelineTriggerID  string
 	requesterUID       uuid.UUID
 	userUID            uuid.UUID
+	expiryRule         miniox.ExpiryRule
 }
 
 func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams) (*longrunningpb.Operation, error) {
@@ -1812,11 +1811,6 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 		return nil, err
 	}
 
-	expiryRuleTag, err := s.retentionHandler.GetExpiryTagBySubscriptionPlan(ctx, params.requesterUID.String())
-	if err != nil {
-		return nil, err
-	}
-
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1833,7 +1827,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 				PipelineRequesterUID: requester.NsUID,
 				PipelineRequesterID:  requester.NsID,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
-				ExpiryRuleTag:        expiryRuleTag,
+				ExpiryRule:           params.expiryRule,
 			},
 			Mode:           mgmtpb.Mode_MODE_ASYNC,
 			TriggerFromAPI: true,
@@ -2001,6 +1995,10 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 	pipelineUID := dbPipeline.UID
 
 	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+	requester, err := s.GetNamespaceByUID(ctx, requesterUID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("fetching requester namespace: %w", err)
+	}
 
 	pipelineRun := s.logPipelineRunStart(ctx, logPipelineRunStartParams{
 		pipelineTriggerID: pipelineTriggerID,
@@ -2019,7 +2017,12 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 		return nil, nil, fmt.Errorf("check trigger permission error: %w", err)
 	}
 
-	err = s.preTriggerPipeline(ctx, ns, dbPipeline.Recipe, pipelineTriggerID, data)
+	expiryRule, err := s.retentionHandler.GetExpiryRuleByNamespace(ctx, requesterUID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("accessing expiry rule: %w", err)
+	}
+
+	err = s.preTriggerPipeline(ctx, requester, dbPipeline.Recipe, pipelineTriggerID, data, expiryRule)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -2031,6 +2034,7 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 		pipelineTriggerID: pipelineTriggerID,
 		requesterUID:      requesterUID,
 		userUID:           userUID,
+		expiryRule:        expiryRule,
 	}, returnTraces)
 	if err != nil {
 		return nil, nil, err
@@ -2048,6 +2052,10 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 	}
 
 	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+	requester, err := s.GetNamespaceByUID(ctx, requesterUID)
+	if err != nil {
+		return nil, fmt.Errorf("fetching requester namespace: %w", err)
+	}
 
 	pipelineRun := s.logPipelineRunStart(ctx, logPipelineRunStartParams{
 		pipelineTriggerID: pipelineTriggerID,
@@ -2066,7 +2074,12 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 		return nil, err
 	}
 
-	err = s.preTriggerPipeline(ctx, ns, dbPipeline.Recipe, pipelineTriggerID, data)
+	expiryRule, err := s.retentionHandler.GetExpiryRuleByNamespace(ctx, requesterUID)
+	if err != nil {
+		return nil, fmt.Errorf("accessing expiry rule: %w", err)
+	}
+
+	err = s.preTriggerPipeline(ctx, requester, dbPipeline.Recipe, pipelineTriggerID, data, expiryRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2077,6 +2090,7 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 		pipelineTriggerID: pipelineTriggerID,
 		requesterUID:      requesterUID,
 		userUID:           userUID,
+		expiryRule:        expiryRule,
 	})
 	if err != nil {
 		return nil, err
@@ -2094,6 +2108,10 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, errdomain.ErrNotFound
 	}
 	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+	requester, err := s.GetNamespaceByUID(ctx, requesterUID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("fetching requester namespace: %w", err)
+	}
 
 	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, false)
 	if err != nil {
@@ -2117,7 +2135,12 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, err
 	}
 
-	err = s.preTriggerPipeline(ctx, ns, dbPipelineRelease.Recipe, pipelineTriggerID, data)
+	expiryRule, err := s.retentionHandler.GetExpiryRuleByNamespace(ctx, requesterUID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("accessing expiry rule: %w", err)
+	}
+
+	err = s.preTriggerPipeline(ctx, requester, dbPipelineRelease.Recipe, pipelineTriggerID, data, expiryRule)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -2131,6 +2154,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		pipelineTriggerID:  pipelineTriggerID,
 		requesterUID:       requesterUID,
 		userUID:            userUID,
+		expiryRule:         expiryRule,
 	}, returnTraces)
 	if err != nil {
 		return nil, nil, err
@@ -2148,6 +2172,10 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 	}
 
 	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+	requester, err := s.GetNamespaceByUID(ctx, requesterUID)
+	if err != nil {
+		return nil, fmt.Errorf("fetching requester namespace: %w", err)
+	}
 
 	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, false)
 	if err != nil {
@@ -2171,7 +2199,12 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		return nil, err
 	}
 
-	err = s.preTriggerPipeline(ctx, ns, dbPipelineRelease.Recipe, pipelineTriggerID, data)
+	expiryRule, err := s.retentionHandler.GetExpiryRuleByNamespace(ctx, requesterUID)
+	if err != nil {
+		return nil, fmt.Errorf("accessing expiry rule: %w", err)
+	}
+
+	err = s.preTriggerPipeline(ctx, requester, dbPipelineRelease.Recipe, pipelineTriggerID, data, expiryRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2184,6 +2217,7 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		pipelineTriggerID:  pipelineTriggerID,
 		requesterUID:       requesterUID,
 		userUID:            userUID,
+		expiryRule:         expiryRule,
 	})
 	if err != nil {
 		return nil, err

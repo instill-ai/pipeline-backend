@@ -59,14 +59,12 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 
 	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
 
-	objectName := fmt.Sprintf("%s/%s", requesterID, value.Filename())
+	objectName := fmt.Sprintf("%s/%s", param.SystemVariables.PipelineRequesterUID.String(), value.Filename())
 
-	// TODO: We will need to add the expiry days for the blob data.
-	// This will be addressed in ins-6857
 	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
 		NamespaceId:      requesterID,
 		ObjectName:       objectName,
-		ObjectExpireDays: 0,
+		ObjectExpireDays: int32(param.SystemVariables.ExpiryRule.ExpirationDays),
 	})
 
 	if err != nil {

@@ -162,6 +162,11 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 				return DispatchPipelineWebhookEventResult{}, err
 			}
 
+			expiryRule, err := s.retentionHandler.GetExpiryRuleByNamespace(ctx, loadPipelineResult.ns.NsUID)
+			if err != nil {
+				return DispatchPipelineWebhookEventResult{}, fmt.Errorf("accessing expiry rule: %w", err)
+			}
+
 			if runOn.ReleaseUID == uuid.Nil {
 				pipelineRun := s.logPipelineRunStart(ctx, logPipelineRunStartParams{
 					pipelineTriggerID: pipelineTriggerID.String(),
@@ -182,6 +187,7 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 					userUID:           loadPipelineResult.ns.NsUID,
 					requesterUID:      loadPipelineResult.ns.NsUID,
 					pipelineTriggerID: pipelineTriggerID.String(),
+					expiryRule:        expiryRule,
 				})
 				if err != nil {
 					return DispatchPipelineWebhookEventResult{}, err
@@ -208,6 +214,7 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 					userUID:            loadPipelineResult.ns.NsUID,
 					requesterUID:       loadPipelineResult.ns.NsUID,
 					pipelineTriggerID:  pipelineTriggerID.String(),
+					expiryRule:         expiryRule,
 				})
 			}
 		}
