@@ -3,7 +3,8 @@
     "TASK_SEGMENT",
     "TASK_SUBSAMPLE",
     "TASK_EXTRACT_AUDIO",
-    "TASK_EXTRACT_FRAMES"
+    "TASK_EXTRACT_FRAMES",
+    "TASK_EMBED_AUDIO"
   ],
   "documentationUrl": "https://www.instill.tech/docs/component/operator/video",
   "icon": "assets/video.svg",

@@ -16,6 +16,7 @@ const (
 	taskSubsample     = "TASK_SUBSAMPLE"
 	taskExtractAudio  = "TASK_EXTRACT_AUDIO"
 	taskExtractFrames = "TASK_EXTRACT_FRAMES"
+	taskEmbedAudio    = "TASK_EMBED_AUDIO"
 )
 
 var (
@@ -61,6 +62,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 		e.execute = extractAudio
 	case taskExtractFrames:
 		e.execute = extractFrames
+	case taskEmbedAudio:
+		e.execute = embedAudio
 	default:
 		return nil, fmt.Errorf("%s task is not supported", x.Task)
 	}

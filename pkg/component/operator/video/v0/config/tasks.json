@@ -247,6 +247,54 @@
       "type": "object"
     }
   },
+  "TASK_EMBED_AUDIO": {
+    "instillShortDescription": "Embed an audio to the existing video",
+    "input": {
+      "description": "Input.",
+      "instillEditOnNodeFields": [
+        "video"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "video": {
+          "description": "[DUMMY] Video input",
+          "instillAcceptFormats": [
+            "video/*",
+            "application/octet-stream"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Video",
+          "type": "string"
+        }
+      },
+      "required": [
+        "video"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output.",
+      "instillUIOrder": 1,
+      "properties": {
+        "audio": {
+          "description": "[DUMMY] Audio output",
+          "instillFormat": "audio/*",
+          "instillUIOrder": 0,
+          "title": "Audio",
+          "type": "string"
+        }
+      },
+      "required": [
+        "audio"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
   "TASK_EXTRACT_FRAMES": {
     "instillShortDescription": "Extract image frames from a video at regular intervals or specified timestamps. This task takes a video input and either an interval value or a list of timestamps. It then produces an array of image frames corresponding to these specifications, allowing for precise capture of key moments or creation of a sequence of still images from the video content.",
     "input": {
