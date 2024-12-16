@@ -252,17 +252,31 @@
     "input": {
       "description": "Input.",
       "instillEditOnNodeFields": [
-        "video"
+        "video",
+        "audio"
       ],
       "instillUIOrder": 0,
       "properties": {
+        "audio": {
+          "description": "Audio data to embed to video",
+          "instillAcceptFormats": [
+            "audio/*",
+            "application/octet-stream"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Audio",
+          "type": "string"
+        },
         "video": {
-          "description": "[DUMMY] Video input",
+          "description": "Video input to be embedded with provided audio",
           "instillAcceptFormats": [
             "video/*",
             "application/octet-stream"
           ],
-          "instillUIOrder": 0,
+          "instillUIOrder": 1,
           "instillUpstreamTypes": [
             "reference"
           ],
@@ -271,25 +285,26 @@
         }
       },
       "required": [
-        "video"
+        "video",
+        "audio"
       ],
       "title": "Input",
       "type": "object"
     },
     "output": {
-      "description": "Output.",
-      "instillUIOrder": 1,
+      "description": "Output for embedding audio task",
+      "instillUIOrder": 0,
       "properties": {
-        "audio": {
-          "description": "[DUMMY] Audio output",
-          "instillFormat": "audio/*",
+        "video": {
+          "description": "Final video embedded with audio",
+          "instillFormat": "video/*",
           "instillUIOrder": 0,
-          "title": "Audio",
+          "title": "Video",
           "type": "string"
         }
       },
       "required": [
-        "audio"
+        "video"
       ],
       "title": "Output",
       "type": "object"

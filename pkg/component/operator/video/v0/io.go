@@ -48,3 +48,12 @@ type extractFramesInput struct {
 type extractFramesOutput struct {
 	Frames []format.Image `instill:"frames"`
 }
+
+type embedAudioInput struct {
+	Video format.Video `instill:"video"`
+	Audio format.Audio `instill:"audio"`
+}
+
+type embedAudioOutput struct {
+	Video format.Video `instill:"video"`
+}

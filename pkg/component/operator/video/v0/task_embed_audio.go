@@ -8,25 +8,25 @@ import (
 
 	"github.com/google/uuid"
 
-	ffmpeg "github.com/u2takey/ffmpeg-go"
+	ffmpeg "github.com/warmans/ffmpeg-go"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 )
 
 func embedAudio(ctx context.Context, job *base.Job) error {
-	var inputStruct extractAudioInput
+	var inputStruct embedAudioInput
 	if err := job.Input.ReadData(ctx, &inputStruct); err != nil {
 		return fmt.Errorf("reading input data: %w", err)
 	}
 
-	// Create temporary input file
-	tempInputFile, err := os.CreateTemp("", "temp-input-*.mp4")
+	// Create temporary input video file
+	tempInputVideoFile, err := os.CreateTemp("", "temp-input-video-*.mp4")
 	if err != nil {
-		return fmt.Errorf("creating temp input file: %w", err)
+		return fmt.Errorf("creating temp input video file: %w", err)
 	}
 	defer func() {
-		_ = os.Remove(tempInputFile.Name())
+		_ = os.Remove(tempInputVideoFile.Name())
 	}()
 
 	videoBytes, err := inputStruct.Video.Binary()
@@ -34,32 +34,50 @@ func embedAudio(ctx context.Context, job *base.Job) error {
 		return fmt.Errorf("getting video bytes: %w", err)
 	}
 
-	if err := os.WriteFile(tempInputFile.Name(), videoBytes.ByteArray(), 0600); err != nil {
-		return fmt.Errorf("writing to temp input file: %w", err)
+	if err := os.WriteFile(tempInputVideoFile.Name(), videoBytes.ByteArray(), 0600); err != nil {
+		return fmt.Errorf("writing to temp input video file: %w", err)
 	}
 
-	// Extract audio
-	audioFilePath, err := embedAudioFromVideo(tempInputFile.Name())
+	// Create temporary input audio file
+	tempInputAudioFile, err := os.CreateTemp("", "temp-input-audio-*.mp3")
+	if err != nil {
+		return fmt.Errorf("creating temp input audio file: %w", err)
+	}
+	defer func() {
+		_ = os.Remove(tempInputAudioFile.Name())
+	}()
+
+	audioBytes, err := inputStruct.Audio.Binary()
+	if err != nil {
+		return fmt.Errorf("getting audio bytes: %w", err)
+	}
+
+	if err := os.WriteFile(tempInputAudioFile.Name(), audioBytes.ByteArray(), 0600); err != nil {
+		return fmt.Errorf("writing to temp input audio file: %w", err)
+	}
+
+	// Embed audio to video and write to a file
+	outputVideoFilePath, err := embedAudioToVideo(tempInputVideoFile.Name(), tempInputAudioFile.Name())
 	if err != nil {
 		return err
 	}
 	defer func() {
-		_ = os.Remove(audioFilePath)
+		_ = os.Remove(outputVideoFilePath)
 	}()
 
-	// Read the audio file
-	audioBytes, err := os.ReadFile(audioFilePath)
+	// Read the output video file and export to standard output
+	outputVideoBytes, err := os.ReadFile(outputVideoFilePath)
 	if err != nil {
-		return fmt.Errorf("reading audio file: %w", err)
+		return fmt.Errorf("reading output video file: %w", err)
 	}
 
-	audioData, err := data.NewAudioFromBytes(audioBytes, "audio/ogg", fmt.Sprintf("audio-%s.ogg", uuid.New().String()))
+	outputVideoData, err := data.NewVideoFromBytes(outputVideoBytes, "video/mp4", fmt.Sprintf("video-%s.mp4", uuid.New().String()))
 	if err != nil {
-		return fmt.Errorf("creating audio data: %w", err)
+		return fmt.Errorf("creating output video data: %w", err)
 	}
 
-	outputData := extractAudioOutput{
-		Audio: audioData,
+	outputData := embedAudioOutput{
+		Video: outputVideoData,
 	}
 
 	if err := job.Output.WriteData(ctx, outputData); err != nil {
@@ -69,19 +87,21 @@ func embedAudio(ctx context.Context, job *base.Job) error {
 	return nil
 }
 
-func embedAudioFromVideo(inputFile string) (string, error) {
-	outputFilePath := filepath.Join(os.TempDir(), fmt.Sprintf("audio-%s.ogg", uuid.New().String()))
+func embedAudioToVideo(inputVideoFile string, inputAudioFile string) (string, error) {
+	outputFilePath := filepath.Join(os.TempDir(), fmt.Sprintf("video-%s.mp4", uuid.New().String()))
 
-	err := ffmpeg.Input(inputFile).
-		Output(outputFilePath, ffmpeg.KwArgs{
-			"vn":  "",
-			"q:a": "0",
-		}).
-		OverWriteOutput().
-		Run()
+	input := []*ffmpeg.Stream{ffmpeg.Input(inputVideoFile), ffmpeg.Input(inputAudioFile)}
+
+	// https://www.mux.com/articles/merge-audio-and-video-files-with-ffmpeg
+	err := ffmpeg.Output(input, outputFilePath, ffmpeg.KwArgs{
+		"c:v":   "copy",
+		"c:a":   "aac",
+		"map_0": "0:v:0",
+		"map_1": "1:a:0",
+	}).OverWriteOutput().Run()
 
 	if err != nil {
-		return "", fmt.Errorf("extracting audio from video: %w", err)
+		return "", fmt.Errorf("embedding audio to video: %w", err)
 	}
 
 	return outputFilePath, nil
