@@ -93,6 +93,7 @@ func embedAudioToVideo(inputVideoFile string, inputAudioFile string) (string, er
 	input := []*ffmpeg.Stream{ffmpeg.Input(inputVideoFile), ffmpeg.Input(inputAudioFile)}
 
 	// https://www.mux.com/articles/merge-audio-and-video-files-with-ffmpeg
+	// Workaround for multiple maps https://github.com/u2takey/ffmpeg-go/issues/1#issuecomment-2507904461
 	err := ffmpeg.Output(input, outputFilePath, ffmpeg.KwArgs{
 		"c:v":   "copy",
 		"c:a":   "aac",
