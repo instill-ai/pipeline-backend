@@ -1,7 +1,8 @@
 package migration
 
 import (
-	"context"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000013"
@@ -18,14 +19,24 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000033"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000034"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000036"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000039"
+	"github.com/instill-ai/pipeline-backend/pkg/service"
 
-	database "github.com/instill-ai/pipeline-backend/pkg/db"
+	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
 
 type migration interface {
 	Migrate() error
+}
+
+// CodeMigrator orchestrates the execution of the code associated with the
+// different database migrations and holds their dependencies.
+type CodeMigrator struct {
+	Logger *zap.Logger
+
+	DB                       *gorm.DB
+	RetentionHandler         service.MetadataRetentionHandler
+	MGMTPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
 }
 
 // Migrate executes custom code as part of a database migration. This code is
@@ -35,17 +46,12 @@ type migration interface {
 //
 // Note that the changes in the database schemas shouldn't be run here, only
 // code accompanying them.
-func Migrate(version uint) error {
+func (cm *CodeMigrator) Migrate(version uint) error {
 	var m migration
-	ctx := context.Background()
-	l, _ := logger.GetZapLogger(ctx)
-
-	db := database.GetConnection().WithContext(ctx)
-	defer database.Close(db)
 
 	bc := convert.Basic{
-		DB:     db,
-		Logger: l,
+		DB:     cm.DB,
+		Logger: cm.Logger,
 	}
 
 	switch version {
@@ -58,14 +64,9 @@ func Migrate(version uint) error {
 	case 19:
 		m = &convert000019.JQInputToKebabCaseConverter{Basic: bc}
 	case 20:
-		mgmtPrivateServiceClient, mgmtPrivateServiceClientConn := external.InitMgmtPrivateServiceClient(ctx)
-		if mgmtPrivateServiceClientConn != nil {
-			defer mgmtPrivateServiceClientConn.Close()
-		}
-
 		m = &convert000020.NamespaceIDMigrator{
 			Basic:      bc,
-			MgmtClient: mgmtPrivateServiceClient,
+			MgmtClient: cm.MGMTPrivateServiceClient,
 		}
 	case 21:
 		m = &convert000021.ConvertToTextTaskConverter{Basic: bc}
@@ -85,6 +86,11 @@ func Migrate(version uint) error {
 		m = &convert000034.RenameHTTPComponent{Basic: bc}
 	case 36:
 		m = &convert000036.RenameInstillFormat{Basic: bc}
+	case 39:
+		m = &convert000039.AddExpirationDateToRuns{
+			Basic:            bc,
+			RetentionHandler: cm.RetentionHandler,
+		}
 	default:
 		return nil
 	}
