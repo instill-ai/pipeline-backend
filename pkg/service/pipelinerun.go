@@ -416,7 +416,16 @@ func (s *service) uploadPipelineRunInputsToMinio(ctx context.Context, param uplo
 		URL:  url,
 	}}
 
-	err = s.repository.UpdatePipelineRun(ctx, param.pipelineTriggerID, &datamodel.PipelineRun{Inputs: inputs})
+	pipelineRunUpdate := &datamodel.PipelineRun{
+		Inputs: inputs,
+	}
+
+	if param.expiryRule.ExpirationDays > 0 {
+		blobExpiration := time.Now().UTC().AddDate(0, 0, param.expiryRule.ExpirationDays)
+		pipelineRunUpdate.BlobDataExpirationTime = null.TimeFrom(blobExpiration)
+	}
+
+	err = s.repository.UpdatePipelineRun(ctx, param.pipelineTriggerID, pipelineRunUpdate)
 	if err != nil {
 		logger.Error("save pipeline run input data", zap.Error(err))
 		return err

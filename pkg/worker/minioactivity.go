@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/structpb"
+	"gopkg.in/guregu/null.v4"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -187,7 +189,15 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 		URL:  url,
 	}}
 
-	err = w.repository.UpdateComponentRun(ctx, pipelineTriggerID, param.ID, &datamodel.ComponentRun{Inputs: inputs})
+	componentRunUpdate := &datamodel.ComponentRun{
+		Inputs: inputs,
+	}
+
+	if param.SystemVariables.ExpiryRule.ExpirationDays > 0 {
+		blobExpiration := time.Now().UTC().AddDate(0, 0, param.SystemVariables.ExpiryRule.ExpirationDays)
+		componentRunUpdate.BlobDataExpirationTime = null.TimeFrom(blobExpiration)
+	}
+	err = w.repository.UpdateComponentRun(ctx, pipelineTriggerID, param.ID, componentRunUpdate)
 	if err != nil {
 		log.Error("failed to save pipeline run input data", zap.Error(err))
 		return err
