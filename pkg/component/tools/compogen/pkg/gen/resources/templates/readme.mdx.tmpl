@@ -41,10 +41,10 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 {{- range . }}
-| {{ anchorSetup . }}{{ if .Required }} (required){{- end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+| {{ anchorSetup . }}{{ if .Required }} (required){{- end }} | `{{ .ID }}` | {{ .Format }} | {{ .Description }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
 {{- end }}
 {{- end }}
 
@@ -66,10 +66,10 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 {{- range $propKey, $prop := $option.Properties }}
-| {{ anchorSetup $prop }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ if $prop.Const }} Must be `"{{ $prop.Const }}"` {{ else }} {{ $prop.Description }}  {{- end }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+| {{ anchorSetup $prop }} | `{{ $propKey }}` | {{ $prop.Format }} | {{ if $prop.Const }} Must be `"{{ $prop.Const }}"` {{ else }} {{ $prop.Description }}  {{- end }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
 {{- end }}
 </div>
 {{- end }}
@@ -88,11 +88,11 @@ ${connection.<my-connection-id>}`.
 {{ if $task.Input }}
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `{{ $task.ID }}` |
 {{- range $task.Input }}
-| {{ anchorTaskObject . $task }}{{ if .Required }} (required){{ end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} {{- if .Enum }} {{ enumValues .Enum }} {{ end }} |
+| {{ anchorTaskObject . $task }}{{ if .Required }} (required){{ end }} | `{{ .ID }}` | {{ .Format }} | {{ .Description }} {{- if .Enum }} {{ enumValues .Enum }} {{ end }} |
 {{- end }}
 </div>
 {{- end }}
@@ -110,10 +110,10 @@ ${connection.<my-connection-id>}`.
 {{ end }}
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 {{- range $propKey, $prop := $schema.Properties }}
-| {{ anchorTaskObject $prop $task }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ $prop.Description }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+| {{ anchorTaskObject $prop $task }} | `{{ $propKey }}` | {{ $prop.Format }} | {{ $prop.Description }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
 {{- end }}
 </div>
 {{- end }}
@@ -139,10 +139,10 @@ ${connection.<my-connection-id>}`.
 {{ end }}
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 {{- range $propKey, $prop := $option.Properties }}
-| {{ $prop.Title }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ if $prop.Const }} Must be `"{{ $prop.Const }}"` {{ else }} {{ $prop.Description }} {{- end }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+| {{ $prop.Title }} | `{{ $propKey }}` | {{ $prop.Format }} | {{ if $prop.Const }} Must be `"{{ $prop.Const }}"` {{ else }} {{ $prop.Description }} {{- end }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
 {{- end }}
 </div>
 {{- end }}
@@ -155,10 +155,10 @@ ${connection.<my-connection-id>}`.
 {{ if $task.Output -}}
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 {{- range $task.Output }}
-| {{ anchorTaskObject . $task }}{{ if not .Required }} (optional){{- end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} |
+| {{ anchorTaskObject . $task }}{{ if not .Required }} (optional){{- end }} | `{{ .ID }}` | {{ .Format }} | {{ .Description }} |
 {{- end }}
 </div>
 {{- end }}
@@ -173,10 +173,10 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 {{- range $propKey, $prop := $schema.Properties }}
-| {{ anchorTaskObject $prop $task }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ $prop.Description }} |
+| {{ anchorTaskObject $prop $task }} | `{{ $propKey }}` | {{ $prop.Format }} | {{ $prop.Description }} |
 {{- end }}
 </div>
 {{- end }}

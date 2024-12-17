@@ -16,7 +16,7 @@
                 "string"
               ],
               "instillShortDescription": "config whether the component will be executed or skipped",
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "instillUpstreamTypes": [
                 "value",
                 "template"
@@ -28,7 +28,7 @@
               "instillEditOnNodeFields": [
                 "object"
               ],
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "properties": {
                 "object": {
                   "anyOf": [
@@ -45,7 +45,7 @@
                     "structured/*"
                   ],
                   "instillShortDescription": "Json object to be marshaled",
-                  "instillUIOrder": 0,
+                  "uiOrder": 0,
                   "instillUpstreamTypes": [
                     "reference"
                   ],
@@ -77,7 +77,7 @@
           "instillEditOnNodeFields": [
             "object"
           ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "properties": {
             "object": {
               "description": "Json object to be marshaled",
@@ -87,7 +87,7 @@
                 "structured/*"
               ],
               "instillEditOnNodeFields": [],
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "instillUpstreamTypes": [
                 "reference"
               ],
@@ -107,13 +107,13 @@
           "instillEditOnNodeFields": [
             "string"
           ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "properties": {
             "string": {
               "description": "Data",
               "instillFormat": "string",
               "instillShortDescription": "Data",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Data",
               "type": "string"
             }

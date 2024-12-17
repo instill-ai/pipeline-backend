@@ -4,37 +4,28 @@
   "properties": {
     "api-key": {
       "description": "Fill in your Pinecone AI API key. You can create an api key in Pinecone Console.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "API Key",
-      "type": "string"
+      "format": "string"
     },
     "url": {
       "description": "Fill in your Pinecone index URL. It is in the form.",
-      "instillUpstreamTypes": [
-        "value"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": false,
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "Pinecone Index URL",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
     "api-key"
   ],
-  "instillEditOnNodeFields": [
-    "api-key"
-  ],
   "title": "Pinecone Connection",
-  "type": "object"
+  "format": "object"
 }

@@ -4,23 +4,17 @@
   "properties": {
     "api-key": {
       "description": "Fill in your API key from the vendor's platform.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
       "instillCredential": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "API Key",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [],
-  "instillEditOnNodeFields": [
-    "api-key"
-  ],
   "title": "Perplexity Connection",
-  "type": "object"
+  "format": "object"
 }

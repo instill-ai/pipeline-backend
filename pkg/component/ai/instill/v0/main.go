@@ -17,6 +17,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
+	"github.com/instill-ai/pipeline-backend/pkg/component/resources/schemas"
 
 	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -45,7 +46,10 @@ type execution struct {
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionJSON, nil, tasksJSON, nil, nil)
+		additionalJSONBytes := map[string][]byte{
+			"schema.json": schemas.SchemaJSON,
+		}
+		err := comp.LoadDefinition(definitionJSON, nil, tasksJSON, nil, additionalJSONBytes)
 		if err != nil {
 			panic(err)
 		}

@@ -4,24 +4,18 @@
   "properties": {
     "uri": {
       "description": "Fill in your MongoDB URI.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "URI",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
     "uri"
   ],
-  "instillEditOnNodeFields": [
-    "uri"
-  ],
   "title": "MongoDB Connection",
-  "type": "object"
+  "format": "object"
 }

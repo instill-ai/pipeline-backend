@@ -38,7 +38,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | JSON Key File Contents (required) | `json-key` | string | Contents of the JSON key file with access to the bucket.  |
 
@@ -56,7 +56,7 @@ Upload data to Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPLOAD` |
 | Bucket Name (required) | `bucket-name` | string | Name of the bucket to be used for object storage. |
@@ -71,7 +71,7 @@ Upload data to Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Authenticated URL (optional) | `authenticated-url` | string | Only users granted permission can access the object with this link. |
 | Gsutil URI (optional) | `gsutil-uri` | string | File path to this resource in Cloud Storage. |
@@ -87,7 +87,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_OBJECTS` |
 | Bucket Name (required) | `bucket-name` | string | Name of the bucket to be used for object storage. |
@@ -108,7 +108,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Text Objects](#read-objects-text-objects) (optional) | `text-objects` | array[object] | The text objects in the bucket. |
 | [Image Objects](#read-objects-image-objects) (optional) | `image-objects` | array[object] | The image objects in the bucket. |
@@ -124,7 +124,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
 | Data | `data` | string | The data of the object. |
@@ -134,7 +134,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Content Disposition | `content-disposition` | string | The content disposition of the object. |
 | Content Encoding | `content-encoding` | string | The content encoding of the object. |
@@ -152,7 +152,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
 | Data | `data` | string | The data of the object. |
@@ -162,7 +162,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Content Disposition | `content-disposition` | string | The content disposition of the object. |
 | Content Encoding | `content-encoding` | string | The content encoding of the object. |
@@ -180,7 +180,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
 | Data | `data` | string | The data of the object. |
@@ -190,7 +190,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Content Disposition | `content-disposition` | string | The content disposition of the object. |
 | Content Encoding | `content-encoding` | string | The content encoding of the object. |
@@ -208,7 +208,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
 | Data | `data` | string | The data of the object. |
@@ -218,7 +218,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Content Disposition | `content-disposition` | string | The content disposition of the object. |
 | Content Encoding | `content-encoding` | string | The content encoding of the object. |
@@ -236,7 +236,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
 | Data | `data` | string | The data of the object. |
@@ -246,7 +246,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Content Disposition | `content-disposition` | string | The content disposition of the object. |
 | Content Encoding | `content-encoding` | string | The content encoding of the object. |
@@ -268,7 +268,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_BUCKET` |
 | Bucket Name (required) | `bucket-name` | string | Name of the bucket to be used for object storage. |
@@ -283,7 +283,7 @@ Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Result (optional) | `result` | string | The result of the operation. |
 | Bucket Name (optional) | `name` | string | The name of the bucket. |

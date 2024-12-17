@@ -4,17 +4,17 @@
   "properties": {
     "authentication": {
       "description": "Authentication method to use for the REST API.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "oneOf": [
         {
           "properties": {
             "auth-type": {
               "const": "NO_AUTH",
               "description": "No Authentication.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "order": 0,
               "title": "Auth Type",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
@@ -27,37 +27,31 @@
             "auth-type": {
               "const": "BASIC_AUTH",
               "description": "Basic auth.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "order": 0,
               "title": "Auth Type",
-              "type": "string"
+              "format": "string"
             },
             "password": {
               "description": "Password for Basic auth.",
-              "instillUpstreamTypes": [
-                "reference"
-              ],
-              "instillAcceptFormats": [
+              "acceptFormats": [
                 "string"
               ],
               "instillSecret": true,
-              "instillUIOrder": 2,
+              "uiOrder": 2,
               "order": 2,
               "title": "Password",
-              "type": "string"
+              "format": "string"
             },
             "username": {
               "description": "Username for Basic Auth.",
-              "instillUpstreamTypes": [
-                "value"
-              ],
-              "instillAcceptFormats": [
+              "acceptFormats": [
                 "string"
               ],
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "order": 1,
               "title": "Username",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
@@ -76,52 +70,43 @@
                 "header",
                 "query"
               ],
-              "instillUpstreamTypes": [
-                "value"
-              ],
-              "instillAcceptFormats": [
+              "acceptFormats": [
                 "string"
               ],
-              "instillUIOrder": 3,
+              "uiOrder": 3,
               "order": 3,
               "title": "Auth Location",
-              "type": "string"
+              "format": "string"
             },
             "auth-type": {
               "const": "API_KEY",
               "description": "API key authentication.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "order": 0,
-              "type": "string",
-              "title": "Auth Type"
+              "title": "Auth Type",
+              "format": "string"
             },
             "key": {
               "default": "X-API-Key",
               "description": "Key name for API key authentication.",
-              "instillUpstreamTypes": [
-                "value"
-              ],
-              "instillAcceptFormats": [
+              "acceptFormats": [
                 "string"
               ],
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "order": 1,
               "title": "Key Name",
-              "type": "string"
+              "format": "string"
             },
             "value": {
               "description": "Key value for API key authentication.",
-              "instillUpstreamTypes": [
-                "reference"
-              ],
-              "instillAcceptFormats": [
+              "acceptFormats": [
                 "string"
               ],
               "instillSecret": true,
-              "instillUIOrder": 2,
+              "uiOrder": 2,
               "order": 2,
               "title": "Key Value",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
@@ -137,24 +122,21 @@
             "auth-type": {
               "const": "BEARER_TOKEN",
               "description": "Bearer token authentication.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "order": 0,
               "title": "Auth Type",
-              "type": "string"
+              "format": "string"
             },
             "token": {
               "description": "Bearer token.",
-              "instillUpstreamTypes": [
-                "reference"
-              ],
-              "instillAcceptFormats": [
+              "acceptFormats": [
                 "string"
               ],
               "instillSecret": true,
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "order": 1,
               "title": "Token",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
@@ -166,12 +148,12 @@
       ],
       "order": 1,
       "title": "Authentication",
-      "type": "object"
+      "format": "object"
     }
   },
   "required": [
     "authentication"
   ],
   "title": "REST API Connection",
-  "type": "object"
+  "format": "object"
 }

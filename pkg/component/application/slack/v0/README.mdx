@@ -37,7 +37,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Bot OAuth Token (required) | `bot-token` | string | Token associated to the application bot.  |
 | User OAuth Token | `user-token` | string | Token to act on behalf of a Slack user.  |
@@ -78,7 +78,7 @@ Get the latest message since specific date
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_MESSAGE` |
 | Channel Name (required) | `channel-name` | string | Channel name, as displayed on Slack. |
@@ -92,7 +92,7 @@ Get the latest message since specific date
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Conversations](#read-message-conversations) | `conversations` | array[object] | An array of conversations with thread messages. |
 </div>
@@ -104,7 +104,7 @@ Get the latest message since specific date
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Last Date | `last-date` | string | Date of the last message. |
 | Start Conversation Message | `message` | string | message to start a conversation. |
@@ -118,7 +118,7 @@ Get the latest message since specific date
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Replied Time | `datetime` | string | replied datetime. |
 | Replied Message | `message` | string | message to reply a conversation. |
@@ -134,7 +134,7 @@ send message to a specific channel
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_WRITE_MESSAGE` |
 | Channel Name (required) | `channel-name` | string | Channel name, as displayed on Slack. |
@@ -149,7 +149,7 @@ send message to a specific channel
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Result | `result` | string | Result of the message delivery. |
 </div>

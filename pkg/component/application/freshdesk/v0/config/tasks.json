@@ -206,619 +206,602 @@
       "ticket-id": {
         "description": "The ID of the ticket.",
         "title": "Ticket ID",
-        "type": "integer"
+        "format": "integer"
       },
       "subject": {
         "description": "Subject of the ticket.",
         "title": "Subject",
-        "type": "string"
+        "format": "string"
       },
       "description-text": {
         "description": "Content of the ticket.",
         "title": "Description Text",
-        "type": "string"
+        "format": "string"
       },
       "source": {
         "description": "Source of the ticket. Eg: Email.",
         "title": "Source",
-        "type": "string"
+        "format": "string"
       },
       "status": {
         "description": "Status of the ticket. Eg: Pending.",
         "title": "Status",
-        "type": "string"
+        "format": "string"
       },
       "priority": {
         "description": "Priority of the ticket. Eg: Medium.",
         "title": "Priority",
-        "type": "string"
+        "format": "string"
       },
       "ticket-type": {
         "description": "Used to categorize the ticket. To check the possible types a ticket can have, please go to Admin -> Ticket Fields.",
         "title": "Ticket Type",
-        "type": "string"
+        "format": "string"
       },
       "association-type": {
         "description": "Used to determine whether a ticket is a parent, child, tracker or related ticket.",
         "title": "Association Type",
-        "type": "string"
+        "format": "string"
       },
       "associated-ticket-list": {
         "description": "List of associated ticket IDs.",
         "title": "Associated Ticket List",
-        "type": "array"
+        "format": "array"
       },
       "tags": {
         "description": "Tags associated with the ticket.",
         "title": "Tags",
-        "type": "array"
+        "format": "array"
       },
       "cc-emails": {
         "description": "Email addresses added in the 'cc' field of the incoming ticket email.",
         "title": "CC Emails",
-        "type": "array"
+        "format": "array"
       },
       "bcc-emails": {
         "description": "Email addresses added in the 'bcc' field of the incoming ticket email.",
         "title": "BCC Emails",
-        "type": "array"
+        "format": "array"
       },
       "forward-emails": {
         "description": "Email addresses added while forwarding a ticket.",
         "title": "Forward Emails",
-        "type": "array"
+        "format": "array"
       },
       "reply-cc-emails": {
         "description": "Email addresses added while replying to a ticket.",
         "title": "Reply CC Emails",
-        "type": "array"
+        "format": "array"
       },
       "requester-id": {
         "description": "ID of the requester.",
         "title": "Requester ID",
-        "type": "integer"
+        "format": "integer"
       },
       "responder-id": {
         "description": "ID of the agent to whom the ticket has been assigned. List of agents can be found in Admin -> Agents.",
         "title": "Responder ID",
-        "type": "integer"
+        "format": "integer"
       },
       "company-id": {
         "description": "ID of the company to which this ticket belongs.",
         "title": "Company ID",
-        "type": "integer"
+        "format": "integer"
       },
       "group-id": {
         "description": "ID of the group to which the ticket has been assigned. List of groups can be found in Admin -> Groups.",
         "title": "Group ID",
-        "type": "integer"
+        "format": "integer"
       },
       "product-id": {
         "description": "ID of the product to which the ticket is associated. List of products can be found in Admin -> Multiple Products.",
         "title": "Product ID",
-        "type": "integer"
+        "format": "integer"
       },
       "support-email": {
         "description": "Support email address. You can find it in Admin -> Email (under channel).",
         "title": "Support Email",
-        "type": "string"
+        "format": "string"
       },
       "to-emails": {
         "description": "Email addresses to which the ticket was originally sent.",
         "title": "To Emails",
-        "type": "array"
+        "format": "array"
       },
       "spam": {
         "description": "Set to true if the ticket is marked as spam.",
         "title": "Spam",
-        "type": "boolean"
+        "format": "boolean"
       },
       "due-by": {
         "description": "Timestamp that denotes when the ticket is due to be resolved. In UTC format.",
         "title": "Due By",
-        "type": "string"
+        "format": "string"
       },
       "is-escalated": {
         "description": "Set to true if the ticket has been escalated.",
         "title": "Is Escalated",
-        "type": "boolean"
+        "format": "boolean"
       },
       "first-response-due-by": {
         "description": "Timestamp that denotes when the first response is due. In UTC format. You can adjust this by going to Admin -> SLA policy (under Workflows).",
         "title": "First Response Due By",
-        "type": "string"
+        "format": "string"
       },
       "first-response-escalated": {
         "description": "Set to true if the ticket has been escalated as the result of first response time being breached.",
         "title": "First Response Escalated",
-        "type": "boolean"
+        "format": "boolean"
       },
       "next-response-due-by": {
         "description": "Timestamp that denotes when the next response is due. In UTC format. You can adjust this by going to Admin -> SLA policy (under Workflows).",
         "title": "Next Response Due By",
-        "type": "string"
+        "format": "string"
       },
       "next-response-escalated": {
         "description": "Set to true if the ticket has been escalated as the result of next response time being breached.",
         "title": "Next Response Escalated",
-        "type": "boolean"
+        "format": "boolean"
       },
       "created-at": {
         "description": "Timestamp that denotes when the ticket/conversation was created. In UTC format.",
         "title": "Created At",
-        "type": "string"
+        "format": "string"
       },
       "updated-at": {
         "description": "Timestamp that denotes when the ticket was last updated. In UTC format.",
         "title": "Updated At",
-        "type": "string"
+        "format": "string"
       },
       "attachments": {
         "description": "Ticket attachments (cannot be more than 20MB).",
         "title": "Attachments",
-        "type": "array"
+        "format": "array"
       },
       "sentiment-score": {
         "description": "Freshdesk uses AI to assess the emotional tone and attitude expressed in customer interaction.",
         "title": "Sentiment Score",
-        "type": "integer"
+        "format": "integer"
       },
       "initial-sentiment-score": {
         "description": "The initial sentiment score of the ticket.",
         "title": "Initial Sentiment Score",
-        "type": "integer"
+        "format": "integer"
       },
       "custom-fields": {
         "description": "Custom fields that the ticket have. Custom fields can be created or modified in Admin -> Ticket Fields.",
         "title": "Custom Fields",
-        "type": "object"
+        "format": "object"
       },
       "conversation-id": {
         "description": "The ID of the note or reply that is associated with the ticket.",
         "title": "Conversation ID",
-        "type": "integer"
+        "format": "integer"
       }
     },
     "contact": {
       "contact-id": {
         "description": "ID of the contact.",
         "title": "Contact ID",
-        "type": "integer"
+        "format": "integer"
       },
       "name": {
         "description": "Name of the contact.",
         "title": "Name",
-        "type": "string"
+        "format": "string"
       },
       "email": {
         "description": "The primary email address of the contact.",
         "title": "Email",
-        "type": "string"
+        "format": "string"
       },
       "phone": {
         "description": "Telephone number of the contact.",
         "title": "Phone",
-        "type": "string"
+        "format": "string"
       },
       "mobile": {
         "description": "Mobile number of the contact.",
         "title": "Mobile",
-        "type": "string"
+        "format": "string"
       },
       "description": {
         "description": "Description of the contact.",
         "title": "Description",
-        "type": "string"
+        "format": "string"
       },
       "address": {
         "description": "Address of the contact.",
         "title": "Address",
-        "type": "string"
+        "format": "string"
       },
       "job-title": {
         "description": "Job title of the contact.",
         "title": "Job Title",
-        "type": "string"
+        "format": "string"
       },
       "tags": {
         "description": "Tags associated with the contact.",
         "title": "Tags",
-        "type": "array"
+        "format": "array"
       },
       "language": {
         "description": "Language of the contact.",
         "title": "Language",
-        "type": "string"
+        "format": "string"
       },
       "time-zone": {
         "description": "Time zone of the contact.",
         "title": "Time Zone",
-        "type": "string"
+        "format": "string"
       },
       "company-id": {
         "description": "ID of the primary company to which the contact belongs.",
         "title": "Company ID",
-        "type": "integer"
+        "format": "integer"
       },
       "unique-external-id": {
         "description": "Unique external ID of the contact which be assigned by the user(agent).",
         "title": "Unique External ID",
-        "type": "string"
+        "format": "string"
       },
       "twitter-id": {
         "description": "Twitter ID of the contact.",
         "title": "Twitter ID",
-        "type": "string"
+        "format": "string"
       },
       "view-all-tickets": {
         "description": "Set to true if the contact can see all the tickets that are associated with the primary company.",
         "title": "View All Tickets",
-        "type": "boolean"
+        "format": "boolean"
       },
       "deleted": {
         "description": "Set to true if the contact is deleted.",
         "title": "Deleted",
-        "type": "boolean"
+        "format": "boolean"
       },
       "active": {
         "description": "Set to true if the contact has been verified.",
         "title": "Active",
-        "type": "boolean"
+        "format": "boolean"
       },
       "other-emails": {
         "description": "List of other email addresses of the contact.",
         "title": "Other Emails",
-        "type": "array"
+        "format": "array"
       },
       "other-companies": {
         "description": "List of other companies to which the contact belongs.",
         "title": "Other Companies",
-        "type": "array"
+        "format": "array"
       },
       "other-phone-numbers": {
         "description": "List of other phone numbers of the contact.",
         "title": "Other Phone Numbers",
-        "type": "array"
+        "format": "array"
       },
       "created-at": {
         "description": "Timestamp that denotes when the contact was created. In UTC format.",
         "title": "Created At",
-        "type": "string"
+        "format": "string"
       },
       "updated-at": {
         "description": "Timestamp that denotes when the contact was last updated. In UTC format.",
         "title": "Updated At",
-        "type": "string"
+        "format": "string"
       },
       "custom-fields": {
         "description": "Custom fields that the contact have. Custom fields can be created or modified in Admin -> Customer Fields.",
         "title": "Custom Fields",
-        "type": "object"
+        "format": "object"
       }
     },
     "company": {
       "company-id": {
         "description": "ID of the company.",
         "title": "Company ID",
-        "type": "integer"
+        "format": "integer"
       },
       "name": {
         "description": "Name of the company.",
         "title": "Name",
-        "type": "string"
+        "format": "string"
       },
       "description": {
         "description": "Description of the company.",
         "title": "Description",
-        "type": "string"
+        "format": "string"
       },
       "note": {
         "description": "Note about the company.",
         "title": "Note",
-        "type": "string"
+        "format": "string"
       },
       "domains": {
         "description": "Domains of the company.",
         "title": "Domains",
-        "type": "array"
+        "format": "array"
       },
       "health-score": {
         "description": "The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: \"At risk\", \"Doing okay\", \"Happy\".",
         "title": "Health Score",
-        "type": "string"
+        "format": "string"
       },
       "account-tier": {
         "description": "Classification based on how much value the company brings to your business. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: \"Basic\", \"Premium\", \"Enterprise\".",
         "title": "Account Tier",
-        "type": "string"
+        "format": "string"
       },
       "renewal-date": {
         "description": "Date when your contract or relationship with the company is due for renewal.",
         "title": "Renewal Date",
-        "type": "string"
+        "format": "string"
       },
       "industry": {
         "description": "The industry in which the company operates. To look at all the possible values or create custom values, please go to Admin -> Customer Fields.",
         "title": "Industry",
-        "type": "string"
+        "format": "string"
       },
       "created-at": {
         "description": "Timestamp that denotes when the company was created. In UTC format.",
         "title": "Created At",
-        "type": "string"
+        "format": "string"
       },
       "updated-at": {
         "description": "Timestamp that denotes when the company was last updated. In UTC format.",
         "title": "Updated At",
-        "type": "string"
+        "format": "string"
       },
       "custom-fields": {
         "description": "Custom fields that the company have. Custom fields can be created or modified in Admin -> Customer Fields.",
         "title": "Custom Fields",
-        "type": "object"
+        "format": "object"
       }
     }
   },
   "TASK_GET_TICKET": {
-    "instillShortDescription": "Get ticket using ID",
+    "shortDescription": "Get ticket using ID",
     "input": {
       "description": "Ticket ID.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "ticket-id"
-      ],
+      "uiOrder": 0,
       "properties": {
         "ticket-id": {
           "$ref": "#/$defs/ticket/ticket-id",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "instillUIMultiline": false,
-          "instillUIOrder": 0
+          "uiOrder": 0
         }
       },
       "required": [
         "ticket-id"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Ticket information.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "subject": {
           "$ref": "#/$defs/ticket/subject",
-          "instillFormat": "string",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "string"
         },
         "description-text": {
           "$ref": "#/$defs/ticket/description-text",
-          "instillFormat": "string",
-          "instillUIOrder": 1
+          "uiOrder": 1,
+          "format": "string"
         },
         "source": {
           "$ref": "#/$defs/ticket/source",
-          "instillFormat": "string",
-          "instillUIOrder": 2
+          "uiOrder": 2,
+          "format": "string"
         },
         "status": {
           "$ref": "#/$defs/ticket/status",
-          "instillFormat": "string",
-          "instillUIOrder": 3
+          "uiOrder": 3,
+          "format": "string"
         },
         "priority": {
           "$ref": "#/$defs/ticket/priority",
-          "instillFormat": "string",
-          "instillUIOrder": 4
+          "uiOrder": 4,
+          "format": "string"
         },
         "ticket-type": {
           "$ref": "#/$defs/ticket/ticket-type",
-          "instillFormat": "string",
-          "instillUIOrder": 5
+          "uiOrder": 5,
+          "format": "string"
         },
         "association-type": {
           "$ref": "#/$defs/ticket/association-type",
-          "instillFormat": "string",
-          "instillUIOrder": 6
+          "uiOrder": 6,
+          "format": "string"
         },
         "associated-ticket-list": {
           "$ref": "#/$defs/ticket/associated-ticket-list",
-          "instillFormat": "array:integer",
           "items": {
             "title": "Associated Ticket",
-            "type": "integer",
             "description": "The ID of the ticket associated with the current ticket.",
-            "instillFormat": "integer"
+            "format": "integer"
           },
-          "instillUIOrder": 7
+          "uiOrder": 7,
+          "format": "array"
         },
         "tags": {
           "$ref": "#/$defs/ticket/tags",
-          "instillFormat": "array:string",
           "items": {
             "title": "Tag",
-            "type": "string",
             "description": "Tag associated with the ticket.",
-            "instillFormat": "string"
+            "format": "string"
           },
-          "instillUIOrder": 8
+          "uiOrder": 8,
+          "format": "array"
         },
         "cc-emails": {
           "$ref": "#/$defs/ticket/cc-emails",
-          "instillFormat": "array:string",
           "items": {
             "title": "CC Email",
-            "type": "string",
             "description": "One of the email address added in the 'cc' field of the incoming ticket email.",
-            "instillFormat": "string"
+            "format": "string"
           },
-          "instillUIOrder": 9
+          "uiOrder": 9,
+          "format": "array"
         },
         "forward-emails": {
           "$ref": "#/$defs/ticket/forward-emails",
-          "instillFormat": "array:string",
           "items": {
             "title": "Forward Email",
-            "type": "string",
             "description": "One of the email address added while forwarding a ticket.",
-            "instillFormat": "string"
+            "format": "string"
           },
-          "instillUIOrder": 10
+          "uiOrder": 10,
+          "format": "array"
         },
         "reply-cc-emails": {
           "$ref": "#/$defs/ticket/reply-cc-emails",
-          "instillFormat": "array:string",
           "items": {
             "title": "Reply CC Email",
-            "type": "string",
             "description": "One of the email address added while replying to a ticket.",
-            "instillFormat": "string"
+            "format": "string"
           },
-          "instillUIOrder": 11
+          "uiOrder": 11,
+          "format": "array"
         },
         "requester-id": {
           "$ref": "#/$defs/ticket/requester-id",
-          "instillFormat": "integer",
-          "instillUIOrder": 12
+          "uiOrder": 12,
+          "format": "integer"
         },
         "responder-id": {
           "$ref": "#/$defs/ticket/responder-id",
-          "instillFormat": "integer",
-          "instillUIOrder": 13
+          "uiOrder": 13,
+          "format": "integer"
         },
         "company-id": {
           "$ref": "#/$defs/ticket/company-id",
-          "instillFormat": "integer",
-          "instillUIOrder": 14
+          "uiOrder": 14,
+          "format": "integer"
         },
         "group-id": {
           "$ref": "#/$defs/ticket/group-id",
-          "instillFormat": "integer",
-          "instillUIOrder": 15
+          "uiOrder": 15,
+          "format": "integer"
         },
         "product-id": {
           "$ref": "#/$defs/ticket/product-id",
-          "instillFormat": "integer",
-          "instillUIOrder": 16
+          "uiOrder": 16,
+          "format": "integer"
         },
         "support-email": {
           "$ref": "#/$defs/ticket/support-email",
-          "instillFormat": "string",
-          "instillUIOrder": 17
+          "uiOrder": 17,
+          "format": "string"
         },
         "to-emails": {
           "$ref": "#/$defs/ticket/to-emails",
-          "instillFormat": "array:string",
           "items": {
             "title": "To Email",
-            "type": "string",
             "description": "One of the email address to which the ticket was originally sent.",
-            "instillFormat": "string"
+            "format": "string"
           },
-          "instillUIOrder": 18
+          "uiOrder": 18,
+          "format": "array"
         },
         "spam": {
           "$ref": "#/$defs/ticket/spam",
-          "instillFormat": "boolean",
-          "instillUIOrder": 19
+          "uiOrder": 19,
+          "format": "boolean"
         },
         "due-by": {
           "$ref": "#/$defs/ticket/due-by",
-          "instillFormat": "string",
-          "instillUIOrder": 20
+          "uiOrder": 20,
+          "format": "string"
         },
         "is-escalated": {
           "$ref": "#/$defs/ticket/is-escalated",
-          "instillFormat": "boolean",
-          "instillUIOrder": 21
+          "uiOrder": 21,
+          "format": "boolean"
         },
         "first-response-due-by": {
           "$ref": "#/$defs/ticket/first-response-due-by",
-          "instillFormat": "string",
-          "instillUIOrder": 22
+          "uiOrder": 22,
+          "format": "string"
         },
         "first-response-escalated": {
           "$ref": "#/$defs/ticket/first-response-escalated",
-          "instillFormat": "boolean",
-          "instillUIOrder": 23
+          "uiOrder": 23,
+          "format": "boolean"
         },
         "next-response-due-by": {
           "$ref": "#/$defs/ticket/next-response-due-by",
-          "instillFormat": "string",
-          "instillUIOrder": 24
+          "uiOrder": 24,
+          "format": "string"
         },
         "next-response-escalated": {
           "$ref": "#/$defs/ticket/next-response-escalated",
-          "instillFormat": "boolean",
-          "instillUIOrder": 25
+          "uiOrder": 25,
+          "format": "boolean"
         },
         "created-at": {
           "$ref": "#/$defs/ticket/created-at",
-          "instillFormat": "string",
-          "instillUIOrder": 26
+          "uiOrder": 26,
+          "format": "string"
         },
         "updated-at": {
           "$ref": "#/$defs/ticket/updated-at",
-          "instillFormat": "string",
-          "instillUIOrder": 27
+          "uiOrder": 27,
+          "format": "string"
         },
         "attachments": {
           "$ref": "#/$defs/ticket/attachments",
-          "instillFormat": "array",
           "items": {
             "title": "Attachment",
-            "type": "object",
             "properties": {
               "name": {
                 "description": "The name of the file.",
-                "instillFormat": "string",
-                "instillUIOrder": 0,
+                "uiOrder": 0,
                 "title": "Attachment Name",
-                "type": "string"
+                "format": "string"
               },
               "content-type": {
                 "description": "The type of the file.",
-                "instillFormat": "string",
-                "instillUIOrder": 1,
+                "uiOrder": 1,
                 "title": "Attachment Content Type",
-                "type": "string"
+                "format": "string"
               },
               "url": {
                 "description": "The URL to the attachment.",
-                "instillFormat": "string",
-                "instillUIOrder": 2,
+                "uiOrder": 2,
                 "title": "Attachment URL",
-                "type": "string"
+                "format": "string"
               }
             },
             "required": [
               "name",
               "content-type",
               "url"
-            ]
+            ],
+            "format": "object"
           },
-          "instillUIOrder": 28
+          "uiOrder": 28,
+          "format": "array"
         },
         "sentiment-score": {
           "$ref": "#/$defs/ticket/sentiment-score",
-          "instillFormat": "integer",
-          "instillUIOrder": 29
+          "uiOrder": 29,
+          "format": "integer"
         },
         "initial-sentiment-score": {
           "$ref": "#/$defs/ticket/initial-sentiment-score",
-          "instillFormat": "integer",
-          "instillUIOrder": 30
+          "uiOrder": 30,
+          "format": "integer"
         },
         "custom-fields": {
           "$ref": "#/$defs/ticket/custom-fields",
-          "instillFormat": "semi-structured/json",
           "required": [],
-          "instillUIOrder": 31
+          "uiOrder": 31,
+          "format": "json"
         }
       },
       "required": [
@@ -832,80 +815,48 @@
         "updated-at"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CREATE_TICKET": {
-    "instillShortDescription": "Create ticket",
+    "shortDescription": "Create ticket",
     "input": {
       "description": "Ticket Information.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "requester-id",
-        "email",
-        "subject",
-        "description",
-        "source",
-        "status",
-        "priority"
-      ],
+      "uiOrder": 0,
       "properties": {
         "requester-id": {
           "description": "ID of the requester. Must be an existing contact. If you fill in this field, you don't need to fill in the email field. Only one of the two fields is required.",
           "title": "Requester ID",
-          "type": "integer",
-          "instillUIOrder": 0,
-          "instillAcceptFormats": [
+          "uiOrder": 0,
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ]
+          "format": "integer"
         },
         "email": {
           "description": "Email address of the requester. If you fill in the Requester ID above, it will be ignored. Only one of the two fields is required. If no contact exists with this email address in Freshdesk, it will be added as a new contact.",
           "title": "Email",
-          "type": "string",
-          "instillUIOrder": 1,
-          "instillAcceptFormats": [
+          "uiOrder": 1,
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "string"
         },
         "subject": {
           "$ref": "#/$defs/ticket/subject",
-          "instillUIOrder": 2,
-          "instillAcceptFormats": [
+          "uiOrder": 2,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "description": {
           "description": "Content of the ticket. You can use HTML tags in the content.",
           "title": "Description",
-          "type": "string",
-          "instillUIOrder": 3,
-          "instillAcceptFormats": [
+          "uiOrder": 3,
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "string"
         },
         "source": {
           "$ref": "#/$defs/ticket/source",
@@ -921,14 +872,9 @@
             "Ecommerce"
           ],
           "example": "Portal",
-          "instillUIOrder": 4,
-          "instillAcceptFormats": [
+          "uiOrder": 4,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
           ]
         },
         "status": {
@@ -942,14 +888,9 @@
             "Waiting on Third Party"
           ],
           "example": "Open",
-          "instillUIOrder": 5,
-          "instillAcceptFormats": [
+          "uiOrder": 5,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
           ]
         },
         "priority": {
@@ -961,136 +902,86 @@
             "Urgent"
           ],
           "example": "Low",
-          "instillUIOrder": 6,
-          "instillAcceptFormats": [
+          "uiOrder": 6,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
           ]
         },
         "ticket-type": {
           "$ref": "#/$defs/ticket/ticket-type",
-          "instillUIOrder": 7,
-          "instillAcceptFormats": [
+          "uiOrder": 7,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "company-id": {
           "$ref": "#/$defs/ticket/company-id",
-          "instillUIOrder": 8,
-          "instillAcceptFormats": [
+          "uiOrder": 8,
+          "acceptFormats": [
             "integer"
-          ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
           ]
         },
         "product-id": {
           "$ref": "#/$defs/ticket/product-id",
-          "instillUIOrder": 9,
-          "instillAcceptFormats": [
+          "uiOrder": 9,
+          "acceptFormats": [
             "integer"
-          ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
           ]
         },
         "group-id": {
           "$ref": "#/$defs/ticket/group-id",
-          "instillUIOrder": 10,
-          "instillAcceptFormats": [
+          "uiOrder": 10,
+          "acceptFormats": [
             "integer"
-          ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
           ]
         },
         "responder-id": {
           "$ref": "#/$defs/ticket/responder-id",
-          "instillUIOrder": 11,
-          "instillAcceptFormats": [
+          "uiOrder": 11,
+          "acceptFormats": [
             "integer"
-          ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
           ]
         },
         "tags": {
           "$ref": "#/$defs/ticket/tags",
-          "instillUIOrder": 12,
-          "instillAcceptFormats": [
-            "array:string"
+          "uiOrder": 12,
+          "acceptFormats": [
+            "array"
           ],
           "items": {
-            "type": "string"
-          },
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+            "format": "string"
+          }
         },
         "cc-emails": {
           "$ref": "#/$defs/ticket/cc-emails",
-          "instillUIOrder": 13,
-          "instillAcceptFormats": [
-            "array:string"
+          "uiOrder": 13,
+          "acceptFormats": [
+            "array"
           ],
           "items": {
-            "type": "string"
-          },
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+            "format": "string"
+          }
         },
         "parent-id": {
           "description": "ID of the parent ticket. Need to be filled out if you want to create a child ticket.",
           "title": "Parent ID",
-          "type": "integer",
-          "instillUIOrder": 14,
-          "instillAcceptFormats": [
+          "uiOrder": 14,
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ]
+          "format": "integer"
         },
         "related-ticket-ids": {
           "description": "List of related ticket IDs. Need to be filled out if you want to create a tracker ticket.",
           "title": "Related Ticket IDs",
-          "type": "array",
-          "instillUIOrder": 15,
-          "instillAcceptFormats": [
-            "array:integer"
+          "uiOrder": 15,
+          "acceptFormats": [
+            "array"
           ],
           "items": {
-            "type": "integer"
+            "format": "integer"
           },
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ]
+          "format": "array"
         }
       },
       "required": [
@@ -1101,21 +992,21 @@
         "priority"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Ticket ID and create date.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "ticket-id": {
           "$ref": "#/$defs/ticket/ticket-id",
-          "instillFormat": "integer",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "integer"
         },
         "created-at": {
           "$ref": "#/$defs/ticket/created-at",
-          "instillFormat": "string",
-          "instillUIOrder": 1
+          "uiOrder": 1,
+          "format": "string"
         }
       },
       "required": [
@@ -1123,114 +1014,72 @@
         "created-at"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_REPLY_TO_TICKET": {
-    "instillShortDescription": "Reply to a ticket thread.",
+    "shortDescription": "Reply to a ticket thread.",
     "input": {
       "description": "Reply information.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "ticket-id",
-        "body",
-        "from-email",
-        "user-id",
-        "cc-emails",
-        "bcc-emails"
-      ],
+      "uiOrder": 0,
       "properties": {
         "ticket-id": {
           "$ref": "#/$defs/ticket/ticket-id",
-          "instillUIOrder": 0,
-          "instillAcceptFormats": [
+          "uiOrder": 0,
+          "acceptFormats": [
             "integer"
-          ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "body": {
           "description": "Content of the reply. Can be in HTML format.",
           "title": "Body",
-          "type": "string",
-          "instillUIOrder": 0,
-          "instillAcceptFormats": [
+          "uiOrder": 0,
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "string"
         },
         "from-email": {
           "description": "Email address that is replying to the ticket. You need to have this email address registered in Freshdesk by going to Admin -> Emails. If you leave this field empty, the global support email will be used.",
           "title": "From Email",
-          "type": "string",
-          "instillUIOrder": 1,
-          "instillAcceptFormats": [
+          "uiOrder": 1,
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "string"
         },
         "user-id": {
           "description": "ID of the agent/contact replying to the ticket. If you fill this field using a contact ID, there will be no email sent to the requester.",
           "title": "User ID",
-          "type": "integer",
-          "instillUIOrder": 2,
-          "instillAcceptFormats": [
+          "uiOrder": 2,
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "integer"
         },
         "cc-emails": {
           "description": "Email addresses added in the 'cc' field of the outgoing ticket email.",
           "title": "CC Emails",
-          "type": "array",
-          "instillUIOrder": 3,
-          "instillAcceptFormats": [
-            "array:string"
+          "uiOrder": 3,
+          "acceptFormats": [
+            "array"
           ],
           "items": {
-            "type": "string"
+            "format": "string"
           },
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "array"
         },
         "bcc-emails": {
           "description": "Email addresses added in the 'bcc' field of the outgoing ticket email.",
           "title": "BCC Emails",
-          "type": "array",
-          "instillUIOrder": 4,
-          "instillAcceptFormats": [
-            "array:string"
+          "uiOrder": 4,
+          "acceptFormats": [
+            "array"
           ],
           "items": {
-            "type": "string"
+            "format": "string"
           },
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "array"
         }
       },
       "required": [
@@ -1238,21 +1087,21 @@
         "body"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Conversation ID, Ticket ID and created date.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "conversation-id": {
           "$ref": "#/$defs/ticket/conversation-id",
-          "instillFormat": "integer",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "integer"
         },
         "created-at": {
           "$ref": "#/$defs/ticket/created-at",
-          "instillFormat": "string",
-          "instillUIOrder": 1
+          "uiOrder": 1,
+          "format": "string"
         }
       },
       "required": [
@@ -1260,112 +1109,69 @@
         "created-at"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CREATE_TICKET_NOTE": {
-    "instillShortDescription": "Create a private/public note on a ticket thread.",
+    "shortDescription": "Create a private/public note on a ticket thread.",
     "input": {
       "description": "Note information.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "ticket-id",
-        "body",
-        "notify-emails",
-        "user-id",
-        "private",
-        "incoming"
-      ],
+      "uiOrder": 0,
       "properties": {
         "ticket-id": {
           "$ref": "#/$defs/ticket/ticket-id",
-          "instillUIOrder": 0,
-          "instillAcceptFormats": [
+          "uiOrder": 0,
+          "acceptFormats": [
             "integer"
-          ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "body": {
           "description": "Content of the note. Can be in HTML format.",
           "title": "Body",
-          "type": "string",
-          "instillUIOrder": 1,
-          "instillAcceptFormats": [
+          "uiOrder": 1,
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "string"
         },
         "notify-emails": {
           "description": "Email addresses of agents/users who need to be notified about this note. The emails need to exist in Freshdesk agent. Agent list can be seen in Admin -> Agents.",
           "title": "Notify Emails",
-          "type": "array",
-          "instillUIOrder": 2,
-          "instillAcceptFormats": [
-            "array:string"
+          "uiOrder": 2,
+          "acceptFormats": [
+            "array"
           ],
           "items": {
-            "type": "string"
+            "format": "string"
           },
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "array"
         },
         "user-id": {
           "description": "ID of the agent/contact who is adding the note.",
           "title": "User ID",
-          "type": "integer",
-          "instillUIOrder": 3,
-          "instillAcceptFormats": [
+          "uiOrder": 3,
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "integer"
         },
         "private": {
           "description": "Set to true if the note is private.",
           "title": "Private",
-          "type": "boolean",
-          "instillUIOrder": 4,
-          "instillAcceptFormats": [
+          "uiOrder": 4,
+          "acceptFormats": [
             "boolean"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "boolean"
         },
         "incoming": {
           "description": "Set to true if a particular note should appear as being created from outside (i.e., not through web portal).",
           "title": "Incoming",
-          "type": "boolean",
-          "instillUIOrder": 5,
-          "instillAcceptFormats": [
+          "uiOrder": 5,
+          "acceptFormats": [
             "boolean"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "boolean"
         }
       },
       "required": [
@@ -1373,21 +1179,21 @@
         "body"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Conversation ID, Ticket ID and created date.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "conversation-id": {
           "$ref": "#/$defs/ticket/conversation-id",
-          "instillFormat": "integer",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "integer"
         },
         "created-at": {
           "$ref": "#/$defs/ticket/created-at",
-          "instillFormat": "string",
-          "instillUIOrder": 1
+          "uiOrder": 1,
+          "format": "string"
         }
       },
       "required": [
@@ -1395,159 +1201,135 @@
         "created-at"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_GET_ALL_CONVERSATIONS": {
-    "instillShortDescription": "Get all the conversations in a ticket. (Conversations are replies and notes that are added to a ticket)",
+    "shortDescription": "Get all the conversations in a ticket. (Conversations are replies and notes that are added to a ticket)",
     "input": {
       "description": "Ticket ID.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "ticket-id"
-      ],
+      "uiOrder": 0,
       "properties": {
         "ticket-id": {
           "description": "Ticket ID.",
           "title": "Ticket ID",
-          "type": "integer",
-          "instillUIOrder": 2,
-          "instillAcceptFormats": [
+          "uiOrder": 2,
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "integer"
         }
       },
       "required": [
         "ticket-id"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Conversations.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "conversations": {
           "description": "An array of conversations.",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Conversations",
-          "type": "array",
           "items": {
             "title": "Conversation",
-            "type": "object",
             "properties": {
               "body-text": {
                 "description": "Content of the conversation.",
                 "title": "Body Text",
-                "type": "string",
-                "instillUIOrder": 0,
-                "instillFormat": "string"
+                "uiOrder": 0,
+                "format": "string"
               },
               "conversation-id": {
                 "$ref": "#/$defs/ticket/conversation-id",
-                "instillUIOrder": 1,
-                "instillFormat": "integer"
+                "uiOrder": 1,
+                "format": "integer"
               },
               "support-email": {
                 "$ref": "#/$defs/ticket/support-email",
-                "instillUIOrder": 2,
-                "instillFormat": "string"
+                "uiOrder": 2,
+                "format": "string"
               },
               "to-emails": {
                 "description": "Email addresses of agents/users who need to be notified about this conversation.",
                 "title": "To Emails",
-                "type": "array",
-                "instillUIOrder": 3,
-                "instillFormat": "array:string",
+                "uiOrder": 3,
                 "items": {
                   "title": "To Email",
-                  "type": "string",
                   "description": "One of the email addresses of agents/users who need to be notified about this conversation.",
-                  "instillFormat": "string"
-                }
+                  "format": "string"
+                },
+                "format": "array"
               },
               "from-email": {
                 "description": "Email address that is replying to the ticket or adding the note.",
                 "title": "From Email",
-                "type": "string",
-                "instillUIOrder": 4,
-                "instillAcceptFormats": [
+                "uiOrder": 4,
+                "acceptFormats": [
                   "string"
                 ],
-                "instillUIMultiline": true,
-                "instillUpstreamTypes": [
-                  "value",
-                  "template",
-                  "reference"
-                ]
+                "format": "string"
               },
               "cc-emails": {
                 "$ref": "#/$defs/ticket/cc-emails",
-                "instillUIOrder": 5,
-                "instillFormat": "array:string",
+                "uiOrder": 5,
                 "items": {
                   "title": "CC Email",
-                  "type": "string",
                   "description": "One of the email address added in the 'cc' field of the incoming ticket email.",
-                  "instillFormat": "string"
-                }
+                  "format": "string"
+                },
+                "format": "array"
               },
               "bcc-emails": {
                 "$ref": "#/$defs/ticket/bcc-emails",
-                "instillUIOrder": 6,
-                "instillFormat": "array:string",
+                "uiOrder": 6,
                 "items": {
                   "title": "BCC Email",
-                  "type": "string",
                   "description": "One of the email address added in the 'bcc' field of the incoming ticket email.",
-                  "instillFormat": "string"
-                }
+                  "format": "string"
+                },
+                "format": "array"
               },
               "incoming": {
                 "description": "Set to true if a particular conversation should appear as being created from outside.",
                 "title": "Incoming",
-                "type": "boolean",
-                "instillUIOrder": 7,
-                "instillFormat": "boolean"
+                "uiOrder": 7,
+                "format": "boolean"
               },
               "private": {
                 "description": "Set to true if a note is private. Can be set only for notes.",
                 "title": "Incoming",
-                "type": "boolean",
-                "instillUIOrder": 8,
-                "instillFormat": "boolean"
+                "uiOrder": 8,
+                "format": "boolean"
               },
               "user-id": {
                 "description": "ID of the agent/contact replying to the ticket.",
                 "title": "Incoming",
-                "type": "integer",
-                "instillUIOrder": 9,
-                "instillFormat": "integer"
+                "uiOrder": 9,
+                "format": "integer"
               },
               "created-at": {
                 "$ref": "#/$defs/ticket/created-at",
-                "instillUIOrder": 10,
-                "instillFormat": "string"
+                "uiOrder": 10,
+                "format": "string"
               }
             },
             "required": [
               "body-text",
               "created-at"
-            ]
-          }
+            ],
+            "format": "object"
+          },
+          "format": "array"
         },
         "conversations-length": {
           "description": "Number of conversations.",
           "title": "Conversations Length",
-          "type": "integer",
-          "instillUIOrder": 1,
-          "instillFormat": "integer"
+          "uiOrder": 1,
+          "format": "integer"
         }
       },
       "required": [
@@ -1555,470 +1337,353 @@
         "conversations-length"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_GET_CONTACT": {
-    "instillShortDescription": "Get contact using ID",
+    "shortDescription": "Get contact using ID",
     "input": {
       "description": "Contact ID.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "contact-id"
-      ],
+      "uiOrder": 0,
       "properties": {
         "contact-id": {
           "$ref": "#/$defs/contact/contact-id",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "instillUIMultiline": false,
-          "instillUIOrder": 0
+          "uiOrder": 0
         }
       },
       "required": [
         "contact-id"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Contact information.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "name": {
           "$ref": "#/$defs/contact/name",
-          "instillFormat": "string",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "string"
         },
         "email": {
           "$ref": "#/$defs/contact/email",
-          "instillFormat": "string",
-          "instillUIOrder": 1
+          "uiOrder": 1,
+          "format": "string"
         },
         "phone": {
           "$ref": "#/$defs/contact/phone",
-          "instillFormat": "string",
-          "instillUIOrder": 2
+          "uiOrder": 2,
+          "format": "string"
         },
         "mobile": {
           "$ref": "#/$defs/contact/mobile",
-          "instillFormat": "string",
-          "instillUIOrder": 3
+          "uiOrder": 3,
+          "format": "string"
         },
         "description": {
           "$ref": "#/$defs/contact/description",
-          "instillFormat": "string",
-          "instillUIOrder": 4
+          "uiOrder": 4,
+          "format": "string"
         },
         "address": {
           "$ref": "#/$defs/contact/address",
-          "instillFormat": "string",
-          "instillUIOrder": 5
+          "uiOrder": 5,
+          "format": "string"
         },
         "job-title": {
           "$ref": "#/$defs/contact/job-title",
-          "instillFormat": "string",
-          "instillUIOrder": 6
+          "uiOrder": 6,
+          "format": "string"
         },
         "tags": {
           "$ref": "#/$defs/contact/tags",
-          "instillFormat": "array:string",
           "items": {
             "title": "Tag",
-            "type": "string",
             "description": "Tag associated with the contact.",
-            "instillFormat": "string"
+            "format": "string"
           },
-          "instillUIOrder": 7
+          "uiOrder": 7,
+          "format": "array"
         },
         "language": {
           "$ref": "#/$defs/contact/language",
-          "instillFormat": "string",
-          "instillUIOrder": 8
+          "uiOrder": 8,
+          "format": "string"
         },
         "time-zone": {
           "$ref": "#/$defs/contact/time-zone",
-          "instillFormat": "string",
-          "instillUIOrder": 9
+          "uiOrder": 9,
+          "format": "string"
         },
         "company-id": {
           "$ref": "#/$defs/contact/company-id",
-          "instillFormat": "integer",
-          "instillUIOrder": 10
+          "uiOrder": 10,
+          "format": "integer"
         },
         "unique-external-id": {
           "$ref": "#/$defs/contact/unique-external-id",
-          "instillFormat": "string",
-          "instillUIOrder": 11
+          "uiOrder": 11,
+          "format": "string"
         },
         "twitter-id": {
           "$ref": "#/$defs/contact/twitter-id",
-          "instillFormat": "string",
-          "instillUIOrder": 12
+          "uiOrder": 12,
+          "format": "string"
         },
         "view-all-tickets": {
           "$ref": "#/$defs/contact/view-all-tickets",
-          "instillFormat": "boolean",
-          "instillUIOrder": 13
+          "uiOrder": 13,
+          "format": "boolean"
         },
         "deleted": {
           "$ref": "#/$defs/contact/deleted",
-          "instillFormat": "boolean",
-          "instillUIOrder": 14
+          "uiOrder": 14,
+          "format": "boolean"
         },
         "active": {
           "$ref": "#/$defs/contact/active",
-          "instillFormat": "boolean",
-          "instillUIOrder": 15
+          "uiOrder": 15,
+          "format": "boolean"
         },
         "other-emails": {
           "$ref": "#/$defs/contact/other-emails",
-          "instillFormat": "array:string",
           "items": {
             "title": "Other Email",
-            "type": "string",
             "description": "The other email addresses of the contact.",
-            "instillFormat": "string"
+            "format": "string"
           },
-          "instillUIOrder": 16
+          "uiOrder": 16,
+          "format": "array"
         },
         "other-companies": {
           "$ref": "#/$defs/contact/other-companies",
-          "instillFormat": "array",
           "items": {
             "title": "Company",
-            "type": "object",
             "properties": {
               "company-id": {
                 "description": "ID of the company.",
-                "instillFormat": "integer",
-                "instillUIOrder": 0,
+                "uiOrder": 0,
                 "title": "Company ID",
-                "type": "integer"
+                "format": "integer"
               },
               "view-all-tickets": {
                 "description": "Set to true if the contact can see all the tickets that are associated with the company.",
-                "instillFormat": "boolean",
-                "instillUIOrder": 1,
+                "uiOrder": 1,
                 "title": "View All Tickets",
-                "type": "boolean"
+                "format": "boolean"
               }
             },
             "required": [
               "company-id",
               "view-all-tickets"
-            ]
+            ],
+            "format": "object"
           },
-          "instillUIOrder": 17
+          "uiOrder": 17,
+          "format": "array"
         },
         "other-phone-numbers": {
           "$ref": "#/$defs/contact/other-phone-numbers",
-          "instillFormat": "array:string",
           "items": {
             "title": "Other Phone Number",
-            "type": "string",
             "description": "The other phone number of the contact.",
-            "instillFormat": "string"
+            "format": "string"
           },
-          "instillUIOrder": 18
+          "uiOrder": 18,
+          "format": "array"
         },
         "created-at": {
           "$ref": "#/$defs/contact/created-at",
-          "instillFormat": "string",
-          "instillUIOrder": 19
+          "uiOrder": 19,
+          "format": "string"
         },
         "updated-at": {
           "$ref": "#/$defs/contact/updated-at",
-          "instillFormat": "string",
-          "instillUIOrder": 20
+          "uiOrder": 20,
+          "format": "string"
         },
         "custom-fields": {
           "$ref": "#/$defs/contact/custom-fields",
-          "instillFormat": "semi-structured/json",
           "required": [],
-          "instillUIOrder": 21
+          "uiOrder": 21,
+          "format": "json"
         }
       },
       "required": [
         "name"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CREATE_CONTACT": {
-    "instillShortDescription": "Create contact",
+    "shortDescription": "Create contact",
     "input": {
       "description": "Contact Information.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "name",
-        "email",
-        "phone",
-        "mobile",
-        "description",
-        "language",
-        "time-zone"
-      ],
+      "uiOrder": 0,
       "properties": {
         "name": {
           "$ref": "#/$defs/contact/name",
-          "instillUIOrder": 0,
-          "instillAcceptFormats": [
+          "uiOrder": 0,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "email": {
           "$ref": "#/$defs/contact/email",
-          "instillUIOrder": 1,
-          "instillAcceptFormats": [
+          "uiOrder": 1,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "phone": {
           "$ref": "#/$defs/contact/phone",
-          "instillUIOrder": 2,
-          "instillAcceptFormats": [
+          "uiOrder": 2,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "mobile": {
           "$ref": "#/$defs/contact/mobile",
-          "instillUIOrder": 3,
-          "instillAcceptFormats": [
+          "uiOrder": 3,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "description": {
           "$ref": "#/$defs/contact/description",
-          "instillUIOrder": 4,
-          "instillAcceptFormats": [
+          "uiOrder": 4,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "address": {
           "$ref": "#/$defs/contact/address",
-          "instillUIOrder": 5,
-          "instillAcceptFormats": [
+          "uiOrder": 5,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "job-title": {
           "$ref": "#/$defs/contact/job-title",
-          "instillUIOrder": 6,
-          "instillAcceptFormats": [
+          "uiOrder": 6,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "tags": {
           "$ref": "#/$defs/contact/tags",
-          "instillUIOrder": 7,
-          "instillAcceptFormats": [
-            "array:string"
+          "uiOrder": 7,
+          "acceptFormats": [
+            "array"
           ],
           "items": {
-            "type": "string"
-          },
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+            "format": "string"
+          }
         },
         "language": {
           "description": "Language of the contact.",
           "title": "Language",
-          "type": "string",
           "$ref": "#/$defs/language",
-          "instillUIOrder": 8,
-          "instillAcceptFormats": [
+          "uiOrder": 8,
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "string"
         },
         "time-zone": {
           "description": "Time zone of the contact.",
           "title": "Time Zone",
-          "type": "string",
           "$ref": "#/$defs/time-zone",
-          "instillUIOrder": 9,
-          "instillAcceptFormats": [
+          "uiOrder": 9,
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "string"
         },
         "company-id": {
           "$ref": "#/$defs/contact/company-id",
-          "instillUIOrder": 10,
-          "instillAcceptFormats": [
+          "uiOrder": 10,
+          "acceptFormats": [
             "integer"
-          ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
           ]
         },
         "unique-external-id": {
           "$ref": "#/$defs/contact/unique-external-id",
-          "instillUIOrder": 11,
-          "instillAcceptFormats": [
+          "uiOrder": 11,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "twitter-id": {
           "$ref": "#/$defs/contact/twitter-id",
-          "instillUIOrder": 12,
-          "instillAcceptFormats": [
+          "uiOrder": 12,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "view-all-tickets": {
           "description": "Used to determine if the contact can see all the tickets that are associated with the primary company. Note: this property will be ignored if the Company ID is not provided.",
           "title": "View All Tickets",
-          "type": "boolean",
-          "instillUIOrder": 13,
-          "instillAcceptFormats": [
+          "uiOrder": 13,
+          "acceptFormats": [
             "boolean"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "boolean"
         },
         "other-emails": {
           "$ref": "#/$defs/contact/other-emails",
-          "instillUIOrder": 14,
-          "instillAcceptFormats": [
-            "array:string"
+          "uiOrder": 14,
+          "acceptFormats": [
+            "array"
           ],
           "items": {
-            "type": "string"
-          },
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+            "format": "string"
+          }
         },
         "other-companies": {
           "title": "Other Companies",
-          "type": "array",
           "description": "List of other companies to which the contact belongs. Each company should be in the format of company-id;view-all-tickets(boolean \"true\"/\"false\") Example: 123;true.",
           "items": {
-            "type": "string"
+            "format": "string"
           },
-          "instillUIOrder": 15,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "uiOrder": 15,
+          "format": "array"
         },
         "other-phone-numbers": {
           "$ref": "#/$defs/contact/other-phone-numbers",
-          "instillUIOrder": 16,
-          "instillAcceptFormats": [
-            "array:string"
+          "uiOrder": 16,
+          "acceptFormats": [
+            "array"
           ],
           "items": {
-            "type": "string"
-          },
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+            "format": "string"
+          }
         }
       },
       "required": [
         "name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Contact ID and create date.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "contact-id": {
           "$ref": "#/$defs/contact/contact-id",
-          "instillFormat": "integer",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "integer"
         },
         "created-at": {
           "$ref": "#/$defs/contact/created-at",
-          "instillFormat": "string",
-          "instillUIOrder": 1
+          "uiOrder": 1,
+          "format": "string"
         }
       },
       "required": [
@@ -2026,102 +1691,93 @@
         "created-at"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_GET_COMPANY": {
-    "instillShortDescription": "Get company using ID",
+    "shortDescription": "Get company using ID",
     "input": {
       "description": "Company ID.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "company-id"
-      ],
+      "uiOrder": 0,
       "properties": {
         "company-id": {
           "$ref": "#/$defs/contact/company-id",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "instillUIMultiline": false,
-          "instillUIOrder": 0
+          "uiOrder": 0
         }
       },
       "required": [
         "company-id"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Company information.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "name": {
           "$ref": "#/$defs/company/name",
-          "instillFormat": "string",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "string"
         },
         "description": {
           "$ref": "#/$defs/company/description",
-          "instillFormat": "string",
-          "instillUIOrder": 1
+          "uiOrder": 1,
+          "format": "string"
         },
         "note": {
           "$ref": "#/$defs/company/note",
-          "instillFormat": "string",
-          "instillUIOrder": 2
+          "uiOrder": 2,
+          "format": "string"
         },
         "domains": {
           "$ref": "#/$defs/company/domains",
-          "instillFormat": "array:string",
           "items": {
             "title": "Domain",
-            "type": "string",
             "description": "Domain of the company.",
-            "instillFormat": "string"
+            "format": "string"
           },
-          "instillUIOrder": 3
+          "uiOrder": 3,
+          "format": "array"
         },
         "health-score": {
           "$ref": "#/$defs/company/health-score",
-          "instillFormat": "string",
-          "instillUIOrder": 4
+          "uiOrder": 4,
+          "format": "string"
         },
         "account-tier": {
           "$ref": "#/$defs/company/account-tier",
-          "instillFormat": "string",
-          "instillUIOrder": 5
+          "uiOrder": 5,
+          "format": "string"
         },
         "renewal-date": {
           "$ref": "#/$defs/company/renewal-date",
-          "instillFormat": "string",
-          "instillUIOrder": 6
+          "uiOrder": 6,
+          "format": "string"
         },
         "industry": {
           "$ref": "#/$defs/company/industry",
-          "instillFormat": "string",
-          "instillUIOrder": 7
+          "uiOrder": 7,
+          "format": "string"
         },
         "created-at": {
           "$ref": "#/$defs/company/created-at",
-          "instillFormat": "string",
-          "instillUIOrder": 8
+          "uiOrder": 8,
+          "format": "string"
         },
         "updated-at": {
           "$ref": "#/$defs/company/updated-at",
-          "instillFormat": "string",
-          "instillUIOrder": 9
+          "uiOrder": 9,
+          "format": "string"
         },
         "custom-fields": {
           "$ref": "#/$defs/company/custom-fields",
-          "instillFormat": "semi-structured/json",
           "required": [],
-          "instillUIOrder": 10
+          "uiOrder": 10,
+          "format": "json"
         }
       },
       "required": [
@@ -2130,127 +1786,74 @@
         "updated-at"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CREATE_COMPANY": {
-    "instillShortDescription": "Create company",
+    "shortDescription": "Create company",
     "input": {
       "description": "Company Information.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "name",
-        "description",
-        "note",
-        "domains"
-      ],
+      "uiOrder": 0,
       "properties": {
         "name": {
           "$ref": "#/$defs/company/name",
-          "instillUIOrder": 0,
-          "instillAcceptFormats": [
+          "uiOrder": 0,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "description": {
           "$ref": "#/$defs/company/description",
-          "instillUIOrder": 1,
-          "instillAcceptFormats": [
+          "uiOrder": 1,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "note": {
           "$ref": "#/$defs/company/note",
-          "instillUIOrder": 2,
-          "instillAcceptFormats": [
+          "uiOrder": 2,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "domains": {
           "$ref": "#/$defs/company/domains",
-          "instillUIOrder": 3,
-          "instillAcceptFormats": [
-            "array:string"
+          "uiOrder": 3,
+          "acceptFormats": [
+            "array"
           ],
           "items": {
-            "type": "string"
-          },
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+            "format": "string"
+          }
         },
         "health-score": {
           "$ref": "#/$defs/company/health-score",
-          "instillUIOrder": 4,
-          "instillAcceptFormats": [
+          "uiOrder": 4,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "account-tier": {
           "$ref": "#/$defs/company/account-tier",
-          "instillUIOrder": 5,
-          "instillAcceptFormats": [
+          "uiOrder": 5,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         },
         "renewal-date": {
           "description": "Date when your contract or relationship with the company is due for renewal. Enter in the format YYYY-MM-DD.",
           "title": "Renewal Date",
-          "type": "string",
-          "instillUIOrder": 6,
-          "instillAcceptFormats": [
+          "uiOrder": 6,
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "string"
         },
         "industry": {
           "$ref": "#/$defs/company/industry",
-          "instillUIOrder": 7,
-          "instillAcceptFormats": [
+          "uiOrder": 7,
+          "acceptFormats": [
             "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
           ]
         }
       },
@@ -2258,21 +1861,21 @@
         "name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Company ID and create date.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "company-id": {
           "$ref": "#/$defs/company/company-id",
-          "instillFormat": "integer",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "integer"
         },
         "created-at": {
           "$ref": "#/$defs/company/created-at",
-          "instillFormat": "string",
-          "instillUIOrder": 1
+          "uiOrder": 1,
+          "format": "string"
         }
       },
       "required": [
@@ -2280,23 +1883,18 @@
         "created-at"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_GET_ALL": {
-    "instillShortDescription": "Task to get all the IDs of existing contacts, companies, tickets, products, agents, roles, or skills. Note: products, agents, roles, and skills require admin privileges. Some of these might not work, depending on the plan you are on.",
+    "shortDescription": "Task to get all the IDs of existing contacts, companies, tickets, products, agents, roles, or skills. Note: products, agents, roles, and skills require admin privileges. Some of these might not work, depending on the plan you are on.",
     "input": {
       "description": "Object type.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "object-type",
-        "length"
-      ],
+      "uiOrder": 0,
       "properties": {
         "object-type": {
           "description": "Type of object to get IDs for.",
           "title": "Object Type",
-          "type": "string",
           "enum": [
             "Contacts",
             "Companies",
@@ -2306,33 +1904,21 @@
             "Roles",
             "Skills"
           ],
-          "instillUIOrder": 0,
-          "instillAcceptFormats": [
+          "uiOrder": 0,
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "string"
         },
         "length": {
           "description": "The maximum number of IDs allowed is 500. The most recent IDs will be retrieved.",
           "default": 500,
           "title": "Length",
-          "type": "integer",
-          "instillUIOrder": 1,
-          "instillFormat": "integer",
-          "instillAcceptFormats": [
+          "uiOrder": 1,
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "integer"
         }
       },
       "required": [
@@ -2340,31 +1926,28 @@
         "length"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "IDs of the object.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "ids": {
           "description": "List of IDs.",
           "title": "IDs",
-          "type": "array",
           "items": {
             "title": "ID",
-            "type": "integer",
             "description": "ID of the object.",
-            "instillFormat": "integer"
+            "format": "integer"
           },
-          "instillFormat": "array:integer",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "array"
         },
         "id-length": {
           "description": "Number of IDs.",
           "title": "ID Length",
-          "type": "integer",
-          "instillFormat": "integer",
-          "instillUIOrder": 1
+          "uiOrder": 1,
+          "format": "integer"
         }
       },
       "required": [
@@ -2372,85 +1955,70 @@
         "id-length"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_GET_PRODUCT": {
-    "instillShortDescription": "Get product using ID. This task will only work if you have admin privileges.",
+    "shortDescription": "Get product using ID. This task will only work if you have admin privileges.",
     "input": {
       "description": "Product ID.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "product-id"
-      ],
+      "uiOrder": 0,
       "properties": {
         "product-id": {
           "description": "Product ID.",
           "title": "Product ID",
-          "type": "integer",
-          "instillUIOrder": 0,
-          "instillAcceptFormats": [
+          "uiOrder": 0,
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "integer"
         }
       },
       "required": [
         "product-id"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Product information.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "name": {
           "description": "Name of the product.",
           "title": "Name",
-          "type": "string",
-          "instillUIOrder": 0,
-          "instillFormat": "string"
+          "uiOrder": 0,
+          "format": "string"
         },
         "description": {
           "description": "Description of the product.",
           "title": "Description",
-          "type": "string",
-          "instillUIOrder": 1,
-          "instillFormat": "string"
+          "uiOrder": 1,
+          "format": "string"
         },
         "primary-email": {
           "description": "Primary email of the product.",
           "title": "Primary Email",
-          "type": "string",
-          "instillUIOrder": 2,
-          "instillFormat": "string"
+          "uiOrder": 2,
+          "format": "string"
         },
         "created-at": {
           "description": "Timestamp that denotes when the product was created.",
           "title": "Created At",
-          "type": "string",
-          "instillUIOrder": 3,
-          "instillFormat": "string"
+          "uiOrder": 3,
+          "format": "string"
         },
         "updated-at": {
           "description": "Timestamp that denotes when the product was last updated.",
           "title": "Updated At",
-          "type": "string",
-          "instillUIOrder": 4,
-          "instillFormat": "string"
+          "uiOrder": 4,
+          "format": "string"
         },
         "default": {
           "description": "Set to true if the product is the default product.",
           "title": "Default",
-          "type": "boolean",
-          "instillUIOrder": 5,
-          "instillFormat": "boolean"
+          "uiOrder": 5,
+          "format": "boolean"
         }
       },
       "required": [
@@ -2462,201 +2030,169 @@
         "default"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_GET_AGENT": {
-    "instillShortDescription": "Get agent using ID. This task will only work if you have admin privileges. Agents are those in your team who will login to Freshdesk.",
+    "shortDescription": "Get agent using ID. This task will only work if you have admin privileges. Agents are those in your team who will login to Freshdesk.",
     "input": {
       "description": "Agent ID.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "agent-id"
-      ],
+      "uiOrder": 0,
       "properties": {
         "agent-id": {
           "description": "Agent ID.",
           "title": "Agent ID",
-          "type": "integer",
-          "instillUIOrder": 0,
-          "instillAcceptFormats": [
+          "uiOrder": 0,
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "integer"
         }
       },
       "required": [
         "agent-id"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Agent information.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "name": {
           "description": "Name of the agent.",
           "title": "Name",
-          "type": "string",
-          "instillUIOrder": 0,
-          "instillFormat": "string"
+          "uiOrder": 0,
+          "format": "string"
         },
         "active": {
           "description": "Set to true if the agent is verified.",
           "title": "Active",
-          "type": "boolean",
-          "instillUIOrder": 1,
-          "instillFormat": "boolean"
+          "uiOrder": 1,
+          "format": "boolean"
         },
         "email": {
           "description": "Email of the agent.",
           "title": "Email",
-          "type": "string",
-          "instillUIOrder": 2,
-          "instillFormat": "string"
+          "uiOrder": 2,
+          "format": "string"
         },
         "job-title": {
           "description": "Job title of the agent.",
           "title": "Job Title",
-          "type": "string",
-          "instillUIOrder": 3,
-          "instillFormat": "string"
+          "uiOrder": 3,
+          "format": "string"
         },
         "language": {
           "description": "Language of the agent.",
           "title": "Language",
-          "type": "string",
-          "instillUIOrder": 4,
-          "instillFormat": "string"
+          "uiOrder": 4,
+          "format": "string"
         },
         "mobile": {
           "description": "Mobile number of the agent.",
           "title": "Mobile",
-          "type": "string",
-          "instillUIOrder": 5,
-          "instillFormat": "string"
+          "uiOrder": 5,
+          "format": "string"
         },
         "phone": {
           "description": "Telephone number of the agent.",
           "title": "Phone",
-          "type": "string",
-          "instillUIOrder": 6,
-          "instillFormat": "string"
+          "uiOrder": 6,
+          "format": "string"
         },
         "time-zone": {
           "description": "Time zone of the agent.",
           "title": "Time Zone",
-          "type": "string",
-          "instillUIOrder": 7,
-          "instillFormat": "string"
-        },
-        "type": {
-          "description": "Type of the agent. Can be \"Support Agent\", \"Field Agent\" or \"Collaborator\".",
-          "title": "Type",
-          "type": "string",
-          "instillUIOrder": 8,
-          "instillFormat": "string"
+          "uiOrder": 7,
+          "format": "string"
         },
         "ticket-scope": {
           "description": "Ticket permission of the agent. Can be \"Global Access\", \"Group Access\" or \"Restricted Access\".",
           "title": "Ticket Scope",
-          "type": "string",
-          "instillUIOrder": 9,
-          "instillFormat": "string"
+          "uiOrder": 9,
+          "format": "string"
         },
         "available": {
           "description": "Set to true if the agent is in a group that has enabled \"Automatic Ticket Assignment\".",
           "title": "Available",
-          "type": "boolean",
-          "instillUIOrder": 10,
-          "instillFormat": "boolean"
+          "uiOrder": 10,
+          "format": "boolean"
         },
         "group-ids": {
           "description": "Group IDs of the agent.",
           "title": "Group IDs",
-          "type": "array",
-          "instillUIOrder": 11,
-          "instillFormat": "array:integer",
+          "uiOrder": 11,
           "items": {
             "title": "Group ID",
-            "type": "integer",
             "description": "ID of the group.",
-            "instillFormat": "integer"
-          }
+            "format": "integer"
+          },
+          "format": "array"
         },
         "role-ids": {
           "description": "Role IDs of the agent.",
           "title": "Role IDs",
-          "type": "array",
-          "instillUIOrder": 12,
-          "instillFormat": "array:integer",
+          "uiOrder": 12,
           "items": {
             "title": "Role ID",
-            "type": "integer",
             "description": "ID of the role.",
-            "instillFormat": "integer"
-          }
+            "format": "integer"
+          },
+          "format": "array"
         },
         "skill-ids": {
           "description": "Skill IDs of the agent.",
           "title": "Skill IDs",
-          "type": "array",
-          "instillUIOrder": 13,
-          "instillFormat": "array:integer",
+          "uiOrder": 13,
           "items": {
             "title": "Skill ID",
-            "type": "integer",
             "description": "ID of the skill.",
-            "instillFormat": "integer"
-          }
+            "format": "integer"
+          },
+          "format": "array"
         },
         "occasional": {
           "description": "Set to true if the agent is not working full-time.",
           "title": "Occasional",
-          "type": "boolean",
-          "instillUIOrder": 14,
-          "instillFormat": "boolean"
+          "uiOrder": 14,
+          "format": "boolean"
         },
         "signature": {
           "description": "Signature of the agent in HTML format.",
           "title": "Signature",
-          "type": "string",
-          "instillUIOrder": 15,
-          "instillFormat": "string"
+          "uiOrder": 15,
+          "format": "string"
         },
         "focus-mode": {
           "description": "Set to true if the agent is in focus mode.",
           "title": "Focus Mode",
-          "type": "boolean",
-          "instillUIOrder": 16,
-          "instillFormat": "boolean"
+          "uiOrder": 16,
+          "format": "boolean"
         },
         "deactivated": {
           "description": "Set to true if the agent is deactivated.",
           "title": "Deactivated",
-          "type": "boolean",
-          "instillUIOrder": 17,
-          "instillFormat": "boolean"
+          "uiOrder": 17,
+          "format": "boolean"
         },
         "created-at": {
           "description": "Timestamp that denotes when the agent was created.",
           "title": "Created At",
-          "type": "string",
-          "instillUIOrder": 18,
-          "instillFormat": "string"
+          "uiOrder": 18,
+          "format": "string"
         },
         "updated-at": {
           "description": "Timestamp that denotes when the agent was last updated.",
           "title": "Updated At",
-          "type": "string",
-          "instillUIOrder": 19,
-          "instillFormat": "string"
+          "uiOrder": 19,
+          "format": "string"
+        },
+        "type": {
+          "description": "Type of the agent. Can be \"Support Agent\", \"Field Agent\" or \"Collaborator\".",
+          "title": "Type",
+          "uiOrder": 8,
+          "format": "string"
         }
       },
       "required": [
@@ -2666,85 +2202,70 @@
         "occasional"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_GET_ROLE": {
-    "instillShortDescription": "Get role using ID. This task will only work if you have admin privileges. Roles allow agents/collaborators to have different privileges.",
+    "shortDescription": "Get role using ID. This task will only work if you have admin privileges. Roles allow agents/collaborators to have different privileges.",
     "input": {
       "description": "Role ID.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "role-id"
-      ],
+      "uiOrder": 0,
       "properties": {
         "role-id": {
           "description": "Role ID.",
           "title": "Role ID",
-          "type": "integer",
-          "instillUIOrder": 0,
-          "instillAcceptFormats": [
+          "uiOrder": 0,
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "integer"
         }
       },
       "required": [
         "role-id"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Role information.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "name": {
           "description": "Name of the role.",
           "title": "Name",
-          "type": "string",
-          "instillUIOrder": 0,
-          "instillFormat": "string"
+          "uiOrder": 0,
+          "format": "string"
         },
         "description": {
           "description": "Description of the role.",
           "title": "Description",
-          "type": "string",
-          "instillUIOrder": 1,
-          "instillFormat": "string"
+          "uiOrder": 1,
+          "format": "string"
         },
         "default": {
           "description": "Set to true if the role is the default role.",
           "title": "Default",
-          "type": "boolean",
-          "instillUIOrder": 2,
-          "instillFormat": "boolean"
+          "uiOrder": 2,
+          "format": "boolean"
         },
         "agent-type": {
           "description": "Type of the agent. Can be \"Support Agent\", \"Field Agent\" or \"Collaborator\".",
           "title": "Agent Type",
-          "type": "string",
-          "instillUIOrder": 3,
-          "instillFormat": "string"
+          "uiOrder": 3,
+          "format": "string"
         },
         "created-at": {
           "description": "Timestamp that denotes when the role was created.",
           "title": "Created At",
-          "type": "string",
-          "instillUIOrder": 4,
-          "instillFormat": "string"
+          "uiOrder": 4,
+          "format": "string"
         },
         "updated-at": {
           "description": "Timestamp that denotes when the role was last updated.",
           "title": "Updated At",
-          "type": "string",
-          "instillUIOrder": 5,
-          "instillFormat": "string"
+          "uiOrder": 5,
+          "format": "string"
         }
       },
       "required": [
@@ -2756,119 +2277,99 @@
         "updated-at"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_GET_GROUP": {
-    "instillShortDescription": "Get group using ID. This task will only work if you have admin privileges. Agents can be classified into groups such as Customer Support.",
+    "shortDescription": "Get group using ID. This task will only work if you have admin privileges. Agents can be classified into groups such as Customer Support.",
     "input": {
       "description": "Group ID.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "group-id"
-      ],
+      "uiOrder": 0,
       "properties": {
         "group-id": {
           "description": "Group ID.",
           "title": "Group ID",
-          "type": "integer",
-          "instillUIOrder": 0,
-          "instillAcceptFormats": [
+          "uiOrder": 0,
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "integer"
         }
       },
       "required": [
         "group-id"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Group information.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "name": {
           "description": "Name of the group.",
           "title": "Name",
-          "type": "string",
-          "instillUIOrder": 0,
-          "instillFormat": "string"
+          "uiOrder": 0,
+          "format": "string"
         },
         "description": {
           "description": "Description of the group.",
           "title": "Description",
-          "type": "string",
-          "instillUIOrder": 1,
-          "instillFormat": "string"
+          "uiOrder": 1,
+          "format": "string"
         },
         "agent-ids": {
           "description": "Agent IDs of the group.",
           "title": "Agent IDs",
-          "type": "array",
-          "instillUIOrder": 2,
-          "instillFormat": "array:integer",
+          "uiOrder": 2,
           "items": {
             "title": "Agent ID",
-            "type": "integer",
             "description": "ID of the agent.",
-            "instillFormat": "integer"
-          }
+            "format": "integer"
+          },
+          "format": "array"
         },
         "auto-ticket-assign": {
           "description": "The type of automatic ticket assignment set for the group.",
           "title": "Auto Ticket Assign",
-          "type": "string",
-          "instillUIOrder": 3,
-          "instillFormat": "string"
+          "uiOrder": 3,
+          "format": "string"
         },
         "escalate-to": {
           "description": "The ID of the user to whom an escalation email is sent if a ticket is unassigned.",
           "title": "Escalate To",
-          "type": "integer",
-          "instillUIOrder": 4,
-          "instillFormat": "integer"
+          "uiOrder": 4,
+          "format": "integer"
         },
         "unassigned-duration": {
           "description": "The duration for which a ticket is unassigned before it is escalated.",
           "title": "Unassigned Duration",
-          "type": "string",
-          "instillUIOrder": 5,
-          "instillFormat": "string"
+          "uiOrder": 5,
+          "format": "string"
         },
         "group-type": {
           "description": "Group type. Can be \"support_agent_group\" or \"field_agent_group\".",
           "title": "Group Type",
-          "type": "string",
-          "instillUIOrder": 6,
-          "instillFormat": "string"
+          "uiOrder": 6,
+          "format": "string"
         },
         "agent-availability-status": {
           "description": "The availability status of the agent in the group. Automatically set to true if the group has enabled \"Automatic Ticket Assignment\".",
           "title": "Agent Availability Status",
-          "type": "boolean",
-          "instillUIOrder": 7,
-          "instillFormat": "boolean"
+          "uiOrder": 7,
+          "format": "boolean"
         },
         "created-at": {
           "description": "Timestamp that denotes when the group was created.",
           "title": "Created At",
-          "type": "string",
-          "instillUIOrder": 8,
-          "instillFormat": "string"
+          "uiOrder": 8,
+          "format": "string"
         },
         "updated-at": {
           "description": "Timestamp that denotes when the group was last updated.",
           "title": "Updated At",
-          "type": "string",
-          "instillUIOrder": 9,
-          "instillFormat": "string"
+          "uiOrder": 9,
+          "format": "string"
         }
       },
       "required": [
@@ -2879,89 +2380,74 @@
         "updated-at"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_GET_SKILL": {
-    "instillShortDescription": "Get skill using ID. This task will only work if you have admin privileges. Agents can be assigned skills, and it is possible for tickets to be automatically assigned to agents based on the skills they have.",
+    "shortDescription": "Get skill using ID. This task will only work if you have admin privileges. Agents can be assigned skills, and it is possible for tickets to be automatically assigned to agents based on the skills they have.",
     "input": {
       "description": "Skill ID.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "skill-id"
-      ],
+      "uiOrder": 0,
       "properties": {
         "skill-id": {
           "description": "Skill ID.",
           "title": "Skill ID",
-          "type": "integer",
-          "instillUIOrder": 0,
-          "instillAcceptFormats": [
+          "uiOrder": 0,
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIMultiline": false,
-          "instillUpstreamTypes": [
-            "value",
-            "template",
-            "reference"
-          ]
+          "format": "integer"
         }
       },
       "required": [
         "skill-id"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Skill information.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "name": {
           "description": "Name of the skill.",
           "title": "Name",
-          "type": "string",
-          "instillUIOrder": 0,
-          "instillFormat": "string"
+          "uiOrder": 0,
+          "format": "string"
         },
         "rank": {
           "description": "Rank of the skill.",
           "title": "Rank",
-          "type": "integer",
-          "instillUIOrder": 1,
-          "instillFormat": "integer"
+          "uiOrder": 1,
+          "format": "integer"
         },
         "condition-match-type": {
           "description": "Type of condition match. Can be \"all\" or \"any\".",
           "title": "Condition Match Type",
-          "type": "string",
-          "instillUIOrder": 2,
-          "instillFormat": "string"
+          "uiOrder": 2,
+          "format": "string"
         },
         "conditions": {
           "description": "Conditions for the skill.",
           "title": "Conditions",
-          "instillFormat": "array:semi-structured/json",
-          "type": "array",
           "items": {
             "title": "Condition",
-            "instillFormat": "semi-structured/json"
+            "format": "json"
           },
-          "instillUIOrder": 3
+          "uiOrder": 3,
+          "format": "array"
         },
         "created-at": {
           "description": "Timestamp that denotes when the skill was created.",
           "title": "Created At",
-          "type": "string",
-          "instillUIOrder": 4,
-          "instillFormat": "string"
+          "uiOrder": 4,
+          "format": "string"
         },
         "updated-at": {
           "description": "Timestamp that denotes when the skill was last updated.",
           "title": "Updated At",
-          "type": "string",
-          "instillUIOrder": 5,
-          "instillFormat": "string"
+          "uiOrder": 5,
+          "format": "string"
         }
       },
       "required": [
@@ -2973,7 +2459,7 @@
         "updated-at"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   }
 }

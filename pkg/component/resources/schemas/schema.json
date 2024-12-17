@@ -4,35 +4,30 @@
       "bounding-box": {
         "additionalProperties": false,
         "description": "The detected bounding box in (left, top, width, height) format.",
-        "instillFormat": "structured/bounding-box",
         "properties": {
           "height": {
             "description": "Bounding box height value",
-            "instillFormat": "number",
-            "instillUIOrder": 3,
+            "uiOrder": 3,
             "title": "Height",
-            "type": "number"
+            "format": "number"
           },
           "left": {
             "description": "Bounding box left x-axis value",
-            "instillFormat": "number",
-            "instillUIOrder": 0,
+            "uiOrder": 0,
             "title": "Left",
-            "type": "number"
+            "format": "number"
           },
           "top": {
             "description": "Bounding box top y-axis value",
-            "instillFormat": "number",
-            "instillUIOrder": 1,
+            "uiOrder": 1,
             "title": "Top",
-            "type": "number"
+            "format": "number"
           },
           "width": {
             "description": "Bounding box width value",
-            "instillFormat": "number",
-            "instillUIOrder": 2,
+            "uiOrder": 2,
             "title": "Width",
-            "type": "number"
+            "format": "number"
           }
         },
         "required": [
@@ -42,98 +37,88 @@
           "height"
         ],
         "title": "Bounding Box",
-        "type": "object"
+        "format": "object"
       },
       "chat-messages": {
-        "instillFormat": "array:structured/chat-messages",
         "items": {
-          "instillFormat": "structured/chat-message",
           "properties": {
             "content": {
               "$ref": "#/$defs/instill-types/multi-modal-content",
               "description": "The message content",
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "title": "Content"
             },
             "metadata": {
               "additionalProperties": true,
               "description": "The message metadata",
-              "instillFormat": "semi-structured/object",
-              "instillUIOrder": 2,
+              "uiOrder": 2,
               "required": [],
               "title": "Metadata",
-              "type": "object"
+              "format": "json"
             },
             "role": {
               "description": "The message role, i.e. 'system', 'user' or 'assistant'",
-              "instillFormat": "string",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Role",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
             "role",
             "content"
           ],
-          "type": "object"
+          "format": "object"
         },
         "title": "Chat Message",
-        "type": "array"
+        "format": "array"
       },
       "classification": {
         "additionalProperties": false,
         "properties": {
           "category": {
             "description": "The predicted category of the input.",
-            "instillFormat": "string",
-            "instillUIOrder": 0,
+            "uiOrder": 0,
             "title": "Category",
-            "type": "string"
+            "format": "string"
           },
           "score": {
             "description": "The confidence score of the predicted category of the input.",
-            "instillFormat": "number",
-            "instillUIOrder": 1,
+            "uiOrder": 1,
             "title": "Score",
-            "type": "number"
+            "format": "number"
           }
         },
         "required": [
           "category",
           "score"
         ],
-        "type": "object"
+        "format": "object"
       },
       "detection": {
         "additionalProperties": false,
         "properties": {
           "objects": {
             "description": "A list of detected objects.",
-            "instillFormat": "array:structured/detection-object",
-            "instillUIOrder": 0,
+            "uiOrder": 0,
             "items": {
               "additionalProperties": false,
-              "instillFormat": "structured/detection-object",
               "properties": {
                 "bounding-box": {
                   "$ref": "#/$defs/instill-types/bounding-box",
-                  "instillUIOrder": 1,
+                  "uiOrder": 1,
                   "title": "Bounding box"
                 },
                 "category": {
                   "description": "The predicted category of the bounding box.",
-                  "instillFormat": "string",
-                  "instillUIOrder": 2,
+                  "uiOrder": 2,
                   "title": "Category",
-                  "type": "string"
+                  "format": "string"
                 },
                 "score": {
                   "description": "The confidence score of the predicted category of the bounding box.",
-                  "instillFormat": "number",
-                  "instillUIOrder": 3,
+                  "uiOrder": 3,
                   "title": "Score",
-                  "type": "number"
+                  "format": "number"
                 }
               },
               "required": [
@@ -142,62 +127,55 @@
                 "score"
               ],
               "title": "Object",
-              "type": "object"
+              "format": "object"
             },
             "title": "Objects",
-            "type": "array"
+            "format": "array"
           }
         },
         "required": [
           "objects"
         ],
-        "type": "object"
+        "format": "object"
       },
       "embedding": {
-        "instillFormat": "array:number",
         "items": {
-          "instillFormat": "number",
           "title": "Embedding",
-          "type": "number"
+          "format": "number"
         },
         "title": "Embedding",
-        "type": "array"
+        "format": "array"
       },
       "instance-segmentation": {
         "additionalProperties": false,
         "properties": {
           "objects": {
             "description": "A list of detected instance bounding boxes.",
-            "instillFormat": "array:structured/instance-segmentation-object",
-            "instillUIOrder": 0,
+            "uiOrder": 0,
             "items": {
-              "instillFormat": "structured/instance-segmentation-object",
               "properties": {
                 "bounding-box": {
                   "$ref": "#/$defs/instill-types/bounding-box",
-                  "instillUIOrder": 1,
+                  "uiOrder": 1,
                   "title": "Bounding Box"
                 },
                 "category": {
                   "description": "The predicted category of the bounding box.",
-                  "instillFormat": "string",
-                  "instillUIOrder": 2,
+                  "uiOrder": 2,
                   "title": "Category",
-                  "type": "string"
+                  "format": "string"
                 },
                 "rle": {
                   "description": "Run Length Encoding (RLE) of instance mask within the bounding box.",
-                  "instillFormat": "string",
-                  "instillUIOrder": 0,
+                  "uiOrder": 0,
                   "title": "RLE",
-                  "type": "string"
+                  "format": "string"
                 },
                 "score": {
                   "description": "The confidence score of the predicted instance object.",
-                  "instillFormat": "number",
-                  "instillUIOrder": 3,
+                  "uiOrder": 3,
                   "title": "Score",
-                  "type": "number"
+                  "format": "number"
                 }
               },
               "required": [
@@ -207,58 +185,53 @@
                 "score"
               ],
               "title": "Object",
-              "type": "object"
+              "format": "object"
             },
             "title": "Objects",
-            "type": "array"
+            "format": "array"
           }
         },
         "required": [
           "objects"
         ],
-        "type": "object"
+        "format": "object"
       },
       "keypoint": {
         "additionalProperties": false,
         "properties": {
           "objects": {
             "description": "A list of keypoint objects, a keypoint object includes all the pre-defined keypoints of a detected object.",
-            "instillFormat": "array:structured/keypoint-object",
-            "instillUIOrder": 0,
+            "uiOrder": 0,
             "items": {
-              "instillFormat": "structured/keypoint-object",
               "properties": {
                 "bounding-box": {
                   "$ref": "#/$defs/instill-types/bounding-box",
-                  "instillUIOrder": 2,
+                  "uiOrder": 2,
                   "title": "Bounding Box"
                 },
                 "keypoints": {
                   "description": "A keypoint group is composed of a list of pre-defined keypoints of a detected object.",
-                  "instillUIOrder": 0,
+                  "uiOrder": 0,
                   "items": {
-                    "instillUIOrder": 0,
+                    "uiOrder": 0,
                     "properties": {
                       "v": {
                         "description": "visibility score of the keypoint.",
-                        "instillFormat": "number",
-                        "instillUIOrder": 2,
+                        "uiOrder": 2,
                         "title": "Visibility Score",
-                        "type": "number"
+                        "format": "number"
                       },
                       "x": {
                         "description": "x coordinate of the keypoint.",
-                        "instillFormat": "number",
-                        "instillUIOrder": 0,
+                        "uiOrder": 0,
                         "title": "X Coordinate",
-                        "type": "number"
+                        "format": "number"
                       },
                       "y": {
                         "description": "y coordinate of the keypoint.",
-                        "instillFormat": "number",
-                        "instillUIOrder": 1,
+                        "uiOrder": 1,
                         "title": "Y Coordinate",
-                        "type": "number"
+                        "format": "number"
                       }
                     },
                     "required": [
@@ -267,17 +240,16 @@
                       "v"
                     ],
                     "title": "Keypoints",
-                    "type": "object"
+                    "format": "object"
                   },
                   "title": "Keypoints",
-                  "type": "array"
+                  "format": "array"
                 },
                 "score": {
                   "description": "The confidence score of the predicted object.",
-                  "instillFormat": "number",
-                  "instillUIOrder": 1,
+                  "uiOrder": 1,
                   "title": "Score",
-                  "type": "number"
+                  "format": "number"
                 }
               },
               "required": [
@@ -286,28 +258,27 @@
                 "bounding-box"
               ],
               "title": "Object",
-              "type": "object"
+              "format": "object"
             },
             "title": "Objects",
-            "type": "array"
+            "format": "array"
           }
         },
         "required": [
           "objects"
         ],
-        "type": "object"
+        "format": "object"
       },
       "multi-modal-content": {
-        "instillFormat": "structured/multi-modal-content",
         "items": {
           "properties": {
             "image-url": {
               "properties": {
                 "url": {
                   "description": "Either a URL of the image or the base64 encoded image data.",
-                  "type": "string",
                   "title": "URL",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 }
               },
               "required": [
@@ -315,15 +286,14 @@
               ],
               "title": "Image URL",
               "description": "The image URL",
-              "instillUIOrder": 0,
-              "type": "object"
+              "uiOrder": 0,
+              "format": "object"
             },
             "text": {
               "description": "The text content.",
-              "instillFormat": "string",
               "title": "Text",
-              "instillUIOrder": 1,
-              "type": "string"
+              "uiOrder": 1,
+              "format": "string"
             },
             "type": {
               "description": "The type of the content part.",
@@ -331,47 +301,42 @@
                 "text",
                 "image-url"
               ],
-              "instillFormat": "string",
               "title": "Type",
-              "instillUIOrder": 2,
-              "type": "string"
+              "uiOrder": 2,
+              "format": "string"
             }
           },
           "required": [
             "type"
           ],
-          "type": "object"
+          "format": "object"
         },
-        "type": "array"
+        "format": "array"
       },
       "ocr": {
         "additionalProperties": false,
         "properties": {
           "objects": {
             "description": "A list of detected bounding boxes.",
-            "instillFormat": "array:structured/ocr-object",
-            "instillUIOrder": 0,
+            "uiOrder": 0,
             "items": {
-              "instillFormat": "structured/ocr-object",
               "properties": {
                 "bounding-box": {
                   "$ref": "#/$defs/instill-types/bounding-box",
-                  "instillUIOrder": 0,
+                  "uiOrder": 0,
                   "title": "Bounding Box"
                 },
                 "score": {
                   "description": "The confidence score of the predicted object.",
-                  "instillFormat": "number",
-                  "instillUIOrder": 2,
+                  "uiOrder": 2,
                   "title": "Score",
-                  "type": "number"
+                  "format": "number"
                 },
                 "text": {
                   "description": "Text string recognised per bounding box.",
-                  "instillFormat": "string",
-                  "instillUIOrder": 1,
+                  "uiOrder": 1,
                   "title": "Text",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
@@ -380,40 +345,36 @@
                 "score"
               ],
               "title": "Object",
-              "type": "object"
+              "format": "object"
             },
             "title": "Objects",
-            "type": "array"
+            "format": "array"
           }
         },
         "required": [
           "objects"
         ],
-        "type": "object"
+        "format": "object"
       },
       "semantic-segmentation": {
         "additionalProperties": false,
         "properties": {
           "stuffs": {
             "description": "A list of RLE binary masks.",
-            "instillFormat": "array:structured/semantic-segmentation-stuff",
-            "instillUIOrder": 0,
+            "uiOrder": 0,
             "items": {
-              "instillFormat": "structured/semantic-segmentation-stuff",
               "properties": {
                 "category": {
                   "description": "Category text string corresponding to each stuff mask.",
-                  "instillFormat": "string",
-                  "instillUIOrder": 1,
+                  "uiOrder": 1,
                   "title": "Category",
-                  "type": "string"
+                  "format": "string"
                 },
                 "rle": {
                   "description": "Run Length Encoding (RLE) of each stuff mask within the image.",
-                  "instillFormat": "string",
-                  "instillUIOrder": 0,
+                  "uiOrder": 0,
                   "title": "RLE",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
@@ -421,16 +382,16 @@
                 "category"
               ],
               "title": "Object",
-              "type": "object"
+              "format": "object"
             },
             "title": "Stuffs",
-            "type": "array"
+            "format": "array"
           }
         },
         "required": [
           "stuffs"
         ],
-        "type": "object"
+        "format": "object"
       }
     }
   }

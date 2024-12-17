@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"mime"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -325,4 +326,17 @@ func FormatToISO8601(ts *timestampPB.Timestamp) string {
 // UnixToISO8601 converts a Unix timestamp to an ISO8601 formatted string
 func UnixToISO8601(unix int64) string {
 	return time.Unix(unix, 0).UTC().Format(time.RFC3339)
+}
+
+// return the extension of the file from the base64 string, in the "jpeg" , "png" format, check with provided header
+func GetBase64FileExtension(b64 string) string {
+	splitB64 := strings.Split(b64, ",")
+	header := splitB64[0]
+	header = strings.TrimPrefix(header, "data:")
+	header = strings.TrimSuffix(header, ";base64")
+	mtype, _, err := mime.ParseMediaType(header)
+	if err != nil {
+		return err.Error()
+	}
+	return strings.Split(mtype, "/")[1]
 }

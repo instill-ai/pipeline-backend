@@ -1,130 +1,101 @@
 {
   "TASK_RETRIEVE_CHAT_HISTORY": {
-    "instillShortDescription": "Retrieve chat history from Redis.",
+    "shortDescription": "Retrieve chat history from Redis.",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "include-system-message": {
           "default": true,
           "description": "Include system message in the retrieved conversation turns if exists.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "boolean"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 2,
           "title": "Include System Message If Exists",
-          "type": "boolean"
+          "format": "boolean"
         },
         "latest-k": {
           "default": 5,
           "description": "The number of latest conversation turns to retrieve. A conversation turn typically includes one participant speaking or sending a message, and the other participant(s) responding to it.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 1,
           "minimum": 1,
           "title": "Latest K",
-          "type": "integer"
+          "format": "integer"
         },
         "session-id": {
           "description": "A unique identifier for the chat session.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 0,
           "title": "Session ID",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "session-id"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "messages": {
-          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/chat-messages",
+          "$ref": "schema.json#/$defs/instill-types/chat-messages",
           "description": "Messages.",
-          "instillUIOrder": 0
+          "uiOrder": 0
         }
       },
       "required": [
         "messages"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_WRITE_CHAT_MESSAGE": {
-    "instillShortDescription": "Write chat message into Redis.",
+    "shortDescription": "Write chat message into Redis.",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "content": {
           "description": "The message content.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 2,
           "title": "Content",
-          "type": "string"
+          "format": "string"
         },
         "metadata": {
           "additionalProperties": true,
           "description": "The message metadata.",
-          "instillUIOrder": 3,
+          "uiOrder": 3,
           "required": [],
           "title": "Metadata",
-          "type": "object"
+          "format": "object"
         },
         "role": {
           "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 1,
           "title": "Role",
-          "type": "string"
+          "format": "string"
         },
         "session-id": {
           "description": "A unique identifier for the chat session.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 0,
           "title": "Session ID",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
@@ -133,79 +104,65 @@
         "content"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "The status of the write operation.",
-          "instillFormat": "boolean",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "boolean"
+          "format": "boolean"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_WRITE_MULTI_MODAL_CHAT_MESSAGE": {
-    "instillShortDescription": "Write multi-modal chat message into Redis.",
+    "shortDescription": "Write multi-modal chat message into Redis.",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "content": {
-          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/multi-modal-content",
+          "$ref": "schema.json#/$defs/instill-types/multi-modal-content",
           "description": "The multi-modal message content.",
-          "instillAcceptFormats": [
-            "structured/multi-modal-content"
+          "acceptFormats": [
+            "array"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "uiOrder": 2,
           "title": "Content",
-          "type": "string"
+          "format": "string"
         },
         "metadata": {
           "additionalProperties": true,
           "description": "The message metadata.",
-          "instillUIOrder": 3,
+          "uiOrder": 3,
           "required": [],
           "title": "Metadata",
-          "type": "object"
+          "format": "object"
         },
         "role": {
           "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 1,
           "title": "Role",
-          "type": "string"
+          "format": "string"
         },
         "session-id": {
           "description": "A unique identifier for the chat session.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 0,
           "title": "Session ID",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
@@ -214,24 +171,23 @@
         "content"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "The status of the write operation.",
-          "instillFormat": "boolean",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "boolean"
+          "format": "boolean"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   }
 }

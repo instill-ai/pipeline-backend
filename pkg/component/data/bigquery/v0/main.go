@@ -279,7 +279,7 @@ func constructTableProperties(tables []TableColumns) ([]*structpb.Struct, error)
 		for idx, column := range table.Columns {
 			propertiesMap[column.Name] = map[string]interface{}{
 				"title":                column.Name,
-				"instillUIOrder":       idx,
+				"uiOrder":              idx,
 				"description":          "Column " + column.Name + " of table " + table.TableName,
 				"instillFormat":        getInstillAcceptFormat(column.Type),
 				"instillUpstreamTypes": instillUpstreamTypes,

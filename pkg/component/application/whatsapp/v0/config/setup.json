@@ -4,24 +4,18 @@
   "properties": {
     "token": {
       "description": "Fill in your WhatsApp access token. Go [here](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started) for more information.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Token",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
     "token"
   ],
-  "instillEditOnNodeFields": [
-    "token"
-  ],
   "title": "WhatsApp Connection",
-  "type": "object"
+  "format": "object"
 }

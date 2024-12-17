@@ -1,163 +1,113 @@
 {
   "TASK_VECTOR_SEARCH": {
-    "instillShortDescription": "Perform a vector search on a collection",
+    "shortDescription": "Perform a vector search on a collection",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "collection-name": {
           "description": "The name of the collection to perform vector search on.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 0,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "partition-name": {
           "description": "The name of the partition to vector search the data from.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Partition Name",
-          "type": "string"
+          "format": "string"
         },
         "vector": {
           "description": "An array of dimensions for the vector search.",
-          "instillAcceptFormats": [
-            "array:number",
-            "array:integer"
+          "acceptFormats": [
+            "array",
+            "array"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 2,
           "items": {
             "description": "A dimension of the vector.",
             "example": 0.8167237,
-            "type": "number"
+            "format": "number"
           },
           "minItems": 1,
           "title": "Vector",
-          "type": "array"
+          "format": "array"
         },
         "vector-field": {
           "description": "The name of the field to perform vector search on.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 3,
           "title": "Vector Field",
-          "type": "string"
+          "format": "string"
         },
         "limit": {
           "description": "The limit of the data to return.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 4,
           "title": "Limit",
-          "type": "integer"
+          "format": "integer"
         },
         "fields": {
           "description": "The fields to return in the data. If empty then all fields will be returned.",
-          "instillAcceptFormats": [
-            "array:string"
+          "acceptFormats": [
+            "array"
           ],
-          "instillShortDescription": "Fields to be returned, empty for all fields",
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "shortDescription": "Fields to be returned, empty for all fields",
+          "uiOrder": 4,
           "title": "Fields",
           "minItems": 1,
-          "type": "array",
           "items": {
             "title": "Field",
-            "type": "string"
-          }
+            "format": "string"
+          },
+          "format": "array"
         },
         "filter": {
           "description": "The properties filter to be applied to the data with zilliz scalar filter, please refer to [filtered-search](https://docs.zilliz.com/docs/single-vector-search?_highlight=filter/docs/single-vector-search#filtered-search).",
-          "instillUIOrder": 5,
-          "instillAcceptFormats": [
+          "uiOrder": 5,
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
           "title": "Filter",
-          "type": "string"
+          "format": "string"
         },
         "offset": {
           "description": "The offset of the data to return.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 6,
           "title": "Offset",
-          "type": "integer"
+          "format": "integer"
         },
         "grouping-field": {
           "description": "The name of the field to group the data by, please refer to [grouping-search](https://docs.zilliz.com/docs/release-notes-290?_highlight=grouping&_highlight=field/docs/release-notes-290#grouping-search).",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 7,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 7,
           "title": "Grouping Field",
-          "type": "string"
+          "format": "string"
         },
         "search-params": {
           "description": "The search parameters to be applied to the data with zilliz search parameters, please refer to [search-parameters](https://docs.zilliz.com/docs/single-vector-search?_highlight=search&_highlight=params/docs/single-vector-search#search-parameters).",
-          "instillUIOrder": 8,
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "uiOrder": 8,
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
           "title": "Search Parameters",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
@@ -166,94 +116,79 @@
         "vector-field",
         "limit"
       ],
-      "instillEditOnNodeFields": [
-        "collection-name",
-        "partition-name",
-        "vector",
-        "vector-field",
-        "limit"
-      ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Vector search status.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         },
         "result": {
           "description": "Result of the vector search operation.",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Result",
-          "type": "object",
           "properties": {
             "ids": {
               "description": "The ids returned from the vector search operation.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "IDs",
-              "type": "array",
               "required": [],
-              "instillFormat": "array:string",
               "items": {
                 "description": "An id of the point.",
-                "type": "string",
-                "example": "c8faa-4b3b-4b3b-4b3b"
-              }
+                "example": "c8faa-4b3b-4b3b-4b3b",
+                "format": "string"
+              },
+              "format": "array"
             },
             "data": {
               "description": "The points returned from the vector search operation.",
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "required": [],
               "title": "Data",
-              "type": "array",
-              "instillFormat": "array:semi-structured/json",
               "items": {
                 "title": "Datum",
-                "format": "semi-structured/json",
-                "type": "object",
+                "format": "object",
                 "required": []
-              }
+              },
+              "format": "array"
             },
             "vectors": {
               "description": "The vectors returned from the vector search operation.",
-              "instillUIOrder": 2,
+              "uiOrder": 2,
               "title": "Vectors",
-              "type": "array",
               "required": [],
-              "instillFormat": "array:array",
               "items": {
                 "description": "The vector from array vectors.",
-                "type": "array",
-                "instillFormat": "array",
                 "required": [],
                 "items": {
                   "description": "A dimension of the vector.",
                   "example": 0.8167237,
-                  "type": "number"
-                }
-              }
+                  "format": "number"
+                },
+                "format": "array"
+              },
+              "format": "array"
             },
             "metadata": {
               "description": "The metadata returned from the vector search operation.",
-              "instillUIOrder": 3,
+              "uiOrder": 3,
               "title": "Metadata",
-              "type": "array",
               "required": [],
-              "instillFormat": "array:semi-structured/json",
               "items": {
                 "title": "Metadatum",
-                "format": "semi-structured/json",
-                "type": "object",
+                "format": "object",
                 "required": []
-              }
+              },
+              "format": "array"
             }
           },
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
@@ -261,381 +196,278 @@
         "result"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_UPSERT": {
-    "instillShortDescription": "Insert a vector data into a collection",
+    "shortDescription": "Insert a vector data into a collection",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "collection-name": {
           "description": "The name of the collection to upsert the data into.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 0,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "partition-name": {
           "description": "The name of the partition to upsert the data from. If empty then default partition will be used.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Partition Name",
-          "type": "string"
+          "format": "string"
         },
         "data": {
           "description": "The data.",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 2,
           "title": "Data",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
         "collection-name",
         "data"
       ],
-      "instillEditOnNodeFields": [
-        "collection-name",
-        "partition-name",
-        "data"
-      ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Upsert status.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_BATCH_UPSERT": {
-    "instillShortDescription": "Insert a batch of vector data into a collection",
+    "shortDescription": "Insert a batch of vector data into a collection",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "collection-name": {
           "description": "The name of the collection to upsert the data into.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 0,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "partition-name": {
           "description": "The name of the partition to upsert the data from. If empty then default partition will be used.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Partition Name",
-          "type": "string"
+          "format": "string"
         },
         "array-data": {
           "description": "The data.",
-          "instillAcceptFormats": [
-            "array:semi-structured/*",
-            "array:semi-structured/json",
-            "array:semi-structured/object",
-            "array:object"
+          "acceptFormats": [
+            "array",
+            "array",
+            "array",
+            "array"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 2,
           "title": "Array Data",
-          "type": "array",
           "items": {
             "description": "A datum.",
-            "type": "object",
-            "required": []
-          }
+            "required": [],
+            "format": "object"
+          },
+          "format": "array"
         }
       },
       "required": [
         "collection-name",
         "array-data"
       ],
-      "instillEditOnNodeFields": [
-        "collection-name",
-        "partition-name",
-        "array-data"
-      ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Batch upsert status.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DELETE": {
-    "instillShortDescription": "Delete vector data from a collection",
+    "shortDescription": "Delete vector data from a collection",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "collection-name": {
           "description": "The name of the collection to delete the data from.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 0,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "partition-name": {
           "description": "The name of the partition to delete the data from. If empty then default partition will be used.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Partition Name",
-          "type": "string"
+          "format": "string"
         },
         "filter": {
           "description": "The properties filter to be applied to the data with zilliz scalar filter, please refer to [filtered-search](https://docs.zilliz.com/docs/single-vector-search?_highlight=filter/docs/single-vector-search#filtered-search).",
-          "instillUIOrder": 2,
-          "instillAcceptFormats": [
+          "uiOrder": 2,
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
           "title": "Filter",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "collection-name"
       ],
-      "instillEditOnNodeFields": [
-        "collection-name",
-        "partition-name",
-        "filter"
-      ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Delete status.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CREATE_COLLECTION": {
-    "instillShortDescription": "Create a collection, please refer to [create-collection-v2](https://docs.zilliz.com/reference/restful/create-collection-v2)",
+    "shortDescription": "Create a collection, please refer to [create-collection-v2](https://docs.zilliz.com/reference/restful/create-collection-v2)",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "collection-name": {
           "description": "The name of the collection to create.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 0,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "dimension": {
           "description": "The dimension of the collection.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Dimension",
-          "type": "integer"
+          "format": "integer"
         },
         "id-type": {
           "description": "The type of the id.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 3,
           "title": "ID Type",
-          "type": "string"
+          "format": "string"
         },
         "schema": {
           "description": "The schema of the collection.",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 4,
           "title": "Schema",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         },
         "auto-id": {
           "description": "Whether to auto generate id.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "boolean"
           ],
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 5,
           "title": "Auto ID",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "format": "boolean"
         },
         "metric-type": {
           "description": "The metric type of the collection.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 6,
           "title": "Metric Type",
-          "type": "string",
           "enum": [
             "L2",
             "IP",
             "COSINE"
           ],
-          "default": "L2"
+          "default": "L2",
+          "format": "string"
         },
         "index-params": {
           "description": "The index parameters to be applied to the collection with zilliz index parameters, please refer to [index-parameter](https://zilliz.io/docs/single-vector-search.md#Index-parameters).",
-          "instillUIOrder": 7,
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "uiOrder": 7,
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
           "title": "Index Parameters",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         },
         "params": {
           "description": "The parameters to be applied to the collection with zilliz parameters, please refer to [parameters](https://zilliz.io/docs/single-vector-search.md#Parameters).",
-          "instillUIOrder": 8,
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "uiOrder": 8,
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
           "title": "Parameters",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
@@ -643,194 +475,157 @@
         "dimension"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Create collection status.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DROP_COLLECTION": {
-    "instillShortDescription": "Drop a collection",
+    "shortDescription": "Drop a collection",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "collection-name": {
           "description": "The name of the collection to drop.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 0,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "collection-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Drop collection status.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CREATE_PARTITION": {
-    "instillShortDescription": "Create a partition in a collection",
+    "shortDescription": "Create a partition in a collection",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "collection-name": {
           "description": "The name of the collection to create the partition in.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 0,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "partition-name": {
           "description": "The name of the partition to create.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Partition Name",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "collection-name",
         "partition-name"
       ],
-      "instillEditOnNodeFields": [
-        "collection-name",
-        "partition-name"
-      ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Create partition status.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DROP_PARTITION": {
-    "instillShortDescription": "Drop a partition from a collection",
+    "shortDescription": "Drop a partition from a collection",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "collection-name": {
           "description": "The name of the collection to drop the partition from.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 0,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "partition-name": {
           "description": "The name of the partition to drop.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Partition Name",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
-        "collection-name",
-        "partition-name"
-      ],
-      "instillEditOnNodeFields": [
         "collection-name",
         "partition-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Drop partition status.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   }
 }

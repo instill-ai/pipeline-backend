@@ -46,7 +46,7 @@ Upload and process the files into chunks into Catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPLOAD_FILE` |
 | [Options](#upload-file-options) (required) | `options` | object | Choose to upload the files to existing catalog or create a new catalog. |
@@ -66,7 +66,7 @@ Upload and process the files into chunks into Catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Catalog ID | `catalog-id` | string |  Catalog ID that you input in the Catalog.  |
 | File | `file` | string |  Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into catalog.  |
@@ -79,7 +79,7 @@ Upload and process the files into chunks into Catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Catalog ID | `catalog-id` | string |  Catalog ID for new catalog you want to create.  |
 | Description | `description` | string |  Description of the catalog.  |
@@ -93,7 +93,7 @@ Upload and process the files into chunks into Catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [File](#upload-file-file) | `file` | object | Result of uploading file into catalog. |
 | Status | `status` | boolean | The status of trigger file processing, if succeeded, return true. |
@@ -106,7 +106,7 @@ Upload and process the files into chunks into Catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Catalog ID | `catalog-id` | string | ID of the catalog that you upload files. |
 | Create Time | `create-time` | string | Creation time of the file in ISO 8601 format. |
@@ -125,7 +125,7 @@ Upload and process the files into chunks into Catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPLOAD_FILES` |
 | [Options](#upload-files-options) (required) | `options` | object | Choose to upload the files to existing catalog or create a new catalog. |
@@ -145,7 +145,7 @@ Upload and process the files into chunks into Catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Catalog ID | `catalog-id` | string |  Catalog ID that you input in the Catalog.  |
 | File Names | `file-names` | array |  Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.  |
@@ -158,7 +158,7 @@ Upload and process the files into chunks into Catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Catalog ID | `catalog-id` | string |  Catalog ID for new catalog you want to create.  |
 | Description | `description` | string |  Description of the catalog.  |
@@ -172,7 +172,7 @@ Upload and process the files into chunks into Catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Files](#upload-files-files) | `files` | array[object] | Files metadata in catalog. |
 | Status | `status` | boolean | The status of trigger file processing, if ALL succeeded, return true. |
@@ -185,7 +185,7 @@ Upload and process the files into chunks into Catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Catalog ID | `catalog-id` | string | ID of the catalog that you upload files. |
 | Create Time | `create-time` | string | Creation time of the file in ISO 8601 format. |
@@ -204,7 +204,7 @@ get the metadata of the files in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_FILES_METADATA` |
 | Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
@@ -218,7 +218,7 @@ get the metadata of the files in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Files](#get-files-metadata-files) | `files` | array[object] | Files metadata in catalog. |
 </div>
@@ -230,7 +230,7 @@ get the metadata of the files in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Catalog ID | `catalog-id` | string | ID of the catalog that you upload files. |
 | Create Time | `create-time` | string | Creation time of the file in ISO 8601 format. |
@@ -249,7 +249,7 @@ get the metadata of the chunks from a file in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_CHUNKS_METADATA` |
 | Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
@@ -264,7 +264,7 @@ get the metadata of the chunks from a file in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Chunks](#get-chunks-metadata-chunks) | `chunks` | array[object] | Chunks metadata of the file in catalog. |
 </div>
@@ -276,7 +276,7 @@ get the metadata of the chunks from a file in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
 | Create Time | `create-time` | string | The creation time of the chunk in ISO 8601 format. |
@@ -295,7 +295,7 @@ get the file content in markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_FILE_IN_MARKDOWN` |
 | Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
@@ -310,7 +310,7 @@ get the file content in markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | File UID | `original-file-uid` | string | The unique identifier of the file. |
 | Content | `content` | string | The content of the file in markdown format. |
@@ -325,7 +325,7 @@ Check if the specified file's processing status is done.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_MATCH_FILE_STATUS` |
 | Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to check files' processing status in the Catalog. |
@@ -340,7 +340,7 @@ Check if the specified file's processing status is done.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `succeeded` | boolean | The status of the file processing, if succeeded, return true. |
 </div>
@@ -352,7 +352,7 @@ search the chunks in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_RETRIEVE` |
 | Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
@@ -368,7 +368,7 @@ search the chunks in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Chunks](#retrieve-chunks) | `chunks` | array[object] | Chunks data from smart search. |
 </div>
@@ -380,7 +380,7 @@ search the chunks in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
 | Similarity | `similarity-score` | number | The similarity score of the chunk. |
@@ -396,7 +396,7 @@ Reply the questions based on the files in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_ASK` |
 | Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
@@ -412,7 +412,7 @@ Reply the questions based on the files in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Answer | `answer` | string | Answers data from smart search. |
 | [Chunks](#ask-chunks) (optional) | `chunks` | array[object] | Chunks data to answer question. |
@@ -425,7 +425,7 @@ Reply the questions based on the files in the catalog.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
 | Similarity | `similarity-score` | number | The similarity score of the chunk. |

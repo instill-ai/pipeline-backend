@@ -51,7 +51,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Refresh Token | `refresh-token` | string | Refresh token for the Google Sheets API. For more information about how to create tokens, please refer to the <a href="https://developers.google.com/sheets/api/guides/concepts">Google Sheets API documentation</a> and <a href="https://developers.google.com/identity/protocols/oauth2" >OAuth 2.0 documentation</a>.  |
 
@@ -69,7 +69,7 @@ Create a new Google Sheets spreadsheet with multiple sheets.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_SPREADSHEET` |
 | Title | `title` | string | Title of the new spreadsheet. |
@@ -86,7 +86,7 @@ Configuration for sheets to create.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Headers | `headers` | array | Column headers for the sheet.  |
 | Sheet Name | `name` | string | Name of the sheet.  |
@@ -97,7 +97,7 @@ Configuration for sheets to create.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Spreadsheet ID | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
 </div>
@@ -109,7 +109,7 @@ Delete a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE_SPREADSHEET` |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
@@ -122,7 +122,7 @@ Delete a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Success | `success` | boolean | Result of the operation. |
 </div>
@@ -134,7 +134,7 @@ Add a new sheet to an existing Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_ADD_SHEET` |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
@@ -149,7 +149,7 @@ Add a new sheet to an existing Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Success | `success` | boolean | Result of the operation. |
 </div>
@@ -161,7 +161,7 @@ Remove a sheet from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE_SHEET` |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
@@ -175,7 +175,7 @@ Remove a sheet from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Success | `success` | boolean | Result of the operation. |
 </div>
@@ -187,7 +187,7 @@ Add a new column to a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_SPREADSHEET_COLUMN` |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
@@ -202,7 +202,7 @@ Add a new column to a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Success | `success` | boolean | Result of the operation. |
 </div>
@@ -214,7 +214,7 @@ Delete a column from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE_SPREADSHEET_COLUMN` |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
@@ -229,7 +229,7 @@ Delete a column from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Success | `success` | boolean | Result of the operation. |
 </div>
@@ -241,12 +241,12 @@ List all rows in a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_ROWS` |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
-| Start Row | `start-row` | integer | The starting row number to retrieve (1-based index). |
-| End Row | `end-row` | integer | The ending row number to retrieve (1-based index). |
+| Start Row | `start-row` | number | The starting row number to retrieve (1-based index). |
+| End Row | `end-row` | number | The ending row number to retrieve (1-based index). |
 | Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
 </div>
 
@@ -257,7 +257,7 @@ List all rows in a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Rows Data](#list-rows-rows-data) | `rows` | array[object] | Multiple rows data with row numbers and data. |
 </div>
@@ -269,10 +269,10 @@ List all rows in a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Row Number | `row-number` | integer | Row number to update (1-based index) |
-| Row Data | `row-value` | object | Row data in JSON format where keys are column names and values are the corresponding cell values |
+| Row Number | `row-number` | number | Row number to update (1-based index) |
+| Row Data | `row-value` | json | Row data in JSON format where keys are column names and values are the corresponding cell values |
 </div>
 </details>
 
@@ -283,7 +283,7 @@ Find multiple rows based on column value in a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LOOKUP_ROWS` |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
@@ -299,7 +299,7 @@ Find multiple rows based on column value in a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Rows Data](#lookup-rows-rows-data) | `rows` | array[object] | Multiple rows data with row numbers and data. |
 </div>
@@ -311,10 +311,10 @@ Find multiple rows based on column value in a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Row Number | `row-number` | integer | Row number to update (1-based index) |
-| Row Data | `row-value` | object | Row data in JSON format where keys are column names and values are the corresponding cell values |
+| Row Number | `row-number` | number | Row number to update (1-based index) |
+| Row Data | `row-value` | json | Row data in JSON format where keys are column names and values are the corresponding cell values |
 </div>
 </details>
 
@@ -325,10 +325,10 @@ Get a single row from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ROW` |
-| Row Number (required) | `row-number` | integer | The row number to retrieve (1-based index). |
+| Row Number (required) | `row-number` | number | The row number to retrieve (1-based index). |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
 | Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
 </div>
@@ -340,7 +340,7 @@ Get a single row from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Row Data](#get-row-row-data) | `row` | object | Row data with row number and data. |
 </div>
@@ -352,10 +352,10 @@ Get a single row from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Row Number | `row-number` | integer | Row number to update (1-based index) |
-| Row Data | `row-value` | object | Row data in JSON format where keys are column names and values are the corresponding cell values |
+| Row Number | `row-number` | number | Row number to update (1-based index) |
+| Row Data | `row-value` | json | Row data in JSON format where keys are column names and values are the corresponding cell values |
 </div>
 </details>
 
@@ -366,7 +366,7 @@ Get multiple rows from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_MULTIPLE_ROWS` |
 | Row Numbers (required) | `row-numbers` | array[integer] | The row numbers to retrieve (1-based indices). |
@@ -381,7 +381,7 @@ Get multiple rows from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Rows Data](#get-multiple-rows-rows-data) | `rows` | array[object] | Multiple rows data with row numbers and data. |
 </div>
@@ -393,10 +393,10 @@ Get multiple rows from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Row Number | `row-number` | integer | Row number to update (1-based index) |
-| Row Data | `row-value` | object | Row data in JSON format where keys are column names and values are the corresponding cell values |
+| Row Number | `row-number` | number | Row number to update (1-based index) |
+| Row Data | `row-value` | json | Row data in JSON format where keys are column names and values are the corresponding cell values |
 </div>
 </details>
 
@@ -407,12 +407,12 @@ Insert a single row into a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT_ROW` |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
 | Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
-| Row Data | `row-value` | object | Row data in JSON format where keys are column names and values are the corresponding cell values |
+| Row Data | `row-value` | json | Row data in JSON format where keys are column names and values are the corresponding cell values |
 </div>
 
 
@@ -422,7 +422,7 @@ Insert a single row into a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Row Data](#insert-row-row-data) | `row` | object | Row data with row number and data. |
 </div>
@@ -434,10 +434,10 @@ Insert a single row into a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Row Number | `row-number` | integer | Row number to update (1-based index) |
-| Row Data | `row-value` | object | Row data in JSON format where keys are column names and values are the corresponding cell values |
+| Row Number | `row-number` | number | Row number to update (1-based index) |
+| Row Data | `row-value` | json | Row data in JSON format where keys are column names and values are the corresponding cell values |
 </div>
 </details>
 
@@ -448,11 +448,11 @@ Insert multiple rows into a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT_MULTIPLE_ROWS` |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
-| [Row Values](#insert-multiple-rows-row-values) | `row-values` | array[object] | Array of row data in JSON format where keys are column names and values are the corresponding cell values |
+| Row Values | `row-values` | array[json] | Array of row data in JSON format where keys are column names and values are the corresponding cell values |
 | Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
 </div>
 
@@ -463,7 +463,7 @@ Insert multiple rows into a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Rows Data](#insert-multiple-rows-rows-data) | `rows` | array[object] | Multiple rows data with row numbers and data. |
 </div>
@@ -475,10 +475,10 @@ Insert multiple rows into a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Row Number | `row-number` | integer | Row number to update (1-based index) |
-| Row Data | `row-value` | object | Row data in JSON format where keys are column names and values are the corresponding cell values |
+| Row Number | `row-number` | number | Row number to update (1-based index) |
+| Row Data | `row-value` | json | Row data in JSON format where keys are column names and values are the corresponding cell values |
 </div>
 </details>
 
@@ -489,7 +489,7 @@ Update a row in a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE_ROW` |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
@@ -507,10 +507,10 @@ Row data with row number and data.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Row Number | `row-number` | integer | Row number to update (1-based index)  |
-| Row Data | `row-value` | object | Row data in JSON format where keys are column names and values are the corresponding cell values  |
+| Row Number | `row-number` | number | Row number to update (1-based index)  |
+| Row Data | `row-value` | json | Row data in JSON format where keys are column names and values are the corresponding cell values  |
 </div>
 </details>
 
@@ -518,7 +518,7 @@ Row data with row number and data.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Row Data](#update-row-row-data) | `row` | object | Row data with row number and data. |
 </div>
@@ -530,10 +530,10 @@ Row data with row number and data.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Row Number | `row-number` | integer | Row number to update (1-based index) |
-| Row Data | `row-value` | object | Row data in JSON format where keys are column names and values are the corresponding cell values |
+| Row Number | `row-number` | number | Row number to update (1-based index) |
+| Row Data | `row-value` | json | Row data in JSON format where keys are column names and values are the corresponding cell values |
 </div>
 </details>
 
@@ -544,7 +544,7 @@ Update multiple rows in a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE_MULTIPLE_ROWS` |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
@@ -562,10 +562,10 @@ Multiple rows data with row numbers and data.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Row Number | `row-number` | integer | Row number to update (1-based index)  |
-| Row Data | `row-value` | object | Row data in JSON format where keys are column names and values are the corresponding cell values  |
+| Row Number | `row-number` | number | Row number to update (1-based index)  |
+| Row Data | `row-value` | json | Row data in JSON format where keys are column names and values are the corresponding cell values  |
 </div>
 </details>
 
@@ -573,7 +573,7 @@ Multiple rows data with row numbers and data.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Rows Data](#update-multiple-rows-rows-data) | `rows` | array[object] | Multiple rows data with row numbers and data. |
 </div>
@@ -585,10 +585,10 @@ Multiple rows data with row numbers and data.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Row Number | `row-number` | integer | Row number to update (1-based index) |
-| Row Data | `row-value` | object | Row data in JSON format where keys are column names and values are the corresponding cell values |
+| Row Number | `row-number` | number | Row number to update (1-based index) |
+| Row Data | `row-value` | json | Row data in JSON format where keys are column names and values are the corresponding cell values |
 </div>
 </details>
 
@@ -599,12 +599,12 @@ Delete a row from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE_ROW` |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
 | Sheet Name (required) | `sheet-name` | string | Name of the sheet. |
-| Row Number (required) | `row-number` | integer | Row number to update (1-based index). |
+| Row Number (required) | `row-number` | number | Row number to update (1-based index). |
 </div>
 
 
@@ -614,7 +614,7 @@ Delete a row from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Success | `success` | boolean | Result of the operation. |
 </div>
@@ -626,7 +626,7 @@ Delete multiple rows from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE_MULTIPLE_ROWS` |
 | Spreadsheet ID (required) | `shared-link` | string | Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'. |
@@ -641,7 +641,7 @@ Delete multiple rows from a Google Sheets spreadsheet.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Success | `success` | boolean | Result of the operation. |
 </div>

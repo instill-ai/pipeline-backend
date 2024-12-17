@@ -3,100 +3,106 @@
     "title": "New Message",
     "description": "A new message event from Slack.",
     "configSchema": {
-      "type": "object",
       "properties": {
         "channel-names": {
           "description": "Names of the Slack channels to listen to.",
-          "instillFormat": "array",
           "title": "Channel Names",
-          "type": "array",
           "items": {
-            "type": "string"
-          }
+            "format": "string"
+          },
+          "format": "array"
         }
-      }
+      },
+      "format": "object"
     },
     "messageSchema": {
       "description": "A new message event from Slack.",
       "properties": {
         "timestamp": {
           "description": "Timestamp of the message.",
-          "instillFormat": "string",
           "title": "Timestamp",
-          "type": "string"
+          "format": "string"
         },
         "channel": {
           "description": "Channel information.",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "properties": {
             "id": {
               "description": "Unique ID of the Slack channel.",
-              "instillFormat": "string",
               "title": "Channel ID",
-              "type": "string"
+              "format": "string"
             },
             "name": {
               "description": "Name of the Slack channel.",
-              "instillFormat": "string",
               "title": "Channel Name",
-              "type": "string"
+              "format": "string"
             }
           },
-          "required": ["id", "name"],
+          "required": [
+            "id",
+            "name"
+          ],
           "title": "Channel",
-          "type": "object"
+          "format": "object"
         },
         "user": {
           "description": "User information.",
-          "instillUIOrder": 2,
+          "uiOrder": 2,
           "properties": {
             "id": {
               "description": "Unique ID of the Slack user.",
-              "instillFormat": "string",
               "title": "User ID",
-              "type": "string"
+              "format": "string"
             },
             "name": {
               "description": "Username of the Slack user.",
-              "instillFormat": "string",
               "title": "User Name",
-              "type": "string"
+              "format": "string"
             },
             "real-name": {
               "description": "Real name of the Slack user.",
-              "instillFormat": "string",
               "title": "Real Name",
-              "type": "string"
+              "format": "string"
             },
             "profile": {
               "description": "User profile information.",
               "properties": {
                 "display-name": {
                   "description": "Display name of the Slack user.",
-                  "instillFormat": "string",
                   "title": "Display Name",
-                  "type": "string"
+                  "format": "string"
                 }
               },
-              "required": ["display-name"],
+              "required": [
+                "display-name"
+              ],
               "title": "Profile",
-              "type": "object"
+              "format": "object"
             }
           },
-          "required": ["id", "name", "real-name", "profile"],
+          "required": [
+            "id",
+            "name",
+            "real-name",
+            "profile"
+          ],
           "title": "User",
-          "type": "object"
+          "format": "object"
         },
         "text": {
           "description": "Content of the message.",
-          "instillFormat": "string",
           "title": "Message Text",
-          "type": "string"
+          "format": "string"
         }
       },
-      "required": ["timestamp", "channel", "user", "text"],
+      "required": [
+        "timestamp",
+        "channel",
+        "user",
+        "text"
+      ],
       "title": "New Message Event",
-      "type": "object"
+      "format": "object"
     },
     "messageExamples": [
       {

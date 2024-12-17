@@ -4,15 +4,10 @@
   "properties": {
     "engine": {
       "description": "Choose the engine of your database.",
-      "instillUpstreamTypes": [
-        "value",
-        "reference",
-        "template"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Engine",
       "enum": [
         "MySQL",
@@ -22,87 +17,68 @@
         "MariaDB",
         "Firebird"
       ],
-      "type": "string"
+      "format": "string"
     },
     "username": {
       "description": "Fill in your account username.",
-      "instillUpstreamTypes": [
-        "value",
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "Username",
-      "type": "string"
+      "format": "string"
     },
     "password": {
       "description": "Fill in your account password.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 2,
+      "uiOrder": 2,
       "title": "Password",
-      "type": "string"
+      "format": "string"
     },
     "database-name": {
       "description": "Fill in the name of your database.",
-      "instillUpstreamTypes": [
-        "value",
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
-      "instillUIOrder": 3,
+      "uiOrder": 3,
       "title": "Database Name",
-      "type": "string"
+      "format": "string"
     },
     "host": {
       "description": "Fill in the host of your database.",
-      "instillUpstreamTypes": [
-        "value",
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
-      "instillUIOrder": 4,
+      "uiOrder": 4,
       "title": "Host",
-      "type": "string"
+      "format": "string"
     },
     "port": {
       "description": "Fill in the port of your database.",
-      "instillUpstreamTypes": [
-        "value",
-        "reference"
-      ],
       "default": 3306,
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "number"
       ],
-      "instillUIOrder": 5,
+      "uiOrder": 5,
       "title": "Port",
-      "type": "number"
+      "format": "number"
     },
     "ssl-tls": {
       "description": "Enable SSL / TLS.",
-      "instillUIOrder": 6,
+      "uiOrder": 6,
       "oneOf": [
         {
           "properties": {
             "ssl-tls-type": {
               "const": "NO TLS",
               "description": "Choose the type of SSL / TLS.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "order": 0,
               "title": "SSL / TLS Type",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
@@ -115,24 +91,21 @@
             "ssl-tls-type": {
               "const": "TLS",
               "description": "Choose the type of SSL / TLS.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "order": 0,
               "title": "SSL / TLS Type",
-              "type": "string"
+              "format": "string"
             },
             "ssl-tls-ca": {
               "description": "Base64 encoded CA certificate file.",
-              "instillShortDescription": "Base64 encoded CA certificate file",
-              "instillUpstreamTypes": [
-                "reference"
-              ],
-              "instillAcceptFormats": [
+              "shortDescription": "Base64 encoded CA certificate file",
+              "acceptFormats": [
                 "string"
               ],
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "order": 1,
               "title": "CA Certificate",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
@@ -146,52 +119,43 @@
             "ssl-tls-type": {
               "const": "mTLS",
               "description": "Choose the type of SSL / TLS.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "order": 0,
               "title": "SSL / TLS Type",
-              "type": "string"
+              "format": "string"
             },
             "ssl-tls-ca": {
               "description": "Base64 encoded CA certificate file.",
-              "instillShortDescription": "Base64 encoded CA certificate file",
-              "instillUpstreamTypes": [
-                "reference"
-              ],
-              "instillAcceptFormats": [
+              "shortDescription": "Base64 encoded CA certificate file",
+              "acceptFormats": [
                 "string"
               ],
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "order": 1,
               "title": "CA Certificate",
-              "type": "string"
+              "format": "string"
             },
             "ssl-tls-cert": {
               "description": "Base64 encoded client certificate file.",
-              "instillShortDescription": "Base64 encoded client certificate file",
-              "instillUpstreamTypes": [
-                "reference"
-              ],
-              "instillAcceptFormats": [
+              "shortDescription": "Base64 encoded client certificate file",
+              "acceptFormats": [
                 "string"
               ],
-              "instillUIOrder": 2,
+              "uiOrder": 2,
               "order": 2,
               "title": "Client Certificate",
-              "type": "string"
+              "format": "string"
             },
             "ssl-tls-key": {
               "description": "Base64 encoded client key file.",
-              "instillShortDescription": "Base64 encoded client key file",
-              "instillUpstreamTypes": [
-                "reference"
-              ],
-              "instillAcceptFormats": [
+              "shortDescription": "Base64 encoded client key file",
+              "acceptFormats": [
                 "string"
               ],
-              "instillUIOrder": 3,
+              "uiOrder": 3,
               "order": 3,
               "title": "Client Key",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
@@ -205,7 +169,7 @@
       ],
       "order": 6,
       "title": "SSL / TLS",
-      "type": "object"
+      "format": "object"
     }
   },
   "required": [
@@ -217,14 +181,6 @@
     "port",
     "ssl-tls"
   ],
-  "instillEditOnNodeFields": [
-    "engine",
-    "username",
-    "password",
-    "database-name",
-    "host",
-    "port"
-  ],
   "title": "SQL Connection",
-  "type": "object"
+  "format": "object"
 }

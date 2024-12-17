@@ -3,16 +3,15 @@
     "title": "Star Created",
     "description": "A star created event from GitHub",
     "configSchema": {
-      "type": "object",
       "properties": {
         "repository": {
-          "type": "string"
+          "format": "string"
         }
-      }
+      },
+      "format": "object"
     },
     "messageSchema": {
       "$schema": "http://json-schema.org/draft-07/schema",
-      "type": "object",
       "required": [
         "action",
         "starred-at",
@@ -21,20 +20,18 @@
       ],
       "properties": {
         "action": {
-          "type": "string",
           "enum": [
             "created"
-          ]
+          ],
+          "format": "string"
         },
         "starred-at": {
-          "type": "string",
-          "format": "date-time",
+          "format": "string",
           "description": "The time the star was created. This is a timestamp in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. Will be `null` for the `deleted` action."
         },
         "repository": {
           "$schema": "http://json-schema.org/draft-07/schema",
           "description": "A git repository",
-          "type": "object",
           "required": [
             "id",
             "node-id",
@@ -116,28 +113,27 @@
           ],
           "properties": {
             "id": {
-              "type": "integer",
-              "description": "Unique identifier of the repository"
+              "description": "Unique identifier of the repository",
+              "format": "integer"
             },
             "node-id": {
-              "type": "string",
-              "description": "The GraphQL identifier of the repository."
+              "description": "The GraphQL identifier of the repository.",
+              "format": "string"
             },
             "name": {
-              "type": "string",
-              "description": "The name of the repository."
+              "description": "The name of the repository.",
+              "format": "string"
             },
             "full-name": {
-              "type": "string",
-              "description": "The full, globally unique, name of the repository."
+              "description": "The full, globally unique, name of the repository.",
+              "format": "string"
             },
             "private": {
-              "type": "boolean",
-              "description": "Whether the repository is private or public."
+              "description": "Whether the repository is private or public.",
+              "format": "boolean"
             },
             "owner": {
               "$schema": "http://json-schema.org/draft-07/schema",
-              "type": "object",
               "required": [
                 "login",
                 "id",
@@ -160,410 +156,353 @@
               ],
               "properties": {
                 "login": {
-                  "type": "string"
+                  "format": "string"
                 },
                 "id": {
-                  "type": "integer"
+                  "format": "integer"
                 },
                 "node-id": {
-                  "type": "string"
+                  "format": "string"
                 },
                 "name": {
-                  "type": "string"
+                  "format": "string"
                 },
                 "email": {
-                  "type": [
+                  "format": [
                     "string",
                     "null"
                   ]
                 },
                 "avatar-url": {
-                  "type": "string",
-                  "format": "uri"
+                  "format": "string"
                 },
                 "gravatar-id": {
-                  "type": "string"
+                  "format": "string"
                 },
                 "url": {
-                  "type": "string",
-                  "format": "uri"
+                  "format": "string"
                 },
                 "html-url": {
-                  "type": "string",
-                  "format": "uri"
+                  "format": "string"
                 },
                 "followers-url": {
-                  "type": "string",
-                  "format": "uri"
+                  "format": "string"
                 },
                 "following-url": {
-                  "type": "string",
-                  "format": "uri-template"
+                  "format": "string"
                 },
                 "gists-url": {
-                  "type": "string",
-                  "format": "uri-template"
+                  "format": "string"
                 },
                 "starred-url": {
-                  "type": "string",
-                  "format": "uri-template"
+                  "format": "string"
                 },
                 "subscriptions-url": {
-                  "type": "string",
-                  "format": "uri"
+                  "format": "string"
                 },
                 "organizations-url": {
-                  "type": "string",
-                  "format": "uri"
+                  "format": "string"
                 },
                 "repos-url": {
-                  "type": "string",
-                  "format": "uri"
+                  "format": "string"
                 },
                 "events-url": {
-                  "type": "string",
-                  "format": "uri-template"
+                  "format": "string"
                 },
                 "received-events-url": {
-                  "type": "string",
-                  "format": "uri"
+                  "format": "string"
+                },
+                "site-admin": {
+                  "format": "boolean"
                 },
                 "type": {
-                  "type": "string",
                   "enum": [
                     "Bot",
                     "User",
                     "Organization"
-                  ]
-                },
-                "site-admin": {
-                  "type": "boolean"
+                  ],
+                  "format": "string"
                 }
               },
               "additionalProperties": false,
-              "title": "User"
+              "title": "User",
+              "format": "object"
             },
             "html-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The URL to view the repository on GitHub.com."
             },
             "description": {
-              "type": [
+              "description": "The repository description.",
+              "format": [
                 "string",
                 "null"
-              ],
-              "description": "The repository description."
+              ]
             },
             "fork": {
-              "type": "boolean",
-              "description": "Whether the repository is a fork."
+              "description": "Whether the repository is a fork.",
+              "format": "boolean"
             },
             "url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The URL to get more information about the repository from the GitHub API."
             },
             "forks-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The API URL to list the forks of the repository."
             },
             "keys-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about deploy keys on the repository."
             },
             "collaborators-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about collaborators of the repository."
             },
             "teams-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The API URL to list the teams on the repository."
             },
             "hooks-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The API URL to list the hooks on the repository."
             },
             "issue-events-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about issue events on the repository."
             },
             "events-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The API URL to list the events of the repository."
             },
             "assignees-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to list the available assignees for issues in the repository."
             },
             "branches-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about branches in the repository."
             },
             "tags-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The API URL to get information about tags on the repository."
             },
             "blobs-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to create or retrieve a raw Git blob in the repository."
             },
             "git-tags-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about Git tags of the repository."
             },
             "git-refs-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about Git refs of the repository."
             },
             "trees-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to create or retrieve a raw Git tree of the repository."
             },
             "statuses-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about statuses of a commit."
             },
             "languages-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The API URL to get information about the languages of the repository."
             },
             "stargazers-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The API URL to list the stargazers on the repository."
             },
             "contributors-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "A template for the API URL to list the contributors to the repository."
             },
             "subscribers-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The API URL to list the subscribers on the repository."
             },
             "subscription-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The API URL to subscribe to notifications for this repository."
             },
             "commits-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about commits on the repository."
             },
             "git-commits-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about Git commits of the repository."
             },
             "comments-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about comments on the repository."
             },
             "issue-comment-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about issue comments on the repository."
             },
             "contents-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get the contents of the repository."
             },
             "compare-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to compare two commits or refs."
             },
             "merges-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The API URL to merge branches in the repository."
             },
             "archive-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to download the repository as an archive."
             },
             "downloads-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The API URL to list the downloads on the repository."
             },
             "issues-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about issues on the repository."
             },
             "pulls-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about pull requests on the repository."
             },
             "milestones-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about milestones of the repository."
             },
             "notifications-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about notifications on the repository."
             },
             "labels-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about labels of the repository."
             },
             "releases-url": {
-              "type": "string",
-              "format": "uri-template",
+              "format": "string",
               "description": "A template for the API URL to get information about releases on the repository."
             },
             "deployments-url": {
-              "type": "string",
-              "format": "uri",
+              "format": "string",
               "description": "The API URL to list the deployments of the repository."
             },
             "created-at": {
               "oneOf": [
                 {
-                  "type": "integer"
+                  "format": "integer"
                 },
                 {
-                  "type": "string",
-                  "format": "date-time"
+                  "format": "string"
                 }
               ]
             },
             "updated-at": {
-              "type": "string",
-              "format": "date-time"
+              "format": "string"
             },
             "pushed-at": {
               "oneOf": [
                 {
-                  "type": "integer"
+                  "format": "integer"
                 },
                 {
-                  "type": "string",
-                  "format": "date-time"
+                  "format": "string"
                 },
                 {
-                  "type": "null"
+                  "format": "null"
                 }
               ]
             },
             "git-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "ssh-url": {
-              "type": "string"
+              "format": "string"
             },
             "clone-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "svn-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "homepage": {
-              "type": [
+              "format": [
                 "string",
                 "null"
               ]
             },
             "size": {
-              "type": "integer"
+              "format": "integer"
             },
             "stargazers-count": {
-              "type": "integer"
+              "format": "integer"
             },
             "watchers-count": {
-              "type": "integer"
+              "format": "integer"
             },
             "language": {
-              "type": [
+              "format": [
                 "string",
                 "null"
               ]
             },
             "has-issues": {
-              "type": "boolean",
               "description": "Whether issues are enabled.",
-              "default": true
+              "default": true,
+              "format": "boolean"
             },
             "has-projects": {
-              "type": "boolean",
               "description": "Whether projects are enabled.",
-              "default": true
+              "default": true,
+              "format": "boolean"
             },
             "has-downloads": {
-              "type": "boolean",
               "description": "Whether downloads are enabled.",
-              "default": true
+              "default": true,
+              "format": "boolean"
             },
             "has-wiki": {
-              "type": "boolean",
               "description": "Whether the wiki is enabled.",
-              "default": true
+              "default": true,
+              "format": "boolean"
             },
             "has-pages": {
-              "type": "boolean"
+              "format": "boolean"
             },
             "has-discussions": {
-              "type": "boolean",
               "description": "Whether discussions are enabled.",
-              "default": true
+              "default": true,
+              "format": "boolean"
             },
             "forks-count": {
-              "type": "integer"
+              "format": "integer"
             },
             "mirror-url": {
-              "type": [
+              "format": [
                 "string",
                 "null"
-              ],
-              "format": "uri"
+              ]
             },
             "archived": {
-              "type": "boolean",
               "description": "Whether the repository is archived.",
-              "default": false
+              "default": false,
+              "format": "boolean"
             },
             "disabled": {
-              "type": "boolean",
-              "description": "Returns whether or not this repository is disabled."
+              "description": "Returns whether or not this repository is disabled.",
+              "format": "boolean"
             },
             "open-issues-count": {
-              "type": "integer"
+              "format": "integer"
             },
             "license": {
               "oneOf": [
                 {
                   "$schema": "http://json-schema.org/draft-07/schema",
-                  "type": "object",
                   "required": [
                     "key",
                     "name",
@@ -573,121 +512,120 @@
                   ],
                   "properties": {
                     "key": {
-                      "type": "string"
+                      "format": "string"
                     },
                     "name": {
-                      "type": "string"
+                      "format": "string"
                     },
                     "spdx-id": {
-                      "type": "string"
+                      "format": "string"
                     },
                     "url": {
-                      "type": [
+                      "format": [
                         "string",
                         "null"
-                      ],
-                      "format": "uri"
+                      ]
                     },
                     "node-id": {
-                      "type": "string"
+                      "format": "string"
                     }
                   },
                   "additionalProperties": false,
-                  "title": "License"
+                  "title": "License",
+                  "format": "object"
                 },
                 {
-                  "type": "null"
+                  "format": "null"
                 }
               ]
             },
             "forks": {
-              "type": "integer"
+              "format": "integer"
             },
             "open-issues": {
-              "type": "integer"
+              "format": "integer"
             },
             "watchers": {
-              "type": "integer"
+              "format": "integer"
             },
             "stargazers": {
-              "type": "integer"
+              "format": "integer"
             },
             "default-branch": {
-              "type": "string",
-              "description": "The default branch of the repository."
+              "description": "The default branch of the repository.",
+              "format": "string"
             },
             "allow-squash-merge": {
-              "type": "boolean",
               "description": "Whether to allow squash merges for pull requests.",
-              "default": true
+              "default": true,
+              "format": "boolean"
             },
             "allow-merge-commit": {
-              "type": "boolean",
               "description": "Whether to allow merge commits for pull requests.",
-              "default": true
+              "default": true,
+              "format": "boolean"
             },
             "allow-rebase-merge": {
-              "type": "boolean",
               "description": "Whether to allow rebase merges for pull requests.",
-              "default": true
+              "default": true,
+              "format": "boolean"
             },
             "allow-auto-merge": {
-              "type": "boolean",
               "description": "Whether to allow auto-merge for pull requests.",
-              "default": false
+              "default": false,
+              "format": "boolean"
             },
             "allow-forking": {
-              "type": "boolean",
-              "description": "Whether to allow private forks"
+              "description": "Whether to allow private forks",
+              "format": "boolean"
             },
             "allow-update-branch": {
-              "type": "boolean"
+              "format": "boolean"
             },
             "use-squash-pr-title-as-default": {
-              "type": "boolean"
+              "format": "boolean"
             },
             "squash-merge-commit-message": {
-              "type": "string"
+              "format": "string"
             },
             "squash-merge-commit-title": {
-              "type": "string"
+              "format": "string"
             },
             "merge-commit-message": {
-              "type": "string"
+              "format": "string"
             },
             "merge-commit-title": {
-              "type": "string"
+              "format": "string"
             },
             "is-template": {
-              "type": "boolean"
+              "format": "boolean"
             },
             "web-commit-signoff-required": {
-              "type": "boolean"
+              "format": "boolean"
             },
             "topics": {
-              "type": "array",
               "items": {
-                "type": "string"
-              }
+                "format": "string"
+              },
+              "format": "array"
             },
             "visibility": {
-              "type": "string",
               "enum": [
                 "public",
                 "private",
                 "internal"
-              ]
+              ],
+              "format": "string"
             },
             "delete-branch-on-merge": {
-              "type": "boolean",
               "description": "Whether to delete head branches when pull requests are merged",
-              "default": false
+              "default": false,
+              "format": "boolean"
             },
             "master-branch": {
-              "type": "string"
+              "format": "string"
             },
             "permissions": {
-              "type": "object",
               "required": [
                 "pull",
                 "push",
@@ -695,55 +633,56 @@
               ],
               "properties": {
                 "pull": {
-                  "type": "boolean"
+                  "format": "boolean"
                 },
                 "push": {
-                  "type": "boolean"
+                  "format": "boolean"
                 },
                 "admin": {
-                  "type": "boolean"
+                  "format": "boolean"
                 },
                 "maintain": {
-                  "type": "boolean"
+                  "format": "boolean"
                 },
                 "triage": {
-                  "type": "boolean"
+                  "format": "boolean"
                 }
               },
-              "additionalProperties": false
+              "additionalProperties": false,
+              "format": "object"
             },
             "public": {
-              "type": "boolean"
+              "format": "boolean"
             },
             "organization": {
-              "type": "string"
+              "format": "string"
             },
             "custom-properties": {
-              "type": "object",
               "additionalProperties": {
                 "oneOf": [
                   {
-                    "type": "null"
+                    "format": "null"
                   },
                   {
-                    "type": "string"
+                    "format": "string"
                   },
                   {
-                    "type": "array",
                     "items": {
-                      "type": "string"
-                    }
+                      "format": "string"
+                    },
+                    "format": "array"
                   }
                 ]
-              }
+              },
+              "format": "object"
             }
           },
           "additionalProperties": false,
-          "title": "Repository"
+          "title": "Repository",
+          "format": "object"
         },
         "sender": {
           "$schema": "http://json-schema.org/draft-07/schema",
-          "type": "object",
           "required": [
             "login",
             "id",
@@ -766,92 +705,80 @@
           ],
           "properties": {
             "login": {
-              "type": "string"
+              "format": "string"
             },
             "id": {
-              "type": "integer"
+              "format": "integer"
             },
             "node-id": {
-              "type": "string"
+              "format": "string"
             },
             "name": {
-              "type": "string"
+              "format": "string"
             },
             "email": {
-              "type": [
+              "format": [
                 "string",
                 "null"
               ]
             },
             "avatar-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "gravatar-id": {
-              "type": "string"
+              "format": "string"
             },
             "url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "html-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "followers-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "following-url": {
-              "type": "string",
-              "format": "uri-template"
+              "format": "string"
             },
             "gists-url": {
-              "type": "string",
-              "format": "uri-template"
+              "format": "string"
             },
             "starred-url": {
-              "type": "string",
-              "format": "uri-template"
+              "format": "string"
             },
             "subscriptions-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "organizations-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "repos-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "events-url": {
-              "type": "string",
-              "format": "uri-template"
+              "format": "string"
             },
             "received-events-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
+            },
+            "site-admin": {
+              "format": "boolean"
             },
             "type": {
-              "type": "string",
               "enum": [
                 "Bot",
                 "User",
                 "Organization"
-              ]
-            },
-            "site-admin": {
-              "type": "boolean"
+              ],
+              "format": "string"
             }
           },
           "additionalProperties": false,
-          "title": "User"
+          "title": "User",
+          "format": "object"
         },
         "organization": {
           "$schema": "http://json-schema.org/draft-07/schema",
-          "type": "object",
           "required": [
             "login",
             "id",
@@ -868,83 +795,76 @@
           ],
           "properties": {
             "login": {
-              "type": "string"
+              "format": "string"
             },
             "id": {
-              "type": "integer"
+              "format": "integer"
             },
             "node-id": {
-              "type": "string"
+              "format": "string"
             },
             "url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "html-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "repos-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "events-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "hooks-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "issues-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "members-url": {
-              "type": "string",
-              "format": "uri-template"
+              "format": "string"
             },
             "public-members-url": {
-              "type": "string",
-              "format": "uri-template"
+              "format": "string"
             },
             "avatar-url": {
-              "type": "string",
-              "format": "uri"
+              "format": "string"
             },
             "description": {
-              "type": [
+              "format": [
                 "string",
                 "null"
               ]
             }
           },
           "additionalProperties": false,
-          "title": "Organization"
+          "title": "Organization",
+          "format": "object"
         },
         "installation": {
           "$schema": "http://json-schema.org/draft-07/schema",
           "description": "Installation",
-          "type": "object",
           "required": [
             "id",
             "node-id"
           ],
           "properties": {
             "id": {
-              "type": "integer",
-              "description": "The ID of the installation."
+              "description": "The ID of the installation.",
+              "format": "integer"
             },
             "node-id": {
-              "type": "string"
+              "format": "string"
             }
           },
           "additionalProperties": false,
-          "title": "InstallationLite"
+          "title": "InstallationLite",
+          "format": "object"
         }
       },
       "additionalProperties": false,
-      "title": "star created event"
+      "title": "star created event",
+      "format": "object"
     },
     "messageExamples": [
       {
@@ -973,8 +893,8 @@
             "repos-url": "https://api.github.com/users/Codertocat/repos",
             "events-url": "https://api.github.com/users/Codertocat/events{/privacy}",
             "received-events-url": "https://api.github.com/users/Codertocat/received_events",
-            "type": "User",
-            "site-admin": false
+            "site-admin": false,
+            "format": "User"
           },
           "html-url": "https://github.com/Codertocat/Hello-World",
           "description": null,
@@ -1066,8 +986,8 @@
           "repos-url": "https://api.github.com/users/Codertocat/repos",
           "events-url": "https://api.github.com/users/Codertocat/events{/privacy}",
           "received-events-url": "https://api.github.com/users/Codertocat/received_events",
-          "type": "User",
-          "site-admin": false
+          "site-admin": false,
+          "format": "User"
         }
       }
     ]

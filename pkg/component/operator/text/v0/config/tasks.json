@@ -2,48 +2,34 @@
   "$defs": {
     "text": {
       "description": "Text to be chunked.",
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
-      "instillUIMultiline": true,
-      "instillUIOrder": 0,
-      "instillUpstreamTypes": [
-        "value",
-        "reference",
-        "template"
-      ],
+      "uiOrder": 0,
       "title": "Text",
-      "type": "string"
+      "format": "string"
     },
     "chunk-size": {
       "default": 512,
       "description": "Specifies the maximum size of each chunk in terms of the number of tokens.",
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "integer"
       ],
-      "instillUIOrder": 1,
-      "instillUpstreamTypes": [
-        "value",
-        "reference"
-      ],
+      "uiOrder": 1,
       "minimum": 1,
       "title": "Chunk Size",
-      "type": "integer"
+      "format": "integer"
     },
     "chunk-overlap": {
       "default": 100,
       "description": "Determines the number of tokens that overlap between consecutive chunks.",
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "integer"
       ],
-      "instillUIOrder": 2,
-      "instillUpstreamTypes": [
-        "value",
-        "reference"
-      ],
+      "uiOrder": 2,
       "minimum": 1,
       "title": "Chunk Overlap",
-      "type": "integer"
+      "format": "integer"
     },
     "model-name": {
       "description": "The name of the model used for tokenization.",
@@ -81,42 +67,32 @@
         "code-search-ada-code-001",
         "gpt2"
       ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
-      "instillUIOrder": 3,
-      "instillUpstreamTypes": [
-        "value",
-        "reference",
-        "template"
-      ],
+      "uiOrder": 3,
       "title": "Model",
-      "type": "string"
+      "format": "string"
     }
   },
   "TASK_CHUNK_TEXT": {
-    "instillShortDescription": "Chunk text with different strategies",
+    "shortDescription": "Chunk text with different strategies",
     "input": {
       "description": "Input.",
-      "instillEditOnNodeFields": [
-        "text",
-        "strategy"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "text": {
           "$ref": "#/$defs/text"
         },
         "strategy": {
           "description": "Chunking strategy.",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "properties": {
             "setting": {
               "description": "Chunk Setting.",
               "additionalProperties": true,
-              "type": "object",
               "title": "Setting",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "required": [
                 "chunk-method"
               ],
@@ -125,10 +101,10 @@
                   "properties": {
                     "chunk-method": {
                       "const": "Token",
-                      "type": "string",
                       "title": "Chunk Method",
                       "description": "Chunking based on tokenization.",
-                      "instillUIOrder": 0
+                      "uiOrder": 0,
+                      "format": "string"
                     },
                     "chunk-size": {
                       "$ref": "#/$defs/chunk-size"
@@ -142,65 +118,45 @@
                     "allowed-special": {
                       "default": [],
                       "description": "A list of special tokens that are allowed within chunks.",
-                      "instillAcceptFormats": [
-                        "array:string"
+                      "acceptFormats": [
+                        "array"
                       ],
                       "items": {
-                        "instillUIMultiline": false,
-                        "type": "string"
+                        "format": "string"
                       },
-                      "instillUIOrder": 4,
-                      "instillUpstreamTypes": [
-                        "value",
-                        "reference",
-                        "template"
-                      ],
+                      "uiOrder": 4,
                       "title": "Allowed Special Tokens",
-                      "type": "array"
+                      "format": "array"
                     },
                     "disallowed-special": {
                       "default": [],
                       "description": "A list of special tokens that should not appear within chunks.",
-                      "instillAcceptFormats": [
-                        "array:string"
+                      "acceptFormats": [
+                        "array"
                       ],
                       "items": {
-                        "instillUIMultiline": false,
-                        "type": "string"
+                        "format": "string"
                       },
-                      "instillUIOrder": 5,
-                      "instillUpstreamTypes": [
-                        "value",
-                        "reference",
-                        "template"
-                      ],
+                      "uiOrder": 5,
                       "title": "Disallowed Special Tokens",
-                      "type": "array"
+                      "format": "array"
                     }
                   },
                   "required": [
                     "chunk-method"
                   ],
-                  "instillEditOnNodeFields": [
-                    "chunk-method",
-                    "chunk-size",
-                    "chunk-overlap",
-                    "model-name",
-                    "allowed-special",
-                    "disallowed-special"
-                  ],
                   "title": "Token",
-                  "type": "object",
-                  "description": "Language models have a token limit. You should not exceed the token limit. When you split your text into chunks it is therefore a good idea to count the number of tokens. There are many tokenizers. When you count tokens in your text you should use the same tokenizer as used in the language model."
+                  "description": "Language models have a token limit. You should not exceed the token limit. When you split your text into chunks it is therefore a good idea to count the number of tokens. There are many tokenizers. When you count tokens in your text you should use the same tokenizer as used in the language model.",
+                  "format": "object"
                 },
                 {
                   "properties": {
                     "chunk-method": {
                       "const": "Recursive",
-                      "type": "string",
                       "title": "Chunk Method",
                       "description": "Chunking based on recursive splitting.",
-                      "instillUIOrder": 0
+                      "uiOrder": 0,
+                      "format": "string"
                     },
                     "chunk-size": {
                       "$ref": "#/$defs/chunk-size"
@@ -214,60 +170,41 @@
                     "separators": {
                       "default": [],
                       "description": "A list of strings representing the separators used to split the text.",
-                      "instillAcceptFormats": [
-                        "array:string"
+                      "acceptFormats": [
+                        "array"
                       ],
-                      "instillUIOrder": 3,
+                      "uiOrder": 3,
                       "items": {
-                        "instillUIMultiline": false,
-                        "type": "string"
+                        "format": "string"
                       },
-                      "instillUpstreamTypes": [
-                        "value",
-                        "reference",
-                        "template"
-                      ],
                       "title": "Separators",
-                      "type": "array"
+                      "format": "array"
                     },
                     "keep-separator": {
                       "description": "A flag indicating whether to keep the separator characters at the beginning or end of chunks.",
-                      "instillAcceptFormats": [
+                      "acceptFormats": [
                         "boolean"
                       ],
-                      "instillUIOrder": 4,
-                      "instillUpstreamTypes": [
-                        "value",
-                        "reference",
-                        "template"
-                      ],
+                      "uiOrder": 4,
                       "title": "Keep Separator",
-                      "type": "boolean"
+                      "format": "boolean"
                     }
                   },
                   "required": [
                     "chunk-method"
                   ],
-                  "instillEditOnNodeFields": [
-                    "chunk-method",
-                    "chunk-size",
-                    "chunk-overlap",
-                    "model-name",
-                    "separators",
-                    "keep-separator"
-                  ],
                   "title": "Recursive",
-                  "type": "object",
-                  "description": "This text splitter is the recommended one for generic text. It is parameterized by a list of characters. It tries to split on them in order until the chunks are small enough. The default list is [\"\\n\\n\", \"\\n\", \"\", \"\"]. This has the effect of trying to keep all paragraphs (and then sentences, and then words) together as long as possible, as those would generically seem to be the strongest semantically related pieces of text."
+                  "description": "This text splitter is the recommended one for generic text. It is parameterized by a list of characters. It tries to split on them in order until the chunks are small enough. The default list is [\"\\n\\n\", \"\\n\", \"\", \"\"]. This has the effect of trying to keep all paragraphs (and then sentences, and then words) together as long as possible, as those would generically seem to be the strongest semantically related pieces of text.",
+                  "format": "object"
                 },
                 {
                   "properties": {
                     "chunk-method": {
                       "const": "Markdown",
-                      "type": "string",
                       "title": "Chunk Method",
                       "description": "Chunking based on recursive splitting with markdown format.",
-                      "instillUIOrder": 0
+                      "uiOrder": 0,
+                      "format": "string"
                     },
                     "chunk-size": {
                       "$ref": "#/$defs/chunk-size"
@@ -280,41 +217,30 @@
                     },
                     "code-blocks": {
                       "description": "A flag indicating whether code blocks should be treated as a single unit.",
-                      "instillAcceptFormats": [
+                      "acceptFormats": [
                         "boolean"
                       ],
-                      "instillUIOrder": 3,
-                      "instillUpstreamTypes": [
-                        "value",
-                        "reference",
-                        "template"
-                      ],
+                      "uiOrder": 3,
                       "title": "Code Blocks",
-                      "type": "boolean"
+                      "format": "boolean"
                     }
                   },
                   "required": [
                     "chunk-method"
                   ],
-                  "instillEditOnNodeFields": [
-                    "chunk-method",
-                    "chunk-size",
-                    "chunk-overlap",
-                    "model-name",
-                    "code-blocks"
-                  ],
                   "title": "Markdown",
-                  "type": "object",
-                  "description": "This text splitter is specially designed for Markdown format."
+                  "description": "This text splitter is specially designed for Markdown format.",
+                  "format": "object"
                 }
-              ]
+              ],
+              "format": "object"
             }
           },
           "title": "Strategy",
           "required": [
             "setting"
           ],
-          "type": "object"
+          "format": "object"
         }
       },
       "required": [
@@ -322,22 +248,21 @@
         "strategy"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Output.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "chunk-num": {
           "description": "Total number of output text chunks.",
-          "instillUIOrder": 2,
-          "instillFormat": "integer",
+          "uiOrder": 2,
           "title": "Number of Text Chunks",
-          "type": "integer"
+          "format": "integer"
         },
         "text-chunks": {
           "description": "Text chunks after splitting.",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "items": {
             "title": "Text Chunk",
             "description": "Text chunk after splitting.",
@@ -345,31 +270,26 @@
               "text": {
                 "title": "Text",
                 "description": "Text chunk after splitting.",
-                "instillFormat": "string",
-                "instillUIMultiline": true,
-                "instillUIOrder": 0,
-                "type": "string"
+                "uiOrder": 0,
+                "format": "string"
               },
               "start-position": {
                 "title": "Start Position",
                 "description": "The starting position of the chunk in the original text.",
-                "instillFormat": "integer",
-                "instillUIOrder": 1,
-                "type": "integer"
+                "uiOrder": 1,
+                "format": "integer"
               },
               "end-position": {
                 "title": "End Position",
                 "description": "The ending position of the chunk in the original text.",
-                "instillFormat": "integer",
-                "instillUIOrder": 2,
-                "type": "integer"
+                "uiOrder": 2,
+                "format": "integer"
               },
               "token-count": {
                 "title": "Token Count",
                 "description": "Count of tokens in a chunk.",
-                "instillFormat": "integer",
-                "instillUIOrder": 3,
-                "type": "integer"
+                "uiOrder": 3,
+                "format": "integer"
               }
             },
             "required": [
@@ -378,25 +298,22 @@
               "end-position",
               "token-count"
             ],
-            "instillUIMultiline": true,
-            "type": "object"
+            "format": "object"
           },
           "title": "Text Chunks",
-          "type": "array"
+          "format": "array"
         },
         "token-count": {
           "description": "Total count of tokens in the original input text.",
-          "instillUIOrder": 0,
-          "instillFormat": "integer",
+          "uiOrder": 0,
           "title": "Token Count",
-          "type": "integer"
+          "format": "integer"
         },
         "chunks-token-count": {
           "description": "Total count of tokens in the output text chunks.",
-          "instillUIOrder": 3,
-          "instillFormat": "integer",
+          "uiOrder": 3,
           "title": "Token Count Chunks",
-          "type": "integer"
+          "format": "integer"
         }
       },
       "required": [
@@ -406,7 +323,7 @@
         "chunks-token-count"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   }
 }

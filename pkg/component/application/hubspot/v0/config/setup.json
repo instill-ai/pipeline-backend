@@ -4,24 +4,18 @@
   "properties": {
     "token": {
       "description": "Fill in your HubSpot private app access token. Go here for [more information](https://developers.hubspot.com/docs/api/private-apps).",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Token",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
     "token"
   ],
-  "instillEditOnNodeFields": [
-    "token"
-  ],
   "title": "HubSpot Connection",
-  "type": "object"
+  "format": "object"
 }

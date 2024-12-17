@@ -2,228 +2,183 @@
   "$defs": {
     "resolution": {
       "description": "Desired number pixels per inch. Defaults to 300. Minimum is 72.",
-      "instillFormat": "number",
       "title": "Resolution",
-      "type": "number",
       "minimum": 72,
-      "default": 300
+      "default": 300,
+      "format": "number"
     }
   },
   "TASK_CONVERT_TO_MARKDOWN": {
-    "instillShortDescription": "Convert document to text in Markdown format.",
+    "shortDescription": "Convert document to text in Markdown format.",
     "input": {
       "description": "Input.",
-      "instillEditOnNodeFields": [
-        "document"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "document": {
           "description": "Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML/XLSX/XLS/CSV to be converted to text in Markdown format.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "*/*"
           ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "uiOrder": 0,
           "title": "Document",
-          "type": "string"
+          "format": "string"
         },
         "filename": {
           "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Filename",
-          "type": "string"
+          "format": "string"
         },
         "display-image-tag": {
           "default": false,
           "description": "Whether to display image tag in the markdown text. Default is 'false'. It is only applicable for convert-2024-08-28 converter. And, it is only applicable for the type of PPTX/PPT/DOCX/DOC/PDF.",
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "uiOrder": 2,
           "title": "Display Image Tag",
-          "type": "boolean"
+          "format": "boolean"
         },
         "display-all-page-image": {
           "default": false,
           "description": "Whether to respond the whole page as the images if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF.",
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "uiOrder": 3,
           "title": "Display All Page Image",
-          "type": "boolean"
+          "format": "boolean"
         },
         "resolution": {
           "$ref": "#/$defs/resolution",
-          "instillUIOrder": 4
+          "uiOrder": 4
         }
       },
       "required": [
         "document"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Output.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "body": {
           "description": "Markdown text converted from the PDF document.",
-          "instillFormat": "string",
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Body",
-          "type": "string"
+          "format": "string"
         },
         "filename": {
           "description": "The name of the file.",
-          "instillFormat": "string",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "title": "Filename",
-          "type": "string"
+          "format": "string"
         },
         "images": {
           "description": "Images extracted from the document.",
-          "instillFormat": "array:image/*",
-          "instillUIOrder": 2,
+          "uiOrder": 2,
           "items": {
-            "type": "string"
+            "format": "string"
           },
           "title": "Images",
-          "type": "array"
+          "format": "array"
         },
         "error": {
           "description": "Error message if any during the conversion process.",
-          "instillFormat": "string",
-          "instillUIOrder": 3,
+          "uiOrder": 3,
           "title": "Error",
-          "type": "string"
+          "format": "string"
         },
         "all-page-images": {
           "description": "The image contains all the pages in the document if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF.",
-          "instillFormat": "array:image/*",
-          "instillUIOrder": 4,
+          "uiOrder": 4,
           "items": {
-            "type": "string"
+            "format": "string"
           },
           "title": "All Page Images",
-          "type": "array"
+          "format": "array"
         },
         "markdowns": {
           "description": "Markdown text converted from the PDF document, separated by page.",
-          "instillFormat": "array:string",
-          "instillUIOrder": 5,
+          "uiOrder": 5,
           "items": {
-            "type": "string"
+            "format": "string"
           },
           "title": "Markdowns",
-          "type": "array"
+          "format": "array"
         }
       },
       "required": [
         "body"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CONVERT_TO_TEXT": {
-    "instillShortDescription": "Convert document to text.",
+    "shortDescription": "Convert document to text.",
     "input": {
       "description": "Input.",
-      "instillEditOnNodeFields": [
-        "document"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "document": {
           "description": "Base64 encoded PDF/DOC/DOCX/XML/HTML/RTF/MD/PPTX/ODT/TIF/CSV/TXT/PNG document to be converted to plain text.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "*/*"
           ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "uiOrder": 0,
           "title": "Document",
-          "type": "string"
+          "format": "string"
         },
         "filename": {
           "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Filename",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "document"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Output.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "body": {
           "description": "Plain text converted from the document.",
-          "instillFormat": "string",
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Body",
-          "type": "string"
+          "format": "string"
         },
         "error": {
           "description": "Error message if any during the conversion process.",
-          "instillFormat": "string",
-          "instillUIMultiline": true,
-          "instillUIOrder": 3,
+          "uiOrder": 3,
           "title": "Error",
-          "type": "string"
+          "format": "string"
         },
         "meta": {
           "description": "Metadata extracted from the document.",
-          "instillFormat": "semi-structured/object",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "required": [],
           "title": "Meta",
-          "type": "object"
+          "format": "json"
         },
         "msecs": {
           "description": "Time taken to convert the document.",
-          "instillFormat": "number",
-          "instillUIOrder": 2,
+          "uiOrder": 2,
           "title": "Milliseconds",
-          "type": "number"
+          "format": "number"
         },
         "filename": {
           "description": "The name of the file.",
-          "instillFormat": "string",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "title": "Filename",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
@@ -233,85 +188,72 @@
         "error"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CONVERT_TO_IMAGES": {
-    "instillShortDescription": "Convert Document to images.",
+    "shortDescription": "Convert Document to images.",
     "input": {
       "description": "Input.",
-      "instillEditOnNodeFields": [
-        "document"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "document": {
           "description": "Base64 encoded PDF/DOCX/DOC/PPT/PPTX to be converted to images.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "*/*"
           ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "uiOrder": 0,
           "title": "PDF",
-          "type": "string"
+          "format": "string"
         },
         "filename": {
           "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Filename",
-          "type": "string"
+          "format": "string"
         },
         "resolution": {
           "$ref": "#/$defs/resolution",
-          "instillUIOrder": 4
+          "uiOrder": 4
         }
       },
       "required": [
         "document"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Output.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "images": {
           "description": "Images converted from the document.",
-          "instillFormat": "array:image/*",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "items": {
-            "type": "string"
+            "format": "string"
           },
           "title": "Images",
-          "type": "array"
+          "format": "array"
         },
         "filenames": {
           "description": "The filenames of the images. The filenames will be appended with the page number. e.g. 'example-1.jpg'.",
-          "instillFormat": "array:string",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "items": {
-            "type": "string"
+            "format": "string"
           },
           "title": "Filenames",
-          "type": "array"
+          "format": "array"
         }
       },
       "required": [
         "images"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   }
 }

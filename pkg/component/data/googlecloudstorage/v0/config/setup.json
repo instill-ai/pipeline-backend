@@ -4,25 +4,18 @@
   "properties": {
     "json-key": {
       "description": "Contents of the JSON key file with access to the bucket.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 1,
-      "instillUIMultiline": true,
+      "uiOrder": 1,
       "title": "JSON Key File contents",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
     "json-key"
   ],
-  "instillEditOnNodeFields": [
-    "json-key"
-  ],
   "title": "Google Cloud Storage Connection",
-  "type": "object"
+  "format": "object"
 }

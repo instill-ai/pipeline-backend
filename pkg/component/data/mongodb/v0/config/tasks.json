@@ -1,66 +1,46 @@
 {
   "TASK_INSERT": {
-    "instillShortDescription": "Perform an insert operation",
+    "shortDescription": "Perform an insert operation",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "database-name": {
           "description": "The name of the database in MongoDB.",
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Database Name",
-          "type": "string"
+          "format": "string"
         },
         "collection-name": {
           "description": "The name of the collection in MongoDB.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "id": {
           "description": "The ID of the document.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 2,
           "title": "ID",
-          "type": "string"
+          "format": "string"
         },
         "data": {
           "description": "The data to be inserted.",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 3,
           "title": "Data",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
@@ -69,103 +49,82 @@
         "data"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Insert status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_INSERT_MANY": {
-    "instillShortDescription": "Perform an insert many operation",
+    "shortDescription": "Perform an insert many operation",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "database-name": {
           "description": "The name of the database in MongoDB.",
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Database Name",
-          "type": "string"
+          "format": "string"
         },
         "collection-name": {
           "description": "The name of the collection in MongoDB.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "array-id": {
           "description": "The array of id.",
-          "instillAcceptFormats": [
-            "array:string"
+          "acceptFormats": [
+            "array"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 2,
           "items": {
             "description": "An id of the document.",
-            "type": "string",
-            "example": 1
+            "example": 1,
+            "format": "string"
           },
           "minItems": 1,
           "title": "Array ID",
-          "type": "array"
+          "format": "array"
         },
         "array-data": {
           "description": "The array data to be inserted.",
-          "instillAcceptFormats": [
-            "array:semi-structured/*",
-            "array:semi-structured/json",
-            "array:semi-structured/object",
-            "array:object"
+          "acceptFormats": [
+            "array",
+            "array",
+            "array",
+            "array"
           ],
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 3,
           "title": "Data",
-          "type": "array",
           "items": {
             "description": "The data to be inserted.",
             "title": "Data",
-            "type": "object",
-            "required": []
+            "required": [],
+            "format": "object"
           },
-          "minItems": 1
+          "minItems": 1,
+          "format": "array"
         }
       },
       "required": [
@@ -174,197 +133,156 @@
         "array-data"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Insert many status.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_FIND": {
-    "instillShortDescription": "Perform a find operation",
+    "shortDescription": "Perform a find operation",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "database-name": {
           "description": "The name of the database in MongoDB.",
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Database Name",
-          "type": "string"
+          "format": "string"
         },
         "collection-name": {
           "description": "The name of the collection in MongoDB.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "id": {
           "description": "The ID of the document.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 2,
           "title": "ID",
-          "type": "string"
+          "format": "string"
         },
         "filter": {
           "description": "The filter to find documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned.",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillShortDescription": "The mongodb language query to filter the documents, empty for no filter",
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "shortDescription": "The mongodb language query to filter the documents, empty for no filter",
+          "uiOrder": 3,
           "title": "Filter",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         },
         "limit": {
           "description": "The number of documents to return. If empty then all documents will be returned.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillShortDescription": "Limit the documents, empty for all documents",
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "shortDescription": "Limit the documents, empty for all documents",
+          "uiOrder": 4,
           "title": "Limit",
-          "type": "integer"
+          "format": "integer"
         },
         "fields": {
           "description": "The fields to return in the documents. If empty then all fields will be returned.",
-          "instillAcceptFormats": [
-            "array:string"
+          "acceptFormats": [
+            "array"
           ],
-          "instillShortDescription": "Fields to be returned, empty for all fields",
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "shortDescription": "Fields to be returned, empty for all fields",
+          "uiOrder": 5,
           "title": "Fields",
-          "type": "array",
           "items": {
             "title": "Field",
-            "type": "string"
+            "format": "string"
           },
-          "minItems": 1
+          "minItems": 1,
+          "format": "array"
         }
       },
       "required": [
         "database-name",
         "collection-name"
       ],
-      "instillEditOnNodeFields": [
-        "database-name",
-        "collection-name",
-        "filter"
-      ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Find status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         },
         "result": {
           "description": "Result of the find operation.",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Result",
-          "type": "object",
           "properties": {
             "ids": {
               "description": "The ids returned from the find operation.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "IDs",
-              "type": "array",
               "required": [],
-              "instillFormat": "array:string",
               "items": {
                 "description": "An id of the document.",
-                "type": "string",
-                "example": "c8faa-4b3b-4b3b-4b3b"
-              }
+                "example": "c8faa-4b3b-4b3b-4b3b",
+                "format": "string"
+              },
+              "format": "array"
             },
             "documents": {
               "description": "The documents returned from the find operation.",
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "required": [],
               "title": "Documents",
-              "type": "array",
-              "instillFormat": "array:semi-structured/json",
               "items": {
                 "title": "Document",
-                "format": "semi-structured/json",
-                "type": "object",
+                "format": "object",
                 "required": []
-              }
+              },
+              "format": "array"
             },
             "data": {
               "description": "The data returned from the find operation.",
-              "instillUIOrder": 2,
+              "uiOrder": 2,
               "title": "Metadata",
-              "type": "array",
               "required": [],
-              "instillFormat": "array:semi-structured/json",
               "items": {
                 "title": "Datum",
-                "format": "semi-structured/json",
-                "type": "object",
+                "format": "object",
                 "required": []
-              }
+              },
+              "format": "array"
             }
           },
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
@@ -372,88 +290,63 @@
         "result"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_UPDATE": {
-    "instillShortDescription": "Perform an update operation",
+    "shortDescription": "Perform an update operation",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "database-name": {
           "description": "The name of the database in MongoDB.",
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Database Name",
-          "type": "string"
+          "format": "string"
         },
         "collection-name": {
           "description": "The name of the collection in MongoDB.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "id": {
           "description": "The ID of the document.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 2,
           "title": "ID",
-          "type": "string"
+          "format": "string"
         },
         "filter": {
           "description": "The filter to update documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned.",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillShortDescription": "The mongodb language query to filter the documents",
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "shortDescription": "The mongodb language query to filter the documents",
+          "uiOrder": 3,
           "title": "Filter",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         },
         "update-data": {
           "description": "The updated data to be applied to the documents.",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 4,
           "title": "Update",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
@@ -461,161 +354,119 @@
         "collection-name",
         "update-data"
       ],
-      "instillEditOnNodeFields": [
-        "database-name",
-        "collection-name",
-        "filter"
-      ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Update status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DELETE": {
-    "instillShortDescription": "Perform a delete operation",
+    "shortDescription": "Perform a delete operation",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "database-name": {
           "description": "The name of the database in MongoDB.",
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Database Name",
-          "type": "string"
+          "format": "string"
         },
         "collection-name": {
           "description": "The name of the collection in MongoDB.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "id": {
           "description": "The ID of the document.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 2,
           "title": "ID",
-          "type": "string"
+          "format": "string"
         },
         "filter": {
           "description": "The filter to delete documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned.",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillShortDescription": "The mongodb language query to filter the documents",
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "shortDescription": "The mongodb language query to filter the documents",
+          "uiOrder": 3,
           "title": "Filter",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
         "database-name",
         "collection-name"
       ],
-      "instillEditOnNodeFields": [
-        "database-name",
-        "collection-name",
-        "filter"
-      ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Delete status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DROP_COLLECTION": {
-    "instillShortDescription": "Delete the collection",
+    "shortDescription": "Delete the collection",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "database-name": {
           "description": "The name of the database in MongoDB.",
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Database Name",
-          "type": "string"
+          "format": "string"
         },
         "collection-name": {
           "description": "The name of the collection in MongoDB.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
@@ -623,152 +474,123 @@
         "collection-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Delete collection status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DROP_DATABASE": {
-    "instillShortDescription": "Delete the database",
+    "shortDescription": "Delete the database",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "database-name": {
           "description": "The name of the database in MongoDB.",
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Database Name",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "database-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Delete database status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CREATE_SEARCH_INDEX": {
-    "instillShortDescription": "Create a search index, only works for M10 or larger clusters",
+    "shortDescription": "Create a search index, only works for M10 or larger clusters",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "database-name": {
           "description": "The name of the database in MongoDB.",
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Database Name",
-          "type": "string"
+          "format": "string"
         },
         "collection-name": {
           "description": "The name of the collection in MongoDB.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "index-name": {
           "description": "The name of the index to be created.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "Index Name",
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "shortDescription": "Index Name",
+          "uiOrder": 2,
           "title": "Index Name",
-          "type": "string"
+          "format": "string"
         },
         "index-type": {
           "description": "The type of the index to be created.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "Index Type",
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "shortDescription": "Index Type",
+          "uiOrder": 3,
           "enum": [
             "search",
             "vectorSearch"
           ],
           "title": "Index Type",
-          "type": "string"
+          "format": "string"
         },
         "syntax": {
           "description": "The syntax structure of the search index, please refer to the MongoDB documentation for more information. search [here](https://www.mongodb.com/docs/atlas/atlas-search/create-index/). vectorSearch [here](https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-type/).",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillShortDescription": "Syntax Structure, please refer to the MongoDB documentation",
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "shortDescription": "Syntax Structure, please refer to the MongoDB documentation",
+          "uiOrder": 4,
           "title": "Syntax",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
@@ -779,74 +601,58 @@
         "syntax"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Create index status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DROP_SEARCH_INDEX": {
-    "instillShortDescription": "Drop a search index, only works for M10 or larger clusters",
+    "shortDescription": "Drop a search index, only works for M10 or larger clusters",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "database-name": {
           "description": "The name of the database in MongoDB.",
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Database Name",
-          "type": "string"
+          "format": "string"
         },
         "collection-name": {
           "description": "The name of the collection in MongoDB.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "index-name": {
           "description": "The name of the index to be dropped.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "Index Name",
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "shortDescription": "Index Name",
+          "uiOrder": 2,
           "title": "Index Name",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
@@ -855,190 +661,143 @@
         "index-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Delete index status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_VECTOR_SEARCH": {
-    "instillShortDescription": "Perform a vector search operation",
+    "shortDescription": "Perform a vector search operation",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "database-name": {
           "description": "The name of the database in MongoDB.",
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Database Name",
-          "type": "string"
+          "format": "string"
         },
         "collection-name": {
           "description": "The name of the collection in MongoDB.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "Collection Name",
-          "type": "string"
+          "format": "string"
         },
         "index-name": {
           "description": "The name of the index to be used for vector search.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "Index Name",
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "shortDescription": "Index Name",
+          "uiOrder": 2,
           "title": "Index Name",
-          "type": "string"
+          "format": "string"
         },
         "query-vector": {
           "description": "The query vector to be used for vector search.",
-          "instillAcceptFormats": [
-            "array:number",
-            "array:integer"
+          "acceptFormats": [
+            "array",
+            "array"
           ],
-          "instillShortDescription": "Query Vector",
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "shortDescription": "Query Vector",
+          "uiOrder": 3,
           "title": "Query Vector",
-          "type": "array",
           "items": {
             "description": "A dimension of the vector.",
             "example": 0.8167237,
-            "type": "number"
+            "format": "number"
           },
-          "minItems": 1
+          "minItems": 1,
+          "format": "array"
         },
         "exact": {
           "description": "The exact value for vector search. If true, then ENN search will be performed, otherwise ANN search will be performed. Default to false.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "boolean"
           ],
-          "instillShortDescription": "Exact Search, true for ENN search, false for ANN search",
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "shortDescription": "Exact Search, true for ENN search, false for ANN search",
+          "uiOrder": 4,
           "title": "Exact",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "format": "boolean"
         },
         "limit": {
           "description": "Limit the documents to be returned.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillShortDescription": "Limit Documents",
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "shortDescription": "Limit Documents",
+          "uiOrder": 5,
           "title": "Limit",
-          "type": "integer"
+          "format": "integer"
         },
         "num-candidates": {
           "description": "The number of candidates to the field to be used for vector search. Default to 3 times limit.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillShortDescription": "Number of Candidates, default to 3 times limit",
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "shortDescription": "Number of Candidates, default to 3 times limit",
+          "uiOrder": 6,
           "title": "Number of Candidates",
-          "type": "integer"
+          "format": "integer"
         },
         "path": {
           "description": "The path to the field to be used for vector search.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "Path, need to first create vectorSearch search index",
-          "instillUIOrder": 7,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "shortDescription": "Path, need to first create vectorSearch search index",
+          "uiOrder": 7,
           "title": "Path",
-          "type": "string"
+          "format": "string"
         },
         "filter": {
           "description": "The filter to be used for vector search, need to first create filter vectorSearch search index, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned to be used for vector search.",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillShortDescription": "The mongodb language query to filter the documents, empty for all documents",
-          "instillUIOrder": 8,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "shortDescription": "The mongodb language query to filter the documents, empty for all documents",
+          "uiOrder": 8,
           "title": "Filter",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         },
         "fields": {
           "description": "The fields to return in the documents. If empty then all fields will be returned.",
-          "instillAcceptFormats": [
-            "array:string"
+          "acceptFormats": [
+            "array"
           ],
-          "instillShortDescription": "Fields to be returned, empty for all fields",
-          "instillUIOrder": 9,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "shortDescription": "Fields to be returned, empty for all fields",
+          "uiOrder": 9,
           "title": "Fields",
-          "type": "array",
           "items": {
             "title": "Field",
-            "type": "string"
+            "format": "string"
           },
-          "minItems": 1
+          "minItems": 1,
+          "format": "array"
         }
       },
       "required": [
@@ -1050,87 +809,79 @@
         "limit"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Vector search status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         },
         "result": {
           "description": "Result of the vector search operation.",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Result",
-          "type": "object",
           "properties": {
             "ids": {
               "description": "The ids returned from the vector search operation.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "IDs",
-              "type": "array",
               "required": [],
-              "instillFormat": "array:string",
               "items": {
                 "description": "An id of the document.",
-                "type": "string",
-                "example": "c8faa-4b3b-4b3b-4b3b"
-              }
+                "example": "c8faa-4b3b-4b3b-4b3b",
+                "format": "string"
+              },
+              "format": "array"
             },
             "documents": {
               "description": "The documents returned from the vector search operation.",
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "required": [],
               "title": "Documents",
-              "type": "array",
-              "instillFormat": "array:semi-structured/json",
               "items": {
                 "title": "Document",
-                "format": "semi-structured/json",
-                "type": "object",
+                "format": "object",
                 "required": []
-              }
+              },
+              "format": "array"
             },
             "vectors": {
               "description": "The vectors returned from the vector search operation.",
-              "instillUIOrder": 2,
+              "uiOrder": 2,
               "title": "Vectors",
-              "type": "array",
               "required": [],
-              "instillFormat": "array:array",
               "items": {
                 "description": "The vector from array vectors.",
-                "type": "array",
-                "instillFormat": "array",
                 "required": [],
                 "items": {
                   "description": "A dimension of the vector.",
                   "example": 0.8167237,
-                  "type": "number"
-                }
-              }
+                  "format": "number"
+                },
+                "format": "array"
+              },
+              "format": "array"
             },
             "metadata": {
               "description": "The metadata returned from the vector search operation.",
-              "instillUIOrder": 3,
+              "uiOrder": 3,
               "title": "Metadata",
-              "type": "array",
               "required": [],
-              "instillFormat": "array:semi-structured/json",
               "items": {
                 "title": "Metadatum",
-                "format": "semi-structured/json",
-                "type": "object",
+                "format": "object",
                 "required": []
-              }
+              },
+              "format": "array"
             }
           },
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
@@ -1138,7 +889,7 @@
         "result"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   }
 }

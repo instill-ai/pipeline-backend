@@ -50,7 +50,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | API Key (required) | `api-key` | string | Fill in your Freshdesk API key. To find your key, go to profile settigs and on the right pane, you can get your key once you have completed the captcha verification.  |
 | Domain (required) | `domain` | string | Your Freshdesk domain. You can find this by going to Admin -> Search for "Portals" -> Portal URL. Your portal URL will look like "yourdomain.freshdesk.com". Please only input your domain and not the whole URL.  |
@@ -69,7 +69,7 @@ Get ticket using ID
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_TICKET` |
 | Ticket ID (required) | `ticket-id` | integer | The ID of the ticket. |
@@ -82,7 +82,7 @@ Get ticket using ID
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Subject | `subject` | string | Subject of the ticket. |
 | Description Text | `description-text` | string | Content of the ticket. |
@@ -115,7 +115,7 @@ Get ticket using ID
 | [Attachments](#get-ticket-attachments) (optional) | `attachments` | array[object] | Ticket attachments (cannot be more than 20MB). |
 | Sentiment Score (optional) | `sentiment-score` | integer | Freshdesk uses AI to assess the emotional tone and attitude expressed in customer interaction. |
 | Initial Sentiment Score (optional) | `initial-sentiment-score` | integer | The initial sentiment score of the ticket. |
-| Custom Fields (optional) | `custom-fields` | object | Custom fields that the ticket have. Custom fields can be created or modified in Admin -> Ticket Fields. |
+| Custom Fields (optional) | `custom-fields` | json | Custom fields that the ticket have. Custom fields can be created or modified in Admin -> Ticket Fields. |
 </div>
 
 <details>
@@ -125,7 +125,7 @@ Get ticket using ID
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Attachment Content Type | `content-type` | string | The type of the file. |
 | Attachment Name | `name` | string | The name of the file. |
@@ -140,7 +140,7 @@ Create ticket
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_TICKET` |
 | Requester ID | `requester-id` | integer | ID of the requester. Must be an existing contact. If you fill in this field, you don't need to fill in the email field. Only one of the two fields is required. |
@@ -168,7 +168,7 @@ Create ticket
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Ticket ID | `ticket-id` | integer | The ID of the ticket. |
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
@@ -181,7 +181,7 @@ Reply to a ticket thread.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_REPLY_TO_TICKET` |
 | Body (required) | `body` | string | Content of the reply. Can be in HTML format. |
@@ -199,7 +199,7 @@ Reply to a ticket thread.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket. |
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
@@ -212,7 +212,7 @@ Create a private/public note on a ticket thread.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_TICKET_NOTE` |
 | Ticket ID (required) | `ticket-id` | integer | The ID of the ticket. |
@@ -230,7 +230,7 @@ Create a private/public note on a ticket thread.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket. |
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
@@ -243,7 +243,7 @@ Get all the conversations in a ticket. (Conversations are replies and notes that
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ALL_CONVERSATIONS` |
 | Ticket ID (required) | `ticket-id` | integer | Ticket ID. |
@@ -256,7 +256,7 @@ Get all the conversations in a ticket. (Conversations are replies and notes that
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Conversations](#get-all-conversations-conversations) | `conversations` | array[object] | An array of conversations. |
 | Conversations Length | `conversations-length` | integer | Number of conversations. |
@@ -269,7 +269,7 @@ Get all the conversations in a ticket. (Conversations are replies and notes that
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | BCC Emails | `bcc-emails` | array | Email addresses added in the 'bcc' field of the incoming ticket email. |
 | Body Text | `body-text` | string | Content of the conversation. |
@@ -292,7 +292,7 @@ Get contact using ID
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_CONTACT` |
 | Contact ID (required) | `contact-id` | integer | ID of the contact. |
@@ -305,7 +305,7 @@ Get contact using ID
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Name | `name` | string | Name of the contact. |
 | Email (optional) | `email` | string | The primary email address of the contact. |
@@ -328,7 +328,7 @@ Get contact using ID
 | Other Phone Numbers (optional) | `other-phone-numbers` | array[string] | List of other phone numbers of the contact. |
 | Created At (optional) | `created-at` | string | Timestamp that denotes when the contact was created. In UTC format. |
 | Updated At (optional) | `updated-at` | string | Timestamp that denotes when the contact was last updated. In UTC format. |
-| Custom Fields (optional) | `custom-fields` | object | Custom fields that the contact have. Custom fields can be created or modified in Admin -> Customer Fields. |
+| Custom Fields (optional) | `custom-fields` | json | Custom fields that the contact have. Custom fields can be created or modified in Admin -> Customer Fields. |
 </div>
 
 <details>
@@ -338,7 +338,7 @@ Get contact using ID
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Company ID | `company-id` | integer | ID of the company. |
 | View All Tickets | `view-all-tickets` | boolean | Set to true if the contact can see all the tickets that are associated with the company. |
@@ -352,7 +352,7 @@ Create contact
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_CONTACT` |
 | Name (required) | `name` | string | Name of the contact. |
@@ -381,7 +381,7 @@ Create contact
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Contact ID | `contact-id` | integer | ID of the contact. |
 | Created At | `created-at` | string | Timestamp that denotes when the contact was created. In UTC format. |
@@ -394,7 +394,7 @@ Get company using ID
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_COMPANY` |
 | Company ID (required) | `company-id` | integer | ID of the primary company to which the contact belongs. |
@@ -407,7 +407,7 @@ Get company using ID
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Name | `name` | string | Name of the company. |
 | Description (optional) | `description` | string | Description of the company. |
@@ -419,7 +419,7 @@ Get company using ID
 | Industry (optional) | `industry` | string | The industry in which the company operates. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. |
 | Created At | `created-at` | string | Timestamp that denotes when the company was created. In UTC format. |
 | Updated At | `updated-at` | string | Timestamp that denotes when the company was last updated. In UTC format. |
-| Custom Fields (optional) | `custom-fields` | object | Custom fields that the company have. Custom fields can be created or modified in Admin -> Customer Fields. |
+| Custom Fields (optional) | `custom-fields` | json | Custom fields that the company have. Custom fields can be created or modified in Admin -> Customer Fields. |
 </div>
 
 
@@ -429,7 +429,7 @@ Create company
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_COMPANY` |
 | Name (required) | `name` | string | Name of the company. |
@@ -449,7 +449,7 @@ Create company
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Company ID | `company-id` | integer | ID of the company. |
 | Created At | `created-at` | string | Timestamp that denotes when the company was created. In UTC format. |
@@ -462,7 +462,7 @@ Task to get all the IDs of existing contacts, companies, tickets, products, agen
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ALL` |
 | Object Type (required) | `object-type` | string | Type of object to get IDs for. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Contacts`</li><li>`Companies`</li><li>`Tickets`</li><li>`Products`</li><li>`Agents`</li><li>`Roles`</li><li>`Skills`</li></ul></details>  |
@@ -476,7 +476,7 @@ Task to get all the IDs of existing contacts, companies, tickets, products, agen
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | IDs | `ids` | array[integer] | List of IDs. |
 | ID Length | `id-length` | integer | Number of IDs. |
@@ -489,7 +489,7 @@ Get product using ID. This task will only work if you have admin privileges.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_PRODUCT` |
 | Product ID (required) | `product-id` | integer | Product ID. |
@@ -502,7 +502,7 @@ Get product using ID. This task will only work if you have admin privileges.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Name | `name` | string | Name of the product. |
 | Description | `description` | string | Description of the product. |
@@ -519,7 +519,7 @@ Get agent using ID. This task will only work if you have admin privileges. Agent
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_AGENT` |
 | Agent ID (required) | `agent-id` | integer | Agent ID. |
@@ -532,7 +532,7 @@ Get agent using ID. This task will only work if you have admin privileges. Agent
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Name (optional) | `name` | string | Name of the agent. |
 | Active (optional) | `active` | boolean | Set to true if the agent is verified. |
@@ -563,7 +563,7 @@ Get role using ID. This task will only work if you have admin privileges. Roles 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ROLE` |
 | Role ID (required) | `role-id` | integer | Role ID. |
@@ -576,7 +576,7 @@ Get role using ID. This task will only work if you have admin privileges. Roles 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Name | `name` | string | Name of the role. |
 | Description | `description` | string | Description of the role. |
@@ -593,7 +593,7 @@ Get group using ID. This task will only work if you have admin privileges. Agent
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_GROUP` |
 | Group ID (required) | `group-id` | integer | Group ID. |
@@ -606,7 +606,7 @@ Get group using ID. This task will only work if you have admin privileges. Agent
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Name | `name` | string | Name of the group. |
 | Description | `description` | string | Description of the group. |
@@ -627,7 +627,7 @@ Get skill using ID. This task will only work if you have admin privileges. Agent
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_SKILL` |
 | Skill ID (required) | `skill-id` | integer | Skill ID. |
@@ -640,12 +640,12 @@ Get skill using ID. This task will only work if you have admin privileges. Agent
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Name | `name` | string | Name of the skill. |
 | Rank | `rank` | integer | Rank of the skill. |
 | Condition Match Type | `condition-match-type` | string | Type of condition match. Can be "all" or "any". |
-| Conditions | `conditions` | array | Conditions for the skill. |
+| Conditions | `conditions` | array[json] | Conditions for the skill. |
 | Created At | `created-at` | string | Timestamp that denotes when the skill was created. |
 | Updated At | `updated-at` | string | Timestamp that denotes when the skill was last updated. |
 </div>

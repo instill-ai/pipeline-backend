@@ -3,17 +3,16 @@
     "chat-message": {
       "properties": {
         "content": {
-          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/multi-modal-content",
+          "$ref": "schema.json#/$defs/instill-types/multi-modal-content",
           "description": "The message content.",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "title": "Content"
         },
         "role": {
           "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Role",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
@@ -21,41 +20,29 @@
         "content"
       ],
       "title": "Chat Message",
-      "type": "object"
+      "format": "object"
     },
     "common": {
       "description": "Input.",
-      "instillEditOnNodeFields": [
-        "image-base64",
-        "model-name"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "image-base64": {
           "description": "Image base64.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "image/*"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "uiOrder": 2,
           "title": "Image",
-          "type": "string"
+          "format": "string"
         },
         "model-name": {
           "description": "The Instill Model model to be used.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 0,
           "title": "Model Name",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
@@ -63,189 +50,156 @@
         "model-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CLASSIFICATION": {
-    "instillShortDescription": "Classify images into predefined categories.",
+    "shortDescription": "Classify images into predefined categories.",
     "input": {
       "$ref": "#/$defs/common",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/classification",
+      "$ref": "schema.json#/$defs/instill-types/classification",
       "description": "Output.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DETECTION": {
-    "instillShortDescription": "Detect and localize multiple objects in images.",
+    "shortDescription": "Detect and localize multiple objects in images.",
     "input": {
       "$ref": "#/$defs/common",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/detection",
+      "$ref": "schema.json#/$defs/instill-types/detection",
       "description": "Output.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_INSTANCE_SEGMENTATION": {
-    "instillShortDescription": "Detect, localize and delineate multiple objects in images.",
+    "shortDescription": "Detect, localize and delineate multiple objects in images.",
     "input": {
       "$ref": "#/$defs/common",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/instance-segmentation",
+      "$ref": "schema.json#/$defs/instill-types/instance-segmentation",
       "description": "Output.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_KEYPOINT": {
-    "instillShortDescription": "Detect and localize multiple keypoints of objects in images.",
+    "shortDescription": "Detect and localize multiple keypoints of objects in images.",
     "input": {
       "$ref": "#/$defs/common",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/keypoint",
+      "$ref": "schema.json#/$defs/instill-types/keypoint",
       "description": "Output.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_OCR": {
-    "instillShortDescription": "Detect and recognize text in images.",
+    "shortDescription": "Detect and recognize text in images.",
     "input": {
       "$ref": "#/$defs/common",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/ocr",
+      "$ref": "schema.json#/$defs/instill-types/ocr",
       "description": "Output.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_SEMANTIC_SEGMENTATION": {
-    "instillShortDescription": "Classify image pixels into predefined categories.",
+    "shortDescription": "Classify image pixels into predefined categories.",
     "input": {
       "$ref": "#/$defs/common",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/semantic-segmentation",
+      "$ref": "schema.json#/$defs/instill-types/semantic-segmentation",
       "description": "Output.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_TEXT_GENERATION": {
-    "instillShortDescription": "Generate texts from input text prompts.",
+    "shortDescription": "Generate texts from input text prompts.",
     "input": {
       "description": "Input.",
-      "instillEditOnNodeFields": [
-        "prompt",
-        "model-name"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "max-new-tokens": {
           "default": 50,
           "description": "The maximum number of tokens for model to generate.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 6,
           "title": "Max New Tokens",
-          "type": "integer"
+          "format": "integer"
         },
         "model-name": {
           "description": "The Instill Model model to be used.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 0,
           "title": "Model Name",
-          "type": "string"
+          "format": "string"
         },
         "prompt": {
           "description": "The prompt text.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 2,
           "title": "Prompt",
-          "type": "string"
+          "format": "string"
         },
         "seed": {
           "description": "The seed.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 4,
           "title": "Seed",
-          "type": "integer"
+          "format": "integer"
         },
         "system-message": {
           "default": "You are a helpful assistant.",
           "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as \"You are a helpful assistant.\".",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "The system message helps set the behavior of the assistant",
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "shortDescription": "The system message helps set the behavior of the assistant",
+          "uiOrder": 2,
           "title": "System Message",
-          "type": "string"
+          "format": "string"
         },
         "temperature": {
           "default": 0.7,
           "description": "The temperature for sampling.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "number"
           ],
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 5,
           "title": "Temperature",
-          "type": "number"
+          "format": "number"
         }
       },
       "required": [
@@ -253,158 +207,114 @@
         "model-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Output.",
-      "instillEditOnNodeFields": [
-        "text"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "text": {
           "description": "Text.",
-          "instillFormat": "string",
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Text",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "text"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_TEXT_GENERATION_CHAT": {
-    "instillShortDescription": "Generate texts from input text prompts and chat history.",
+    "shortDescription": "Generate texts from input text prompts and chat history.",
     "input": {
       "description": "Input.",
-      "instillEditOnNodeFields": [
-        "prompt",
-        "model-name"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "chat-history": {
           "description": "Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : {\"role\": \"The message role, i.e. 'system', 'user' or 'assistant'\", \"content\": \"message content\"}.",
-          "instillAcceptFormats": [
-            "structured/chat-messages"
+          "acceptFormats": [
+            "object"
           ],
-          "instillShortDescription": "Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : {\"role\": \"The message role, i.e. 'system', 'user' or 'assistant'\", \"content\": \"message content\"}.",
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "shortDescription": "Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : {\"role\": \"The message role, i.e. 'system', 'user' or 'assistant'\", \"content\": \"message content\"}.",
+          "uiOrder": 4,
           "items": {
             "$ref": "#/$defs/chat-message"
           },
           "title": "Chat history",
-          "type": "array"
+          "format": "array"
         },
         "max-new-tokens": {
           "default": 50,
           "description": "The maximum number of tokens for model to generate.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 6,
           "title": "Max New Tokens",
-          "type": "integer"
+          "format": "integer"
         },
         "model-name": {
           "description": "The Instill Model model to be used.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 0,
           "title": "Model Name",
-          "type": "string"
+          "format": "string"
         },
         "prompt": {
           "description": "The prompt text.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 2,
           "title": "Prompt",
-          "type": "string"
+          "format": "string"
         },
         "prompt-images": {
           "description": "The prompt images.",
-          "instillAcceptFormats": [
-            "array:image/*"
+          "acceptFormats": [
+            "array"
           ],
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "uiOrder": 3,
           "items": {
-            "type": "string"
+            "format": "string"
           },
           "title": "Prompt Images",
-          "type": "array"
+          "format": "array"
         },
         "seed": {
           "description": "The seed.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 4,
           "title": "Seed",
-          "type": "integer"
+          "format": "integer"
         },
         "system-message": {
           "default": "You are a helpful assistant.",
           "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as \"You are a helpful assistant.\".",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "The system message helps set the behavior of the assistant",
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "shortDescription": "The system message helps set the behavior of the assistant",
+          "uiOrder": 2,
           "title": "System Message",
-          "type": "string"
+          "format": "string"
         },
         "temperature": {
           "default": 0.7,
           "description": "The temperature for sampling.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "number"
           ],
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 5,
           "title": "Temperature",
-          "type": "number"
+          "format": "number"
         }
       },
       "required": [
@@ -412,115 +322,86 @@
         "model-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Output.",
-      "instillEditOnNodeFields": [
-        "text"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "text": {
           "description": "Text.",
-          "instillFormat": "string",
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Text",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "text"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_TEXT_TO_IMAGE": {
-    "instillShortDescription": "Generate images from input text prompts.",
+    "shortDescription": "Generate images from input text prompts.",
     "input": {
       "description": "Input.",
-      "instillEditOnNodeFields": [
-        "prompt",
-        "model-name"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "model-name": {
           "description": "The Instill Model model to be used.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 0,
           "title": "Model Name",
-          "type": "string"
+          "format": "string"
         },
         "prompt": {
           "description": "The prompt text.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 2,
           "title": "Prompt",
-          "type": "string"
+          "format": "string"
         },
         "samples": {
           "description": "The number of generated samples, default is 1.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 5,
           "title": "Samples",
-          "type": "integer"
+          "format": "integer"
         },
         "seed": {
           "description": "The seed, default is 0.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 6,
           "title": "Seed",
-          "type": "integer"
+          "format": "integer"
         },
         "negative-prompt": {
           "title": "Aspect ratio",
-          "type": "string",
           "description": "Keywords of what you do not wish to see in the output image.",
-          "instillShortDescription": "Keywords of what you do not wish to see in the output image.",
-          "instillAcceptFormats": [
+          "shortDescription": "Keywords of what you do not wish to see in the output image.",
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 7
+          "uiOrder": 7,
+          "format": "string"
         },
         "aspect-ratio": {
           "title": "Aspect ratio",
-          "type": "string",
           "description": "Controls the aspect ratio of the generated image. Defaults to 1:1.",
-          "instillShortDescription": "Controls the aspect ratio of the generated image. Defaults to 1:1.",
-          "instillAcceptFormats": [
+          "shortDescription": "Controls the aspect ratio of the generated image. Defaults to 1:1.",
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 8,
+          "uiOrder": 8,
           "default": "1:1",
           "enum": [
             "16:9",
@@ -532,7 +413,8 @@
             "5:4",
             "9:16",
             "9:21"
-          ]
+          ],
+          "format": "string"
         }
       },
       "required": [
@@ -540,198 +422,189 @@
         "model-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Output.",
-      "instillEditOnNodeFields": [
-        "images"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "images": {
           "description": "Images.",
-          "instillUIOrder": 0,
-          "instillFormat": "array:image/jpeg",
+          "uiOrder": 0,
           "items": {
-            "instillFormat": "image/jpeg",
             "title": "Image",
-            "type": "string"
+            "format": "image/jpeg"
           },
           "title": "Images",
-          "type": "array"
+          "format": "array"
         }
       },
       "required": [
         "images"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_VISUAL_QUESTION_ANSWERING": {
-    "instillShortDescription": "Answer questions based on a prompt and an image.",
+    "shortDescription": "Answer questions based on a prompt and an image.",
     "$ref": "#/TASK_TEXT_GENERATION_CHAT"
   },
   "TASK_CHAT": {
-    "instillShortDescription": "Generate texts from input text prompts and chat history.",
+    "shortDescription": "Generate texts from input text prompts and chat history.",
     "$ref": "#/TASK_TEXT_GENERATION_CHAT"
   },
   "TASK_EMBEDDING": {
     "title": "Embedding",
-    "instillShortDescription": "This task refers to the process of generating vector embeddings from input data, which can be text or images. This transformation converts the data into a dense, fixed-length numerical representation that captures the essential features of the original input. These embeddings are typically used in machine learning tasks to represent complex data in a more structured, simplified form.",
+    "shortDescription": "This task refers to the process of generating vector embeddings from input data, which can be text or images. This transformation converts the data into a dense, fixed-length numerical representation that captures the essential features of the original input. These embeddings are typically used in machine learning tasks to represent complex data in a more structured, simplified form.",
     "input": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Embedding Input",
       "description": "Input schema of the embedding task.",
-      "instillShortDescription": "Input schema of the embedding task.",
-      "type": "object",
+      "shortDescription": "Input schema of the embedding task.",
       "properties": {
         "data": {
           "description": "Input data.",
-          "instillShortDescription": "Input data.",
-          "type": "object",
+          "shortDescription": "Input data.",
           "properties": {
             "model": {
               "description": "The model to be used for generating embeddings. It should be `namespace/model-name/version`. i.e. `abrc/yolov7-stomata/v0.1.0`. You can see the version from the Versions tab of Model page.",
-              "instillShortDescription": "The model to be used.",
-              "instillAcceptFormats": [
+              "shortDescription": "The model to be used.",
+              "acceptFormats": [
                 "string"
               ],
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Model",
-              "type": "string"
+              "format": "string"
             },
             "embeddings": {
               "title": "Embeddings",
-              "type": "array",
               "items": {
-                "type": "object",
                 "oneOf": [
                   {
-                    "type": "object",
                     "properties": {
                       "text": {
                         "title": "Text Content",
                         "description": "When the input is text, the raw text is tokenized and processed into a dense, fixed-length vector that captures semantic information such as word meanings and relationships. These text embeddings enable tasks like sentiment analysis, search, or classification.",
-                        "instillShortDescription": "Text content.",
-                        "instillAcceptFormats": [
+                        "shortDescription": "Text content.",
+                        "acceptFormats": [
                           "string"
                         ],
-                        "type": "string",
-                        "instillUIOrder": 1
+                        "uiOrder": 1,
+                        "format": "string"
                       },
                       "type": {
                         "title": "Text",
                         "description": "Text input content type.",
-                        "instillShortDescription": "Text input content type.",
-                        "instillAcceptFormats": [
+                        "shortDescription": "Text input content type.",
+                        "acceptFormats": [
                           "string"
                         ],
-                        "type": "string",
                         "const": "text",
-                        "instillUIOrder": 0
+                        "uiOrder": 0,
+                        "format": "string"
                       }
                     },
                     "title": "Text",
                     "required": [
                       "text",
                       "type"
-                    ]
+                    ],
+                    "format": "object"
                   },
                   {
-                    "type": "object",
                     "properties": {
                       "image-url": {
                         "title": "Image URL",
                         "description": "When the input is an image from a URL, the image is first fetched from the URL and then decoded into its original format. It is then processed into a fixed-length vector representing essential visual features like shapes and colors. These image embeddings are useful for tasks like image classification or similarity search, providing structured numerical data for complex visual inputs.",
-                        "instillShortDescription": "Image content URL.",
-                        "instillAcceptFormats": [
+                        "shortDescription": "Image content URL.",
+                        "acceptFormats": [
                           "string"
                         ],
-                        "type": "string",
-                        "instillUIOrder": 1
+                        "uiOrder": 1,
+                        "format": "string"
                       },
                       "type": {
                         "title": "Image URL",
                         "description": "Image URL input content type.",
-                        "instillShortDescription": "Image URL input content type",
-                        "instillAcceptFormats": [
+                        "shortDescription": "Image URL input content type",
+                        "acceptFormats": [
                           "string"
                         ],
-                        "type": "string",
                         "const": "image-url",
-                        "instillUIOrder": 0
+                        "uiOrder": 0,
+                        "format": "string"
                       }
                     },
                     "title": "Image URL",
                     "required": [
                       "image-url",
                       "type"
-                    ]
+                    ],
+                    "format": "object"
                   },
                   {
-                    "type": "object",
                     "properties": {
                       "image-base64": {
                         "title": "Image File",
                         "description": "When the input is an image in base64 format, the base64-encoded data is first decoded into its original image form. The image is then processed and transformed into a dense, fixed-length numerical vector, capturing key visual features like shapes, colors, or textures.",
-                        "instillShortDescription": "Image file input.",
-                        "instillAcceptFormats": [
+                        "shortDescription": "Image file input.",
+                        "acceptFormats": [
                           "image/*"
                         ],
-                        "type": "string",
-                        "instillUIOrder": 1
+                        "uiOrder": 1,
+                        "format": "string"
                       },
                       "type": {
                         "title": "Image File",
                         "description": "Image file input content type.",
-                        "instillShortDescription": "Image file input content type.",
-                        "instillAcceptFormats": [
+                        "shortDescription": "Image file input content type.",
+                        "acceptFormats": [
                           "string"
                         ],
-                        "type": "string",
                         "const": "image-base64",
-                        "instillUIOrder": 0
+                        "uiOrder": 0,
+                        "format": "string"
                       }
                     },
                     "title": "Image Base64",
                     "required": [
                       "image-base64",
                       "type"
-                    ]
+                    ],
+                    "format": "object"
                   }
                 ],
                 "title": "Embedding",
                 "description": "Input data to be embedded.",
-                "instillUIOrder": 0,
+                "uiOrder": 0,
                 "required": [
                   "type"
-                ]
-
+                ],
+                "format": "object"
               },
               "description": "List of input data to be embedded.",
-              "instillUIOrder": 1
+              "uiOrder": 1,
+              "format": "array"
             }
           },
           "required": [
             "model",
             "embeddings"
           ],
-          "instillUIOrder": 0,
-          "title": "Data"
+          "uiOrder": 0,
+          "title": "Data",
+          "format": "object"
         },
         "parameter": {
           "description": "Input parameter.",
-          "instillShortDescription": "Input parameter.",
-          "type": "object",
+          "shortDescription": "Input parameter.",
           "properties": {
             "format": {
               "title": "Data Format",
-              "type": "string",
               "description": "The data format of the embeddings. Defaults to float.",
-              "instillShortDescription": "Data format",
-              "instillAcceptFormats": [
+              "shortDescription": "Data format",
+              "acceptFormats": [
                 "string"
               ],
               "enum": [
@@ -739,35 +612,35 @@
                 "base64"
               ],
               "default": "float",
-              "instillUIOrder": 0
+              "uiOrder": 0,
+              "format": "string"
             },
             "dimensions": {
               "title": "Dimensions",
-              "type": "integer",
               "description": "Number of dimensions in the output embedding vectors.",
-              "instillShortDescription": "Number of dimensions",
-              "instillAcceptFormats": [
+              "shortDescription": "Number of dimensions",
+              "acceptFormats": [
                 "integer"
               ],
               "default": 512,
-              "instillUIOrder": 1
+              "uiOrder": 1,
+              "format": "integer"
             },
             "input-type": {
               "title": "Input Type",
-              "type": "string",
               "description": "The type of input data to be embedded (e.g., query, document).",
-              "instillShortDescription": "Type of input data",
-              "instillAcceptFormats": [
+              "shortDescription": "Type of input data",
+              "acceptFormats": [
                 "string"
               ],
-              "instillUIOrder": 2
+              "uiOrder": 2,
+              "format": "string"
             },
             "truncate": {
               "title": "Truncate",
-              "type": "string",
               "description": "How to handle inputs longer than the max token length. Defaults to 'End'.",
-              "instillShortDescription": "Truncation handling",
-              "instillAcceptFormats": [
+              "shortDescription": "Truncation handling",
+              "acceptFormats": [
                 "string"
               ],
               "enum": [
@@ -776,86 +649,85 @@
                 "Start"
               ],
               "default": "End",
-              "instillUIOrder": 3
+              "uiOrder": 3,
+              "format": "string"
             }
           },
           "title": "Parameter",
-          "instillUIOrder": 1,
-          "required": []
+          "uiOrder": 1,
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
         "data"
-      ]
+      ],
+      "format": "object"
     },
     "output": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Embedding Output",
       "description": "Output schema of the embedding task.",
-      "instillShortDescription": "Output schema of the embedding task.",
-      "type": "object",
+      "shortDescription": "Output schema of the embedding task.",
       "properties": {
         "data": {
           "description": "Output data.",
-          "instillShortDescription": "Output data.",
-          "type": "object",
+          "shortDescription": "Output data.",
           "properties": {
             "embeddings": {
               "title": "Embeddings",
-              "type": "array",
               "description": "List of generated embeddings.",
-              "instillShortDescription": "List of embeddings.",
-              "instillFormat": "array",
+              "shortDescription": "List of embeddings.",
               "items": {
-                "type": "object",
                 "properties": {
                   "index": {
                     "title": "Index",
-                    "type": "integer",
                     "description": "The index of the embedding vector in the array.",
-                    "instillShortDescription": "Index in the array",
-                    "instillFormat": "integer",
-                    "instillUIOrder": 0
+                    "shortDescription": "Index in the array",
+                    "uiOrder": 0,
+                    "format": "integer"
                   },
                   "vector": {
                     "title": "Embedding Vector",
-                    "type": "array",
                     "description": "The embedding vector.",
-                    "instillShortDescription": "Embedding vector.",
-                    "instillFormat": "array",
+                    "shortDescription": "Embedding vector.",
                     "items": {
-                      "type": "number"
+                      "format": "number"
                     },
-                    "instillUIOrder": 1
+                    "uiOrder": 1,
+                    "format": "array"
                   },
                   "created": {
                     "title": "Created",
-                    "type": "integer",
                     "description": "The Unix timestamp (in seconds) of when the embedding was created.",
-                    "instillShortDescription": "Timestamp of creation",
-                    "instillFormat": "integer",
-                    "instillUIOrder": 2
+                    "shortDescription": "Timestamp of creation",
+                    "uiOrder": 2,
+                    "format": "integer"
                   }
                 },
                 "required": [
                   "index",
                   "vector",
                   "created"
-                ]
+                ],
+                "format": "object"
               },
-              "instillUIOrder": 0
+              "uiOrder": 0,
+              "format": "array"
             }
           },
           "required": [
             "embeddings"
           ],
-          "instillUIOrder": 0,
-          "title": "Data"
+          "uiOrder": 0,
+          "title": "Data",
+          "format": "object"
         }
       },
       "required": [
         "data"
-      ]
+      ],
+      "format": "object"
     }
   }
 }

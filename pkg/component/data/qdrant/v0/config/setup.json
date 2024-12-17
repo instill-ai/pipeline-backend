@@ -4,39 +4,29 @@
   "properties": {
     "api-key": {
       "description": "Fill in your Qdrant API key. Please refer to clusters in Qdrant data access control.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "API Key",
-      "type": "string"
+      "format": "string"
     },
     "url": {
       "description": "Fill in your Qdrant URL endpoint. Please refer to clusters in Qdrant cluster details.",
-      "instillUpstreamTypes": [
-        "value"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": false,
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "Qdrant URL Endpoint",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
     "api-key",
     "url"
   ],
-  "instillEditOnNodeFields": [
-    "api-key",
-    "url"
-  ],
   "title": "Qdrant Connection",
-  "type": "object"
+  "format": "object"
 }

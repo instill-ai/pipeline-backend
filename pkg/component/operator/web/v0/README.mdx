@@ -37,7 +37,7 @@ This task involves systematically navigating through a website, starting from a 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRAWL_SITE` |
 | URL (required) | `url` | string | The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on. |
@@ -58,7 +58,7 @@ Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Exclude Pattern | `exclude-pattern` | string | When the URL is matched, the URL will not be crawled.  |
 | Include Pattern | `include-pattern` | string | When the URL is matched, the URL will be crawled.  |
@@ -69,7 +69,7 @@ Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Pages](#crawl-site-pages) | `pages` | array[object] | The link and title of webpages crawled by the crawler. |
 </div>
@@ -81,7 +81,7 @@ Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Link | `link` | string | The full URL to which the webpage link is pointing, e.g., http://www.example.com/foo/bar. |
 | Title | `title` | string | The title of a webpage link in plain text. |
@@ -145,7 +145,7 @@ This task focuses on extracting specific data from targeted webpages by parsing 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SCRAPE_PAGES` |
 | URLs (required) | `urls` | array[string] | The URLs to scrape the webpage contents. |
@@ -164,7 +164,7 @@ This task focuses on extracting specific data from targeted webpages by parsing 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Pages](#scrape-pages-pages) | `pages` | array[object] | A list of page objects that have been scraped. |
 </div>
@@ -176,7 +176,7 @@ This task focuses on extracting specific data from targeted webpages by parsing 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Content | `content` | string | The scraped plain content without html tags of the webpage. |
 | HTML | `html` | string | The scraped html of the webpage. |
@@ -189,7 +189,7 @@ This task focuses on extracting specific data from targeted webpages by parsing 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Description | `description` | string | The description of the webpage. |
 | Source URL | `source-url` | string | The source URL of the webpage. |
@@ -243,7 +243,7 @@ This task extracts data directly from a website’s sitemap. A sitemap is typica
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SCRAPE_SITEMAP` |
 | URL (required) | `url` | string | The URL of the sitemap to scrape. |
@@ -256,9 +256,9 @@ This task extracts data directly from a website’s sitemap. A sitemap is typica
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| List | `list` | array | The list of information in a sitemap. |
+| List | `list` | array[json] | The list of information in a sitemap. |
 </div>
 
 

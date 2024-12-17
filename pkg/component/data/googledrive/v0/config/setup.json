@@ -3,22 +3,16 @@
   "properties": {
     "refresh-token": {
       "description": "Refresh token for the Google Drive API. For more information about how to create tokens, please refer to the <a href=\"https://developers.google.com/drive/api/v3/about-auth\">Google Drive API documentation</a> and <a href=\"https://developers.google.com/identity/protocols/oauth2\" >OAuth 2.0 documentation</a>.",
-      "instillUpstreamTypes": [
-        "reference"
-        ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "Refresh Token",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [],
-  "instillEditOnNodeFields": [
-    "refresh-token"
-  ],
   "instillOAuthConfig": {
     "authUrl": "https://accounts.google.com/o/oauth2/auth",
     "accessUrl": "https://oauth2.googleapis.com/token",
@@ -30,5 +24,5 @@
     ]
   },
   "title": "Google Drive Connection",
-  "type": "object"
+  "format": "object"
 }

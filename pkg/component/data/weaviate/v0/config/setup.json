@@ -4,39 +4,29 @@
   "properties": {
     "api-key": {
       "description": "Fill in your Weaviate API key. Please refer to clusters in Weaviate Console.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "API Key",
-      "type": "string"
+      "format": "string"
     },
     "url": {
       "description": "Fill in your Weaviate base URL without https:// or http://. Please refer to clusters in Weaviate Console.",
-      "instillUpstreamTypes": [
-        "value"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": false,
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "Weaviate URL Endpoint",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
     "api-key",
     "url"
   ],
-  "instillEditOnNodeFields": [
-    "api-key",
-    "url"
-  ],
   "title": "Weaviate Connection",
-  "type": "object"
+  "format": "object"
 }

@@ -22,15 +22,13 @@ type ExecutionWrapper struct {
 
 type inputReader struct {
 	InputReader
-	schema string
-	input  *structpb.Struct
+	input *structpb.Struct
 }
 
-func NewInputReader(ir InputReader, input *structpb.Struct, schema string) *inputReader {
+func NewInputReader(ir InputReader, input *structpb.Struct) *inputReader {
 	return &inputReader{
 		InputReader: ir,
 		input:       input,
-		schema:      schema,
 	}
 }
 
@@ -43,22 +41,17 @@ func (ir *inputReader) ReadData(ctx context.Context, input any) (err error) {
 // will be phased out gradually.
 func (ir *inputReader) Read(ctx context.Context) (input *structpb.Struct, err error) {
 	input = ir.input
-	if err = Validate(input, ir.schema, "input"); err != nil {
-		return nil, err
-	}
 	return input, nil
 }
 
 type outputWriter struct {
 	OutputWriter
-	schema string
 	output *structpb.Struct
 }
 
-func NewOutputWriter(ow OutputWriter, schema string) *outputWriter {
+func NewOutputWriter(ow OutputWriter) *outputWriter {
 	return &outputWriter{
 		OutputWriter: ow,
-		schema:       schema,
 	}
 }
 func (ow *outputWriter) WriteData(ctx context.Context, output any) (err error) {
@@ -81,9 +74,6 @@ func (ow *outputWriter) WriteData(ctx context.Context, output any) (err error) {
 // and will be phased out gradually.
 func (ow *outputWriter) Write(ctx context.Context, output *structpb.Struct) (err error) {
 
-	if err := Validate(output, ow.schema, "output"); err != nil {
-		return err
-	}
 	ow.output = output
 
 	return ow.OutputWriter.Write(ctx, output)
@@ -130,8 +120,8 @@ func (e *ExecutionWrapper) Execute(ctx context.Context, jobs []*Job) (err error)
 	wrappedJobs := make([]*Job, len(validJobs))
 	for batchIdx, job := range validJobs {
 		wrappedJobs[batchIdx] = &Job{
-			Input:  NewInputReader(job.Input, validInputs[batchIdx], e.GetTaskInputSchema()),
-			Output: NewOutputWriter(job.Output, e.GetTaskOutputSchema()),
+			Input:  NewInputReader(job.Input, validInputs[batchIdx]),
+			Output: NewOutputWriter(job.Output),
 			Error:  job.Error,
 		}
 	}
