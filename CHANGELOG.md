@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.49.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.48.5-beta...v0.49.0-beta) (2024-12-17)
+
+
+### Features
+
+* **pipeline:** add blob expiration time to run logs ([#938](https://github.com/instill-ai/pipeline-backend/issues/938)) ([fa7ef0e](https://github.com/instill-ai/pipeline-backend/commit/fa7ef0ee11cb4539e51bad7d92556aa9ca3d6f5d))
+
 ## [0.48.5-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.48.4-beta...v0.48.5-beta) (2024-12-11)
 
 
