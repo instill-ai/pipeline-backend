@@ -1,4 +1,4 @@
-//go:generate compogen readme ./config ./README.mdx
+//go:generate compogen readme ./config ./README.mdx --extraContents intro=.compogen/intro.mdx
 package googledrive
 
 import (
