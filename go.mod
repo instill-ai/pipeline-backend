@@ -64,6 +64,7 @@ require (
 	github.com/slack-go/slack v0.12.5
 	github.com/tmc/langchaingo v0.1.10
 	github.com/u2takey/ffmpeg-go v0.5.0
+	github.com/warmans/ffmpeg-go v1.0.0
 	github.com/weaviate/weaviate v1.26.0-rc.1
 	github.com/weaviate/weaviate-go-client/v4 v4.15.0
 	github.com/xuri/excelize/v2 v2.8.1

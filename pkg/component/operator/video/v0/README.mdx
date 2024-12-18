@@ -11,6 +11,7 @@ It can carry out the following tasks:
 - [Subsample](#subsample)
 - [Extract Audio](#extract-audio)
 - [Extract Frames](#extract-frames)
+- [Embed Audio](#embed-audio)
 
 
 
@@ -154,4 +155,57 @@ Extract image frames from a video at regular intervals or specified timestamps. 
 </div>
 
 
+
+### Embed Audio
+
+Given a pair of audio and video files, embed the audio to the video. The audio input will override any of the video's existing audio.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+ | Input | ID | Type | Description |
+ | :--- | :--- | :--- | :--- |
+ | Task ID (required) | `task` | string | `TASK_EMBED_AUDIO` |
+ | Video (required) | `video` | string | The source video file to be merged with the source audio file |
+ | Audio (required) | `audio` | string | The source audio file to embed to the source video file |
+</div>
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+ | Output | ID | Type | Description |
+ | :--- | :--- | :--- | :--- |
+ | Video | `video` | string | The final video output with audio stream coming from the provided input. |
+</div>
+
+## Example Recipes
+
+Recipe for the `Embed audio` pipeline.
+
+```yaml
+version: v1beta
+
+variable:
+  video:
+    format: video
+    title: Input video
+    description: Video to embed to
+  audio:
+    format: audio
+    title: Input audio
+    description: Audio to embed from
+
+component:
+  video-0:
+    type: video
+    task: TASK_EMBED_AUDIO
+    input:
+      video: ${variable.video}
+      audio: ${variable.audio}
+
+output:
+  video:
+    title: Embedded video
+    value: ${video-0.output.video}
+
+```
 

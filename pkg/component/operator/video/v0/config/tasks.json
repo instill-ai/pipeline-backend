@@ -247,6 +247,69 @@
       "type": "object"
     }
   },
+  "TASK_EMBED_AUDIO": {
+    "instillShortDescription": "Embed an audio to the existing video",
+    "input": {
+      "description": "Input.",
+      "instillEditOnNodeFields": [
+        "video",
+        "audio"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "audio": {
+          "description": "Audio data to embed to video",
+          "instillAcceptFormats": [
+            "audio/*",
+            "application/octet-stream"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Audio",
+          "type": "string"
+        },
+        "video": {
+          "description": "Video input to be embedded with provided audio",
+          "instillAcceptFormats": [
+            "video/*",
+            "application/octet-stream"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Video",
+          "type": "string"
+        }
+      },
+      "required": [
+        "video",
+        "audio"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output for embedding audio task",
+      "instillUIOrder": 0,
+      "properties": {
+        "video": {
+          "description": "Final video embedded with audio",
+          "instillFormat": "video/*",
+          "instillUIOrder": 0,
+          "title": "Video",
+          "type": "string"
+        }
+      },
+      "required": [
+        "video"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
   "TASK_EXTRACT_FRAMES": {
     "instillShortDescription": "Extract image frames from a video at regular intervals or specified timestamps. This task takes a video input and either an interval value or a list of timestamps. It then produces an array of image frames corresponding to these specifications, allowing for precise capture of key moments or creation of a sequence of still images from the video content.",
     "input": {
