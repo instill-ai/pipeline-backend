@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.49.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.49.0-beta...v0.49.1-beta) (2024-12-21)
+
+
+### Bug Fixes
+
+* **mod:** update golang.org/x/net module to fix vulnerability issue ([a2db7de](https://github.com/instill-ai/pipeline-backend/commit/a2db7dea69f47b7e0fa8fba5d70aecea405d88f7))
+
 ## [0.49.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.48.5-beta...v0.49.0-beta) (2024-12-17)
 
 
