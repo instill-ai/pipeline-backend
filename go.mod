@@ -85,7 +85,7 @@ require (
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
 	golang.org/x/image v0.18.0
 	golang.org/x/mod v0.17.0
-	golang.org/x/net v0.28.0
+	golang.org/x/net v0.33.0
 	golang.org/x/oauth2 v0.21.0
 	google.golang.org/api v0.189.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240701130421-f6361c86f094
