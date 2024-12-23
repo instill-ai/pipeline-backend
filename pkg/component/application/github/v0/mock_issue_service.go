@@ -28,14 +28,14 @@ func (m *MockIssuesService) ListByRepo(ctx context.Context, owner, repo string, 
 		Body:   github.String("Issue Body"),
 		State:  github.String("open"),
 		Assignee: &github.User{
-			Name: github.String("assignee"),
+			Login: github.String("assignee"),
 		},
 		Assignees: []*github.User{
 			{
-				Name: github.String("assignee1"),
+				Login: github.String("assignee1"),
 			},
 			{
-				Name: github.String("assignee2"),
+				Login: github.String("assignee2"),
 			},
 		},
 		Labels: []*github.Label{
@@ -68,14 +68,14 @@ func (m *MockIssuesService) Get(ctx context.Context, owner, repo string, number 
 		Body:   github.String("Issue Body"),
 		State:  github.String("open"),
 		Assignee: &github.User{
-			Name: github.String("assignee"),
+			Login: github.String("assignee"),
 		},
 		Assignees: []*github.User{
 			{
-				Name: github.String("assignee1"),
+				Login: github.String("assignee1"),
 			},
 			{
-				Name: github.String("assignee2"),
+				Login: github.String("assignee2"),
 			},
 		},
 		Labels: []*github.Label{
