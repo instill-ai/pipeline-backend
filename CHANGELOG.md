@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.49.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.49.0-beta...v0.49.1-beta) (2024-12-23)
+
+
+### Features
+
+* **component,video:** add task to embed audio to video ([#939](https://github.com/instill-ai/pipeline-backend/issues/939)) ([1aa40c2](https://github.com/instill-ai/pipeline-backend/commit/1aa40c274ccc9ea3ad1e7e6e6d10e48740ed9eda))
+
+
+### Bug Fixes
+
+* **component,github:** fix data structs ([#944](https://github.com/instill-ai/pipeline-backend/issues/944)) ([804e56a](https://github.com/instill-ai/pipeline-backend/commit/804e56a59204bc52d4e0e8f3075331340fbbed68))
+* **mod:** update golang.org/x/net module to fix vulnerability issue ([a2db7de](https://github.com/instill-ai/pipeline-backend/commit/a2db7dea69f47b7e0fa8fba5d70aecea405d88f7))
+
+
+### Miscellaneous Chores
+
+* release v0.49.1-beta ([51d676d](https://github.com/instill-ai/pipeline-backend/commit/51d676d1e1ab1a966d86baf4c1dcb62facdc916f))
+
 ## [0.49.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.48.5-beta...v0.49.0-beta) (2024-12-17)
 
 
