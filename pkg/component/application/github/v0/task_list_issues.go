@@ -19,21 +19,24 @@ func (client *Client) listIssues(ctx context.Context, job *base.Job) error {
 	if err != nil {
 		return err
 	}
-	// from format like `2006-01-02` parse it into UTC time
-	// The time will be 2006-01-02 00:00:00 +0000 UTC exactly
-	sinceTime, err := time.Parse(time.DateOnly, input.Since)
-	if err != nil {
-		return fmt.Errorf("parse since time: %w", err)
-	}
+
 	opts := &github.IssueListByRepoOptions{
 		State:     input.State,
 		Sort:      input.Sort,
 		Direction: input.Direction,
-		Since:     sinceTime,
 		ListOptions: github.ListOptions{
 			Page:    input.Page,
 			PerPage: min(input.PerPage, 100), // GitHub API only allows 100 per page
 		},
+	}
+	// from format like `2006-01-02` parse it into UTC time
+	// The time will be 2006-01-02 00:00:00 +0000 UTC exactly
+	if input.Since != "" {
+		sinceTime, err := time.Parse(time.DateOnly, input.Since)
+		if err != nil {
+			return fmt.Errorf("parse since time: %w", err)
+		}
+		opts.Since = sinceTime
 	}
 	if opts.Mentioned == "none" {
 		opts.Mentioned = ""

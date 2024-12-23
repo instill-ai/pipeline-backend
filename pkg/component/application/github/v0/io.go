@@ -1,7 +1,5 @@
 package github
 
-import "github.com/google/go-github/v62/github"
-
 type createIssueInput struct {
 	RepoInfo
 	Title     string   `instill:"title"`
@@ -16,8 +14,8 @@ type createIssueOutput struct {
 
 type createReviewCommentInput struct {
 	RepoInfo
-	PRNumber int                       `instill:"pr-number"`
-	Comment  github.PullRequestComment `instill:"comment"`
+	PRNumber int                `instill:"pr-number"`
+	Comment  PullRequestComment `instill:"comment"`
 }
 
 type createReviewCommentOutput struct {
@@ -95,7 +93,7 @@ type listReviewCommentsInput struct {
 	PRNumber  int    `instill:"pr-number,default=0"`
 	Sort      string `instill:"sort,default=created"`
 	Direction string `instill:"direction,default=desc"`
-	Since     string `instill:"since,default=2021-01-01"`
+	Since     string `instill:"since"`
 	PageOptions
 }
 

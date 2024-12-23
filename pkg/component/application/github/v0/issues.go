@@ -14,14 +14,14 @@ type IssuesService interface {
 }
 
 type Issue struct {
-	Number        int      `json:"number"`
-	Title         string   `json:"title"`
-	State         string   `json:"state"`
-	Body          string   `json:"body"`
-	Assignee      string   `json:"assignee"`
-	Assignees     []string `json:"assignees"`
-	Labels        []string `json:"labels"`
-	IsPullRequest bool     `json:"is-pull-request"`
+	Number        int      `instill:"number"`
+	Title         string   `instill:"title"`
+	State         string   `instill:"state"`
+	Body          string   `instill:"body"`
+	Assignee      string   `instill:"assignee"`
+	Assignees     []string `instill:"assignees"`
+	Labels        []string `instill:"labels"`
+	IsPullRequest bool     `instill:"is-pull-request"`
 }
 
 func (client *Client) extractIssue(originalIssue *github.Issue) Issue {
@@ -30,7 +30,7 @@ func (client *Client) extractIssue(originalIssue *github.Issue) Issue {
 		Title:         originalIssue.GetTitle(),
 		State:         originalIssue.GetState(),
 		Body:          originalIssue.GetBody(),
-		Assignee:      originalIssue.GetAssignee().GetName(),
+		Assignee:      originalIssue.GetAssignee().GetLogin(),
 		Assignees:     extractAssignees(originalIssue.Assignees),
 		Labels:        extractLabels(originalIssue.Labels),
 		IsPullRequest: originalIssue.IsPullRequest(),
@@ -40,7 +40,7 @@ func (client *Client) extractIssue(originalIssue *github.Issue) Issue {
 func extractAssignees(assignees []*github.User) []string {
 	assigneeList := make([]string, len(assignees))
 	for idx, assignee := range assignees {
-		assigneeList[idx] = assignee.GetName()
+		assigneeList[idx] = assignee.GetLogin()
 	}
 	return assigneeList
 }

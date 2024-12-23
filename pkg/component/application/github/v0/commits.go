@@ -8,23 +8,23 @@ import (
 
 // Commit is a struct that contains the information of a commit
 type Commit struct {
-	SHA     string       `json:"sha"`
-	Message string       `json:"message"`
-	Stats   *CommitStats `json:"stats,omitempty"`
-	Files   []CommitFile `json:"files,omitempty"`
+	SHA     string       `instill:"sha"`
+	Message string       `instill:"message"`
+	Stats   *CommitStats `instill:"stats"`
+	Files   []CommitFile `instill:"files"`
 }
 
 // CommitStats is a struct that contains the statistics of a commit
 type CommitStats struct {
-	Additions int `json:"additions"`
-	Deletions int `json:"deletions"`
-	Changes   int `json:"changes"`
+	Additions int `instill:"additions"`
+	Deletions int `instill:"deletions"`
+	Changes   int `instill:"changes"`
 }
 
 // CommitFile is a struct that contains the information of a commit file
 type CommitFile struct {
-	Filename string `json:"filename"`
-	Patch    string `json:"patch"`
+	Filename string `instill:"filename"`
+	Patch    string `instill:"patch"`
 	CommitStats
 }
 
