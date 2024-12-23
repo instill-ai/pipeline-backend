@@ -21,7 +21,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 					Repository: "test_repo",
 				},
 				PRNumber: 1,
-				Comment: github.PullRequestComment{
+				Comment: PullRequestComment{
 					Body:        github.String("This is a fake comment"),
 					Line:        github.Int(2),
 					StartLine:   github.Int(1),
@@ -54,7 +54,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 					Repository: "test_repo",
 				},
 				PRNumber: 1,
-				Comment: github.PullRequestComment{
+				Comment: PullRequestComment{
 					Body:        github.String("This is a fake comment"),
 					Line:        github.Int(1),
 					StartLine:   github.Int(1),
@@ -86,7 +86,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 					Repository: "test_repo",
 				},
 				PRNumber: 1,
-				Comment: github.PullRequestComment{
+				Comment: PullRequestComment{
 					Body:        github.String("This is a fake comment"),
 					Line:        github.Int(2),
 					StartLine:   github.Int(1),
@@ -106,7 +106,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 					Repository: "test_repo",
 				},
 				PRNumber: 1,
-				Comment: github.PullRequestComment{
+				Comment: PullRequestComment{
 					Body:        github.String("This is a fake comment"),
 					Line:        github.Int(2),
 					StartLine:   github.Int(1),
@@ -126,7 +126,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 					Repository: "test_repo",
 				},
 				PRNumber: 1,
-				Comment: github.PullRequestComment{
+				Comment: PullRequestComment{
 					Body:        github.String("This is a fake comment"),
 					Line:        github.Int(2),
 					StartLine:   github.Int(1),
@@ -146,7 +146,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 					Repository: "test_repo",
 				},
 				PRNumber: 1,
-				Comment: github.PullRequestComment{
+				Comment: PullRequestComment{
 					Body:        github.String("This is a fake comment"),
 					Line:        github.Int(1),
 					StartLine:   github.Int(2),

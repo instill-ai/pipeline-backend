@@ -31,8 +31,8 @@ type RepoInfoInterface interface {
 
 // RepoInfo is a struct that contains the owner and repository of a repository
 type RepoInfo struct {
-	Owner      string `json:"owner"`
-	Repository string `json:"repository"`
+	Owner      string `instill:"owner"`
+	Repository string `instill:"repository"`
 }
 
 func (info RepoInfo) getOwner() (string, error) {

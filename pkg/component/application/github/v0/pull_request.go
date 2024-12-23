@@ -15,19 +15,51 @@ type PullRequestService interface {
 }
 
 type PullRequest struct {
-	ID                int64    `json:"id"`
-	Number            int      `json:"number"`
-	State             string   `json:"state"`
-	Title             string   `json:"title"`
-	Body              string   `json:"body"`
-	DiffURL           string   `json:"diff-url,omitempty"`
-	CommitsURL        string   `json:"commits-url,omitempty"`
-	Commits           []Commit `json:"commits"`
-	Head              string   `json:"head"`
-	Base              string   `json:"base"`
-	CommentsNum       int      `json:"comments-num"`
-	CommitsNum        int      `json:"commits-num"`
-	ReviewCommentsNum int      `json:"review-comments-num"`
+	ID                int64    `instill:"id"`
+	Number            int      `instill:"number"`
+	State             string   `instill:"state"`
+	Title             string   `instill:"title"`
+	Body              string   `instill:"body"`
+	DiffURL           string   `instill:"diff-url"`
+	CommitsURL        string   `instill:"commits-url"`
+	Commits           []Commit `instill:"commits"`
+	Head              string   `instill:"head"`
+	Base              string   `instill:"base"`
+	CommentsNum       int      `instill:"comments-num"`
+	CommitsNum        int      `instill:"commits-num"`
+	ReviewCommentsNum int      `instill:"review-comments-num"`
+}
+
+type PullRequestComment struct {
+	ID                  *int64     `instill:"id"`
+	NodeID              *string    `instill:"node-id"`
+	InReplyTo           *int64     `instill:"in-reply-to-id"`
+	Body                *string    `instill:"body"`
+	Path                *string    `instill:"path"`
+	DiffHunk            *string    `instill:"diff-hunk"`
+	PullRequestReviewID *int64     `instill:"pull-request-review-id"`
+	Position            *int       `instill:"position"`
+	OriginalPosition    *int       `instill:"original-position"`
+	StartLine           *int       `instill:"start-line"`
+	Line                *int       `instill:"line"`
+	OriginalLine        *int       `instill:"original-line"`
+	OriginalStartLine   *int       `instill:"original-start-line"`
+	Side                *string    `instill:"side"`
+	StartSide           *string    `instill:"start-side"`
+	CommitID            *string    `instill:"commit-id"`
+	OriginalCommitID    *string    `instill:"original-commit-id"`
+	User                *User      `instill:"user"`
+	Reactions           *Reactions `instill:"reactions"`
+	CreatedAt           *Timestamp `instill:"created-at"`
+	UpdatedAt           *Timestamp `instill:"updated-at"`
+	// AuthorAssociation is the comment author's relationship to the pull request's repository.
+	// Possible values are "COLLABORATOR", "CONTRIBUTOR", "FIRST_TIMER", "FIRST_TIME_CONTRIBUTOR", "MEMBER", "OWNER", or "NONE".
+	AuthorAssociation *string `instill:"author-association"`
+	URL               *string `instill:"url"`
+	HTMLURL           *string `instill:"html-url"`
+	PullRequestURL    *string `instill:"pull-request-url"`
+	// Can be one of: LINE, FILE from https://docs.github.com/rest/pulls/comments#create-a-review-comment-for-a-pull-request
+	SubjectType *string `instill:"subject-type"`
 }
 
 func (client *Client) extractPullRequestInformation(ctx context.Context, owner string, repository string, originalPr *github.PullRequest, needCommitDetails bool) (PullRequest, error) {
@@ -59,11 +91,11 @@ func (client *Client) extractPullRequestInformation(ctx context.Context, owner s
 
 type ListPullRequestsInput struct {
 	RepoInfo
-	State     string `json:"state"`
-	Sort      string `json:"sort"`
-	Direction string `json:"direction"`
+	State     string `instill:"state"`
+	Sort      string `instill:"sort"`
+	Direction string `instill:"direction"`
 	PageOptions
 }
 type ListPullRequestsResp struct {
-	PullRequests []PullRequest `json:"pull-requests"`
+	PullRequests []PullRequest `instill:"pull-requests"`
 }

@@ -5,18 +5,18 @@ import (
 )
 
 type HookConfig struct {
-	URL         string `json:"url"`
-	InsecureSSL string `json:"insecure-ssl"`
-	Secret      string `json:"secret,omitempty"`
-	ContentType string `json:"content-type"`
+	URL         string `instill:"url"`
+	InsecureSSL string `instill:"insecure-ssl"`
+	Secret      string `instill:"secret"`
+	ContentType string `instill:"content-type"`
 }
 
 type HookInfo struct {
-	ID      int64      `json:"id"`
-	URL     string     `json:"url"`
-	PingURL string     `json:"ping-url"`
-	TestURL string     `json:"test-url"`
-	Config  HookConfig `json:"config"`
+	ID      int64      `instill:"id"`
+	URL     string     `instill:"url"`
+	PingURL string     `instill:"ping-url"`
+	TestURL string     `instill:"test-url"`
+	Config  HookConfig `instill:"config"`
 }
 
 func (client *Client) extractHook(originalHook *github.Hook) HookInfo {

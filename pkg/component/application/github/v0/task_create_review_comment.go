@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/go-github/v62/github"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
@@ -27,7 +28,23 @@ func (client *Client) createReviewComment(ctx context.Context, job *base.Job) er
 	if *commentReqs.Line == *commentReqs.StartLine {
 		commentReqs.StartLine = nil // If it's a one line comment, don't send start-line
 	}
-	comment, _, err := client.PullRequests.CreateComment(ctx, owner, repository, number, commentReqs)
+	req := &github.PullRequestComment{
+		Body:              commentReqs.Body,
+		Path:              commentReqs.Path,
+		Position:          commentReqs.Position,
+		Line:              commentReqs.Line,
+		StartLine:         commentReqs.StartLine,
+		Side:              commentReqs.Side,
+		StartSide:         commentReqs.StartSide,
+		CommitID:          commentReqs.CommitID,
+		OriginalCommitID:  commentReqs.OriginalCommitID,
+		SubjectType:       commentReqs.SubjectType,
+		AuthorAssociation: commentReqs.AuthorAssociation,
+		URL:               commentReqs.URL,
+		HTMLURL:           commentReqs.HTMLURL,
+		PullRequestURL:    commentReqs.PullRequestURL,
+	}
+	comment, _, err := client.PullRequests.CreateComment(ctx, owner, repository, number, req)
 	if err != nil {
 		return addErrMsgToClientError(err)
 	}
