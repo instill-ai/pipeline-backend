@@ -2,7 +2,6 @@ package base
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	_ "embed"
@@ -49,8 +48,6 @@ func TestComponent_ListComponentDefinitions(t *testing.T) {
 
 	wantComponentDefinitionStruct := map[string]any{}
 	err = json.Unmarshal(wantComponentDefinitionJSON, &wantComponentDefinitionStruct)
-	fmt.Println(string(gotJSON))
-	// fmt.Println(string(wantComponentDefinitionJSON))
 	c.Assert(err, qt.IsNil)
 	c.Check(gotJSON, qt.JSONEquals, wantComponentDefinitionStruct)
 }
