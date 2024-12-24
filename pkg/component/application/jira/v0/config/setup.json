@@ -4,42 +4,31 @@
   "properties": {
     "token": {
       "description": "Fill in your Jira API token. You can generate one from your Jira account \"settings > security > API tokens\".",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Token",
-      "type": "string"
+      "format": "string"
     },
     "email": {
       "description": "Fill in your Jira email address.",
-      "instillUpstreamTypes": [
-        "value",
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "Email",
-      "type": "string"
+      "format": "string"
     },
     "base-url": {
       "description": "Fill in your Jira base URL. For example, if your Jira URL is \"https://mycompany.atlassian.net/...\", then your base URL is https://mycompany.atlassian.net.",
-      "instillUpstreamTypes": [
-        "value",
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "Base URL",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
@@ -47,11 +36,6 @@
     "email",
     "base-url"
   ],
-  "instillEditOnNodeFields": [
-    "token",
-    "email",
-    "base-url"
-  ],
   "title": "Jira Connection",
-  "type": "object"
+  "format": "object"
 }

@@ -4,22 +4,16 @@
   "properties": {
     "token": {
       "description": "Fill in your GitHub access token for advanced usages. For more information about how to create tokens, please refer to the <a href=\"https://github.com/settings/tokens\">github settings</a>.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Token",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
-    "token"
-  ],
-  "instillEditOnNodeFields": [
     "token"
   ],
   "instillOAuthConfig": {
@@ -31,5 +25,5 @@
     ]
   },
   "title": "GitHub Connection",
-  "type": "object"
+  "format": "object"
 }

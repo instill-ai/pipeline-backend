@@ -8,79 +8,60 @@
       "examples": [
         "localhost,127.0.0.1"
       ],
-      "instillUpstreamTypes": [
-        "value"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": false,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Host",
-      "type": "string"
+      "format": "string"
     },
     "password": {
       "description": "Password associated with Redis.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 3,
+      "uiOrder": 3,
       "title": "Password",
-      "type": "string"
+      "format": "string"
     },
     "port": {
       "default": 6379,
       "description": "Port of Redis.",
-      "instillUpstreamTypes": [
-        "value"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "integer"
       ],
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "maximum": 65536,
       "minimum": 0,
       "title": "Port",
-      "type": "integer"
+      "format": "integer"
     },
     "ssl": {
       "default": false,
       "description": "Indicates whether SSL encryption protocol will be used to connect to Redis. It is recommended to use SSL connection if possible.",
-      "instillUpstreamTypes": [
-        "value"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "boolean"
       ],
-      "instillUIOrder": 4,
+      "uiOrder": 4,
       "title": "SSL Connection",
-      "type": "boolean"
+      "format": "boolean"
     },
     "username": {
       "description": "Username associated with Redis.",
-      "instillUpstreamTypes": [
-        "value"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
-      "instillUIOrder": 2,
+      "uiOrder": 2,
       "title": "Username",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
     "host",
     "port"
   ],
-  "instillEditOnNodeFields": [
-    "host",
-    "port"
-  ],
   "title": "Redis Connection",
-  "type": "object"
+  "format": "object"
 }

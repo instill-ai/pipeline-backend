@@ -45,7 +45,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Milvus URL Endpoint (required) | `url` | string | Fill in your Milvus public URL endpoint with port number, e.g http://3.25.202.142:19530.  |
 | Milvus Username (required) | `username` | string | Fill in your Milvus username.  |
@@ -65,7 +65,7 @@ Perform a vector search on a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to perform vector search on. |
@@ -87,7 +87,7 @@ Perform a vector search on a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
 | Status | `status` | string | Vector search status. |
@@ -100,7 +100,7 @@ Perform a vector search on a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | [Data](#vector-search-data) | `data` | array | The points returned from the vector search operation. |
 | IDs | `ids` | array | The ids returned from the vector search operation. |
@@ -116,7 +116,7 @@ Insert a vector data into a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPSERT` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into. |
@@ -131,7 +131,7 @@ Insert a vector data into a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Upsert status. |
 </div>
@@ -143,7 +143,7 @@ Insert a batch of vector data into a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into. |
@@ -158,7 +158,7 @@ Insert a batch of vector data into a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Batch upsert status. |
 </div>
@@ -170,7 +170,7 @@ Delete vector data from a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to delete the data from. |
@@ -185,7 +185,7 @@ Delete vector data from a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete status. |
 </div>
@@ -197,7 +197,7 @@ Create a collectio, please refer to [Create-Collection](https://milvus.io/docs/m
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_COLLECTION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to create. |
@@ -217,7 +217,7 @@ Create a collectio, please refer to [Create-Collection](https://milvus.io/docs/m
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create collection status. |
 </div>
@@ -229,7 +229,7 @@ Drop a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_COLLECTION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to drop. |
@@ -242,7 +242,7 @@ Drop a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Drop collection status. |
 </div>
@@ -254,7 +254,7 @@ Create a partition in a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_PARTITION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to create the partition in. |
@@ -268,7 +268,7 @@ Create a partition in a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create partition status. |
 </div>
@@ -280,7 +280,7 @@ Drop a partition from a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_PARTITION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to drop the partition from. |
@@ -294,7 +294,7 @@ Drop a partition from a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Drop partition status. |
 </div>
@@ -306,7 +306,7 @@ Create an index in a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_INDEX` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to create the index in. |
@@ -320,7 +320,7 @@ Create an index in a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create index status. |
 </div>
@@ -332,7 +332,7 @@ Drop an index from a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_INDEX` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to drop the index from. |
@@ -346,7 +346,7 @@ Drop an index from a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Drop index status. |
 </div>

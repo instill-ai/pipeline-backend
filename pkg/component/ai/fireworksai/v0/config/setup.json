@@ -4,23 +4,17 @@
   "properties": {
     "api-key": {
       "description": "Fill in your Fireworks AI API key. To find your keys, visit the Fireworks AI API Keys page.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
       "instillCredential": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "API Key",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [],
-  "instillEditOnNodeFields": [
-    "api-key"
-  ],
   "title": "Fireworks AI Connection",
-  "type": "object"
+  "format": "object"
 }

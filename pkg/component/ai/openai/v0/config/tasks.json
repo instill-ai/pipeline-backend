@@ -3,17 +3,16 @@
     "chat-message": {
       "properties": {
         "content": {
-          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/multi-modal-content",
+          "$ref": "schema.json#/$defs/instill-types/multi-modal-content",
           "description": "The message content.",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "title": "Content"
         },
         "role": {
           "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Role",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
@@ -21,41 +20,32 @@
         "content"
       ],
       "title": "Chat Message",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_SPEECH_RECOGNITION": {
-    "instillShortDescription": "Turn audio into text.",
+    "shortDescription": "Turn audio into text.",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "audio": {
           "description": "The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm.\n.",
-          "format": "binary",
-          "type": "string",
-          "instillAcceptFormats": [
+          "format": "string",
+          "acceptFormats": [
             "audio/*"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "uiOrder": 1,
           "title": "Audio"
         },
         "language": {
           "description": "The language of the input audio. Supplying the input language in <a href=\"https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes\">ISO-639-1</a> format will improve accuracy and latency.\n.",
-          "type": "string",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "The language of the input audio.",
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Language"
+          "shortDescription": "The language of the input audio.",
+          "uiOrder": 3,
+          "title": "Language",
+          "format": "string"
         },
         "model": {
           "description": "ID of the model to use. Only `whisper-1` is currently available.\n.",
@@ -63,17 +53,11 @@
             "whisper-1"
           ],
           "example": "whisper-1",
-          "type": "string",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "ID of the model to use",
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "shortDescription": "ID of the model to use",
+          "uiOrder": 0,
           "instillCredentialMap": {
             "values": [
               "whisper-1"
@@ -82,39 +66,30 @@
               "setup.api-key"
             ]
           },
-          "title": "Model"
+          "title": "Model",
+          "format": "string"
         },
         "prompt": {
           "description": "An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.\n.",
-          "type": "string",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "An optional text to guide the model's style or continue a previous audio segment.",
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Prompt"
+          "shortDescription": "An optional text to guide the model's style or continue a previous audio segment.",
+          "uiOrder": 2,
+          "title": "Prompt",
+          "format": "string"
         },
         "temperature": {
           "default": 0,
           "description": "The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. If set to 0, the model will use <a href=\"https://en.wikipedia.org/wiki/Log_probability\">log probability</a> to automatically increase the temperature until certain thresholds are hit.\n.",
-          "type": "number",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "number",
             "integer"
           ],
-          "instillShortDescription": "The sampling temperature, between 0 and 1.",
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Temperature"
+          "shortDescription": "The sampling temperature, between 0 and 1.",
+          "uiOrder": 4,
+          "title": "Temperature",
+          "format": "number"
         }
       },
       "required": [
@@ -122,30 +97,29 @@
         "model"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "text": {
-          "type": "string",
           "description": "Generated text.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
-          "title": "Text"
+          "uiOrder": 0,
+          "title": "Text",
+          "format": "string"
         }
       },
       "required": [
         "text"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_TEXT_EMBEDDINGS": {
-    "instillShortDescription": "Turn text into numbers, unlocking use cases like search.",
+    "shortDescription": "Turn text into numbers, unlocking use cases like search.",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "model": {
           "description": "ID of the model to use.",
@@ -155,12 +129,11 @@
             "text-embedding-3-large"
           ],
           "example": "text-embedding-3-small",
-          "type": "string",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "ID of the model to use",
-          "instillUIOrder": 0,
+          "shortDescription": "ID of the model to use",
+          "uiOrder": 0,
           "instillCredentialMap": {
             "values": [
               "text-embedding-3-small",
@@ -170,40 +143,26 @@
               "setup.api-key"
             ]
           },
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Model"
+          "title": "Model",
+          "format": "string"
         },
         "text": {
           "description": "The text.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 1,
           "title": "Text",
-          "type": "string"
+          "format": "string"
         },
         "dimensions": {
           "description": "The number of dimensions the resulting output embeddings should have. Only supported in text-embedding-3 and later models.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 2,
           "title": "Dimensions",
-          "type": "integer"
+          "format": "integer"
         }
       },
       "required": [
@@ -211,15 +170,15 @@
         "model"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "embedding": {
-          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/embedding",
+          "$ref": "schema.json#/$defs/instill-types/embedding",
           "description": "Embedding of the input text.",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Embedding"
         }
       },
@@ -227,31 +186,27 @@
         "embedding"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_TEXT_GENERATION": {
-    "instillShortDescription": "Provide text outputs in response to their inputs.",
-    "description": "OpenAI's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as \"prompts\". Designing a prompt is essentially how you \u201cprogram\u201d a large language model model, usually by providing instructions or some examples of how to successfully complete a task.",
+    "shortDescription": "Provide text outputs in response to their inputs.",
+    "description": "OpenAI's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as \"prompts\". Designing a prompt is essentially how you “program” a large language model model, usually by providing instructions or some examples of how to successfully complete a task.",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "chat-history": {
           "description": "Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format {\"role\": \"The message role, i.e. 'system', 'user' or 'assistant'\", \"content\": \"message content\"}.",
-          "instillAcceptFormats": [
-            "structured/chat-messages"
+          "acceptFormats": [
+            "object"
           ],
-          "instillShortDescription": "Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should be an ojbect adhere to the format: {\"role\": \"The message role, i.e. 'system', 'user' or 'assistant'\", \"content\": \"message content\"}.",
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "shortDescription": "Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should be an ojbect adhere to the format: {\"role\": \"The message role, i.e. 'system', 'user' or 'assistant'\", \"content\": \"message content\"}.",
+          "uiOrder": 4,
           "items": {
             "$ref": "#/$defs/chat-message"
           },
           "title": "Chat history",
-          "type": "array"
+          "format": "array"
         },
         "frequency-penalty": {
           "default": 0,
@@ -259,49 +214,37 @@
           "maximum": 2,
           "minimum": -2,
           "nullable": true,
-          "type": "number",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "number",
             "integer"
           ],
-          "instillShortDescription": "Number between -2.0 and 2.0",
-          "instillUIOrder": 11,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Frequency Penalty"
+          "shortDescription": "Number between -2.0 and 2.0",
+          "uiOrder": 11,
+          "title": "Frequency Penalty",
+          "format": "number"
         },
         "images": {
           "description": "The images.",
-          "instillAcceptFormats": [
-            "array:image/*"
+          "acceptFormats": [
+            "array"
           ],
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "uiOrder": 3,
           "items": {
-            "type": "string"
+            "format": "string"
           },
           "title": "Image",
-          "type": "array"
+          "format": "array"
         },
         "max-tokens": {
           "description": "The maximum number of tokens that can be generated in the chat completion.\n\nThe total length of input tokens and generated tokens is limited by the model's context length.",
           "nullable": true,
-          "type": "integer",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillShortDescription": "The maximum number of tokens to generate in the chat completion.",
-          "instillUIOrder": 7,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Max Tokens"
+          "shortDescription": "The maximum number of tokens to generate in the chat completion.",
+          "uiOrder": 7,
+          "title": "Max Tokens",
+          "format": "integer"
         },
         "model": {
           "description": "ID of the model to use.",
@@ -333,17 +276,11 @@
             "gpt-3.5-turbo-16k-0613"
           ],
           "example": "gpt-4o",
-          "type": "string",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "ID of the model to use",
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "shortDescription": "ID of the model to use",
+          "uiOrder": 0,
           "instillCredentialMap": {
             "values": [
               "o1-preview",
@@ -361,7 +298,8 @@
               "setup.api-key"
             ]
           },
-          "title": "Model"
+          "title": "Model",
+          "format": "string"
         },
         "n": {
           "default": 1,
@@ -370,16 +308,12 @@
           "maximum": 128,
           "minimum": 1,
           "nullable": true,
-          "type": "integer",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "N"
+          "uiOrder": 6,
+          "title": "N",
+          "format": "integer"
         },
         "presence-penalty": {
           "default": 0,
@@ -387,40 +321,28 @@
           "maximum": 2,
           "minimum": -2,
           "nullable": true,
-          "type": "number",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "number",
             "integer"
           ],
-          "instillShortDescription": "Number between -2.0 and 2.0",
-          "instillUIOrder": 10,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Presence Penalty"
+          "shortDescription": "Number between -2.0 and 2.0",
+          "uiOrder": 10,
+          "title": "Presence Penalty",
+          "format": "number"
         },
         "prompt": {
           "description": "The prompt text.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 1,
           "title": "Prompt",
-          "type": "string"
+          "format": "string"
         },
         "response-format": {
           "description": "Response format.",
-          "instillUIOrder": 8,
+          "uiOrder": 8,
           "additionalProperties": true,
-          "type": "object",
           "required": [
             "type"
           ],
@@ -428,58 +350,53 @@
             {
               "properties": {
                 "type": {
-                  "type": "string",
                   "const": "text",
                   "title": "Type",
                   "description": "Text.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 }
               },
               "required": [
                 "type"
               ],
               "title": "Text",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "type": {
-                  "type": "string",
                   "const": "json_object",
                   "title": "Type",
                   "description": "JSON Object.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 }
               },
               "required": [
                 "type"
               ],
               "title": "JSON Object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "type": {
-                  "type": "string",
                   "const": "json_schema",
                   "title": "Type",
                   "description": "JSON Schema.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "json-schema": {
                   "description": "Set up the schema of the structured output.",
-                  "type": "string",
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
                   "title": "JSON Schema",
-                  "instillShortDescription": "Specify the schema of the structured output.",
-                  "instillUIOrder": 1,
-                  "instillUIMultiline": true,
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference"
-                  ]
+                  "shortDescription": "Specify the schema of the structured output.",
+                  "uiOrder": 1,
+                  "format": "string"
                 }
               },
               "required": [
@@ -487,27 +404,22 @@
                 "json-schema"
               ],
               "title": "JSON Schema",
-              "type": "object"
+              "format": "object"
             }
           ],
-          "title": "Response Format"
+          "title": "Response Format",
+          "format": "object"
         },
         "system-message": {
           "default": "You are a helpful assistant.",
-          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model\u2019s behavior is using a generic message as \"You are a helpful assistant.\".",
-          "instillAcceptFormats": [
+          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as \"You are a helpful assistant.\".",
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "The system message helps set the behavior of the assistant",
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "shortDescription": "The system message helps set the behavior of the assistant",
+          "uiOrder": 2,
           "title": "System Message",
-          "type": "string"
+          "format": "string"
         },
         "temperature": {
           "default": 1,
@@ -516,18 +428,14 @@
           "maximum": 2,
           "minimum": 0,
           "nullable": true,
-          "type": "number",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "number",
             "integer"
           ],
-          "instillShortDescription": "What sampling temperature to use, between 0 and 2.",
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Temperature"
+          "shortDescription": "What sampling temperature to use, between 0 and 2.",
+          "uiOrder": 5,
+          "title": "Temperature",
+          "format": "number"
         },
         "top-p": {
           "default": 1,
@@ -536,92 +444,77 @@
           "maximum": 1,
           "minimum": 0,
           "nullable": true,
-          "type": "number",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "number",
             "integer"
           ],
-          "instillShortDescription": "An alternative to sampling with temperature, called nucleus sampling",
-          "instillUIOrder": 9,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Top P"
+          "shortDescription": "An alternative to sampling with temperature, called nucleus sampling",
+          "uiOrder": 9,
+          "title": "Top P",
+          "format": "number"
         }
       },
-      "instillEditOnNodeFields": [
-        "model",
-        "prompt",
-        "response-format"
-      ],
       "required": [
         "model",
         "prompt"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "texts": {
-          "instillUIOrder": 0,
-          "instillFormat": "array:string",
+          "uiOrder": 0,
           "items": {
-            "instillFormat": "string",
-            "instillUIMultiline": true,
             "title": "Text",
-            "type": "string"
+            "format": "string"
           },
           "description": "Texts.",
           "title": "Texts",
-          "type": "array"
+          "format": "array"
         },
         "usage": {
           "description": "Usage statistics related to the query.",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "properties": {
             "total-tokens": {
               "title": "Total tokens",
               "description": "Total number of tokens used (prompt + completion).",
-              "instillFormat": "integer",
-              "instillUIOrder": 0,
-              "type": "integer"
+              "uiOrder": 0,
+              "format": "integer"
             },
             "completion-tokens": {
               "title": "Completion tokens",
               "description": "Total number of tokens used (completion).",
-              "instillFormat": "integer",
-              "instillUIOrder": 1,
-              "type": "integer"
+              "uiOrder": 1,
+              "format": "integer"
             },
             "prompt-tokens": {
               "title": "Prompt tokens",
               "description": "Total number of tokens used (prompt).",
-              "instillFormat": "integer",
-              "instillUIOrder": 2,
-              "type": "integer"
+              "uiOrder": 2,
+              "format": "integer"
             }
           },
           "required": [
             "total-tokens"
           ],
           "title": "Usage",
-          "type": "object"
+          "format": "object"
         }
       },
       "required": [
         "texts"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_TEXT_TO_IMAGE": {
-    "instillShortDescription": "Generate or manipulate images with DALL\u00b7E.",
+    "shortDescription": "Generate or manipulate images with DALL·E.",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "model": {
           "default": "dall-e-2",
@@ -632,7 +525,6 @@
           ],
           "example": "dall-e-3",
           "nullable": true,
-          "type": "string",
           "instillCredentialMap": {
             "values": [
               "dall-e-3"
@@ -641,17 +533,13 @@
               "setup.api-key"
             ]
           },
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "ID of the model to use",
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Model"
+          "shortDescription": "ID of the model to use",
+          "uiOrder": 0,
+          "title": "Model",
+          "format": "string"
         },
         "n": {
           "default": 1,
@@ -660,33 +548,23 @@
           "maximum": 10,
           "minimum": 1,
           "nullable": true,
-          "type": "integer",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "N"
+          "uiOrder": 2,
+          "title": "N",
+          "format": "integer"
         },
         "prompt": {
           "description": "A text description of the desired image(s). The maximum length is 1000 characters for `dall-e-2` and 4000 characters for `dall-e-3`.",
           "example": "A cute baby sea otter",
-          "type": "string",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "A text description of the desired image(s).",
-          "instillUIMultiline": true,
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Prompt"
+          "shortDescription": "A text description of the desired image(s).",
+          "uiOrder": 1,
+          "title": "Prompt",
+          "format": "string"
         },
         "quality": {
           "default": "standard",
@@ -696,17 +574,13 @@
             "hd"
           ],
           "example": "standard",
-          "type": "string",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "The quality of the image that will be generated.",
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Quality"
+          "shortDescription": "The quality of the image that will be generated.",
+          "uiOrder": 3,
+          "title": "Quality",
+          "format": "string"
         },
         "size": {
           "default": "1024x1024",
@@ -720,17 +594,13 @@
           ],
           "example": "1024x1024",
           "nullable": true,
-          "type": "string",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "The size of the generated images.",
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Size"
+          "shortDescription": "The size of the generated images.",
+          "uiOrder": 4,
+          "title": "Size",
+          "format": "string"
         },
         "style": {
           "default": "vivid",
@@ -741,17 +611,13 @@
           ],
           "example": "vivid",
           "nullable": true,
-          "type": "string",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "The style of the generated images.",
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "N"
+          "shortDescription": "The style of the generated images.",
+          "uiOrder": 5,
+          "title": "N",
+          "format": "string"
         }
       },
       "required": [
@@ -759,31 +625,28 @@
         "model"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "results": {
           "description": "Generated results.",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "items": {
             "description": "Generated result.",
             "properties": {
               "image": {
                 "title": "Generated Image",
                 "description": "Generated image.",
-                "instillFormat": "image/webp",
-                "instillUIOrder": 0,
-                "type": "string"
+                "uiOrder": 0,
+                "format": "image/webp"
               },
               "revised-prompt": {
                 "title": "Revised Prompt",
                 "description": "Revised prompt.",
-                "instillFormat": "string",
-                "instillUIMultiline": true,
-                "instillUIOrder": 1,
-                "type": "string"
+                "uiOrder": 1,
+                "format": "string"
               }
             },
             "required": [
@@ -791,23 +654,23 @@
               "revised-prompt"
             ],
             "title": "Image",
-            "type": "object"
+            "format": "object"
           },
           "title": "Images",
-          "type": "array"
+          "format": "array"
         }
       },
       "required": [
         "results"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_TEXT_TO_SPEECH": {
-    "instillShortDescription": "Turn text into lifelike spoken audio",
+    "shortDescription": "Turn text into lifelike spoken audio",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "model": {
           "description": "One of the available TTS models: `tts-1` or `tts-1-hd`\n.",
@@ -816,7 +679,7 @@
             "tts-1",
             "tts-1-hd"
           ],
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
           "instillCredentialMap": {
@@ -828,15 +691,10 @@
               "setup.api-key"
             ]
           },
-          "instillShortDescription": "ID of the model to use",
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "shortDescription": "ID of the model to use",
+          "uiOrder": 0,
           "title": "Model",
-          "type": "string"
+          "format": "string"
         },
         "response-format": {
           "default": "mp3",
@@ -847,50 +705,37 @@
             "aac",
             "flac"
           ],
-          "type": "string",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "The format to audio",
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Response Format"
+          "shortDescription": "The format to audio",
+          "uiOrder": 3,
+          "title": "Response Format",
+          "format": "string"
         },
         "speed": {
           "default": 1,
           "description": "The speed of the generated audio. Select a value from `0.25` to `4.0`. `1.0` is the default.",
           "maximum": 4,
           "minimum": 0.25,
-          "type": "number",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "number"
           ],
-          "instillShortDescription": "The speed of the generated audio",
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Speed"
+          "shortDescription": "The speed of the generated audio",
+          "uiOrder": 4,
+          "title": "Speed",
+          "format": "number"
         },
         "text": {
           "description": "The text to generate audio for. The maximum length is 4096 characters.",
           "maxLength": 4096,
-          "type": "string",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "The text to generate audio for",
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Text"
+          "shortDescription": "The text to generate audio for",
+          "uiOrder": 1,
+          "title": "Text",
+          "format": "string"
         },
         "voice": {
           "description": "The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`.",
@@ -902,19 +747,14 @@
             "nova",
             "shimmer"
           ],
-          "type": "string",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
           "default": "alloy",
-          "instillShortDescription": "The voice to use when generating the audio",
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Voice"
+          "shortDescription": "The voice to use when generating the audio",
+          "uiOrder": 2,
+          "title": "Voice",
+          "format": "string"
         }
       },
       "required": [
@@ -923,22 +763,21 @@
         "voice"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "audio": {
           "description": "AI generated audio.",
-          "instillFormat": "audio/wav",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Audio",
-          "type": "string"
+          "format": "audio/wav"
         }
       },
       "required": [],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   }
 }

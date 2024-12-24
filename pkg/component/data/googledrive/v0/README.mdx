@@ -38,7 +38,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Refresh Token | `refresh-token` | string | Refresh token for the Google Drive API. For more information about how to create tokens, please refer to the <a href="https://developers.google.com/drive/api/v3/about-auth">Google Drive API documentation</a> and <a href="https://developers.google.com/identity/protocols/oauth2" >OAuth 2.0 documentation</a>.  |
 
@@ -56,7 +56,7 @@ Read a file content and metadata from Google Drive.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_FILE` |
 | File ID (required) | `shared-link` | string | Shared link of the file. You can get the shared link by right-clicking on the file and selecting `Copy link`. |
@@ -69,7 +69,7 @@ Read a file content and metadata from Google Drive.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [File](#read-file-file) | `file` | object | File in Google Drive. |
 </div>
@@ -81,7 +81,7 @@ Read a file content and metadata from Google Drive.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Content | `content` | string | Base64 encoded content of the binary file without the `data:[MIME_TYPE];base64,` prefix. Google Sheets will be exported as CSV, Google Docs as PDF, and Google Slides as PDF. If the file is not a Google file, the content will be the same as the original file. |
 | Created time | `created-time` | string | Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ`. |
@@ -104,7 +104,7 @@ Read metadata and content of files under the specified folder in Google Drive.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_FOLDER` |
 | File ID (required) | `shared-link` | string | Shared link of the file. You can get the shared link by right-clicking on the file and selecting `Copy link`. |
@@ -118,7 +118,7 @@ Read metadata and content of files under the specified folder in Google Drive.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Files](#read-folder-files) | `files` | array[object] | List of files under the specified folder. |
 </div>
@@ -130,7 +130,7 @@ Read metadata and content of files under the specified folder in Google Drive.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Content | `content` | string | Base64 encoded content of the binary file without the `data:[MIME_TYPE];base64,` prefix. Google Sheets will be exported as CSV, Google Docs as PDF, and Google Slides as PDF. If the file is not a Google file, the content will be the same as the original file. |
 | Created time | `created-time` | string | Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ`. |

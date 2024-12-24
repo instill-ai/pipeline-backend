@@ -1,16 +1,15 @@
 {
   "$defs": {
     "multi-modal-content": {
-      "instillFormat": "structured/multi-modal-content",
       "items": {
         "properties": {
           "image-url": {
             "properties": {
               "url": {
                 "description": "Either a URL of the image or the base64 encoded image data.",
-                "type": "string",
                 "title": "URL",
-                "instillUIOrder": 0
+                "uiOrder": 0,
+                "format": "string"
               }
             },
             "required": [
@@ -18,15 +17,14 @@
             ],
             "title": "Image URL",
             "description": "The image URL.",
-            "instillUIOrder": 0,
-            "type": "object"
+            "uiOrder": 0,
+            "format": "object"
           },
           "text": {
             "description": "The text content.",
-            "instillFormat": "string",
             "title": "Text",
-            "instillUIOrder": 1,
-            "type": "string"
+            "uiOrder": 1,
+            "format": "string"
           },
           "type": {
             "description": "The type of the content part.",
@@ -34,33 +32,31 @@
               "text",
               "image_url"
             ],
-            "instillFormat": "string",
             "title": "Type",
-            "instillUIOrder": 2,
-            "type": "string"
+            "uiOrder": 2,
+            "format": "string"
           }
         },
         "required": [
           "type"
         ],
-        "type": "object"
+        "format": "object"
       },
-      "type": "array"
+      "format": "array"
     },
     "chat-message": {
       "properties": {
         "content": {
           "$ref": "#/$defs/multi-modal-content",
           "description": "The message content.",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "title": "Content"
         },
         "role": {
           "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Role",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
@@ -68,25 +64,23 @@
         "content"
       ],
       "title": "Chat Message",
-      "type": "object"
+      "format": "object"
     },
     "usage": {
       "description": "Usage tokens in Anthropic.",
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "properties": {
         "input-tokens": {
           "description": "The input tokens used by Anthropic.",
-          "instillFormat": "number",
-          "instillUIOrder": 2,
+          "uiOrder": 2,
           "title": "Input Tokens",
-          "type": "number"
+          "format": "number"
         },
         "output-tokens": {
           "description": "The output tokens used by Anthropic.",
-          "instillFormat": "number",
-          "instillUIOrder": 3,
+          "uiOrder": 3,
           "title": "Output Tokens",
-          "type": "number"
+          "format": "number"
         }
       },
       "required": [
@@ -94,49 +88,38 @@
         "output-tokens"
       ],
       "title": "Usage",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_TEXT_GENERATION_CHAT": {
-    "instillShortDescription": "Provide text outputs in response to text inputs.",
-    "description": "Anthropic's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as \"prompts\". Designing a prompt is essentially how you \u201cprogram\u201d a large language model model, usually by providing instructions or some examples of how to successfully complete a task.",
+    "shortDescription": "Provide text outputs in response to text inputs.",
+    "description": "Anthropic's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as \"prompts\". Designing a prompt is essentially how you “program” a large language model model, usually by providing instructions or some examples of how to successfully complete a task.",
     "input": {
       "description": "Input.",
-      "instillEditOnNodeFields": [
-        "prompt",
-        "model-name"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "chat-history": {
           "description": "Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : {\"role\": \"The message role, i.e. 'system', 'user' or 'assistant'\", \"content\": \"message content\"}.",
-          "instillAcceptFormats": [
-            "structured/chat-messages"
+          "acceptFormats": [
+            "object"
           ],
-          "instillShortDescription": "Incorporate external chat history, specifically previous messages within the conversation. (Note: Anthropic doesn't support sending images via image-url, use the 'prompt-images' field instead)",
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "shortDescription": "Incorporate external chat history, specifically previous messages within the conversation. (Note: Anthropic doesn't support sending images via image-url, use the 'prompt-images' field instead)",
+          "uiOrder": 4,
           "items": {
             "$ref": "#/$defs/chat-message"
           },
           "title": "Chat history",
-          "type": "array"
+          "format": "array"
         },
         "max-new-tokens": {
           "default": 50,
           "description": "The maximum number of tokens for model to generate.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 6,
           "title": "Max New Tokens",
-          "type": "integer"
+          "format": "integer"
         },
         "model-name": {
           "enum": [
@@ -149,15 +132,10 @@
           ],
           "example": "claude-3-5-sonnet-latest",
           "description": "The Anthropic model to be used.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 0,
           "instillCredentialMap": {
             "values": [
               "claude-3-5-sonnet-latest",
@@ -172,95 +150,68 @@
             ]
           },
           "title": "Model Name",
-          "type": "string"
+          "format": "string"
         },
         "prompt": {
           "description": "The prompt text.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 2,
           "title": "Prompt",
-          "type": "string"
+          "format": "string"
         },
         "prompt-images": {
           "description": "The prompt images (Note: The prompt images will be injected in the order they are provided to the 'prompt' message. Anthropic doesn't support sending images via image-url, use this field instead).",
-          "instillAcceptFormats": [
-            "array:image/*"
+          "acceptFormats": [
+            "array"
           ],
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "uiOrder": 3,
           "items": {
-            "type": "string"
+            "format": "string"
           },
           "title": "Prompt Images",
-          "type": "array"
+          "format": "array"
         },
         "seed": {
           "description": "The seed (Note: Not supported by Anthropic Models).",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 4,
           "title": "Seed",
-          "type": "integer"
+          "format": "integer"
         },
         "system-message": {
           "default": "You are a helpful assistant.",
-          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model\u2019s behavior is set using a generic message as \"You are a helpful assistant.\".",
-          "instillAcceptFormats": [
+          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message as \"You are a helpful assistant.\".",
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "The system message helps set the behavior of the assistant",
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "shortDescription": "The system message helps set the behavior of the assistant",
+          "uiOrder": 2,
           "title": "System Message",
-          "type": "string"
+          "format": "string"
         },
         "temperature": {
           "default": 0.7,
           "description": "The temperature for sampling.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "number"
           ],
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 5,
           "title": "Temperature",
-          "type": "number"
+          "format": "number"
         },
         "top-k": {
           "default": 10,
           "description": "Top k for sampling.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 5,
           "title": "Top K",
-          "type": "integer"
+          "format": "integer"
         }
       },
       "required": [
@@ -268,19 +219,17 @@
         "model-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Output.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "text": {
           "description": "Model Output.",
-          "instillUIOrder": 0,
-          "instillFormat": "string",
-          "instillUIMultiline": true,
+          "uiOrder": 0,
           "title": "Text",
-          "type": "string"
+          "format": "string"
         },
         "usage": {
           "$ref": "#/$defs/usage"
@@ -290,7 +239,7 @@
         "text"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   }
 }

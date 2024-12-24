@@ -4,39 +4,29 @@
   "properties": {
     "api-key": {
       "description": "Fill in your Freshdesk API key. To find your key, go to profile settigs and on the right pane, you can get your key once you have completed the captcha verification.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "API key",
-      "type": "string"
+      "format": "string"
     },
     "domain": {
       "description": "Your Freshdesk domain. You can find this by going to Admin -> Search for \"Portals\" -> Portal URL. Your portal URL will look like \"yourdomain.freshdesk.com\". Please only input your domain and not the whole URL.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "Domain",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
     "api-key",
     "domain"
   ],
-  "instillEditOnNodeFields": [
-    "api-key",
-    "domain"
-  ],
   "title": "Freshdesk Connection",
-  "type": "object"
+  "format": "object"
 }

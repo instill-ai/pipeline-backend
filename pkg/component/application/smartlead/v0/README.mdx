@@ -53,7 +53,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | API Key (required) | `api-key` | string | Fill in your Smartlead API key. You can generate one from your [Smartlead account](https://app.smartlead.ai/app/settings/profile).  |
 
@@ -71,7 +71,7 @@ Create a new campaign. You have to create a campaign before you can start adding
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_CAMPAIGN` |
 | Name (required) | `name` | string | Name of the campaign. |
@@ -84,7 +84,7 @@ Create a new campaign. You have to create a campaign before you can start adding
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | string | ID of the campaign. |
 | Created At | `created-at` | string | Created at timestamp of the campaign. |
@@ -97,7 +97,7 @@ Setup a campaign. You can update campaign settings to this campaign. For Smartle
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SETUP_CAMPAIGN` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
@@ -123,7 +123,7 @@ Setup a campaign. You can update campaign settings to this campaign. For Smartle
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Result (optional) | `result` | string | Result of setting up a campaign. |
 </div>
@@ -135,7 +135,7 @@ Save sequences to a campaign. A Smartlead sequence is a series of automated emai
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SAVE_SEQUENCES` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
@@ -152,7 +152,7 @@ A Smartlead sequence is a series of automated emails sent to potential customers
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Email Body | `email-body` | string | Body of the email. If you want to set the variable according to different leads, you can use `{{variable_name}}`. It will be replaced by the actual value from the lead.  |
 | Sequence Number | `seq-number` | number | Sequence number means the order of the sequence. If you don't specify this, it will be automatically assigned by the order of the sequences.  |
@@ -165,7 +165,7 @@ A Smartlead sequence is a series of automated emails sent to potential customers
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Result | `result` | string | Result of saving sequences. |
 </div>
@@ -177,7 +177,7 @@ Get sequences of a campaign. If you want to add more sequences to the campaign, 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_SEQUENCES` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
@@ -190,7 +190,7 @@ Get sequences of a campaign. If you want to add more sequences to the campaign, 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Sequences](#get-sequences-sequences) | `sequences` | array[object] | Sequences of the campaign. |
 </div>
@@ -202,7 +202,7 @@ Get sequences of a campaign. If you want to add more sequences to the campaign, 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Email Body | `email-body` | string | Body of the email when you save the sequence. |
 | Sequence ID | `seq-id` | string | ID of the sequence. |
@@ -219,7 +219,7 @@ Add leads to a campaign.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_ADD_LEADS` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
@@ -237,7 +237,7 @@ Leads to add to the campaign.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Company | `company` | string | Company name of the lead.  |
 | Custom Fields | `custom-fields` | array | Custom fields of the lead. You can use custom fields to store additional information about the lead, which can be used in the variable in the sequence email template.  |
@@ -252,7 +252,7 @@ Settings for adding leads.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Ignore Community Bounce List | `ignore-community-bounce-list` | boolean | Ignore the community bounce list and add the lead. If true, uploaded leads will BYPASS any leads that bounced across Smartlead entire user base and be uploaded to the campaign.  |
 | Ignore Duplicate Leads in Other Campaign | `ignore-duplicate-leads-in-other-campaign` | boolean | Ignore duplicate leads in other campaigns and add the lead. If true, leads will NOT BYPASS the comparison with other campaigns and NOT be added to the campaign if they are part of any other campaign.   |
@@ -265,7 +265,7 @@ Settings for adding leads.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Upload Count | `upload-count` | number | Number of leads uploaded. |
 | Total Leads | `total-leads` | number | Total number of leads in the campaign. |
@@ -281,7 +281,7 @@ Add a sender email to the campaign. You have to configure the sender email in Sm
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_ADD_SENDER_EMAIL` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
@@ -295,7 +295,7 @@ Add a sender email to the campaign. You have to configure the sender email in Sm
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Result | `result` | string | Result of adding a sender email. If you don't configure your sender email in Smartlead console, you will get an error. |
 </div>
@@ -307,7 +307,7 @@ Update the status of a campaign. You need to start a campaign to send the emails
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE_CAMPAIGN_STATUS` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
@@ -321,7 +321,7 @@ Update the status of a campaign. You need to start a campaign to send the emails
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Result | `result` | string | Result of updating the status of a campaign. |
 </div>
@@ -333,7 +333,7 @@ Get the metrics of a campaign. You can get the metrics like open count, click co
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_CAMPAIGN_METRIC` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
@@ -346,7 +346,7 @@ Get the metrics of a campaign. You can get the metrics like open count, click co
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Sent Count (optional) | `sent-count` | number | Number of emails sent. |
 | Unique Sent Count (optional) | `unique-sent-count` | number | Number of unique emails sent. |
@@ -366,7 +366,7 @@ List the status of leads in a campaign. You can get the status of leads like 'ST
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_LEADS_STATUS` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
@@ -380,7 +380,7 @@ List the status of leads in a campaign. You can get the status of leads like 'ST
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Leads](#list-leads-status-leads) | `leads` | array[object] | Lead status in the campaign. |
 </div>
@@ -392,7 +392,7 @@ List the status of leads in a campaign. You can get the status of leads like 'ST
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Email | `email` | string | Email of the lead. |
 | Status | `status` | string | Status of the lead. |

@@ -278,14 +278,14 @@ func constructTableProperties(tables []TableColumns) ([]*structpb.Struct, error)
 		propertiesMap := make(map[string]interface{})
 		for idx, column := range table.Columns {
 			propertiesMap[column.Name] = map[string]interface{}{
-				"title":                column.Name,
-				"instillUIOrder":       idx,
-				"description":          "Column " + column.Name + " of table " + table.TableName,
-				"instillFormat":        getInstillAcceptFormat(column.Type),
-				"instillUpstreamTypes": instillUpstreamTypes,
-				"instillAcceptFormats": []string{getInstillAcceptFormat(column.Type)},
-				"required":             []string{},
-				"type":                 getInstillAcceptFormat(column.Type),
+				"title":         column.Name,
+				"uiOrder":       idx,
+				"description":   "Column " + column.Name + " of table " + table.TableName,
+				"format":        getInstillAcceptFormat(column.Type),
+				"upstreamTypes": instillUpstreamTypes,
+				"acceptFormats": []string{getInstillAcceptFormat(column.Type)},
+				"required":      []string{},
+				"type":          getInstillAcceptFormat(column.Type),
 			}
 		}
 		propertyStructPB, err := base.ConvertToStructpb(propertiesMap)

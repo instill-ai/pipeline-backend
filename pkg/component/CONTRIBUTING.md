@@ -132,26 +132,20 @@ should be in the format `TASK_NAME`.
 ```json
 {
   "TASK_GREET": {
-    "instillShortDescription": "Greet someone / something",
+    "shortDescription": "Greet someone / something",
     "title": "Greet",
     "input": {
       "description": "Input",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "target": {
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "description": "The target of the greeting",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "instillUIMultiline": true,
           "title": "Greeting target",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
@@ -162,15 +156,15 @@ should be in the format `TASK_NAME`.
     },
     "output": {
       "description": "The greeting sentence",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "greeting": {
           "description": "A greeting sentence addressed to the target",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "required": [],
           "title": "Greeting",
           "type": "string",
-          "instillFormat": "string"
+          "format": "string"
         }
       },
       "required": [
@@ -189,9 +183,9 @@ This file defines the input and output schema of each task:
 
 - **`title`** is used by the console to provide the title of the task in the
   component.
-- **`description`** and **`instillShortDescription`** are used by the console to
+- **`description`** and **`shortDescription`** are used by the console to
   provide a description of the task in the component. If
-  **`instillShortDescription`** does not exist, it will be the same as
+  **`shortDescription`** does not exist, it will be the same as
   **`description`**.
 - **`input`** is a JSON Schema that describes the input of the task.
 - **`output`** is a JSON Schema that describes the output of the task.
@@ -199,39 +193,32 @@ This file defines the input and output schema of each task:
 **Properties within `input` and `output` Objects**
 
 - **`required`** indicates whether the property is required.
-- **`type`**: describes the JSON type of this field, which could be `integer`,
-  `number`, `boolean`, `string`, `array`, or `object`.
+- **`format`**: describes the format of this field, which could be `string`,
+  `number`, `boolean`, `file`, `document`, `image`, `video`, `audio`, `array`,
+  or `object`.
 - **`title`** is used by the console to provide the title of the property in the component.
 - **`description`** is used by the console to provide information about this
   task in the component.
-- **`instillShortDescription`**: is a concise version of `description`, used to
+- **`shortDescription`**: is a concise version of `description`, used to
   fit smaller spaces such as a component form field. If this value is empty, the
   `description` value will be used.
-- **`instillUIOrder`** defines the order in which the properties will be
+- **`uiOrder`** defines the order in which the properties will be
   rendered in the component.
-- **`instillUIMultiline`** indicates whether the text field in the component is
-  multiline.
 
 **Properties within `input` Objects**
 
-- **`instillEditOnNodeFields`** determines whether this field will appear at the
-  forefront of the component. Optional properties can be set in the
-  advanced configuration.
-- **`instillAcceptFormats`** is an array indicating the data types of acceptable
+- **`acceptFormats`** is an array indicating the data types of acceptable
   input fields. It should be an array of [**Instill
   Format**](https://www.instill.tech/docs/vdp/instill-format).
   - Currently, we do not support the `time` type. When the input is a `date` or `datetime`, it should be represented as a string. The `date` or `datetime` will be automatically parsed in UTC timezone by the YAML parser. Please ensure this point is noted in the documentation, specifically for the `start-to-read-date` in the Slack component.
-- **`instillUpstreamTypes`** defines how an input property can be set: as a
-  direct value, a reference to another value in the pipeline, or a combination
-  of both (e.g., `${variable.name}` or `my dear ${variable.name}`).
 - **`instillSecret`** indicates the data must reference the secrets and cannot
   be used in plaintext.
 
 **Properties within `output` Objects**
 
-- **`instillFormat`** indicates the data type of the output field, which should
-  be one of `number`, `integer`, `string`, `object`, `boolean`, or MIME type.
-  Please refer to [**Instill
+- **`format`** indicates the data type of the output field, which should be one
+  of `string`, `number`, `boolean`, `file`, `document`, `image`, `video`,
+  `audio`, `array`, or `object`. Please refer to [**Instill
   Format**](https://www.instill.tech/docs/vdp/instill-format) for more details.
 
 See the [example recipe](#example-recipe) to understand how these fields map to

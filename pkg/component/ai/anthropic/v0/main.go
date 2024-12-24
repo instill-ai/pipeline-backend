@@ -224,7 +224,7 @@ func (e *execution) generateText(ctx context.Context, job *base.Job) error {
 
 	promptImages := inputStruct.PromptImages
 	for _, image := range promptImages {
-		extension := base.GetBase64FileExtension(image)
+		extension := util.GetBase64FileExtension(image)
 		// check if the image extension is supported
 		if !slices.Contains(supportedImageExtensions, extension) {
 			job.Error.Error(ctx, err)
