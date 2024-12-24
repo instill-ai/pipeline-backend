@@ -18,6 +18,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/russross/blackfriday/v2"
 
+	"github.com/instill-ai/pipeline-backend/pkg/component/resources/schemas"
+
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
@@ -118,7 +120,10 @@ func (g *READMEGenerator) parseTasks(configDir string) (map[string]task, error) 
 
 	}
 
-	renderedTasksJSON, err := componentbase.RenderJSON(tasksJSON, additionalJSONs)
+	additionalJSONBytes := map[string][]byte{
+		"schema.json": schemas.SchemaJSON,
+	}
+	renderedTasksJSON, err := componentbase.RenderJSON(tasksJSON, additionalJSONBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -321,20 +326,20 @@ func parseResourceProperties(o *objectSchema) []resourceProperty {
 		}
 
 		prop.Title = titleCase(prop.Title)
-		prop.replaceType()
+		prop.replaceFormat()
 
-		// If type is map, extend the type with the element type.
-		switch prop.Type {
+		// If format is array, extend the format with the element format.
+		switch prop.Format {
 		case "array":
-			if prop.Items.Type != "" {
-				if prop.Items.Type == "*" {
-					prop.Type = "array[any]"
+			if prop.Items.Format != "" {
+				if prop.Items.Format == "*" {
+					prop.Format = "array[any]"
 				} else {
-					prop.Type += fmt.Sprintf("[%s]", prop.Items.Type)
+					prop.Format += fmt.Sprintf("[%s]", prop.Items.Format)
 				}
 			}
 		case "":
-			prop.Type = "any"
+			prop.Format = "any"
 		}
 		prop.replaceDescription()
 
@@ -378,15 +383,15 @@ func (rt *readmeTask) parseObjectProperties(properties map[string]property, isIn
 			continue
 		}
 
-		if op.Type != "object" && op.Type != "array[object]" && (op.Type != "array" || op.Items.Type != "object") {
+		if op.Format != "object" && op.Format != "array[object]" && (op.Format != "array" || op.Items.Format != "object") {
 			continue
 		}
 
-		if op.Type == "object" && op.Properties == nil {
+		if op.Format == "object" && op.Properties == nil {
 			continue
 		}
 
-		if op.Type == "array[object]" && op.Items.Properties == nil {
+		if op.Format == "array[object]" && op.Items.Properties == nil {
 			continue
 		}
 
@@ -399,9 +404,9 @@ func (rt *readmeTask) parseObjectProperties(properties map[string]property, isIn
 		}
 
 		op.replaceDescription()
-		op.replaceType()
+		op.replaceFormat()
 
-		if op.Type == "object" {
+		if op.Format == "object" {
 
 			if isInput {
 				rt.InputObjects = append(rt.InputObjects, map[string]objectSchema{
@@ -420,13 +425,13 @@ func (rt *readmeTask) parseObjectProperties(properties map[string]property, isIn
 				})
 				rt.parseObjectProperties(op.Properties, isInput)
 			}
-		} else { // op.Type == "array[object]" || (op.Type == "array" || op.Items.Type == "object")
+		} else { // op.Format == "array[object]" || (op.Format == "array" || op.Items.Format == "object")
 
 			props := op.Items.Properties
 			for key := range props {
 				prop := props[key]
 				prop.replaceDescription()
-				prop.replaceType()
+				prop.replaceFormat()
 				props[key] = prop
 			}
 
@@ -495,12 +500,12 @@ func (rt *readmeTask) parseOneOfsProperties(properties map[string]property) {
 			continue
 		}
 
-		if op.Type != "object" && op.Type != "array" {
+		if op.Format != "object" && op.Format != "array" {
 			continue
 		}
 
-		if op.Type == "array" {
-			if op.Items.Type != "object" {
+		if op.Format == "array" {
+			if op.Items.Format != "object" {
 				continue
 			}
 
@@ -589,20 +594,20 @@ func anchorSetupFromProperty(prop property) string {
 	if isSemiStructuredObject(prop) {
 		return prop.Title
 	}
-	if prop.Type == "object" ||
-		(prop.Type == "array" && prop.Items.Type == "object") ||
-		(prop.Type == "array[object]") {
+	if prop.Format == "object" ||
+		(prop.Format == "array" && prop.Items.Format == "object") ||
+		(prop.Format == "array[object]") {
 		return fmt.Sprintf("[%s](#%s)", prop.Title, blackfriday.SanitizedAnchorName(prop.Title))
 	}
 	return prop.Title
 }
 
 func isSemiStructuredObject(p property) bool {
-	return p.Type == "object" && p.Properties == nil && p.OneOf == nil
+	return p.Format == "object" && p.Properties == nil && p.OneOf == nil
 }
 
 func arrayToBeSkipped(op property) bool {
-	return op.Type == "array" && op.Items.Type == "object" && op.Items.Properties == nil
+	return op.Format == "array" && op.Items.Format == "object" && op.Items.Properties == nil
 }
 
 func anchorTaskObject(p interface{}, task readmeTask) string {
@@ -621,9 +626,9 @@ func anchorTaskWithProperty(prop property, taskName string) string {
 	if isSemiStructuredObject(prop) {
 		return prop.Title
 	}
-	if prop.Type == "object" ||
-		(prop.Type == "array" && prop.Items.Type == "object") ||
-		(prop.Type == "array[object]") {
+	if prop.Format == "object" ||
+		(prop.Format == "array" && prop.Items.Format == "object") ||
+		(prop.Format == "array[object]") {
 		return fmt.Sprintf("[%s](#%s-%s)", prop.Title, blackfriday.SanitizedAnchorName(taskName), blackfriday.SanitizedAnchorName(prop.Title))
 	}
 	return prop.Title
@@ -680,11 +685,11 @@ func (prop *property) replaceDescription() {
 	}
 }
 
-func (prop *property) replaceType() {
-	if prop.Type == "*" {
-		prop.Type = "any"
+func (prop *property) replaceFormat() {
+	if prop.Format == "*" {
+		prop.Format = "any"
 	}
-	if prop.Type == "array" && prop.Items.Type == "*" {
-		prop.Type = "array[any]"
+	if prop.Format == "array" && prop.Items.Format == "*" {
+		prop.Format = "array[any]"
 	}
 }

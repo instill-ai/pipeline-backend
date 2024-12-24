@@ -4,39 +4,29 @@
   "properties": {
     "api-key": {
       "description": "Fill in your Chroma API key.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "API Key",
-      "type": "string"
+      "format": "string"
     },
     "url": {
       "description": "Fill in your Chroma hosted public URL endpoint with port, e.g http://1.2.3:8000.",
-      "instillUpstreamTypes": [
-        "value"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": false,
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "Chroma URL Endpoint",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
     "api-key",
     "url"
   ],
-  "instillEditOnNodeFields": [
-    "api-key",
-    "url"
-  ],
   "title": "Chroma Connection",
-  "type": "object"
+  "format": "object"
 }

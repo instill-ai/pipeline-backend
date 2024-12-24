@@ -20,18 +20,18 @@ func (t *task) MarshalJSON() ([]byte, error) {
 	type Alias task
 	return json.Marshal(&struct {
 		*Alias
-		InstillShortDescription string `json:"instillShortDescription,omitempty"`
+		ShortDescription string `json:"shortDescription,omitempty"`
 	}{
-		Alias:                   (*Alias)(t),
-		InstillShortDescription: t.Description,
+		Alias:            (*Alias)(t),
+		ShortDescription: t.Description,
 	})
 }
 
 func (t *task) UnmarshalJSON(data []byte) error {
 	type Alias task
 	aux := &struct {
-		InstillShortDescription string `json:"instillShortDescription"`
-		Description             string `json:"description"`
+		ShortDescription string `json:"shortDescription"`
+		Description      string `json:"description"`
 		*Alias
 	}{
 		Alias: (*Alias)(t),
@@ -43,8 +43,8 @@ func (t *task) UnmarshalJSON(data []byte) error {
 	// Set Description based on the presence of the fields
 	if aux.Description != "" {
 		t.Description = aux.Description
-	} else if aux.InstillShortDescription != "" {
-		t.Description = aux.InstillShortDescription
+	} else if aux.ShortDescription != "" {
+		t.Description = aux.ShortDescription
 	}
 
 	return nil

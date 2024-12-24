@@ -2,6 +2,7 @@ package base
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	_ "embed"
@@ -9,6 +10,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	qt "github.com/frankban/quicktest"
+
+	"github.com/instill-ai/pipeline-backend/pkg/component/resources/schemas"
 )
 
 var (
@@ -33,7 +36,10 @@ func TestComponent_ListComponentDefinitions(t *testing.T) {
 		componentConfigJSON,
 		componentTasksJSON,
 		nil,
-		map[string][]byte{"additional.json": componentAdditionalJSON})
+		map[string][]byte{
+			"additional.json": componentAdditionalJSON,
+			"schema.json":     schemas.SchemaJSON,
+		})
 	c.Assert(err, qt.IsNil)
 
 	got, err := conn.GetDefinition(nil, nil)
@@ -43,6 +49,8 @@ func TestComponent_ListComponentDefinitions(t *testing.T) {
 
 	wantComponentDefinitionStruct := map[string]any{}
 	err = json.Unmarshal(wantComponentDefinitionJSON, &wantComponentDefinitionStruct)
+	fmt.Println(string(gotJSON))
+	// fmt.Println(string(wantComponentDefinitionJSON))
 	c.Assert(err, qt.IsNil)
 	c.Check(gotJSON, qt.JSONEquals, wantComponentDefinitionStruct)
 }

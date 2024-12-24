@@ -4,53 +4,40 @@
   "properties": {
     "dataset-id": {
       "description": "Fill in your BigQuery Dataset ID.",
-      "instillUpstreamTypes": [
-        "value"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
-      "instillUIOrder": 2,
+      "uiOrder": 2,
       "title": "BigQuery Dataset ID",
-      "type": "string"
+      "format": "string"
     },
     "json-key": {
       "description": "Contents of the JSON key file with access to the bucket.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
-      "instillUIMultiline": true,
+      "uiOrder": 0,
       "title": "JSON Key File contents",
-      "type": "string"
+      "format": "string"
     },
     "project-id": {
       "description": "Fill in your BigQuery Project ID.",
-      "instillUpstreamTypes": [
-        "value"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "BigQuery Project ID",
-      "type": "string"
+      "format": "string"
     },
     "table-name": {
       "description": "Fill in your BigQuery Table Name.",
-      "instillUpstreamTypes": [
-        "value"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
-      "instillUIOrder": 3,
+      "uiOrder": 3,
       "title": "BigQuery Table Name",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
@@ -59,12 +46,6 @@
     "dataset-id",
     "table-name"
   ],
-  "instillEditOnNodeFields": [
-    "json-key",
-    "project-id",
-    "dataset-id",
-    "table-name"
-  ],
   "title": "BigQuery Connection",
-  "type": "object"
+  "format": "object"
 }

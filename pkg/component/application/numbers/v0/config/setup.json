@@ -4,24 +4,18 @@
   "properties": {
     "capture-token": {
       "description": "Fill in your Capture token in the Capture App. To access your tokens, you need a Capture App account and you can sign in with email or wallet to acquire the Capture Token.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Capture token",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
     "capture-token"
   ],
-  "instillEditOnNodeFields": [
-    "capture-token"
-  ],
   "title": "Numbers Protocol Connection",
-  "type": "object"
+  "format": "object"
 }

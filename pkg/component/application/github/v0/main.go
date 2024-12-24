@@ -138,10 +138,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 		if err := job.Input.ReadData(ctx, input); err != nil {
 			return fmt.Errorf("reading input data: %w", err)
 		}
-		if err := e.FillInDefaultValues(input); err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
+		// TODO: migrate to new interface with default value
 	}
 	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }

@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/resources/schemas"
 )
 
 const (
@@ -42,7 +43,10 @@ type execution struct {
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, nil, nil)
+		additionalJSONBytes := map[string][]byte{
+			"schema.json": schemas.SchemaJSON,
+		}
+		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, nil, additionalJSONBytes)
 		if err != nil {
 			panic(err)
 		}

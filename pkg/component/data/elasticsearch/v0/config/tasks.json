@@ -1,52 +1,37 @@
 {
   "TASK_INDEX": {
-    "instillShortDescription": "Index a document into Elasticsearch",
+    "shortDescription": "Index a document into Elasticsearch",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "index-name": {
           "description": "Name of the Elasticsearch index.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Index Name",
-          "type": "string"
+          "format": "string"
         },
         "id": {
           "description": "The ID of the document.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "ID",
-          "type": "string"
+          "format": "string"
         },
         "data": {
           "description": "Data to be indexed.",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 2,
           "title": "Data",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
@@ -54,89 +39,73 @@
         "data"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Index operation status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_MULTI_INDEX": {
-    "instillShortDescription": "Index multiple documents into Elasticsearch with bulk API",
+    "shortDescription": "Index multiple documents into Elasticsearch with bulk API",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "index-name": {
           "description": "Name of the Elasticsearch index.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Index Name",
-          "type": "string"
+          "format": "string"
         },
         "array-id": {
           "description": "The array of id.",
-          "instillAcceptFormats": [
-            "array:string"
+          "acceptFormats": [
+            "array"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "items": {
             "description": "An id of the document.",
-            "type": "string",
-            "example": 1
+            "example": 1,
+            "format": "string"
           },
           "minItems": 1,
           "title": "Array ID",
-          "type": "array"
+          "format": "array"
         },
         "array-data": {
           "description": "Array data to be indexed.",
-          "instillAcceptFormats": [
-            "array:semi-structured/*",
-            "array:semi-structured/json",
-            "array:semi-structured/object",
-            "array:object"
+          "acceptFormats": [
+            "array",
+            "array",
+            "array",
+            "array"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 2,
           "title": "Array Data",
-          "type": "array",
           "items": {
             "description": "The data to be inserted.",
             "title": "Data",
-            "type": "object",
-            "required": []
+            "required": [],
+            "format": "object"
           },
-          "minItems": 1
+          "minItems": 1,
+          "format": "array"
         }
       },
       "required": [
@@ -144,352 +113,267 @@
         "array-data"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Index operation status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_UPDATE": {
-    "instillShortDescription": "Update a document in Elasticsearch",
+    "shortDescription": "Update a document in Elasticsearch",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "index-name": {
           "description": "Name of the Elasticsearch index.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Index Name",
-          "type": "string"
+          "format": "string"
         },
         "id": {
           "description": "The ID of the document.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "ID",
-          "type": "string"
+          "format": "string"
         },
         "query": {
           "description": "Full text search query for update task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "Full text search query, (empty for all documents)",
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "type": "string",
-          "title": "Query"
+          "shortDescription": "Full text search query, (empty for all documents)",
+          "uiOrder": 2,
+          "title": "Query",
+          "format": "string"
         },
         "filter": {
           "description": "The query dsl filter which starts with \"query\" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html).",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 3,
           "title": "Filter",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         },
         "filter-sql": {
-          "instillShortDescription": "The filter sql to be applied to the data, if filter or id is provided, this field will be ignored",
+          "shortDescription": "The filter sql to be applied to the data, if filter or id is provided, this field will be ignored",
           "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter.",
-          "instillUIOrder": 4,
-          "instillAcceptFormats": [
+          "uiOrder": 4,
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
           "title": "Filter SQL",
-          "type": "string"
+          "format": "string"
         },
         "update-data": {
           "description": "Update data.",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 4,
           "title": "Update",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
         "index-name",
         "update-data"
       ],
-      "instillEditOnNodeFields": [
-        "index-name",
-        "filter-sql",
-        "update-data"
-      ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Update operation status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_SEARCH": {
-    "instillShortDescription": "Search for documents in Elasticsearch, support full text search",
+    "shortDescription": "Search for documents in Elasticsearch, support full text search",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "index-name": {
           "description": "Name of the Elasticsearch index.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 1,
           "title": "Index Name",
-          "type": "string"
+          "format": "string"
         },
         "id": {
           "description": "The ID of the document.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 2,
           "title": "ID",
-          "type": "string"
+          "format": "string"
         },
         "query": {
           "description": "Full text search query for search task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "Full text search query, (empty for all documents)",
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "type": "string",
-          "title": "Query"
+          "shortDescription": "Full text search query, (empty for all documents)",
+          "uiOrder": 3,
+          "title": "Query",
+          "format": "string"
         },
         "filter": {
           "description": "The query dsl filter which starts with \"query\" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html).",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 4,
           "title": "Filter",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         },
         "filter-sql": {
-          "instillShortDescription": "The filter sql to be applied to the data, if filter or id is provided, this field will be ignored",
+          "shortDescription": "The filter sql to be applied to the data, if filter or id is provided, this field will be ignored",
           "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter.",
-          "instillUIOrder": 5,
-          "instillAcceptFormats": [
+          "uiOrder": 5,
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
           "title": "Filter SQL",
-          "type": "string"
+          "format": "string"
         },
         "size": {
           "description": "Number of documents to return. If empty then all documents will be returned.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillShortDescription": "Size of documents to return, (empty for all documents)",
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "shortDescription": "Size of documents to return, (empty for all documents)",
+          "uiOrder": 6,
           "title": "Size",
-          "type": "integer"
+          "format": "integer"
         },
         "fields": {
           "description": "The fields to return in the documents. If empty then all fields will be returned.",
-          "instillAcceptFormats": [
-            "array:string"
+          "acceptFormats": [
+            "array"
           ],
-          "instillShortDescription": "Fields to be returned, empty for all fields",
-          "instillUIOrder": 7,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "shortDescription": "Fields to be returned, empty for all fields",
+          "uiOrder": 7,
           "title": "Fields",
-          "type": "array",
           "items": {
             "title": "Field",
-            "type": "string"
+            "format": "string"
           },
-          "minItems": 1
+          "minItems": 1,
+          "format": "array"
         },
         "min-score": {
           "description": "Minimum score to consider for search results. If empty then no minimum score will be considered.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "number"
           ],
-          "instillShortDescription": "Minimum Score",
-          "instillUIOrder": 8,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "shortDescription": "Minimum Score",
+          "uiOrder": 8,
           "title": "Minimum Score",
-          "type": "number"
+          "format": "number"
         }
       },
       "required": [
         "index-name"
       ],
-      "instillEditOnNodeFields": [
-        "index-name",
-        "filter-sql"
-      ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Search operation status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         },
         "result": {
           "description": "Result of the search operation.",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "title": "Result",
-          "type": "object",
           "properties": {
             "ids": {
               "description": "The ids returned from the search operation.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "IDs",
-              "type": "array",
               "required": [],
-              "instillFormat": "array:string",
               "items": {
                 "description": "An id of the document.",
-                "type": "string",
-                "example": "c8faa-4b3b-4b3b-4b3b"
-              }
+                "example": "c8faa-4b3b-4b3b-4b3b",
+                "format": "string"
+              },
+              "format": "array"
             },
             "documents": {
               "description": "The documents returned from the search operation.",
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "required": [],
               "title": "Documents",
-              "type": "array",
-              "instillFormat": "array:semi-structured/json",
               "items": {
                 "title": "Document",
-                "format": "semi-structured/json",
-                "type": "object",
+                "format": "object",
                 "required": []
-              }
+              },
+              "format": "array"
             },
             "data": {
               "description": "The data returned from the search operation.",
-              "instillUIOrder": 2,
+              "uiOrder": 2,
               "title": "Data",
-              "type": "array",
               "required": [],
-              "instillFormat": "array:semi-structured/json",
               "items": {
                 "title": "Datum",
-                "format": "semi-structured/json",
-                "type": "object",
+                "format": "object",
                 "required": []
-              }
+              },
+              "format": "array"
             }
           },
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
@@ -497,250 +381,195 @@
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_VECTOR_SEARCH": {
-    "instillShortDescription": "Search for vector similarity search in Elasticsearch",
+    "shortDescription": "Search for vector similarity search in Elasticsearch",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "index-name": {
           "description": "Name of the Elasticsearch index.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 1,
           "title": "Index Name",
-          "type": "string"
+          "format": "string"
         },
         "field": {
           "description": "Field name of the vector to search for similar vectors.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "Field name of the vector",
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "shortDescription": "Field name of the vector",
+          "uiOrder": 2,
           "title": "Field",
-          "type": "string"
+          "format": "string"
         },
         "query-vector": {
           "description": "Query vector to search for similar vectors.",
-          "instillAcceptFormats": [
-            "array:int",
-            "array:number"
+          "acceptFormats": [
+            "array",
+            "array"
           ],
-          "instillShortDescription": "",
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "type": "array",
+          "shortDescription": "",
+          "uiOrder": 3,
           "items": {
             "description": "A dimension of the vector.",
             "example": 0.8167237,
-            "type": "number"
+            "format": "number"
           },
           "minItems": 1,
-          "title": "Query Vector"
+          "title": "Query Vector",
+          "format": "array"
         },
         "k": {
           "description": "K of documents to do kNN vector search.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillShortDescription": "K of documents to return",
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "shortDescription": "K of documents to return",
+          "uiOrder": 4,
           "title": "K",
-          "type": "integer"
+          "format": "integer"
         },
         "num-candidates": {
           "description": "Number of candidates to be considered for kNN vector search. Default to 2 times of k.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer"
           ],
-          "instillShortDescription": "Number of candidates to be considered for kNN, default to 2 times of k",
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "shortDescription": "Number of candidates to be considered for kNN, default to 2 times of k",
+          "uiOrder": 5,
           "title": "Num Candidates",
-          "type": "integer"
+          "format": "integer"
         },
         "filter": {
           "description": "The query dsl filter which starts with \"filter\" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/knn-search.html#knn-search-filter-example).",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 6,
           "title": "Filter",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         },
         "filter-sql": {
-          "instillShortDescription": "The filter sql to be applied to the data, if filter or id is provided, this field will be ignored",
+          "shortDescription": "The filter sql to be applied to the data, if filter or id is provided, this field will be ignored",
           "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter.",
-          "instillUIOrder": 7,
-          "instillAcceptFormats": [
+          "uiOrder": 7,
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
           "title": "Filter SQL",
-          "type": "string"
+          "format": "string"
         },
         "fields": {
           "description": "The fields to return in the documents. If empty then all fields will be returned.",
-          "instillAcceptFormats": [
-            "array:string"
+          "acceptFormats": [
+            "array"
           ],
-          "instillShortDescription": "Fields to be returned, empty for all fields",
-          "instillUIOrder": 8,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "shortDescription": "Fields to be returned, empty for all fields",
+          "uiOrder": 8,
           "title": "Fields",
-          "type": "array",
           "items": {
             "title": "Field",
-            "type": "string"
+            "format": "string"
           },
-          "minItems": 1
+          "minItems": 1,
+          "format": "array"
         },
         "min-score": {
           "description": "Minimum score to consider for search results. If empty then no minimum score will be considered.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "number"
           ],
-          "instillShortDescription": "Minimum Score",
-          "instillUIOrder": 9,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "shortDescription": "Minimum Score",
+          "uiOrder": 9,
           "title": "Minimum Score",
-          "type": "number"
+          "format": "number"
         }
       },
       "required": [
         "index-name",
         "field"
       ],
-      "instillEditOnNodeFields": [
-        "index-name",
-        "field",
-        "query-vector",
-        "k"
-      ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Search operation status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         },
         "result": {
           "description": "Result of the vector search operation.",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "title": "Result",
-          "type": "object",
           "properties": {
             "ids": {
               "description": "The ids returned from the vector search operation.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "IDs",
-              "type": "array",
               "required": [],
-              "instillFormat": "array:string",
               "items": {
                 "description": "An id of the document.",
-                "type": "string",
-                "example": "c8faa-4b3b-4b3b-4b3b"
-              }
+                "example": "c8faa-4b3b-4b3b-4b3b",
+                "format": "string"
+              },
+              "format": "array"
             },
             "documents": {
               "description": "The documents returned from the vector search operation.",
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "required": [],
               "title": "Documents",
-              "type": "array",
-              "instillFormat": "array:semi-structured/json",
               "items": {
                 "title": "Document",
-                "format": "semi-structured/json",
-                "type": "object",
+                "format": "object",
                 "required": []
-              }
+              },
+              "format": "array"
             },
             "vectors": {
               "description": "The vectors returned from the vector search operation.",
-              "instillUIOrder": 2,
+              "uiOrder": 2,
               "title": "Vectors",
-              "type": "array",
               "required": [],
-              "instillFormat": "array:array",
               "items": {
                 "description": "The vector from array vectors.",
-                "type": "array",
-                "instillFormat": "array",
                 "required": [],
                 "items": {
                   "description": "A dimension of the vector.",
                   "example": 0.8167237,
-                  "type": "number"
-                }
-              }
+                  "format": "number"
+                },
+                "format": "array"
+              },
+              "format": "array"
             },
             "metadata": {
               "description": "The metadata returned from the vector search operation.",
-              "instillUIOrder": 3,
+              "uiOrder": 3,
               "title": "Metadata",
-              "type": "array",
               "required": [],
-              "instillFormat": "array:semi-structured/json",
               "items": {
                 "title": "Metadatum",
-                "format": "semi-structured/json",
-                "type": "object",
+                "format": "object",
                 "required": []
-              }
+              },
+              "format": "array"
             }
           },
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
@@ -748,223 +577,176 @@
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DELETE": {
-    "instillShortDescription": "Delete documents from Elasticsearch",
+    "shortDescription": "Delete documents from Elasticsearch",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "index-name": {
           "description": "Name of the Elasticsearch index.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 0,
           "title": "Index Name",
-          "type": "string"
+          "format": "string"
         },
         "id": {
           "description": "The ID of the document.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 1,
           "title": "ID",
-          "type": "string"
+          "format": "string"
         },
         "query": {
           "description": "Full text search query for delete task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "Full text search query, (empty for all documents)",
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "type": "string",
-          "title": "Query"
+          "shortDescription": "Full text search query, (empty for all documents)",
+          "uiOrder": 2,
+          "title": "Query",
+          "format": "string"
         },
         "filter": {
           "description": "The query dsl filter which starts with \"query\" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html).",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
+          "uiOrder": 3,
           "title": "Filter",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         },
         "filter-sql": {
-          "instillShortDescription": "The filter sql to be applied to the data, if filter or id is provided, this field will be ignored",
+          "shortDescription": "The filter sql to be applied to the data, if filter or id is provided, this field will be ignored",
           "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter.",
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "reference",
-            "template",
-            "value"
-          ],
-          "instillAcceptFormats": [
+          "uiOrder": 4,
+          "acceptFormats": [
             "string"
           ],
           "required": [],
           "title": "Filter SQL",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "index-name"
       ],
-      "instillEditOnNodeFields": [
-        "index-name",
-        "filter-sql"
-      ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Delete operation status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CREATE_INDEX": {
-    "instillShortDescription": "Create an index in Elasticsearch",
+    "shortDescription": "Create an index in Elasticsearch",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "index-name": {
           "description": "Name of the Elasticsearch index.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Index Name",
-          "type": "string"
+          "format": "string"
         },
         "mappings": {
           "description": "Index mappings which starts with {\"mappings\":{\"properties\"}} field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html) for vector search and [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html) for other mappings.",
-          "instillAcceptFormats": [
-            "semi-structured/*",
+          "acceptFormats": [
+            "json",
             "object"
           ],
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 1,
           "title": "Mappings",
-          "type": "object",
-          "required": []
+          "required": [],
+          "format": "object"
         }
       },
       "required": [
         "index-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Create index operation status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DELETE_INDEX": {
-    "instillShortDescription": "Delete an index in Elasticsearch",
+    "shortDescription": "Delete an index in Elasticsearch",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "index-name": {
           "description": "Name of the Elasticsearch index.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 0,
           "title": "Index Name",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "index-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "status": {
           "description": "Delete index operation status.",
-          "instillFormat": "string",
           "required": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "status"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   }
 }

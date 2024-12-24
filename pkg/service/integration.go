@@ -31,7 +31,6 @@ import (
 	"github.com/instill-ai/x/checkfield"
 	"github.com/instill-ai/x/errmsg"
 
-	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -284,11 +283,6 @@ func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integr
 	}
 
 	compiler := jsonschema.NewCompiler()
-	compiler.RegisterExtension(
-		"instillAcceptFormats",
-		componentbase.InstillAcceptFormatsMeta,
-		componentbase.InstillAcceptFormatsCompiler{},
-	)
 
 	schemaID := fmt.Sprintf("%s/config/setup.json", conn.GetIntegrationId())
 	if err := compiler.AddResource(schemaID, bytes.NewReader(schema)); err != nil {

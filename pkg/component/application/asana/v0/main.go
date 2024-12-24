@@ -90,12 +90,8 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 			job.Error.Error(ctx, err)
 			continue
 		}
+		// TODO: migrate to new interface with default value
 
-		// TODO: use FillInDefaultValues for all components
-		if err := e.FillInDefaultValues(input); err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
 		action := input
 		if input.GetFields()["action"].GetStringValue() == "" {
 			action = input.GetFields()["action"].GetStructValue()

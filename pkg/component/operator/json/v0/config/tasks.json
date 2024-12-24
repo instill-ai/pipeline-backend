@@ -1,26 +1,19 @@
 {
   "TASK_MARSHAL": {
-    "instillShortDescription": "Convert JSON to a string",
+    "shortDescription": "Convert JSON to a string",
     "input": {
       "description": "Input.",
-      "instillEditOnNodeFields": [
-        "json"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "json": {
           "description": "JSON entity to be marshaled. It can be any valid JSON datatype (e.g. number, string, hash, array).",
-          "instillShortDescription": "JSON entity to be marshaled",
-          "instillAcceptFormats": [
+          "shortDescription": "JSON entity to be marshaled",
+          "acceptFormats": [
             "object",
-            "semi-structured/*",
-            "structured/*"
+            "json",
+            "object"
           ],
-          "instillEditOnNodeFields": [],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "uiOrder": 0,
           "required": [],
           "title": "JSON"
         }
@@ -29,229 +22,184 @@
         "json"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Output.",
-      "instillEditOnNodeFields": [
-        "string"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "string": {
           "description": "String representation of the JSON input.",
-          "instillFormat": "string",
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "JSON string",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "string"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_UNMARSHAL": {
-    "instillShortDescription": "Convert a string to JSON",
+    "shortDescription": "Convert a string to JSON",
     "input": {
       "description": "Input.",
-      "instillEditOnNodeFields": [
-        "string"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "string": {
           "description": "JSON string to be unmarshaled. It can represent any valid JSON datatype (e.g. number, string, hash, array).",
-          "instillShortDescription": "JSON string to be unmarshaled",
-          "instillAcceptFormats": [
+          "shortDescription": "JSON string to be unmarshaled",
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 0,
           "title": "String",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "string"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Output.",
-      "instillEditOnNodeFields": [
-        "json"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "json": {
           "description": "JSON entity extracted from the string input.",
-          "instillEditOnNodeFields": [],
-          "instillFormat": "semi-structured/json",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "required": [],
-          "title": "JSON"
+          "title": "JSON",
+          "format": "json"
         }
       },
       "required": [
         "json"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_JQ": {
-    "instillShortDescription": "Process JSON through a `jq` command",
+    "shortDescription": "Process JSON through a `jq` command",
     "title": "jq",
     "input": {
       "description": "Source JSON and `jq` command.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "json-string": {
           "deprecated": true,
-          "instillUIOrder": 2,
+          "uiOrder": 2,
           "description": "(DEPRECATED, use 'JSON value' instead) String with the JSON value to be processed. This field allows templated inputs, but the data might require preprocessing (marshalling). This field will be used in absence of 'JSON value' for backwards compatibility reasons.",
-          "instillShortDescription": "(DEPRECATED) JSON string to be processed",
-          "instillAcceptFormats": [
+          "shortDescription": "(DEPRECATED) JSON string to be processed",
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "instillUIMultiline": true,
           "title": "(DEPRECATED) JSON string",
-          "type": "string"
+          "format": "string"
         },
         "json-value": {
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "description": "JSON entity to be processed by the filter. It can be any valid JSON datatype (e.g. number, string, hash, array).",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "object",
-            "structured/*",
-            "semi-structured/*"
+            "object",
+            "json"
           ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "instillUIMultiline": true,
           "title": "JSON value"
         },
         "jq-filter": {
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "description": "Filter, in `jq` syntax, that will be applied to the JSON input.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "instillUIMultiline": true,
           "title": "Filter",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "jq-filter"
       ],
-      "instillEditOnNodeFields": [
-        "json-value",
-        "jq-filter"
-      ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Results of the `jq` command applied to the input JSON.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "results": {
           "description": "The `jq` command results.",
-          "instillEditOnNodeFields": [],
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "required": [],
           "title": "Results",
-          "type": "array",
-          "instillFormat": "array:semi-structured/json",
           "items": {
             "title": "Result",
-            "instillFormat": "semi-structured/json"
-          }
+            "format": "json"
+          },
+          "format": "array"
         }
       },
       "required": [
         "results"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_RENAME_FIELDS": {
-    "instillShortDescription": "Rename fields in a JSON object with a conflict resolution strategy. If the new field already exists, it will be overwritten by default.",
+    "shortDescription": "Rename fields in a JSON object with a conflict resolution strategy. If the new field already exists, it will be overwritten by default.",
     "title": "Rename Fields",
     "input": {
       "description": "Input.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "json": {
           "description": "JSON object to be edited. It can be any valid JSON datatype (e.g. number, string, hash, array).",
-          "instillShortDescription": "JSON object to be edited.",
-          "instillAcceptFormats": [
+          "shortDescription": "JSON object to be edited.",
+          "acceptFormats": [
             "object",
-            "semi-structured/*",
-            "structured/*"
+            "json",
+            "object"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
+          "uiOrder": 0,
           "required": [],
           "title": "JSON"
         },
         "fields": {
           "description": "An array of objects specifying the fields to be renamed.",
-          "instillShortDescription": "Array of fields to be renamed.",
-          "instillUIOrder": 1,
-          "instillAcceptFormats": [
-            "array:object"
+          "shortDescription": "Array of fields to be renamed.",
+          "uiOrder": 1,
+          "acceptFormats": [
+            "array"
           ],
           "items": {
             "description": "Field to be renamed.",
-            "instillShortDescription": "Field to be renamed.",
+            "shortDescription": "Field to be renamed.",
             "properties": {
               "from": {
                 "description": "The field in the original data that needs to be renamed.",
-                "instillShortDescription": "Field to be renamed.",
-                "instillAcceptFormats": [
+                "shortDescription": "Field to be renamed.",
+                "acceptFormats": [
                   "string"
                 ],
-                "instillUIOrder": 0,
+                "uiOrder": 0,
                 "title": "From",
-                "type": "string"
+                "format": "string"
               },
               "to": {
                 "description": "The new name for the field.",
-                "instillShortDescription": "New name for the field.",
-                "instillAcceptFormats": [
+                "shortDescription": "New name for the field.",
+                "acceptFormats": [
                   "string"
                 ],
-                "instillUIOrder": 1,
+                "uiOrder": 1,
                 "title": "To",
-                "type": "string"
+                "format": "string"
               }
             },
             "required": [
@@ -259,19 +207,23 @@
               "to"
             ],
             "title": "Field",
-            "type": "object"
+            "format": "object"
           },
           "title": "Fields",
-          "type": "array"
+          "format": "array"
         },
         "conflict-resolution": {
           "description": "Defines how conflicts are handled when the new field already exists in the data. If the new field already exists, it will be overwritten by default. If the new field does not exist, it will be created. When set to 'error', the component will throw an error if the new field already exists. When set to 'skip', the new field will be skipped if it already exists.",
-          "instillShortDescription": "Conflict resolution strategy.",
-          "instillUIOrder": 2,
+          "shortDescription": "Conflict resolution strategy.",
+          "uiOrder": 2,
           "title": "Conflict Resolution",
-          "type": "string",
-          "enum": ["overwrite", "skip", "error"],
-          "default": "overwrite"
+          "enum": [
+            "overwrite",
+            "skip",
+            "error"
+          ],
+          "default": "overwrite",
+          "format": "string"
         }
       },
       "required": [
@@ -279,25 +231,25 @@
         "fields"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Output.",
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "properties": {
         "json": {
           "description": "JSON object with the renamed fields.",
-          "instillFormat": "semi-structured/json",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "required": [],
-          "title": "JSON"
+          "title": "JSON",
+          "format": "json"
         }
       },
       "required": [
         "json"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   }
 }

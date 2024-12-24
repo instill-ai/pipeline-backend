@@ -1,35 +1,24 @@
 {
   "TASK_TEXT_EMBEDDINGS": {
-    "instillShortDescription": "Turn text into numbers, unlocking use cases like search.",
+    "shortDescription": "Turn text into numbers, unlocking use cases like search.",
     "input": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "model": {
           "$ref": "additional.json#/components/schemas/CreateEmbeddingRequest/properties/model",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "ID of the model to use",
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "shortDescription": "ID of the model to use",
+          "uiOrder": 0,
           "title": "Model"
         },
         "text": {
           "description": "The text",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 1,
           "title": "Text",
           "type": "string"
         }
@@ -42,11 +31,11 @@
       "type": "object"
     },
     "output": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "embedding": {
-          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/embedding",
-          "instillUIOrder": 0,
+          "$ref": "schema.json#/$defs/instill-types/embedding",
+          "uiOrder": 0,
           "title": "Embedding"
         }
       },

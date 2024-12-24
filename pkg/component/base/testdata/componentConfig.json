@@ -5,7 +5,7 @@
     "api-key": {
       "description": "Fill in your OpenAI API key. To find your keys, visit your OpenAI's API Keys page.",
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "API Key",
       "type": "string"
     }

@@ -4,39 +4,29 @@
   "properties": {
     "api-key": {
       "description": "Fill in the API key for the Elasticsearch instance (please use encoded one).",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "API Key",
-      "type": "string"
+      "format": "string"
     },
     "cloud-id": {
       "description": "Fill in the Cloud ID for the Elasticsearch instance.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Cloud ID",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
     "api-key",
     "cloud-id"
   ],
-  "instillEditOnNodeFields": [
-    "api-key",
-    "cloud-id"
-  ],
   "title": "Elasticsearch Connection",
-  "type": "object"
+  "format": "object"
 }

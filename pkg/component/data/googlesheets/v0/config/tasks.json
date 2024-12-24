@@ -2,121 +2,110 @@
   "$defs": {
     "shared-link": {
       "description": "Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'.",
-      "instillFormat": "string",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Spreadsheet ID",
-      "type": "string"
+      "format": "string"
     },
     "headers": {
       "description": "Column headers for the sheet.",
-      "type": "array",
       "items": {
-        "type": "string"
+        "format": "string"
       },
-      "instillFormat": "array:string",
-      "instillUIOrder": 1,
-      "title": "Headers"
+      "uiOrder": 1,
+      "title": "Headers",
+      "format": "array"
     },
     "sheet-name": {
       "description": "Name of the sheet.",
-      "instillFormat": "string",
-      "instillUIOrder": 2,
+      "uiOrder": 2,
       "title": "Sheet Name",
-      "type": "string"
+      "format": "string"
     },
     "column-name": {
       "description": "Name of the column.",
-      "instillFormat": "string",
-      "instillUIOrder": 3,
+      "uiOrder": 3,
       "title": "Column Name",
-      "type": "string"
+      "format": "string"
     },
     "row-number": {
       "description": "Row number to update (1-based index).",
-      "instillFormat": "number",
-      "instillUIOrder": 4,
+      "uiOrder": 4,
       "title": "Row Number",
-      "type": "integer"
+      "format": "number"
     },
     "row-numbers": {
       "description": "Row numbers to update (1-based indices).",
       "items": {
-        "type": "integer"
+        "format": "integer"
       },
-      "instillFormat": "array:number",
-      "instillUIOrder": 5,
+      "uiOrder": 5,
       "title": "Row Numbers",
-      "type": "array"
+      "format": "array"
     },
     "row-value": {
-      "type": "object",
       "description": "Row data in JSON format where keys are column names and values are the corresponding cell values",
       "title": "Row Data",
-      "instillFormat": "json",
-      "instillUIOrder": 6,
+      "uiOrder": 6,
       "additionalProperties": {
-        "type": "string",
-        "description": "Cell value for the corresponding column"
+        "description": "Cell value for the corresponding column",
+        "format": "string"
       },
-      "required": []
+      "required": [],
+      "format": "json"
     },
     "row": {
       "description": "Row data with row number and data.",
-      "instillFormat": "json",
-      "instillUIOrder": 7,
+      "uiOrder": 7,
       "title": "Row Data",
-      "type": "object",
       "properties": {
         "row-number": {
-          "type": "integer",
-          "instillFormat": "number",
           "description": "Row number to update (1-based index)",
           "title": "Row Number",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "number"
         },
         "row-value": {
           "$ref": "#/$defs/row-value",
-          "instillUIOrder": 1
+          "uiOrder": 1
         }
       },
-      "required": ["row-number", "data"]
+      "required": [
+        "row-number",
+        "data"
+      ],
+      "format": "object"
     },
     "rows": {
       "description": "Multiple rows data with row numbers and data.",
-      "instillFormat": "array:json",
       "items": {
         "$ref": "#/$defs/row"
       },
-      "instillUIOrder": 8,
+      "uiOrder": 8,
       "title": "Rows Data",
-      "type": "array"
+      "format": "array"
     },
     "success": {
       "description": "Result of the operation.",
-      "instillFormat": "boolean",
-      "instillUIOrder": 9,
+      "uiOrder": 9,
       "title": "Success",
-      "type": "boolean"
+      "format": "boolean"
     }
   },
   "TASK_CREATE_SPREADSHEET": {
-    "instillShortDescription": "Create a new Google Sheets spreadsheet with multiple sheets.",
+    "shortDescription": "Create a new Google Sheets spreadsheet with multiple sheets.",
     "input": {
       "description": "Please provide the name and sheets configuration for the new spreadsheet.",
       "properties": {
         "title": {
           "description": "Title of the new spreadsheet.",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Title",
-          "type": "string"
+          "format": "string"
         },
         "sheets": {
           "title": "Sheets",
           "description": "Configuration for sheets to create.",
-          "type": "array",
           "items": {
-            "type": "object",
             "properties": {
               "name": {
                 "$ref": "#/$defs/sheet-name"
@@ -125,9 +114,13 @@
                 "$ref": "#/$defs/headers"
               }
             },
-            "required": ["name"]
+            "required": [
+              "name"
+            ],
+            "format": "object"
           },
-          "instillUIOrder": 1
+          "uiOrder": 1,
+          "format": "array"
         }
       },
       "required": [
@@ -135,7 +128,7 @@
         "sheets"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -147,11 +140,11 @@
         "shared-link"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DELETE_SPREADSHEET": {
-    "instillShortDescription": "Delete a Google Sheets spreadsheet.",
+    "shortDescription": "Delete a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the shared link of the spreadsheet to delete.",
       "properties": {
@@ -163,7 +156,7 @@
         "shared-link"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -175,11 +168,11 @@
         "success"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_ADD_SHEET": {
-    "instillShortDescription": "Add a new sheet to an existing Google Sheets spreadsheet.",
+    "shortDescription": "Add a new sheet to an existing Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details and new sheet configuration.",
       "properties": {
@@ -198,7 +191,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -210,11 +203,11 @@
         "success"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DELETE_SHEET": {
-    "instillShortDescription": "Remove a sheet from a Google Sheets spreadsheet.",
+    "shortDescription": "Remove a sheet from a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details and sheet to remove.",
       "properties": {
@@ -230,7 +223,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -242,11 +235,11 @@
         "success"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CREATE_SPREADSHEET_COLUMN": {
-    "instillShortDescription": "Add a new column to a Google Sheets spreadsheet.",
+    "shortDescription": "Add a new column to a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details and new column information.",
       "properties": {
@@ -266,7 +259,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -278,11 +271,11 @@
         "success"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DELETE_SPREADSHEET_COLUMN": {
-    "instillShortDescription": "Delete a column from a Google Sheets spreadsheet.",
+    "shortDescription": "Delete a column from a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details and column to delete.",
       "properties": {
@@ -302,7 +295,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -314,11 +307,11 @@
         "success"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_GET_ROW": {
-    "instillShortDescription": "Get a single row from a Google Sheets spreadsheet.",
+    "shortDescription": "Get a single row from a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details and row number.",
       "properties": {
@@ -330,11 +323,10 @@
         },
         "row-number": {
           "description": "The row number to retrieve (1-based index).",
-          "instillFormat": "number",
           "minimum": 1,
           "title": "Row Number",
-          "type": "integer",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "number"
         }
       },
       "required": [
@@ -343,7 +335,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -355,11 +347,11 @@
         "row"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_GET_MULTIPLE_ROWS": {
-    "instillShortDescription": "Get multiple rows from a Google Sheets spreadsheet.",
+    "shortDescription": "Get multiple rows from a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details and row numbers.",
       "properties": {
@@ -373,12 +365,11 @@
           "description": "The row numbers to retrieve (1-based indices).",
           "items": {
             "minimum": 1,
-            "type": "integer"
+            "format": "integer"
           },
-          "instillFormat": "array:number",
           "title": "Row Numbers",
-          "type": "array",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "array"
         }
       },
       "required": [
@@ -387,7 +378,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -399,11 +390,11 @@
         "rows"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_LIST_ROWS": {
-    "instillShortDescription": "List all rows in a Google Sheets spreadsheet.",
+    "shortDescription": "List all rows in a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details to list all rows.",
       "properties": {
@@ -415,20 +406,18 @@
         },
         "start-row": {
           "description": "The starting row number to retrieve (1-based index).",
-          "instillFormat": "number",
           "minimum": 1,
           "default": 2,
           "title": "Start Row",
-          "type": "integer",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "number"
         },
         "end-row": {
           "description": "The ending row number to retrieve (1-based index).",
-          "instillFormat": "number",
           "minimum": 1,
           "title": "End Row",
-          "type": "integer",
-          "instillUIOrder": 1
+          "uiOrder": 1,
+          "format": "number"
         }
       },
       "required": [
@@ -436,7 +425,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -448,11 +437,11 @@
         "rows"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_LOOKUP_ROWS": {
-    "instillShortDescription": "Find multiple rows based on column value in a Google Sheets spreadsheet.",
+    "shortDescription": "Find multiple rows based on column value in a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details and lookup criteria.",
       "properties": {
@@ -467,10 +456,9 @@
         },
         "value": {
           "description": "Value to search for in the specified column.",
-          "instillFormat": "string",
           "title": "Search Value",
-          "type": "string",
-          "instillUIOrder": 10
+          "uiOrder": 10,
+          "format": "string"
         }
       },
       "required": [
@@ -480,7 +468,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -492,11 +480,11 @@
         "rows"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_INSERT_ROW": {
-    "instillShortDescription": "Insert a single row into a Google Sheets spreadsheet.",
+    "shortDescription": "Insert a single row into a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details and row data to insert.",
       "properties": {
@@ -516,7 +504,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -529,11 +517,11 @@
         "row-number"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_INSERT_MULTIPLE_ROWS": {
-    "instillShortDescription": "Insert multiple rows into a Google Sheets spreadsheet.",
+    "shortDescription": "Insert multiple rows into a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details and rows data to insert.",
       "properties": {
@@ -544,14 +532,13 @@
           "$ref": "#/$defs/sheet-name"
         },
         "row-values": {
-          "type": "array",
           "description": "Array of row data in JSON format where keys are column names and values are the corresponding cell values",
           "items": {
             "$ref": "#/$defs/row-value"
           },
-          "instillFormat": "array:json",
-          "instillUIOrder": 2,
-          "title": "Row Values"
+          "uiOrder": 2,
+          "title": "Row Values",
+          "format": "array"
         }
       },
       "required": [
@@ -560,7 +547,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -572,11 +559,11 @@
         "rows"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_UPDATE_ROW": {
-    "instillShortDescription": "Update a row in a Google Sheets spreadsheet.",
+    "shortDescription": "Update a row in a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details and row data to update.",
       "properties": {
@@ -597,7 +584,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -609,11 +596,11 @@
         "row"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_UPDATE_MULTIPLE_ROWS": {
-    "instillShortDescription": "Update multiple rows in a Google Sheets spreadsheet.",
+    "shortDescription": "Update multiple rows in a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details and rows data to update.",
       "properties": {
@@ -634,7 +621,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -646,11 +633,11 @@
         "rows"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DELETE_ROW": {
-    "instillShortDescription": "Delete a row from a Google Sheets spreadsheet.",
+    "shortDescription": "Delete a row from a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details and Row number to delete.",
       "properties": {
@@ -670,7 +657,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -682,11 +669,11 @@
         "success"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DELETE_MULTIPLE_ROWS": {
-    "instillShortDescription": "Delete multiple rows from a Google Sheets spreadsheet.",
+    "shortDescription": "Delete multiple rows from a Google Sheets spreadsheet.",
     "input": {
       "description": "Please provide the spreadsheet details and Row numbers to delete.",
       "properties": {
@@ -706,7 +693,7 @@
         "sheet-name"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "properties": {
@@ -718,7 +705,7 @@
         "success"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   }
 }

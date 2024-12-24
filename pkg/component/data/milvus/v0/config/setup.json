@@ -4,45 +4,33 @@
   "properties": {
     "url": {
       "description": "Fill in your Milvus public URL endpoint with port number, e.g http://3.25.202.142:19530.",
-      "instillUpstreamTypes": [
-        "value",
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": false,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Milvus URL Endpoint",
-      "type": "string"
+      "format": "string"
     },
     "username": {
       "description": "Fill in your Milvus username.",
-      "instillUpstreamTypes": [
-        "value",
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": false,
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "Milvus Username",
-      "type": "string"
+      "format": "string"
     },
     "password": {
       "description": "Fill in your Milvus password.",
-      "instillUpstreamTypes": [
-        "value",
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 2,
+      "uiOrder": 2,
       "title": "Milvus Password",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
@@ -50,11 +38,6 @@
     "username",
     "password"
   ],
-  "instillEditOnNodeFields": [
-    "url",
-    "username",
-    "password"
-  ],
   "title": "Milvus Connection",
-  "type": "object"
+  "format": "object"
 }

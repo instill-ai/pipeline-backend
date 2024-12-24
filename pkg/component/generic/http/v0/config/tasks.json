@@ -1,130 +1,101 @@
 {
   "$defs": {
     "inputWithBody": {
-      "instillEditOnNodeFields": [
-        "body",
-        "endpoint-url"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "body": {
           "description": "The request body.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "*"
           ],
-          "instillShortDescription": "The request body",
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "shortDescription": "The request body",
+          "uiOrder": 1,
           "order": 1,
           "required": [],
           "title": "Body"
         },
         "endpoint-url": {
           "description": "The API endpoint url.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 0,
           "title": "Endpoint Url",
-          "type": "string"
+          "format": "string"
         },
         "output-body-schema": {
           "description": "The JSON schema of output body.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIMultiline": true,
-          "instillShortDescription": "The JSON schema of output body",
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+          "shortDescription": "The JSON schema of output body",
+          "uiOrder": 1,
           "order": 2,
           "required": [],
           "title": "Body",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "endpoint-url"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "inputWithoutBody": {
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "endpoint-url": {
           "description": "The API endpoint url.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
+          "uiOrder": 0,
           "title": "Endpoint Url",
-          "type": "string"
+          "format": "string"
         },
         "output-body-schema": {
           "description": "The request body.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "string"
           ],
-          "instillShortDescription": "The request body",
-          "instillUIOrder": 1,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
-          "instillUIMultiline": true,
+          "shortDescription": "The request body",
+          "uiOrder": 1,
           "order": 1,
           "required": [],
           "title": "Body",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
         "endpoint-url"
       ],
       "title": "Input Without Body",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "The HTTP response from the API.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "body": {
           "description": "The body of the response.",
-          "instillFormat": "*",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "required": [],
-          "title": "Body"
+          "title": "Body",
+          "format": "*"
         },
         "header": {
           "description": "The HTTP header of the response.",
-          "instillFormat": "semi-structured/object",
-          "instillUIOrder": 2,
+          "uiOrder": 2,
           "required": [],
           "title": "Header",
-          "type": "object"
+          "format": "json"
         },
         "status-code": {
           "description": "The HTTP status code of the response.",
-          "instillFormat": "integer",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Status Code",
-          "type": "integer"
+          "format": "integer"
         }
       },
       "required": [
@@ -133,11 +104,11 @@
         "header"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_DELETE": {
-    "instillShortDescription": "Send a HTTP DELETE request.",
+    "shortDescription": "Send a HTTP DELETE request.",
     "input": {
       "$ref": "#/$defs/inputWithBody"
     },
@@ -146,7 +117,7 @@
     }
   },
   "TASK_GET": {
-    "instillShortDescription": "Send a HTTP GET request.",
+    "shortDescription": "Send a HTTP GET request.",
     "input": {
       "$ref": "#/$defs/inputWithoutBody"
     },
@@ -155,7 +126,7 @@
     }
   },
   "TASK_HEAD": {
-    "instillShortDescription": "Send a HTTP HEAD request.",
+    "shortDescription": "Send a HTTP HEAD request.",
     "input": {
       "$ref": "#/$defs/inputWithoutBody"
     },
@@ -164,7 +135,7 @@
     }
   },
   "TASK_OPTIONS": {
-    "instillShortDescription": "Send a HTTP OPTIONS request.",
+    "shortDescription": "Send a HTTP OPTIONS request.",
     "input": {
       "$ref": "#/$defs/inputWithBody"
     },
@@ -173,7 +144,7 @@
     }
   },
   "TASK_PATCH": {
-    "instillShortDescription": "Send a HTTP PATCH request.",
+    "shortDescription": "Send a HTTP PATCH request.",
     "input": {
       "$ref": "#/$defs/inputWithBody"
     },
@@ -182,7 +153,7 @@
     }
   },
   "TASK_POST": {
-    "instillShortDescription": "Send a HTTP POST request.",
+    "shortDescription": "Send a HTTP POST request.",
     "input": {
       "$ref": "#/$defs/inputWithBody"
     },
@@ -191,7 +162,7 @@
     }
   },
   "TASK_PUT": {
-    "instillShortDescription": "Send a HTTP PUT request.",
+    "shortDescription": "Send a HTTP PUT request.",
     "input": {
       "$ref": "#/$defs/inputWithBody"
     },

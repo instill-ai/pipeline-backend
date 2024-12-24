@@ -36,29 +36,29 @@ cmp pkg/dummy/README.mdx want-readme.mdx
   "properties": {
     "organization": {
       "description": "Specify which organization is used for the requests",
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "Organization ID",
-      "type": "string"
+      "format": "string"
     },
     "api-key": {
       "description": "Fill in your Dummy API key",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "API Key",
-      "type": "string"
+      "format": "string"
     },
     "authentication": {
       "description": "Authentication method to use for the Dummy",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "oneOf": [
         {
           "properties": {
             "auth-type": {
               "const": "NO_AUTH",
               "description": "No Authentication",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "order": 0,
-              "title": "Auth Type",
-              "type": "string"
+              "title": "Auth Format",
+              "format": "string"
             }
           },
           "required": [
@@ -71,27 +71,24 @@ cmp pkg/dummy/README.mdx want-readme.mdx
             "auth-type": {
               "const": "AUTH_1",
               "description": "Auth 1",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "order": 0,
-              "title": "Auth Type",
-              "type": "string"
+              "title": "Auth Format",
+              "format": "string"
             },
             "auth-way": {
               "description": "ways for Auth 1",
-              "instillUpstreamTypes": [
-                "value"
-              ],
-              "instillAcceptFormats": [
+              "acceptFormats": [
                 "string"
               ],
               "enum": [
                 "header",
                 "query"
               ],
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "order": 1,
               "title": "Auth Way",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
@@ -103,14 +100,14 @@ cmp pkg/dummy/README.mdx want-readme.mdx
       ],
       "order": 1,
       "title": "Authentication",
-      "type": "object"
+      "format": "object"
     }
   },
   "required": [
     "api-key"
   ],
   "title": "OpenAI Connection",
-  "type": "object"
+  "format": "object"
 }
 
 -- tasks.json --
@@ -121,20 +118,20 @@ cmp pkg/dummy/README.mdx want-readme.mdx
       "properties": {
         "durna": {
           "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Durna",
-          "type": "string"
+          "format": "string"
         },
         "strategy": {
           "description": "Chunking strategy",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "properties": {
             "setting": {
               "description": "Chunk Setting",
               "additionalProperties": true,
-              "type": "object",
+              "format": "object",
               "title": "Chunk Setting",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "required": [
                 "chunk-method"
               ],
@@ -143,10 +140,10 @@ cmp pkg/dummy/README.mdx want-readme.mdx
                   "properties": {
                     "chunk-method": {
                       "const": "Token",
-                      "type": "string",
+                      "format": "string",
                       "title": "Chunk Method",
                       "description": "Chunking based on tokenization.",
-                      "instillUIOrder": 0
+                      "uiOrder": 0
                     },
                     "model-name": {
                       "description": "The name of the model used for tokenization.",
@@ -154,24 +151,24 @@ cmp pkg/dummy/README.mdx want-readme.mdx
                         "gpt-4",
                         "gpt-3.5-turbo"
                       ],
-                      "instillUIOrder": 1,
+                      "uiOrder": 1,
                       "title": "Model",
-                      "type": "string"
+                      "format": "string"
                     }
                   },
                   "title": "Token",
                   "required": ["chunk-method"],
-                  "type": "object",
+                  "format": "object",
                   "description": "Language models have a token limit. You should not exceed the token limit. When you split your text into chunks it is therefore a good idea to count the number of tokens. There are many tokenizers. When you count tokens in your text you should use the same tokenizer as used in the language model."
                 },
                 {
                   "properties": {
                     "chunk-method": {
                       "const": "Markdown",
-                      "type": "string",
+                      "format": "string",
                       "title": "Chunk Method",
                       "description": "Chunking based on recursive splitting with markdown format.",
-                      "instillUIOrder": 0
+                      "uiOrder": 0
                     },
                     "model-name": {
                       "description": "The name of the model used for tokenization.",
@@ -179,14 +176,14 @@ cmp pkg/dummy/README.mdx want-readme.mdx
                         "gpt-4",
                         "gpt-3.5-turbo"
                       ],
-                      "instillUIOrder": 1,
+                      "uiOrder": 1,
                       "title": "Model",
-                      "type": "string"
+                      "format": "string"
                     }
                   },
                   "title": "Markdown",
                   "required": ["chunk-method"],
-                  "type": "object",
+                  "format": "object",
                   "description": "This text splitter is specially designed for Markdown format."
                 }
               ]
@@ -196,27 +193,27 @@ cmp pkg/dummy/README.mdx want-readme.mdx
           "required": [
             "setting"
           ],
-          "type": "object"
+          "format": "object"
         },
         "dummy-string": {
           "description": "{{dummy_string}}",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Dummy String",
-          "type": "string"
+          "format": "string"
         },
         "dummy-file": {
           "description": "this is a file",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Dummy File",
-          "type": "*"
+          "format": "*"
         },
         "dummy-array": {
           "description": "this is an array",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Dummy Array",
-          "type": "array",
+          "format": "array",
           "items": {
-            "type": "*"
+            "format": "*"
           }
         }
       },
@@ -229,53 +226,53 @@ cmp pkg/dummy/README.mdx want-readme.mdx
       "properties": {
         "orci": {
           "description": "Orci sagittis eu volutpat odio facilisis mauris sit",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "format": "string",
+          "uiOrder": 0,
           "title": "Orci",
-          "type": "string"
+          "format": "string"
         },
         "conversations": {
           "description": "An array of conversations with thread messages",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Conversations",
-          "type": "array",
+          "format": "array",
           "items": {
             "title": "conversation details",
-            "type": "object",
+            "format": "object",
             "properties": {
               "message": {
                 "description": "message to start a conversation",
-                "instillUIOrder": 0,
+                "uiOrder": 0,
                 "title": "Start Conversation Message",
-                "type": "string"
+                "format": "string"
               },
               "start-date": {
                 "description": "when a conversation starts",
-                "instillUIOrder": 1,
+                "uiOrder": 1,
                 "title": "Start Date",
-                "type": "string"
+                "format": "string"
               },
               "last-date": {
                 "description": "Date of the last message",
-                "instillUIOrder": 2,
+                "uiOrder": 2,
                 "title": "Last Date",
-                "type": "string"
+                "format": "string"
               },
               "thread-reply-messages": {
                 "description": "replies in a conversation",
-                "instillUIOrder": 0,
+                "uiOrder": 0,
                 "title": "Replied messages",
-                "type": "array",
+                "format": "array",
                 "items": {
                   "title": "relied details",
-                  "type": "object",
+                  "format": "object",
                   "properties": {
                     "message": {
                       "description": "message to reply a conversation",
                       "instillFormat": "string",
-                      "instillUIOrder": 3,
+                      "uiOrder": 3,
                       "title": "Replied Message",
-                      "type": "string"
+                      "format": "string"
                     }
                   },
                   "required": [
@@ -337,7 +334,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | API Key (required) | `api-key` | string | Fill in your Dummy API key  |
 | [Authentication](#authentication) | `authentication` | object | Authentication method to use for the Dummy  |
@@ -358,18 +355,18 @@ This is some crucial information about setup: do it before execution.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Auth Type | `auth-type` | string |  Must be `"NO_AUTH"`   |
+| Auth Format | `auth-type` | string |  Must be `"NO_AUTH"`   |
 </div>
 
 <h5 id="setup-auth-1"><code>Auth 1</code></h5>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Auth Type | `auth-type` | string |  Must be `"AUTH_1"`   |
+| Auth Format | `auth-type` | string |  Must be `"AUTH_1"`   |
 | Auth Way | `auth-way` | string |  ways for Auth 1  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`header`</li><li>`query`</li></ul></details>  |
 </div>
 </details>
@@ -383,7 +380,7 @@ Perform a dummy task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DUMMY` |
 | Dummy Array | `dummy-array` | array[any] | this is an array |
@@ -403,7 +400,7 @@ Chunking strategy
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | [Chunk Setting](#dummy-chunk-setting) | `setting` | object | Chunk Setting  |
 </div>
@@ -422,7 +419,7 @@ Language models have a token limit. You should not exceed the token limit. When 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Chunk Method | `chunk-method` | string |  Must be `"Token"`   |
 | Model | `model-name` | string |  The name of the model used for tokenization.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`gpt-4`</li><li>`gpt-3.5-turbo`</li></ul></details>  |
@@ -434,7 +431,7 @@ This text splitter is specially designed for Markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Chunk Method | `chunk-method` | string |  Must be `"Markdown"`   |
 | Model | `model-name` | string |  The name of the model used for tokenization.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`gpt-4`</li><li>`gpt-3.5-turbo`</li></ul></details>  |
@@ -443,7 +440,7 @@ This text splitter is specially designed for Markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | [Conversations](#dummy-conversations) (optional) | `conversations` | array[object] | An array of conversations with thread messages |
 | Orci (optional) | `orci` | string | Orci sagittis eu volutpat odio facilisis mauris sit |
@@ -456,7 +453,7 @@ This text splitter is specially designed for Markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Last Date | `last-date` | string | Date of the last message |
 | Start Conversation Message | `message` | string | message to start a conversation |
@@ -468,7 +465,7 @@ This text splitter is specially designed for Markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Replied Message | `message` | string | message to reply a conversation |
 </div>

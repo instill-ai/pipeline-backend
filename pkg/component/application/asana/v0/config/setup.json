@@ -4,24 +4,18 @@
   "properties": {
     "token": {
       "description": "Fill in your Asana Personal Access Token (PAT). You can generate one from <a href=\"https://app.asana.com/0/my-apps\">developer console</a>.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Token",
-      "type": "string"
+      "format": "string"
     }
   },
   "required": [
     "token"
   ],
-  "instillEditOnNodeFields": [
-    "token"
-  ],
   "title": "Asana Connection",
-  "type": "object"
+  "format": "object"
 }

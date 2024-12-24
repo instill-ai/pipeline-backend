@@ -3,57 +3,42 @@
   "additionalProperties": false,
   "properties": {
     "email-address": {
-      "type": "string",
       "description": "The email address of the user.",
-      "instillUpstreamTypes": [
-        "reference",
-        "value"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": false,
-      "instillUIOrder": 2,
-      "title": "Email Address"
+      "uiOrder": 2,
+      "title": "Email Address",
+      "format": "string"
     },
     "password": {
-      "type": "string",
       "description": "The password of the App passwords in Gmail settings.",
-      "instillUpstreamTypes": [
-        "reference"
-      ],
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
       "instillSecret": true,
-      "instillUIOrder": 3,
-      "title": "App Password"
+      "uiOrder": 3,
+      "title": "App Password",
+      "format": "string"
     },
     "server-address": {
       "description": "The address of the email server.",
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "string"
       ],
-      "instillUpstreamTypes": [
-        "value",
-        "reference"
-      ],
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "title": "Server Address",
-      "type": "string"
+      "format": "string"
     },
     "server-port": {
       "description": "The port of the email server.",
-      "instillAcceptFormats": [
+      "acceptFormats": [
         "integer"
       ],
-      "instillUpstreamTypes": [
-        "value",
-        "reference"
-      ],
-      "instillUIOrder": 1,
+      "uiOrder": 1,
       "title": "Server Port",
-      "type": "integer"
+      "format": "integer"
     }
   },
   "required": [
@@ -62,12 +47,6 @@
     "server-address",
     "server-port"
   ],
-  "instillEditOnNodeFields": [
-    "email-address",
-    "password",
-    "server-address",
-    "server-port"
-  ],
   "title": "Email",
-  "type": "object"
+  "format": "object"
 }

@@ -7,10 +7,12 @@ import (
 
 	_ "embed"
 
+	"google.golang.org/protobuf/types/known/structpb"
+
 	qt "github.com/frankban/quicktest"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
-	"google.golang.org/protobuf/types/known/structpb"
+	"github.com/instill-ai/pipeline-backend/pkg/component/resources/schemas"
 )
 
 var (
@@ -37,7 +39,10 @@ func TestExecutionWrapper_GetComponent(t *testing.T) {
 		componentConfigJSON,
 		componentTasksJSON,
 		nil,
-		map[string][]byte{"additional.json": componentAdditionalJSON})
+		map[string][]byte{
+			"additional.json": componentAdditionalJSON,
+			"schema.json":     schemas.SchemaJSON,
+		})
 	c.Assert(err, qt.IsNil)
 
 	x, err := cmp.CreateExecution(base.ComponentExecution{

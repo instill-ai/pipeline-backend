@@ -4,17 +4,15 @@
       "properties": {
         "start-time": {
           "title": "Start Time",
-          "type": "number",
           "description": "The number of seconds from the beginning of the audio file to the start of this segment.",
-          "instillFormat": "number",
-          "instillUIOrder": 0
+          "uiOrder": 0,
+          "format": "number"
         },
         "end-time": {
           "title": "End Time",
-          "type": "number",
           "description": "The number of seconds from the beginning of the audio file to the end of this segment.",
-          "instillFormat": "number",
-          "instillUIOrder": 1
+          "uiOrder": 1,
+          "format": "number"
         }
       },
       "required": [
@@ -22,110 +20,102 @@
         "end-time"
       ],
       "title": "Segment",
-      "type": "object",
-      "description": "A time segment of audio data, defined by its start and end times in seconds."
+      "description": "A time segment of audio data, defined by its start and end times in seconds.",
+      "format": "object"
     }
   },
   "TASK_DETECT_ACTIVITY": {
-    "instillShortDescription": "Detect speech segments in audio data using Voice Activity Detection (VAD). This task processes the input audio to 16kHz mono format, identifies periods of human speech, and outputs time segments for each detected speech activity.",
+    "shortDescription": "Detect speech segments in audio data using Voice Activity Detection (VAD). This task processes the input audio to 16kHz mono format, identifies periods of human speech, and outputs time segments for each detected speech activity.",
     "input": {
       "description": "Input.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "audio": {
           "description": "Audio file to analyze for speech activity.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "audio/wav",
             "application/octet-stream"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "uiOrder": 0,
           "title": "Audio",
-          "type": "string"
+          "format": "string"
         },
         "min-silence-duration": {
           "description": "Minimum duration of silence (in milliseconds) required to split speech segments. Longer values result in fewer, longer segments.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer",
             "number"
           ],
-          "instillUIOrder": 1,
-          "type": "integer",
+          "uiOrder": 1,
           "minimum": 0,
           "title": "Minimum Silence Duration",
-          "default": 100
+          "default": 100,
+          "format": "integer"
         },
         "speech-pad": {
           "description": "Additional padding (in milliseconds) added to the start and end of each detected speech segment to prevent cutting off speech.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "integer",
             "number"
           ],
-          "instillUIOrder": 2,
-          "type": "integer",
+          "uiOrder": 2,
           "minimum": 0,
           "title": "Speech Pad",
-          "default": 30
+          "default": 30,
+          "format": "integer"
         }
       },
       "required": [
         "audio"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Output.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "segments": {
           "description": "Array of time segments representing detected speech activity. Each segment contains start and end times in seconds.",
-          "instillFormat": "array:object",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "items": {
             "$ref": "#/$defs/segment"
           },
           "title": "Segments",
-          "type": "array"
+          "format": "array"
         }
       },
       "required": [
         "segments"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_SEGMENT": {
-    "instillShortDescription": "Segment audio data into pieces based on the provided time segments.",
+    "shortDescription": "Segment audio data into pieces based on the provided time segments.",
     "input": {
       "description": "Input.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "audio": {
           "description": "Audio data to segment.",
-          "instillAcceptFormats": [
+          "acceptFormats": [
             "audio/*",
             "application/octet-stream"
           ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
+          "uiOrder": 0,
           "title": "Audio",
-          "type": "string"
+          "format": "string"
         },
         "segments": {
           "description": "A list of time segments of audio data.",
-          "instillFormat": "array:object",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "items": {
             "$ref": "#/$defs/segment"
           },
           "title": "Segments",
-          "type": "array"
+          "format": "array"
         }
       },
       "required": [
@@ -133,28 +123,27 @@
         "segments"
       ],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Output.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "audio-segments": {
           "description": "A list of segmented audio data.",
-          "instillFormat": "array:audio/*",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "items": {
-            "type": "string"
+            "format": "string"
           },
           "title": "Audios",
-          "type": "array"
+          "format": "array"
         }
       },
       "required": [
         "audio-segments"
       ],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   }
 }

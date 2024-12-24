@@ -49,16 +49,16 @@ cmp pkg/dummy/README.mdx want-readme.mdx
       "properties": {
         "durna": {
           "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Durna",
-          "type": "string"
+          "format": "string"
         },
         "parra": {
           "deprecated": true,
           "description": "Shouldn't appear, it's deprecated",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "title": "Parra",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
@@ -70,10 +70,10 @@ cmp pkg/dummy/README.mdx want-readme.mdx
       "properties": {
         "orci": {
           "description": "Orci sagittis eu volutpat odio facilisis mauris sit",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
+          "format": "string",
+          "uiOrder": 0,
           "title": "Orci",
-          "type": "string"
+          "format": "string"
         }
       },
       "title": "Output"
@@ -86,9 +86,9 @@ cmp pkg/dummy/README.mdx want-readme.mdx
       "properties": {
         "cursus": {
           "description": "Cursus mattis molestie a iaculis at erat pellentesque adipiscing commodo",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Cursus",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [
@@ -100,51 +100,51 @@ cmp pkg/dummy/README.mdx want-readme.mdx
       "properties": {
         "elementum": {
           "description": "Tellus elementum sagittis vitae et",
-          "instillUIOrder": 0,
+          "uiOrder": 0,
           "title": "Elementum",
-          "type": "string"
+          "format": "string"
         },
         "errors": {
           "description": "Error messages, if any, during the dummy process",
-          "instillUIOrder": 3,
+          "uiOrder": 3,
           "title": "Errors",
           "items": {
-            "type": "string"
+            "format": "string"
           },
-          "type": "array"
+          "format": "array"
         },
         "context": {
           "description": "Free-form metadata",
-          "instillUIOrder": 4,
+          "uiOrder": 4,
           "required": [],
           "title": "Meta"
         },
         "atem": {
           "description": "This object should comply witht he format {\"tortor\": \"something\", \"arcu\": \"something else\"}",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "title": "Atem",
-          "type": "object",
+          "format": "object",
           "properties": {
             "tortor": {
               "description": "Tincidunt tortor aliquam nulla",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Tincidunt tortor",
-              "type": "string"
+              "format": "string"
             },
             "arcu": {
               "description": "Bibendum arcu vitae elementum curabitur vitae nunc sed velit",
-              "instillUIOrder": 1,
+              "uiOrder": 1,
               "title": "Arcu",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": []
         },
         "nullam_non": {
           "description": "Id faucibus nisl tincidunt eget nullam non",
-          "instillUIOrder": 2,
+          "uiOrder": 2,
           "title": "Nullam non",
-          "type": "number"
+          "format": "number"
         }
       },
       "required": [
@@ -214,7 +214,7 @@ Perform a dummy task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DUMMY` |
 | Durna (required) | `durna` | string | Lorem ipsum dolor sit amet, consectetur adipiscing elit |
@@ -227,7 +227,7 @@ Perform a dummy task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Orci (optional) | `orci` | string | Orci sagittis eu volutpat odio facilisis mauris sit |
 </div>
@@ -243,7 +243,7 @@ This task is dummier than `TASK_DUMMY`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | ID | Type | Description |
+| Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DUMMIER_THAN_DUMMY` |
 | Cursus (required) | `cursus` | string | Cursus mattis molestie a iaculis at erat pellentesque adipiscing commodo |
@@ -256,7 +256,7 @@ This task is dummier than `TASK_DUMMY`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | ID | Type | Description |
+| Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Elementum | `elementum` | string | Tellus elementum sagittis vitae et |
 | [Atem](#dummier-atem) | `atem` | object | This object should comply witht he format \{"tortor": "something", "arcu": "something else"\} |
@@ -272,7 +272,7 @@ This task is dummier than `TASK_DUMMY`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
 | Arcu | `arcu` | string | Bibendum arcu vitae elementum curabitur vitae nunc sed velit |
 | Tincidunt tortor | `tortor` | string | Tincidunt tortor aliquam nulla |

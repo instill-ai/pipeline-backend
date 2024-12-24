@@ -1,21 +1,16 @@
 {
   "TASK_CRUD_GOAL": {
     "description": "Create, Update, Delete, Read and Duplicate goal in Asana.",
-    "instillShortDescription": "Goal Related Task, including get, update, delete, create, duplicate",
+    "shortDescription": "Goal Related Task, including get, update, delete, create, duplicate",
     "input": {
       "description": "Goal Related Task, including get, update, delete, create, duplicate.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "action"
-      ],
+      "uiOrder": 0,
       "properties": {
         "action": {
           "title": "Action",
           "description": "action.",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "additionalProperties": true,
-          "instillFormat": "object",
-          "type": "object",
           "required": [
             "action"
           ],
@@ -25,150 +20,103 @@
                 "action": {
                   "title": "Action",
                   "const": "get",
-                  "type": "string",
                   "description": "Get Goal.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "goal-gid": {
                   "description": "Globally unique identifier (GID) for the goal. You can find the GID of a goal from the URL of the goal in Asana. For example, if the URL of the goal is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.",
-                  "instillShortDescription": "Goal ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Goal ID",
+                  "uiOrder": 0,
                   "title": "Goal ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
                 "action",
                 "goal-gid"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "goal-gid"
-              ],
-              "instillFormat": "object",
               "title": "Get",
               "description": "Get Goal.",
-              "instillUIOrder": 0,
-              "type": "object"
+              "uiOrder": 0,
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "update",
-                  "type": "string",
                   "description": "Update Goal.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "goal-gid": {
                   "description": "Globally unique identifier (GID) for the goal. You can find the GID of a goal from the URL of the goal in Asana. For example, if the URL of the goal is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.",
-                  "instillShortDescription": "Goal ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Goal ID",
+                  "uiOrder": 0,
                   "title": "Goal ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "name": {
                   "description": "The name of the goal.",
-                  "instillShortDescription": "Update Goal Name",
-                  "instillUIOrder": 1,
+                  "shortDescription": "Update Goal Name",
+                  "uiOrder": 1,
                   "title": "Goal Name",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "notes": {
                   "description": "The notes of the goal.",
-                  "instillShortDescription": "Update Goal Note",
-                  "instillUIOrder": 2,
+                  "shortDescription": "Update Goal Note",
+                  "uiOrder": 2,
                   "title": "Goal Note",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "due-on": {
                   "description": "The date on which the goal is due. In the format YYYY-MM-DD.",
-                  "instillShortDescription": "Update Due Date",
-                  "instillUIOrder": 2,
+                  "shortDescription": "Update Due Date",
+                  "uiOrder": 2,
                   "title": "Due Date",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "start-on": {
                   "description": "The date on which the goal starts. In the format YYYY-MM-DD.",
-                  "instillShortDescription": "Update Start Date",
-                  "instillUIOrder": 3,
+                  "shortDescription": "Update Start Date",
+                  "uiOrder": 3,
                   "title": "Start Date",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "liked": {
                   "description": "Whether the goal is liked by the user.",
-                  "instillShortDescription": "Liked",
-                  "instillUIOrder": 4,
+                  "shortDescription": "Liked",
+                  "uiOrder": 4,
                   "title": "Liked",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "boolean"
                   ],
-                  "instillFormat": "boolean",
-                  "type": "boolean"
+                  "format": "boolean"
                 },
                 "status": {
                   "description": "The current status of this goal. When the goal is open, its status can be green, yellow, and red to reflect \"On Track\", \"At Risk\", and \"Off Track\", respectively. When the goal is closed, the value can be missed, achieved, partial, or dropped.",
-                  "instillShortDescription": "Update Status",
-                  "instillUIOrder": 5,
+                  "shortDescription": "Update Status",
+                  "uiOrder": 5,
                   "enum": [
                     "green",
                     "yellow",
@@ -179,14 +127,10 @@
                     "dropped"
                   ],
                   "title": "Status",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
@@ -194,198 +138,128 @@
                 "goal-gid",
                 "liked"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "goal-gid",
-                "name",
-                "notes",
-                "due-on",
-                "start-on",
-                "liked",
-                "status"
-              ],
-              "instillFormat": "object",
               "title": "Update",
               "description": "Update Goal.",
-              "instillUIOrder": 0,
-              "type": "object"
+              "uiOrder": 0,
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "delete",
-                  "type": "string",
-                  "instillUIOrder": 0,
-                  "description": "Delete goal."
+                  "uiOrder": 0,
+                  "description": "Delete goal.",
+                  "format": "string"
                 },
                 "goal-gid": {
                   "description": "Globally unique identifier (GID) for the goal. You can find the GID of a goal from the URL of the goal in Asana. For example, if the URL of the goal is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.",
-                  "instillShortDescription": "Goal ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Goal ID",
+                  "uiOrder": 0,
                   "title": "Goal ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
                 "action",
                 "goal-gid"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "goal-gid"
-              ],
               "title": "Delete",
               "description": "Delete Goal.",
-              "instillUIOrder": 0,
-              "instillFormat": "object",
-              "type": "object"
+              "uiOrder": 0,
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "create",
-                  "type": "string",
                   "description": "Create Goal.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "name": {
                   "description": "The name of the goal.",
-                  "instillShortDescription": "Goal Name",
-                  "instillUIOrder": 1,
+                  "shortDescription": "Goal Name",
+                  "uiOrder": 1,
                   "title": "Goal Name",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "notes": {
                   "description": "The notes of the goal.",
-                  "instillShortDescription": "Goal Note",
-                  "instillUIOrder": 2,
+                  "shortDescription": "Goal Note",
+                  "uiOrder": 2,
                   "title": "Goal Note",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "due-on": {
                   "description": "The date on which the goal is due. In the format YYYY-MM-DD.",
-                  "instillShortDescription": "Due Date",
-                  "instillUIOrder": 2,
+                  "shortDescription": "Due Date",
+                  "uiOrder": 2,
                   "title": "Due Date",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "start-on": {
                   "description": "The date on which the goal starts. In the format YYYY-MM-DD.",
-                  "instillShortDescription": "Start Date",
-                  "instillUIOrder": 3,
+                  "shortDescription": "Start Date",
+                  "uiOrder": 3,
                   "title": "Start Date",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "liked": {
                   "description": "Whether the goal is liked by the user.",
-                  "instillShortDescription": "Liked",
-                  "instillUIOrder": 4,
+                  "shortDescription": "Liked",
+                  "uiOrder": 4,
                   "title": "Liked",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "boolean"
                   ],
-                  "instillFormat": "boolean",
-                  "type": "boolean"
+                  "format": "boolean"
                 },
                 "workspace": {
                   "description": "GID of the workspace.  You can find one by filling the access token in the <a href=\"https://developers.asana.com/reference/getworkspaces\">Asana API Playground</a>.",
-                  "instillShortDescription": "GID of the workspace",
-                  "instillUIOrder": 5,
+                  "shortDescription": "GID of the workspace",
+                  "uiOrder": 5,
                   "title": "Workspace",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "time-period": {
                   "description": "GID of the time period. You can find one by filling the workspace id in the <a href=\"https://developers.asana.com/reference/gettimeperiods\">Asana API Playground</a>.",
-                  "instillShortDescription": "Time Period",
-                  "instillUIOrder": 6,
+                  "shortDescription": "Time Period",
+                  "uiOrder": 6,
                   "title": "Time Period",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "owner": {
                   "description": "User GID of the Owner. You can find one by filling the workspace id in the <a href=\"https://developers.asana.com/reference/getusers\">Asana API Playground</a>.",
-                  "instillShortDescription": "Owner",
-                  "instillUIOrder": 7,
+                  "shortDescription": "Owner",
+                  "uiOrder": 7,
                   "title": "Owner",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
@@ -393,183 +267,156 @@
                 "name",
                 "liked"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "name",
-                "notes",
-                "due-on",
-                "start-on",
-                "liked"
-              ],
               "title": "Create",
               "description": "Create Goal.",
-              "instillUIOrder": 0,
-              "instillFormat": "object",
-              "type": "object"
+              "uiOrder": 0,
+              "format": "object"
             }
-          ]
+          ],
+          "format": "object"
         }
       },
       "required": [],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Goal.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "gid": {
           "description": "Globally unique identifier (GID) for the goal.",
-          "instillShortDescription": "Goal ID",
-          "instillUIOrder": 0,
+          "shortDescription": "Goal ID",
+          "uiOrder": 0,
           "title": "Goal ID",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "name": {
           "description": "The name of the goal.",
-          "instillShortDescription": "Goal Name",
-          "instillUIOrder": 1,
+          "shortDescription": "Goal Name",
+          "uiOrder": 1,
           "title": "Goal Name",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "owner": {
           "description": "The owner of the goal.",
-          "instillShortDescription": "The owner of the goal.",
-          "instillUIOrder": 1,
+          "shortDescription": "The owner of the goal.",
+          "uiOrder": 1,
           "title": "Owner",
-          "instillFormat": "object",
-          "type": "object",
           "properties": {
             "gid": {
               "description": "Globally unique identifier (GID) for the owner.",
-              "instillShortDescription": "Owner ID",
-              "instillUIOrder": 0,
+              "shortDescription": "Owner ID",
+              "uiOrder": 0,
               "title": "Owner ID",
-              "instillFormat": "string",
-              "type": "string"
+              "format": "string"
             },
             "name": {
               "description": "The name of the owner.",
-              "instillShortDescription": "Owner Name",
-              "instillUIOrder": 1,
+              "shortDescription": "Owner Name",
+              "uiOrder": 1,
               "title": "Owner Name",
-              "instillFormat": "string",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
             "gid",
             "name"
-          ]
+          ],
+          "format": "object"
         },
         "notes": {
           "description": "The notes of the goal.",
-          "instillShortDescription": "The notes of the goal.",
-          "instillUIOrder": 2,
+          "shortDescription": "The notes of the goal.",
+          "uiOrder": 2,
           "title": "Goal Note",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "html-notes": {
           "description": "The notes of the goal in HTML format.",
-          "instillShortDescription": "The notes of the goal in HTML format.",
-          "instillUIOrder": 3,
+          "shortDescription": "The notes of the goal in HTML format.",
+          "uiOrder": 3,
           "title": "Goal HTML Note",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "due-on": {
           "description": "The date on which the goal is due. In the format YYYY-MM-DD.",
-          "instillShortDescription": "Due Date",
-          "instillUIOrder": 4,
+          "shortDescription": "Due Date",
+          "uiOrder": 4,
           "title": "Due Date",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "start-on": {
           "description": "The date on which the goal starts. In the format YYYY-MM-DD.",
-          "instillShortDescription": "Start Date",
-          "instillUIOrder": 5,
+          "shortDescription": "Start Date",
+          "uiOrder": 5,
           "title": "Start Date",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "liked": {
           "description": "Whether the goal is liked by the user.",
-          "instillShortDescription": "Liked",
-          "instillUIOrder": 6,
+          "shortDescription": "Liked",
+          "uiOrder": 6,
           "title": "Liked",
-          "instillFormat": "boolean",
-          "type": "boolean"
+          "format": "boolean"
         },
         "likes": {
           "description": "The users who likes the goal.",
-          "instillShortDescription": "The users who likes the goal.",
-          "instillUIOrder": 7,
+          "shortDescription": "The users who likes the goal.",
+          "uiOrder": 7,
           "title": "Likes",
-          "instillFormat": "array:object",
-          "type": "array",
           "items": {
-            "type": "object",
             "properties": {
               "like-gid": {
                 "description": "Globally unique identifier (GID) for the like.",
-                "instillShortDescription": "Like ID",
-                "instillUIOrder": 0,
+                "shortDescription": "Like ID",
+                "uiOrder": 0,
                 "title": "Like ID",
-                "instillFormat": "string",
-                "type": "string"
+                "format": "string"
               },
               "user-gid": {
                 "description": "Globally unique identifier (GID) for the user.",
-                "instillShortDescription": "User ID",
-                "instillUIOrder": 0,
+                "shortDescription": "User ID",
+                "uiOrder": 0,
                 "title": "User ID",
-                "instillFormat": "string",
-                "type": "string"
+                "format": "string"
               },
               "name": {
                 "description": "The name of the user.",
-                "instillShortDescription": "User Name",
-                "instillUIOrder": 1,
+                "shortDescription": "User Name",
+                "uiOrder": 1,
                 "title": "User Name",
-                "instillFormat": "string",
-                "type": "string"
+                "format": "string"
               }
             },
             "required": [
               "like-gid",
               "user-gid",
               "name"
-            ]
-          }
+            ],
+            "format": "object"
+          },
+          "format": "array"
         }
       },
       "required": [],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CRUD_TASK": {
     "description": "Create, Update, Delete, Read and Duplicate Task in Asana.",
-    "instillShortDescription": "Task Related Task, including get, update, delete, create, duplicate",
+    "shortDescription": "Task Related Task, including get, update, delete, create, duplicate",
     "input": {
       "description": "Task Related Task, including get, update, delete, create, duplicate.",
-      "instillShortDescription": "Task Related Task, including get, update, delete, create, duplicate",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "action"
-      ],
+      "shortDescription": "Task Related Task, including get, update, delete, create, duplicate",
+      "uiOrder": 0,
       "properties": {
         "action": {
           "title": "Action",
           "description": "Action.",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "additionalProperties": true,
-          "instillFormat": "object",
-          "type": "object",
           "required": [
             "action"
           ],
@@ -579,86 +426,63 @@
                 "action": {
                   "title": "Action",
                   "const": "get",
-                  "type": "string",
                   "description": "Get Task.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "task-gid": {
                   "description": "Globally unique identifier (GID) for the task.",
-                  "instillShortDescription": "Task ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Task ID",
+                  "uiOrder": 0,
                   "title": "Task ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
                 "action",
                 "task-gid"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "task-gid"
-              ],
               "title": "Get",
               "description": "Get Task.",
-              "instillUIOrder": 0,
-              "instillFormat": "object",
-              "type": "object"
+              "uiOrder": 0,
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "update",
-                  "type": "string",
                   "description": "Update Task.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "task-gid": {
                   "description": "Globally unique identifier (GID) for the task.",
-                  "instillShortDescription": "Task ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Task ID",
+                  "uiOrder": 0,
                   "title": "Task ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "name": {
                   "description": "Name of the task. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.",
-                  "instillShortDescription": "Name of the task",
-                  "instillUIOrder": 1,
+                  "shortDescription": "Name of the task",
+                  "uiOrder": 1,
                   "title": "Name of the task",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "resource-subtype": {
                   "description": "The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.",
-                  "instillShortDescription": "The subtype of this resource",
-                  "instillUIOrder": 2,
+                  "shortDescription": "The subtype of this resource",
+                  "uiOrder": 2,
                   "title": "Resource Subtype",
                   "enum": [
                     "default_task",
@@ -667,19 +491,15 @@
                     "approval",
                     "custom"
                   ],
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "approval-status": {
                   "description": "The approval status of the task. If you set completed to true, this field will be set to approved.",
-                  "instillShortDescription": "The approval status of the task",
-                  "instillUIOrder": 3,
+                  "shortDescription": "The approval status of the task",
+                  "uiOrder": 3,
                   "title": "Approval Status",
                   "enum": [
                     "pending",
@@ -687,88 +507,60 @@
                     "rejected",
                     "changes_requested"
                   ],
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "completed": {
                   "description": "Whether the task is currently marked complete.",
-                  "instillShortDescription": "Whether the task is currently marked complete",
-                  "instillUIOrder": 4,
+                  "shortDescription": "Whether the task is currently marked complete",
+                  "uiOrder": 4,
                   "title": "Completed",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "boolean"
                   ],
-                  "instillFormat": "boolean",
-                  "type": "boolean"
+                  "format": "boolean"
                 },
                 "liked": {
                   "description": "Whether the task is liked by the user.",
-                  "instillShortDescription": "Whether the task is liked by the user",
-                  "instillUIOrder": 5,
+                  "shortDescription": "Whether the task is liked by the user",
+                  "uiOrder": 5,
                   "title": "Liked",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "boolean"
                   ],
-                  "instillFormat": "boolean",
-                  "type": "boolean"
+                  "format": "boolean"
                 },
                 "notes": {
                   "description": "Free-form textual information associated with the task (i.e. its description).",
-                  "instillShortDescription": "Notes of the task",
-                  "instillUIOrder": 6,
+                  "shortDescription": "Notes of the task",
+                  "uiOrder": 6,
                   "title": "Notes of the task",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "assignee": {
                   "description": "GID of the assignee.",
-                  "instillShortDescription": "GID of the assignee",
-                  "instillUIOrder": 7,
+                  "shortDescription": "GID of the assignee",
+                  "uiOrder": 7,
                   "title": "Assignee",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "parent": {
                   "description": "GID of the parent task.",
-                  "instillShortDescription": "GID of the parent task",
-                  "instillUIOrder": 8,
+                  "shortDescription": "GID of the parent task",
+                  "uiOrder": 8,
                   "title": "Parent Task",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
@@ -776,110 +568,74 @@
                 "task-gid",
                 "liked"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "task-gid",
-                "name",
-                "resource-subtype",
-                "approval-status",
-                "completed",
-                "liked",
-                "notes",
-                "assignee",
-                "parent"
-              ],
               "description": "Update Task.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Update",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "delete",
-                  "type": "string",
                   "description": "Delete Task.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "task-gid": {
                   "description": "Globally unique identifier (GID) for the task.",
-                  "instillShortDescription": "Task ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Task ID",
+                  "uiOrder": 0,
                   "title": "Task ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
                 "action",
                 "task-gid"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "task-gid"
-              ],
               "description": "Delete Task.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Delete",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "create",
-                  "type": "string",
                   "description": "Create Task.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "name": {
                   "description": "The name of the task.",
-                  "instillShortDescription": "Task Name",
-                  "instillUIOrder": 1,
+                  "shortDescription": "Task Name",
+                  "uiOrder": 1,
                   "title": "Task Name",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "notes": {
                   "description": "The notes of the task.",
-                  "instillShortDescription": "Task Notes",
-                  "instillUIOrder": 2,
+                  "shortDescription": "Task Notes",
+                  "uiOrder": 2,
                   "title": "Task Notes",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "resource-subtype": {
                   "default": "default_task",
                   "description": "The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.",
-                  "instillShortDescription": "The subtype of this resource",
-                  "instillUIOrder": 2,
+                  "shortDescription": "The subtype of this resource",
+                  "uiOrder": 2,
                   "title": "Resource Subtype",
                   "enum": [
                     "default_task",
@@ -888,19 +644,15 @@
                     "approval",
                     "custom"
                   ],
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "approval-status": {
                   "description": "The approval status of the task. If you set completed to true, this field will be set to approved.",
-                  "instillShortDescription": "The approval status of the task",
-                  "instillUIOrder": 3,
+                  "shortDescription": "The approval status of the task",
+                  "uiOrder": 3,
                   "title": "Approval Status",
                   "enum": [
                     "pending",
@@ -908,122 +660,80 @@
                     "rejected",
                     "changes_requested"
                   ],
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "completed": {
                   "description": "Whether the task is currently marked complete.",
-                  "instillShortDescription": "Whether the task is currently marked complete",
-                  "instillUIOrder": 4,
+                  "shortDescription": "Whether the task is currently marked complete",
+                  "uiOrder": 4,
                   "title": "Completed",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "boolean"
                   ],
-                  "instillFormat": "boolean",
-                  "type": "boolean"
+                  "format": "boolean"
                 },
                 "liked": {
                   "description": "Whether the task is liked by the user.",
-                  "instillShortDescription": "Whether the task is liked by the user",
-                  "instillUIOrder": 5,
+                  "shortDescription": "Whether the task is liked by the user",
+                  "uiOrder": 5,
                   "title": "Liked",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "boolean"
                   ],
-                  "instillFormat": "boolean",
-                  "type": "boolean"
+                  "format": "boolean"
                 },
                 "assignee": {
                   "description": "GID of the assignee.",
-                  "instillShortDescription": "GID of the assignee",
-                  "instillUIOrder": 7,
+                  "shortDescription": "GID of the assignee",
+                  "uiOrder": 7,
                   "title": "Assignee",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "parent": {
                   "description": "GID of the parent task.",
-                  "instillShortDescription": "GID of the parent task",
-                  "instillUIOrder": 8,
+                  "shortDescription": "GID of the parent task",
+                  "uiOrder": 8,
                   "title": "Parent Task",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "start-at": {
                   "description": "The UTC date and time on which this task is due, or null if the task has no due time. This takes an ISO 8601 date string in UTC.",
-                  "instillShortDescription": "Start Date & Time. In format like 2021-09-01T00:00:00Z",
-                  "instillUIOrder": 9,
+                  "shortDescription": "Start Date & Time. In format like 2021-09-01T00:00:00Z",
+                  "uiOrder": 9,
                   "title": "Start Date & Time",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "due-at": {
                   "description": "Date and time on which work begins for the task, or null if the task has no start time. This takes an ISO 8601 date string in UTC.",
-                  "instillShortDescription": "Due Date & Time. In format like 2021-09-01T00:00:00Z",
-                  "instillUIOrder": 10,
+                  "shortDescription": "Due Date & Time. In format like 2021-09-01T00:00:00Z",
+                  "uiOrder": 10,
                   "title": "Due Date & Time",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "workspace": {
                   "description": "GID of the workspace.  You can find one by filling the access token in the <a href=\"https://developers.asana.com/reference/getworkspaces\">Asana API Playground</a>.",
-                  "instillShortDescription": "GID of the workspace",
-                  "instillUIOrder": 11,
+                  "shortDescription": "GID of the workspace",
+                  "uiOrder": 11,
                   "title": "Workspace",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
@@ -1032,65 +742,39 @@
                 "name",
                 "liked"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "name",
-                "notes",
-                "resource-subtype",
-                "approval-status",
-                "completed",
-                "liked",
-                "assignee",
-                "parent",
-                "start-at",
-                "due-at"
-              ],
               "description": "Create Task.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Create",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "duplicate",
-                  "type": "string",
                   "description": "Duplicate Task.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "task-gid": {
                   "description": "Globally unique identifier (GID) for the task.",
-                  "instillShortDescription": "Task ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Task ID",
+                  "uiOrder": 0,
                   "title": "Task ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "name": {
                   "description": "Name of the new task. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.",
-                  "instillShortDescription": "Name of the new task",
-                  "instillUIOrder": 1,
+                  "shortDescription": "Name of the new task",
+                  "uiOrder": 1,
                   "title": "Name",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
@@ -1098,57 +782,39 @@
                 "task-gid",
                 "name"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "task-gid",
-                "name"
-              ],
               "description": "Duplicate Task.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Duplicate",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "set parent",
-                  "type": "string",
                   "description": "Set Parent Task.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "task-gid": {
                   "description": "Globally unique identifier (GID) for the task.",
-                  "instillShortDescription": "Task ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Task ID",
+                  "uiOrder": 0,
                   "title": "Task ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "parent": {
                   "description": "GID of the parent task.",
-                  "instillShortDescription": "GID of the parent task",
-                  "instillUIOrder": 1,
+                  "shortDescription": "GID of the parent task",
+                  "uiOrder": 1,
                   "title": "Parent Task",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
@@ -1156,76 +822,54 @@
                 "task-gid",
                 "parent"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "task-gid",
-                "parent"
-              ],
               "description": "Set Parent Task.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Set Parent",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "edit tag",
-                  "type": "string",
                   "description": "Edit Tag.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "task-gid": {
                   "description": "Globally unique identifier (GID) for the task.",
-                  "instillShortDescription": "Task ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Task ID",
+                  "uiOrder": 0,
                   "title": "Task ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "tag-gid": {
                   "description": "Globally unique identifier (GID) for the tag.",
-                  "instillShortDescription": "Tag ID",
-                  "instillUIOrder": 1,
+                  "shortDescription": "Tag ID",
+                  "uiOrder": 1,
                   "title": "Tag ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "edit-option": {
                   "default": "add",
                   "description": "Edit option. You can choose to add or remove the tag.",
-                  "instillShortDescription": "Edit option",
-                  "instillUIOrder": 2,
+                  "shortDescription": "Edit option",
+                  "uiOrder": 2,
                   "title": "Edit option",
                   "enum": [
                     "add",
                     "remove"
                   ],
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
@@ -1234,77 +878,54 @@
                 "tag-gid",
                 "edit-option"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "task-gid",
-                "tag-gid",
-                "edit-option"
-              ],
               "description": "Edit Tag.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Edit Tag",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "edit follower",
-                  "type": "string",
                   "description": "Edit follower.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "task-gid": {
                   "description": "Globally unique identifier (GID) for the task.",
-                  "instillShortDescription": "Task ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Task ID",
+                  "uiOrder": 0,
                   "title": "Task ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "followers": {
                   "description": "This can either be the string \"me\", an email, or the gid of a user. For multiple followers, separate them with commas.",
-                  "instillShortDescription": "Followers' Identifications, can either be the string \"me\", an email, or the gid of a user.",
-                  "instillUIOrder": 1,
+                  "shortDescription": "Followers' Identifications, can either be the string \"me\", an email, or the gid of a user.",
+                  "uiOrder": 1,
                   "title": "Followers",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "edit-option": {
                   "default": "add",
                   "description": "Edit option. You can choose to add or remove the follower.",
-                  "instillShortDescription": "Edit option",
-                  "instillUIOrder": 2,
+                  "shortDescription": "Edit option",
+                  "uiOrder": 2,
                   "title": "Edit option",
                   "enum": [
                     "add",
                     "remove"
                   ],
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
@@ -1313,302 +934,249 @@
                 "followers",
                 "edit-option"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "task-gid",
-                "follower-gid",
-                "edit-option"
-              ],
               "description": "Edit Follower.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Edit Follower",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "edit project",
-                  "type": "string",
                   "description": "Edit project.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "task-gid": {
                   "description": "Globally unique identifier (GID) for the task.",
-                  "instillShortDescription": "Task ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Task ID",
+                  "uiOrder": 0,
                   "title": "Task ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "project-gid": {
                   "description": "Globally unique identifier (GID) for the project.",
-                  "instillShortDescription": "Project ID",
-                  "instillUIOrder": 1,
+                  "shortDescription": "Project ID",
+                  "uiOrder": 1,
                   "title": "Project ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "edit-option": {
                   "default": "add",
                   "description": "Edit option. You can choose to add or remove the project.",
-                  "instillShortDescription": "Edit option",
-                  "instillUIOrder": 2,
+                  "shortDescription": "Edit option",
+                  "uiOrder": 2,
                   "title": "Edit option",
                   "enum": [
                     "add",
                     "remove"
                   ],
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
-                "action",
-                "task-gid",
-                "project-gid",
-                "edit-option"
-              ],
-              "instillEditOnNodeFields": [
                 "action",
                 "task-gid",
                 "project-gid",
                 "edit-option"
               ],
               "description": "Edit Project.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Edit Project",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             }
-          ]
+          ],
+          "format": "object"
         }
       },
       "required": [],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Task.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "gid": {
           "description": "Globally unique identifier (GID) for the task.",
-          "instillShortDescription": "Task ID",
-          "instillUIOrder": 0,
+          "shortDescription": "Task ID",
+          "uiOrder": 0,
           "title": "Task ID",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "name": {
           "description": "The name of the task.",
-          "instillShortDescription": "Task Name",
-          "instillUIOrder": 1,
+          "shortDescription": "Task Name",
+          "uiOrder": 1,
           "title": "Task Name",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "notes": {
           "description": "The notes of the task.",
-          "instillShortDescription": "Task Notes",
-          "instillUIOrder": 2,
+          "shortDescription": "Task Notes",
+          "uiOrder": 2,
           "title": "Task Notes",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "html-notes": {
           "description": "The notes of the task in HTML format.",
-          "instillShortDescription": "Task Notes in HTML format",
-          "instillUIOrder": 3,
+          "shortDescription": "Task Notes in HTML format",
+          "uiOrder": 3,
           "title": "Task Notes in HTML format",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "projects": {
           "description": "The projects of the task.",
-          "instillShortDescription": "The projects of the task.",
-          "instillUIOrder": 4,
+          "shortDescription": "The projects of the task.",
+          "uiOrder": 4,
           "title": "Projects",
-          "instillFormat": "array:object",
-          "type": "array",
           "items": {
-            "type": "object",
             "properties": {
               "gid": {
                 "description": "Globally unique identifier (GID) for the project.",
-                "instillShortDescription": "Project ID",
-                "instillUIOrder": 0,
+                "shortDescription": "Project ID",
+                "uiOrder": 0,
                 "title": "Project ID",
-                "instillFormat": "string",
-                "type": "string"
+                "format": "string"
               },
               "name": {
                 "description": "The name of the project.",
-                "instillShortDescription": "Project Name",
-                "instillUIOrder": 1,
+                "shortDescription": "Project Name",
+                "uiOrder": 1,
                 "title": "Project Name",
-                "instillFormat": "string",
-                "type": "string"
+                "format": "string"
               }
             },
             "required": [
               "gid",
               "name"
-            ]
-          }
+            ],
+            "format": "object"
+          },
+          "format": "array"
         },
         "due-on": {
           "description": "The date on which the task is due. In the format YYYY-MM-DD.",
-          "instillShortDescription": "Due Date",
-          "instillUIOrder": 4,
+          "shortDescription": "Due Date",
+          "uiOrder": 4,
           "title": "Due Date",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "start-on": {
           "description": "The date on which the task starts. In the format YYYY-MM-DD.",
-          "instillShortDescription": "Start Date",
-          "instillUIOrder": 5,
+          "shortDescription": "Start Date",
+          "uiOrder": 5,
           "title": "Start Date",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "liked": {
           "description": "Whether the task is liked by the user.",
-          "instillShortDescription": "Liked",
-          "instillUIOrder": 6,
+          "shortDescription": "Liked",
+          "uiOrder": 6,
           "title": "Liked",
-          "instillFormat": "boolean",
-          "type": "boolean"
+          "format": "boolean"
         },
         "likes": {
           "description": "The users who likes the task.",
-          "instillShortDescription": "The users who likes the task.",
-          "instillUIOrder": 7,
+          "shortDescription": "The users who likes the task.",
+          "uiOrder": 7,
           "title": "Likes",
-          "instillFormat": "array:object",
-          "type": "array",
           "items": {
-            "type": "object",
             "properties": {
               "like-gid": {
                 "description": "Globally unique identifier (GID) for the like.",
-                "instillShortDescription": "Like ID",
-                "instillUIOrder": 0,
+                "shortDescription": "Like ID",
+                "uiOrder": 0,
                 "title": "Like ID",
-                "instillFormat": "string",
-                "type": "string"
+                "format": "string"
               },
               "user-gid": {
                 "description": "Globally unique identifier (GID) for the user.",
-                "instillShortDescription": "User ID",
-                "instillUIOrder": 0,
+                "shortDescription": "User ID",
+                "uiOrder": 0,
                 "title": "User ID",
-                "instillFormat": "string",
-                "type": "string"
+                "format": "string"
               },
               "name": {
                 "description": "The name of the user.",
-                "instillShortDescription": "User Name",
-                "instillUIOrder": 1,
+                "shortDescription": "User Name",
+                "uiOrder": 1,
                 "title": "User Name",
-                "instillFormat": "string",
-                "type": "string"
+                "format": "string"
               }
             },
             "required": [
               "like-gid",
               "user-gid",
               "name"
-            ]
-          }
+            ],
+            "format": "object"
+          },
+          "format": "array"
         },
         "approval-status": {
           "description": "The approval status of the task. If you set completed to true, this field will be set to approved.",
-          "instillShortDescription": "The approval status of the task",
-          "instillUIOrder": 8,
+          "shortDescription": "The approval status of the task",
+          "uiOrder": 8,
           "title": "Approval Status",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "resource-subtype": {
           "description": "The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.",
-          "instillShortDescription": "The subtype of this resource",
-          "instillUIOrder": 9,
+          "shortDescription": "The subtype of this resource",
+          "uiOrder": 9,
           "title": "Resource Subtype",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "completed": {
           "description": "Whether the task is currently marked complete.",
-          "instillShortDescription": "Whether the task is currently marked complete",
-          "instillUIOrder": 10,
+          "shortDescription": "Whether the task is currently marked complete",
+          "uiOrder": 10,
           "title": "Completed",
-          "instillFormat": "boolean",
-          "type": "boolean"
+          "format": "boolean"
         },
         "assignee": {
           "description": "GID of the assignee.",
-          "instillShortDescription": "GID of the assignee",
-          "instillUIOrder": 11,
+          "shortDescription": "GID of the assignee",
+          "uiOrder": 11,
           "title": "Assignee",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "parent": {
           "description": "GID of the parent task.",
-          "instillShortDescription": "GID of the parent task",
-          "instillUIOrder": 12,
+          "shortDescription": "GID of the parent task",
+          "uiOrder": 12,
           "title": "Parent Task",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CRUD_PROJECT": {
     "description": "Create, Update, Delete, Read and Duplicate project in Asana.",
-    "instillShortDescription": "Project Related Task, including get, update, delete, create, duplicate",
+    "shortDescription": "Project Related Task, including get, update, delete, create, duplicate",
     "input": {
       "description": "Project Related Task, including get, update, delete, create, duplicate.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "action"
-      ],
+      "uiOrder": 0,
       "properties": {
         "action": {
           "title": "Action",
           "description": "action.",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "additionalProperties": true,
-          "instillFormat": "object",
-          "type": "object",
           "required": [
             "action"
           ],
@@ -1618,134 +1186,93 @@
                 "action": {
                   "title": "Action",
                   "const": "get",
-                  "type": "string",
                   "description": "Get Project.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "project-gid": {
                   "description": "Globally unique identifier (GID) for the project.",
-                  "instillShortDescription": "Project ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Project ID",
+                  "uiOrder": 0,
                   "title": "Project ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
                 "action",
                 "project-gid"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "project-gid"
-              ],
               "description": "Get Project.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Get",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "update",
-                  "type": "string",
                   "description": "Update Project.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "project-gid": {
                   "description": "Globally unique identifier (GID) for the project.",
-                  "instillShortDescription": "Project ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Project ID",
+                  "uiOrder": 0,
                   "title": "Project ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "name": {
                   "description": "The name of the project.",
-                  "instillShortDescription": "Update Project Name",
-                  "instillUIOrder": 1,
+                  "shortDescription": "Update Project Name",
+                  "uiOrder": 1,
                   "title": "Project Name",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "notes": {
                   "description": "The notes of the project.",
-                  "instillShortDescription": "Update Project Note",
-                  "instillUIOrder": 2,
+                  "shortDescription": "Update Project Note",
+                  "uiOrder": 2,
                   "title": "Project Note",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "due-on": {
                   "description": "The date on which the project is due. In the format YYYY-MM-DD.",
-                  "instillShortDescription": "Update Due Date",
-                  "instillUIOrder": 2,
+                  "shortDescription": "Update Due Date",
+                  "uiOrder": 2,
                   "title": "Due Date",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "start-on": {
                   "description": "The date on which the project starts. In the format YYYY-MM-DD.",
-                  "instillShortDescription": "Update Start Date",
-                  "instillUIOrder": 3,
+                  "shortDescription": "Update Start Date",
+                  "uiOrder": 3,
                   "title": "Start Date",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "color": {
                   "description": "The color of the project.",
-                  "instillShortDescription": "Update Color",
-                  "instillUIOrder": 5,
+                  "shortDescription": "Update Color",
+                  "uiOrder": 5,
                   "enum": [
                     "dark-pink",
                     "dark-green",
@@ -1769,47 +1296,35 @@
                     "null"
                   ],
                   "title": "Update Color",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "privacy-setting": {
                   "description": "The privacy setting of the project.",
-                  "instillShortDescription": "Update Privacy Setting",
-                  "instillUIOrder": 6,
+                  "shortDescription": "Update Privacy Setting",
+                  "uiOrder": 6,
                   "title": "Update Privacy Setting",
                   "enum": [
                     "public to workspace",
                     "private to team",
                     "private"
                   ],
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "archived": {
                   "description": "Whether the project is archived.",
-                  "instillShortDescription": "Whether the project is archived",
-                  "instillUIOrder": 7,
+                  "shortDescription": "Whether the project is archived",
+                  "uiOrder": 7,
                   "title": "Archived",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "boolean"
                   ],
-                  "instillFormat": "boolean",
-                  "type": "boolean"
+                  "format": "boolean"
                 }
               },
               "required": [
@@ -1817,140 +1332,93 @@
                 "project-gid",
                 "archived"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "project-gid",
-                "name",
-                "notes",
-                "due-on",
-                "start-on",
-                "color",
-                "privacy-setting",
-                "archived"
-              ],
               "description": "Update Project.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Update",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "delete",
-                  "type": "string",
                   "description": "Delete project.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "project-gid": {
                   "description": "Globally unique identifier (GID) for the project.",
-                  "instillShortDescription": "Project ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Project ID",
+                  "uiOrder": 0,
                   "title": "Project ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
                 "action",
                 "project-gid"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "project-gid"
-              ],
               "description": "Delete Project.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Delete",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "create",
-                  "type": "string",
                   "description": "Create project.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "name": {
                   "description": "The name of the project.",
-                  "instillShortDescription": "Update Project Name",
-                  "instillUIOrder": 1,
+                  "shortDescription": "Update Project Name",
+                  "uiOrder": 1,
                   "title": "Project Name",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "notes": {
                   "description": "The notes of the project.",
-                  "instillShortDescription": "Update Project Note",
-                  "instillUIOrder": 2,
+                  "shortDescription": "Update Project Note",
+                  "uiOrder": 2,
                   "title": "Project Note",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "due-on": {
                   "description": "The date on which the project is due. In the format YYYY-MM-DD.",
-                  "instillShortDescription": "Update Due Date",
-                  "instillUIOrder": 2,
+                  "shortDescription": "Update Due Date",
+                  "uiOrder": 2,
                   "title": "Due Date",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "start-on": {
                   "description": "The date on which the project starts. In the format YYYY-MM-DD.",
-                  "instillShortDescription": "Update Start Date",
-                  "instillUIOrder": 3,
+                  "shortDescription": "Update Start Date",
+                  "uiOrder": 3,
                   "title": "Start Date",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "color": {
                   "description": "The color of the project.",
-                  "instillShortDescription": "Update Color",
-                  "instillUIOrder": 5,
+                  "shortDescription": "Update Color",
+                  "uiOrder": 5,
                   "enum": [
                     "dark-pink",
                     "dark-green",
@@ -1974,188 +1442,124 @@
                     "null"
                   ],
                   "title": "Update Color",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "privacy-setting": {
                   "description": "The privacy setting of the project.",
-                  "instillShortDescription": "Update Privacy Setting",
-                  "instillUIOrder": 6,
+                  "shortDescription": "Update Privacy Setting",
+                  "uiOrder": 6,
                   "title": "Update Privacy Setting",
                   "enum": [
                     "public to workspace",
                     "private to team",
                     "private"
                   ],
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "workspace": {
                   "description": "Globally unique identifier (GID) for the workspace. You can find one by filling the access token in the <a href=\"https://developers.asana.com/reference/getworkspaces\">Asana API Playground</a>.",
-                  "instillShortDescription": "Workspace ID",
-                  "instillUIOrder": 7,
+                  "shortDescription": "Workspace ID",
+                  "uiOrder": 7,
                   "title": "Workspace ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "team": {
                   "description": "Globally unique identifier (GID) for the team of the new project.",
-                  "instillShortDescription": "Team ID of the new project",
-                  "instillUIOrder": 8,
+                  "shortDescription": "Team ID of the new project",
+                  "uiOrder": 8,
                   "title": "Team ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
                 "action",
                 "name"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "name",
-                "notes",
-                "due-on",
-                "start-on",
-                "color",
-                "privacy-setting"
-              ],
               "description": "Create Project.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Create",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "duplicate",
-                  "type": "string",
                   "description": "Duplicate project.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "project-gid": {
                   "description": "Globally unique identifier (GID) for the project. You can find the GID of a goal from the URL of the project in Asana. For example, if the URL of the project is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.",
-                  "instillShortDescription": "Project ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Project ID",
+                  "uiOrder": 0,
                   "title": "Project ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "name": {
                   "description": "The name of the new project.",
-                  "instillShortDescription": "New Project Name",
-                  "instillUIOrder": 1,
+                  "shortDescription": "New Project Name",
+                  "uiOrder": 1,
                   "title": "New Project Name",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "team": {
                   "description": "Globally unique identifier (GID) for the team of the new project. If team is not defined, the new project will be in the same team as the the original project.",
-                  "instillShortDescription": "Team ID of the new project",
-                  "instillUIOrder": 2,
+                  "shortDescription": "Team ID of the new project",
+                  "uiOrder": 2,
                   "title": "Team ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "due-on": {
                   "description": "Sets the last due date in the duplicated project to the given date. The rest of the due dates will be offset by the same amount as the due dates in the original project. In the format YYYY-MM-DD.",
-                  "instillShortDescription": "Due Date (You should only specify exactly one of due-on or start-on)",
-                  "instillUIOrder": 3,
+                  "shortDescription": "Due Date (You should only specify exactly one of due-on or start-on)",
+                  "uiOrder": 3,
                   "title": "Due Date",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "start-on": {
                   "description": "Sets the first start date in the duplicated project to the given date. The rest of the start dates will be offset by the same amount as the start dates in the original project. In the format YYYY-MM-DD.",
-                  "instillShortDescription": "Start Date (You should only specify exactly one of due-on or start-on)",
-                  "instillUIOrder": 4,
+                  "shortDescription": "Start Date (You should only specify exactly one of due-on or start-on)",
+                  "uiOrder": 4,
                   "title": "Start Date",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "should-skip-weekends": {
                   "description": "Determines if the auto-shifted dates should skip weekends.",
-                  "instillShortDescription": "Determines if the auto-shifted dates should skip weekends.",
-                  "instillUIOrder": 5,
+                  "shortDescription": "Determines if the auto-shifted dates should skip weekends.",
+                  "uiOrder": 5,
                   "title": "Should Skip Weekends (For auto-shifted dates)",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "boolean"
                   ],
-                  "instillFormat": "boolean",
-                  "type": "boolean"
+                  "format": "boolean"
                 }
               },
               "required": [
@@ -2163,246 +1567,211 @@
                 "project-gid",
                 "name"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "project-gid",
-                "name",
-                "due-on",
-                "start-on"
-              ],
               "description": "Duplicate Project.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Duplicate",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             }
-          ]
+          ],
+          "format": "object"
         }
       },
       "required": [],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Project.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "gid": {
           "description": "Globally unique identifier (GID) for the project.",
-          "instillShortDescription": "Project ID",
-          "instillUIOrder": 0,
+          "shortDescription": "Project ID",
+          "uiOrder": 0,
           "title": "Project ID",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "name": {
           "description": "The name of the project.",
-          "instillShortDescription": "Project Name",
-          "instillUIOrder": 1,
+          "shortDescription": "Project Name",
+          "uiOrder": 1,
           "title": "Project Name",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "owner": {
           "description": "The owner of the project.",
-          "instillShortDescription": "The owner of the project.",
-          "instillUIOrder": 1,
+          "shortDescription": "The owner of the project.",
+          "uiOrder": 1,
           "title": "Owner",
-          "instillFormat": "object",
-          "type": "object",
           "properties": {
             "gid": {
               "description": "Globally unique identifier (GID) for the owner.",
-              "instillShortDescription": "Owner ID",
-              "instillUIOrder": 0,
+              "shortDescription": "Owner ID",
+              "uiOrder": 0,
               "title": "Owner ID",
-              "instillFormat": "string",
-              "type": "string"
+              "format": "string"
             },
             "name": {
               "description": "The name of the owner.",
-              "instillShortDescription": "Owner Name",
-              "instillUIOrder": 1,
+              "shortDescription": "Owner Name",
+              "uiOrder": 1,
               "title": "Owner Name",
-              "instillFormat": "string",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
             "gid",
             "name"
-          ]
+          ],
+          "format": "object"
         },
         "notes": {
           "description": "The notes of the project.",
-          "instillShortDescription": "The notes of the project.",
-          "instillUIOrder": 2,
+          "shortDescription": "The notes of the project.",
+          "uiOrder": 2,
           "title": "Project Note",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "html-notes": {
           "description": "The notes of the project in HTML format.",
-          "instillShortDescription": "The notes of the project in HTML format.",
-          "instillUIOrder": 3,
+          "shortDescription": "The notes of the project in HTML format.",
+          "uiOrder": 3,
           "title": "Project HTML Note",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "due-on": {
           "description": "The date on which the project is due. In the format YYYY-MM-DD.",
-          "instillShortDescription": "Due Date",
-          "instillUIOrder": 4,
+          "shortDescription": "Due Date",
+          "uiOrder": 4,
           "title": "Due Date",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "start-on": {
           "description": "The date on which the project starts. In the format YYYY-MM-DD.",
-          "instillShortDescription": "Start Date",
-          "instillUIOrder": 5,
+          "shortDescription": "Start Date",
+          "uiOrder": 5,
           "title": "Start Date",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "completed": {
           "description": "Whether the project is completed.",
-          "instillShortDescription": "Whether the project is completed",
-          "instillUIOrder": 6,
+          "shortDescription": "Whether the project is completed",
+          "uiOrder": 6,
           "title": "Completed",
-          "instillFormat": "boolean",
-          "type": "boolean"
+          "format": "boolean"
         },
         "color": {
           "description": "The color of the project.",
-          "instillShortDescription": "Color",
-          "instillUIOrder": 7,
+          "shortDescription": "Color",
+          "uiOrder": 7,
           "title": "Color",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "privacy-setting": {
           "description": "The privacy setting of the project.",
-          "instillShortDescription": "Privacy Setting",
-          "instillUIOrder": 8,
+          "shortDescription": "Privacy Setting",
+          "uiOrder": 8,
           "title": "Privacy Setting",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "archived": {
           "description": "Whether the project is archived.",
-          "instillShortDescription": "Whether the project is archived",
-          "instillUIOrder": 9,
+          "shortDescription": "Whether the project is archived",
+          "uiOrder": 9,
           "title": "Archived",
-          "instillFormat": "boolean",
-          "type": "boolean"
+          "format": "boolean"
         },
         "completed-by": {
           "description": "The user who completed the project.",
-          "instillShortDescription": "The user who completed the project.",
-          "instillUIOrder": 10,
+          "shortDescription": "The user who completed the project.",
+          "uiOrder": 10,
           "title": "Completed By",
-          "instillFormat": "object",
-          "type": "object",
           "properties": {
             "gid": {
               "description": "Globally unique identifier (GID) for the user.",
-              "instillShortDescription": "User ID",
-              "instillUIOrder": 0,
+              "shortDescription": "User ID",
+              "uiOrder": 0,
               "title": "User ID",
-              "instillFormat": "string",
-              "type": "string"
+              "format": "string"
             },
             "name": {
               "description": "The name of the user.",
-              "instillShortDescription": "User Name",
-              "instillUIOrder": 1,
+              "shortDescription": "User Name",
+              "uiOrder": 1,
               "title": "User Name",
-              "instillFormat": "string",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
             "gid",
             "name"
-          ]
+          ],
+          "format": "object"
         },
         "current-status": {
           "description": "The current status of the project.",
-          "instillShortDescription": "The current status of the project.",
-          "instillUIOrder": 11,
+          "shortDescription": "The current status of the project.",
+          "uiOrder": 11,
           "title": "Current Status",
           "required": [],
-          "instillFormat": "array:semi-structured/json",
-          "type": "array",
           "items": {
-            "instillFormat": "semi-structured/json",
             "properties": {},
             "required": [],
-            "type": "object"
-          }
+            "format": "json"
+          },
+          "format": "array"
         },
         "custom-fields": {
           "description": "The custom fields of the project.",
-          "instillShortDescription": "The custom fields of the project.",
-          "instillUIOrder": 12,
+          "shortDescription": "The custom fields of the project.",
+          "uiOrder": 12,
           "title": "Custom Fields",
           "required": [],
-          "instillFormat": "array:semi-structured/json",
-          "type": "array",
           "items": {
-            "instillFormat": "semi-structured/json",
             "properties": {},
             "required": [],
-            "type": "object"
-          }
+            "format": "json"
+          },
+          "format": "array"
         },
         "custom-field-settings": {
           "description": "The custom field settings of the project.",
-          "instillShortDescription": "The custom field settings of the project.",
-          "instillUIOrder": 13,
+          "shortDescription": "The custom field settings of the project.",
+          "uiOrder": 13,
           "title": "Custom Field Settings",
           "required": [],
-          "instillFormat": "array:semi-structured/json",
-          "type": "array",
           "items": {
-            "instillFormat": "semi-structured/json",
             "properties": {},
             "required": [],
-            "type": "object"
-          }
+            "format": "json"
+          },
+          "format": "array"
         },
         "modified-at": {
           "description": "The time at which the project was last modified.",
-          "instillShortDescription": "The time at which the project was last modified.",
-          "instillUIOrder": 14,
+          "shortDescription": "The time at which the project was last modified.",
+          "uiOrder": 14,
           "title": "Modified At",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         }
       },
       "required": [],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   },
   "TASK_CRUD_PORTFOLIO": {
     "description": "Create, Update, Delete and Read portfolio in Asana.",
-    "instillShortDescription": "Portfolio Related Task, including get, update, delete, create",
+    "shortDescription": "Portfolio Related Task, including get, update, delete, create",
     "input": {
       "description": "Portfolio Related Task, including get, update, delete, create.",
-      "instillUIOrder": 0,
-      "instillEditOnNodeFields": [
-        "action"
-      ],
+      "uiOrder": 0,
       "properties": {
         "action": {
           "title": "Action",
           "description": "action.",
-          "instillUIOrder": 1,
+          "uiOrder": 1,
           "additionalProperties": true,
-          "instillFormat": "object",
-          "type": "object",
           "required": [
             "action"
           ],
@@ -2412,86 +1781,63 @@
                 "action": {
                   "title": "Action",
                   "const": "get",
-                  "type": "string",
                   "description": "Get portfolio.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "portfolio-gid": {
                   "description": "Globally unique identifier (GID) for the portfolio.",
-                  "instillShortDescription": "Portfolio ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Portfolio ID",
+                  "uiOrder": 0,
                   "title": "Portfolio ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
                 "action",
                 "portfolio-gid"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "portfolio-gid"
-              ],
               "description": "Get Portfolio.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Get",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "update",
-                  "type": "string",
                   "description": "Update portfolio.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "portfolio-gid": {
                   "description": "Globally unique identifier (GID) for the portfolio.",
-                  "instillShortDescription": "Portfolio ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Portfolio ID",
+                  "uiOrder": 0,
                   "title": "Portfolio ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "name": {
                   "description": "The name of the portfolio.",
-                  "instillShortDescription": "Update Portfolio Name",
-                  "instillUIOrder": 1,
+                  "shortDescription": "Update Portfolio Name",
+                  "uiOrder": 1,
                   "title": "Portfolio Name",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "color": {
                   "description": "The color of the portfolio.",
-                  "instillShortDescription": "Update Color",
-                  "instillUIOrder": 5,
+                  "shortDescription": "Update Color",
+                  "uiOrder": 5,
                   "enum": [
                     "dark-pink",
                     "dark-green",
@@ -2515,133 +1861,93 @@
                     "null"
                   ],
                   "title": "Update Color",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "public": {
                   "description": "Whether the portfolio is public.",
-                  "instillShortDescription": "Whether the portfolio is public",
-                  "instillUIOrder": 6,
+                  "shortDescription": "Whether the portfolio is public",
+                  "uiOrder": 6,
                   "title": "Public",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "boolean"
                   ],
-                  "instillFormat": "boolean",
-                  "type": "boolean"
+                  "format": "boolean"
                 },
                 "workspace": {
                   "description": "The workspace of the portfolio. Please fill in the Globally unique identifier (GID) for the workspace.",
-                  "instillShortDescription": "The workspace of the portfolio.",
-                  "instillUIOrder": 7,
+                  "shortDescription": "The workspace of the portfolio.",
+                  "uiOrder": 7,
                   "title": "Workspace",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
                 "action",
                 "portfolio-gid"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "portfolio-gid",
-                "name",
-                "color",
-                "public",
-                "workspace"
-              ],
               "description": "Update Portfolio.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Update",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "delete",
-                  "type": "string",
                   "description": "Delete portfolio.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "portfolio-gid": {
                   "description": "Globally unique identifier (GID) for the portfolio.",
-                  "instillShortDescription": "Portfolio ID",
-                  "instillUIOrder": 0,
+                  "shortDescription": "Portfolio ID",
+                  "uiOrder": 0,
                   "title": "Portfolio ID",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
                 "action",
                 "portfolio-gid"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "portfolio-gid"
-              ],
               "description": "Delete Portfolio.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Delete",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             },
             {
               "properties": {
                 "action": {
                   "title": "Action",
                   "const": "create",
-                  "type": "string",
                   "description": "Create portfolio.",
-                  "instillUIOrder": 0
+                  "uiOrder": 0,
+                  "format": "string"
                 },
                 "name": {
                   "description": "The name of the portfolio.",
-                  "instillShortDescription": "Portfolio Name",
-                  "instillUIOrder": 1,
+                  "shortDescription": "Portfolio Name",
+                  "uiOrder": 1,
                   "title": "Portfolio Name",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "color": {
                   "description": "The color of the portfolio.",
-                  "instillShortDescription": "Color",
-                  "instillUIOrder": 5,
+                  "shortDescription": "Color",
+                  "uiOrder": 5,
                   "enum": [
                     "dark-pink",
                     "dark-green",
@@ -2665,44 +1971,30 @@
                     "null"
                   ],
                   "title": "Color",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 },
                 "public": {
                   "description": "Whether the portfolio is public.",
-                  "instillShortDescription": "Whether the portfolio is public",
-                  "instillUIOrder": 6,
+                  "shortDescription": "Whether the portfolio is public",
+                  "uiOrder": 6,
                   "title": "Public",
-                  "instillUpstreamTypes": [
-                    "value"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "boolean"
                   ],
-                  "instillFormat": "boolean",
-                  "type": "boolean"
+                  "format": "boolean"
                 },
                 "workspace": {
                   "description": "The workspace of the portfolio. Please fill in the Globally unique identifier (GID) for the workspace.",
-                  "instillShortDescription": "The workspace of the portfolio.",
-                  "instillUIOrder": 7,
+                  "shortDescription": "The workspace of the portfolio.",
+                  "uiOrder": 7,
                   "title": "Workspace",
-                  "instillUpstreamTypes": [
-                    "value",
-                    "reference",
-                    "template"
-                  ],
-                  "instillAcceptFormats": [
+                  "acceptFormats": [
                     "string"
                   ],
-                  "instillFormat": "string",
-                  "type": "string"
+                  "format": "string"
                 }
               },
               "required": [
@@ -2711,188 +2003,162 @@
                 "name",
                 "public"
               ],
-              "instillEditOnNodeFields": [
-                "action",
-                "portfolio-gid",
-                "name",
-                "color",
-                "public",
-                "workspace"
-              ],
               "description": "Create Portfolio.",
-              "instillUIOrder": 0,
+              "uiOrder": 0,
               "title": "Create",
-              "instillFormat": "object",
-              "type": "object"
+              "format": "object"
             }
-          ]
+          ],
+          "format": "object"
         }
       },
       "required": [],
       "title": "Input",
-      "type": "object"
+      "format": "object"
     },
     "output": {
       "description": "Portfolio.",
-      "instillUIOrder": 0,
+      "uiOrder": 0,
       "properties": {
         "gid": {
           "description": "Globally unique identifier (GID) for the portfolio.",
-          "instillShortDescription": "Portfolio ID",
-          "instillUIOrder": 0,
+          "shortDescription": "Portfolio ID",
+          "uiOrder": 0,
           "title": "Portfolio ID",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "name": {
           "description": "The name of the portfolio.",
-          "instillShortDescription": "Portfolio Name",
-          "instillUIOrder": 1,
+          "shortDescription": "Portfolio Name",
+          "uiOrder": 1,
           "title": "Portfolio Name",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "owner": {
           "description": "The owner of the portfolio.",
-          "instillShortDescription": "The owner of the portfolio.",
-          "instillUIOrder": 1,
+          "shortDescription": "The owner of the portfolio.",
+          "uiOrder": 1,
           "title": "Owner",
-          "instillFormat": "object",
-          "type": "object",
           "properties": {
             "gid": {
               "description": "Globally unique identifier (GID) for the owner.",
-              "instillShortDescription": "Owner ID",
-              "instillUIOrder": 0,
+              "shortDescription": "Owner ID",
+              "uiOrder": 0,
               "title": "Owner ID",
-              "instillFormat": "string",
-              "type": "string"
+              "format": "string"
             },
             "name": {
               "description": "The name of the owner.",
-              "instillShortDescription": "Owner Name",
-              "instillUIOrder": 1,
+              "shortDescription": "Owner Name",
+              "uiOrder": 1,
               "title": "Owner Name",
-              "instillFormat": "string",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
             "gid",
             "name"
-          ]
+          ],
+          "format": "object"
         },
         "due-on": {
           "description": "The date on which the portfolio is due. In the format YYYY-MM-DD.",
-          "instillShortDescription": "Due Date",
-          "instillUIOrder": 4,
+          "shortDescription": "Due Date",
+          "uiOrder": 4,
           "title": "Due Date",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "start-on": {
           "description": "The date on which the portfolio starts. In the format YYYY-MM-DD.",
-          "instillShortDescription": "Start Date",
-          "instillUIOrder": 5,
+          "shortDescription": "Start Date",
+          "uiOrder": 5,
           "title": "Start Date",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "color": {
           "description": "The color of the portfolio.",
-          "instillShortDescription": "Color",
-          "instillUIOrder": 7,
+          "shortDescription": "Color",
+          "uiOrder": 7,
           "title": "Color",
-          "instillFormat": "string",
-          "type": "string"
+          "format": "string"
         },
         "public": {
           "description": "Whether the portfolio is public.",
-          "instillShortDescription": "Whether the portfolio is public",
-          "instillUIOrder": 8,
+          "shortDescription": "Whether the portfolio is public",
+          "uiOrder": 8,
           "title": "Public",
-          "instillFormat": "boolean",
-          "type": "boolean"
+          "format": "boolean"
         },
         "created-by": {
           "description": "The user who created the portfolio.",
-          "instillShortDescription": "The user who created the portfolio.",
-          "instillUIOrder": 10,
+          "shortDescription": "The user who created the portfolio.",
+          "uiOrder": 10,
           "title": "Created By",
-          "instillFormat": "object",
-          "type": "object",
           "properties": {
             "gid": {
               "description": "Globally unique identifier (GID) for the user.",
-              "instillShortDescription": "User ID",
-              "instillUIOrder": 0,
+              "shortDescription": "User ID",
+              "uiOrder": 0,
               "title": "User ID",
-              "instillFormat": "string",
-              "type": "string"
+              "format": "string"
             },
             "name": {
               "description": "The name of the user.",
-              "instillShortDescription": "User Name",
-              "instillUIOrder": 1,
+              "shortDescription": "User Name",
+              "uiOrder": 1,
               "title": "User Name",
-              "instillFormat": "string",
-              "type": "string"
+              "format": "string"
             }
           },
           "required": [
             "gid",
             "name"
-          ]
+          ],
+          "format": "object"
         },
         "current-status": {
           "description": "The current status of the portfolio.",
-          "instillShortDescription": "The current status of the portfolio.",
-          "instillUIOrder": 11,
+          "shortDescription": "The current status of the portfolio.",
+          "uiOrder": 11,
           "title": "Current Status",
           "required": [],
-          "instillFormat": "array:semi-structured/json",
-          "type": "array",
           "items": {
-            "instillFormat": "semi-structured/json",
             "properties": {},
             "required": [],
-            "type": "object"
-          }
+            "format": "json"
+          },
+          "format": "array"
         },
         "custom-fields": {
           "description": "The custom fields of the portfolio.",
-          "instillShortDescription": "The custom fields of the portfolio.",
-          "instillUIOrder": 12,
+          "shortDescription": "The custom fields of the portfolio.",
+          "uiOrder": 12,
           "title": "Custom Fields",
           "required": [],
-          "instillFormat": "array:semi-structured/json",
-          "type": "array",
           "items": {
-            "instillFormat": "semi-structured/json",
             "properties": {},
             "required": [],
-            "type": "object"
-          }
+            "format": "json"
+          },
+          "format": "array"
         },
         "custom-field-settings": {
           "description": "The custom field settings of the portfolio.",
-          "instillShortDescription": "The custom field settings of the portfolio.",
-          "instillUIOrder": 13,
+          "shortDescription": "The custom field settings of the portfolio.",
+          "uiOrder": 13,
           "title": "Custom Field Settings",
           "required": [],
-          "instillFormat": "array:semi-structured/json",
-          "type": "array",
           "items": {
-            "instillFormat": "semi-structured/json",
             "properties": {},
             "required": [],
-            "type": "object"
-          }
+            "format": "json"
+          },
+          "format": "array"
         }
       },
       "required": [],
       "title": "Output",
-      "type": "object"
+      "format": "object"
     }
   }
 }
