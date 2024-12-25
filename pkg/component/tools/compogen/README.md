@@ -22,10 +22,10 @@ compogen readme path/to/component/config path/to/component/README.mdx
 
 ### Validation & guidelines
 
-In order to successfully build the README of a component, the `definition.json`
-and `tasks.json` files must be present in the component configuration directory.
+In order to successfully build the README of a component, the `definition.yaml`
+and `tasks.yaml` files must be present in the component configuration directory.
 
-The `definition.json` file must contain an array with one object in which the
+The `definition.yaml` file must contain an array with one object in which the
 following fields must be present and comply with the following guidelines:
 
 - `id`.
@@ -39,7 +39,7 @@ following fields must be present and comply with the following guidelines:
 - `type` - Component definitions must contain this field and its value must
   match one of the (string) values, defined in [protobufs](https://github.com/instill-ai/protobufs/blob/main/vdp/pipeline/v1beta/component_definition.proto).
 - `availableTasks` - This array must have at least one value, which should be
-  one of the root-level keys in the `tasks.json` file.
+  one of the root-level keys in the `tasks.yaml` file.
 - `sourceUrl` - Must be a valid URL. It must not end with a slash, as the
   definitions path will be appended.
 
@@ -48,7 +48,7 @@ Certain optional fields modify the document behaviour:
 - `public`, when `true`, will set the `draft` property to `false`.
 - The content of `prerequisites` will be displayed in
   an info block next to the resource configuration details.
-- A table will be built for the `setup` properties described in `setup.json`. They
+- A table will be built for the `setup` properties described in `setup.yaml`. They
   must contain an `instillUIOrder` field so the row order is deterministic.
 
 ### Injecting extra content
@@ -70,7 +70,7 @@ The following section IDs are accepted:
 - `release`
 - `config`
 - `setup`
-- Any task ID defined in `tasks.json` (e.g. `TASK_CHUNK_TEXT`)
+- Any task ID defined in `tasks.yaml` (e.g. `TASK_CHUNK_TEXT`)
 - `bottom`
 
 More than one section can be extended with this flag:
@@ -83,7 +83,7 @@ compogen readme path/to/component/config path/to/component/README.mdx \
 
 ## TODO
 
-- Support `oneOf` schemas for resource properties, present in, e.g., the [REST API](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/application/restapi/v0/config/definition.json#L26) component.
+- Support `oneOf` schemas for resource properties, present in, e.g., the [REST API](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/application/restapi/v0/config/definition.yaml#L26) component.
   - We might leverage some Go implementation of JSON schema. Some candidates:
     - [santhosh-tekuri/jsonschema](https://pkg.go.dev/github.com/santhosh-tekuri/jsonschema/v5#Schema)
     - [omissis/go-jsonschema](https://github.com/omissis/go-jsonschema/blob/934012d/pkg/schemas/model.go#L107)

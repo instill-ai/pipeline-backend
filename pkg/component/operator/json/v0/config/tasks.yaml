@@ -1,0 +1,209 @@
+TASK_MARSHAL:
+  shortDescription: Convert JSON to a string
+  input:
+    description: Input.
+    uiOrder: 0
+    properties:
+      json:
+        description: JSON entity to be marshaled. It can be any valid JSON datatype
+          (e.g. number, string, hash, array).
+        shortDescription: JSON entity to be marshaled
+        acceptFormats:
+        - object
+        - json
+        - object
+        uiOrder: 0
+        required: []
+        title: JSON
+    required:
+    - json
+    title: Input
+    format: object
+  output:
+    description: Output.
+    uiOrder: 0
+    properties:
+      string:
+        description: String representation of the JSON input.
+        uiOrder: 0
+        title: JSON string
+        format: string
+    required:
+    - string
+    title: Output
+    format: object
+TASK_UNMARSHAL:
+  shortDescription: Convert a string to JSON
+  input:
+    description: Input.
+    uiOrder: 0
+    properties:
+      string:
+        description: JSON string to be unmarshaled. It can represent any valid JSON
+          datatype (e.g. number, string, hash, array).
+        shortDescription: JSON string to be unmarshaled
+        acceptFormats:
+        - string
+        uiOrder: 0
+        title: String
+        format: string
+    required:
+    - string
+    title: Input
+    format: object
+  output:
+    description: Output.
+    uiOrder: 0
+    properties:
+      json:
+        description: JSON entity extracted from the string input.
+        uiOrder: 0
+        required: []
+        title: JSON
+        format: json
+    required:
+    - json
+    title: Output
+    format: object
+TASK_JQ:
+  shortDescription: Process JSON through a `jq` command
+  title: jq
+  input:
+    description: Source JSON and `jq` command.
+    uiOrder: 0
+    properties:
+      json-string:
+        deprecated: true
+        uiOrder: 2
+        description: (DEPRECATED, use 'JSON value' instead) String with the JSON value
+          to be processed. This field allows templated inputs, but the data might
+          require preprocessing (marshalling). This field will be used in absence
+          of 'JSON value' for backwards compatibility reasons.
+        shortDescription: (DEPRECATED) JSON string to be processed
+        acceptFormats:
+        - string
+        title: (DEPRECATED) JSON string
+        format: string
+      json-value:
+        uiOrder: 0
+        description: JSON entity to be processed by the filter. It can be any valid
+          JSON datatype (e.g. number, string, hash, array).
+        acceptFormats:
+        - object
+        - object
+        - json
+        title: JSON value
+      jq-filter:
+        uiOrder: 1
+        description: Filter, in `jq` syntax, that will be applied to the JSON input.
+        acceptFormats:
+        - string
+        title: Filter
+        format: string
+    required:
+    - jq-filter
+    title: Input
+    format: object
+  output:
+    description: Results of the `jq` command applied to the input JSON.
+    uiOrder: 0
+    properties:
+      results:
+        description: The `jq` command results.
+        uiOrder: 0
+        required: []
+        title: Results
+        items:
+          title: Result
+          format: json
+        format: array
+    required:
+    - results
+    title: Output
+    format: object
+TASK_RENAME_FIELDS:
+  shortDescription: Rename fields in a JSON object with a conflict resolution strategy.
+    If the new field already exists, it will be overwritten by default.
+  title: Rename Fields
+  input:
+    description: Input.
+    uiOrder: 0
+    properties:
+      json:
+        description: JSON object to be edited. It can be any valid JSON datatype (e.g.
+          number, string, hash, array).
+        shortDescription: JSON object to be edited.
+        acceptFormats:
+        - object
+        - json
+        - object
+        uiOrder: 0
+        required: []
+        title: JSON
+      fields:
+        description: An array of objects specifying the fields to be renamed.
+        shortDescription: Array of fields to be renamed.
+        uiOrder: 1
+        acceptFormats:
+        - array
+        items:
+          description: Field to be renamed.
+          shortDescription: Field to be renamed.
+          properties:
+            from:
+              description: The field in the original data that needs to be renamed.
+              shortDescription: Field to be renamed.
+              acceptFormats:
+              - string
+              uiOrder: 0
+              title: From
+              format: string
+            to:
+              description: The new name for the field.
+              shortDescription: New name for the field.
+              acceptFormats:
+              - string
+              uiOrder: 1
+              title: To
+              format: string
+          required:
+          - from
+          - to
+          title: Field
+          format: object
+        title: Fields
+        format: array
+      conflict-resolution:
+        description: Defines how conflicts are handled when the new field already
+          exists in the data. If the new field already exists, it will be overwritten
+          by default. If the new field does not exist, it will be created. When set
+          to 'error', the component will throw an error if the new field already exists.
+          When set to 'skip', the new field will be skipped if it already exists.
+        shortDescription: Conflict resolution strategy.
+        uiOrder: 2
+        title: Conflict Resolution
+        enum:
+        - overwrite
+        - skip
+        - error
+        default: overwrite
+        format: string
+    required:
+    - json
+    - fields
+    title: Input
+    format: object
+  output:
+    description: Output.
+    uiOrder: 1
+    properties:
+      json:
+        description: JSON object with the renamed fields.
+        uiOrder: 0
+        required: []
+        title: JSON
+        format: json
+    required:
+    - json
+    title: Output
+    format: object

@@ -1,0 +1,93 @@
+EVENT_NEW_MESSAGE:
+  title: New Message
+  description: A new message event from Slack.
+  configSchema:
+    properties:
+      channel-names:
+        description: Names of the Slack channels to listen to.
+        title: Channel Names
+        items:
+          format: string
+        format: array
+    format: object
+  messageSchema:
+    description: A new message event from Slack.
+    properties:
+      timestamp:
+        description: Timestamp of the message.
+        title: Timestamp
+        format: string
+      channel:
+        description: Channel information.
+        uiOrder: 1
+        properties:
+          id:
+            description: Unique ID of the Slack channel.
+            title: Channel ID
+            format: string
+          name:
+            description: Name of the Slack channel.
+            title: Channel Name
+            format: string
+        required:
+        - id
+        - name
+        title: Channel
+        format: object
+      user:
+        description: User information.
+        uiOrder: 2
+        properties:
+          id:
+            description: Unique ID of the Slack user.
+            title: User ID
+            format: string
+          name:
+            description: Username of the Slack user.
+            title: User Name
+            format: string
+          real-name:
+            description: Real name of the Slack user.
+            title: Real Name
+            format: string
+          profile:
+            description: User profile information.
+            properties:
+              display-name:
+                description: Display name of the Slack user.
+                title: Display Name
+                format: string
+            required:
+            - display-name
+            title: Profile
+            format: object
+        required:
+        - id
+        - name
+        - real-name
+        - profile
+        title: User
+        format: object
+      text:
+        description: Content of the message.
+        title: Message Text
+        format: string
+    required:
+    - timestamp
+    - channel
+    - user
+    - text
+    title: New Message Event
+    format: object
+  messageExamples:
+  - timestamp: '1715159446.644219'
+    channel:
+      id: G0AKFJBEU
+      name: test_channel
+    user:
+      id: user123
+      name: testuser
+      real-name: Test User
+      profile:
+        display-name: testuser
+    text: Hello, world!

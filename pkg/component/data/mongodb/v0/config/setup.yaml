@@ -1,0 +1,14 @@
+additionalProperties: false
+properties:
+  uri:
+    description: Fill in your MongoDB URI.
+    acceptFormats:
+    - string
+    instillSecret: true
+    uiOrder: 0
+    title: URI
+    format: string
+required:
+- uri
+title: MongoDB Connection
+format: object

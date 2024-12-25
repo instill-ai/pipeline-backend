@@ -1,0 +1,35 @@
+TASK_TEXT_EMBEDDINGS:
+  shortDescription: Turn text into numbers, unlocking use cases like search.
+  input:
+    uiOrder: 0
+    properties:
+      model:
+        $ref: additional.yaml#/components/schemas/CreateEmbeddingRequest/properties/model
+        acceptFormats:
+        - string
+        shortDescription: ID of the model to use
+        uiOrder: 0
+        title: Model
+      text:
+        description: The text
+        acceptFormats:
+        - string
+        uiOrder: 1
+        title: Text
+        type: string
+    required:
+    - text
+    - model
+    title: Input
+    type: object
+  output:
+    uiOrder: 0
+    properties:
+      embedding:
+        $ref: schema.yaml#/$defs/instill-types/embedding
+        uiOrder: 0
+        title: Embedding
+    required:
+    - embedding
+    title: Output
+    type: object

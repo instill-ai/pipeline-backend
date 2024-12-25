@@ -1,0 +1,272 @@
+$defs:
+  text:
+    description: Text to be chunked.
+    acceptFormats:
+    - string
+    uiOrder: 0
+    title: Text
+    format: string
+  chunk-size:
+    default: 512
+    description: Specifies the maximum size of each chunk in terms of the number of
+      tokens.
+    acceptFormats:
+    - integer
+    uiOrder: 1
+    minimum: 1
+    title: Chunk Size
+    format: integer
+  chunk-overlap:
+    default: 100
+    description: Determines the number of tokens that overlap between consecutive
+      chunks.
+    acceptFormats:
+    - integer
+    uiOrder: 2
+    minimum: 1
+    title: Chunk Overlap
+    format: integer
+  model-name:
+    description: The name of the model used for tokenization.
+    enum:
+    - gpt-4
+    - gpt-3.5-turbo
+    - text-davinci-003
+    - text-davinci-002
+    - text-davinci-001
+    - text-curie-001
+    - text-babbage-001
+    - text-ada-001
+    - davinci
+    - curie
+    - babbage
+    - ada
+    - code-davinci-002
+    - code-davinci-001
+    - code-cushman-002
+    - code-cushman-001
+    - davinci-codex
+    - cushman-codex
+    - text-davinci-edit-001
+    - code-davinci-edit-001
+    - text-embedding-ada-002
+    - text-similarity-davinci-001
+    - text-similarity-curie-001
+    - text-similarity-babbage-001
+    - text-similarity-ada-001
+    - text-search-davinci-doc-001
+    - text-search-curie-doc-001
+    - text-search-babbage-doc-001
+    - text-search-ada-doc-001
+    - code-search-babbage-code-001
+    - code-search-ada-code-001
+    - gpt2
+    acceptFormats:
+    - string
+    uiOrder: 3
+    title: Model
+    format: string
+TASK_CHUNK_TEXT:
+  shortDescription: Chunk text with different strategies
+  input:
+    description: Input.
+    uiOrder: 0
+    properties:
+      text:
+        $ref: '#/$defs/text'
+      strategy:
+        description: Chunking strategy.
+        uiOrder: 1
+        properties:
+          setting:
+            description: Chunk Setting.
+            additionalProperties: true
+            title: Setting
+            uiOrder: 0
+            required:
+            - chunk-method
+            oneOf:
+            - properties:
+                chunk-method:
+                  const: Token
+                  title: Chunk Method
+                  description: Chunking based on tokenization.
+                  uiOrder: 0
+                  format: string
+                chunk-size:
+                  $ref: '#/$defs/chunk-size'
+                chunk-overlap:
+                  $ref: '#/$defs/chunk-overlap'
+                model-name:
+                  $ref: '#/$defs/model-name'
+                allowed-special:
+                  default: []
+                  description: A list of special tokens that are allowed within chunks.
+                  acceptFormats:
+                  - array
+                  items:
+                    format: string
+                  uiOrder: 4
+                  title: Allowed Special Tokens
+                  format: array
+                disallowed-special:
+                  default: []
+                  description: A list of special tokens that should not appear within
+                    chunks.
+                  acceptFormats:
+                  - array
+                  items:
+                    format: string
+                  uiOrder: 5
+                  title: Disallowed Special Tokens
+                  format: array
+              required:
+              - chunk-method
+              title: Token
+              description: Language models have a token limit. You should not exceed
+                the token limit. When you split your text into chunks it is therefore
+                a good idea to count the number of tokens. There are many tokenizers.
+                When you count tokens in your text you should use the same tokenizer
+                as used in the language model.
+              format: object
+            - properties:
+                chunk-method:
+                  const: Recursive
+                  title: Chunk Method
+                  description: Chunking based on recursive splitting.
+                  uiOrder: 0
+                  format: string
+                chunk-size:
+                  $ref: '#/$defs/chunk-size'
+                chunk-overlap:
+                  $ref: '#/$defs/chunk-overlap'
+                model-name:
+                  $ref: '#/$defs/model-name'
+                separators:
+                  default: []
+                  description: A list of strings representing the separators used
+                    to split the text.
+                  acceptFormats:
+                  - array
+                  uiOrder: 3
+                  items:
+                    format: string
+                  title: Separators
+                  format: array
+                keep-separator:
+                  description: A flag indicating whether to keep the separator characters
+                    at the beginning or end of chunks.
+                  acceptFormats:
+                  - boolean
+                  uiOrder: 4
+                  title: Keep Separator
+                  format: boolean
+              required:
+              - chunk-method
+              title: Recursive
+              description: This text splitter is the recommended one for generic text.
+                It is parameterized by a list of characters. It tries to split on
+                them in order until the chunks are small enough. The default list
+                is ["\n\n", "\n", "", ""]. This has the effect of trying to keep all
+                paragraphs (and then sentences, and then words) together as long as
+                possible, as those would generically seem to be the strongest semantically
+                related pieces of text.
+              format: object
+            - properties:
+                chunk-method:
+                  const: Markdown
+                  title: Chunk Method
+                  description: Chunking based on recursive splitting with markdown
+                    format.
+                  uiOrder: 0
+                  format: string
+                chunk-size:
+                  $ref: '#/$defs/chunk-size'
+                chunk-overlap:
+                  $ref: '#/$defs/chunk-overlap'
+                model-name:
+                  $ref: '#/$defs/model-name'
+                code-blocks:
+                  description: A flag indicating whether code blocks should be treated
+                    as a single unit.
+                  acceptFormats:
+                  - boolean
+                  uiOrder: 3
+                  title: Code Blocks
+                  format: boolean
+              required:
+              - chunk-method
+              title: Markdown
+              description: This text splitter is specially designed for Markdown format.
+              format: object
+            format: object
+        title: Strategy
+        required:
+        - setting
+        format: object
+    required:
+    - text
+    - strategy
+    title: Input
+    format: object
+  output:
+    description: Output.
+    uiOrder: 0
+    properties:
+      chunk-num:
+        description: Total number of output text chunks.
+        uiOrder: 2
+        title: Number of Text Chunks
+        format: integer
+      text-chunks:
+        description: Text chunks after splitting.
+        uiOrder: 1
+        items:
+          title: Text Chunk
+          description: Text chunk after splitting.
+          properties:
+            text:
+              title: Text
+              description: Text chunk after splitting.
+              uiOrder: 0
+              format: string
+            start-position:
+              title: Start Position
+              description: The starting position of the chunk in the original text.
+              uiOrder: 1
+              format: integer
+            end-position:
+              title: End Position
+              description: The ending position of the chunk in the original text.
+              uiOrder: 2
+              format: integer
+            token-count:
+              title: Token Count
+              description: Count of tokens in a chunk.
+              uiOrder: 3
+              format: integer
+          required:
+          - text
+          - start-position
+          - end-position
+          - token-count
+          format: object
+        title: Text Chunks
+        format: array
+      token-count:
+        description: Total count of tokens in the original input text.
+        uiOrder: 0
+        title: Token Count
+        format: integer
+      chunks-token-count:
+        description: Total count of tokens in the output text chunks.
+        uiOrder: 3
+        title: Token Count Chunks
+        format: integer
+    required:
+    - text-chunks
+    - chunk-num
+    - token-count
+    - chunks-token-count
+    title: Output
+    format: object

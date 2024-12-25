@@ -1,0 +1,941 @@
+$defs:
+  pullRequest:
+    description: A pull request object.
+    properties:
+      id:
+        description: ID of the PR.
+        uiOrder: 1
+        title: PR id
+        format: integer
+      number:
+        description: Number of the PR.
+        uiOrder: 2
+        title: PR number
+        format: integer
+      state:
+        description: State of the PR.
+        uiOrder: 3
+        title: PR state
+        format: string
+      title:
+        description: Title of the PR.
+        uiOrder: 4
+        title: PR Title
+        format: string
+      body:
+        description: Body of the PR.
+        uiOrder: 5
+        title: PR body
+        format: string
+      diff-url:
+        description: URL to the diff of the PR.
+        uiOrder: 6
+        title: PR diff url
+        format: string
+      head:
+        description: Head commit of the PR (in SHA value).
+        uiOrder: 8
+        title: PR head
+        format: string
+      base:
+        description: Base commit of the PR (in SHA value).
+        uiOrder: 9
+        title: PR base
+        format: string
+      comments-num:
+        description: Number of comments on the PR.
+        uiOrder: 10
+        title: Number of PR comments
+        format: integer
+      commits-num:
+        description: Number of commits in the PR.
+        uiOrder: 11
+        title: Number of PR commits
+        format: integer
+      review-comments-num:
+        description: Number of review comments in the PR.
+        uiOrder: 12
+        title: Number of PR review comments
+        format: integer
+      commits:
+        description: Commits in the PR.
+        uiOrder: 13
+        title: Commits
+        items:
+          $ref: '#/$defs/commit'
+          required: []
+          description: A commit in the PR.
+        format: array
+    required: []
+    title: Pull Request
+    format: object
+  commit:
+    description: A commit object.
+    properties:
+      sha:
+        description: SHA of the commit.
+        uiOrder: 1
+        title: Commit SHA
+        format: string
+      message:
+        description: Message of the commit.
+        uiOrder: 2
+        title: Commit message
+        format: string
+      stats:
+        uiOrder: 3
+        $ref: '#/$defs/commitStats'
+        required: []
+      files:
+        description: Files in the commit.
+        uiOrder: 4
+        title: Files
+        items:
+          $ref: '#/$defs/commitFile'
+          required: []
+          description: A file in the commit.
+        format: array
+    required: []
+    title: Commit
+    format: object
+  commitStats:
+    description: Stats of changes.
+    uiOrder: 1
+    properties:
+      additions:
+        description: Number of additions in the commit.
+        uiOrder: 1
+        title: Additions
+        format: integer
+      deletions:
+        description: Number of deletions in the commit.
+        uiOrder: 2
+        title: Deletions
+        format: integer
+      changes:
+        description: Total number of changes in the commit.
+        uiOrder: 3
+        title: Total changes
+        format: integer
+    required: []
+    title: Commit stats
+    format: object
+  commitFile:
+    description: A commit file object.
+    properties:
+      filename:
+        description: Name of the file.
+        uiOrder: 1
+        title: File name
+        format: string
+      $ref: '#/$defs/commitStats/properties'
+      patch:
+        description: Patch of the file.
+        uiOrder: 3
+        title: Patch
+        format: string
+    required: []
+    title: Commit File
+    format: object
+  repositoryInfo:
+    owner:
+      description: Owner of the repository.
+      uiOrder: 0
+      acceptFormats:
+      - string
+      title: Owner
+      format: string
+    repository:
+      description: Repository name.
+      uiOrder: 1
+      acceptFormats:
+      - string
+      title: Repository
+      format: string
+  reviewComments:
+    description: A review comment object.
+    properties:
+      id:
+        description: ID of the comment.
+        uiOrder: 1
+        title: Comment id
+        format: integer
+      in-reply-to-id:
+        description: ID of the comment this comment is in reply to.
+        uiOrder: 2
+        title: In Reply To
+        format: integer
+      commit-id:
+        description: SHA of the commit on which you want to comment.
+        uiOrder: 3
+        title: Commit SHA
+        format: string
+      body:
+        description: Body of the comment.
+        uiOrder: 4
+        title: Comment body
+        format: string
+      path:
+        description: Path of the file the comment is on.
+        uiOrder: 5
+        title: Comment path
+        format: string
+      line:
+        shortDescription: The last line of the range that your comment applies to.
+          Your comment will be placed under this line.
+        description: The line of the blob in the pull request diff that the comment
+          applies to. For a multi-line comment, the last line of the range that your
+          comment applies to.
+        uiOrder: 6
+        title: Comment end line
+        format: integer
+      start-line:
+        description: The first line in the pull request diff that your multi-line
+          comment applies to. Only multi-line comment needs to fill this field.
+        uiOrder: 7
+        title: Comment start line
+        format: integer
+      side:
+        shortDescription: 'Side of the end line, can be one of: LEFT, RIGHT, side.
+          Default is side.'
+        description: 'Side of the end line, can be one of: LEFT, RIGHT, side. LEFT
+          is the left side of the diff (deletion), RIGHT is the right side of the
+          diff (addition), and side is the comment on the PR as a whole. Default is
+          side.'
+        default: side
+        enum:
+        - LEFT
+        - RIGHT
+        - side
+        uiOrder: 8
+        title: Comment end side
+        format: string
+      start-side:
+        shortDescription: 'Side of the start line, can be one of: LEFT, RIGHT, side.
+          Default is side.'
+        description: 'Side of the start line, can be one of: LEFT, RIGHT, side. LEFT
+          is the left side of the diff (deletion), RIGHT is the right side of the
+          diff (addition), and side is the comment on the PR as a whole. Default is
+          side.'
+        default: side
+        enum:
+        - LEFT
+        - RIGHT
+        - side
+        uiOrder: 9
+        title: Comment start side
+        format: string
+      subject-type:
+        description: 'Subject type of the comment, can be one of: line, file. Default
+          is line.'
+        uiOrder: 10
+        title: Comment type
+        default: line
+        enum:
+        - line
+        - file
+        format: string
+      created-at:
+        description: Time the comment was created.
+        uiOrder: 11
+        title: Comment created at
+        format: string
+      updated-at:
+        description: Time the comment was updated.
+        uiOrder: 12
+        title: Comment updated at
+        format: string
+      user:
+        description: User who created the comment.
+        uiOrder: 13
+        title: User
+        properties:
+          id:
+            description: ID of the user.
+            uiOrder: 14
+            title: User id
+            format: integer
+          url:
+            description: URL of the user.
+            uiOrder: 15
+            title: User URL
+            format: string
+        required: []
+        format: object
+    title: Review Comment
+    format: object
+  issue:
+    description: An issue object.
+    properties:
+      number:
+        description: Number of the issue.
+        uiOrder: 2
+        title: Issue Number
+        format: integer
+      state:
+        description: State of the issue.
+        uiOrder: 3
+        title: Issue state
+        format: string
+      title:
+        description: Title of the issue.
+        uiOrder: 4
+        title: Issue title
+        format: string
+      body:
+        description: Body of the issue.
+        uiOrder: 5
+        title: Issue body
+        format: string
+      assignee:
+        description: Assignee of the issue.
+        uiOrder: 6
+        title: Assignee
+        format: string
+      assignees:
+        description: Assignees of the issue.
+        uiOrder: 7
+        title: Assignees
+        items:
+          format: string
+        format: array
+      labels:
+        description: Labels of the issue.
+        uiOrder: 8
+        title: Labels
+        items:
+          format: string
+        format: array
+      is-pull-request:
+        description: Whether the issue is a pull request.
+        uiOrder: 9
+        title: Is Pull Request
+        format: boolean
+    title: Issue
+    format: object
+  pageOptions:
+    title: Page Options
+    description: Options for listing pages.
+    required: []
+    page:
+      default: 1
+      description: Page number of the results to fetch. Default is 1.
+      uiOrder: 100
+      title: Page
+      acceptFormats:
+      - integer
+      format: integer
+    per-page:
+      default: 30
+      description: Number of results to fetch per page. Default is 30.
+      uiOrder: 101
+      title: Per Page
+      acceptFormats:
+      - integer
+      format: integer
+    format: object
+TASK_CREATE_ISSUE:
+  description: Create an issue.
+  input:
+    description: Please input the repository name and owner.
+    uiOrder: 0
+    properties:
+      $ref: '#/$defs/repositoryInfo'
+      title:
+        $ref: '#/$defs/issue/properties/title'
+        acceptFormats:
+        - string
+        uiOrder: 3
+      body:
+        $ref: '#/$defs/issue/properties/body'
+        acceptFormats:
+        - string
+        uiOrder: 4
+      assignees:
+        $ref: '#/$defs/issue/properties/assignees'
+        acceptFormats:
+        - array
+        items:
+          format: string
+        title: Assignees
+        uiOrder: 5
+      labels:
+        $ref: '#/$defs/issue/properties/labels'
+        acceptFormats:
+        - array
+        items:
+          format: string
+        title: Labels
+        uiOrder: 6
+    required:
+    - owner
+    - repository
+    - title
+    - body
+    title: Input
+    format: object
+  output:
+    description: The created issue.
+    uiOrder: 0
+    properties:
+      $ref: '#/$defs/issue/properties'
+    required: []
+    title: Output
+    format: object
+TASK_CREATE_REVIEW_COMMENT:
+  shortDescription: Create a review comment in pull request.
+  description: Create a review comment in a pull request. The comment can be a general
+    comment or a review comment. The comment can be on a specific line or on the PR
+    as a whole.
+  input:
+    description: Please input the repository name and owner, and the PR number.
+    uiOrder: 0
+    properties:
+      $ref: '#/$defs/repositoryInfo'
+      pr-number:
+        title: PR Number
+        description: Number of the PR.
+        acceptFormats:
+        - integer
+        uiOrder: 3
+        format: integer
+      comment:
+        title: Comment
+        description: The comment to be added.
+        uiOrder: 4
+        properties:
+          commit-id:
+            $ref: '#/$defs/reviewComments/properties/commit-id'
+            acceptFormats:
+            - string
+            uiOrder: 0
+          body:
+            $ref: '#/$defs/reviewComments/properties/body'
+            acceptFormats:
+            - string
+            uiOrder: 1
+          path:
+            $ref: '#/$defs/reviewComments/properties/path'
+            acceptFormats:
+            - string
+            uiOrder: 2
+          start-line:
+            $ref: '#/$defs/reviewComments/properties/start-line'
+            acceptFormats:
+            - integer
+            uiOrder: 3
+          line:
+            $ref: '#/$defs/reviewComments/properties/line'
+            acceptFormats:
+            - integer
+            uiOrder: 4
+          start-side:
+            $ref: '#/$defs/reviewComments/properties/start-side'
+            acceptFormats:
+            - string
+            uiOrder: 5
+          side:
+            $ref: '#/$defs/reviewComments/properties/side'
+            acceptFormats:
+            - string
+            uiOrder: 6
+          subject-type:
+            $ref: '#/$defs/reviewComments/properties/subject-type'
+            acceptFormats:
+            - string
+            uiOrder: 7
+        required:
+        - body
+        - path
+        - commit-id
+        format: object
+    required:
+    - owner
+    - repository
+    - pr-number
+    - comment
+    title: Input
+    format: object
+  output:
+    description: The created comment.
+    uiOrder: 0
+    properties:
+      $ref: '#/$defs/reviewComments/properties'
+    required: []
+    title: Output
+    format: object
+TASK_CREATE_WEBHOOK:
+  description: Create a webhook for a repository.
+  input:
+    description: Please input the repository name and owner.
+    uiOrder: 0
+    properties:
+      $ref: '#/$defs/repositoryInfo'
+      hook-url:
+        title: Webhook URL
+        description: URL to send the payload to.
+        acceptFormats:
+        - string
+        uiOrder: 3
+        format: string
+      events:
+        title: Events
+        description: Events to trigger the webhook. Please see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads">the
+          github document</a> for more information.
+        acceptFormats:
+        - array
+        uiOrder: 4
+        items:
+          acceptFormats:
+          - string
+          format: string
+        format: array
+      active:
+        title: Active
+        default: false
+        description: Whether the webhook is active. Default is false.
+        acceptFormats:
+        - boolean
+        uiOrder: 5
+        format: boolean
+      content-type:
+        default: json
+        title: Content Type
+        description: 'Content type of the webhook, can be one of: json, form. Default
+          is json.'
+        enum:
+        - json
+        - form
+        acceptFormats:
+        - string
+        uiOrder: 6
+        format: string
+      hook-secret:
+        title: Hook Secret
+        description: If provided, the secret will be used as the key to generate the
+          HMAC hex digest value for delivery signature headers. (see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#delivery-headers">the
+          document</a>).
+        instillSecret: true
+        acceptFormats:
+        - string
+        uiOrder: 7
+        format: string
+    required:
+    - owner
+    - repository
+    - hook-url
+    - events
+    title: Input
+    format: object
+  output:
+    description: The created webhook.
+    uiOrder: 0
+    properties:
+      id:
+        description: ID of the webhook.
+        uiOrder: 1
+        title: Webhook ID
+        format: integer
+      url:
+        description: URL of the webhook.
+        uiOrder: 2
+        title: Webhook URL
+        format: string
+      ping-url:
+        description: URL to ping the webhook.
+        uiOrder: 3
+        title: Ping URL
+        format: string
+      test-url:
+        description: URL to test the webhook.
+        uiOrder: 4
+        title: Test URL
+        format: string
+      config:
+        description: Configuration of the webhook.
+        uiOrder: 6
+        title: Config
+        properties:
+          url:
+            description: URL of the webhook.
+            uiOrder: 1
+            title: Webhook URL
+            format: string
+          content-type:
+            description: Content type of the webhook.
+            uiOrder: 2
+            title: Content Type
+            format: string
+          insecure-ssl:
+            description: Whether the webhook is insecure.
+            uiOrder: 3
+            title: Insecure SSL
+            format: string
+        required: []
+        format: object
+    required: []
+    title: Output
+    format: object
+TASK_GET_COMMIT:
+  shortDescription: Get a commit from a repository, given the commit SHA
+  input:
+    description: Please input the repository name and owner, and the commit SHA.
+    uiOrder: 0
+    properties:
+      $ref: '#/$defs/repositoryInfo'
+      sha:
+        $ref: '#/$defs/commit/properties/sha'
+        acceptFormats:
+        - string
+        uiOrder: 3
+    required:
+    - owner
+    - repository
+    - sha
+    title: Input
+    format: object
+  output:
+    description: The specific commit in GitHub repository.
+    uiOrder: 0
+    properties:
+      $ref: '#/$defs/commit/properties'
+    required: []
+    title: Output
+    format: object
+TASK_GET_ISSUE:
+  description: Get an issue. This can be a pull request or a general issue, and you
+    can tell by the `is-pull-request` field.
+  shortDescription: Get an issue.
+  input:
+    description: Please input the repository name and owner.
+    uiOrder: 0
+    properties:
+      $ref: '#/$defs/repositoryInfo'
+      issue-number:
+        default: 0
+        title: Issue Number
+        description: Number of the issue.
+        acceptFormats:
+        - integer
+        uiOrder: 4
+        format: integer
+    required:
+    - owner
+    - repository
+    - issue-number
+    title: Input
+    format: object
+  output:
+    description: The specific issue in GitHub repository.
+    uiOrder: 0
+    properties:
+      $ref: '#/$defs/issue/properties'
+    required: []
+    title: Output
+    format: object
+TASK_GET_PULL_REQUEST:
+  shortDescription: Get a pull request from a repository, given the PR number. This
+    will default to the latest PR if no PR number is provided.
+  input:
+    description: Please input the repository name and owner, and the PR number.
+    uiOrder: 0
+    properties:
+      $ref: '#/$defs/repositoryInfo'
+      pr-number:
+        default: 0
+        title: PR Number
+        description: Number of the PR. `0` for the latest PR.
+        acceptFormats:
+        - integer
+        uiOrder: 4
+        format: integer
+    required:
+    - owner
+    - repository
+    title: Input
+    format: object
+  output:
+    description: The specific pr in GitHub repository.
+    uiOrder: 0
+    $ref: '#/$defs/pullRequest'
+    required: []
+    title: Output
+    format: object
+TASK_LIST_ISSUES:
+  description: Get the list of all issues in a repository,This can be a pull request
+    or a general issue, and you can tell by the `is-pull-request` field.
+  shortDescription: Get the list of all issues in a repository
+  input:
+    description: Please input the repository name and owner.
+    uiOrder: 0
+    properties:
+      $ref: '#/$defs/repositoryInfo'
+      state:
+        default: open
+        title: State
+        description: 'State of the issues, can be one of: open, closed, all. Default
+          is open.'
+        enum:
+        - open
+        - closed
+        - all
+        acceptFormats:
+        - string
+        uiOrder: 10
+        format: string
+      sort:
+        default: created
+        title: Sort
+        description: Sort the issues by created, updated, popularity, or long-running.
+          Default is created.
+        enum:
+        - created
+        - updated
+        - popularity
+        - long-running
+        acceptFormats:
+        - string
+        uiOrder: 11
+        format: string
+      direction:
+        default: desc
+        title: Direction
+        description: 'Direction of the sort, can be one of: asc, desc. Default is
+          desc.'
+        enum:
+        - asc
+        - desc
+        acceptFormats:
+        - string
+        uiOrder: 12
+        format: string
+      since:
+        default: '2021-01-01'
+        title: Since
+        description: Date (in `YYYY-MM-DD` format) from which issues will start to
+          be fetched. The date will be in the UTC timezone.
+        acceptFormats:
+        - string
+        uiOrder: 13
+        format: string
+      no-pull-request:
+        title: No Pull Request
+        description: Whether to `not` include pull requests in the response. Since
+          issue and pr use the same indexing system in GitHub, the API returns all
+          relevant objects (issues and pr). Default is false.
+        acceptFormats:
+        - boolean
+        uiOrder: 14
+        format: boolean
+      page:
+        default: 1
+        description: Page number of the results to fetch. Default is 1.
+        uiOrder: 100
+        title: Page
+        acceptFormats:
+        - integer
+        format: integer
+      per-page:
+        default: 30
+        description: Number of results to fetch per page. Default is 30.
+        uiOrder: 101
+        title: Per Page
+        acceptFormats:
+        - integer
+        format: integer
+    required:
+    - owner
+    - repository
+    title: Input
+    format: object
+  output:
+    description: All issues in GitHub repository.
+    uiOrder: 0
+    properties:
+      issues:
+        description: An array of issues.
+        uiOrder: 1
+        title: Issues
+        items:
+          $ref: '#/$defs/issue'
+          required: []
+          description: An issue in GitHub.
+        format: array
+    required:
+    - issues
+    title: Output
+    format: object
+TASK_LIST_PULL_REQUESTS:
+  shortDescription: Get the list of all pull requests in a repository
+  description: Get the list of all pull requests in a repository. Detailed information
+    about each commit in a PR is omitted, please use the `Get Commit` task or the
+    `Get Pull Request` task to get the details of a commit.
+  input:
+    description: Please input the repository name and owner.
+    uiOrder: 0
+    properties:
+      $ref: '#/$defs/repositoryInfo'
+      state:
+        default: open
+        title: State
+        description: State of the PRs, including open, closed, all. Default is open.
+        enum:
+        - open
+        - closed
+        - all
+        acceptFormats:
+        - string
+        uiOrder: 10
+        format: string
+      sort:
+        default: created
+        title: Sort
+        description: Sort the PRs by created, updated, popularity, or long-running.
+          Default is created.
+        enum:
+        - created
+        - updated
+        - popularity
+        - long-running
+        acceptFormats:
+        - string
+        uiOrder: 11
+        format: string
+      direction:
+        default: desc
+        title: Direction
+        description: Direction of the sort, including asc or desc. Default is desc.
+        enum:
+        - asc
+        - desc
+        acceptFormats:
+        - string
+        uiOrder: 12
+        format: string
+      page:
+        default: 1
+        description: Page number of the results to fetch. Default is 1.
+        uiOrder: 100
+        title: Page
+        acceptFormats:
+        - integer
+        format: integer
+      per-page:
+        default: 30
+        description: Number of results to fetch per page. Default is 30.
+        uiOrder: 101
+        title: Per Page
+        acceptFormats:
+        - integer
+        format: integer
+    required:
+    - owner
+    - repository
+    title: Input
+    format: object
+  output:
+    description: All PRs in GitHub repository.
+    uiOrder: 0
+    properties:
+      pull-requests:
+        description: An array of PRs.
+        title: Pull Requests
+        uiOrder: 1
+        items:
+          $ref: '#/$defs/pullRequest'
+          required: []
+          description: A pull request in GitHub.
+        format: array
+    required:
+    - pull-requests
+    title: Output
+    format: object
+TASK_LIST_REVIEW_COMMENTS:
+  shortDescription: Get the review comments in a pull request
+  description: Get the review comments in a pull request. The comments can be on a
+    specific line or on the PR as a whole.
+  input:
+    description: Please input the repository name and owner, and the PR number. Set
+      PR number as`0` to get all comments on all PRs in the repository.
+    uiOrder: 0
+    properties:
+      $ref: '#/$defs/repositoryInfo'
+      pr-number:
+        default: 0
+        title: PR Number
+        description: Number of the PR. Default is `0`, which retrieves all comments
+          on all PRs in the repository.
+        acceptFormats:
+        - integer
+        uiOrder: 4
+        format: integer
+      sort:
+        default: created
+        title: Sort
+        description: Sort the comments by created, updated. Default is created.
+        enum:
+        - created
+        - updated
+        acceptFormats:
+        - string
+        uiOrder: 11
+        format: string
+      direction:
+        default: desc
+        title: Direction
+        description: Direction of the sort, including asc or desc. Default is desc.
+        enum:
+        - asc
+        - desc
+        acceptFormats:
+        - string
+        uiOrder: 12
+        format: string
+      since:
+        default: '2021-01-01'
+        title: Since
+        description: Date (in `YYYY-MM-DD` format) from which comments will start
+          to be fetched. The date will be in the UTC timezone.
+        acceptFormats:
+        - string
+        uiOrder: 13
+        format: string
+      page:
+        default: 1
+        description: Page number of the results to fetch. Default is 1.
+        uiOrder: 100
+        title: Page
+        acceptFormats:
+        - integer
+        format: integer
+      per-page:
+        default: 30
+        description: Number of results to fetch per page. Default is 30.
+        uiOrder: 101
+        title: Per Page
+        acceptFormats:
+        - integer
+        format: integer
+    required:
+    - owner
+    - repository
+    title: Input
+    format: object
+  output:
+    description: Comments in the PR.
+    uiOrder: 0
+    properties:
+      comments:
+        description: An array of comments.
+        uiOrder: 0
+        title: Comments
+        items:
+          $ref: '#/$defs/reviewComments'
+          required: []
+          uiOrder: 1
+          description: Comments in the PR.
+        format: array
+    required:
+    - comments
+    title: Output
+    format: object

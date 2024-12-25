@@ -1,0 +1,23 @@
+additionalProperties: false
+properties:
+  url:
+    description: Fill in your Zilliz public URL endpoint.
+    acceptFormats:
+    - string
+    instillSecret: false
+    uiOrder: 0
+    title: Zilliz URL Endpoint
+    format: string
+  api-key:
+    description: Fill in your Zilliz API key.
+    acceptFormats:
+    - string
+    instillSecret: true
+    uiOrder: 1
+    title: Zilliz API Key
+    format: string
+required:
+- url
+- api-key
+title: Zilliz Connection
+format: object

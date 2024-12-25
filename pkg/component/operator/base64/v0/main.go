@@ -23,10 +23,10 @@ const (
 )
 
 var (
-	//go:embed config/definition.json
-	definitionJSON []byte
-	//go:embed config/tasks.json
-	tasksJSON []byte
+	//go:embed config/definition.yaml
+	definitionYAML []byte
+	//go:embed config/tasks.yaml
+	tasksYAML []byte
 	once      sync.Once
 	comp      *component
 )
@@ -46,7 +46,7 @@ type Base64 struct {
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionJSON, nil, tasksJSON, nil, nil)
+		err := comp.LoadDefinition(definitionYAML, nil, tasksYAML, nil, nil)
 		if err != nil {
 			panic(err)
 		}

@@ -1,0 +1,34 @@
+availableTasks:
+- TASK_TEXT_GENERATION
+- TASK_FILL_MASK
+- TASK_SUMMARIZATION
+- TASK_TEXT_CLASSIFICATION
+- TASK_TOKEN_CLASSIFICATION
+- TASK_TRANSLATION
+- TASK_ZERO_SHOT_CLASSIFICATION
+- TASK_QUESTION_ANSWERING
+- TASK_TABLE_QUESTION_ANSWERING
+- TASK_SENTENCE_SIMILARITY
+- TASK_CONVERSATIONAL
+- TASK_IMAGE_CLASSIFICATION
+- TASK_IMAGE_SEGMENTATION
+- TASK_OBJECT_DETECTION
+- TASK_IMAGE_TO_TEXT
+- TASK_SPEECH_RECOGNITION
+- TASK_AUDIO_CLASSIFICATION
+custom: false
+documentationUrl: https://www.instill.tech/docs/component/ai/hugging-face
+icon: assets/hugging-face.svg
+iconUrl: ''
+id: hugging-face
+public: true
+title: Hugging Face
+description: Connect the AI models served on the Hugging Face Platform.
+tombstone: false
+type: COMPONENT_TYPE_AI
+uid: 0255ef87-33ce-4f88-b9db-8897f8c17233
+vendor: Hugging Face
+vendorAttributes: {}
+version: 0.1.1
+sourceUrl: https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/huggingface/v0
+releaseStage: RELEASE_STAGE_ALPHA

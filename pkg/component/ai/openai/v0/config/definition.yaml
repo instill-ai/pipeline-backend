@@ -1,0 +1,21 @@
+availableTasks:
+- TASK_TEXT_GENERATION
+- TASK_TEXT_EMBEDDINGS
+- TASK_SPEECH_RECOGNITION
+- TASK_TEXT_TO_SPEECH
+- TASK_TEXT_TO_IMAGE
+custom: false
+icon: assets/openai.svg
+iconUrl: ''
+id: openai
+public: true
+title: OpenAI
+description: Connect the AI models served on the OpenAI Platform.
+type: COMPONENT_TYPE_AI
+uid: 9fb6a2cb-bff5-4c69-bc6d-4538dd8e3362
+vendor: OpenAI
+vendorAttributes: {}
+version: 0.1.1
+sourceUrl: https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/openai/v0
+releaseStage: RELEASE_STAGE_ALPHA
+documentationUrl: https://www.instill.tech/docs/component/ai/openai

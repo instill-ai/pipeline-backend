@@ -14,6 +14,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
+	"gopkg.in/yaml.v3"
 
 	jsoniter "github.com/json-iterator/go"
 	temporalclient "go.temporal.io/sdk/client"
@@ -438,7 +439,6 @@ func generateComponentEventCards(events []string, eventStructs map[string]*struc
 func generateComponentSpec(title string, tasks []*pb.ComponentTask, taskStructs map[string]*structpb.Struct) (*structpb.Struct, error) {
 	var err error
 	componentSpec := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-	componentSpec.Fields["$schema"] = structpb.NewStringValue("http://json-schema.org/draft-07/schema#")
 	componentSpec.Fields["title"] = structpb.NewStringValue(fmt.Sprintf("%s Component", title))
 	componentSpec.Fields["format"] = structpb.NewStringValue("object")
 
@@ -746,10 +746,48 @@ func (c *Component) GetDefinition(sysVars map[string]any, compConfig *ComponentC
 	return definition, nil
 }
 
+func convertYAMLToJSON(yamlBytes []byte) ([]byte, error) {
+	if yamlBytes == nil {
+		return nil, nil
+	}
+	var d any
+	err := yaml.Unmarshal(yamlBytes, &d)
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(d)
+}
+
 // LoadDefinition loads the component definition, setup, tasks, events and additional JSON files.
 // The definition files are currently loaded together but could be refactored to load separately.
-func (c *Component) LoadDefinition(definitionJSONBytes, setupJSONBytes, tasksJSONBytes []byte, eventsJSONBytes []byte, additionalJSONBytes map[string][]byte) error {
+func (c *Component) LoadDefinition(definitionYAMLBytes, setupYAMLBytes, tasksYAMLBytes, eventsYAMLBytes []byte, additionalYAMLBytes map[string][]byte) error {
+
 	var err error
+	definitionJSONBytes, err := convertYAMLToJSON(definitionYAMLBytes)
+	if err != nil {
+		return err
+	}
+	setupJSONBytes, err := convertYAMLToJSON(setupYAMLBytes)
+	if err != nil {
+		return err
+	}
+	eventsJSONBytes, err := convertYAMLToJSON(eventsYAMLBytes)
+	if err != nil {
+		return err
+	}
+	tasksJSONBytes, err := convertYAMLToJSON(tasksYAMLBytes)
+	if err != nil {
+		return err
+	}
+	additionalJSONBytes := map[string][]byte{}
+	for k, v := range additionalYAMLBytes {
+		v, err = convertYAMLToJSON(v)
+		if err != nil {
+			return err
+		}
+		additionalJSONBytes[k] = v
+	}
+
 	var definitionJSON any
 
 	c.secretFields = []string{}

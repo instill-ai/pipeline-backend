@@ -1,0 +1,22 @@
+additionalProperties: false
+properties:
+  token:
+    description: Fill in your GitHub access token for advanced usages. For more information
+      about how to create tokens, please refer to the <a href="https://github.com/settings/tokens">github
+      settings</a>.
+    acceptFormats:
+    - string
+    instillSecret: true
+    uiOrder: 0
+    title: Token
+    format: string
+required:
+- token
+instillOAuthConfig:
+  authUrl: https://github.com/login/oauth/authorize
+  accessUrl: https://github.com/login/oauth/access_token
+  scopes:
+  - repo
+  - admin:repo_hook
+title: GitHub Connection
+format: object

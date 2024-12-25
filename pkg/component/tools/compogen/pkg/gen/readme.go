@@ -24,9 +24,9 @@ import (
 )
 
 const (
-	definitionsFile = "definition.json"
-	setupFile       = "setup.json"
-	tasksFile       = "tasks.json"
+	definitionsFile = "definition.yaml"
+	setupFile       = "setup.yaml"
+	tasksFile       = "tasks.yaml"
 )
 
 //go:embed resources/templates/readme.mdx.tmpl
@@ -53,7 +53,11 @@ func NewREADMEGenerator(configDir, outputFile string, extraContentPaths map[stri
 }
 
 func (g *READMEGenerator) parseDefinition(configDir string) (d definition, err error) {
-	definitionJSON, err := os.ReadFile(filepath.Join(configDir, definitionsFile))
+	definitionYAML, err := os.ReadFile(filepath.Join(configDir, definitionsFile))
+	if err != nil {
+		return d, err
+	}
+	definitionJSON, err := convertYAMLToJSON(definitionYAML)
 	if err != nil {
 		return d, err
 	}
@@ -76,11 +80,15 @@ func (g *READMEGenerator) parseDefinition(configDir string) (d definition, err e
 }
 
 func (g *READMEGenerator) parseSetup(configDir string) (s *objectSchema, err error) {
-	setupJSON, err := os.ReadFile(filepath.Join(configDir, setupFile))
+	setupYAML, err := os.ReadFile(filepath.Join(configDir, setupFile))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
 		}
+		return nil, err
+	}
+	setupJSON, err := convertYAMLToJSON(setupYAML)
+	if err != nil {
 		return nil, err
 	}
 
@@ -102,7 +110,11 @@ func (g *READMEGenerator) parseSetup(configDir string) (s *objectSchema, err err
 }
 
 func (g *READMEGenerator) parseTasks(configDir string) (map[string]task, error) {
-	tasksJSON, err := os.ReadFile(filepath.Join(configDir, tasksFile))
+	tasksYAML, err := os.ReadFile(filepath.Join(configDir, tasksFile))
+	if err != nil {
+		return nil, err
+	}
+	tasksJSON, err := convertYAMLToJSON(tasksYAML)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +124,11 @@ func (g *READMEGenerator) parseTasks(configDir string) (map[string]task, error) 
 	}
 	additionalJSONs := map[string][]byte{}
 	for _, file := range files {
-		additionalJSON, err := os.ReadFile(filepath.Join(configDir, file.Name()))
+		additionalYAML, err := os.ReadFile(filepath.Join(configDir, file.Name()))
+		if err != nil {
+			return nil, err
+		}
+		additionalJSON, err := convertYAMLToJSON(additionalYAML)
 		if err != nil {
 			return nil, err
 		}
@@ -120,8 +136,12 @@ func (g *READMEGenerator) parseTasks(configDir string) (map[string]task, error) 
 
 	}
 
+	schemaJSON, err := convertYAMLToJSON(schemas.SchemaYAML)
+	if err != nil {
+		return nil, err
+	}
 	additionalJSONBytes := map[string][]byte{
-		"schema.json": schemas.SchemaJSON,
+		"schema.yaml": schemaJSON,
 	}
 	renderedTasksJSON, err := componentbase.RenderJSON(tasksJSON, additionalJSONBytes)
 	if err != nil {

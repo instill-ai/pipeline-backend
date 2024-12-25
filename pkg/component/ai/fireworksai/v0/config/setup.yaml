@@ -1,0 +1,15 @@
+additionalProperties: false
+properties:
+  api-key:
+    description: Fill in your Fireworks AI API key. To find your keys, visit the Fireworks
+      AI API Keys page.
+    acceptFormats:
+    - string
+    instillSecret: true
+    instillCredential: true
+    uiOrder: 0
+    title: API Key
+    format: string
+required: []
+title: Fireworks AI Connection
+format: object

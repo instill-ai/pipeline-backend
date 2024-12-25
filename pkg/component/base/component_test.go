@@ -1,12 +1,12 @@
 package base
 
 import (
-	"encoding/json"
 	"testing"
 
 	_ "embed"
 
 	"google.golang.org/protobuf/encoding/protojson"
+	"gopkg.in/yaml.v3"
 
 	qt "github.com/frankban/quicktest"
 
@@ -14,16 +14,16 @@ import (
 )
 
 var (
-	//go:embed testdata/componentDef.json
-	componentDefJSON []byte
-	//go:embed testdata/componentTasks.json
-	componentTasksJSON []byte
-	//go:embed testdata/componentConfig.json
-	componentConfigJSON []byte
-	//go:embed testdata/componentAdditional.json
-	componentAdditionalJSON []byte
-	//go:embed testdata/wantComponentDefinition.json
-	wantComponentDefinitionJSON []byte
+	//go:embed testdata/componentDef.yaml
+	componentDefYAML []byte
+	//go:embed testdata/componentTasks.yaml
+	componentTasksYAML []byte
+	//go:embed testdata/componentConfig.yaml
+	componentConfigYAML []byte
+	//go:embed testdata/componentAdditional.yaml
+	componentAdditionalYAML []byte
+	//go:embed testdata/wantComponentDefinition.yaml
+	wantComponentDefinitionYAML []byte
 )
 
 func TestComponent_ListComponentDefinitions(t *testing.T) {
@@ -31,13 +31,13 @@ func TestComponent_ListComponentDefinitions(t *testing.T) {
 
 	conn := new(Component)
 	err := conn.LoadDefinition(
-		componentDefJSON,
-		componentConfigJSON,
-		componentTasksJSON,
+		componentDefYAML,
+		componentConfigYAML,
+		componentTasksYAML,
 		nil,
 		map[string][]byte{
-			"additional.json": componentAdditionalJSON,
-			"schema.json":     schemas.SchemaJSON,
+			"additional.yaml": componentAdditionalYAML,
+			"schema.yaml":     schemas.SchemaYAML,
 		})
 	c.Assert(err, qt.IsNil)
 
@@ -47,7 +47,7 @@ func TestComponent_ListComponentDefinitions(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 
 	wantComponentDefinitionStruct := map[string]any{}
-	err = json.Unmarshal(wantComponentDefinitionJSON, &wantComponentDefinitionStruct)
+	err = yaml.Unmarshal(wantComponentDefinitionYAML, &wantComponentDefinitionStruct)
 	c.Assert(err, qt.IsNil)
 	c.Check(gotJSON, qt.JSONEquals, wantComponentDefinitionStruct)
 }
