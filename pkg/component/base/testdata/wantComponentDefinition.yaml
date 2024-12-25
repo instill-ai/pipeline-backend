@@ -1,0 +1,152 @@
+name: component-definitions/openai
+uid: 9fb6a2cb-bff5-4c69-bc6d-4538dd8e3362
+id: openai
+title: OpenAI
+documentationUrl: https://www.instill.tech/docs/component/ai/openai
+icon: OpenAI/openai.svg
+spec:
+  componentSpecification:
+    instillFormat: object
+    oneOf:
+    - instillFormat: object
+      properties:
+        condition:
+          instillAcceptFormats:
+          - string
+          instillShortDescription: config whether the component will be executed or
+            skipped
+          instillUIOrder: 1
+          instillUpstreamTypes:
+          - value
+          - template
+          type: string
+        input:
+          instillUIOrder: 0
+          properties:
+            model:
+              anyOf:
+              - enum:
+                - text-embedding-ada-002
+                instillUpstreamType: value
+                type: string
+              - instillUpstreamType: reference
+                pattern: ^\{.*\}$
+                type: string
+              - instillUpstreamType: template
+                type: string
+              description: ID of the model to use
+              instillAcceptFormats:
+              - string
+              instillShortDescription: ID of the model to use
+              instillUIOrder: 0
+              instillUpstreamTypes:
+              - value
+              - reference
+              - template
+              title: Model
+              type: string
+            text:
+              anyOf:
+              - instillUpstreamType: value
+                type: string
+              - instillUpstreamType: reference
+                pattern: ^\{.*\}$
+                type: string
+              - instillUpstreamType: template
+                type: string
+              description: The text
+              instillAcceptFormats:
+              - string
+              instillShortDescription: The text
+              instillUIOrder: 1
+              instillUpstreamTypes:
+              - value
+              - reference
+              - template
+              title: Text
+              type: string
+          required:
+          - text
+          - model
+          title: Input
+          type: object
+        task:
+          const: TASK_TEXT_EMBEDDINGS
+          instillShortDescription: Turn text into numbers, unlocking use cases like
+            search.
+          title: Text Embeddings
+      type: object
+    properties:
+      setup:
+        additionalProperties: true
+        instillShortDescription: ''
+        properties:
+          api-key:
+            description: Fill in your OpenAI API key. To find your keys, visit your
+              OpenAI's API Keys page.
+            instillSecret: true
+            instillShortDescription: Fill in your OpenAI API key. To find your keys,
+              visit your OpenAI's API Keys page.
+            instillUIOrder: 0
+            title: API Key
+            type: string
+        required:
+        - api-key
+        title: OpenAI Connection
+        type: object
+    title: OpenAI Component
+    type: object
+  dataSpecifications:
+    TASK_TEXT_EMBEDDINGS:
+      input:
+        instillUIOrder: 0
+        properties:
+          model:
+            description: ID of the model to use
+            instillAcceptFormats:
+            - string
+            enum:
+            - text-embedding-ada-002
+            instillShortDescription: ID of the model to use
+            instillUIOrder: 0
+            title: Model
+            type: string
+          text:
+            description: The text
+            instillAcceptFormats:
+            - string
+            instillShortDescription: The text
+            instillUIOrder: 1
+            title: Text
+            type: string
+        required:
+        - text
+        - model
+        title: Input
+        type: object
+      output:
+        instillUIOrder: 0
+        properties:
+          embedding:
+            instillUIOrder: 0
+            instillFormat: array
+            items:
+              instillFormat: number
+              title: Embedding
+              type: number
+            title: Embedding
+            type: array
+        required:
+        - embedding
+        title: Output
+        type: object
+type: COMPONENT_TYPE_AI
+public: true
+vendor: OpenAI
+vendorAttributes: {}
+tasks:
+- name: TASK_TEXT_EMBEDDINGS
+  title: Text Embeddings
+  description: Turn text into numbers, unlocking use cases like search.
+version: 1.0.0
+sourceUrl: https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/base

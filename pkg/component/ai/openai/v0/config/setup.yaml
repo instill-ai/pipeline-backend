@@ -1,0 +1,23 @@
+additionalProperties: false
+properties:
+  api-key:
+    description: Fill in your OpenAI API key. To find your keys, visit your OpenAI's
+      API Keys page.
+    acceptFormats:
+    - string
+    instillSecret: true
+    instillCredential: true
+    uiOrder: 0
+    title: API Key
+    format: string
+  organization:
+    description: Specify which organization is used for the requests. Usage will count
+      against the specified organization's subscription quota.
+    acceptFormats:
+    - string
+    uiOrder: 1
+    title: Organization ID
+    format: string
+required: []
+title: OpenAI Connection
+format: object

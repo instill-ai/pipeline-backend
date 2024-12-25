@@ -1,0 +1,15 @@
+additionalProperties: false
+properties:
+  api-key:
+    description: Fill in your Mistral API key. To find your keys, visit the Mistral
+      AI platform page.
+    acceptFormats:
+    - string
+    instillSecret: true
+    instillCredential: true
+    uiOrder: 0
+    title: API Key
+    format: string
+required: []
+title: Mistral AI Connection
+format: object

@@ -24,14 +24,14 @@ const (
 	TaskDeleteCollection = "TASK_DELETE_COLLECTION"
 )
 
-//go:embed config/definition.json
-var definitionJSON []byte
+//go:embed config/definition.yaml
+var definitionYAML []byte
 
-//go:embed config/setup.json
-var setupJSON []byte
+//go:embed config/setup.yaml
+var setupYAML []byte
 
-//go:embed config/tasks.json
-var tasksJSON []byte
+//go:embed config/tasks.yaml
+var tasksYAML []byte
 
 var once sync.Once
 var comp *component
@@ -50,7 +50,7 @@ type execution struct {
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, nil, nil)
+		err := comp.LoadDefinition(definitionYAML, setupYAML, tasksYAML, nil, nil)
 		if err != nil {
 			panic(err)
 		}

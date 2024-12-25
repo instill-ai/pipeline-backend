@@ -1,0 +1,24 @@
+availableTasks:
+- TASK_SEND_TEXT_BASED_TEMPLATE_MESSAGE
+- TASK_SEND_MEDIA_BASED_TEMPLATE_MESSAGE
+- TASK_SEND_LOCATION_BASED_TEMPLATE_MESSAGE
+- TASK_SEND_AUTHENTICATION_TEMPLATE_MESSAGE
+- TASK_SEND_TEXT_MESSAGE
+- TASK_SEND_MEDIA_MESSAGE
+- TASK_SEND_LOCATION_MESSAGE
+- TASK_SEND_CONTACT_MESSAGE
+- TASK_SEND_INTERACTIVE_CALL_TO_ACTION_URL_BUTTON_MESSAGE
+documentationUrl: https://www.instill.tech/docs/component/application/whatsapp
+icon: assets/whatsapp.svg
+id: whatsapp
+public: true
+title: WhatsApp
+description: Use WhatsApp Business Platform API to send template and messages.
+tombstone: false
+type: COMPONENT_TYPE_APPLICATION
+uid: 028c0ce7-94ff-4ac2-9324-d9a362724eed
+vendor: WhatsApp
+vendorAttributes: {}
+version: 0.1.0
+sourceUrl: https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/whatsapp/v0
+releaseStage: RELEASE_STAGE_ALPHA

@@ -16,14 +16,14 @@ import (
 )
 
 var (
-	//go:embed testdata/componentDef.json
-	componentDefJSON []byte
-	//go:embed testdata/componentTasks.json
-	componentTasksJSON []byte
-	//go:embed testdata/componentConfig.json
-	componentConfigJSON []byte
-	//go:embed testdata/componentAdditional.json
-	componentAdditionalJSON []byte
+	//go:embed testdata/componentDef.yaml
+	componentDefYAML []byte
+	//go:embed testdata/componentTasks.yaml
+	componentTasksYAML []byte
+	//go:embed testdata/componentConfig.yaml
+	componentConfigYAML []byte
+	//go:embed testdata/componentAdditional.yaml
+	componentAdditionalYAML []byte
 )
 
 func TestExecutionWrapper_GetComponent(t *testing.T) {
@@ -35,13 +35,13 @@ func TestExecutionWrapper_GetComponent(t *testing.T) {
 		},
 	}
 	err := cmp.LoadDefinition(
-		componentDefJSON,
-		componentConfigJSON,
-		componentTasksJSON,
+		componentDefYAML,
+		componentConfigYAML,
+		componentTasksYAML,
 		nil,
 		map[string][]byte{
-			"additional.json": componentAdditionalJSON,
-			"schema.json":     schemas.SchemaJSON,
+			"additional.yaml": componentAdditionalYAML,
+			"schema.yaml":     schemas.SchemaYAML,
 		})
 	c.Assert(err, qt.IsNil)
 
@@ -127,13 +127,13 @@ func TestExecutionWrapper_Execute(t *testing.T) {
 			}
 
 			err := cmp.LoadDefinition(
-				componentDefJSON,
-				componentConfigJSON,
-				componentTasksJSON,
+				componentDefYAML,
+				componentConfigYAML,
+				componentTasksYAML,
 				nil,
 				map[string][]byte{
-					"additional.json": componentAdditionalJSON,
-					"schema.json":     schemas.SchemaJSON,
+					"additional.yaml": componentAdditionalYAML,
+					"schema.yaml":     schemas.SchemaYAML,
 				})
 			c.Assert(err, qt.IsNil)
 

@@ -1,0 +1,14 @@
+additionalProperties: false
+properties:
+  json-key:
+    description: Contents of the JSON key file with access to the bucket.
+    acceptFormats:
+    - string
+    instillSecret: true
+    uiOrder: 1
+    title: JSON Key File contents
+    format: string
+required:
+- json-key
+title: Google Cloud Storage Connection
+format: object

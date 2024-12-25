@@ -21,12 +21,12 @@ const (
 )
 
 var (
-	//go:embed config/definition.json
-	definitionJSON []byte
-	//go:embed config/setup.json
-	setupJSON []byte
-	//go:embed config/tasks.json
-	tasksJSON []byte
+	//go:embed config/definition.yaml
+	definitionYAML []byte
+	//go:embed config/setup.yaml
+	setupYAML []byte
+	//go:embed config/tasks.yaml
+	tasksYAML []byte
 
 	once sync.Once
 	comp *component
@@ -44,9 +44,9 @@ func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
 		additionalJSONBytes := map[string][]byte{
-			"schema.json": schemas.SchemaJSON,
+			"schema.yaml": schemas.SchemaYAML,
 		}
-		err := comp.LoadDefinition(definitionJSON, setupJSON, tasksJSON, nil, additionalJSONBytes)
+		err := comp.LoadDefinition(definitionYAML, setupYAML, tasksYAML, nil, additionalJSONBytes)
 		if err != nil {
 			panic(err)
 		}

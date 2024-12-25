@@ -1,0 +1,13 @@
+additionalProperties: true
+properties:
+  api-key:
+    description: Fill in your OpenAI API key. To find your keys, visit your OpenAI's
+      API Keys page.
+    instillSecret: true
+    uiOrder: 0
+    title: API Key
+    type: string
+required:
+- api-key
+title: OpenAI Connection
+type: object

@@ -1,0 +1,127 @@
+$defs:
+  inputWithBody:
+    uiOrder: 0
+    properties:
+      body:
+        description: The request body.
+        acceptFormats:
+        - '*'
+        shortDescription: The request body
+        uiOrder: 1
+        order: 1
+        required: []
+        title: Body
+      endpoint-url:
+        description: The API endpoint url.
+        acceptFormats:
+        - string
+        uiOrder: 0
+        title: Endpoint Url
+        format: string
+      output-body-schema:
+        description: The JSON schema of output body.
+        acceptFormats:
+        - string
+        shortDescription: The JSON schema of output body
+        uiOrder: 1
+        order: 2
+        required: []
+        title: Body
+        format: string
+    required:
+    - endpoint-url
+    title: Input
+    format: object
+  inputWithoutBody:
+    uiOrder: 0
+    properties:
+      endpoint-url:
+        description: The API endpoint url.
+        acceptFormats:
+        - string
+        uiOrder: 0
+        title: Endpoint Url
+        format: string
+      output-body-schema:
+        description: The request body.
+        acceptFormats:
+        - string
+        shortDescription: The request body
+        uiOrder: 1
+        order: 1
+        required: []
+        title: Body
+        format: string
+    required:
+    - endpoint-url
+    title: Input Without Body
+    format: object
+  output:
+    description: The HTTP response from the API.
+    uiOrder: 0
+    properties:
+      body:
+        description: The body of the response.
+        uiOrder: 1
+        required: []
+        title: Body
+        format: '*'
+      header:
+        description: The HTTP header of the response.
+        uiOrder: 2
+        required: []
+        title: Header
+        format: json
+      status-code:
+        description: The HTTP status code of the response.
+        uiOrder: 0
+        title: Status Code
+        format: integer
+    required:
+    - status-code
+    - body
+    - header
+    title: Output
+    format: object
+TASK_DELETE:
+  shortDescription: Send a HTTP DELETE request.
+  input:
+    $ref: '#/$defs/inputWithBody'
+  output:
+    $ref: '#/$defs/output'
+TASK_GET:
+  shortDescription: Send a HTTP GET request.
+  input:
+    $ref: '#/$defs/inputWithoutBody'
+  output:
+    $ref: '#/$defs/output'
+TASK_HEAD:
+  shortDescription: Send a HTTP HEAD request.
+  input:
+    $ref: '#/$defs/inputWithoutBody'
+  output:
+    $ref: '#/$defs/output'
+TASK_OPTIONS:
+  shortDescription: Send a HTTP OPTIONS request.
+  input:
+    $ref: '#/$defs/inputWithBody'
+  output:
+    $ref: '#/$defs/output'
+TASK_PATCH:
+  shortDescription: Send a HTTP PATCH request.
+  input:
+    $ref: '#/$defs/inputWithBody'
+  output:
+    $ref: '#/$defs/output'
+TASK_POST:
+  shortDescription: Send a HTTP POST request.
+  input:
+    $ref: '#/$defs/inputWithBody'
+  output:
+    $ref: '#/$defs/output'
+TASK_PUT:
+  shortDescription: Send a HTTP PUT request.
+  input:
+    $ref: '#/$defs/inputWithBody'
+  output:
+    $ref: '#/$defs/output'

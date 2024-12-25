@@ -5,7 +5,7 @@
       "uiOrder": 0,
       "properties": {
         "model": {
-          "$ref": "additional.json#/components/schemas/CreateEmbeddingRequest/properties/model",
+          "$ref": "additional.yaml#/components/schemas/CreateEmbeddingRequest/properties/model",
           "acceptFormats": [
             "string"
           ],
@@ -34,7 +34,7 @@
       "uiOrder": 0,
       "properties": {
         "embedding": {
-          "$ref": "schema.json#/$defs/instill-types/embedding",
+          "$ref": "schema.yaml#/$defs/instill-types/embedding",
           "uiOrder": 0,
           "title": "Embedding"
         }

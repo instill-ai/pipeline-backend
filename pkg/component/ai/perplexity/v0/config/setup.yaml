@@ -1,0 +1,14 @@
+additionalProperties: false
+properties:
+  api-key:
+    description: Fill in your API key from the vendor's platform.
+    acceptFormats:
+    - string
+    instillSecret: true
+    instillCredential: true
+    uiOrder: 0
+    title: API Key
+    format: string
+required: []
+title: Perplexity Connection
+format: object

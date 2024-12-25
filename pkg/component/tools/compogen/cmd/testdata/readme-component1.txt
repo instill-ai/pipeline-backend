@@ -1,9 +1,9 @@
 # Setup
 
 mkdir -p pkg/dummy/config
-cp definition.json pkg/dummy/config/definition.json
-cp setup.json pkg/dummy/config/setup.json
-cp tasks.json pkg/dummy/config/tasks.json
+cp definition.yaml pkg/dummy/config/definition.yaml
+cp setup.yaml pkg/dummy/config/setup.yaml
+cp tasks.yaml pkg/dummy/config/tasks.yaml
 
 mkdir -p pkg/dummy/.compogen
 cp extra-setup.mdx pkg/dummy/.compogen/extra-setup.mdx
@@ -13,285 +13,217 @@ cp extra-setup.mdx pkg/dummy/.compogen/extra-setup.mdx
 compogen readme ./pkg/dummy/config ./pkg/dummy/README.mdx --extraContents setup=./pkg/dummy/.compogen/extra-setup.mdx
 cmp pkg/dummy/README.mdx want-readme.mdx
 
--- definition.json --
-{
-  "availableTasks": [
-    "TASK_DUMMY"
-  ],
-  "public": true,
-  "id": "dummy",
-  "title": "Dummy",
-  "vendor": "Dummy Inc.",
-  "description": "Perform an action.",
-  "prerequisites": "An account at [dummy.io](https://dummy.io) is required.",
-  "type": "COMPONENT_TYPE_DATA",
-  "releaseStage": "RELEASE_STAGE_COMING_SOON",
-  "sourceUrl": "https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/dummy/v0"
-}
+-- definition.yaml --
+availableTasks:
+  - TASK_DUMMY
+public: true
+id: dummy
+title: Dummy
+vendor: Dummy Inc.
+description: Perform an action.
+prerequisites: An account at [dummy.io](https://dummy.io) is required.
+type: COMPONENT_TYPE_DATA
+releaseStage: RELEASE_STAGE_COMING_SOON
+sourceUrl: https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/dummy/v0
 
--- setup.json --
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "additionalProperties": true,
-  "properties": {
-    "organization": {
-      "description": "Specify which organization is used for the requests",
-      "uiOrder": 1,
-      "title": "Organization ID",
-      "format": "string"
-    },
-    "api-key": {
-      "description": "Fill in your Dummy API key",
-      "uiOrder": 0,
-      "title": "API Key",
-      "format": "string"
-    },
-    "authentication": {
-      "description": "Authentication method to use for the Dummy",
-      "uiOrder": 0,
-      "oneOf": [
-        {
-          "properties": {
-            "auth-type": {
-              "const": "NO_AUTH",
-              "description": "No Authentication",
-              "uiOrder": 0,
-              "order": 0,
-              "title": "Auth Format",
-              "format": "string"
-            }
-          },
-          "required": [
-            "auth-type"
-          ],
-          "title": "No Auth"
-        },
-        {
-          "properties": {
-            "auth-type": {
-              "const": "AUTH_1",
-              "description": "Auth 1",
-              "uiOrder": 0,
-              "order": 0,
-              "title": "Auth Format",
-              "format": "string"
-            },
-            "auth-way": {
-              "description": "ways for Auth 1",
-              "acceptFormats": [
-                "string"
-              ],
-              "enum": [
-                "header",
-                "query"
-              ],
-              "uiOrder": 1,
-              "order": 1,
-              "title": "Auth Way",
-              "format": "string"
-            }
-          },
-          "required": [
-            "auth-type",
-            "auth-way"
-          ],
-          "title": "Auth 1"
-        }
-      ],
-      "order": 1,
-      "title": "Authentication",
-      "format": "object"
-    }
-  },
-  "required": [
-    "api-key"
-  ],
-  "title": "OpenAI Connection",
-  "format": "object"
-}
+-- setup.yaml --
+additionalProperties: true
+properties:
+  organization:
+    description: Specify which organization is used for the requests
+    uiOrder: 1
+    title: Organization ID
+    format: string
+  api-key:
+    description: Fill in your Dummy API key
+    uiOrder: 0
+    title: API Key
+    format: string
+  authentication:
+    description: Authentication method to use for the Dummy
+    uiOrder: 0
+    oneOf:
+      - properties:
+          auth-type:
+            const: NO_AUTH
+            description: No Authentication
+            uiOrder: 0
+            order: 0
+            title: Auth Format
+            format: string
+        required:
+          - auth-type
+        title: No Auth
+      - properties:
+          auth-type:
+            const: AUTH_1
+            description: Auth 1
+            uiOrder: 0
+            order: 0
+            title: Auth Format
+            format: string
+          auth-way:
+            description: ways for Auth 1
+            acceptFormats:
+              - string
+            enum:
+              - header
+              - query
+            uiOrder: 1
+            order: 1
+            title: Auth Way
+            format: string
+        required:
+          - auth-type
+          - auth-way
+        title: Auth 1
+    order: 1
+    title: Authentication
+    format: object
+required:
+  - api-key
+title: OpenAI Connection
+format: object
 
--- tasks.json --
-{
-  "TASK_DUMMY": {
-    "description": "Perform a dummy task.",
-    "input": {
-      "properties": {
-        "durna": {
-          "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-          "uiOrder": 0,
-          "title": "Durna",
-          "format": "string"
-        },
-        "strategy": {
-          "description": "Chunking strategy",
-          "uiOrder": 1,
-          "properties": {
-            "setting": {
-              "description": "Chunk Setting",
-              "additionalProperties": true,
-              "format": "object",
-              "title": "Chunk Setting",
-              "uiOrder": 0,
-              "required": [
-                "chunk-method"
-              ],
-              "oneOf": [
-                {
-                  "properties": {
-                    "chunk-method": {
-                      "const": "Token",
-                      "format": "string",
-                      "title": "Chunk Method",
-                      "description": "Chunking based on tokenization.",
-                      "uiOrder": 0
-                    },
-                    "model-name": {
-                      "description": "The name of the model used for tokenization.",
-                      "enum": [
-                        "gpt-4",
-                        "gpt-3.5-turbo"
-                      ],
-                      "uiOrder": 1,
-                      "title": "Model",
-                      "format": "string"
-                    }
-                  },
-                  "title": "Token",
-                  "required": ["chunk-method"],
-                  "format": "object",
-                  "description": "Language models have a token limit. You should not exceed the token limit. When you split your text into chunks it is therefore a good idea to count the number of tokens. There are many tokenizers. When you count tokens in your text you should use the same tokenizer as used in the language model."
-                },
-                {
-                  "properties": {
-                    "chunk-method": {
-                      "const": "Markdown",
-                      "format": "string",
-                      "title": "Chunk Method",
-                      "description": "Chunking based on recursive splitting with markdown format.",
-                      "uiOrder": 0
-                    },
-                    "model-name": {
-                      "description": "The name of the model used for tokenization.",
-                      "enum": [
-                        "gpt-4",
-                        "gpt-3.5-turbo"
-                      ],
-                      "uiOrder": 1,
-                      "title": "Model",
-                      "format": "string"
-                    }
-                  },
-                  "title": "Markdown",
-                  "required": ["chunk-method"],
-                  "format": "object",
-                  "description": "This text splitter is specially designed for Markdown format."
-                }
-              ]
-            }
-          },
-          "title": "Strategy",
-          "required": [
-            "setting"
-          ],
-          "format": "object"
-        },
-        "dummy-string": {
-          "description": "{{dummy_string}}",
-          "uiOrder": 0,
-          "title": "Dummy String",
-          "format": "string"
-        },
-        "dummy-file": {
-          "description": "this is a file",
-          "uiOrder": 0,
-          "title": "Dummy File",
-          "format": "*"
-        },
-        "dummy-array": {
-          "description": "this is an array",
-          "uiOrder": 0,
-          "title": "Dummy Array",
-          "format": "array",
-          "items": {
-            "format": "*"
-          }
-        }
-      },
-      "required": [
-        "durna"
-      ],
-      "title": "Input"
-    },
-    "output": {
-      "properties": {
-        "orci": {
-          "description": "Orci sagittis eu volutpat odio facilisis mauris sit",
-          "format": "string",
-          "uiOrder": 0,
-          "title": "Orci",
-          "format": "string"
-        },
-        "conversations": {
-          "description": "An array of conversations with thread messages",
-          "uiOrder": 0,
-          "title": "Conversations",
-          "format": "array",
-          "items": {
-            "title": "conversation details",
-            "format": "object",
-            "properties": {
-              "message": {
-                "description": "message to start a conversation",
-                "uiOrder": 0,
-                "title": "Start Conversation Message",
-                "format": "string"
-              },
-              "start-date": {
-                "description": "when a conversation starts",
-                "uiOrder": 1,
-                "title": "Start Date",
-                "format": "string"
-              },
-              "last-date": {
-                "description": "Date of the last message",
-                "uiOrder": 2,
-                "title": "Last Date",
-                "format": "string"
-              },
-              "thread-reply-messages": {
-                "description": "replies in a conversation",
-                "uiOrder": 0,
-                "title": "Replied messages",
-                "format": "array",
-                "items": {
-                  "title": "relied details",
-                  "format": "object",
-                  "properties": {
-                    "message": {
-                      "description": "message to reply a conversation",
-                      "instillFormat": "string",
-                      "uiOrder": 3,
-                      "title": "Replied Message",
-                      "format": "string"
-                    }
-                  },
-                  "required": [
-                    "message"
-                  ]
-                }
-              }
-            },
-            "required": [
-              "message",
-              "start-date"
-            ]
-          }
-        }
-      },
-      "title": "Output"
-    }
-  }
-}
+-- tasks.yaml --
+TASK_DUMMY:
+  description: Perform a dummy task.
+  input:
+    properties:
+      durna:
+        description: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+        uiOrder: 0
+        title: Durna
+        format: string
+      strategy:
+        description: Chunking strategy
+        uiOrder: 1
+        properties:
+          setting:
+            description: Chunk Setting
+            additionalProperties: true
+            format: object
+            title: Chunk Setting
+            uiOrder: 0
+            required:
+              - chunk-method
+            oneOf:
+              - properties:
+                  chunk-method:
+                    const: Token
+                    format: string
+                    title: Chunk Method
+                    description: Chunking based on tokenization.
+                    uiOrder: 0
+                  model-name:
+                    description: The name of the model used for tokenization.
+                    enum:
+                      - gpt-4
+                      - gpt-3.5-turbo
+                    uiOrder: 1
+                    title: Model
+                    format: string
+                title: Token
+                required:
+                  - chunk-method
+                format: object
+                description: Language models have a token limit. You should not exceed the token limit. When you split your text into chunks it is therefore a good idea to count the number of tokens. There are many tokenizers. When you count tokens in your text you should use the same tokenizer as used in the language model.
+              - properties:
+                  chunk-method:
+                    const: Markdown
+                    format: string
+                    title: Chunk Method
+                    description: Chunking based on recursive splitting with markdown format.
+                    uiOrder: 0
+                  model-name:
+                    description: The name of the model used for tokenization.
+                    enum:
+                      - gpt-4
+                      - gpt-3.5-turbo
+                    uiOrder: 1
+                    title: Model
+                    format: string
+                title: Markdown
+                required:
+                  - chunk-method
+                format: object
+                description: This text splitter is specially designed for Markdown format.
+        title: Strategy
+        required:
+          - setting
+        format: object
+      dummy-string:
+        description: '{{dummy_string}}'
+        uiOrder: 0
+        title: Dummy String
+        format: string
+      dummy-file:
+        description: this is a file
+        uiOrder: 0
+        title: Dummy File
+        format: '*'
+      dummy-array:
+        description: this is an array
+        uiOrder: 0
+        title: Dummy Array
+        format: array
+        items:
+          format: '*'
+    required:
+      - durna
+    title: Input
+  output:
+    properties:
+      orci:
+        description: Orci sagittis eu volutpat odio facilisis mauris sit
+        format: string
+        uiOrder: 0
+        title: Orci
+      conversations:
+        description: An array of conversations with thread messages
+        uiOrder: 0
+        title: Conversations
+        format: array
+        items:
+          title: conversation details
+          format: object
+          properties:
+            message:
+              description: message to start a conversation
+              uiOrder: 0
+              title: Start Conversation Message
+              format: string
+            start-date:
+              description: when a conversation starts
+              uiOrder: 1
+              title: Start Date
+              format: string
+            last-date:
+              description: Date of the last message
+              uiOrder: 2
+              title: Last Date
+              format: string
+            thread-reply-messages:
+              description: replies in a conversation
+              uiOrder: 0
+              title: Replied messages
+              format: array
+              items:
+                title: relied details
+                format: object
+                properties:
+                  message:
+                    description: message to reply a conversation
+                    instillFormat: string
+                    uiOrder: 3
+                    title: Replied Message
+                    format: string
+                required:
+                  - message
+          required:
+            - message
+            - start-date
+    title: Output
 -- extra-setup.mdx --
 This is some crucial information about setup: do it before execution.
 -- want-readme.mdx --
@@ -316,7 +248,7 @@ It can carry out the following tasks:
 
 ## Configuration
 
-The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/dummy/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/dummy/v0/config/tasks.json) files respectively.
+The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/dummy/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/dummy/v0/config/tasks.yaml) files respectively.
 
 
 

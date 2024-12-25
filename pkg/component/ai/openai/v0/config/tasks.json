@@ -3,7 +3,7 @@
     "chat-message": {
       "properties": {
         "content": {
-          "$ref": "schema.json#/$defs/instill-types/multi-modal-content",
+          "$ref": "schema.yaml#/$defs/instill-types/multi-modal-content",
           "description": "The message content.",
           "uiOrder": 1,
           "title": "Content"
@@ -176,7 +176,7 @@
       "uiOrder": 0,
       "properties": {
         "embedding": {
-          "$ref": "schema.json#/$defs/instill-types/embedding",
+          "$ref": "schema.yaml#/$defs/instill-types/embedding",
           "description": "Embedding of the input text.",
           "uiOrder": 0,
           "title": "Embedding"
