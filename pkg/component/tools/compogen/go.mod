@@ -5,7 +5,7 @@ go 1.22.5
 require (
 	github.com/frankban/quicktest v1.14.6
 	github.com/go-playground/validator/v10 v10.22.0
-	github.com/instill-ai/pipeline-backend v0.49.1-beta.0.20241224134251-c4a675c31007
+	github.com/instill-ai/pipeline-backend v0.49.1-beta.0.20241225070636-1d7ceb88b650
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20241213145904-c3d8111872b5
 	github.com/rogpeppe/go-internal v1.12.0
 	github.com/russross/blackfriday/v2 v2.1.0
