@@ -7,13 +7,13 @@ description: "Learn about how to set up a VDP HTTP component https://github.com/
 
 The HTTP component is a generic component that allows users to make requests to external HTTP APIs.
 It can carry out the following tasks:
-- [Get](#get)
-- [Post](#post)
-- [Patch](#patch)
-- [Put](#put)
 - [Delete](#delete)
+- [Get](#get)
 - [Head](#head)
 - [Options](#options)
+- [Patch](#patch)
+- [Post](#post)
+- [Put](#put)
 
 
 
@@ -103,121 +103,6 @@ ${connection.<my-connection-id>}`.
 
 ## Supported Tasks
 
-### Get
-
-Send a HTTP GET request.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_GET` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
-| Body | `output-body-schema` | string | The request body. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status Code | `status-code` | integer | The HTTP status code of the response. |
-| Body | `body` | any | The body of the response. |
-| Header | `header` | json | The HTTP header of the response. |
-</div>
-
-
-### Post
-
-Send a HTTP POST request.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_POST` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
-| Body | `body` | any | The request body. |
-| Body | `output-body-schema` | string | The JSON schema of output body. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status Code | `status-code` | integer | The HTTP status code of the response. |
-| Body | `body` | any | The body of the response. |
-| Header | `header` | json | The HTTP header of the response. |
-</div>
-
-
-### Patch
-
-Send a HTTP PATCH request.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_PATCH` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
-| Body | `body` | any | The request body. |
-| Body | `output-body-schema` | string | The JSON schema of output body. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status Code | `status-code` | integer | The HTTP status code of the response. |
-| Body | `body` | any | The body of the response. |
-| Header | `header` | json | The HTTP header of the response. |
-</div>
-
-
-### Put
-
-Send a HTTP PUT request.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_PUT` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
-| Body | `body` | any | The request body. |
-| Body | `output-body-schema` | string | The JSON schema of output body. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status Code | `status-code` | integer | The HTTP status code of the response. |
-| Body | `body` | any | The body of the response. |
-| Header | `header` | json | The HTTP header of the response. |
-</div>
-
-
 ### Delete
 
 Send a HTTP DELETE request.
@@ -230,6 +115,34 @@ Send a HTTP DELETE request.
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
 | Body | `body` | any | The request body. |
 | Body | `output-body-schema` | string | The JSON schema of output body. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status Code | `status-code` | integer | The HTTP status code of the response. |
+| Body | `body` | any | The body of the response. |
+| Header | `header` | json | The HTTP header of the response. |
+</div>
+
+
+### Get
+
+Send a HTTP GET request.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET` |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Body | `output-body-schema` | string | The request body. |
 </div>
 
 
@@ -284,6 +197,93 @@ Send a HTTP OPTIONS request.
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_OPTIONS` |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Body | `body` | any | The request body. |
+| Body | `output-body-schema` | string | The JSON schema of output body. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status Code | `status-code` | integer | The HTTP status code of the response. |
+| Body | `body` | any | The body of the response. |
+| Header | `header` | json | The HTTP header of the response. |
+</div>
+
+
+### Patch
+
+Send a HTTP PATCH request.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_PATCH` |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Body | `body` | any | The request body. |
+| Body | `output-body-schema` | string | The JSON schema of output body. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status Code | `status-code` | integer | The HTTP status code of the response. |
+| Body | `body` | any | The body of the response. |
+| Header | `header` | json | The HTTP header of the response. |
+</div>
+
+
+### Post
+
+Send a HTTP POST request.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_POST` |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Body | `body` | any | The request body. |
+| Body | `output-body-schema` | string | The JSON schema of output body. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status Code | `status-code` | integer | The HTTP status code of the response. |
+| Body | `body` | any | The body of the response. |
+| Header | `header` | json | The HTTP header of the response. |
+</div>
+
+
+### Put
+
+Send a HTTP PUT request.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_PUT` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
 | Body | `body` | any | The request body. |
 | Body | `output-body-schema` | string | The JSON schema of output body. |

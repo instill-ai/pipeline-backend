@@ -10,7 +10,9 @@ require (
 	github.com/rogpeppe/go-internal v1.12.0
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cobra v1.8.0
+	github.com/wk8/go-ordered-map/v2 v2.1.8
 	golang.org/x/text v0.21.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -22,6 +24,8 @@ require (
 	github.com/advancedlogic/GoOse v0.0.0-20191112112754-e742535969c1 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/araddon/dateparse v0.0.0-20200409225146-d820a6159ab1 // indirect
+	github.com/bahlo/generic-list-go v0.2.0 // indirect
+	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -65,6 +69,7 @@ require (
 	github.com/lestrrat-go/pdebug v0.0.0-20210111095411-35b07dbf089b // indirect
 	github.com/lestrrat-go/structinfo v0.0.0-20210312050401-7f8bd69d6acb // indirect
 	github.com/levigross/exp-html v0.0.0-20120902181939-8df60c69a8f5 // indirect
+	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/minio/minio-go/v7 v7.0.76 // indirect
@@ -109,5 +114,4 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240722135656-d784300faade // indirect
 	google.golang.org/grpc v1.65.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

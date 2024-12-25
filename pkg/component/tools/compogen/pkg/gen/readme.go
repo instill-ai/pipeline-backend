@@ -18,6 +18,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/russross/blackfriday/v2"
 
+	orderedmap "github.com/wk8/go-ordered-map/v2"
+
 	"github.com/instill-ai/pipeline-backend/pkg/component/resources/schemas"
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
@@ -109,7 +111,7 @@ func (g *READMEGenerator) parseSetup(configDir string) (s *objectSchema, err err
 	return setup, nil
 }
 
-func (g *READMEGenerator) parseTasks(configDir string) (map[string]task, error) {
+func (g *READMEGenerator) parseTasks(configDir string) (*orderedmap.OrderedMap[string, task], error) {
 	tasksYAML, err := os.ReadFile(filepath.Join(configDir, tasksFile))
 	if err != nil {
 		return nil, err
@@ -147,7 +149,7 @@ func (g *READMEGenerator) parseTasks(configDir string) (map[string]task, error) 
 	if err != nil {
 		return nil, err
 	}
-	tasks := map[string]task{}
+	tasks := orderedmap.New[string, task]()
 	if err := json.Unmarshal(renderedTasksJSON, &tasks); err != nil {
 		return nil, err
 	}
@@ -270,11 +272,11 @@ type readmeParams struct {
 
 // parseDefinition converts a component definition and its tasks to the README
 // template params.
-func (p readmeParams) parseDefinition(d definition, s *objectSchema, tasks map[string]task) (readmeParams, error) {
+func (p readmeParams) parseDefinition(d definition, s *objectSchema, tasks *orderedmap.OrderedMap[string, task]) (readmeParams, error) {
 	p.ComponentType = toComponentType[d.Type]
 
 	var err error
-	if p.Tasks, err = parseREADMETasks(d.AvailableTasks, tasks); err != nil {
+	if p.Tasks, err = parseREADMETasks(tasks); err != nil {
 		return p, err
 	}
 
@@ -296,16 +298,16 @@ func (p readmeParams) parseDefinition(d definition, s *objectSchema, tasks map[s
 	return p, nil
 }
 
-func parseREADMETasks(availableTasks []string, tasks map[string]task) ([]readmeTask, error) {
-	readmeTasks := make([]readmeTask, len(availableTasks))
-	for i, at := range availableTasks {
-		t, ok := tasks[at]
-		if !ok {
-			return nil, fmt.Errorf("invalid tasks file:\nmissing %s", at)
+func parseREADMETasks(tasks *orderedmap.OrderedMap[string, task]) ([]readmeTask, error) {
+	readmeTasks := make([]readmeTask, 0, tasks.Len())
+	for pair := tasks.Oldest(); pair != nil; pair = pair.Next() {
+		id := pair.Key
+		t := pair.Value
+		if !strings.HasPrefix(id, "TASK_") {
+			continue
 		}
-
 		rt := readmeTask{
-			ID:          at,
+			ID:          id,
 			Description: t.Description,
 			Input:       parseResourceProperties(t.Input),
 			Output:      parseResourceProperties(t.Output),
@@ -316,12 +318,10 @@ func parseREADMETasks(availableTasks []string, tasks map[string]task) ([]readmeT
 		rt.parseOneOfsProperties(t.Input.Properties)
 
 		if rt.Title = t.Title; rt.Title == "" {
-			rt.Title = titleCase(componentbase.TaskIDToTitle(at))
+			rt.Title = titleCase(componentbase.TaskIDToTitle(id))
 		}
-
-		readmeTasks[i] = rt
+		readmeTasks = append(readmeTasks, rt)
 	}
-
 	return readmeTasks, nil
 }
 

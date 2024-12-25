@@ -1,6 +1,3 @@
-availableTasks: []
-availableEvents:
-- EVENT_CRON_JOB_TRIGGERED
 documentationUrl: https://www.instill.tech/docs/component/generic/scheduler
 icon: assets/scheduler.svg
 id: scheduler

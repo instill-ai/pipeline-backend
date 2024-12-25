@@ -38,8 +38,6 @@ following fields must be present and comply with the following guidelines:
   [protobufs](https://github.com/instill-ai/protobufs/blob/main/vdp/pipeline/v1beta/component_definition.proto).
 - `type` - Component definitions must contain this field and its value must
   match one of the (string) values, defined in [protobufs](https://github.com/instill-ai/protobufs/blob/main/vdp/pipeline/v1beta/component_definition.proto).
-- `availableTasks` - This array must have at least one value, which should be
-  one of the root-level keys in the `tasks.yaml` file.
 - `sourceUrl` - Must be a valid URL. It must not end with a slash, as the
   definitions path will be appended.
 

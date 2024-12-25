@@ -7,14 +7,15 @@ description: "Learn about how to set up a VDP Instill Artifact component https:/
 
 The Instill Artifact component is a data component that allows users to manipulate and smart search files and data in the artifact store.
 It can carry out the following tasks:
-- [Upload File](#upload-file)
-- [Upload Files](#upload-files)
-- [Get Files Metadata](#get-files-metadata)
+- [Ask](#ask)
 - [Get Chunks Metadata](#get-chunks-metadata)
+- [Get Files Metadata](#get-files-metadata)
 - [Get File in Markdown](#get-file-in-markdown)
 - [Match File Status](#match-file-status)
 - [Retrieve](#retrieve)
-- [Ask](#ask)
+- [Sync Files](#sync-files)
+- [Upload File](#upload-file)
+- [Upload Files](#upload-files)
 
 To use Artifact Component, you will need to set up the OpenAI API key for self-hosted deployment of Instill Core.
 You can do this by setting the `OPENAI_API_KEY` environment variable.
@@ -39,6 +40,350 @@ The component definition and tasks are defined in the [definition.yaml](https://
 
 
 ## Supported Tasks
+
+### Ask
+
+Reply the questions based on the files in the catalog.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_ASK` |
+| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
+| Question (required) | `question` | string | The question to reply. |
+| Top K | `top-k` | integer | The number of top answers to return. The range is from 1~20, and default is 5. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Answer | `answer` | string | Answers data from smart search. |
+| [Chunks](#ask-chunks) (optional) | `chunks` | array[object] | Chunks data to answer question. |
+</div>
+
+<details>
+<summary> Output Objects in Ask</summary>
+
+<h4 id="ask-chunks">Chunks</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Format | Note |
+| :--- | :--- | :--- | :--- |
+| Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
+| Similarity | `similarity-score` | number | The similarity score of the chunk. |
+| Source File Name | `source-file-name` | string | The name of the source file. |
+| Text Content | `text-content` | string | The text content of the chunk. |
+</div>
+</details>
+
+
+### Get Chunks Metadata
+
+get the metadata of the chunks from a file in the catalog.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_CHUNKS_METADATA` |
+| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
+| File UID (required) | `file-uid` | string | The unique identifier of the file. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| [Chunks](#get-chunks-metadata-chunks) | `chunks` | array[object] | Chunks metadata of the file in catalog. |
+</div>
+
+<details>
+<summary> Output Objects in Get Chunks Metadata</summary>
+
+<h4 id="get-chunks-metadata-chunks">Chunks</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Format | Note |
+| :--- | :--- | :--- | :--- |
+| Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
+| Create Time | `create-time` | string | The creation time of the chunk in ISO 8601 format. |
+| End Position | `end-position` | integer | The end position of the chunk in the file. |
+| File UID | `original-file-uid` | string | The unique identifier of the file. |
+| Retrievable | `retrievable` | boolean | The retrievable status of the chunk. |
+| Start Position | `start-position` | integer | The start position of the chunk in the file. |
+| Token Count | `token-count` | integer | The token count of the chunk. |
+</div>
+</details>
+
+
+### Get Files Metadata
+
+get the metadata of the files in the catalog.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_FILES_METADATA` |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
+| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| [Files](#get-files-metadata-files) | `files` | array[object] | Files metadata in catalog. |
+</div>
+
+<details>
+<summary> Output Objects in Get Files Metadata</summary>
+
+<h4 id="get-files-metadata-files">Files</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Format | Note |
+| :--- | :--- | :--- | :--- |
+| Catalog ID | `catalog-id` | string | ID of the catalog that you upload files. |
+| Create Time | `create-time` | string | Creation time of the file in ISO 8601 format. |
+| File Name | `file-name` | string | Name of the file. |
+| Type | `file-type` | string | Type of the file. |
+| File UID | `file-uid` | string | Unique identifier of the file. |
+| Size | `size` | number | Size of the file in bytes. |
+| Update Time | `update-time` | string | Update time of the file in ISO 8601 format. |
+</div>
+</details>
+
+
+### Get File in Markdown
+
+get the file content in markdown format.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_FILE_IN_MARKDOWN` |
+| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
+| File UID (required) | `file-uid` | string | The unique identifier of the file. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| File UID | `original-file-uid` | string | The unique identifier of the file. |
+| Content | `content` | string | The content of the file in markdown format. |
+| Create Time | `create-time` | string | The creation time of the source file in ISO 8601 format. |
+| Update Time | `update-time` | string | The update time of the source file in ISO 8601 format. |
+</div>
+
+
+### Match File Status
+
+Check if the specified file's processing status is done.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_MATCH_FILE_STATUS` |
+| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to check files' processing status in the Catalog. |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
+| File UID (required) | `file-uid` | string | The unique identifier of the file. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `succeeded` | boolean | The status of the file processing, if succeeded, return true. |
+</div>
+
+
+### Retrieve
+
+search the chunks in the catalog.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_RETRIEVE` |
+| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
+| Text Prompt (required) | `text-prompt` | string | The prompt string to search the chunks. |
+| Top K | `top-k` | integer | The number of top chunks to return. The range is from 1~20, and default is 5. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| [Chunks](#retrieve-chunks) | `chunks` | array[object] | Chunks data from smart search. |
+</div>
+
+<details>
+<summary> Output Objects in Retrieve</summary>
+
+<h4 id="retrieve-chunks">Chunks</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Format | Note |
+| :--- | :--- | :--- | :--- |
+| Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
+| Similarity | `similarity-score` | number | The similarity score of the chunk. |
+| Source File Name | `source-file-name` | string | The name of the source file. |
+| Text Content | `text-content` | string | The text content of the chunk. |
+</div>
+</details>
+
+
+### Sync Files
+
+This task synchronizes files from third-party storage to Instill Catalog. New files are uploaded, and updated files are overwritten based on third-party metadata. Files added through other channels, like the Artifact API or additional storage services, will not be removed. Currently, only Google Drive is supported as a third-party storage service.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SYNC_FILES` |
+| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
+| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to synchronize files from third-party data storage to catalog. |
+| [Third Party Files](#sync-files-third-party-files) (required) | `third-party-files` | array[object] | File contents and metadata from third-part data storage. |
+</div>
+
+
+<details>
+<summary> Input Objects in Sync Files</summary>
+
+<h4 id="sync-files-third-party-files">Third Party Files</h4>
+
+File contents and metadata from third-part data storage.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Format | Note |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | string | Base64 encoded content of the binary file without the `data:[MIME_TYPE];base64,` prefix.  |
+| Created time | `created-time` | string | Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ`.  |
+| ID | `id` | string | Unique ID of the file from third-party data storage.  |
+| MD5 checksum | `md5-checksum` | string | MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user.  |
+| MIME type | `mime-type` | string | MIME type of the file.  |
+| Modified time | `modified-time` | string | Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ`. It will be used to check if the file has been updated.  |
+| Name | `name` | string | Name of the file from third-party data storage.  |
+| Size | `size` | integer | Size of the file in bytes.  |
+| Version | `version` | integer | Version of the file.  |
+| Web Content Link | `web-content-link` | string | Link for downloading the content of the file in a browser.  |
+| Web View Link | `web-view-link` | string | Link for opening the file in a relevant third-party data storage editor or viewer in a browser. It will be used to check the source of the file.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| [Uploaded Files](#sync-files-uploaded-files) (optional) | `uploaded-files` | array[object] | Files metadata in catalog. The metadata here is from Instill Artifact rather than third-party storage. |
+| [Updated Files](#sync-files-updated-files) (optional) | `updated_files` | array[object] | Files that were updated. The metadata here is from Instill Artifact rather than third-party storage. |
+| [Failure Files](#sync-files-failure-files) (optional) | `failure-files` | array[object] | Files that failed to upload or overwrite. The metadata here is from third-party storage. |
+| Error Messages (optional) | `error-messages` | array[string] | Error messages for files that failed to upload or overwrite. |
+| Status (optional) | `status` | boolean | The status of the triggering processing files, if succeeded, return true. |
+</div>
+
+<details>
+<summary> Output Objects in Sync Files</summary>
+
+<h4 id="sync-files-uploaded-files">Uploaded Files</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Format | Note |
+| :--- | :--- | :--- | :--- |
+| Catalog ID | `catalog-id` | string | ID of the catalog that you upload files. |
+| Create Time | `create-time` | string | Creation time of the file in ISO 8601 format. |
+| File Name | `file-name` | string | Name of the file. |
+| Type | `file-type` | string | Type of the file. |
+| File UID | `file-uid` | string | Unique identifier of the file. |
+| Size | `size` | number | Size of the file in bytes. |
+| Update Time | `update-time` | string | Update time of the file in ISO 8601 format. |
+</div>
+
+<h4 id="sync-files-updated-files">Updated Files</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Format | Note |
+| :--- | :--- | :--- | :--- |
+| Catalog ID | `catalog-id` | string | ID of the catalog that you upload files. |
+| Create Time | `create-time` | string | Creation time of the file in ISO 8601 format. |
+| File Name | `file-name` | string | Name of the file. |
+| Type | `file-type` | string | Type of the file. |
+| File UID | `file-uid` | string | Unique identifier of the file. |
+| Size | `size` | number | Size of the file in bytes. |
+| Update Time | `update-time` | string | Update time of the file in ISO 8601 format. |
+</div>
+
+<h4 id="sync-files-failure-files">Failure Files</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Format | Note |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | string | Base64 encoded content of the binary file without the `data:[MIME_TYPE];base64,` prefix. |
+| Created time | `created-time` | string | Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ`. |
+| ID | `id` | string | Unique ID of the file from third-party data storage. |
+| MD5 checksum | `md5-checksum` | string | MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user. |
+| MIME type | `mime-type` | string | MIME type of the file. |
+| Modified time | `modified-time` | string | Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ`. It will be used to check if the file has been updated. |
+| Name | `name` | string | Name of the file from third-party data storage. |
+| Size | `size` | integer | Size of the file in bytes. |
+| Version | `version` | integer | Version of the file. |
+| Web Content Link | `web-content-link` | string | Link for downloading the content of the file in a browser. |
+| Web View Link | `web-view-link` | string | Link for opening the file in a relevant third-party data storage editor or viewer in a browser. It will be used to check the source of the file. |
+</div>
+</details>
+
 
 ### Upload File
 
@@ -194,243 +539,6 @@ Upload and process the files into chunks into Catalog.
 | File UID | `file-uid` | string | Unique identifier of the file. |
 | Size | `size` | number | Size of the file in bytes. |
 | Update Time | `update-time` | string | Update time of the file in ISO 8601 format. |
-</div>
-</details>
-
-
-### Get Files Metadata
-
-get the metadata of the files in the catalog.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_GET_FILES_METADATA` |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| [Files](#get-files-metadata-files) | `files` | array[object] | Files metadata in catalog. |
-</div>
-
-<details>
-<summary> Output Objects in Get Files Metadata</summary>
-
-<h4 id="get-files-metadata-files">Files</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Format | Note |
-| :--- | :--- | :--- | :--- |
-| Catalog ID | `catalog-id` | string | ID of the catalog that you upload files. |
-| Create Time | `create-time` | string | Creation time of the file in ISO 8601 format. |
-| File Name | `file-name` | string | Name of the file. |
-| Type | `file-type` | string | Type of the file. |
-| File UID | `file-uid` | string | Unique identifier of the file. |
-| Size | `size` | number | Size of the file in bytes. |
-| Update Time | `update-time` | string | Update time of the file in ISO 8601 format. |
-</div>
-</details>
-
-
-### Get Chunks Metadata
-
-get the metadata of the chunks from a file in the catalog.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_GET_CHUNKS_METADATA` |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
-| File UID (required) | `file-uid` | string | The unique identifier of the file. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| [Chunks](#get-chunks-metadata-chunks) | `chunks` | array[object] | Chunks metadata of the file in catalog. |
-</div>
-
-<details>
-<summary> Output Objects in Get Chunks Metadata</summary>
-
-<h4 id="get-chunks-metadata-chunks">Chunks</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Format | Note |
-| :--- | :--- | :--- | :--- |
-| Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
-| Create Time | `create-time` | string | The creation time of the chunk in ISO 8601 format. |
-| End Position | `end-position` | integer | The end position of the chunk in the file. |
-| File UID | `original-file-uid` | string | The unique identifier of the file. |
-| Retrievable | `retrievable` | boolean | The retrievable status of the chunk. |
-| Start Position | `start-position` | integer | The start position of the chunk in the file. |
-| Token Count | `token-count` | integer | The token count of the chunk. |
-</div>
-</details>
-
-
-### Get File in Markdown
-
-get the file content in markdown format.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_GET_FILE_IN_MARKDOWN` |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
-| File UID (required) | `file-uid` | string | The unique identifier of the file. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| File UID | `original-file-uid` | string | The unique identifier of the file. |
-| Content | `content` | string | The content of the file in markdown format. |
-| Create Time | `create-time` | string | The creation time of the source file in ISO 8601 format. |
-| Update Time | `update-time` | string | The update time of the source file in ISO 8601 format. |
-</div>
-
-
-### Match File Status
-
-Check if the specified file's processing status is done.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_MATCH_FILE_STATUS` |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to check files' processing status in the Catalog. |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
-| File UID (required) | `file-uid` | string | The unique identifier of the file. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `succeeded` | boolean | The status of the file processing, if succeeded, return true. |
-</div>
-
-
-### Retrieve
-
-search the chunks in the catalog.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_RETRIEVE` |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
-| Text Prompt (required) | `text-prompt` | string | The prompt string to search the chunks. |
-| Top K | `top-k` | integer | The number of top chunks to return. The range is from 1~20, and default is 5. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| [Chunks](#retrieve-chunks) | `chunks` | array[object] | Chunks data from smart search. |
-</div>
-
-<details>
-<summary> Output Objects in Retrieve</summary>
-
-<h4 id="retrieve-chunks">Chunks</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Format | Note |
-| :--- | :--- | :--- | :--- |
-| Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
-| Similarity | `similarity-score` | number | The similarity score of the chunk. |
-| Source File Name | `source-file-name` | string | The name of the source file. |
-| Text Content | `text-content` | string | The text content of the chunk. |
-</div>
-</details>
-
-
-### Ask
-
-Reply the questions based on the files in the catalog.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_ASK` |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
-| Question (required) | `question` | string | The question to reply. |
-| Top K | `top-k` | integer | The number of top answers to return. The range is from 1~20, and default is 5. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Answer | `answer` | string | Answers data from smart search. |
-| [Chunks](#ask-chunks) (optional) | `chunks` | array[object] | Chunks data to answer question. |
-</div>
-
-<details>
-<summary> Output Objects in Ask</summary>
-
-<h4 id="ask-chunks">Chunks</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Format | Note |
-| :--- | :--- | :--- | :--- |
-| Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
-| Similarity | `similarity-score` | number | The similarity score of the chunk. |
-| Source File Name | `source-file-name` | string | The name of the source file. |
-| Text Content | `text-content` | string | The text content of the chunk. |
 </div>
 </details>
 

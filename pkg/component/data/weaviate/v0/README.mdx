@@ -7,12 +7,12 @@ description: "Learn about how to set up a VDP Weaviate component https://github.
 
 The Weaviate component is a data component that allows users to build and search vector datasets.
 It can carry out the following tasks:
-- [Vector Search](#vector-search)
 - [Batch Insert](#batch-insert)
-- [Insert](#insert)
-- [Update](#update)
 - [Delete](#delete)
 - [Delete Collection](#delete-collection)
+- [Insert](#insert)
+- [Update](#update)
+- [Vector Search](#vector-search)
 
 
 
@@ -54,53 +54,6 @@ ${connection.<my-connection-id>}`.
 
 ## Supported Tasks
 
-### Vector Search
-
-Perform a vector search on a collection
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to perform vector search on. |
-| Vector | `vector` | array[number] | An array of dimensions for the vector query, optional. If not provided, all objects will be returned. |
-| Limit | `limit` | integer | The limit of objects, empty for all objects. |
-| Fields | `fields` | array[string] | The fields to return in the objects. If empty then all fields will be returned. |
-| Filter | `filter` | object | The properties filter to be applied to the data with GraphQL queries, which starts with WHERE field, please refer to [here](https://weaviate.io/developers/weaviate/search/filters). |
-| Tenant | `tenant` | string | The tenant to perform the vector search on. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
-| Status | `status` | string | Upsert status. |
-</div>
-
-<details>
-<summary> Output Objects in Vector Search</summary>
-
-<h4 id="vector-search-result">Result</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Format | Note |
-| :--- | :--- | :--- | :--- |
-| IDs | `ids` | array | The ids returned from the vector search operation. |
-| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
-| [Objects](#vector-search-objects) | `objects` | array | The objects returned from the vector search operation. |
-| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
-</div>
-</details>
-
-
 ### Batch Insert
 
 Insert multiple vector objects into a collection
@@ -126,6 +79,58 @@ Insert multiple vector objects into a collection
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Batch insert status. |
+</div>
+
+
+### Delete
+
+Delete vector objects from a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to delete the object from. |
+| ID | `id` | string | The ID of the object. |
+| Filter | `filter` | object | The properties filter to be applied to the data with GraphQL queries, which starts with WHERE field, please refer to [here](https://weaviate.io/developers/weaviate/search/filters). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Delete status. |
+</div>
+
+
+### Delete Collection
+
+Delete a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE_COLLECTION` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to delete. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Delete collection status. |
 </div>
 
 
@@ -185,18 +190,21 @@ Update vector object in a collection
 </div>
 
 
-### Delete
+### Vector Search
 
-Delete vector objects from a collection
+Perform a vector search on a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DELETE` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to delete the object from. |
-| ID | `id` | string | The ID of the object. |
+| Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to perform vector search on. |
+| Vector | `vector` | array[number] | An array of dimensions for the vector query, optional. If not provided, all objects will be returned. |
+| Limit | `limit` | integer | The limit of objects, empty for all objects. |
+| Fields | `fields` | array[string] | The fields to return in the objects. If empty then all fields will be returned. |
 | Filter | `filter` | object | The properties filter to be applied to the data with GraphQL queries, which starts with WHERE field, please refer to [here](https://weaviate.io/developers/weaviate/search/filters). |
+| Tenant | `tenant` | string | The tenant to perform the vector search on. |
 </div>
 
 
@@ -208,33 +216,25 @@ Delete vector objects from a collection
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete status. |
+| [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
+| Status | `status` | string | Upsert status. |
 </div>
 
+<details>
+<summary> Output Objects in Vector Search</summary>
 
-### Delete Collection
-
-Delete a collection
+<h4 id="vector-search-result">Result</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DELETE_COLLECTION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to delete. |
+| IDs | `ids` | array | The ids returned from the vector search operation. |
+| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
+| [Objects](#vector-search-objects) | `objects` | array | The objects returned from the vector search operation. |
+| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
 </div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete collection status. |
-</div>
+</details>
 
 
 

@@ -1,5 +1,3 @@
-availableTasks:
-- TASK_TEXT_GENERATION_CHAT
 documentationUrl: https://www.instill.tech/docs/component/ai/groq
 icon: assets/groq.svg
 id: groq

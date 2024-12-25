@@ -7,8 +7,8 @@ description: "Learn about how to set up a VDP Base64 component https://github.co
 
 The Base64 component is an operator component that allows users to encode or decode a string in Base64 format.
 It can carry out the following tasks:
-- [Encode](#encode)
 - [Decode](#decode)
+- [Encode](#encode)
 
 
 
@@ -30,16 +30,16 @@ The component definition and tasks are defined in the [definition.yaml](https://
 
 ## Supported Tasks
 
-### Encode
+### Decode
 
-Encode data into base64 string
+Decode the base64 string.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_ENCODE` |
-| Data (required) | `data` | string | Data to be encoded. |
+| Task ID (required) | `task` | string | `TASK_DECODE` |
+| Data (required) | `data` | string | Base64 string to be decoded. |
 </div>
 
 
@@ -55,16 +55,16 @@ Encode data into base64 string
 </div>
 
 
-### Decode
+### Encode
 
-Decode the base64 string.
+Encode data into base64 string
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DECODE` |
-| Data (required) | `data` | string | Base64 string to be decoded. |
+| Task ID (required) | `task` | string | `TASK_ENCODE` |
+| Data (required) | `data` | string | Data to be encoded. |
 </div>
 
 

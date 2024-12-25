@@ -7,11 +7,11 @@ description: "Learn about how to set up a VDP OpenAI component https://github.co
 
 The OpenAI component is an AI component that allows users to connect the AI models served on the OpenAI Platform.
 It can carry out the following tasks:
-- [Text Generation](#text-generation)
-- [Text Embeddings](#text-embeddings)
 - [Speech Recognition](#speech-recognition)
-- [Text to Speech](#text-to-speech)
+- [Text Embeddings](#text-embeddings)
+- [Text Generation](#text-generation)
 - [Text to Image](#text-to-image)
+- [Text to Speech](#text-to-speech)
 
 
 
@@ -52,6 +52,62 @@ ${connection.<my-connection-id>}`.
 
 
 ## Supported Tasks
+
+### Speech Recognition
+
+Turn audio into text.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SPEECH_RECOGNITION` |
+| Model (required) | `model` | string | ID of the model to use. Only `whisper-1` is currently available. . <br/><details><summary><strong>Enum values</strong></summary><ul><li>`whisper-1`</li></ul></details>  |
+| Audio (required) | `audio` | string | The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm. . |
+| Prompt | `prompt` | string | An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language. . |
+| Language | `language` | string | The language of the input audio. Supplying the input language in <a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO-639-1</a> format will improve accuracy and latency. . |
+| Temperature | `temperature` | number | The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. If set to 0, the model will use <a href="https://en.wikipedia.org/wiki/Log_probability">log probability</a> to automatically increase the temperature until certain thresholds are hit. . |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Text | `text` | string | Generated text. |
+</div>
+
+
+### Text Embeddings
+
+Turn text into numbers, unlocking use cases like search.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
+| Model (required) | `model` | string | ID of the model to use. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text-embedding-ada-002`</li><li>`text-embedding-3-small`</li><li>`text-embedding-3-large`</li></ul></details>  |
+| Text (required) | `text` | string | The text. |
+| Dimensions | `dimensions` | integer | The number of dimensions the resulting output embeddings should have. Only supported in text-embedding-3 and later models. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Embedding | `embedding` | array[number] | Embedding of the input text. |
+</div>
+
 
 ### Text Generation
 
@@ -175,91 +231,6 @@ The image URL
 </details>
 
 
-### Text Embeddings
-
-Turn text into numbers, unlocking use cases like search.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
-| Model (required) | `model` | string | ID of the model to use. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text-embedding-ada-002`</li><li>`text-embedding-3-small`</li><li>`text-embedding-3-large`</li></ul></details>  |
-| Text (required) | `text` | string | The text. |
-| Dimensions | `dimensions` | integer | The number of dimensions the resulting output embeddings should have. Only supported in text-embedding-3 and later models. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Embedding | `embedding` | array[number] | Embedding of the input text. |
-</div>
-
-
-### Speech Recognition
-
-Turn audio into text.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_SPEECH_RECOGNITION` |
-| Model (required) | `model` | string | ID of the model to use. Only `whisper-1` is currently available. . <br/><details><summary><strong>Enum values</strong></summary><ul><li>`whisper-1`</li></ul></details>  |
-| Audio (required) | `audio` | string | The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm. . |
-| Prompt | `prompt` | string | An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language. . |
-| Language | `language` | string | The language of the input audio. Supplying the input language in <a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO-639-1</a> format will improve accuracy and latency. . |
-| Temperature | `temperature` | number | The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. If set to 0, the model will use <a href="https://en.wikipedia.org/wiki/Log_probability">log probability</a> to automatically increase the temperature until certain thresholds are hit. . |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Text | `text` | string | Generated text. |
-</div>
-
-
-### Text to Speech
-
-Turn text into lifelike spoken audio
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_TEXT_TO_SPEECH` |
-| Model (required) | `model` | string | One of the available TTS models: `tts-1` or `tts-1-hd` . <br/><details><summary><strong>Enum values</strong></summary><ul><li>`tts-1`</li><li>`tts-1-hd`</li></ul></details>  |
-| Text (required) | `text` | string | The text to generate audio for. The maximum length is 4096 characters. |
-| Voice (required) | `voice` | string | The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`alloy`</li><li>`echo`</li><li>`fable`</li><li>`onyx`</li><li>`nova`</li><li>`shimmer`</li></ul></details>  |
-| Response Format | `response-format` | string | The format to audio in. Supported formats are `mp3`, `opus`, `aac`, and `flac`. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`mp3`</li><li>`opus`</li><li>`aac`</li><li>`flac`</li></ul></details>  |
-| Speed | `speed` | number | The speed of the generated audio. Select a value from `0.25` to `4.0`. `1.0` is the default. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Audio (optional) | `audio` | audio/wav | AI generated audio. |
-</div>
-
-
 ### Text to Image
 
 Generate or manipulate images with DALL·E.
@@ -302,6 +273,35 @@ Generate or manipulate images with DALL·E.
 | Revised Prompt | `revised-prompt` | string | Revised prompt. |
 </div>
 </details>
+
+
+### Text to Speech
+
+Turn text into lifelike spoken audio
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_TEXT_TO_SPEECH` |
+| Model (required) | `model` | string | One of the available TTS models: `tts-1` or `tts-1-hd` . <br/><details><summary><strong>Enum values</strong></summary><ul><li>`tts-1`</li><li>`tts-1-hd`</li></ul></details>  |
+| Text (required) | `text` | string | The text to generate audio for. The maximum length is 4096 characters. |
+| Voice (required) | `voice` | string | The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`alloy`</li><li>`echo`</li><li>`fable`</li><li>`onyx`</li><li>`nova`</li><li>`shimmer`</li></ul></details>  |
+| Response Format | `response-format` | string | The format to audio in. Supported formats are `mp3`, `opus`, `aac`, and `flac`. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`mp3`</li><li>`opus`</li><li>`aac`</li><li>`flac`</li></ul></details>  |
+| Speed | `speed` | number | The speed of the generated audio. Select a value from `0.25` to `4.0`. `1.0` is the default. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Audio (optional) | `audio` | audio/wav | AI generated audio. |
+</div>
 
 
 

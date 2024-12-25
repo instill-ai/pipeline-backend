@@ -7,13 +7,13 @@ description: "Learn about how to set up a VDP SQL component https://github.com/i
 
 The SQL component is a data component that allows users to access the SQL database of your choice.
 It can carry out the following tasks:
+- [Create Table](#create-table)
+- [Delete](#delete)
+- [Drop Table](#drop-table)
 - [Insert](#insert)
 - [Insert Many](#insert-many)
-- [Update](#update)
 - [Select](#select)
-- [Delete](#delete)
-- [Create Table](#create-table)
-- [Drop Table](#drop-table)
+- [Update](#update)
 
 
 
@@ -98,6 +98,83 @@ ${connection.<my-connection-id>}`.
 
 ## Supported Tasks
 
+### Create Table
+
+Create a table in the database
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CREATE_TABLE` |
+| Table Name (required) | `table-name` | string | The table name in the database to be created. |
+| Columns (required) | `columns-structure` | object | The columns structure to be created in the table, json with value string, e.g \{"name": "VARCHAR(255)", "age": "INT not null"\}. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Create table status. |
+</div>
+
+
+### Delete
+
+Perform delete operation
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE` |
+| Table Name (required) | `table-name` | string | The table name in the database to be deleted. |
+| Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Delete status. |
+</div>
+
+
+### Drop Table
+
+Drop a table in the database
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DROP_TABLE` |
+| Table Name (required) | `table-name` | string | The table name in the database to be dropped. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Drop table status. |
+</div>
+
+
 ### Insert
 
 Perform insert operation
@@ -150,33 +227,6 @@ Perform insert operation with multiple rows
 </div>
 
 
-### Update
-
-Perform update operation
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_UPDATE` |
-| Table Name (required) | `table-name` | string | The table name in the database to update data into. |
-| Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
-| Update (required) | `update-data` | object | The new data to be updated to. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Update status. |
-</div>
-
-
 ### Select
 
 Perform select operation
@@ -206,17 +256,18 @@ Perform select operation
 </div>
 
 
-### Delete
+### Update
 
-Perform delete operation
+Perform update operation
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DELETE` |
-| Table Name (required) | `table-name` | string | The table name in the database to be deleted. |
+| Task ID (required) | `task` | string | `TASK_UPDATE` |
+| Table Name (required) | `table-name` | string | The table name in the database to update data into. |
 | Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
+| Update (required) | `update-data` | object | The new data to be updated to. |
 </div>
 
 
@@ -228,58 +279,7 @@ Perform delete operation
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete status. |
-</div>
-
-
-### Create Table
-
-Create a table in the database
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CREATE_TABLE` |
-| Table Name (required) | `table-name` | string | The table name in the database to be created. |
-| Columns (required) | `columns-structure` | object | The columns structure to be created in the table, json with value string, e.g \{"name": "VARCHAR(255)", "age": "INT not null"\}. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create table status. |
-</div>
-
-
-### Drop Table
-
-Drop a table in the database
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DROP_TABLE` |
-| Table Name (required) | `table-name` | string | The table name in the database to be dropped. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Drop table status. |
+| Status | `status` | string | Update status. |
 </div>
 
 

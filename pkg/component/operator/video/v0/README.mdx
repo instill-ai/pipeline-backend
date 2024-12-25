@@ -7,11 +7,11 @@ description: "Learn about how to set up a VDP Video component https://github.com
 
 The Video component is an operator component that allows users to operate video data.
 It can carry out the following tasks:
-- [Segment](#segment)
-- [Subsample](#subsample)
+- [Embed Audio](#embed-audio)
 - [Extract Audio](#extract-audio)
 - [Extract Frames](#extract-frames)
-- [Embed Audio](#embed-audio)
+- [Segment](#segment)
+- [Subsample](#subsample)
 
 
 
@@ -32,6 +32,84 @@ The component definition and tasks are defined in the [definition.yaml](https://
 
 
 ## Supported Tasks
+
+### Embed Audio
+
+Embed an audio to the existing video
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_EMBED_AUDIO` |
+| Audio (required) | `audio` | any | Audio data to embed to video |
+| Video (required) | `video` | any | Video input to be embedded with provided audio |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Video | `video` | video | Final video embedded with audio |
+</div>
+
+
+### Extract Audio
+
+Extract the audio track from a video file, creating a standalone audio output. This task takes a video input and isolates its sound component, removing all visual elements. The resulting audio data is provided as a single output, suitable for further audio processing, analysis, or use in audio-only applications.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_EXTRACT_AUDIO` |
+| Video (required) | `video` | string | The source video file from which the audio will be extracted. The video's visual content will be discarded, and only the audio track will be processed. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Audio | `audio` | audio/* | The extracted audio data from the input video. This is a standalone audio file containing only the sound component of the original video, with all visual elements removed. The audio format may vary depending on the original video's audio codec and the extraction process. |
+</div>
+
+
+### Extract Frames
+
+Extract image frames from a video at regular intervals or specified timestamps. This task takes a video input and either an interval value or a list of timestamps. It then produces an array of image frames corresponding to these specifications, allowing for precise capture of key moments or creation of a sequence of still images from the video content.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_EXTRACT_FRAMES` |
+| Video (required) | `video` | string | The source video file from which frames will be extracted. |
+| Interval | `interval` | number | The time interval between extracted frames, in seconds. If specified, frames will be extracted at regular intervals throughout the video. This parameter is mutually exclusive with `timestamps`. |
+| Timestamps | `timestamps` | array | An array of specific timestamps (in seconds) at which to extract frames from the video. If provided, frames will be extracted only at these exact times. This parameter is mutually exclusive with `interval`. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Frames | `frames` | array[string] | Extracted video frames. |
+</div>
+
 
 ### Segment
 
@@ -100,84 +178,6 @@ Reduce video file size by adjusting frame rate, bitrate, and dimensions while ma
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Video | `video` | video/* | The subsampled video data, processed according to the specified input parameters. Maintains the content of the original video with potentially reduced file size due to changes in frame rate, bitrate, or dimensions. |
-</div>
-
-
-### Extract Audio
-
-Extract the audio track from a video file, creating a standalone audio output. This task takes a video input and isolates its sound component, removing all visual elements. The resulting audio data is provided as a single output, suitable for further audio processing, analysis, or use in audio-only applications.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_EXTRACT_AUDIO` |
-| Video (required) | `video` | string | The source video file from which the audio will be extracted. The video's visual content will be discarded, and only the audio track will be processed. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Audio | `audio` | audio/* | The extracted audio data from the input video. This is a standalone audio file containing only the sound component of the original video, with all visual elements removed. The audio format may vary depending on the original video's audio codec and the extraction process. |
-</div>
-
-
-### Extract Frames
-
-Extract image frames from a video at regular intervals or specified timestamps. This task takes a video input and either an interval value or a list of timestamps. It then produces an array of image frames corresponding to these specifications, allowing for precise capture of key moments or creation of a sequence of still images from the video content.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_EXTRACT_FRAMES` |
-| Video (required) | `video` | string | The source video file from which frames will be extracted. |
-| Interval | `interval` | number | The time interval between extracted frames, in seconds. If specified, frames will be extracted at regular intervals throughout the video. This parameter is mutually exclusive with `timestamps`. |
-| Timestamps | `timestamps` | array | An array of specific timestamps (in seconds) at which to extract frames from the video. If provided, frames will be extracted only at these exact times. This parameter is mutually exclusive with `interval`. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Frames | `frames` | array[string] | Extracted video frames. |
-</div>
-
-
-### Embed Audio
-
-Embed an audio to the existing video
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_EMBED_AUDIO` |
-| Audio (required) | `audio` | any | Audio data to embed to video |
-| Video (required) | `video` | any | Video input to be embedded with provided audio |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Video | `video` | video | Final video embedded with audio |
 </div>
 
 

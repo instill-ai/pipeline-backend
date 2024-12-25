@@ -7,10 +7,10 @@ description: "Learn about how to set up a VDP JSON component https://github.com/
 
 The JSON component is an operator component that allows users to manipulate and convert JSON entities.
 It can carry out the following tasks:
-- [Marshal](#marshal)
-- [Unmarshal](#unmarshal)
 - [jq](#jq)
+- [Marshal](#marshal)
 - [Rename Fields](#rename-fields)
+- [Unmarshal](#unmarshal)
 
 
 
@@ -31,56 +31,6 @@ The component definition and tasks are defined in the [definition.yaml](https://
 
 
 ## Supported Tasks
-
-### Marshal
-
-Convert JSON to a string
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_MARSHAL` |
-| JSON (required) | `json` | any | JSON entity to be marshaled. It can be any valid JSON datatype (e.g. number, string, hash, array). |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| JSON String | `string` | string | String representation of the JSON input. |
-</div>
-
-
-### Unmarshal
-
-Convert a string to JSON
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_UNMARSHAL` |
-| String (required) | `string` | string | JSON string to be unmarshaled. It can represent any valid JSON datatype (e.g. number, string, hash, array). |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| JSON | `json` | json | JSON entity extracted from the string input. |
-</div>
-
 
 ### jq
 
@@ -131,6 +81,31 @@ to access such fields in a `jq` filter is by wrapping the key in double quotes:
 | :--- | :--- | :--- |
 | `[{"key-a": "value1"}, {"key-a": "value2"}]` | `.[] \| ."key-a"` | `["value1", "value2"]` |
 
+### Marshal
+
+Convert JSON to a string
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_MARSHAL` |
+| JSON (required) | `json` | any | JSON entity to be marshaled. It can be any valid JSON datatype (e.g. number, string, hash, array). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| JSON String | `string` | string | String representation of the JSON input. |
+</div>
+
+
 ### Rename Fields
 
 Rename fields in a JSON object with a conflict resolution strategy. If the new field already exists, it will be overwritten by default.
@@ -169,6 +144,31 @@ An array of objects specifying the fields to be renamed.
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | JSON | `json` | json | JSON object with the renamed fields. |
+</div>
+
+
+### Unmarshal
+
+Convert a string to JSON
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_UNMARSHAL` |
+| String (required) | `string` | string | JSON string to be unmarshaled. It can represent any valid JSON datatype (e.g. number, string, hash, array). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| JSON | `json` | json | JSON entity extracted from the string input. |
 </div>
 
 

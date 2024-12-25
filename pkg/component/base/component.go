@@ -387,51 +387,56 @@ func EventIDToTitle(id string) string {
 	return cases.Title(language.English).String(title)
 }
 
-func generateComponentTaskCards(tasks []string, taskStructs map[string]*structpb.Struct) []*pb.ComponentTask {
-	taskCards := make([]*pb.ComponentTask, 0, len(tasks))
-	for _, k := range tasks {
-		if v, ok := taskStructs[k]; ok {
-			title := v.Fields["title"].GetStringValue()
-			if title == "" {
-				title = TaskIDToTitle(k)
-			}
+func generateComponentTaskCards(taskStructs map[string]*structpb.Struct) []*pb.ComponentTask {
+	taskCards := make([]*pb.ComponentTask, 0, len(taskStructs))
+	for k, v := range taskStructs {
 
-			description := taskStructs[k].Fields["shortDescription"].GetStringValue()
-			if description == "" {
-				description = v.Fields["description"].GetStringValue()
-			}
-
-			taskCards = append(taskCards, &pb.ComponentTask{
-				Name:        k,
-				Title:       title,
-				Description: description,
-			})
+		if !strings.HasPrefix(k, "TASK_") {
+			continue
 		}
+
+		title := v.Fields["title"].GetStringValue()
+		if title == "" {
+			title = TaskIDToTitle(k)
+		}
+
+		description := taskStructs[k].Fields["shortDescription"].GetStringValue()
+		if description == "" {
+			description = v.Fields["description"].GetStringValue()
+		}
+
+		taskCards = append(taskCards, &pb.ComponentTask{
+			Name:        k,
+			Title:       title,
+			Description: description,
+		})
 	}
 
 	return taskCards
 }
 
-func generateComponentEventCards(events []string, eventStructs map[string]*structpb.Struct) []*pb.ComponentEvent {
-	eventCards := make([]*pb.ComponentEvent, 0, len(events))
-	for _, k := range events {
-		if v, ok := eventStructs[k]; ok {
-			title := v.Fields["title"].GetStringValue()
-			if title == "" {
-				title = TaskIDToTitle(k)
-			}
-
-			description := eventStructs[k].Fields["shortDescription"].GetStringValue()
-			if description == "" {
-				description = v.Fields["description"].GetStringValue()
-			}
-
-			eventCards = append(eventCards, &pb.ComponentEvent{
-				Name:        k,
-				Title:       title,
-				Description: description,
-			})
+func generateComponentEventCards(eventStructs map[string]*structpb.Struct) []*pb.ComponentEvent {
+	eventCards := make([]*pb.ComponentEvent, 0, len(eventStructs))
+	for k, v := range eventStructs {
+		if !strings.HasPrefix(k, "EVENT_") {
+			continue
 		}
+		title := v.Fields["title"].GetStringValue()
+		if title == "" {
+			title = EventIDToTitle(k)
+		}
+
+		description := eventStructs[k].Fields["shortDescription"].GetStringValue()
+		if description == "" {
+			description = v.Fields["description"].GetStringValue()
+		}
+
+		eventCards = append(eventCards, &pb.ComponentEvent{
+			Name:        k,
+			Title:       title,
+			Description: description,
+		})
+
 	}
 	return eventCards
 }
@@ -577,7 +582,7 @@ func generateDataSpecs(tasks map[string]*structpb.Struct) (map[string]*pb.DataSp
 	return specs, nil
 }
 
-func loadTasks(availableTasks []string, tasksJSONBytes []byte) ([]*pb.ComponentTask, map[string]*structpb.Struct, error) {
+func loadTasks(tasksJSONBytes []byte) ([]*pb.ComponentTask, map[string]*structpb.Struct, error) {
 
 	taskStructs := map[string]*structpb.Struct{}
 	var err error
@@ -588,20 +593,20 @@ func loadTasks(availableTasks []string, tasksJSONBytes []byte) ([]*pb.ComponentT
 		return nil, nil, err
 	}
 
-	for _, t := range availableTasks {
-		if v, ok := tasksJSONMap[t]; ok {
-			taskStructs[t], err = structpb.NewStruct(v)
-			if err != nil {
-				return nil, nil, err
-			}
-
+	for t, v := range tasksJSONMap {
+		if !strings.HasPrefix(t, "TASK_") {
+			continue
+		}
+		taskStructs[t], err = structpb.NewStruct(v)
+		if err != nil {
+			return nil, nil, err
 		}
 	}
-	tasks := generateComponentTaskCards(availableTasks, taskStructs)
+	tasks := generateComponentTaskCards(taskStructs)
 	return tasks, taskStructs, nil
 }
 
-func loadEvents(availableEvents []string, eventsJSONBytes []byte) ([]*pb.ComponentEvent, error) {
+func loadEvents(eventsJSONBytes []byte) ([]*pb.ComponentEvent, error) {
 	eventStructs := map[string]*structpb.Struct{}
 	var err error
 
@@ -611,16 +616,16 @@ func loadEvents(availableEvents []string, eventsJSONBytes []byte) ([]*pb.Compone
 		return nil, err
 	}
 
-	for _, t := range availableEvents {
-		if v, ok := eventsJSONMap[t]; ok {
-			eventStructs[t], err = structpb.NewStruct(v)
-			if err != nil {
-				return nil, err
-			}
-
+	for t, v := range eventsJSONMap {
+		if !strings.HasPrefix(t, "EVENT_") {
+			continue
+		}
+		eventStructs[t], err = structpb.NewStruct(v)
+		if err != nil {
+			return nil, err
 		}
 	}
-	events := generateComponentEventCards(availableEvents, eventStructs)
+	events := generateComponentEventCards(eventStructs)
 	return events, nil
 }
 
@@ -801,12 +806,7 @@ func (c *Component) LoadDefinition(definitionYAMLBytes, setupYAMLBytes, tasksYAM
 		return err
 	}
 
-	availableTasks := []string{}
-	for _, availableTask := range definitionJSON.(map[string]any)["availableTasks"].([]any) {
-		availableTasks = append(availableTasks, availableTask.(string))
-	}
-
-	tasks, taskStructs, err := loadTasks(availableTasks, renderedTasksJSON)
+	tasks, taskStructs, err := loadTasks(renderedTasksJSON)
 	if err != nil {
 		return err
 	}
@@ -851,11 +851,7 @@ func (c *Component) LoadDefinition(definitionYAMLBytes, setupYAMLBytes, tasksYAM
 	}
 
 	if eventsJSONBytes != nil {
-		availableEvents := []string{}
-		for _, availableEvent := range definitionJSON.(map[string]any)["availableEvents"].([]any) {
-			availableEvents = append(availableEvents, availableEvent.(string))
-		}
-		events, err := loadEvents(availableEvents, eventsJSONBytes)
+		events, err := loadEvents(eventsJSONBytes)
 		if err != nil {
 			return err
 		}

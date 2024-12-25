@@ -9,13 +9,13 @@ The Image component is an operator component that allows users to manipulate ima
 It can carry out the following tasks:
 - [Concat](#concat)
 - [Crop](#crop)
-- [Resize](#resize)
 - [Draw Classification](#draw-classification)
 - [Draw Detection](#draw-detection)
+- [Draw Instance Segmentation](#draw-instance-segmentation)
 - [Draw Keypoint](#draw-keypoint)
 - [Draw OCR](#draw-ocr)
-- [Draw Instance Segmentation](#draw-instance-segmentation)
 - [Draw Semantic Segmentation](#draw-semantic-segmentation)
+- [Resize](#resize)
 
 
 
@@ -96,34 +96,6 @@ Crop image to the specified size.
 </div>
 
 
-### Resize
-
-Resize image to the specified size.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_RESIZE` |
-| Image (required) | `image` | string | Input image. |
-| Ratio | `ratio` | number | Resize ratio (e.g., 0.5 for half size, 2 for double size) to resize the image. If ratio is provided, width and height will be ignored. |
-| Width | `width` | integer | Width of the output image. |
-| Height | `height` | integer | Height of the output image. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Image | `image` | image/png | Output image. |
-</div>
-
-
 ### Draw Classification
 
 Draw classification result on the image.
@@ -183,6 +155,62 @@ A list of detected objects.
 | Score | `score` | number | The confidence score of the predicted category of the bounding box.  |
 </div>
 <h4 id="draw-detection-bounding-box">Bounding Box</h4>
+
+The detected bounding box in (left, top, width, height) format.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Format | Note |
+| :--- | :--- | :--- | :--- |
+| Height | `height` | number | Bounding box height value  |
+| Left | `left` | number | Bounding box left x-axis value  |
+| Top | `top` | number | Bounding box top y-axis value  |
+| Width | `width` | number | Bounding box width value  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Image | `image` | image/png | Output image. |
+</div>
+
+
+### Draw Instance Segmentation
+
+Draw instance segmentation result on the image.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DRAW_INSTANCE_SEGMENTATION` |
+| Image (required) | `image` | string | Input image. |
+| [Objects](#draw-instance-segmentation-objects) (required) | `objects` | array[object] | A list of detected instance bounding boxes. |
+| Show Score | `show-score` | boolean | Show model confidence score on each instance. |
+</div>
+
+
+<details>
+<summary> Input Objects in Draw Instance Segmentation</summary>
+
+<h4 id="draw-instance-segmentation-objects">Objects</h4>
+
+A list of detected instance bounding boxes.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Format | Note |
+| :--- | :--- | :--- | :--- |
+| [Bounding Box](#draw-instance-segmentation-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format.  |
+| Category | `category` | string | The predicted category of the bounding box.  |
+| RLE | `rle` | string | Run Length Encoding (RLE) of instance mask within the bounding box.  |
+| Score | `score` | number | The confidence score of the predicted instance object.  |
+</div>
+<h4 id="draw-instance-segmentation-bounding-box">Bounding Box</h4>
 
 The detected bounding box in (left, top, width, height) format.
 
@@ -329,62 +357,6 @@ The detected bounding box in (left, top, width, height) format.
 </div>
 
 
-### Draw Instance Segmentation
-
-Draw instance segmentation result on the image.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DRAW_INSTANCE_SEGMENTATION` |
-| Image (required) | `image` | string | Input image. |
-| [Objects](#draw-instance-segmentation-objects) (required) | `objects` | array[object] | A list of detected instance bounding boxes. |
-| Show Score | `show-score` | boolean | Show model confidence score on each instance. |
-</div>
-
-
-<details>
-<summary> Input Objects in Draw Instance Segmentation</summary>
-
-<h4 id="draw-instance-segmentation-objects">Objects</h4>
-
-A list of detected instance bounding boxes.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Format | Note |
-| :--- | :--- | :--- | :--- |
-| [Bounding Box](#draw-instance-segmentation-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format.  |
-| Category | `category` | string | The predicted category of the bounding box.  |
-| RLE | `rle` | string | Run Length Encoding (RLE) of instance mask within the bounding box.  |
-| Score | `score` | number | The confidence score of the predicted instance object.  |
-</div>
-<h4 id="draw-instance-segmentation-bounding-box">Bounding Box</h4>
-
-The detected bounding box in (left, top, width, height) format.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Format | Note |
-| :--- | :--- | :--- | :--- |
-| Height | `height` | number | Bounding box height value  |
-| Left | `left` | number | Bounding box left x-axis value  |
-| Top | `top` | number | Bounding box top y-axis value  |
-| Width | `width` | number | Bounding box width value  |
-</div>
-</details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Image | `image` | image/png | Output image. |
-</div>
-
-
 ### Draw Semantic Segmentation
 
 Draw semantic segmentation result on the image.
@@ -414,6 +386,34 @@ A list of RLE binary masks.
 | RLE | `rle` | string | Run Length Encoding (RLE) of each stuff mask within the image.  |
 </div>
 </details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Image | `image` | image/png | Output image. |
+</div>
+
+
+### Resize
+
+Resize image to the specified size.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_RESIZE` |
+| Image (required) | `image` | string | Input image. |
+| Ratio | `ratio` | number | Resize ratio (e.g., 0.5 for half size, 2 for double size) to resize the image. If ratio is provided, width and height will be ignored. |
+| Width | `width` | integer | Width of the output image. |
+| Height | `height` | integer | Height of the output image. |
+</div>
+
+
+
 
 
 

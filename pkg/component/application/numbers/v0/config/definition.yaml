@@ -1,5 +1,3 @@
-availableTasks:
-- TASK_REGISTER
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/application/numbers
 icon: assets/numbers.svg

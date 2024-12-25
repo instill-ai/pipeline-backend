@@ -14,8 +14,6 @@ compogen readme ./pkg/dummy/config ./pkg/dummy/README.mdx --extraContents setup=
 cmp pkg/dummy/README.mdx want-readme.mdx
 
 -- definition.yaml --
-availableTasks:
-  - TASK_DUMMY
 public: true
 id: dummy
 title: Dummy

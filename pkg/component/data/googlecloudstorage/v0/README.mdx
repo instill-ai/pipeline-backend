@@ -7,9 +7,9 @@ description: "Learn about how to set up a VDP Google Cloud Storage component htt
 
 The Google Cloud Storage component is a data component that allows users to upload data to Google's Cloud Storage.
 It can carry out the following tasks:
-- [Upload](#upload)
-- [Read Objects](#read-objects)
 - [Create Bucket](#create-bucket)
+- [Read Objects](#read-objects)
+- [Upload](#upload)
 
 
 
@@ -50,18 +50,18 @@ ${connection.<my-connection-id>}`.
 
 ## Supported Tasks
 
-### Upload
+### Create Bucket
 
-Upload data to Google Cloud Storage.
+Read objects from Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_UPLOAD` |
+| Task ID (required) | `task` | string | `TASK_CREATE_BUCKET` |
 | Bucket Name (required) | `bucket-name` | string | Name of the bucket to be used for object storage. |
-| Object Name (required) | `object-name` | string | The name of the object to be created. |
-| Data (required) | `data` | string | The data to be saved in the object. |
+| Project ID (required) | `project-id` | string | The project ID to create the bucket in. |
+| Location | `location` | string | The location to create the bucket in. |
 </div>
 
 
@@ -73,11 +73,9 @@ Upload data to Google Cloud Storage.
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Authenticated URL (optional) | `authenticated-url` | string | Only users granted permission can access the object with this link. |
-| Gsutil URI (optional) | `gsutil-uri` | string | File path to this resource in Cloud Storage. |
-| Public Access (optional) | `public-access` | boolean | Whether the object is publicly accessible. |
-| Public URL (optional) | `public-url` | string | Anyone with this link can access the object on the public Internet. |
-| Upload Status | `status` | string | Status of the upload operation. |
+| Result (optional) | `result` | string | The result of the operation. |
+| Bucket Name (optional) | `name` | string | The name of the bucket. |
+| Location (optional) | `location` | string | The location of the bucket. |
 </div>
 
 
@@ -262,18 +260,18 @@ Read objects from Google Cloud Storage.
 </details>
 
 
-### Create Bucket
+### Upload
 
-Read objects from Google Cloud Storage.
+Upload data to Google Cloud Storage.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CREATE_BUCKET` |
+| Task ID (required) | `task` | string | `TASK_UPLOAD` |
 | Bucket Name (required) | `bucket-name` | string | Name of the bucket to be used for object storage. |
-| Project ID (required) | `project-id` | string | The project ID to create the bucket in. |
-| Location | `location` | string | The location to create the bucket in. |
+| Object Name (required) | `object-name` | string | The name of the object to be created. |
+| Data (required) | `data` | string | The data to be saved in the object. |
 </div>
 
 
@@ -285,9 +283,11 @@ Read objects from Google Cloud Storage.
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Result (optional) | `result` | string | The result of the operation. |
-| Bucket Name (optional) | `name` | string | The name of the bucket. |
-| Location (optional) | `location` | string | The location of the bucket. |
+| Authenticated URL (optional) | `authenticated-url` | string | Only users granted permission can access the object with this link. |
+| Gsutil URI (optional) | `gsutil-uri` | string | File path to this resource in Cloud Storage. |
+| Public Access (optional) | `public-access` | boolean | Whether the object is publicly accessible. |
+| Public URL (optional) | `public-url` | string | Anyone with this link can access the object on the public Internet. |
+| Upload Status | `status` | string | Status of the upload operation. |
 </div>
 
 

@@ -33,12 +33,11 @@ func (rs releaseStage) String() string {
 }
 
 type definition struct {
-	ID             string       `json:"id" validate:"required"`
-	Title          string       `json:"title" validate:"required"`
-	Description    string       `json:"description" validate:"required"`
-	ReleaseStage   releaseStage `json:"releaseStage" validate:"required"`
-	AvailableTasks []string     `json:"availableTasks"`
-	SourceURL      string       `json:"sourceUrl" validate:"url"`
+	ID           string       `json:"id" validate:"required"`
+	Title        string       `json:"title" validate:"required"`
+	Description  string       `json:"description" validate:"required"`
+	ReleaseStage releaseStage `json:"releaseStage" validate:"required"`
+	SourceURL    string       `json:"sourceUrl" validate:"url"`
 
 	Public        bool   `json:"public"`
 	Type          string `json:"type"`

@@ -8,11 +8,11 @@ description: "Learn about how to set up a VDP Chroma component https://github.co
 The Chroma component is a data component that allows users to build and search vector datasets.
 It can carry out the following tasks:
 - [Batch Upsert](#batch-upsert)
-- [Upsert](#upsert)
-- [Query](#query)
-- [Delete](#delete)
 - [Create Collection](#create-collection)
+- [Delete](#delete)
 - [Delete Collection](#delete-collection)
+- [Query](#query)
+- [Upsert](#upsert)
 
 
 
@@ -84,21 +84,19 @@ Upsert multiple vector items into a collection, existing items will be updated
 </div>
 
 
-### Upsert
+### Create Collection
 
-Upsert a vector item into a collection, existing item will be updated
+Create a collection
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_UPSERT` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the item into. |
-| ID (required) | `id` | string | The ID of the item. |
-| Metadata (required) | `metadata` | object | The vector metadata. |
-| Vector (required) | `vector` | array[number] | An array of dimensions for the vector value. |
-| Document | `document` | string | The document string value. |
-| URI | `uri` | string | The uri of the item. |
+| Task ID (required) | `task` | string | `TASK_CREATE_COLLECTION` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to create. |
+| Config | `metadata` | object | The metadata of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections). |
+| Configuration | `configuration` | object | The configuration of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections). |
+| Get or Create | `get-or-create` | boolean | If true, the collection will be created if it does not exist. |
 </div>
 
 
@@ -110,7 +108,60 @@ Upsert a vector item into a collection, existing item will be updated
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Add status. |
+| Status | `status` | string | Create collection status. |
+</div>
+
+
+### Delete
+
+Delete vector items from a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to delete the object from. |
+| ID | `id` | string | The ID of the item. |
+| Filter | `filter` | object | The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters). |
+| Filter Document | `filter-document` | string | The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Delete status. |
+</div>
+
+
+### Delete Collection
+
+Delete a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE_COLLECTION` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to delete. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Delete collection status. |
 </div>
 
 
@@ -161,19 +212,21 @@ Perform a vector search on a collection
 </details>
 
 
-### Delete
+### Upsert
 
-Delete vector items from a collection
+Upsert a vector item into a collection, existing item will be updated
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DELETE` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to delete the object from. |
-| ID | `id` | string | The ID of the item. |
-| Filter | `filter` | object | The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters). |
-| Filter Document | `filter-document` | string | The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents). |
+| Task ID (required) | `task` | string | `TASK_UPSERT` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the item into. |
+| ID (required) | `id` | string | The ID of the item. |
+| Metadata (required) | `metadata` | object | The vector metadata. |
+| Vector (required) | `vector` | array[number] | An array of dimensions for the vector value. |
+| Document | `document` | string | The document string value. |
+| URI | `uri` | string | The uri of the item. |
 </div>
 
 
@@ -185,60 +238,7 @@ Delete vector items from a collection
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete status. |
-</div>
-
-
-### Create Collection
-
-Create a collection
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CREATE_COLLECTION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to create. |
-| Config | `metadata` | object | The metadata of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections). |
-| Configuration | `configuration` | object | The configuration of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections). |
-| Get or Create | `get-or-create` | boolean | If true, the collection will be created if it does not exist. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create collection status. |
-</div>
-
-
-### Delete Collection
-
-Delete a collection
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DELETE_COLLECTION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to delete. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete collection status. |
+| Status | `status` | string | Add status. |
 </div>
 
 

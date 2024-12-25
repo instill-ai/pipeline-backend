@@ -80,9 +80,6 @@ component.
   "type": "COMPONENT_TYPE_OPERATOR",
   "description": "'Hello, world' operator used as a template for adding components",
   "spec": {},
-  "availableTasks": [
-    "TASK_GREET"
-  ],
   "documentationUrl": "https://www.instill.tech/docs/component/operator/hello",
   "icon": "assets/hello.svg",
   "version": "0.1.0",
@@ -103,10 +100,6 @@ This file defines the component properties:
 - **`spec`** contains the parameters required to configure the component and
   that are independent from its tasks. E.g., the API token of a vendor. In
   general, only AI, data or application components need such parameters.
-- **`availableTasks`** defines the tasks the component can perform.
-  - When a component is created in a pipeline, one of the tasks has to be
-    selected, i.e., a configured component can only execute one task.
-  - Task configurations are defined in `tasks.json`.
 - **`documentationUrl`** points to the official documentation of the component.
 - **`icon`** is the local path to the icon that will be displayed in the console
   when creating the component. If left blank, a placeholder icon will be shown.

@@ -7,10 +7,10 @@ description: "Learn about how to set up a VDP Pinecone component https://github.
 
 The Pinecone component is a data component that allows users to build and search vector datasets.
 It can carry out the following tasks:
-- [Query](#query)
-- [Upsert](#upsert)
 - [Batch Upsert](#batch-upsert)
+- [Query](#query)
 - [Rerank](#rerank)
+- [Upsert](#upsert)
 
 
 
@@ -51,6 +51,47 @@ ${connection.<my-connection-id>}`.
 
 
 ## Supported Tasks
+
+### Batch Upsert
+
+Writes vectors into a namespace. If a new value is upserted for an existing vector ID, it will overwrite the previous value.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
+| [Vectors](#batch-upsert-vectors) (required) | `vectors` | array[object] | Array of vectors to upsert |
+| Namespace | `namespace` | string | The namespace to query. |
+</div>
+
+
+<details>
+<summary> Input Objects in Batch Upsert</summary>
+
+<h4 id="batch-upsert-vectors">Vectors</h4>
+
+Array of vectors to upsert
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Format | Note |
+| :--- | :--- | :--- | :--- |
+| ID | `id` | string | The unique ID of the vector.  |
+| Metadata | `metadata` | object | The vector metadata. This is a set of key-value pairs that can be used to store additional information about the vector. The values can have the following types: string, number, boolean, or array of strings.  |
+| Values | `values` | array | An array of dimensions for the vector to be saved.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Upserted Count | `upserted-count` | integer | Number of records modified or added. |
+</div>
+
 
 ### Query
 
@@ -101,75 +142,6 @@ Retrieve the ids of the most similar items in a namespace, along with their simi
 </details>
 
 
-### Upsert
-
-Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value. This task will be soon replaced by `TASK_BATCH_UPSERT`, which extends its functionality.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_UPSERT` |
-| ID (required) | `id` | string | This is the vector's unique id. |
-| Values (required) | `values` | array[number] | An array of dimensions for the vector to be saved. |
-| Namespace | `namespace` | string | The namespace to query. |
-| Metadata | `metadata` | object | The vector metadata. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Upserted Count | `upserted-count` | integer | Number of records modified or added. |
-</div>
-
-
-### Batch Upsert
-
-Writes vectors into a namespace. If a new value is upserted for an existing vector ID, it will overwrite the previous value.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
-| [Vectors](#batch-upsert-vectors) (required) | `vectors` | array[object] | Array of vectors to upsert |
-| Namespace | `namespace` | string | The namespace to query. |
-</div>
-
-
-<details>
-<summary> Input Objects in Batch Upsert</summary>
-
-<h4 id="batch-upsert-vectors">Vectors</h4>
-
-Array of vectors to upsert
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Format | Note |
-| :--- | :--- | :--- | :--- |
-| ID | `id` | string | The unique ID of the vector.  |
-| Metadata | `metadata` | object | The vector metadata. This is a set of key-value pairs that can be used to store additional information about the vector. The values can have the following types: string, number, boolean, or array of strings.  |
-| Values | `values` | array | An array of dimensions for the vector to be saved.  |
-</div>
-</details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Upserted Count | `upserted-count` | integer | Number of records modified or added. |
-</div>
-
-
 ### Rerank
 
 Rerank documents, such as text passages, according to their relevance to a query. The input is a list of documents and a query. The output is a list of documents, sorted by relevance to the query.
@@ -195,6 +167,34 @@ Rerank documents, such as text passages, according to their relevance to a query
 | :--- | :--- | :--- | :--- |
 | Reranked Documents. | `documents` | array[string] | Reranked documents. |
 | Scores | `scores` | array[number] | The relevance score of the documents normalized between 0 and 1. |
+</div>
+
+
+### Upsert
+
+Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value. This task will be soon replaced by `TASK_BATCH_UPSERT`, which extends its functionality.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_UPSERT` |
+| ID (required) | `id` | string | This is the vector's unique id. |
+| Values (required) | `values` | array[number] | An array of dimensions for the vector to be saved. |
+| Namespace | `namespace` | string | The namespace to query. |
+| Metadata | `metadata` | object | The vector metadata. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Upserted Count | `upserted-count` | integer | Number of records modified or added. |
 </div>
 
 

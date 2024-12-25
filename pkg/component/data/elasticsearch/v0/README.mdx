@@ -7,14 +7,14 @@ description: "Learn about how to set up a VDP Elasticsearch component https://gi
 
 The Elasticsearch component is a data component that allows users to access the Elasticsearch database.
 It can carry out the following tasks:
-- [Search](#search)
-- [Vector Search](#vector-search)
+- [Create Index](#create-index)
+- [Delete](#delete)
+- [Delete Index](#delete-index)
 - [Index](#index)
 - [Multi Index](#multi-index)
+- [Search](#search)
 - [Update](#update)
-- [Delete](#delete)
-- [Create Index](#create-index)
-- [Delete Index](#delete-index)
+- [Vector Search](#vector-search)
 
 
 
@@ -56,23 +56,46 @@ ${connection.<my-connection-id>}`.
 
 ## Supported Tasks
 
-### Search
+### Create Index
 
-Search for documents in Elasticsearch, support full text search
+Create an index in Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_SEARCH` |
+| Task ID (required) | `task` | string | `TASK_CREATE_INDEX` |
+| Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
+| Mappings | `mappings` | object | Index mappings which starts with \{"mappings":\{"properties"\}\} field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html) for vector search and [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html) for other mappings. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Create index operation status. |
+</div>
+
+
+### Delete
+
+Delete documents from Elasticsearch
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
 | ID | `id` | string | The ID of the document. |
-| Query | `query` | string | Full text search query for search task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected. |
+| Query | `query` | string | Full text search query for delete task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected. |
 | Filter | `filter` | object | The query dsl filter which starts with "query" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html). |
 | Filter SQL | `filter-sql` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter. |
-| Size | `size` | integer | Number of documents to return. If empty then all documents will be returned. |
-| Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned. |
-| Minimum Score | `min-score` | number | Minimum score to consider for search results. If empty then no minimum score will be considered. |
 </div>
 
 
@@ -84,44 +107,20 @@ Search for documents in Elasticsearch, support full text search
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Search operation status. |
-| [Result](#search-result) | `result` | object | Result of the search operation. |
+| Status | `status` | string | Delete operation status. |
 </div>
 
-<details>
-<summary> Output Objects in Search</summary>
 
-<h4 id="search-result">Result</h4>
+### Delete Index
 
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Format | Note |
-| :--- | :--- | :--- | :--- |
-| [Data](#search-data) | `data` | array | The data returned from the search operation. |
-| [Documents](#search-documents) | `documents` | array | The documents returned from the search operation. |
-| IDs | `ids` | array | The ids returned from the search operation. |
-</div>
-</details>
-
-
-### Vector Search
-
-Search for vector similarity search in Elasticsearch
+Delete an index in Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
+| Task ID (required) | `task` | string | `TASK_DELETE_INDEX` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
-| Field (required) | `field` | string | Field name of the vector to search for similar vectors. |
-| Query Vector | `query-vector` | array[number] | Query vector to search for similar vectors. |
-| K | `k` | integer | K of documents to do kNN vector search. |
-| Num Candidates | `num-candidates` | integer | Number of candidates to be considered for kNN vector search. Default to 2 times of k. |
-| Filter | `filter` | object | The query dsl filter which starts with "filter" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/knn-search.html#knn-search-filter-example). |
-| Filter SQL | `filter-sql` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter. |
-| Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned. |
-| Minimum Score | `min-score` | number | Minimum score to consider for search results. If empty then no minimum score will be considered. |
 </div>
 
 
@@ -133,25 +132,8 @@ Search for vector similarity search in Elasticsearch
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Search operation status. |
-| [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
+| Status | `status` | string | Delete index operation status. |
 </div>
-
-<details>
-<summary> Output Objects in Vector Search</summary>
-
-<h4 id="vector-search-result">Result</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Format | Note |
-| :--- | :--- | :--- | :--- |
-| [Documents](#vector-search-documents) | `documents` | array | The documents returned from the vector search operation. |
-| IDs | `ids` | array | The ids returned from the vector search operation. |
-| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
-| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
-</div>
-</details>
 
 
 ### Index
@@ -208,6 +190,54 @@ Index multiple documents into Elasticsearch with bulk API
 </div>
 
 
+### Search
+
+Search for documents in Elasticsearch, support full text search
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SEARCH` |
+| Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
+| ID | `id` | string | The ID of the document. |
+| Query | `query` | string | Full text search query for search task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected. |
+| Filter | `filter` | object | The query dsl filter which starts with "query" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html). |
+| Filter SQL | `filter-sql` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter. |
+| Size | `size` | integer | Number of documents to return. If empty then all documents will be returned. |
+| Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned. |
+| Minimum Score | `min-score` | number | Minimum score to consider for search results. If empty then no minimum score will be considered. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Search operation status. |
+| [Result](#search-result) | `result` | object | Result of the search operation. |
+</div>
+
+<details>
+<summary> Output Objects in Search</summary>
+
+<h4 id="search-result">Result</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Format | Note |
+| :--- | :--- | :--- | :--- |
+| [Data](#search-data) | `data` | array | The data returned from the search operation. |
+| [Documents](#search-documents) | `documents` | array | The documents returned from the search operation. |
+| IDs | `ids` | array | The ids returned from the search operation. |
+</div>
+</details>
+
+
 ### Update
 
 Update a document in Elasticsearch
@@ -238,20 +268,24 @@ Update a document in Elasticsearch
 </div>
 
 
-### Delete
+### Vector Search
 
-Delete documents from Elasticsearch
+Search for vector similarity search in Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DELETE` |
+| Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
-| ID | `id` | string | The ID of the document. |
-| Query | `query` | string | Full text search query for delete task, query will be prioritised over filter if both are provided, if both query and filter are not provided, all documents will be selected. |
-| Filter | `filter` | object | The query dsl filter which starts with "query" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html). |
+| Field (required) | `field` | string | Field name of the vector to search for similar vectors. |
+| Query Vector | `query-vector` | array[number] | Query vector to search for similar vectors. |
+| K | `k` | integer | K of documents to do kNN vector search. |
+| Num Candidates | `num-candidates` | integer | Number of candidates to be considered for kNN vector search. Default to 2 times of k. |
+| Filter | `filter` | object | The query dsl filter which starts with "filter" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/knn-search.html#knn-search-filter-example). |
 | Filter SQL | `filter-sql` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter. |
+| Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned. |
+| Minimum Score | `min-score` | number | Minimum score to consider for search results. If empty then no minimum score will be considered. |
 </div>
 
 
@@ -263,59 +297,25 @@ Delete documents from Elasticsearch
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete operation status. |
+| Status | `status` | string | Search operation status. |
+| [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
 </div>
 
+<details>
+<summary> Output Objects in Vector Search</summary>
 
-### Create Index
-
-Create an index in Elasticsearch
+<h4 id="vector-search-result">Result</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CREATE_INDEX` |
-| Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
-| Mappings | `mappings` | object | Index mappings which starts with \{"mappings":\{"properties"\}\} field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html) for vector search and [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html) for other mappings. |
+| [Documents](#vector-search-documents) | `documents` | array | The documents returned from the vector search operation. |
+| IDs | `ids` | array | The ids returned from the vector search operation. |
+| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
+| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
 </div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create index operation status. |
-</div>
-
-
-### Delete Index
-
-Delete an index in Elasticsearch
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DELETE_INDEX` |
-| Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete index operation status. |
-</div>
+</details>
 
 
 

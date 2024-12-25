@@ -7,8 +7,8 @@ description: "Learn about how to set up a VDP Ollama component https://github.co
 
 The Ollama component is an AI component that allows users to connect the AI models served with the Ollama library.
 It can carry out the following tasks:
-- [Text Generation Chat](#text-generation-chat)
 - [Text Embeddings](#text-embeddings)
+- [Text Generation Chat](#text-generation-chat)
 
 
 
@@ -49,6 +49,32 @@ ${connection.<my-connection-id>}`.
 
 
 ## Supported Tasks
+
+### Text Embeddings
+
+An embedding is a list of floating point numbers that captures semantic information about the text that it represents.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
+| Model Name (required) | `model` | string | The OSS model to be used, check [here](https://ollama.com/library) for list of models available. |
+| Text (required) | `text` | string | The text. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Embedding | `embedding` | array[number] | Embedding of the input text. |
+</div>
+
 
 ### Text Generation Chat
 
@@ -131,31 +157,5 @@ To set up an Ollama instance on your local machine, follow the instructions belo
     - On Windows, open the command prompt and type `ipconfig`.
 4. Suppose the IP address is `192.168.178.88`, then the Ollama hosting endpoint would be `192.168.178.88:11434`.
 5. Enjoy fast LLM inference on your local machine and integration with 💧 Instill VDP.
-
-### Text Embeddings
-
-An embedding is a list of floating point numbers that captures semantic information about the text that it represents.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
-| Model Name (required) | `model` | string | The OSS model to be used, check [here](https://ollama.com/library) for list of models available. |
-| Text (required) | `text` | string | The text. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Embedding | `embedding` | array[number] | Embedding of the input text. |
-</div>
-
 
 

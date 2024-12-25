@@ -7,8 +7,8 @@ description: "Learn about how to set up a VDP Email component https://github.com
 
 The Email component is an application component that allows users to get and send email from Mail Protocol.
 It can carry out the following tasks:
-- [Send Email](#send-email)
 - [Read Emails](#read-emails)
+- [Send Email](#send-email)
 
 You can connect to different email servers through the Email component.
 Emails are fetched and sent using the IMAP and SMTP protocols, respectively. You can set the server address and port for each protocol in the component configuration.
@@ -79,35 +79,6 @@ For App Password, please follow the steps below:
 
 
 ## Supported Tasks
-
-### Send Email
-
-Send an email to recipients
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_SEND_EMAIL` |
-| Recipient (required) | `recipients` | array[string] | The email addresses of the recipients. |
-| CC | `cc` | array[string] | The email addresses for Carbon Copy. |
-| BCC | `bcc` | array[string] | The email addresses for Blind Carbon Copy. |
-| Subject | `subject` | string | The subject of the email. |
-| Message (required) | `message` | string | The message to be sent. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Result | `result` | string | The result of sending the email. |
-</div>
-
 
 ### Read Emails
 
@@ -184,5 +155,34 @@ Take Gmail as an example, the mailbox names are following.
 #### Search From and Search To
 You need to input the exact same email address with `<` as a prefix and `>` as a suffix as the email you want to search for.
 For example, if you want to search for the email from `email@example.com`, you need to input `<email@example.com>`.
+
+### Send Email
+
+Send an email to recipients
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SEND_EMAIL` |
+| Recipient (required) | `recipients` | array[string] | The email addresses of the recipients. |
+| CC | `cc` | array[string] | The email addresses for Carbon Copy. |
+| BCC | `bcc` | array[string] | The email addresses for Blind Carbon Copy. |
+| Subject | `subject` | string | The subject of the email. |
+| Message (required) | `message` | string | The message to be sent. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Result | `result` | string | The result of sending the email. |
+</div>
+
 
 

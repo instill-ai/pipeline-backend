@@ -17,13 +17,12 @@ func TestDefinition_Validate(t *testing.T) {
 	// Returns a valid struct
 	validStruct := func() *definition {
 		return &definition{
-			ID:             "foo",
-			Title:          "Foo",
-			Description:    "Foo bar",
-			Public:         false,
-			ReleaseStage:   3,
-			AvailableTasks: []string{"TASK_1", "TASK_2"},
-			SourceURL:      "https://github.com/instill-ai",
+			ID:           "foo",
+			Title:        "Foo",
+			Description:  "Foo bar",
+			Public:       false,
+			ReleaseStage: 3,
+			SourceURL:    "https://github.com/instill-ai",
 		}
 	}
 

@@ -7,21 +7,21 @@ description: "Learn about how to set up a VDP HubSpot component https://github.c
 
 The HubSpot component is an application component that allows users to use HubSpot application to do various tasks.
 It can carry out the following tasks:
-- [Get Contact](#get-contact)
-- [Create Contact](#create-contact)
-- [Get Deal](#get-deal)
-- [Create Deal](#create-deal)
-- [Update Deal](#update-deal)
-- [Get Company](#get-company)
 - [Create Company](#create-company)
-- [Get Ticket](#get-ticket)
+- [Create Contact](#create-contact)
+- [Create Deal](#create-deal)
 - [Create Ticket](#create-ticket)
-- [Update Ticket](#update-ticket)
+- [Get All](#get-all)
+- [Get Company](#get-company)
+- [Get Contact](#get-contact)
+- [Get Deal](#get-deal)
+- [Get Owner](#get-owner)
 - [Get Thread](#get-thread)
+- [Get Ticket](#get-ticket)
 - [Insert Message](#insert-message)
 - [Retrieve Association](#retrieve-association)
-- [Get Owner](#get-owner)
-- [Get All](#get-all)
+- [Update Deal](#update-deal)
+- [Update Ticket](#update-ticket)
 
 
 
@@ -62,16 +62,30 @@ ${connection.<my-connection-id>}`.
 
 ## Supported Tasks
 
-### Get Contact
+### Create Company
 
-Get contact information using contact ID or Email
+Create new company
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_GET_CONTACT` |
-| Contact ID or Email (required) | `contact-id-or-email` | string | Input contact ID or email. If the input has @, it will search the contact using email. |
+| Task ID (required) | `task` | string | `TASK_CREATE_COMPANY` |
+| Owner ID | `owner-id` | string | The user who is assigned to the object. |
+| Company Name | `company-name` | string | Company name. |
+| Company Domain (required) | `company-domain` | string | The domain name of the company. |
+| Description | `description` | string | Description of the company. |
+| Phone Number | `phone-number` | string | Phone number of the company. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example: +886xxxxxxxxx. |
+| Industry | `industry` | string | The industry the company belongs to. Default format is in capital letters, with _ as space. Example: BROADCAST_MEDIA. |
+| Company Type | `company-type` | string | Type of company. Default format is capital letter. Example: RESELLER. |
+| City | `city` | string | City. |
+| State | `state` | string | State. |
+| Country | `country` | string | Country. |
+| Postal Code | `postal-code,` | string | Postal code. |
+| Time Zone | `time-zone` | string | Time zone. |
+| Annual Revenue | `annual-revenue` | number | Annual revenue. |
+| Linkedin Page | `linkedin-page` | string | Linkedin page of the company. |
+| Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object. |
 </div>
 
 
@@ -83,16 +97,7 @@ Get contact information using contact ID or Email
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Owner ID (optional) | `owner-id` | string | The user who is assigned to the object. |
-| Email Address (optional) | `email` | string | Email address. |
-| First Name (optional) | `first-name` | string | First name. |
-| Last Name (optional) | `last-name` | string | Last name. |
-| Phone Number (optional) | `phone-number` | string | Phone number. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example: +886xxxxxxxxx. |
-| Company (optional) | `company` | string | Company. |
-| Job Title (optional) | `job-title` | string | Job title. |
-| Lifecycle Stage (optional) | `lifecycle-stage` | string | Lifecycle stages are used to track how contacts or companies move forward in your process. Default format is in small letters, all words are combined. Example: salesqualifiedlead. However, remember to check internal value for custom fields. |
-| Lead Status (optional) | `lead-status` | string | The contact's sales, prospecting or outreach status. Default format is in capital letters, with _ as space. Example: IN_PROGRESS. However, remember to check internal value for custom fields. |
-| Contact ID | `contact-id` | string | Contact ID. |
+| Company ID | `company-id` | string | Company ID. |
 </div>
 
 
@@ -132,39 +137,6 @@ Create new contact
 </div>
 
 
-### Get Deal
-
-Get deal information using deal ID
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_GET_DEAL` |
-| Deal ID (required) | `deal-id` | string | Input deal ID. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Owner ID (optional) | `owner-id` | string | The user who is assigned to the object. |
-| Deal Name | `deal-name` | string | Deal name. |
-| Pipeline | `pipeline` | string | A pipeline is the place where you document and manage how your prospects move through the steps of your sales process. HubSpot uses interval value rather than the name displayed in the view. |
-| Deal Stage | `deal-stage` | string | Deal stages allow you to categorize and track the progress of the deals that you are working on. Default format is in small letters, all words are combined. Example: qualifiedtobuy. However, remember to check internal value for custom fields. |
-| Amount (optional) | `amount` | number | The total amount of the deal. |
-| Deal Type (optional) | `deal-type` | string | The type of deal. Default format is in small letters, all words are combined. Example: newbusiness. However, remember to check internal value for custom fields. |
-| Close Date (optional) | `close-date` | string | Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
-| Create Date (optional) | `create-date` | string | Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
-| Associated Contact IDs (optional) | `associated-contact-ids` | array[string] | Contact IDs associated with the object. |
-</div>
-
-
 ### Create Deal
 
 Create new deal
@@ -197,23 +169,22 @@ Create new deal
 </div>
 
 
-### Update Deal
+### Create Ticket
 
-Update existing deal
+Create new ticket
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_UPDATE_DEAL` |
-| Deal ID (required) | `deal-id` | string | Input deal ID. |
+| Task ID (required) | `task` | string | `TASK_CREATE_TICKET` |
 | Owner ID | `owner-id` | string | The user who is assigned to the object. |
-| Deal Name | `deal-name` | string | Deal name. |
-| Pipeline | `pipeline` | string | A pipeline is the place where you document and manage how your prospects move through the steps of your sales process. HubSpot uses interval value rather than the name displayed in the view. |
-| Deal Stage | `deal-stage` | string | Deal stages allow you to categorize and track the progress of the deals that you are working on. Default format is in small letters, all words are combined. Example: qualifiedtobuy. However, remember to check internal value for custom fields. |
-| Amount | `amount` | number | The total amount of the deal. |
-| Deal Type | `deal-type` | string | The type of deal. Default format is in small letters, all words are combined. Example: newbusiness. However, remember to check internal value for custom fields. |
-| Close Date | `close-date` | string | Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
+| Ticket Name (required) | `ticket-name` | string | Ticket name. |
+| Ticket Status (required) | `ticket-status` | string | The pipeline stage that contains this ticket. Default format is number. Example: 1. However, remember to check internal value for custom fields. Note: In Instill AI, ticket-status is displayed as string because of the possible custom internal value. |
+| Pipeline (required) | `pipeline` | string | A pipeline organizes and tracks the progression of tickets through various stages of resolution within your support process. HubSpot uses interval value rather than the name displayed in the view. |
+| Categories | `categories` | array[string] | The main reason customer reached out for help. Default format is in capital letters. Example: BILLING_ISSUE. However, remember to check internal value for custom fields. |
+| Priority | `priority` | string | The level of attention needed on the ticket. Default format is in capital letters. Example: MEDIUM. However, remember to check internal value for custom fields. |
+| Source | `source` | string | Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL. |
 | Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object. |
 </div>
 
@@ -226,8 +197,33 @@ Update existing deal
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Updated by User ID | `updated-by-user-id` | string | User ID that updated the deal. |
-| Updated At | `updated-at` | string | The time when the deal was updated. |
+| Ticket ID | `ticket-id` | string | Ticket ID. |
+</div>
+
+
+### Get All
+
+Get all the IDs for a specific object (e.g. all contact IDs)
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_ALL` |
+| Object Type (required) | `object-type` | string | The object which you want to get all IDs for. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Contacts`</li><li>`Deals`</li><li>`Companies`</li><li>`Tickets`</li><li>`Threads`</li><li>`Owners`</li></ul></details>  |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Object ID Array | `object-ids` | array[string] | An array of object ID. |
+| Object IDs Length | `object-ids-length` | integer | The number of object IDs. |
 </div>
 
 
@@ -271,55 +267,16 @@ Get company information using company ID
 </div>
 
 
-### Create Company
+### Get Contact
 
-Create new company
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CREATE_COMPANY` |
-| Owner ID | `owner-id` | string | The user who is assigned to the object. |
-| Company Name | `company-name` | string | Company name. |
-| Company Domain (required) | `company-domain` | string | The domain name of the company. |
-| Description | `description` | string | Description of the company. |
-| Phone Number | `phone-number` | string | Phone number of the company. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example: +886xxxxxxxxx. |
-| Industry | `industry` | string | The industry the company belongs to. Default format is in capital letters, with _ as space. Example: BROADCAST_MEDIA. |
-| Company Type | `company-type` | string | Type of company. Default format is capital letter. Example: RESELLER. |
-| City | `city` | string | City. |
-| State | `state` | string | State. |
-| Country | `country` | string | Country. |
-| Postal Code | `postal-code,` | string | Postal code. |
-| Time Zone | `time-zone` | string | Time zone. |
-| Annual Revenue | `annual-revenue` | number | Annual revenue. |
-| Linkedin Page | `linkedin-page` | string | Linkedin page of the company. |
-| Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Company ID | `company-id` | string | Company ID. |
-</div>
-
-
-### Get Ticket
-
-Get ticket information using ticket ID
+Get contact information using contact ID or Email
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_GET_TICKET` |
-| Ticket ID (required) | `ticket-id` | string | Input ticket ID. |
+| Task ID (required) | `task` | string | `TASK_GET_CONTACT` |
+| Contact ID or Email (required) | `contact-id-or-email` | string | Input contact ID or email. If the input has @, it will search the contact using email. |
 </div>
 
 
@@ -332,36 +289,62 @@ Get ticket information using ticket ID
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
 | Owner ID (optional) | `owner-id` | string | The user who is assigned to the object. |
-| Ticket Name | `ticket-name` | string | Ticket name. |
-| Ticket Status | `ticket-status` | string | The pipeline stage that contains this ticket. Default format is number. Example: 1. However, remember to check internal value for custom fields. Note: In Instill AI, ticket-status is displayed as string because of the possible custom internal value. |
-| Pipeline | `pipeline` | string | A pipeline organizes and tracks the progression of tickets through various stages of resolution within your support process. HubSpot uses interval value rather than the name displayed in the view. |
-| Categories (optional) | `categories` | array[string] | The main reason customer reached out for help. Default format is in capital letters. Example: BILLING_ISSUE. However, remember to check internal value for custom fields. |
-| Priority (optional) | `priority` | string | The level of attention needed on the ticket. Default format is in capital letters. Example: MEDIUM. However, remember to check internal value for custom fields. |
-| Source (optional) | `source` | string | Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL. |
-| Record Source (optional) | `record-source` | string | How this record was created. |
+| Email Address (optional) | `email` | string | Email address. |
+| First Name (optional) | `first-name` | string | First name. |
+| Last Name (optional) | `last-name` | string | Last name. |
+| Phone Number (optional) | `phone-number` | string | Phone number. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example: +886xxxxxxxxx. |
+| Company (optional) | `company` | string | Company. |
+| Job Title (optional) | `job-title` | string | Job title. |
+| Lifecycle Stage (optional) | `lifecycle-stage` | string | Lifecycle stages are used to track how contacts or companies move forward in your process. Default format is in small letters, all words are combined. Example: salesqualifiedlead. However, remember to check internal value for custom fields. |
+| Lead Status (optional) | `lead-status` | string | The contact's sales, prospecting or outreach status. Default format is in capital letters, with _ as space. Example: IN_PROGRESS. However, remember to check internal value for custom fields. |
+| Contact ID | `contact-id` | string | Contact ID. |
+</div>
+
+
+### Get Deal
+
+Get deal information using deal ID
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_DEAL` |
+| Deal ID (required) | `deal-id` | string | Input deal ID. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Owner ID (optional) | `owner-id` | string | The user who is assigned to the object. |
+| Deal Name | `deal-name` | string | Deal name. |
+| Pipeline | `pipeline` | string | A pipeline is the place where you document and manage how your prospects move through the steps of your sales process. HubSpot uses interval value rather than the name displayed in the view. |
+| Deal Stage | `deal-stage` | string | Deal stages allow you to categorize and track the progress of the deals that you are working on. Default format is in small letters, all words are combined. Example: qualifiedtobuy. However, remember to check internal value for custom fields. |
+| Amount (optional) | `amount` | number | The total amount of the deal. |
+| Deal Type (optional) | `deal-type` | string | The type of deal. Default format is in small letters, all words are combined. Example: newbusiness. However, remember to check internal value for custom fields. |
+| Close Date (optional) | `close-date` | string | Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
 | Create Date (optional) | `create-date` | string | Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
-| Last Modified Date (optional) | `last-modified-date` | string | Last modified date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
 | Associated Contact IDs (optional) | `associated-contact-ids` | array[string] | Contact IDs associated with the object. |
 </div>
 
 
-### Create Ticket
+### Get Owner
 
-Create new ticket
+Get information about HubSpot owner using either owner ID or user ID. For more information about owner, please go to [here](https://developers.hubspot.com/docs/api/crm/owners)
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CREATE_TICKET` |
-| Owner ID | `owner-id` | string | The user who is assigned to the object. |
-| Ticket Name (required) | `ticket-name` | string | Ticket name. |
-| Ticket Status (required) | `ticket-status` | string | The pipeline stage that contains this ticket. Default format is number. Example: 1. However, remember to check internal value for custom fields. Note: In Instill AI, ticket-status is displayed as string because of the possible custom internal value. |
-| Pipeline (required) | `pipeline` | string | A pipeline organizes and tracks the progression of tickets through various stages of resolution within your support process. HubSpot uses interval value rather than the name displayed in the view. |
-| Categories | `categories` | array[string] | The main reason customer reached out for help. Default format is in capital letters. Example: BILLING_ISSUE. However, remember to check internal value for custom fields. |
-| Priority | `priority` | string | The level of attention needed on the ticket. Default format is in capital letters. Example: MEDIUM. However, remember to check internal value for custom fields. |
-| Source | `source` | string | Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL. |
-| Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object. |
+| Task ID (required) | `task` | string | `TASK_GET_OWNER` |
+| ID Type (required) | `id-type` | string | Specify the type of ID you will use to get owner's information. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Owner ID`</li><li>`User ID`</li></ul></details>  |
+| ID (required) | `id` | string | Can either be owner ID or user ID; according to the ID type you selected. |
 </div>
 
 
@@ -373,41 +356,31 @@ Create new ticket
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Ticket ID | `ticket-id` | string | Ticket ID. |
+| First Name | `first-name` | string | First name. |
+| Last Name | `last-name` | string | Last name. |
+| Email | `email` | string | Email. |
+| Owner ID | `owner-id` | string | Owner ID. Usually used to associate the owner with other objects. |
+| User ID | `user-id` | string | User ID. Usually used to indicate the owner who performed the action. User ID can be seen in Update Deal task output. |
+| [Teams](#get-owner-teams) (optional) | `teams` | array[object] | The owner's teams information. |
+| Created At | `created-at` | string | Created at. |
+| Updated At | `updated-at` | string | Updated at. |
+| Archived | `archived` | boolean | Archived. |
 </div>
 
+<details>
+<summary> Output Objects in Get Owner</summary>
 
-### Update Ticket
-
-Update existing ticket
+<h4 id="get-owner-teams">Teams</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Field | Field ID | Format | Note |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_UPDATE_TICKET` |
-| Owner ID | `owner-id` | string | The user who is assigned to the object. |
-| Ticket ID (required) | `ticket-id` | string | Input ticket ID. |
-| Ticket Name | `ticket-name` | string | Ticket name. |
-| Ticket Status | `ticket-status` | string | The pipeline stage that contains this ticket. Default format is number. Example: 1. However, remember to check internal value for custom fields. Note: In Instill AI, ticket-status is displayed as string because of the possible custom internal value. |
-| Pipeline | `pipeline` | string | A pipeline organizes and tracks the progression of tickets through various stages of resolution within your support process. HubSpot uses interval value rather than the name displayed in the view. |
-| Categories | `categories` | array[string] | The main reason customer reached out for help. Default format is in capital letters. Example: BILLING_ISSUE. However, remember to check internal value for custom fields. |
-| Priority | `priority` | string | The level of attention needed on the ticket. Default format is in capital letters. Example: MEDIUM. However, remember to check internal value for custom fields. |
-| Source | `source` | string | Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL. |
-| Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object. |
+| Team ID | `team-id` | string | The ID of the team. |
+| Team Name | `team-name` | string | The name of the team. |
+| Team Primary | `team-primary` | boolean | Indicate whether this team is the primary team of the owner. |
 </div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Updated At | `updated-at` | string | The time when the ticket was updated. |
-</div>
+</details>
 
 
 ### Get Thread
@@ -478,6 +451,41 @@ Retrieve all the messages inside a thread (conversation inbox). The messages wil
 </details>
 
 
+### Get Ticket
+
+Get ticket information using ticket ID
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_TICKET` |
+| Ticket ID (required) | `ticket-id` | string | Input ticket ID. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Owner ID (optional) | `owner-id` | string | The user who is assigned to the object. |
+| Ticket Name | `ticket-name` | string | Ticket name. |
+| Ticket Status | `ticket-status` | string | The pipeline stage that contains this ticket. Default format is number. Example: 1. However, remember to check internal value for custom fields. Note: In Instill AI, ticket-status is displayed as string because of the possible custom internal value. |
+| Pipeline | `pipeline` | string | A pipeline organizes and tracks the progression of tickets through various stages of resolution within your support process. HubSpot uses interval value rather than the name displayed in the view. |
+| Categories (optional) | `categories` | array[string] | The main reason customer reached out for help. Default format is in capital letters. Example: BILLING_ISSUE. However, remember to check internal value for custom fields. |
+| Priority (optional) | `priority` | string | The level of attention needed on the ticket. Default format is in capital letters. Example: MEDIUM. However, remember to check internal value for custom fields. |
+| Source (optional) | `source` | string | Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL. |
+| Record Source (optional) | `record-source` | string | How this record was created. |
+| Create Date (optional) | `create-date` | string | Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
+| Last Modified Date (optional) | `last-modified-date` | string | Last modified date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
+| Associated Contact IDs (optional) | `associated-contact-ids` | array[string] | Contact IDs associated with the object. |
+</div>
+
+
 ### Insert Message
 
 Insert message into a thread (only support email thread)
@@ -535,17 +543,24 @@ Get the object IDs associated with contact ID (contact->objects). If you are try
 </div>
 
 
-### Get Owner
+### Update Deal
 
-Get information about HubSpot owner using either owner ID or user ID. For more information about owner, please go to [here](https://developers.hubspot.com/docs/api/crm/owners)
+Update existing deal
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_GET_OWNER` |
-| ID Type (required) | `id-type` | string | Specify the type of ID you will use to get owner's information. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Owner ID`</li><li>`User ID`</li></ul></details>  |
-| ID (required) | `id` | string | Can either be owner ID or user ID; according to the ID type you selected. |
+| Task ID (required) | `task` | string | `TASK_UPDATE_DEAL` |
+| Deal ID (required) | `deal-id` | string | Input deal ID. |
+| Owner ID | `owner-id` | string | The user who is assigned to the object. |
+| Deal Name | `deal-name` | string | Deal name. |
+| Pipeline | `pipeline` | string | A pipeline is the place where you document and manage how your prospects move through the steps of your sales process. HubSpot uses interval value rather than the name displayed in the view. |
+| Deal Stage | `deal-stage` | string | Deal stages allow you to categorize and track the progress of the deals that you are working on. Default format is in small letters, all words are combined. Example: qualifiedtobuy. However, remember to check internal value for custom fields. |
+| Amount | `amount` | number | The total amount of the deal. |
+| Deal Type | `deal-type` | string | The type of deal. Default format is in small letters, all words are combined. Example: newbusiness. However, remember to check internal value for custom fields. |
+| Close Date | `close-date` | string | Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
+| Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object. |
 </div>
 
 
@@ -557,43 +572,29 @@ Get information about HubSpot owner using either owner ID or user ID. For more i
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| First Name | `first-name` | string | First name. |
-| Last Name | `last-name` | string | Last name. |
-| Email | `email` | string | Email. |
-| Owner ID | `owner-id` | string | Owner ID. Usually used to associate the owner with other objects. |
-| User ID | `user-id` | string | User ID. Usually used to indicate the owner who performed the action. User ID can be seen in Update Deal task output. |
-| [Teams](#get-owner-teams) (optional) | `teams` | array[object] | The owner's teams information. |
-| Created At | `created-at` | string | Created at. |
-| Updated At | `updated-at` | string | Updated at. |
-| Archived | `archived` | boolean | Archived. |
+| Updated by User ID | `updated-by-user-id` | string | User ID that updated the deal. |
+| Updated At | `updated-at` | string | The time when the deal was updated. |
 </div>
 
-<details>
-<summary> Output Objects in Get Owner</summary>
 
-<h4 id="get-owner-teams">Teams</h4>
+### Update Ticket
 
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Format | Note |
-| :--- | :--- | :--- | :--- |
-| Team ID | `team-id` | string | The ID of the team. |
-| Team Name | `team-name` | string | The name of the team. |
-| Team Primary | `team-primary` | boolean | Indicate whether this team is the primary team of the owner. |
-</div>
-</details>
-
-
-### Get All
-
-Get all the IDs for a specific object (e.g. all contact IDs)
+Update existing ticket
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_GET_ALL` |
-| Object Type (required) | `object-type` | string | The object which you want to get all IDs for. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Contacts`</li><li>`Deals`</li><li>`Companies`</li><li>`Tickets`</li><li>`Threads`</li><li>`Owners`</li></ul></details>  |
+| Task ID (required) | `task` | string | `TASK_UPDATE_TICKET` |
+| Owner ID | `owner-id` | string | The user who is assigned to the object. |
+| Ticket ID (required) | `ticket-id` | string | Input ticket ID. |
+| Ticket Name | `ticket-name` | string | Ticket name. |
+| Ticket Status | `ticket-status` | string | The pipeline stage that contains this ticket. Default format is number. Example: 1. However, remember to check internal value for custom fields. Note: In Instill AI, ticket-status is displayed as string because of the possible custom internal value. |
+| Pipeline | `pipeline` | string | A pipeline organizes and tracks the progression of tickets through various stages of resolution within your support process. HubSpot uses interval value rather than the name displayed in the view. |
+| Categories | `categories` | array[string] | The main reason customer reached out for help. Default format is in capital letters. Example: BILLING_ISSUE. However, remember to check internal value for custom fields. |
+| Priority | `priority` | string | The level of attention needed on the ticket. Default format is in capital letters. Example: MEDIUM. However, remember to check internal value for custom fields. |
+| Source | `source` | string | Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL. |
+| Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object. |
 </div>
 
 
@@ -605,8 +606,7 @@ Get all the IDs for a specific object (e.g. all contact IDs)
 
 | Output | Field ID | Format | Description |
 | :--- | :--- | :--- | :--- |
-| Object ID Array | `object-ids` | array[string] | An array of object ID. |
-| Object IDs Length | `object-ids-length` | integer | The number of object IDs. |
+| Updated At | `updated-at` | string | The time when the ticket was updated. |
 </div>
 
 

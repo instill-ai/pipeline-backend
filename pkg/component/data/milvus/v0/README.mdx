@@ -7,16 +7,16 @@ description: "Learn about how to set up a VDP Milvus component https://github.co
 
 The Milvus component is a data component that allows users to build and search vector datasets.
 It can carry out the following tasks:
-- [Vector Search](#vector-search)
-- [Upsert](#upsert)
 - [Batch Upsert](#batch-upsert)
-- [Delete](#delete)
 - [Create Collection](#create-collection)
-- [Drop Collection](#drop-collection)
-- [Create Partition](#create-partition)
-- [Drop Partition](#drop-partition)
 - [Create Index](#create-index)
+- [Create Partition](#create-partition)
+- [Delete](#delete)
+- [Drop Collection](#drop-collection)
 - [Drop Index](#drop-index)
+- [Drop Partition](#drop-partition)
+- [Upsert](#upsert)
+- [Vector Search](#vector-search)
 
 
 
@@ -58,6 +58,248 @@ ${connection.<my-connection-id>}`.
 
 
 ## Supported Tasks
+
+### Batch Upsert
+
+Insert a batch of vector data into a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into. |
+| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used. |
+| [Array Data](#batch-upsert-array-data) (required) | `array-data` | array[object] | The data. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Batch upsert status. |
+</div>
+
+
+### Create Collection
+
+Create a collectio, please refer to [Create-Collection](https://milvus.io/docs/manage-collections.md#Create-Collection)
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CREATE_COLLECTION` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to create. |
+| Dimension (required) | `dimension` | integer | The dimension of the collection. |
+| ID Type | `id-type` | string | The type of the id. |
+| Schema | `schema` | object | The schema of the collection. |
+| Auto ID | `auto-id` | boolean | Whether to auto generate id. |
+| Metric Type | `metric-type` | string | The metric type of the collection. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`L2`</li><li>`IP`</li><li>`COSINE`</li></ul></details>  |
+| [Index Parameters](#create-collection-index-parameters) | `index-params` | array[object] | The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Collection%20(v2)/Create.md). |
+| Parameters | `params` | object | The parameters to be applied to the collection with milvus parameters, please refer to [Parameters](https://milvus.io/docs/single-vector-search.md#Parameters). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Create collection status. |
+</div>
+
+
+### Create Index
+
+Create an index in a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CREATE_INDEX` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to create the index in. |
+| Index Parameters (required) | `index-params` | object | The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Index%20(v2)/Create.md). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Create index status. |
+</div>
+
+
+### Create Partition
+
+Create a partition in a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CREATE_PARTITION` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to create the partition in. |
+| Partition Name (required) | `partition-name` | string | The name of the partition to create. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Create partition status. |
+</div>
+
+
+### Delete
+
+Delete vector data from a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to delete the data from. |
+| Partition Name | `partition-name` | string | The name of the partition to delete the data from. If empty then default partition will be used. |
+| Filter | `filter` | string | The properties filter to be applied to the data with milvus scalar filter, please refer to [Filtered-search](https://milvus.io/docs/single-vector-search.md#Filtered-search). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Delete status. |
+</div>
+
+
+### Drop Collection
+
+Drop a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DROP_COLLECTION` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to drop. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Drop collection status. |
+</div>
+
+
+### Drop Index
+
+Drop an index from a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DROP_INDEX` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to drop the index from. |
+| Index Name (required) | `index-name` | string | The name of the index to drop. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Drop index status. |
+</div>
+
+
+### Drop Partition
+
+Drop a partition from a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DROP_PARTITION` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to drop the partition from. |
+| Partition Name (required) | `partition-name` | string | The name of the partition to drop. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Drop partition status. |
+</div>
+
+
+### Upsert
+
+Insert a vector data into a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_UPSERT` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into. |
+| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used. |
+| Data (required) | `data` | object | The data. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Format | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Upsert status. |
+</div>
+
 
 ### Vector Search
 
@@ -108,248 +350,6 @@ Perform a vector search on a collection
 | Vectors | `vectors` | array | The vectors returned from the vector search operation. |
 </div>
 </details>
-
-
-### Upsert
-
-Insert a vector data into a collection
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_UPSERT` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into. |
-| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used. |
-| Data (required) | `data` | object | The data. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Upsert status. |
-</div>
-
-
-### Batch Upsert
-
-Insert a batch of vector data into a collection
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into. |
-| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used. |
-| [Array Data](#batch-upsert-array-data) (required) | `array-data` | array[object] | The data. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Batch upsert status. |
-</div>
-
-
-### Delete
-
-Delete vector data from a collection
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DELETE` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to delete the data from. |
-| Partition Name | `partition-name` | string | The name of the partition to delete the data from. If empty then default partition will be used. |
-| Filter | `filter` | string | The properties filter to be applied to the data with milvus scalar filter, please refer to [Filtered-search](https://milvus.io/docs/single-vector-search.md#Filtered-search). |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Delete status. |
-</div>
-
-
-### Create Collection
-
-Create a collectio, please refer to [Create-Collection](https://milvus.io/docs/manage-collections.md#Create-Collection)
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CREATE_COLLECTION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to create. |
-| Dimension (required) | `dimension` | integer | The dimension of the collection. |
-| ID Type | `id-type` | string | The type of the id. |
-| Schema | `schema` | object | The schema of the collection. |
-| Auto ID | `auto-id` | boolean | Whether to auto generate id. |
-| Metric Type | `metric-type` | string | The metric type of the collection. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`L2`</li><li>`IP`</li><li>`COSINE`</li></ul></details>  |
-| [Index Parameters](#create-collection-index-parameters) | `index-params` | array[object] | The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Collection%20(v2)/Create.md). |
-| Parameters | `params` | object | The parameters to be applied to the collection with milvus parameters, please refer to [Parameters](https://milvus.io/docs/single-vector-search.md#Parameters). |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create collection status. |
-</div>
-
-
-### Drop Collection
-
-Drop a collection
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DROP_COLLECTION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to drop. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Drop collection status. |
-</div>
-
-
-### Create Partition
-
-Create a partition in a collection
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CREATE_PARTITION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to create the partition in. |
-| Partition Name (required) | `partition-name` | string | The name of the partition to create. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create partition status. |
-</div>
-
-
-### Drop Partition
-
-Drop a partition from a collection
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DROP_PARTITION` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to drop the partition from. |
-| Partition Name (required) | `partition-name` | string | The name of the partition to drop. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Drop partition status. |
-</div>
-
-
-### Create Index
-
-Create an index in a collection
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CREATE_INDEX` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to create the index in. |
-| Index Parameters (required) | `index-params` | object | The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Index%20(v2)/Create.md). |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Create index status. |
-</div>
-
-
-### Drop Index
-
-Drop an index from a collection
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DROP_INDEX` |
-| Collection Name (required) | `collection-name` | string | The name of the collection to drop the index from. |
-| Index Name (required) | `index-name` | string | The name of the index to drop. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Format | Description |
-| :--- | :--- | :--- | :--- |
-| Status | `status` | string | Drop index status. |
-</div>
 
 
 
