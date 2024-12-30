@@ -142,14 +142,14 @@ $defs:
       description: Owner of the repository.
       uiOrder: 0
       acceptFormats:
-      - string
+        - string
       title: Owner
       format: string
     repository:
       description: Repository name.
       uiOrder: 1
       acceptFormats:
-      - string
+        - string
       title: Repository
       format: string
   reviewComments:
@@ -181,59 +181,49 @@ $defs:
         title: Comment path
         format: string
       line:
-        shortDescription: The last line of the range that your comment applies to.
-          Your comment will be placed under this line.
-        description: The line of the blob in the pull request diff that the comment
-          applies to. For a multi-line comment, the last line of the range that your
-          comment applies to.
+        shortDescription: The last line of the range that your comment applies to. Your comment will be placed under this line.
+        description: The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that
+          your comment applies to.
         uiOrder: 6
         title: Comment end line
         format: integer
       start-line:
-        description: The first line in the pull request diff that your multi-line
-          comment applies to. Only multi-line comment needs to fill this field.
+        description: The first line in the pull request diff that your multi-line comment applies to. Only multi-line comment needs to fill this field.
         uiOrder: 7
         title: Comment start line
         format: integer
       side:
-        shortDescription: 'Side of the end line, can be one of: LEFT, RIGHT, side.
-          Default is side.'
-        description: 'Side of the end line, can be one of: LEFT, RIGHT, side. LEFT
-          is the left side of the diff (deletion), RIGHT is the right side of the
-          diff (addition), and side is the comment on the PR as a whole. Default is
-          side.'
+        shortDescription: 'Side of the end line, can be one of: LEFT, RIGHT, side. Default is side.'
+        description: 'Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the
+          diff (addition), and side is the comment on the PR as a whole. Default is side.'
         default: side
         enum:
-        - LEFT
-        - RIGHT
-        - side
+          - LEFT
+          - RIGHT
+          - side
         uiOrder: 8
         title: Comment end side
         format: string
       start-side:
-        shortDescription: 'Side of the start line, can be one of: LEFT, RIGHT, side.
-          Default is side.'
-        description: 'Side of the start line, can be one of: LEFT, RIGHT, side. LEFT
-          is the left side of the diff (deletion), RIGHT is the right side of the
-          diff (addition), and side is the comment on the PR as a whole. Default is
-          side.'
+        shortDescription: 'Side of the start line, can be one of: LEFT, RIGHT, side. Default is side.'
+        description: 'Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of
+          the diff (addition), and side is the comment on the PR as a whole. Default is side.'
         default: side
         enum:
-        - LEFT
-        - RIGHT
-        - side
+          - LEFT
+          - RIGHT
+          - side
         uiOrder: 9
         title: Comment start side
         format: string
       subject-type:
-        description: 'Subject type of the comment, can be one of: line, file. Default
-          is line.'
+        description: 'Subject type of the comment, can be one of: line, file. Default is line.'
         uiOrder: 10
         title: Comment type
         default: line
         enum:
-        - line
-        - file
+          - line
+          - file
         format: string
       created-at:
         description: Time the comment was created.
@@ -323,7 +313,7 @@ $defs:
       uiOrder: 100
       title: Page
       acceptFormats:
-      - integer
+        - integer
       format: integer
     per-page:
       default: 30
@@ -331,7 +321,7 @@ $defs:
       uiOrder: 101
       title: Per Page
       acceptFormats:
-      - integer
+        - integer
       format: integer
     format: object
 TASK_CREATE_ISSUE:
@@ -344,17 +334,17 @@ TASK_CREATE_ISSUE:
       title:
         $ref: '#/$defs/issue/properties/title'
         acceptFormats:
-        - string
+          - string
         uiOrder: 3
       body:
         $ref: '#/$defs/issue/properties/body'
         acceptFormats:
-        - string
+          - string
         uiOrder: 4
       assignees:
         $ref: '#/$defs/issue/properties/assignees'
         acceptFormats:
-        - array
+          - array
         items:
           format: string
         title: Assignees
@@ -362,16 +352,16 @@ TASK_CREATE_ISSUE:
       labels:
         $ref: '#/$defs/issue/properties/labels'
         acceptFormats:
-        - array
+          - array
         items:
           format: string
         title: Labels
         uiOrder: 6
     required:
-    - owner
-    - repository
-    - title
-    - body
+      - owner
+      - repository
+      - title
+      - body
     title: Input
     format: object
   output:
@@ -384,9 +374,8 @@ TASK_CREATE_ISSUE:
     format: object
 TASK_CREATE_REVIEW_COMMENT:
   shortDescription: Create a review comment in pull request.
-  description: Create a review comment in a pull request. The comment can be a general
-    comment or a review comment. The comment can be on a specific line or on the PR
-    as a whole.
+  description: Create a review comment in a pull request. The comment can be a general comment or a review comment. The comment can be on a specific line
+    or on the PR as a whole.
   input:
     description: Please input the repository name and owner, and the PR number.
     uiOrder: 0
@@ -396,7 +385,7 @@ TASK_CREATE_REVIEW_COMMENT:
         title: PR Number
         description: Number of the PR.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 3
         format: integer
       comment:
@@ -407,53 +396,53 @@ TASK_CREATE_REVIEW_COMMENT:
           commit-id:
             $ref: '#/$defs/reviewComments/properties/commit-id'
             acceptFormats:
-            - string
+              - string
             uiOrder: 0
           body:
             $ref: '#/$defs/reviewComments/properties/body'
             acceptFormats:
-            - string
+              - string
             uiOrder: 1
           path:
             $ref: '#/$defs/reviewComments/properties/path'
             acceptFormats:
-            - string
+              - string
             uiOrder: 2
           start-line:
             $ref: '#/$defs/reviewComments/properties/start-line'
             acceptFormats:
-            - integer
+              - integer
             uiOrder: 3
           line:
             $ref: '#/$defs/reviewComments/properties/line'
             acceptFormats:
-            - integer
+              - integer
             uiOrder: 4
           start-side:
             $ref: '#/$defs/reviewComments/properties/start-side'
             acceptFormats:
-            - string
+              - string
             uiOrder: 5
           side:
             $ref: '#/$defs/reviewComments/properties/side'
             acceptFormats:
-            - string
+              - string
             uiOrder: 6
           subject-type:
             $ref: '#/$defs/reviewComments/properties/subject-type'
             acceptFormats:
-            - string
+              - string
             uiOrder: 7
         required:
-        - body
-        - path
-        - commit-id
+          - body
+          - path
+          - commit-id
         format: object
     required:
-    - owner
-    - repository
-    - pr-number
-    - comment
+      - owner
+      - repository
+      - pr-number
+      - comment
     title: Input
     format: object
   output:
@@ -475,19 +464,19 @@ TASK_CREATE_WEBHOOK:
         title: Webhook URL
         description: URL to send the payload to.
         acceptFormats:
-        - string
+          - string
         uiOrder: 3
         format: string
       events:
         title: Events
-        description: Events to trigger the webhook. Please see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads">the
-          github document</a> for more information.
+        description: Events to trigger the webhook. Please see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads">the github document</a>
+          for more information.
         acceptFormats:
-        - array
+          - array
         uiOrder: 4
         items:
           acceptFormats:
-          - string
+            - string
           format: string
         format: array
       active:
@@ -495,36 +484,34 @@ TASK_CREATE_WEBHOOK:
         default: false
         description: Whether the webhook is active. Default is false.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 5
         format: boolean
       content-type:
         default: json
         title: Content Type
-        description: 'Content type of the webhook, can be one of: json, form. Default
-          is json.'
+        description: 'Content type of the webhook, can be one of: json, form. Default is json.'
         enum:
-        - json
-        - form
+          - json
+          - form
         acceptFormats:
-        - string
+          - string
         uiOrder: 6
         format: string
       hook-secret:
         title: Hook Secret
-        description: If provided, the secret will be used as the key to generate the
-          HMAC hex digest value for delivery signature headers. (see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#delivery-headers">the
+        description: If provided, the secret will be used as the key to generate the HMAC hex digest value for delivery signature headers. (see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#delivery-headers">the
           document</a>).
         instillSecret: true
         acceptFormats:
-        - string
+          - string
         uiOrder: 7
         format: string
     required:
-    - owner
-    - repository
-    - hook-url
-    - events
+      - owner
+      - repository
+      - hook-url
+      - events
     title: Input
     format: object
   output:
@@ -586,12 +573,12 @@ TASK_GET_COMMIT:
       sha:
         $ref: '#/$defs/commit/properties/sha'
         acceptFormats:
-        - string
+          - string
         uiOrder: 3
     required:
-    - owner
-    - repository
-    - sha
+      - owner
+      - repository
+      - sha
     title: Input
     format: object
   output:
@@ -603,8 +590,7 @@ TASK_GET_COMMIT:
     title: Output
     format: object
 TASK_GET_ISSUE:
-  description: Get an issue. This can be a pull request or a general issue, and you
-    can tell by the `is-pull-request` field.
+  description: Get an issue. This can be a pull request or a general issue, and you can tell by the `is-pull-request` field.
   shortDescription: Get an issue.
   input:
     description: Please input the repository name and owner.
@@ -616,13 +602,13 @@ TASK_GET_ISSUE:
         title: Issue Number
         description: Number of the issue.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 4
         format: integer
     required:
-    - owner
-    - repository
-    - issue-number
+      - owner
+      - repository
+      - issue-number
     title: Input
     format: object
   output:
@@ -634,8 +620,7 @@ TASK_GET_ISSUE:
     title: Output
     format: object
 TASK_GET_PULL_REQUEST:
-  shortDescription: Get a pull request from a repository, given the PR number. This
-    will default to the latest PR if no PR number is provided.
+  shortDescription: Get a pull request from a repository, given the PR number. This will default to the latest PR if no PR number is provided.
   input:
     description: Please input the repository name and owner, and the PR number.
     uiOrder: 0
@@ -646,12 +631,12 @@ TASK_GET_PULL_REQUEST:
         title: PR Number
         description: Number of the PR. `0` for the latest PR.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 4
         format: integer
     required:
-    - owner
-    - repository
+      - owner
+      - repository
     title: Input
     format: object
   output:
@@ -662,8 +647,7 @@ TASK_GET_PULL_REQUEST:
     title: Output
     format: object
 TASK_LIST_ISSUES:
-  description: Get the list of all issues in a repository,This can be a pull request
-    or a general issue, and you can tell by the `is-pull-request` field.
+  description: Get the list of all issues in a repository,This can be a pull request or a general issue, and you can tell by the `is-pull-request` field.
   shortDescription: Get the list of all issues in a repository
   input:
     description: Please input the repository name and owner.
@@ -673,58 +657,53 @@ TASK_LIST_ISSUES:
       state:
         default: open
         title: State
-        description: 'State of the issues, can be one of: open, closed, all. Default
-          is open.'
+        description: 'State of the issues, can be one of: open, closed, all. Default is open.'
         enum:
-        - open
-        - closed
-        - all
+          - open
+          - closed
+          - all
         acceptFormats:
-        - string
+          - string
         uiOrder: 10
         format: string
       sort:
         default: created
         title: Sort
-        description: Sort the issues by created, updated, popularity, or long-running.
-          Default is created.
+        description: Sort the issues by created, updated, popularity, or long-running. Default is created.
         enum:
-        - created
-        - updated
-        - popularity
-        - long-running
+          - created
+          - updated
+          - popularity
+          - long-running
         acceptFormats:
-        - string
+          - string
         uiOrder: 11
         format: string
       direction:
         default: desc
         title: Direction
-        description: 'Direction of the sort, can be one of: asc, desc. Default is
-          desc.'
+        description: 'Direction of the sort, can be one of: asc, desc. Default is desc.'
         enum:
-        - asc
-        - desc
+          - asc
+          - desc
         acceptFormats:
-        - string
+          - string
         uiOrder: 12
         format: string
       since:
         default: '2021-01-01'
         title: Since
-        description: Date (in `YYYY-MM-DD` format) from which issues will start to
-          be fetched. The date will be in the UTC timezone.
+        description: Date (in `YYYY-MM-DD` format) from which issues will start to be fetched. The date will be in the UTC timezone.
         acceptFormats:
-        - string
+          - string
         uiOrder: 13
         format: string
       no-pull-request:
         title: No Pull Request
-        description: Whether to `not` include pull requests in the response. Since
-          issue and pr use the same indexing system in GitHub, the API returns all
-          relevant objects (issues and pr). Default is false.
+        description: Whether to `not` include pull requests in the response. Since issue and pr use the same indexing system in GitHub, the API returns
+          all relevant objects (issues and pr). Default is false.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 14
         format: boolean
       page:
@@ -733,7 +712,7 @@ TASK_LIST_ISSUES:
         uiOrder: 100
         title: Page
         acceptFormats:
-        - integer
+          - integer
         format: integer
       per-page:
         default: 30
@@ -741,11 +720,11 @@ TASK_LIST_ISSUES:
         uiOrder: 101
         title: Per Page
         acceptFormats:
-        - integer
+          - integer
         format: integer
     required:
-    - owner
-    - repository
+      - owner
+      - repository
     title: Input
     format: object
   output:
@@ -762,14 +741,13 @@ TASK_LIST_ISSUES:
           description: An issue in GitHub.
         format: array
     required:
-    - issues
+      - issues
     title: Output
     format: object
 TASK_LIST_PULL_REQUESTS:
   shortDescription: Get the list of all pull requests in a repository
-  description: Get the list of all pull requests in a repository. Detailed information
-    about each commit in a PR is omitted, please use the `Get Commit` task or the
-    `Get Pull Request` task to get the details of a commit.
+  description: Get the list of all pull requests in a repository. Detailed information about each commit in a PR is omitted, please use the `Get Commit`
+    task or the `Get Pull Request` task to get the details of a commit.
   input:
     description: Please input the repository name and owner.
     uiOrder: 0
@@ -780,25 +758,24 @@ TASK_LIST_PULL_REQUESTS:
         title: State
         description: State of the PRs, including open, closed, all. Default is open.
         enum:
-        - open
-        - closed
-        - all
+          - open
+          - closed
+          - all
         acceptFormats:
-        - string
+          - string
         uiOrder: 10
         format: string
       sort:
         default: created
         title: Sort
-        description: Sort the PRs by created, updated, popularity, or long-running.
-          Default is created.
+        description: Sort the PRs by created, updated, popularity, or long-running. Default is created.
         enum:
-        - created
-        - updated
-        - popularity
-        - long-running
+          - created
+          - updated
+          - popularity
+          - long-running
         acceptFormats:
-        - string
+          - string
         uiOrder: 11
         format: string
       direction:
@@ -806,10 +783,10 @@ TASK_LIST_PULL_REQUESTS:
         title: Direction
         description: Direction of the sort, including asc or desc. Default is desc.
         enum:
-        - asc
-        - desc
+          - asc
+          - desc
         acceptFormats:
-        - string
+          - string
         uiOrder: 12
         format: string
       page:
@@ -818,7 +795,7 @@ TASK_LIST_PULL_REQUESTS:
         uiOrder: 100
         title: Page
         acceptFormats:
-        - integer
+          - integer
         format: integer
       per-page:
         default: 30
@@ -826,11 +803,11 @@ TASK_LIST_PULL_REQUESTS:
         uiOrder: 101
         title: Per Page
         acceptFormats:
-        - integer
+          - integer
         format: integer
     required:
-    - owner
-    - repository
+      - owner
+      - repository
     title: Input
     format: object
   output:
@@ -847,26 +824,23 @@ TASK_LIST_PULL_REQUESTS:
           description: A pull request in GitHub.
         format: array
     required:
-    - pull-requests
+      - pull-requests
     title: Output
     format: object
 TASK_LIST_REVIEW_COMMENTS:
   shortDescription: Get the review comments in a pull request
-  description: Get the review comments in a pull request. The comments can be on a
-    specific line or on the PR as a whole.
+  description: Get the review comments in a pull request. The comments can be on a specific line or on the PR as a whole.
   input:
-    description: Please input the repository name and owner, and the PR number. Set
-      PR number as`0` to get all comments on all PRs in the repository.
+    description: Please input the repository name and owner, and the PR number. Set PR number as`0` to get all comments on all PRs in the repository.
     uiOrder: 0
     properties:
       $ref: '#/$defs/repositoryInfo'
       pr-number:
         default: 0
         title: PR Number
-        description: Number of the PR. Default is `0`, which retrieves all comments
-          on all PRs in the repository.
+        description: Number of the PR. Default is `0`, which retrieves all comments on all PRs in the repository.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 4
         format: integer
       sort:
@@ -874,10 +848,10 @@ TASK_LIST_REVIEW_COMMENTS:
         title: Sort
         description: Sort the comments by created, updated. Default is created.
         enum:
-        - created
-        - updated
+          - created
+          - updated
         acceptFormats:
-        - string
+          - string
         uiOrder: 11
         format: string
       direction:
@@ -885,19 +859,18 @@ TASK_LIST_REVIEW_COMMENTS:
         title: Direction
         description: Direction of the sort, including asc or desc. Default is desc.
         enum:
-        - asc
-        - desc
+          - asc
+          - desc
         acceptFormats:
-        - string
+          - string
         uiOrder: 12
         format: string
       since:
         default: '2021-01-01'
         title: Since
-        description: Date (in `YYYY-MM-DD` format) from which comments will start
-          to be fetched. The date will be in the UTC timezone.
+        description: Date (in `YYYY-MM-DD` format) from which comments will start to be fetched. The date will be in the UTC timezone.
         acceptFormats:
-        - string
+          - string
         uiOrder: 13
         format: string
       page:
@@ -906,7 +879,7 @@ TASK_LIST_REVIEW_COMMENTS:
         uiOrder: 100
         title: Page
         acceptFormats:
-        - integer
+          - integer
         format: integer
       per-page:
         default: 30
@@ -914,11 +887,11 @@ TASK_LIST_REVIEW_COMMENTS:
         uiOrder: 101
         title: Per Page
         acceptFormats:
-        - integer
+          - integer
         format: integer
     required:
-    - owner
-    - repository
+      - owner
+      - repository
     title: Input
     format: object
   output:
@@ -936,6 +909,6 @@ TASK_LIST_REVIEW_COMMENTS:
           description: Comments in the PR.
         format: array
     required:
-    - comments
+      - comments
     title: Output
     format: object

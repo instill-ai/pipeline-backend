@@ -3,27 +3,23 @@ $defs:
     properties:
       start-time:
         title: Start Time
-        description: The number of seconds from the beginning of the audio file to
-          the start of this segment.
+        description: The number of seconds from the beginning of the audio file to the start of this segment.
         uiOrder: 0
         format: number
       end-time:
         title: End Time
-        description: The number of seconds from the beginning of the audio file to
-          the end of this segment.
+        description: The number of seconds from the beginning of the audio file to the end of this segment.
         uiOrder: 1
         format: number
     required:
-    - start-time
-    - end-time
+      - start-time
+      - end-time
     title: Segment
-    description: A time segment of audio data, defined by its start and end times
-      in seconds.
+    description: A time segment of audio data, defined by its start and end times in seconds.
     format: object
 TASK_DETECT_ACTIVITY:
-  shortDescription: Detect speech segments in audio data using Voice Activity Detection
-    (VAD). This task processes the input audio to 16kHz mono format, identifies periods
-    of human speech, and outputs time segments for each detected speech activity.
+  shortDescription: Detect speech segments in audio data using Voice Activity Detection (VAD). This task processes the input audio to 16kHz mono format,
+    identifies periods of human speech, and outputs time segments for each detected speech activity.
   input:
     description: Input.
     uiOrder: 0
@@ -31,35 +27,33 @@ TASK_DETECT_ACTIVITY:
       audio:
         description: Audio file to analyze for speech activity.
         acceptFormats:
-        - audio/wav
-        - application/octet-stream
+          - audio/wav
+          - application/octet-stream
         uiOrder: 0
         title: Audio
         format: string
       min-silence-duration:
-        description: Minimum duration of silence (in milliseconds) required to split
-          speech segments. Longer values result in fewer, longer segments.
+        description: Minimum duration of silence (in milliseconds) required to split speech segments. Longer values result in fewer, longer segments.
         acceptFormats:
-        - integer
-        - number
+          - integer
+          - number
         uiOrder: 1
         minimum: 0
         title: Minimum Silence Duration
         default: 100
         format: integer
       speech-pad:
-        description: Additional padding (in milliseconds) added to the start and end
-          of each detected speech segment to prevent cutting off speech.
+        description: Additional padding (in milliseconds) added to the start and end of each detected speech segment to prevent cutting off speech.
         acceptFormats:
-        - integer
-        - number
+          - integer
+          - number
         uiOrder: 2
         minimum: 0
         title: Speech Pad
         default: 30
         format: integer
     required:
-    - audio
+      - audio
     title: Input
     format: object
   output:
@@ -67,15 +61,14 @@ TASK_DETECT_ACTIVITY:
     uiOrder: 0
     properties:
       segments:
-        description: Array of time segments representing detected speech activity.
-          Each segment contains start and end times in seconds.
+        description: Array of time segments representing detected speech activity. Each segment contains start and end times in seconds.
         uiOrder: 0
         items:
           $ref: '#/$defs/segment'
         title: Segments
         format: array
     required:
-    - segments
+      - segments
     title: Output
     format: object
 TASK_SEGMENT:
@@ -87,8 +80,8 @@ TASK_SEGMENT:
       audio:
         description: Audio data to segment.
         acceptFormats:
-        - audio/*
-        - application/octet-stream
+          - audio/*
+          - application/octet-stream
         uiOrder: 0
         title: Audio
         format: string
@@ -100,8 +93,8 @@ TASK_SEGMENT:
         title: Segments
         format: array
     required:
-    - audio
-    - segments
+      - audio
+      - segments
     title: Input
     format: object
   output:
@@ -116,6 +109,6 @@ TASK_SEGMENT:
         title: Audios
         format: array
     required:
-    - audio-segments
+      - audio-segments
     title: Output
     format: object

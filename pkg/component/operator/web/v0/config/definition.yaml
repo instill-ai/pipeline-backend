@@ -1,7 +1,7 @@
 availableTasks:
-- TASK_CRAWL_SITE
-- TASK_SCRAPE_PAGES
-- TASK_SCRAPE_SITEMAP
+  - TASK_CRAWL_SITE
+  - TASK_SCRAPE_PAGES
+  - TASK_SCRAPE_SITEMAP
 documentationUrl: https://www.instill.tech/docs/component/operator/web
 icon: assets/web.svg
 id: web

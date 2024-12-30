@@ -5,20 +5,18 @@ TASK_RETRIEVE_CHAT_HISTORY:
     properties:
       include-system-message:
         default: true
-        description: Include system message in the retrieved conversation turns if
-          exists.
+        description: Include system message in the retrieved conversation turns if exists.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 2
         title: Include System Message If Exists
         format: boolean
       latest-k:
         default: 5
-        description: The number of latest conversation turns to retrieve. A conversation
-          turn typically includes one participant speaking or sending a message, and
-          the other participant(s) responding to it.
+        description: The number of latest conversation turns to retrieve. A conversation turn typically includes one participant speaking or sending a message,
+          and the other participant(s) responding to it.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 1
         minimum: 1
         title: Latest K
@@ -26,12 +24,12 @@ TASK_RETRIEVE_CHAT_HISTORY:
       session-id:
         description: A unique identifier for the chat session.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Session ID
         format: string
     required:
-    - session-id
+      - session-id
     title: Input
     format: object
   output:
@@ -42,7 +40,7 @@ TASK_RETRIEVE_CHAT_HISTORY:
         description: Messages.
         uiOrder: 0
     required:
-    - messages
+      - messages
     title: Output
     format: object
 TASK_WRITE_CHAT_MESSAGE:
@@ -53,7 +51,7 @@ TASK_WRITE_CHAT_MESSAGE:
       content:
         description: The message content.
         acceptFormats:
-        - string
+          - string
         uiOrder: 2
         title: Content
         format: string
@@ -67,21 +65,21 @@ TASK_WRITE_CHAT_MESSAGE:
       role:
         description: The message role, i.e. 'system', 'user' or 'assistant'.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Role
         format: string
       session-id:
         description: A unique identifier for the chat session.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Session ID
         format: string
     required:
-    - session-id
-    - role
-    - content
+      - session-id
+      - role
+      - content
     title: Input
     format: object
   output:
@@ -93,7 +91,7 @@ TASK_WRITE_CHAT_MESSAGE:
         title: Status
         format: boolean
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_WRITE_MULTI_MODAL_CHAT_MESSAGE:
@@ -105,7 +103,7 @@ TASK_WRITE_MULTI_MODAL_CHAT_MESSAGE:
         $ref: schema.yaml#/$defs/instill-types/multi-modal-content
         description: The multi-modal message content.
         acceptFormats:
-        - array
+          - array
         uiOrder: 2
         title: Content
         format: string
@@ -119,21 +117,21 @@ TASK_WRITE_MULTI_MODAL_CHAT_MESSAGE:
       role:
         description: The message role, i.e. 'system', 'user' or 'assistant'.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Role
         format: string
       session-id:
         description: A unique identifier for the chat session.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Session ID
         format: string
     required:
-    - session-id
-    - role
-    - content
+      - session-id
+      - role
+      - content
     title: Input
     format: object
   output:
@@ -145,6 +143,6 @@ TASK_WRITE_MULTI_MODAL_CHAT_MESSAGE:
         title: Status
         format: boolean
     required:
-    - status
+      - status
     title: Output
     format: object

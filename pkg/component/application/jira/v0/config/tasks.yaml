@@ -2,12 +2,11 @@ $defs:
   common-query-params:
     start-at:
       default: 0
-      description: 'The starting index of the returned boards. Base index: 0. Default
-        is 0.'
+      description: 'The starting index of the returned boards. Base index: 0. Default is 0.'
       uiOrder: 3
       title: Start At
       acceptFormats:
-      - integer
+        - integer
       format: integer
     max-results:
       default: 50
@@ -15,15 +14,14 @@ $defs:
       uiOrder: 4
       title: Max Results
       acceptFormats:
-      - integer
+        - integer
       format: integer
     update-history:
-      description: Whether the action taken is added to the user's Recent history,
-        as shown under `Your Work` in Jira.
+      description: Whether the action taken is added to the user's Recent history, as shown under `Your Work` in Jira.
       title: Update History
       uiOrder: 5
       acceptFormats:
-      - boolean
+        - boolean
       format: boolean
   issue:
     properties:
@@ -38,7 +36,7 @@ $defs:
         shortDescription: The key of the issue
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         format: string
       self:
         description: The URL of the issue.
@@ -72,10 +70,10 @@ $defs:
         title: Status
         format: string
     required:
-    - id
-    - key
-    - self
-    - fields
+      - id
+      - key
+      - self
+      - fields
     title: Issue
     format: object
   sprint:
@@ -102,22 +100,19 @@ $defs:
         format: string
       start-date:
         title: Start Date
-        description: The start date of the sprint, e.g. 2018-03-05 (default 00:00
-          UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+        description: The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         uiOrder: 4
         format: string
       end-date:
         title: End Date
-        description: The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0).
-          To adjust your time zone, please provide a more detailed RFC3339 format
-          like `2018-03-05T09:00:00Z0000`.
+        description: The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+          format like `2018-03-05T09:00:00Z0000`.
         uiOrder: 5
         format: string
       complete-date:
         title: Complete Date
-        description: The complete date of the sprint, e.g. 2018-03-05 (default 00:00
-          UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+        description: The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         uiOrder: 6
         format: string
@@ -132,8 +127,8 @@ $defs:
         uiOrder: 8
         format: string
     required:
-    - id
-    - self
+      - id
+      - self
     title: Sprint
     format: object
 TASK_CREATE_ISSUE:
@@ -149,7 +144,7 @@ TASK_CREATE_ISSUE:
         shortDescription: The key of the project
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
         format: string
       issue-type:
         title: Issue Type
@@ -157,79 +152,78 @@ TASK_CREATE_ISSUE:
         uiOrder: 1
         additionalProperties: true
         required:
-        - issue-type
+          - issue-type
         oneOf:
-        - properties:
-            issue-type:
-              title: Issue Type
-              const: Epic
-              description: Epic.
-              uiOrder: 0
-              format: string
-          required:
-          - issue-type
-          description: Epic.
-          uiOrder: 0
-          title: Epic
-          format: object
-        - properties:
-            issue-type:
-              title: Issue Type
-              const: Task
-              description: Task.
-              uiOrder: 0
-              format: string
-          required:
-          - issue-type
-          description: Task.
-          uiOrder: 0
-          title: Task
-          format: object
-        - properties:
-            issue-type:
-              title: Issue Type
-              const: Subtask
-              description: Subtask.
-              uiOrder: 0
-              format: string
-            parent-key:
-              title: Parent Key
-              description: The key of the parent issue, e.g. `JRA-1330`.
-              shortDescription: The key of the parent issue
-              uiOrder: 10
-              acceptFormats:
-              - string
-              format: string
-          required:
-          - issue-type
-          - parent-key
-          description: Subtask.
-          uiOrder: 0
-          title: Subtask
-          format: object
-        - properties:
-            issue-type:
-              title: Issue Type
-              const: Other
-              description: Other.
-              uiOrder: 0
-              format: string
-            custom-issue-type:
-              title: Issue Type
-              description: 'The type of the issue, can be: `Task`, `Epic`, `Subtask`,
-                etc.'
-              shortDescription: The type of the issue
-              uiOrder: 1
-              acceptFormats:
-              - string
-              format: string
-          required:
-          - issue-type
-          - custom-issue-type
-          description: Other.
-          uiOrder: 0
-          title: Other
-          format: object
+          - properties:
+              issue-type:
+                title: Issue Type
+                const: Epic
+                description: Epic.
+                uiOrder: 0
+                format: string
+            required:
+              - issue-type
+            description: Epic.
+            uiOrder: 0
+            title: Epic
+            format: object
+          - properties:
+              issue-type:
+                title: Issue Type
+                const: Task
+                description: Task.
+                uiOrder: 0
+                format: string
+            required:
+              - issue-type
+            description: Task.
+            uiOrder: 0
+            title: Task
+            format: object
+          - properties:
+              issue-type:
+                title: Issue Type
+                const: Subtask
+                description: Subtask.
+                uiOrder: 0
+                format: string
+              parent-key:
+                title: Parent Key
+                description: The key of the parent issue, e.g. `JRA-1330`.
+                shortDescription: The key of the parent issue
+                uiOrder: 10
+                acceptFormats:
+                  - string
+                format: string
+            required:
+              - issue-type
+              - parent-key
+            description: Subtask.
+            uiOrder: 0
+            title: Subtask
+            format: object
+          - properties:
+              issue-type:
+                title: Issue Type
+                const: Other
+                description: Other.
+                uiOrder: 0
+                format: string
+              custom-issue-type:
+                title: Issue Type
+                description: 'The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc.'
+                shortDescription: The type of the issue
+                uiOrder: 1
+                acceptFormats:
+                  - string
+                format: string
+            required:
+              - issue-type
+              - custom-issue-type
+            description: Other.
+            uiOrder: 0
+            title: Other
+            format: object
         format: object
       summary:
         title: Summary
@@ -237,7 +231,7 @@ TASK_CREATE_ISSUE:
         shortDescription: The summary of the issue
         uiOrder: 2
         acceptFormats:
-        - string
+          - string
         format: string
       description:
         title: Description
@@ -245,11 +239,11 @@ TASK_CREATE_ISSUE:
         shortDescription: The description of the issue
         uiOrder: 3
         acceptFormats:
-        - string
+          - string
         format: string
     required:
-    - project-key
-    - issue-type
+      - project-key
+      - issue-type
     title: Input
     format: object
   output:
@@ -272,7 +266,7 @@ TASK_CREATE_SPRINT:
         shortDescription: The name of the board
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
         format: string
       name:
         title: Name
@@ -280,7 +274,7 @@ TASK_CREATE_SPRINT:
         shortDescription: The name of the sprint
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         format: string
       goal:
         title: Goal
@@ -288,34 +282,32 @@ TASK_CREATE_SPRINT:
         shortDescription: The goal of the sprint
         uiOrder: 2
         acceptFormats:
-        - string
+          - string
         format: string
       start-date:
         title: Start Date
-        description: The start date of the sprint, e.g. 2018-03-05 (default 00:00
-          UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+        description: The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         shortDescription: The start date of the sprint
         uiOrder: 3
         acceptFormats:
-        - string
+          - string
         format: string
       end-date:
         title: End Date
-        description: The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0).
-          To adjust your time zone, please provide a more detailed RFC3339 format
-          like `2018-03-05T09:00:00Z0000`.
+        description: The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+          format like `2018-03-05T09:00:00Z0000`.
         shortDescription: The end date of the sprint
         uiOrder: 4
         acceptFormats:
-        - string
+          - string
         format: string
     required:
-    - board-name
-    - name
-    - goal
-    - start-date
-    - end-date
+      - board-name
+      - name
+      - goal
+      - start-date
+      - end-date
     title: Input
     format: object
   output:
@@ -326,9 +318,8 @@ TASK_CREATE_SPRINT:
     format: object
   format: object
 TASK_GET_ISSUE:
-  description: Get an issue in Jira. The issue will only be returned if the user has
-    permission to view it. Issues returned from this resource include Agile fields,
-    like sprint, closedSprints, flagged, and epic.
+  description: Get an issue in Jira. The issue will only be returned if the user has permission to view it. Issues returned from this resource include Agile
+    fields, like sprint, closedSprints, flagged, and epic.
   shortDescription: Get an issue in Jira
   input:
     description: Get an issue in Jira.
@@ -340,13 +331,13 @@ TASK_GET_ISSUE:
         shortDescription: The key of the issue
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
         format: string
       update-history:
         $ref: '#/$defs/common-query-params/update-history'
         uiOrder: 1
     required:
-    - issue-key
+      - issue-key
     title: Input
     format: object
   output:
@@ -357,9 +348,8 @@ TASK_GET_ISSUE:
     format: object
   format: object
 TASK_GET_SPRINT:
-  description: Get a sprint in Jira. The sprint will only be returned if the user
-    can view the board that the sprint was created on, or view at least one of the
-    issues in the sprint.
+  description: Get a sprint in Jira. The sprint will only be returned if the user can view the board that the sprint was created on, or view at least one
+    of the issues in the sprint.
   shortDescription: Get a sprint in Jira
   input:
     description: Get an sprint in Jira.
@@ -367,16 +357,15 @@ TASK_GET_SPRINT:
     properties:
       sprint-id:
         title: Sprint ID
-        description: The ID of the sprint. The sprint will only be returned if you
-          can view the board that the sprint was created on, or view at least one
+        description: The ID of the sprint. The sprint will only be returned if you can view the board that the sprint was created on, or view at least one
           of the issues in the sprint.
         shortDescription: The ID of the sprint
         uiOrder: 0
         acceptFormats:
-        - integer
+          - integer
         format: integer
     required:
-    - sprint-id
+      - sprint-id
     title: Input
     format: object
   output:
@@ -396,35 +385,32 @@ TASK_LIST_BOARDS:
       project-key-or-id:
         default: ''
         title: Project Key or ID
-        description: This filters results to boards that are relevant to a project.
-          Relevance meaning that the JQL filter defined in board contains a reference
+        description: This filters results to boards that are relevant to a project. Relevance meaning that the JQL filter defined in board contains a reference
           to a project.
         shortDescription: The project key or ID, e.g. `INS`. Default is empty
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
         format: string
       board-type:
         default: simple
-        description: 'The type of board, can be: scrum, kanban, simple. Default is
-          simple.'
+        description: 'The type of board, can be: scrum, kanban, simple. Default is simple.'
         uiOrder: 1
         enum:
-        - scrum
-        - kanban
-        - simple
+          - scrum
+          - kanban
+          - simple
         title: Board Type
         acceptFormats:
-        - string
+          - string
         format: string
       name:
         default: ''
-        description: Name filters results to boards that match or partially match
-          the specified name. Default is empty.
+        description: Name filters results to boards that match or partially match the specified name. Default is empty.
         uiOrder: 2
         title: Name
         acceptFormats:
-        - string
+          - string
         format: string
       start-at:
         $ref: '#/$defs/common-query-params/start-at'
@@ -466,10 +452,10 @@ TASK_LIST_BOARDS:
               title: Type
               format: string
           required:
-          - id
-          - name
-          - type
-          - self
+            - id
+            - name
+            - type
+            - self
           format: object
         format: array
       start-at:
@@ -493,10 +479,10 @@ TASK_LIST_BOARDS:
         title: Is Last
         format: boolean
     required:
-    - start-at
-    - max-results
-    - total
-    - is-last
+      - start-at
+      - max-results
+      - total
+      - is-last
     title: Output
     format: object
   format: object
@@ -513,7 +499,7 @@ TASK_LIST_ISSUES:
         shortDescription: The name of the board
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
         format: string
       range:
         title: Range
@@ -521,141 +507,140 @@ TASK_LIST_ISSUES:
         uiOrder: 1
         additionalProperties: true
         required:
-        - range
+          - range
         oneOf:
-        - properties:
-            range:
-              title: Range
-              const: All
-              description: All issues.
-              uiOrder: 0
-              format: string
-          required:
-          - range
-          description: All issues.
-          uiOrder: 0
-          title: All
-          format: object
-        - properties:
-            range:
-              title: Range
-              const: Standard Issues
-              description: Standard issues.
-              uiOrder: 0
-              format: string
-          required:
-          - range
-          description: Standard issues.
-          uiOrder: 0
-          title: Standard Issues
-          format: object
-        - properties:
-            range:
-              title: Range
-              const: Epics only
-              description: Epics only.
-              uiOrder: 0
-              format: string
-          required:
-          - range
-          description: Epics only.
-          uiOrder: 0
-          title: Epics only
-          format: object
-        - properties:
-            range:
-              title: Range
-              const: In backlog only
-              description: In backlog only.
-              uiOrder: 0
-              format: string
-          required:
-          - range
-          description: In backlog only.
-          uiOrder: 0
-          title: In Backlog Only
-          format: object
-        - properties:
-            range:
-              title: Range
-              const: Issues of an epic
-              description: Issues of an epic.
-              uiOrder: 0
-              format: string
-            epic-key:
-              title: Epic Key
-              description: The Key of the epic, e.g. `JRA-1330`.
-              shortDescription: The Key of the epic
-              uiOrder: 10
-              acceptFormats:
-              - string
-              format: string
-          required:
-          - range
-          - epic-key
-          description: Issues of an epic.
-          uiOrder: 0
-          title: Issues of an Epic
-          format: object
-        - properties:
-            range:
-              title: Range
-              const: Issues of a sprint
-              description: Issues of a sprint.
-              uiOrder: 0
-              format: string
-            sprint-name:
-              title: Sprint Name
-              description: The name of the sprint.
-              shortDescription: The Name of the sprint
-              uiOrder: 10
-              acceptFormats:
-              - string
-              format: string
-          required:
-          - range
-          - sprint-name
-          description: Issues of a sprint.
-          uiOrder: 0
-          title: Issues of a Sprint
-          format: object
-        - properties:
-            range:
-              title: Range
-              const: Issues without epic assigned
-              description: Issues without epic assigned.
-              uiOrder: 0
-              format: string
-          required:
-          - range
-          description: Issues without Epic Assigned.
-          uiOrder: 0
-          title: Issues without Epic Assigned
-          format: object
-        - properties:
-            range:
-              title: Range
-              const: JQL query
-              description: JQL query.
-              uiOrder: 0
-              format: string
-            jql:
-              title: JQL
-              description: The JQL query. For example, `type = "Task" AND status =
-                "Done"`. For more information, see <a href="https://support.atlassian.com/jira-software-cloud/docs/what-is-advanced-search-in-jira-cloud/">Advanced
-                searching</a>.
-              shortDescription: The JQL query
-              uiOrder: 10
-              acceptFormats:
-              - string
-              format: string
-          required:
-          - range
-          - jql
-          description: JQL query.
-          uiOrder: 0
-          title: JQL Query
-          format: object
+          - properties:
+              range:
+                title: Range
+                const: All
+                description: All issues.
+                uiOrder: 0
+                format: string
+            required:
+              - range
+            description: All issues.
+            uiOrder: 0
+            title: All
+            format: object
+          - properties:
+              range:
+                title: Range
+                const: Standard Issues
+                description: Standard issues.
+                uiOrder: 0
+                format: string
+            required:
+              - range
+            description: Standard issues.
+            uiOrder: 0
+            title: Standard Issues
+            format: object
+          - properties:
+              range:
+                title: Range
+                const: Epics only
+                description: Epics only.
+                uiOrder: 0
+                format: string
+            required:
+              - range
+            description: Epics only.
+            uiOrder: 0
+            title: Epics only
+            format: object
+          - properties:
+              range:
+                title: Range
+                const: In backlog only
+                description: In backlog only.
+                uiOrder: 0
+                format: string
+            required:
+              - range
+            description: In backlog only.
+            uiOrder: 0
+            title: In Backlog Only
+            format: object
+          - properties:
+              range:
+                title: Range
+                const: Issues of an epic
+                description: Issues of an epic.
+                uiOrder: 0
+                format: string
+              epic-key:
+                title: Epic Key
+                description: The Key of the epic, e.g. `JRA-1330`.
+                shortDescription: The Key of the epic
+                uiOrder: 10
+                acceptFormats:
+                  - string
+                format: string
+            required:
+              - range
+              - epic-key
+            description: Issues of an epic.
+            uiOrder: 0
+            title: Issues of an Epic
+            format: object
+          - properties:
+              range:
+                title: Range
+                const: Issues of a sprint
+                description: Issues of a sprint.
+                uiOrder: 0
+                format: string
+              sprint-name:
+                title: Sprint Name
+                description: The name of the sprint.
+                shortDescription: The Name of the sprint
+                uiOrder: 10
+                acceptFormats:
+                  - string
+                format: string
+            required:
+              - range
+              - sprint-name
+            description: Issues of a sprint.
+            uiOrder: 0
+            title: Issues of a Sprint
+            format: object
+          - properties:
+              range:
+                title: Range
+                const: Issues without epic assigned
+                description: Issues without epic assigned.
+                uiOrder: 0
+                format: string
+            required:
+              - range
+            description: Issues without Epic Assigned.
+            uiOrder: 0
+            title: Issues without Epic Assigned
+            format: object
+          - properties:
+              range:
+                title: Range
+                const: JQL query
+                description: JQL query.
+                uiOrder: 0
+                format: string
+              jql:
+                title: JQL
+                description: The JQL query. For example, `type = "Task" AND status = "Done"`. For more information, see <a href="https://support.atlassian.com/jira-software-cloud/docs/what-is-advanced-search-in-jira-cloud/">Advanced
+                  searching</a>.
+                shortDescription: The JQL query
+                uiOrder: 10
+                acceptFormats:
+                  - string
+                format: string
+            required:
+              - range
+              - jql
+            description: JQL query.
+            uiOrder: 0
+            title: JQL Query
+            format: object
         format: object
       start-at:
         $ref: '#/$defs/common-query-params/start-at'
@@ -664,7 +649,7 @@ TASK_LIST_ISSUES:
         $ref: '#/$defs/common-query-params/max-results'
         uiOrder: 4
     required:
-    - board-name
+      - board-name
     title: Input
     format: object
   output:
@@ -694,9 +679,9 @@ TASK_LIST_ISSUES:
         title: Total
         format: integer
     required:
-    - start-at
-    - max-results
-    - total
+      - start-at
+      - max-results
+      - total
     title: Output
     format: object
   format: object
@@ -713,7 +698,7 @@ TASK_LIST_SPRINTS:
         shortDescription: The ID of the board
         uiOrder: 0
         acceptFormats:
-        - integer
+          - integer
         format: integer
       start-at:
         $ref: '#/$defs/common-query-params/start-at'
@@ -722,7 +707,7 @@ TASK_LIST_SPRINTS:
         $ref: '#/$defs/common-query-params/max-results'
         uiOrder: 2
     required:
-    - board-id
+      - board-id
     title: Input
     format: object
   output:
@@ -752,9 +737,9 @@ TASK_LIST_SPRINTS:
         title: Total
         format: integer
     required:
-    - start-at
-    - max-results
-    - total
+      - start-at
+      - max-results
+      - total
     title: Output
     format: object
   format: object
@@ -774,7 +759,7 @@ TASK_UPDATE_ISSUE:
         description: Whether to notify users.
         uiOrder: 1
         acceptFormats:
-        - boolean
+          - boolean
         format: boolean
       update:
         title: Update
@@ -782,82 +767,81 @@ TASK_UPDATE_ISSUE:
         uiOrder: 1
         additionalProperties: true
         required:
-        - update
+          - update
         oneOf:
-        - properties:
-            update:
-              title: Update
-              const: Custom Update
-              description: Custom update.
-              uiOrder: 0
-              format: string
-            update-fields:
-              title: Update Fields
-              description: The fields to update.
-              acceptFormats:
-              - array
-              items:
-                properties:
-                  action:
-                    description: 'The action to perform, can be: `add`, `copy`, `edit`,
-                      `remove`, `set`.'
-                    enum:
-                    - add
-                    - copy
-                    - edit
-                    - remove
-                    - set
-                    uiOrder: 3
-                    title: Action
-                    format: string
-                  field-name:
-                    description: The name of the field to update.
-                    uiOrder: 4
-                    title: Field Name
-                    format: string
-                  value:
-                    description: The value of the field to update.
-                    uiOrder: 5
-                    title: Value
-                    format: string
-                required:
-                - action
-                - field-name
-                format: object
-              uiOrder: 1
-              format: array
-          required:
-          - update
-          - update-fields
-          description: Custom update.
-          uiOrder: 0
-          title: Custom Update
-          format: object
-        - properties:
-            update:
-              title: Update
-              const: Move Issue to Epic
-              description: Move issue to epic.
-              uiOrder: 0
-              format: string
-            epic-key:
-              title: Epic Key
-              description: The key of the epic, e.g. `JRA-1330`.
-              shortDescription: The key of the epic
-              uiOrder: 11
-              acceptFormats:
-              - string
-              format: string
-          required:
-          - update
-          - epic-key
-          description: Move issue to epic.
-          uiOrder: 0
-          title: Move Issue to Epic
-          format: object
+          - properties:
+              update:
+                title: Update
+                const: Custom Update
+                description: Custom update.
+                uiOrder: 0
+                format: string
+              update-fields:
+                title: Update Fields
+                description: The fields to update.
+                acceptFormats:
+                  - array
+                items:
+                  properties:
+                    action:
+                      description: 'The action to perform, can be: `add`, `copy`, `edit`, `remove`, `set`.'
+                      enum:
+                        - add
+                        - copy
+                        - edit
+                        - remove
+                        - set
+                      uiOrder: 3
+                      title: Action
+                      format: string
+                    field-name:
+                      description: The name of the field to update.
+                      uiOrder: 4
+                      title: Field Name
+                      format: string
+                    value:
+                      description: The value of the field to update.
+                      uiOrder: 5
+                      title: Value
+                      format: string
+                  required:
+                    - action
+                    - field-name
+                  format: object
+                uiOrder: 1
+                format: array
+            required:
+              - update
+              - update-fields
+            description: Custom update.
+            uiOrder: 0
+            title: Custom Update
+            format: object
+          - properties:
+              update:
+                title: Update
+                const: Move Issue to Epic
+                description: Move issue to epic.
+                uiOrder: 0
+                format: string
+              epic-key:
+                title: Epic Key
+                description: The key of the epic, e.g. `JRA-1330`.
+                shortDescription: The key of the epic
+                uiOrder: 11
+                acceptFormats:
+                  - string
+                format: string
+            required:
+              - update
+              - epic-key
+            description: Move issue to epic.
+            uiOrder: 0
+            title: Move Issue to Epic
+            format: object
         format: object
     required:
-    - issue-key
+      - issue-key
     title: Input
     format: object
   output:
@@ -880,7 +864,7 @@ TASK_UPDATE_SPRINT:
         shortDescription: The ID of the sprint
         uiOrder: 0
         acceptFormats:
-        - integer
+          - integer
         format: integer
       name:
         title: Name
@@ -888,7 +872,7 @@ TASK_UPDATE_SPRINT:
         shortDescription: The name of the sprint
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         format: string
       goal:
         title: Goal
@@ -896,52 +880,48 @@ TASK_UPDATE_SPRINT:
         shortDescription: The goal of the sprint
         uiOrder: 2
         acceptFormats:
-        - string
+          - string
         format: string
       start-date:
         title: Start Date
-        description: The start date of the sprint, e.g. 2018-03-05 (default 00:00
-          UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+        description: The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         shortDescription: The start date of the sprint
         uiOrder: 3
         acceptFormats:
-        - string
+          - string
         format: string
       end-date:
         title: End Date
-        description: The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0).
-          To adjust your time zone, please provide a more detailed RFC3339 format
-          like `2018-03-05T09:00:00Z0000`.
+        description: The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+          format like `2018-03-05T09:00:00Z0000`.
         shortDescription: The end date of the sprint
         uiOrder: 4
         acceptFormats:
-        - string
+          - string
         format: string
       current-state:
         title: Current State
-        description: 'The current state of the sprint, can be: `future`, `active`,
-          `closed`.'
+        description: 'The current state of the sprint, can be: `future`, `active`, `closed`.'
         shortDescription: The current state of the sprint
         uiOrder: 5
         acceptFormats:
-        - string
+          - string
         format: string
       enter-next-state:
         title: Enter Next State
-        description: Whether to enter the next state. If `true`, the sprint will enter
-          the next state, i.e., `future` -> `active` -> `closed`.
+        description: Whether to enter the next state. If `true`, the sprint will enter the next state, i.e., `future` -> `active` -> `closed`.
         shortDescription: Whether to enter the next state
         uiOrder: 6
         acceptFormats:
-        - boolean
+          - boolean
         format: boolean
     required:
-    - sprint-id
-    - name
-    - start-date
-    - end-date
-    - current-state
+      - sprint-id
+      - name
+      - start-date
+      - end-date
+      - current-state
     title: Input
     format: object
   output:

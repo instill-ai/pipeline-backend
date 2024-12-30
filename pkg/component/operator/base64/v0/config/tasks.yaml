@@ -7,12 +7,12 @@ TASK_DECODE:
       data:
         description: Base64 string to be decoded.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Data
         format: string
     required:
-    - data
+      - data
     title: Input
     format: object
   output:
@@ -25,7 +25,7 @@ TASK_DECODE:
         title: Data
         format: string
     required:
-    - data
+      - data
     title: Output
     format: object
 TASK_ENCODE:
@@ -37,12 +37,12 @@ TASK_ENCODE:
       data:
         description: Data to be encoded.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Data
         format: string
     required:
-    - data
+      - data
     title: Input
     format: object
   output:
@@ -55,6 +55,6 @@ TASK_ENCODE:
         title: Data
         format: string
     required:
-    - data
+      - data
     title: Output
     format: object

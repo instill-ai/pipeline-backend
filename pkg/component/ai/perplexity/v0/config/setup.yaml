@@ -3,7 +3,7 @@ properties:
   api-key:
     description: Fill in your API key from the vendor's platform.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     instillCredential: true
     uiOrder: 0

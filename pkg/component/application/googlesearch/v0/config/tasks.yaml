@@ -4,45 +4,42 @@ $defs:
       link:
         description: The full URL to which the search result is pointing, e.g., http://www.example.com/foo/bar.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Link
         format: string
       link-html:
-        description: The scraped raw html of the link associated with this search
-          result.
+        description: The scraped raw html of the link associated with this search result.
         acceptFormats:
-        - string
+          - string
         uiOrder: 4
         title: Link HTML
         format: string
       link-text:
-        description: The scraped text of the link associated with this search result,
-          in plain text.
+        description: The scraped text of the link associated with this search result, in plain text.
         acceptFormats:
-        - string
+          - string
         uiOrder: 3
         title: Link Text
         format: string
       snippet:
-        description: The snippet from the page associated with this search result,
-          in plain text.
+        description: The snippet from the page associated with this search result, in plain text.
         acceptFormats:
-        - string
+          - string
         uiOrder: 2
         title: Snippet
         format: string
       title:
         description: The title of a search result, in plain text.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Title
         format: string
     required:
-    - title
-    - link
-    - snippet
+      - title
+      - link
+      - snippet
     title: Result
     format: object
 TASK_SEARCH:
@@ -52,26 +49,24 @@ TASK_SEARCH:
     properties:
       include-link-html:
         default: false
-        description: Indicate whether to scrape the link and include the raw HTML
-          of the link associated with this search result in the 'link-html' field.
+        description: Indicate whether to scrape the link and include the raw HTML of the link associated with this search result in the 'link-html' field.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 3
         title: Include Link HTML
         format: boolean
       include-link-text:
         default: false
-        description: Indicate whether to scrape the link and include the text of the
-          link associated with this search result in the 'link-text' field.
+        description: Indicate whether to scrape the link and include the text of the link associated with this search result in the 'link-text' field.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 2
         title: Include Link Text
         format: boolean
       query:
         description: The search query for Google.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Query
         format: string
@@ -79,14 +74,14 @@ TASK_SEARCH:
         default: 10
         description: The number of results to return for each query.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 1
         maximum: 100
         minimum: 1
         title: Top K
         format: integer
     required:
-    - query
+      - query
     title: Input
     format: object
   output:
@@ -100,6 +95,6 @@ TASK_SEARCH:
         title: Results
         format: array
     required:
-    - results
+      - results
     title: Output
     format: object

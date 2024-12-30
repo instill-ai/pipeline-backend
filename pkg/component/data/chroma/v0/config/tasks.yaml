@@ -4,18 +4,17 @@ TASK_QUERY:
     uiOrder: 0
     properties:
       collection-name:
-        description: The name of the collection to perform vector similarity search
-          on.
+        description: The name of the collection to perform vector similarity search on.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       vector:
         description: An array of dimensions for the vector query.
         acceptFormats:
-        - array
-        - array
+          - array
+          - array
         uiOrder: 1
         items:
           description: A dimension of the vector.
@@ -27,32 +26,30 @@ TASK_QUERY:
       n-results:
         description: The N amount of items to return from the vector search operation.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 2
         title: N Results
         format: integer
       filter:
-        description: The metadata filter to be applied to the data with Chroma where
-          filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters).
+        description: The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters).
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 3
         title: Filter
         required: []
         format: object
       filter-document:
-        description: The document content filter to be applied to the data, please
-          refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents).
+        description: The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents).
         acceptFormats:
-        - string
+          - string
         uiOrder: 4
         title: Filter Document
         format: string
       fields:
         description: The fields to be returned from the vector search operation.
         acceptFormats:
-        - array
+          - array
         uiOrder: 5
         items:
           description: A field to be returned.
@@ -62,9 +59,9 @@ TASK_QUERY:
         title: Fields
         format: array
     required:
-    - collection-name
-    - vector
-    - n-results
+      - collection-name
+      - vector
+      - n-results
     title: Input
     format: object
   output:
@@ -127,27 +124,26 @@ TASK_QUERY:
         required: []
         format: object
     required:
-    - status
-    - result
+      - status
+      - result
     title: Output
     format: object
 TASK_BATCH_UPSERT:
-  shortDescription: Upsert multiple vector items into a collection, existing items
-    will be updated
+  shortDescription: Upsert multiple vector items into a collection, existing items will be updated
   input:
     uiOrder: 0
     properties:
       collection-name:
         description: The name of the collection to upsert the item into.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       array-id:
         description: The array of id.
         acceptFormats:
-        - array
+          - array
         uiOrder: 1
         items:
           description: An id of the point.
@@ -159,10 +155,10 @@ TASK_BATCH_UPSERT:
       array-metadata:
         description: The array of vector metadata.
         acceptFormats:
-        - array
-        - array
-        - array
-        - array
+          - array
+          - array
+          - array
+          - array
         uiOrder: 2
         minItems: 1
         title: Array Metadata
@@ -175,13 +171,13 @@ TASK_BATCH_UPSERT:
       array-vector:
         description: The array of vector values.
         acceptFormats:
-        - array
+          - array
         uiOrder: 3
         items:
           description: An array of dimensions for the vector value.
           acceptFormats:
-          - array
-          - array
+            - array
+            - array
           items:
             description: A dimension of the vector.
             example: 0.8167237
@@ -193,7 +189,7 @@ TASK_BATCH_UPSERT:
       array-document:
         description: The array of document string values.
         acceptFormats:
-        - array
+          - array
         uiOrder: 4
         items:
           description: A document string value.
@@ -205,7 +201,7 @@ TASK_BATCH_UPSERT:
       array-uri:
         description: The array of uri.
         acceptFormats:
-        - array
+          - array
         uiOrder: 5
         items:
           description: An uri of the point.
@@ -214,10 +210,10 @@ TASK_BATCH_UPSERT:
         title: Array URI
         format: array
     required:
-    - collection-name
-    - array-id
-    - array-metadata
-    - array-vector
+      - collection-name
+      - array-id
+      - array-metadata
+      - array-vector
     title: Input
     format: object
   output:
@@ -229,34 +225,33 @@ TASK_BATCH_UPSERT:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_UPSERT:
-  shortDescription: Upsert a vector item into a collection, existing item will be
-    updated
+  shortDescription: Upsert a vector item into a collection, existing item will be updated
   input:
     uiOrder: 0
     properties:
       collection-name:
         description: The name of the collection to upsert the item into.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       id:
         description: The ID of the item.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: ID
         format: string
       metadata:
         description: The vector metadata.
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 2
         title: Metadata
         required: []
@@ -264,8 +259,8 @@ TASK_UPSERT:
       vector:
         description: An array of dimensions for the vector value.
         acceptFormats:
-        - array
-        - array
+          - array
+          - array
         uiOrder: 3
         items:
           description: A dimension of the vector.
@@ -277,22 +272,22 @@ TASK_UPSERT:
       document:
         description: The document string value.
         acceptFormats:
-        - string
+          - string
         uiOrder: 4
         title: Document
         format: string
       uri:
         description: The uri of the item.
         acceptFormats:
-        - string
+          - string
         uiOrder: 5
         title: URI
         format: string
     required:
-    - collection-name
-    - id
-    - metadata
-    - vector
+      - collection-name
+      - id
+      - metadata
+      - vector
     title: Input
     format: object
   output:
@@ -304,7 +299,7 @@ TASK_UPSERT:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_DELETE:
@@ -315,37 +310,35 @@ TASK_DELETE:
       collection-name:
         description: The name of the collection to delete the object from.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       id:
         description: The ID of the item.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: ID
         format: string
       filter:
-        description: The metadata filter to be applied to the data with Chroma where
-          filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters).
+        description: The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters).
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 2
         title: Filter
         required: []
         format: object
       filter-document:
-        description: The document content filter to be applied to the data, please
-          refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents).
+        description: The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents).
         acceptFormats:
-        - string
+          - string
         uiOrder: 3
         title: Filter Document
         format: string
     required:
-    - collection-name
+      - collection-name
     title: Input
     format: object
   output:
@@ -357,7 +350,7 @@ TASK_DELETE:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_CREATE_COLLECTION:
@@ -368,15 +361,15 @@ TASK_CREATE_COLLECTION:
       collection-name:
         description: The name of the collection to create.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       metadata:
         description: The metadata of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections).
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 1
         title: Config
         required: []
@@ -384,8 +377,8 @@ TASK_CREATE_COLLECTION:
       configuration:
         description: The configuration of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections).
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 2
         title: Configuration
         required: []
@@ -393,13 +386,13 @@ TASK_CREATE_COLLECTION:
       get-or-create:
         description: If true, the collection will be created if it does not exist.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 3
         title: Get or Create
         default: false
         format: boolean
     required:
-    - collection-name
+      - collection-name
     title: Input
     format: object
   output:
@@ -411,7 +404,7 @@ TASK_CREATE_COLLECTION:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_DELETE_COLLECTION:
@@ -422,12 +415,12 @@ TASK_DELETE_COLLECTION:
       collection-name:
         description: The name of the collection to delete.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
     required:
-    - collection-name
+      - collection-name
     title: Input
     format: object
   output:
@@ -439,6 +432,6 @@ TASK_DELETE_COLLECTION:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object

@@ -1,6 +1,6 @@
 availableTasks:
-- TASK_TEXT_GENERATION_CHAT
-- TASK_TEXT_EMBEDDINGS
+  - TASK_TEXT_GENERATION_CHAT
+  - TASK_TEXT_EMBEDDINGS
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/ai/mistral-ai
 icon: assets/mistral-ai.svg

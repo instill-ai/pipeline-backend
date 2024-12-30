@@ -12,32 +12,28 @@ $defs:
         title: Title
         format: string
     required:
-    - link
+      - link
     title: Page Information
     format: object
 TASK_CRAWL_SITE:
-  shortDescription: This task involves systematically navigating through a website,
-    starting from a designated page (typically the homepage), and following internal
-    links to discover and retrieve page titles and URLs. The process is limited to
-    120 seconds and only collects links and titles from multiple pages; it does not
-    extract the content of the pages themselves. If you need to collect specific content
-    from individual pages, please use the Scrape Page task instead.
+  shortDescription: This task involves systematically navigating through a website, starting from a designated page (typically the homepage), and following
+    internal links to discover and retrieve page titles and URLs. The process is limited to 120 seconds and only collects links and titles from multiple
+    pages; it does not extract the content of the pages themselves. If you need to collect specific content from individual pages, please use the Scrape
+    Page task instead.
   input:
     uiOrder: 0
     properties:
       url:
-        description: The root URL to scrape. All links on this page will be scraped,
-          and all links on those pages, and so on.
+        description: The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: URL
         format: string
       allowed-domains:
-        description: A list of domains that are allowed to be scraped. If empty, all
-          domains are allowed.
+        description: A list of domains that are allowed to be scraped. If empty, all domains are allowed.
         acceptFormats:
-        - array
+          - array
         uiOrder: 1
         items:
           format: string
@@ -45,23 +41,20 @@ TASK_CRAWL_SITE:
         format: array
       max-k:
         default: 10
-        description: Max-K sets a limit on the number of pages to fetch. If Max-K
-          is set to 0, all available pages will be fetched within the time limit of
-          120 seconds. If Max-K is a positive number, the fetch will return up to
-          that many pages, but no more.
+        description: Max-K sets a limit on the number of pages to fetch. If Max-K is set to 0, all available pages will be fetched within the time limit
+          of 120 seconds. If Max-K is a positive number, the fetch will return up to that many pages, but no more.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 2
         minimum: 0
         title: Max Number of Pages
         format: integer
       timeout:
         default: 1000
-        description: The time to wait for a page to load in milliseconds. Min 0, Max
-          60000. Please notice the timeout here is set for each page rather than the
-          whole crawl task.
+        description: The time to wait for a page to load in milliseconds. Min 0, Max 60000. Please notice the timeout here is set for each page rather than
+          the whole crawl task.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 3
         minimum: 0
         maximum: 60000
@@ -69,49 +62,43 @@ TASK_CRAWL_SITE:
         format: integer
       max-depth:
         default: 0
-        description: Max Depth specifies how deep the crawler will navigate from the
-          root URL. If max depth is set to 1, the crawler will only scrape the root
-          URL and will not follow any links to other pages. If max depth is set to
-          0, the crawler will scrape all reachable pages until the total number of
-          scraped pages reaches max-k. If both max-k and max depth are defined, the
-          crawler will prioritize the max-k setting when determining how many pages
-          to scrape.
+        description: Max Depth specifies how deep the crawler will navigate from the root URL. If max depth is set to 1, the crawler will only scrape the
+          root URL and will not follow any links to other pages. If max depth is set to 0, the crawler will scrape all reachable pages until the total number
+          of scraped pages reaches max-k. If both max-k and max depth are defined, the crawler will prioritize the max-k setting when determining how many
+          pages to scrape.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 4
         minimum: 0
         title: Max Depth
         format: integer
       filter:
-        description: Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions).
-          The URL will be crawled if it matches either include-pattern or not match
-          exclude-pattern. When both include-pattern and exclude-pattern are empty,
-          all URLs will be crawled. It will process exclude-pattern first, then include-pattern.
-          When exclude-pattern is not empty, only URLs that do not match exclude-pattern
-          will be crawled. When include-pattern is not empty, only URLs that match
-          include-pattern will be crawled.
+        description: Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). The URL
+          will be crawled if it matches either include-pattern or not match exclude-pattern. When both include-pattern and exclude-pattern are empty, all
+          URLs will be crawled. It will process exclude-pattern first, then include-pattern. When exclude-pattern is not empty, only URLs that do not match
+          exclude-pattern will be crawled. When include-pattern is not empty, only URLs that match include-pattern will be crawled.
         uiOrder: 5
         title: Filter
         properties:
           exclude-pattern:
             description: When the URL is matched, the URL will not be crawled.
             acceptFormats:
-            - string
+              - string
             uiOrder: 1
             title: Exclude Pattern
             format: string
           include-pattern:
             description: When the URL is matched, the URL will be crawled.
             acceptFormats:
-            - string
+              - string
             uiOrder: 2
             title: Include Pattern
             format: string
         required: []
         format: object
     required:
-    - url
-    - max-k
+      - url
+      - max-k
     title: Input
     format: object
   output:
@@ -126,14 +113,13 @@ TASK_CRAWL_SITE:
         title: Pages
         format: array
     required:
-    - pages
+      - pages
     title: Output
     format: object
 TASK_SCRAPE_SITEMAP:
-  shortDescription: This task extracts data directly from a website’s sitemap. A sitemap
-    is typically an XML file that lists all URLs and other relevant metadata, providing
-    a structured overview of the site’s pages. This method efficiently gathers key
-    information from the sitemap without navigating through the site’s internal pages.
+  shortDescription: This task extracts data directly from a website’s sitemap. A sitemap is typically an XML file that lists all URLs and other relevant
+    metadata, providing a structured overview of the site’s pages. This method efficiently gathers key information from the sitemap without navigating through
+    the site’s internal pages.
   input:
     description: The URL contains sitemap.
     uiOrder: 0
@@ -141,12 +127,12 @@ TASK_SCRAPE_SITEMAP:
       url:
         description: The URL of the sitemap to scrape.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: URL
         format: string
     required:
-    - url
+      - url
     title: Input
     format: object
   output:
@@ -178,87 +164,75 @@ TASK_SCRAPE_SITEMAP:
               uiOrder: 3
               format: number
           required:
-          - loc
-          - lastmod
+            - loc
+            - lastmod
           title: List
           format: json
         title: List
         format: array
     required:
-    - list
+      - list
     title: Output
     format: object
 TASK_SCRAPE_PAGES:
-  shortDescription: This task focuses on extracting specific data from targeted webpages
-    by parsing its HTML structure. Unlike crawling, which navigates across multiple
-    pages, scraping retrieves content only from the specified page. After scraping,
-    the data can be further processed using a defined [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp)
-    in a specified sequence. The sequence of jQuery filtering data will be executed
-    in the order of `only-main-content`, `remove-tags`, and `only-include-tags`. Refer
-    to the [jQuery Syntax Examples](#jquery-syntax-examples) for more details on how
-    to filter and manipulate the data. To avoid a single URL failure from affecting
-    all requests, we will not return an error when an individual URL fails. Instead,
-    we will return all contents that are successfully scraped.
+  shortDescription: This task focuses on extracting specific data from targeted webpages by parsing its HTML structure. Unlike crawling, which navigates
+    across multiple pages, scraping retrieves content only from the specified page. After scraping, the data can be further processed using a defined [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp)
+    in a specified sequence. The sequence of jQuery filtering data will be executed in the order of `only-main-content`, `remove-tags`, and `only-include-tags`.
+    Refer to the [jQuery Syntax Examples](#jquery-syntax-examples) for more details on how to filter and manipulate the data. To avoid a single URL failure
+    from affecting all requests, we will not return an error when an individual URL fails. Instead, we will return all contents that are successfully scraped.
   input:
     uiOrder: 0
     properties:
       urls:
         description: The URLs to scrape the webpage contents.
         acceptFormats:
-        - array
+          - array
         items:
           format: string
         uiOrder: 0
         title: URLs
         format: array
       scrape-method:
-        description: Defines the method used for web scraping. Available options include
-          'http' for standard HTTP-based scraping and 'chrome-simulator' for scraping
-          through a simulated Chrome browser environment.
+        description: Defines the method used for web scraping. Available options include 'http' for standard HTTP-based scraping and 'chrome-simulator'
+          for scraping through a simulated Chrome browser environment.
         acceptFormats:
-        - string
+          - string
         enum:
-        - http
-        - chrome-simulator
+          - http
+          - chrome-simulator
         uiOrder: 1
         default: http
         title: Scrape Method
         format: string
       include-html:
-        description: Indicate whether to include the raw HTML of the webpage in the
-          output. If you want to include the raw HTML, set this to true.
+        description: Indicate whether to include the raw HTML of the webpage in the output. If you want to include the raw HTML, set this to true.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 2
         title: Include HTML
         format: boolean
       only-main-content:
-        description: Only return the main content of the page by excluding the content
-          of the tag of header, nav, footer.
+        description: Only return the main content of the page by excluding the content of the tag of header, nav, footer.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 3
         title: Only Main Content
         format: boolean
       remove-tags:
-        description: 'A list of tags, classes, and ids to remove from the output.
-          You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp)
-          to remove data. If empty, no tags will be removed. Example: ''script, .ad,
-          #footer''. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).'
+        description: 'A list of tags, classes, and ids to remove from the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp)
+          to remove data. If empty, no tags will be removed. Example: ''script, .ad, #footer''. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).'
         acceptFormats:
-        - array
+          - array
         uiOrder: 4
         items:
           format: string
         title: Remove Tags
         format: array
       only-include-tags:
-        description: 'A list of tags, classes, and ids to include in the output. You
-          can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to
-          include data. If empty, all tags will be included. Example: ''script, .ad,
-          #footer''. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).'
+        description: 'A list of tags, classes, and ids to include in the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp)
+          to include data. If empty, all tags will be included. Example: ''script, .ad, #footer''. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).'
         acceptFormats:
-        - array
+          - array
         uiOrder: 5
         items:
           format: string
@@ -266,22 +240,19 @@ TASK_SCRAPE_PAGES:
         format: array
       timeout:
         default: 1000
-        description: This parameter specifies the time to wait for a page to load,
-          measured in milliseconds. The minimum value is 0, and the maximum value
-          is 60,000. Please note that if you set a short timeout, the page may not
-          fully load. Conversely, setting a long timeout could significantly increase
-          the time it takes for the task to complete. This timeout setting applies
-          only to the Chrome simulator.
+        description: This parameter specifies the time to wait for a page to load, measured in milliseconds. The minimum value is 0, and the maximum value
+          is 60,000. Please note that if you set a short timeout, the page may not fully load. Conversely, setting a long timeout could significantly increase
+          the time it takes for the task to complete. This timeout setting applies only to the Chrome simulator.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 6
         minimum: 0
         maximum: 60000
         title: Timeout
         format: integer
     required:
-    - urls
-    - scrape-method
+      - urls
+      - scrape-method
     title: Input
     format: object
   output:
@@ -327,8 +298,8 @@ TASK_SCRAPE_PAGES:
                   uiOrder: 2
                   format: string
               required:
-              - title
-              - source-url
+                - title
+                - source-url
               title: Metadata
               format: object
             links-on-page:
@@ -339,12 +310,12 @@ TASK_SCRAPE_PAGES:
               title: Links on Page
               format: array
           required:
-          - content
-          - markdown
+            - content
+            - markdown
           format: object
         title: Pages
         format: array
     required:
-    - pages
+      - pages
     title: Output
     format: object

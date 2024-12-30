@@ -1,6 +1,6 @@
 availableTasks:
-- TASK_TEXT_TO_IMAGE
-- TASK_IMAGE_TO_IMAGE
+  - TASK_TEXT_TO_IMAGE
+  - TASK_IMAGE_TO_IMAGE
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/ai/stability-ai
 icon: assets/stability-ai.svg

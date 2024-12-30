@@ -12,28 +12,26 @@ $defs:
 TASK_READ_MESSAGE:
   shortDescription: Get the latest message since specific date
   input:
-    description: Please input the channel name and the date that we want to start
-      to read.
+    description: Please input the channel name and the date that we want to start to read.
     uiOrder: 0
     properties:
       channel-name:
         description: Channel name, as displayed on Slack.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Channel Name
         format: string
       start-to-read-date:
-        description: Date (in `YYYY-MM-DD` format) from which messages will start
-          to be fetched. If not provided, it will be 7 days before the current date.
+        description: Date (in `YYYY-MM-DD` format) from which messages will start to be fetched. If not provided, it will be 7 days before the current date.
           The date will be in the UTC timezone.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Start to read date
         format: string
     required:
-    - channel-name
+      - channel-name
     title: Input
     format: object
   output:
@@ -90,19 +88,19 @@ TASK_READ_MESSAGE:
                     title: Replied Message
                     format: string
                 required:
-                - user-id
-                - datetime
-                - message
+                  - user-id
+                  - datetime
+                  - message
                 format: object
               format: array
           required:
-          - user-id
-          - message
-          - start-date
+            - user-id
+            - message
+            - start-date
           format: object
         format: array
     required:
-    - conversations
+      - conversations
     title: Output
     format: object
 TASK_WRITE_MESSAGE:
@@ -115,29 +113,28 @@ TASK_WRITE_MESSAGE:
       channel-name:
         description: Channel name, as displayed on Slack.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Channel Name
         format: string
       message:
         description: The message to be sent to the target channel.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Message
         format: string
       as-user:
         default: false
-        description: Send the message on behalf of the user identified by the <code>setup.user-token</code>
-          field.
+        description: Send the message on behalf of the user identified by the <code>setup.user-token</code> field.
         uiOrder: 2
         title: Send As User
         acceptFormats:
-        - boolean
+          - boolean
         format: boolean
     required:
-    - channel-name
-    - message
+      - channel-name
+      - message
     title: Input
     format: object
   output:
@@ -151,6 +148,6 @@ TASK_WRITE_MESSAGE:
         title: Result
         format: string
     required:
-    - result
+      - result
     title: Output
     format: object

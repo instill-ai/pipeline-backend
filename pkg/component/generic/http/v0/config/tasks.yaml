@@ -5,7 +5,7 @@ $defs:
       body:
         description: The request body.
         acceptFormats:
-        - '*'
+          - '*'
         shortDescription: The request body
         uiOrder: 1
         order: 1
@@ -14,14 +14,14 @@ $defs:
       endpoint-url:
         description: The API endpoint url.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Endpoint Url
         format: string
       output-body-schema:
         description: The JSON schema of output body.
         acceptFormats:
-        - string
+          - string
         shortDescription: The JSON schema of output body
         uiOrder: 1
         order: 2
@@ -29,7 +29,7 @@ $defs:
         title: Body
         format: string
     required:
-    - endpoint-url
+      - endpoint-url
     title: Input
     format: object
   inputWithoutBody:
@@ -38,14 +38,14 @@ $defs:
       endpoint-url:
         description: The API endpoint url.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Endpoint Url
         format: string
       output-body-schema:
         description: The request body.
         acceptFormats:
-        - string
+          - string
         shortDescription: The request body
         uiOrder: 1
         order: 1
@@ -53,7 +53,7 @@ $defs:
         title: Body
         format: string
     required:
-    - endpoint-url
+      - endpoint-url
     title: Input Without Body
     format: object
   output:
@@ -78,9 +78,9 @@ $defs:
         title: Status Code
         format: integer
     required:
-    - status-code
-    - body
-    - header
+      - status-code
+      - body
+      - header
     title: Output
     format: object
 TASK_DELETE:

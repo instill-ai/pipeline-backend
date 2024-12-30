@@ -7,46 +7,45 @@ TASK_IMAGE_TO_IMAGE:
     properties:
       cfg-scale:
         default: 7
-        description: How strictly the diffusion process adheres to the prompt text
-          (higher values keep your image closer to your prompt)
+        description: How strictly the diffusion process adheres to the prompt text (higher values keep your image closer to your prompt)
         example: 7
         maximum: 35
         minimum: 0
         format: number
         acceptFormats:
-        - number
-        - integer
+          - number
+          - integer
         uiOrder: 6
         title: Cfg Scale
       clip-guidance-preset:
         default: NONE
         enum:
-        - FAST_BLUE
-        - FAST_GREEN
-        - NONE
-        - SIMPLE
-        - SLOW
-        - SLOWER
-        - SLOWEST
+          - FAST_BLUE
+          - FAST_GREEN
+          - NONE
+          - SIMPLE
+          - SLOW
+          - SLOWER
+          - SLOWEST
         example: FAST_BLUE
         format: string
         description: Clip guidance preset.
         acceptFormats:
-        - string
+          - string
         uiOrder: 3
         title: Clip Guidance Preset
       engine:
         default: stable-diffusion-xl-1024-v1-0
         description: Stability AI Engine (model) to be used.
         enum:
-        - stable-diffusion-xl-1024-v1-0
-        - stable-diffusion-xl-1024-v0-9
-        - stable-diffusion-v1-6
-        - esrgan-v1-x2plus
-        - stable-diffusion-512-v2-1
-        - stable-diffusion-xl-beta-v2-2-2
+          - stable-diffusion-xl-1024-v1-0
+          - stable-diffusion-xl-1024-v0-9
+          - stable-diffusion-v1-6
+          - esrgan-v1-x2plus
+          - stable-diffusion-512-v2-1
+          - stable-diffusion-xl-beta-v2-2-2
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Engine
         format: string
@@ -59,36 +58,33 @@ TASK_IMAGE_TO_IMAGE:
         minimum: 0
         format: number
         acceptFormats:
-        - number
-        - integer
-        shortDescription: How much influence the `init-image` has on the diffusion
-          process.
+          - number
+          - integer
+        shortDescription: How much influence the `init-image` has on the diffusion process.
         uiOrder: 5
         title: Image Strength
       init-image:
-        description: Image used to initialize the diffusion process, in lieu of random
-          noise.
+        description: Image used to initialize the diffusion process, in lieu of random noise.
         format: image
         acceptFormats:
-        - image/*
+          - image/*
         uiOrder: 2
         title: Init Image
       init-image-mode:
         default: IMAGE_STRENGTH
-        description: Whether to use `image_strength` or `step_schedule_*` to control
-          how much influence the `init_image` has on the result.
+        description: Whether to use `image_strength` or `step_schedule_*` to control how much influence the `init_image` has on the result.
         enum:
-        - IMAGE_STRENGTH
-        - STEP_SCHEDULE
+          - IMAGE_STRENGTH
+          - STEP_SCHEDULE
         format: string
         acceptFormats:
-        - string
+          - string
         uiOrder: 7
         title: Init Image Mode
       prompts:
         description: An array of prompts to use for generation.
         acceptFormats:
-        - array
+          - array
         uiOrder: 1
         items:
           description: The prompt itself
@@ -99,23 +95,22 @@ TASK_IMAGE_TO_IMAGE:
         title: Prompts
         format: array
       sampler:
-        description: Which sampler to use for the diffusion process. If this value
-          is omitted we'll automatically select an appropriate sampler for you.
+        description: Which sampler to use for the diffusion process. If this value is omitted we'll automatically select an appropriate sampler for you.
         enum:
-        - DDIM
-        - DDPM
-        - K_DPMPP_2M
-        - K_DPMPP_2S_ANCESTRAL
-        - K_DPM_2
-        - K_DPM_2_ANCESTRAL
-        - K_EULER
-        - K_EULER_ANCESTRAL
-        - K_HEUN
-        - K_LMS
+          - DDIM
+          - DDPM
+          - K_DPMPP_2M
+          - K_DPMPP_2S_ANCESTRAL
+          - K_DPM_2
+          - K_DPM_2_ANCESTRAL
+          - K_EULER
+          - K_EULER_ANCESTRAL
+          - K_HEUN
+          - K_LMS
         example: K_DPM_2_ANCESTRAL
         format: string
         acceptFormats:
-        - string
+          - string
         shortDescription: Which sampler to use for the diffusion process
         uiOrder: 8
         title: Sampler
@@ -127,7 +122,7 @@ TASK_IMAGE_TO_IMAGE:
         minimum: 1
         format: integer
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 9
         title: Samples
       seed:
@@ -138,40 +133,35 @@ TASK_IMAGE_TO_IMAGE:
         minimum: 0
         format: integer
         acceptFormats:
-        - number
-        - integer
+          - number
+          - integer
         uiOrder: 10
         title: Seed
       step-schedule-end:
-        description: Skips a proportion of the end of the diffusion steps, allowing
-          the init_image to influence the final generated image.  Lower values will
-          result in more influence from the init_image, while higher values will result
-          in more influence from the diffusion steps.
+        description: Skips a proportion of the end of the diffusion steps, allowing the init_image to influence the final generated image.  Lower values
+          will result in more influence from the init_image, while higher values will result in more influence from the diffusion steps.
         example: 0.01
         maximum: 1
         minimum: 0
         format: number
         acceptFormats:
-        - number
-        - integer
+          - number
+          - integer
         shortDescription: Skips a proportion of the end of the diffusion steps
         uiOrder: 12
         title: Step Schedule End
       step-schedule-start:
         default: 0.65
-        description: Skips a proportion of the start of the diffusion steps, allowing
-          the init_image to influence the final generated image.  Lower values will
-          result in more influence from the init_image, while higher values will result
-          in more influence from the diffusion steps.  (e.g. a value of `0` would
-          simply return you the init_image, where a value of `1` would return you
-          a completely different image.)
+        description: Skips a proportion of the start of the diffusion steps, allowing the init_image to influence the final generated image.  Lower values
+          will result in more influence from the init_image, while higher values will result in more influence from the diffusion steps.  (e.g. a value
+          of `0` would simply return you the init_image, where a value of `1` would return you a completely different image.)
         example: 0.4
         maximum: 1
         minimum: 0
         format: number
         acceptFormats:
-        - number
-        - integer
+          - number
+          - integer
         shortDescription: Skips a proportion of the start of the diffusion steps
         uiOrder: 11
         title: Step Schedule Start
@@ -183,7 +173,7 @@ TASK_IMAGE_TO_IMAGE:
         minimum: 10
         format: integer
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 13
         title: Steps
       style-preset:
@@ -191,45 +181,44 @@ TASK_IMAGE_TO_IMAGE:
           Pass in a style preset to guide the image model towards a particular style.
           This list of style presets is subject to change.
         enum:
-        - enhance
-        - anime
-        - photographic
-        - digital-art
-        - comic-book
-        - fantasy-art
-        - line-art
-        - analog-film
-        - neon-punk
-        - isometric
-        - low-poly
-        - origami
-        - modeling-compound
-        - cinematic
-        - 3d-model
-        - pixel-art
-        - tile-texture
+          - enhance
+          - anime
+          - photographic
+          - digital-art
+          - comic-book
+          - fantasy-art
+          - line-art
+          - analog-film
+          - neon-punk
+          - isometric
+          - low-poly
+          - origami
+          - modeling-compound
+          - cinematic
+          - 3d-model
+          - pixel-art
+          - tile-texture
         acceptFormats:
-        - string
+          - string
         uiOrder: 14
         title: Style Preset
       weights:
-        description: An array of weights to use for generation. If unspecified, the
-          model will automatically assign a default weight of 1.0 to each prompt.
+        description: An array of weights to use for generation. If unspecified, the model will automatically assign a default weight of 1.0 to each prompt.
         acceptFormats:
-        - array
+          - array
         uiOrder: 2
         items:
           description: Weight of the prompt (use negative numbers for negative prompts)
           example: 0.8167237
           acceptFormats:
-          - number
-          - integer
+            - number
+            - integer
         minItems: 1
         title: Weights
         format: array
     required:
-    - prompts
-    - engine
+      - prompts
+      - engine
     title: Input
     format: object
   output:
@@ -243,104 +232,99 @@ TASK_TEXT_TO_IMAGE:
     properties:
       cfg-scale:
         default: 7
-        description: How strictly the diffusion process adheres to the prompt text
-          (higher values keep your image closer to your prompt)
+        description: How strictly the diffusion process adheres to the prompt text (higher values keep your image closer to your prompt)
         example: 7
         maximum: 35
         minimum: 0
         format: number
         acceptFormats:
-        - number
-        - integer
+          - number
+          - integer
         uiOrder: 3
         title: CFG Scale
       clip-guidance-preset:
         default: NONE
         enum:
-        - FAST_BLUE
-        - FAST_GREEN
-        - NONE
-        - SIMPLE
-        - SLOW
-        - SLOWER
-        - SLOWEST
+          - FAST_BLUE
+          - FAST_GREEN
+          - NONE
+          - SIMPLE
+          - SLOW
+          - SLOWER
+          - SLOWEST
         example: FAST_BLUE
         format: string
         description: Clip guidance preset.
         acceptFormats:
-        - string
+          - string
         uiOrder: 4
         title: Clip Guidance Preset
       engine:
         default: stable-diffusion-xl-1024-v1-0
         description: Stability AI Engine (model) to be used.
         enum:
-        - stable-diffusion-xl-1024-v1-0
-        - stable-diffusion-xl-1024-v0-9
-        - stable-diffusion-v1-6
-        - esrgan-v1-x2plus
-        - stable-diffusion-512-v2-1
-        - stable-diffusion-xl-beta-v2-2-2
+          - stable-diffusion-xl-1024-v1-0
+          - stable-diffusion-xl-1024-v0-9
+          - stable-diffusion-v1-6
+          - esrgan-v1-x2plus
+          - stable-diffusion-512-v2-1
+          - stable-diffusion-xl-beta-v2-2-2
         instillCredentialMap:
           values:
-          - stable-diffusion-xl-1024-v1-0
-          - stable-diffusion-v1-6
+            - stable-diffusion-xl-1024-v1-0
+            - stable-diffusion-v1-6
           targets:
-          - setup.api-key
+            - setup.api-key
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Engine
         format: string
       height:
         default: 1024
-        description: "Height of the image to generate, in pixels, in an increment\
-          \ divible by 64.\n\nEngine-specific dimension validation:\n- SDXL Beta:\
-          \ must be between 128x128 and 512x896 (or 896x512); only one dimension can\
-          \ be greater than 512.  \n- SDXL v0.9: must be one of 1024x1024, 1152x896,\
-          \ 1216x832, 1344x768, 1536x640, 640x1536, 768x1344, 832x1216, or 896x1152\n\
-          - SDXL v1.0: same as SDXL v0.9\n- SD   v1.6: must be between 320x320 and\
-          \ 1536x1536"
+        description: "Height of the image to generate, in pixels, in an increment divible by 64.\n\nEngine-specific dimension validation:\n- SDXL Beta:\
+          \ must be between 128x128 and 512x896 (or 896x512); only one dimension can be greater than 512.  \n- SDXL v0.9: must be one of 1024x1024, 1152x896,\
+          \ 1216x832, 1344x768, 1536x640, 640x1536, 768x1344, 832x1216, or 896x1152\n- SDXL v1.0: same as SDXL v0.9\n- SD   v1.6: must be between 320x320\
+          \ and 1536x1536"
         example: 1024
         minimum: 128
         multipleOf: 64
         format: integer
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 5
         title: Height
       prompts:
         description: An array of prompts to use for generation.
         acceptFormats:
-        - array
+          - array
         uiOrder: 1
         items:
           description: The prompt itself
           example: A lighthouse on a cliff
           maxLength: 2000
           acceptFormats:
-          - string
+            - string
         minItems: 1
         title: Prompts
         format: array
       sampler:
-        description: Which sampler to use for the diffusion process. If this value
-          is omitted we'll automatically select an appropriate sampler for you.
+        description: Which sampler to use for the diffusion process. If this value is omitted we'll automatically select an appropriate sampler for you.
         enum:
-        - DDIM
-        - DDPM
-        - K_DPMPP_2M
-        - K_DPMPP_2S_ANCESTRAL
-        - K_DPM_2
-        - K_DPM_2_ANCESTRAL
-        - K_EULER
-        - K_EULER_ANCESTRAL
-        - K_HEUN
-        - K_LMS
+          - DDIM
+          - DDPM
+          - K_DPMPP_2M
+          - K_DPMPP_2S_ANCESTRAL
+          - K_DPM_2
+          - K_DPM_2_ANCESTRAL
+          - K_EULER
+          - K_EULER_ANCESTRAL
+          - K_HEUN
+          - K_LMS
         example: K_DPM_2_ANCESTRAL
         format: string
         acceptFormats:
-        - string
+          - string
         uiOrder: 6
         title: Sampler
       samples:
@@ -351,7 +335,7 @@ TASK_TEXT_TO_IMAGE:
         minimum: 1
         format: integer
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 7
         title: Samples
       seed:
@@ -362,8 +346,8 @@ TASK_TEXT_TO_IMAGE:
         minimum: 0
         format: integer
         acceptFormats:
-        - number
-        - integer
+          - number
+          - integer
         uiOrder: 8
         title: Seed
       steps:
@@ -374,7 +358,7 @@ TASK_TEXT_TO_IMAGE:
         minimum: 10
         format: integer
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 9
         title: Steps
       style-preset:
@@ -382,62 +366,60 @@ TASK_TEXT_TO_IMAGE:
           Pass in a style preset to guide the image model towards a particular style.
           This list of style presets is subject to change.
         enum:
-        - enhance
-        - anime
-        - photographic
-        - digital-art
-        - comic-book
-        - fantasy-art
-        - line-art
-        - analog-film
-        - neon-punk
-        - isometric
-        - low-poly
-        - origami
-        - modeling-compound
-        - cinematic
-        - 3d-model
-        - pixel-art
-        - tile-texture
+          - enhance
+          - anime
+          - photographic
+          - digital-art
+          - comic-book
+          - fantasy-art
+          - line-art
+          - analog-film
+          - neon-punk
+          - isometric
+          - low-poly
+          - origami
+          - modeling-compound
+          - cinematic
+          - 3d-model
+          - pixel-art
+          - tile-texture
         format: string
         acceptFormats:
-        - string
+          - string
         uiOrder: 10
         title: Style Preset
       weights:
         description: An array of weights to use for generation.
         acceptFormats:
-        - array
+          - array
         uiOrder: 2
         items:
           description: Weight of the prompt (use negative numbers for negative prompts)
           example: 0.8167237
           format: float
           acceptFormats:
-          - number
-          - integer
+            - number
+            - integer
         minItems: 1
         title: Weights
         format: array
       width:
         default: 1024
-        description: "Width of the image to generate, in pixels, in an increment divible\
-          \ by 64.\n\nEngine-specific dimension validation:\n- SDXL Beta: must be\
-          \ between 128x128 and 512x896 (or 896x512); only one dimension can be greater\
-          \ than 512.  \n- SDXL v0.9: must be one of 1024x1024, 1152x896, 1216x832,\
-          \ 1344x768, 1536x640, 640x1536, 768x1344, 832x1216, or 896x1152\n- SDXL\
-          \ v1.0: same as SDXL v0.9\n- SD   v1.6: must be between 320x320 and 1536x1536"
+        description: "Width of the image to generate, in pixels, in an increment divible by 64.\n\nEngine-specific dimension validation:\n- SDXL Beta: must\
+          \ be between 128x128 and 512x896 (or 896x512); only one dimension can be greater than 512.  \n- SDXL v0.9: must be one of 1024x1024, 1152x896,\
+          \ 1216x832, 1344x768, 1536x640, 640x1536, 768x1344, 832x1216, or 896x1152\n- SDXL v1.0: same as SDXL v0.9\n- SD   v1.6: must be between 320x320\
+          \ and 1536x1536"
         example: 1024
         minimum: 128
         multipleOf: 64
         format: integer
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 5
         title: Width
     required:
-    - prompts
-    - engine
+      - prompts
+      - engine
     title: Input
     format: object
   output:
@@ -461,14 +443,14 @@ TASK_TEXT_TO_IMAGE:
           example: 1229191277
           format: number
           acceptFormats:
-          - number
-          - integer
+            - number
+            - integer
           title: Seed
           x-go-type-skip-optional-pointer: true
         title: Seeds
         format: array
     required:
-    - images
-    - seeds
+      - images
+      - seeds
     title: Output
     format: object

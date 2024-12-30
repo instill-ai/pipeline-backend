@@ -7,45 +7,44 @@ icon: Instill AI/json.svg
 spec:
   componentSpecification:
     oneOf:
-    - properties:
-        condition:
-          instillAcceptFormats:
-          - string
-          instillShortDescription: config whether the component will be executed or
-            skipped
-          instillUIOrder: 1
-          instillUpstreamTypes:
-          - value
-          - template
-          type: string
-        input:
-          description: Input
-          instillUIOrder: 0
-          properties:
-            object:
-              anyOf:
-              - instillUpstreamType: reference
-                pattern: ^\{.*\}$
-                type: string
-              description: Json object to be marshaled
-              instillAcceptFormats:
+      - properties:
+          condition:
+            instillAcceptFormats:
+              - string
+            instillShortDescription: config whether the component will be executed or skipped
+            instillUIOrder: 1
+            instillUpstreamTypes:
+              - value
+              - template
+            type: string
+          input:
+            description: Input
+            instillUIOrder: 0
+            properties:
+              object:
+                anyOf:
+                  - instillUpstreamType: reference
+                    pattern: ^\{.*\}$
+                    type: string
+                description: Json object to be marshaled
+                instillAcceptFormats:
+                  - object
+                  - semi-structured/*
+                  - structured/*
+                instillShortDescription: Json object to be marshaled
+                instillUIOrder: 0
+                instillUpstreamTypes:
+                  - reference
+                title: Object
+            required:
               - object
-              - semi-structured/*
-              - structured/*
-              instillShortDescription: Json object to be marshaled
-              instillUIOrder: 0
-              instillUpstreamTypes:
-              - reference
-              title: Object
-          required:
-          - object
-          title: Input
-          type: object
-        task:
-          const: TASK_MARSHAL
-          title: Marshal
-      title: Marshal
-      type: object
+            title: Input
+            type: object
+          task:
+            const: TASK_MARSHAL
+            title: Marshal
+        title: Marshal
+        type: object
     title: JSON Component
     type: object
   dataSpecifications:
@@ -57,17 +56,17 @@ spec:
           object:
             description: Json object to be marshaled
             instillAcceptFormats:
-            - object
-            - semi-structured/*
-            - structured/*
+              - object
+              - semi-structured/*
+              - structured/*
             instillUIOrder: 0
             instillUpstreamTypes:
-            - reference
+              - reference
             required: []
             title: Object
             type: object
         required:
-        - object
+          - object
         title: Input
         type: object
       output:
@@ -82,12 +81,12 @@ spec:
             title: Data
             type: string
         required:
-        - string
+          - string
         title: Output
         type: object
 public: true
 version: 1.0.0
 sourceUrl: https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/base
 tasks:
-- name: TASK_MARSHAL
-  title: Marshal
+  - name: TASK_MARSHAL
+    title: Marshal

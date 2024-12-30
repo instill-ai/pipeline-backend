@@ -1,6 +1,6 @@
 availableTasks:
-- TASK_INSERT
-- TASK_READ
+  - TASK_INSERT
+  - TASK_READ
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/data/bigquery
 icon: assets/bigquery.svg

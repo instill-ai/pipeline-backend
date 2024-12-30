@@ -1,28 +1,27 @@
 availableTasks:
-- TASK_CREATE_SPREADSHEET
-- TASK_DELETE_SPREADSHEET
-- TASK_ADD_SHEET
-- TASK_DELETE_SHEET
-- TASK_CREATE_SPREADSHEET_COLUMN
-- TASK_DELETE_SPREADSHEET_COLUMN
-- TASK_LIST_ROWS
-- TASK_LOOKUP_ROWS
-- TASK_GET_ROW
-- TASK_GET_MULTIPLE_ROWS
-- TASK_INSERT_ROW
-- TASK_INSERT_MULTIPLE_ROWS
-- TASK_UPDATE_ROW
-- TASK_UPDATE_MULTIPLE_ROWS
-- TASK_DELETE_ROW
-- TASK_DELETE_MULTIPLE_ROWS
+  - TASK_CREATE_SPREADSHEET
+  - TASK_DELETE_SPREADSHEET
+  - TASK_ADD_SHEET
+  - TASK_DELETE_SHEET
+  - TASK_CREATE_SPREADSHEET_COLUMN
+  - TASK_DELETE_SPREADSHEET_COLUMN
+  - TASK_LIST_ROWS
+  - TASK_LOOKUP_ROWS
+  - TASK_GET_ROW
+  - TASK_GET_MULTIPLE_ROWS
+  - TASK_INSERT_ROW
+  - TASK_INSERT_MULTIPLE_ROWS
+  - TASK_UPDATE_ROW
+  - TASK_UPDATE_MULTIPLE_ROWS
+  - TASK_DELETE_ROW
+  - TASK_DELETE_MULTIPLE_ROWS
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/data/google-sheets
 icon: assets/google-sheets.svg
 id: google-sheets
 public: true
 title: Google Sheets
-description: Connect to and interact with Google Sheets spreadsheets to read and write
-  data.
+description: Connect to and interact with Google Sheets spreadsheets to read and write data.
 tombstone: false
 type: COMPONENT_TYPE_DATA
 uid: c4f8e3d2-a1b9-4c7e-9f5d-6b2e8a7d3c1f

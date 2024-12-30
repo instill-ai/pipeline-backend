@@ -4,116 +4,116 @@ properties:
     description: Authentication method to use for the REST API.
     uiOrder: 0
     oneOf:
-    - properties:
-        auth-type:
-          const: NO_AUTH
-          description: No Authentication.
-          uiOrder: 0
-          order: 0
-          title: Auth Type
-          format: string
-      required:
-      - auth-type
-      title: No Auth
-    - properties:
-        auth-type:
-          const: BASIC_AUTH
-          description: Basic auth.
-          uiOrder: 0
-          order: 0
-          title: Auth Type
-          format: string
-        password:
-          description: Password for Basic auth.
-          acceptFormats:
-          - string
-          instillSecret: true
-          uiOrder: 2
-          order: 2
-          title: Password
-          format: string
-        username:
-          description: Username for Basic Auth.
-          acceptFormats:
-          - string
-          uiOrder: 1
-          order: 1
-          title: Username
-          format: string
-      required:
-      - auth-type
-      - username
-      - password
-      title: Basic Auth
-    - properties:
-        auth-location:
-          default: header
-          description: Add the API key to the header or query params.
-          enum:
-          - header
-          - query
-          acceptFormats:
-          - string
-          uiOrder: 3
-          order: 3
-          title: Auth Location
-          format: string
-        auth-type:
-          const: API_KEY
-          description: API key authentication.
-          uiOrder: 0
-          order: 0
-          title: Auth Type
-          format: string
-        key:
-          default: X-API-Key
-          description: Key name for API key authentication.
-          acceptFormats:
-          - string
-          uiOrder: 1
-          order: 1
-          title: Key Name
-          format: string
-        value:
-          description: Key value for API key authentication.
-          acceptFormats:
-          - string
-          instillSecret: true
-          uiOrder: 2
-          order: 2
-          title: Key Value
-          format: string
-      required:
-      - auth-type
-      - key
-      - value
-      - auth-location
-      title: API Key
-    - properties:
-        auth-type:
-          const: BEARER_TOKEN
-          description: Bearer token authentication.
-          uiOrder: 0
-          order: 0
-          title: Auth Type
-          format: string
-        token:
-          description: Bearer token.
-          acceptFormats:
-          - string
-          instillSecret: true
-          uiOrder: 1
-          order: 1
-          title: Token
-          format: string
-      required:
-      - auth-type
-      - token
-      title: Bearer Token
+      - properties:
+          auth-type:
+            const: NO_AUTH
+            description: No Authentication.
+            uiOrder: 0
+            order: 0
+            title: Auth Type
+            format: string
+        required:
+          - auth-type
+        title: No Auth
+      - properties:
+          auth-type:
+            const: BASIC_AUTH
+            description: Basic auth.
+            uiOrder: 0
+            order: 0
+            title: Auth Type
+            format: string
+          password:
+            description: Password for Basic auth.
+            acceptFormats:
+              - string
+            instillSecret: true
+            uiOrder: 2
+            order: 2
+            title: Password
+            format: string
+          username:
+            description: Username for Basic Auth.
+            acceptFormats:
+              - string
+            uiOrder: 1
+            order: 1
+            title: Username
+            format: string
+        required:
+          - auth-type
+          - username
+          - password
+        title: Basic Auth
+      - properties:
+          auth-location:
+            default: header
+            description: Add the API key to the header or query params.
+            enum:
+              - header
+              - query
+            acceptFormats:
+              - string
+            uiOrder: 3
+            order: 3
+            title: Auth Location
+            format: string
+          auth-type:
+            const: API_KEY
+            description: API key authentication.
+            uiOrder: 0
+            order: 0
+            title: Auth Type
+            format: string
+          key:
+            default: X-API-Key
+            description: Key name for API key authentication.
+            acceptFormats:
+              - string
+            uiOrder: 1
+            order: 1
+            title: Key Name
+            format: string
+          value:
+            description: Key value for API key authentication.
+            acceptFormats:
+              - string
+            instillSecret: true
+            uiOrder: 2
+            order: 2
+            title: Key Value
+            format: string
+        required:
+          - auth-type
+          - key
+          - value
+          - auth-location
+        title: API Key
+      - properties:
+          auth-type:
+            const: BEARER_TOKEN
+            description: Bearer token authentication.
+            uiOrder: 0
+            order: 0
+            title: Auth Type
+            format: string
+          token:
+            description: Bearer token.
+            acceptFormats:
+              - string
+            instillSecret: true
+            uiOrder: 1
+            order: 1
+            title: Token
+            format: string
+        required:
+          - auth-type
+          - token
+        title: Bearer Token
     order: 1
     title: Authentication
     format: object
 required:
-- authentication
+  - authentication
 title: REST API Connection
 format: object

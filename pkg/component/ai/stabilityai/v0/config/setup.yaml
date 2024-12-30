@@ -3,7 +3,7 @@ properties:
   api-key:
     description: Fill in your Stability AI API key. To find your keys, visit <a href="https://platform.stability.ai/account/keys">here</a>.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     instillCredential: true
     uiOrder: 0

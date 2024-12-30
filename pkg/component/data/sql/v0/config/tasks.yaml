@@ -6,7 +6,7 @@ TASK_INSERT:
       table-name:
         description: The table name in the database to insert data into.
         acceptFormats:
-        - string
+          - string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
@@ -14,8 +14,8 @@ TASK_INSERT:
       data:
         description: The data to be inserted.
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 1
         items:
           title: Object
@@ -24,8 +24,8 @@ TASK_INSERT:
         required: []
         format: object
     required:
-    - data
-    - table-name
+      - data
+      - table-name
     title: Input
     format: object
   output:
@@ -38,7 +38,7 @@ TASK_INSERT:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_INSERT_MANY:
@@ -49,7 +49,7 @@ TASK_INSERT_MANY:
       table-name:
         description: The table name in the database to insert data into.
         acceptFormats:
-        - string
+          - string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
@@ -57,10 +57,10 @@ TASK_INSERT_MANY:
       array-data:
         description: The array data to be inserted.
         acceptFormats:
-        - array
-        - array
-        - array
-        - array
+          - array
+          - array
+          - array
+          - array
         uiOrder: 1
         title: Data
         items:
@@ -71,8 +71,8 @@ TASK_INSERT_MANY:
         minItems: 1
         format: array
     required:
-    - array-data
-    - table-name
+      - array-data
+      - table-name
     title: Input
     format: object
   output:
@@ -85,7 +85,7 @@ TASK_INSERT_MANY:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_UPDATE:
@@ -96,25 +96,24 @@ TASK_UPDATE:
       table-name:
         description: The table name in the database to update data into.
         acceptFormats:
-        - string
+          - string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
         format: string
       filter:
         shortDescription: The filter to be applied to the data
-        description: The filter to be applied to the data with SQL syntax, which starts
-          with WHERE clause.
+        description: The filter to be applied to the data with SQL syntax, which starts with WHERE clause.
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         title: Filter
         format: string
       update-data:
         description: The new data to be updated to.
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 2
         items:
           title: Object
@@ -123,9 +122,9 @@ TASK_UPDATE:
         required: []
         format: object
     required:
-    - filter
-    - update-data
-    - table-name
+      - filter
+      - update-data
+      - table-name
     title: Input
     format: object
   output:
@@ -138,7 +137,7 @@ TASK_UPDATE:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_SELECT:
@@ -149,34 +148,31 @@ TASK_SELECT:
       table-name:
         description: The table name in the database to be selected.
         acceptFormats:
-        - string
+          - string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
         format: string
       filter:
-        shortDescription: The filter to be applied to the data. If empty, then all
-          rows will be updated
-        description: The filter to be applied to the data with SQL syntax, which starts
-          with WHERE clause, empty for all rows.
+        shortDescription: The filter to be applied to the data. If empty, then all rows will be updated
+        description: The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for all rows.
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         title: Filter
         format: string
       limit:
         description: The limit of rows to be selected, empty for all rows.
         acceptFormats:
-        - integer
+          - integer
         shortDescription: Limit Rows
         uiOrder: 2
         title: Limit
         format: integer
       columns:
-        description: The columns to return in the rows. If empty then all columns
-          will be returned.
+        description: The columns to return in the rows. If empty then all columns will be returned.
         acceptFormats:
-        - array
+          - array
         shortDescription: Columns to be returned, empty for all columns
         uiOrder: 3
         title: Columns
@@ -186,7 +182,7 @@ TASK_SELECT:
         minItems: 1
         format: array
     required:
-    - table-name
+      - table-name
     title: Input
     format: object
   output:
@@ -210,8 +206,8 @@ TASK_SELECT:
         title: Status
         format: string
     required:
-    - status
-    - rows
+      - status
+      - rows
     title: Output
     format: object
 TASK_DELETE:
@@ -222,23 +218,22 @@ TASK_DELETE:
       table-name:
         description: The table name in the database to be deleted.
         acceptFormats:
-        - string
+          - string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
         format: string
       filter:
         shortDescription: The filter to be applied to the data
-        description: The filter to be applied to the data with SQL syntax, which starts
-          with WHERE clause.
+        description: The filter to be applied to the data with SQL syntax, which starts with WHERE clause.
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         title: Filter
         format: string
     required:
-    - filter
-    - table-name
+      - filter
+      - table-name
     title: Input
     format: object
   output:
@@ -251,7 +246,7 @@ TASK_DELETE:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_CREATE_TABLE:
@@ -262,26 +257,24 @@ TASK_CREATE_TABLE:
       table-name:
         description: The table name in the database to be created.
         acceptFormats:
-        - string
+          - string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
         format: string
       columns-structure:
-        description: 'The columns structure to be created in the table, json with
-          value string, e.g {"name": "VARCHAR(255)", "age": "INT not null"}.'
+        description: 'The columns structure to be created in the table, json with value string, e.g {"name": "VARCHAR(255)", "age": "INT not null"}.'
         acceptFormats:
-        - json
-        - object
-        shortDescription: 'Columns Structure, e.g {"name": "VARCHAR(255)", "age":
-          "INT not null"}'
+          - json
+          - object
+        shortDescription: 'Columns Structure, e.g {"name": "VARCHAR(255)", "age": "INT not null"}'
         uiOrder: 1
         title: Columns
         required: []
         format: object
     required:
-    - table-name
-    - columns-structure
+      - table-name
+      - columns-structure
     title: Input
     format: object
   output:
@@ -294,7 +287,7 @@ TASK_CREATE_TABLE:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_DROP_TABLE:
@@ -305,13 +298,13 @@ TASK_DROP_TABLE:
       table-name:
         description: The table name in the database to be dropped.
         acceptFormats:
-        - string
+          - string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
         format: string
     required:
-    - table-name
+      - table-name
     title: Input
     format: object
   output:
@@ -324,6 +317,6 @@ TASK_DROP_TABLE:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object

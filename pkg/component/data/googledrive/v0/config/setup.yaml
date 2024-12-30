@@ -1,11 +1,9 @@
 properties:
   refresh-token:
-    description: Refresh token for the Google Drive API. For more information about
-      how to create tokens, please refer to the <a href="https://developers.google.com/drive/api/v3/about-auth">Google
-      Drive API documentation</a> and <a href="https://developers.google.com/identity/protocols/oauth2"
-      >OAuth 2.0 documentation</a>.
+    description: Refresh token for the Google Drive API. For more information about how to create tokens, please refer to the <a href="https://developers.google.com/drive/api/v3/about-auth">Google
+      Drive API documentation</a> and <a href="https://developers.google.com/identity/protocols/oauth2" >OAuth 2.0 documentation</a>.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     uiOrder: 1
     title: Refresh Token
@@ -15,9 +13,9 @@ instillOAuthConfig:
   authUrl: https://accounts.google.com/o/oauth2/auth
   accessUrl: https://oauth2.googleapis.com/token
   scopes:
-  - https://www.googleapis.com/auth/drive.readonly
-  - https://www.googleapis.com/auth/drive.file
-  - https://www.googleapis.com/auth/userinfo.email
-  - https://www.googleapis.com/auth/userinfo.profile
+    - https://www.googleapis.com/auth/drive.readonly
+    - https://www.googleapis.com/auth/drive.file
+    - https://www.googleapis.com/auth/userinfo.email
+    - https://www.googleapis.com/auth/userinfo.profile
 title: Google Drive Connection
 format: object

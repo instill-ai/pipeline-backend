@@ -15,16 +15,16 @@ TASK_CHAT:
             description: The model to be used for `TASK_CHAT`.
             shortDescription: The model to be used.
             acceptFormats:
-            - string
+              - string
             enum:
-            - llama-3.1-sonar-small-128k-online
-            - llama-3.1-sonar-large-128k-online
-            - llama-3.1-sonar-huge-128k-online
-            instillCredentialMap:
-              values:
               - llama-3.1-sonar-small-128k-online
               - llama-3.1-sonar-large-128k-online
               - llama-3.1-sonar-huge-128k-online
+            instillCredentialMap:
+              values:
+                - llama-3.1-sonar-small-128k-online
+                - llama-3.1-sonar-large-128k-online
+                - llama-3.1-sonar-huge-128k-online
             title: Model Name
             uiOrder: 0
             format: string
@@ -43,7 +43,7 @@ TASK_CHAT:
                         description: Text message.
                         shortDescription: Text message.
                         acceptFormats:
-                        - string
+                          - string
                         uiOrder: 1
                         format: string
                       type:
@@ -51,7 +51,7 @@ TASK_CHAT:
                         description: Text content type.
                         shortDescription: Text content type.
                         acceptFormats:
-                        - string
+                          - string
                         const: text
                         uiOrder: 0
                         format: string
@@ -64,35 +64,32 @@ TASK_CHAT:
                   description: The message role, i.e. 'system', 'user' or 'assistant'.
                   shortDescription: The message role, i.e. 'system', 'user' or 'assistant'.
                   acceptFormats:
-                  - string
+                    - string
                   title: Role
                   enum:
-                  - system
-                  - user
-                  - assistant
+                    - system
+                    - user
+                    - assistant
                   uiOrder: 1
                   format: string
                 name:
-                  description: An optional name for the participant. Provides the
-                    model information to differentiate between participants of the
-                    same role.
-                  shortDescription: An optional name for the participant. Provides
-                    the model information to differentiate between participants of
-                    the same role.
+                  description: An optional name for the participant. Provides the model information to differentiate between participants of the same role.
+                  shortDescription: An optional name for the participant. Provides the model information to differentiate between participants of the same
+                    role.
                   acceptFormats:
-                  - string
+                    - string
                   title: Name
                   uiOrder: 2
                   format: string
               required:
-              - content
-              - role
+                - content
+                - role
               format: object
             uiOrder: 1
             description: List of chat messages.
             format: array
         required:
-        - messages
+          - messages
         uiOrder: 0
         format: object
       parameter:
@@ -101,98 +98,83 @@ TASK_CHAT:
         properties:
           max-tokens:
             title: Max New Tokens
-            description: The maximum number of completion tokens returned by the API.
-              The total number of tokens requested in max_tokens plus the number of
-              prompt tokens sent in messages must not exceed the context window token
-              limit of model requested. If left unspecified, then the model will generate
-              tokens until either it reaches its stop token or the end of its context
-              window.
+            description: The maximum number of completion tokens returned by the API. The total number of tokens requested in max_tokens plus the number
+              of prompt tokens sent in messages must not exceed the context window token limit of model requested. If left unspecified, then the model will
+              generate tokens until either it reaches its stop token or the end of its context window.
             shortDescription: The maximum number of tokens for model to generate.
             acceptFormats:
-            - integer
+              - integer
             default: 50
             uiOrder: 0
             format: integer
           temperature:
             title: Temperature
-            description: The amount of randomness in the response, valued between
-              0 inclusive and 2 exclusive. Higher values are more random, and lower
+            description: The amount of randomness in the response, valued between 0 inclusive and 2 exclusive. Higher values are more random, and lower
               values are more deterministic.
             shortDescription: The temperature for sampling.
             acceptFormats:
-            - number
+              - number
             default: 0.2
             uiOrder: 1
             format: number
           top-p:
             title: Top P
-            description: The nucleus sampling threshold, valued between 0 and 1 inclusive.
-              For each subsequent token, the model considers the results of the tokens
-              with top_p probability mass. We recommend either altering top_k or top_p,
-              but not both.
+            description: The nucleus sampling threshold, valued between 0 and 1 inclusive. For each subsequent token, the model considers the results of
+              the tokens with top_p probability mass. We recommend either altering top_k or top_p, but not both.
             shortDescription: Nucleus sampling.
             acceptFormats:
-            - number
+              - number
             default: 0.9
             uiOrder: 2
             format: number
           stream:
             title: Stream
-            description: If set, partial message deltas will be sent. Tokens will
-              be sent as data-only server-sent events as they become available.
+            description: If set, partial message deltas will be sent. Tokens will be sent as data-only server-sent events as they become available.
             shortDescription: If set, partial message deltas will be sent.
             acceptFormats:
-            - boolean
+              - boolean
             default: false
             uiOrder: 3
             format: boolean
           search-domain-filter:
             title: Search Domain Filter
-            description: Given a list of domains, limit the citations used by the
-              online model to URLs from the specified domains. Currently limited to
-              only 3 domains for whitelisting and blacklisting. For blacklisting add
-              a `-` to the beginning of the domain string.
+            description: Given a list of domains, limit the citations used by the online model to URLs from the specified domains. Currently limited to
+              only 3 domains for whitelisting and blacklisting. For blacklisting add a `-` to the beginning of the domain string.
             acceptFormats:
-            - array
+              - array
             uiOrder: 4
             format: string
           search-recency-filter:
             title: Search Recency Filter
-            description: Returns search results within the specified time interval
-              - does not apply to images. Values include `month`, `week`, `day`, `hour`.
+            description: Returns search results within the specified time interval - does not apply to images. Values include `month`, `week`, `day`, `hour`.
             acceptFormats:
-            - string
+              - string
             uiOrder: 5
             format: string
           top-k:
             title: Top K
-            description: The number of tokens to keep for highest top-k filtering,
-              specified as an integer between 0 and 2048 inclusive. If set to 0, top-k
-              filtering is disabled. We recommend either altering top_k or top_p,
-              but not both.
+            description: The number of tokens to keep for highest top-k filtering, specified as an integer between 0 and 2048 inclusive. If set to 0, top-k
+              filtering is disabled. We recommend either altering top_k or top_p, but not both.
             acceptFormats:
-            - number
+              - number
             default: 0
             uiOrder: 6
             format: number
           presence-penalty:
             title: Presence Penalty
-            description: A value between -2.0 and 2.0. Positive values penalize new
-              tokens based on whether they appear in the text so far, increasing the
+            description: A value between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the
               model's likelihood to talk about new topics. Incompatible with `frequency_penalty`.
             acceptFormats:
-            - number
+              - number
             default: 0
             uiOrder: 7
             format: number
           frequency-penalty:
             title: Frequency Penalty
-            description: A multiplicative penalty greater than 0. Values greater than
-              1.0 penalize new tokens based on their existing frequency in the text
-              so far, decreasing the model's likelihood to repeat the same line verbatim.
-              A value of 1.0 means no penalty. Incompatible with `presence_penalty`.
+            description: A multiplicative penalty greater than 0. Values greater than 1.0 penalize new tokens based on their existing frequency in the text
+              so far, decreasing the model's likelihood to repeat the same line verbatim. A value of 1.0 means no penalty. Incompatible with `presence_penalty`.
             acceptFormats:
-            - number
+              - number
             default: 1
             uiOrder: 8
             format: number
@@ -201,7 +183,7 @@ TASK_CHAT:
         title: Input Parameter
         format: object
     required:
-    - data
+      - data
     format: object
   output:
     title: Chat Output
@@ -252,17 +234,15 @@ TASK_CHAT:
                   format: object
                 created:
                   title: Created
-                  description: 'The timestamp of when the chat completion was created.
-                    Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.'
-                  shortDescription: The Unix timestamp (in seconds) of when the chat
-                    completion was created.
+                  description: 'The timestamp of when the chat completion was created. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.'
+                  shortDescription: The Unix timestamp (in seconds) of when the chat completion was created.
                   uiOrder: 3
                   format: integer
               required:
-              - finish-reason
-              - index
-              - message
-              - created
+                - finish-reason
+                - index
+                - message
+                - created
               format: object
             uiOrder: 0
             format: array
@@ -275,7 +255,7 @@ TASK_CHAT:
             uiOrder: 1
             format: array
         required:
-        - choices
+          - choices
         uiOrder: 0
         title: Output Data
         format: object
@@ -301,16 +281,14 @@ TASK_CHAT:
                 format: integer
               total-tokens:
                 title: Total Tokens
-                description: Total number of tokens used in the request (prompt +
-                  completion).
-                shortDescription: Total number of tokens used in the request (prompt
-                  + completion).
+                description: Total number of tokens used in the request (prompt + completion).
+                shortDescription: Total number of tokens used in the request (prompt + completion).
                 uiOrder: 2
                 format: integer
             required:
-            - completion-tokens
-            - prompt-tokens
-            - total-tokens
+              - completion-tokens
+              - prompt-tokens
+              - total-tokens
             uiOrder: 0
             title: Usage
             format: object
@@ -319,5 +297,5 @@ TASK_CHAT:
         uiOrder: 1
         format: object
     required:
-    - data
+      - data
     format: object

@@ -1,10 +1,9 @@
 additionalProperties: false
 properties:
   api-key:
-    description: Fill in your Fireworks AI API key. To find your keys, visit the Fireworks
-      AI API Keys page.
+    description: Fill in your Fireworks AI API key. To find your keys, visit the Fireworks AI API Keys page.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     instillCredential: true
     uiOrder: 0

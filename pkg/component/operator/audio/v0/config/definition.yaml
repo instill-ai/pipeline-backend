@@ -1,6 +1,6 @@
 availableTasks:
-- TASK_DETECT_ACTIVITY
-- TASK_SEGMENT
+  - TASK_DETECT_ACTIVITY
+  - TASK_SEGMENT
 documentationUrl: https://www.instill.tech/docs/component/operator/audio
 icon: assets/audio.svg
 id: audio

@@ -1,10 +1,9 @@
 additionalProperties: false
 properties:
   api-key:
-    description: Fill in the API key for the Elasticsearch instance (please use encoded
-      one).
+    description: Fill in the API key for the Elasticsearch instance (please use encoded one).
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     uiOrder: 1
     title: API Key
@@ -12,13 +11,13 @@ properties:
   cloud-id:
     description: Fill in the Cloud ID for the Elasticsearch instance.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     uiOrder: 0
     title: Cloud ID
     format: string
 required:
-- api-key
-- cloud-id
+  - api-key
+  - cloud-id
 title: Elasticsearch Connection
 format: object

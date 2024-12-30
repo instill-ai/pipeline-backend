@@ -3,7 +3,7 @@ properties:
   url:
     description: Fill in your Milvus public URL endpoint with port number, e.g http://3.25.202.142:19530.
     acceptFormats:
-    - string
+      - string
     instillSecret: false
     uiOrder: 0
     title: Milvus URL Endpoint
@@ -11,7 +11,7 @@ properties:
   username:
     description: Fill in your Milvus username.
     acceptFormats:
-    - string
+      - string
     instillSecret: false
     uiOrder: 1
     title: Milvus Username
@@ -19,14 +19,14 @@ properties:
   password:
     description: Fill in your Milvus password.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     uiOrder: 2
     title: Milvus Password
     format: string
 required:
-- url
-- username
-- password
+  - url
+  - username
+  - password
 title: Milvus Connection
 format: object

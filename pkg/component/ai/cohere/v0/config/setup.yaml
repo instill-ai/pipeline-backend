@@ -1,10 +1,9 @@
 additionalProperties: false
 properties:
   api-key:
-    description: Fill in your Cohere API key. To find your keys, visit the Cohere
-      dashboard page.
+    description: Fill in your Cohere API key. To find your keys, visit the Cohere dashboard page.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     instillCredential: true
     uiOrder: 0
