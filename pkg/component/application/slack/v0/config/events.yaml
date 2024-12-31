@@ -30,8 +30,8 @@ EVENT_NEW_MESSAGE:
             title: Channel Name
             format: string
         required:
-        - id
-        - name
+          - id
+          - name
         title: Channel
         format: object
       user:
@@ -58,14 +58,14 @@ EVENT_NEW_MESSAGE:
                 title: Display Name
                 format: string
             required:
-            - display-name
+              - display-name
             title: Profile
             format: object
         required:
-        - id
-        - name
-        - real-name
-        - profile
+          - id
+          - name
+          - real-name
+          - profile
         title: User
         format: object
       text:
@@ -73,21 +73,21 @@ EVENT_NEW_MESSAGE:
         title: Message Text
         format: string
     required:
-    - timestamp
-    - channel
-    - user
-    - text
+      - timestamp
+      - channel
+      - user
+      - text
     title: New Message Event
     format: object
   messageExamples:
-  - timestamp: '1715159446.644219'
-    channel:
-      id: G0AKFJBEU
-      name: test_channel
-    user:
-      id: user123
-      name: testuser
-      real-name: Test User
-      profile:
-        display-name: testuser
-    text: Hello, world!
+    - timestamp: '1715159446.644219'
+      channel:
+        id: G0AKFJBEU
+        name: test_channel
+      user:
+        id: user123
+        name: testuser
+        real-name: Test User
+        profile:
+          display-name: testuser
+      text: Hello, world!

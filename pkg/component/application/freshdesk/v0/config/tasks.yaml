@@ -1,201 +1,201 @@
 $defs:
   language:
     enum:
-    - Arabic
-    - Bosnian
-    - Bulgarian
-    - Catalan
-    - Chinese
-    - Chinese (Traditional)
-    - Croatian
-    - Czech
-    - Danish
-    - Dutch
-    - English
-    - Estonian
-    - Filipino
-    - Finnish
-    - French
-    - German
-    - Greek
-    - Hebrew
-    - Hungarian
-    - Icelandic
-    - Indonesian
-    - Italian
-    - Japanese
-    - Korean
-    - Latvian
-    - Lithuanian
-    - Malay
-    - Norwegian
-    - Polish
-    - Portuguese (BR)
-    - Portuguese/Portugal
-    - Romanian
-    - Russian
-    - Serbian
-    - Slovak
-    - Slovenian
-    - Spanish
-    - Spanish (Latin America)
-    - Swedish
-    - Thai
-    - Turkish
-    - Ukrainian
-    - Vietnamese
+      - Arabic
+      - Bosnian
+      - Bulgarian
+      - Catalan
+      - Chinese
+      - Chinese (Traditional)
+      - Croatian
+      - Czech
+      - Danish
+      - Dutch
+      - English
+      - Estonian
+      - Filipino
+      - Finnish
+      - French
+      - German
+      - Greek
+      - Hebrew
+      - Hungarian
+      - Icelandic
+      - Indonesian
+      - Italian
+      - Japanese
+      - Korean
+      - Latvian
+      - Lithuanian
+      - Malay
+      - Norwegian
+      - Polish
+      - Portuguese (BR)
+      - Portuguese/Portugal
+      - Romanian
+      - Russian
+      - Serbian
+      - Slovak
+      - Slovenian
+      - Spanish
+      - Spanish (Latin America)
+      - Swedish
+      - Thai
+      - Turkish
+      - Ukrainian
+      - Vietnamese
     example: English
   time-zone:
     enum:
-    - American Samoa
-    - International Date Line West
-    - Midway Island
-    - Hawaii
-    - Alaska
-    - Pacific Time (US & Canada)
-    - Tijuana
-    - Arizona
-    - Mazatlan
-    - Mountain Time (US & Canada)
-    - Central America
-    - Central Time (US & Canada)
-    - Chihuahua
-    - Guadalajara
-    - Mexico City
-    - Monterrey
-    - Saskatchewan
-    - Bogota
-    - Eastern Time (US & Canada)
-    - Indiana (East)
-    - Lima
-    - Quito
-    - Atlantic Time (Canada)
-    - Caracas
-    - Georgetown
-    - La Paz
-    - Santiago
-    - Newfoundland
-    - Brasilia
-    - Buenos Aires
-    - Montevideo
-    - Greenland
-    - Mid-Atlantic
-    - Azores
-    - Cape Verde Is.
-    - Casablanca
-    - Dublin
-    - Edinburgh
-    - Lisbon
-    - London
-    - Monrovia
-    - UTC
-    - Amsterdam
-    - Belgrade
-    - Berlin
-    - Bern
-    - Bratislava
-    - Brussels
-    - Budapest
-    - Copenhagen
-    - Ljubljana
-    - Madrid
-    - Paris
-    - Prague
-    - Rome
-    - Sarajevo
-    - Skopje
-    - Stockholm
-    - Vienna
-    - Warsaw
-    - West Central Africa
-    - Zagreb
-    - Athens
-    - Bucharest
-    - Cairo
-    - Harare
-    - Helsinki
-    - Jerusalem
-    - Kaliningrad
-    - Kyiv
-    - Pretoria
-    - Riga
-    - Sofia
-    - Tallinn
-    - Vilnius
-    - Baghdad
-    - Istanbul
-    - Kuwait
-    - Minsk
-    - Moscow
-    - Nairobi
-    - Riyadh
-    - St. Petersburg
-    - Volgograd
-    - Tehran
-    - Abu Dhabi
-    - Baku
-    - Muscat
-    - Samara
-    - Tbilisi
-    - Yerevan
-    - Kabul
-    - Ekaterinburg
-    - Islamabad
-    - Karachi
-    - Tashkent
-    - Chennai
-    - Kolkata
-    - Mumbai
-    - New Delhi
-    - Sri Jayawardenepura
-    - Kathmandu
-    - Almaty
-    - Astana
-    - Dhaka
-    - Urumqi
-    - Rangoon
-    - Bangkok
-    - Hanoi
-    - Jakarta
-    - Krasnoyarsk
-    - Novosibirsk
-    - Beijing
-    - Chongqing
-    - Hong Kong
-    - Irkutsk
-    - Kuala Lumpur
-    - Perth
-    - Singapore
-    - Taipei
-    - Ulaanbaatar
-    - Osaka
-    - Sapporo
-    - Seoul
-    - Tokyo
-    - Yakutsk
-    - Adelaide
-    - Darwin
-    - Brisbane
-    - Canberra
-    - Guam
-    - Hobart
-    - Melbourne
-    - Port Moresby
-    - Sydney
-    - Vladivostok
-    - Magadan
-    - New Caledonia
-    - Solomon Is.
-    - Srednekolymsk
-    - Auckland
-    - Fiji
-    - Kamchatka
-    - Marshall Is.
-    - Wellington
-    - Chatham Is.
-    - Nuku'alofa
-    - Samoa
-    - Tokelau Is.
+      - American Samoa
+      - International Date Line West
+      - Midway Island
+      - Hawaii
+      - Alaska
+      - Pacific Time (US & Canada)
+      - Tijuana
+      - Arizona
+      - Mazatlan
+      - Mountain Time (US & Canada)
+      - Central America
+      - Central Time (US & Canada)
+      - Chihuahua
+      - Guadalajara
+      - Mexico City
+      - Monterrey
+      - Saskatchewan
+      - Bogota
+      - Eastern Time (US & Canada)
+      - Indiana (East)
+      - Lima
+      - Quito
+      - Atlantic Time (Canada)
+      - Caracas
+      - Georgetown
+      - La Paz
+      - Santiago
+      - Newfoundland
+      - Brasilia
+      - Buenos Aires
+      - Montevideo
+      - Greenland
+      - Mid-Atlantic
+      - Azores
+      - Cape Verde Is.
+      - Casablanca
+      - Dublin
+      - Edinburgh
+      - Lisbon
+      - London
+      - Monrovia
+      - UTC
+      - Amsterdam
+      - Belgrade
+      - Berlin
+      - Bern
+      - Bratislava
+      - Brussels
+      - Budapest
+      - Copenhagen
+      - Ljubljana
+      - Madrid
+      - Paris
+      - Prague
+      - Rome
+      - Sarajevo
+      - Skopje
+      - Stockholm
+      - Vienna
+      - Warsaw
+      - West Central Africa
+      - Zagreb
+      - Athens
+      - Bucharest
+      - Cairo
+      - Harare
+      - Helsinki
+      - Jerusalem
+      - Kaliningrad
+      - Kyiv
+      - Pretoria
+      - Riga
+      - Sofia
+      - Tallinn
+      - Vilnius
+      - Baghdad
+      - Istanbul
+      - Kuwait
+      - Minsk
+      - Moscow
+      - Nairobi
+      - Riyadh
+      - St. Petersburg
+      - Volgograd
+      - Tehran
+      - Abu Dhabi
+      - Baku
+      - Muscat
+      - Samara
+      - Tbilisi
+      - Yerevan
+      - Kabul
+      - Ekaterinburg
+      - Islamabad
+      - Karachi
+      - Tashkent
+      - Chennai
+      - Kolkata
+      - Mumbai
+      - New Delhi
+      - Sri Jayawardenepura
+      - Kathmandu
+      - Almaty
+      - Astana
+      - Dhaka
+      - Urumqi
+      - Rangoon
+      - Bangkok
+      - Hanoi
+      - Jakarta
+      - Krasnoyarsk
+      - Novosibirsk
+      - Beijing
+      - Chongqing
+      - Hong Kong
+      - Irkutsk
+      - Kuala Lumpur
+      - Perth
+      - Singapore
+      - Taipei
+      - Ulaanbaatar
+      - Osaka
+      - Sapporo
+      - Seoul
+      - Tokyo
+      - Yakutsk
+      - Adelaide
+      - Darwin
+      - Brisbane
+      - Canberra
+      - Guam
+      - Hobart
+      - Melbourne
+      - Port Moresby
+      - Sydney
+      - Vladivostok
+      - Magadan
+      - New Caledonia
+      - Solomon Is.
+      - Srednekolymsk
+      - Auckland
+      - Fiji
+      - Kamchatka
+      - Marshall Is.
+      - Wellington
+      - Chatham Is.
+      - Nuku'alofa
+      - Samoa
+      - Tokelau Is.
     example: Eastern Time (US & Canada)
   ticket:
     ticket-id:
@@ -223,13 +223,11 @@ $defs:
       title: Priority
       format: string
     ticket-type:
-      description: Used to categorize the ticket. To check the possible types a ticket
-        can have, please go to Admin -> Ticket Fields.
+      description: Used to categorize the ticket. To check the possible types a ticket can have, please go to Admin -> Ticket Fields.
       title: Ticket Type
       format: string
     association-type:
-      description: Used to determine whether a ticket is a parent, child, tracker
-        or related ticket.
+      description: Used to determine whether a ticket is a parent, child, tracker or related ticket.
       title: Association Type
       format: string
     associated-ticket-list:
@@ -241,13 +239,11 @@ $defs:
       title: Tags
       format: array
     cc-emails:
-      description: Email addresses added in the 'cc' field of the incoming ticket
-        email.
+      description: Email addresses added in the 'cc' field of the incoming ticket email.
       title: CC Emails
       format: array
     bcc-emails:
-      description: Email addresses added in the 'bcc' field of the incoming ticket
-        email.
+      description: Email addresses added in the 'bcc' field of the incoming ticket email.
       title: BCC Emails
       format: array
     forward-emails:
@@ -263,8 +259,7 @@ $defs:
       title: Requester ID
       format: integer
     responder-id:
-      description: ID of the agent to whom the ticket has been assigned. List of agents
-        can be found in Admin -> Agents.
+      description: ID of the agent to whom the ticket has been assigned. List of agents can be found in Admin -> Agents.
       title: Responder ID
       format: integer
     company-id:
@@ -272,18 +267,15 @@ $defs:
       title: Company ID
       format: integer
     group-id:
-      description: ID of the group to which the ticket has been assigned. List of
-        groups can be found in Admin -> Groups.
+      description: ID of the group to which the ticket has been assigned. List of groups can be found in Admin -> Groups.
       title: Group ID
       format: integer
     product-id:
-      description: ID of the product to which the ticket is associated. List of products
-        can be found in Admin -> Multiple Products.
+      description: ID of the product to which the ticket is associated. List of products can be found in Admin -> Multiple Products.
       title: Product ID
       format: integer
     support-email:
-      description: Support email address. You can find it in Admin -> Email (under
-        channel).
+      description: Support email address. You can find it in Admin -> Email (under channel).
       title: Support Email
       format: string
     to-emails:
@@ -295,8 +287,7 @@ $defs:
       title: Spam
       format: boolean
     due-by:
-      description: Timestamp that denotes when the ticket is due to be resolved. In
-        UTC format.
+      description: Timestamp that denotes when the ticket is due to be resolved. In UTC format.
       title: Due By
       format: string
     is-escalated:
@@ -304,33 +295,27 @@ $defs:
       title: Is Escalated
       format: boolean
     first-response-due-by:
-      description: Timestamp that denotes when the first response is due. In UTC format.
-        You can adjust this by going to Admin -> SLA policy (under Workflows).
+      description: Timestamp that denotes when the first response is due. In UTC format. You can adjust this by going to Admin -> SLA policy (under Workflows).
       title: First Response Due By
       format: string
     first-response-escalated:
-      description: Set to true if the ticket has been escalated as the result of first
-        response time being breached.
+      description: Set to true if the ticket has been escalated as the result of first response time being breached.
       title: First Response Escalated
       format: boolean
     next-response-due-by:
-      description: Timestamp that denotes when the next response is due. In UTC format.
-        You can adjust this by going to Admin -> SLA policy (under Workflows).
+      description: Timestamp that denotes when the next response is due. In UTC format. You can adjust this by going to Admin -> SLA policy (under Workflows).
       title: Next Response Due By
       format: string
     next-response-escalated:
-      description: Set to true if the ticket has been escalated as the result of next
-        response time being breached.
+      description: Set to true if the ticket has been escalated as the result of next response time being breached.
       title: Next Response Escalated
       format: boolean
     created-at:
-      description: Timestamp that denotes when the ticket/conversation was created.
-        In UTC format.
+      description: Timestamp that denotes when the ticket/conversation was created. In UTC format.
       title: Created At
       format: string
     updated-at:
-      description: Timestamp that denotes when the ticket was last updated. In UTC
-        format.
+      description: Timestamp that denotes when the ticket was last updated. In UTC format.
       title: Updated At
       format: string
     attachments:
@@ -338,8 +323,7 @@ $defs:
       title: Attachments
       format: array
     sentiment-score:
-      description: Freshdesk uses AI to assess the emotional tone and attitude expressed
-        in customer interaction.
+      description: Freshdesk uses AI to assess the emotional tone and attitude expressed in customer interaction.
       title: Sentiment Score
       format: integer
     initial-sentiment-score:
@@ -347,8 +331,7 @@ $defs:
       title: Initial Sentiment Score
       format: integer
     custom-fields:
-      description: Custom fields that the ticket have. Custom fields can be created
-        or modified in Admin -> Ticket Fields.
+      description: Custom fields that the ticket have. Custom fields can be created or modified in Admin -> Ticket Fields.
       title: Custom Fields
       format: object
     conversation-id:
@@ -413,8 +396,7 @@ $defs:
       title: Twitter ID
       format: string
     view-all-tickets:
-      description: Set to true if the contact can see all the tickets that are associated
-        with the primary company.
+      description: Set to true if the contact can see all the tickets that are associated with the primary company.
       title: View All Tickets
       format: boolean
     deleted:
@@ -442,13 +424,11 @@ $defs:
       title: Created At
       format: string
     updated-at:
-      description: Timestamp that denotes when the contact was last updated. In UTC
-        format.
+      description: Timestamp that denotes when the contact was last updated. In UTC format.
       title: Updated At
       format: string
     custom-fields:
-      description: Custom fields that the contact have. Custom fields can be created
-        or modified in Admin -> Customer Fields.
+      description: Custom fields that the contact have. Custom fields can be created or modified in Admin -> Customer Fields.
       title: Custom Fields
       format: object
   company:
@@ -473,25 +453,22 @@ $defs:
       title: Domains
       format: array
     health-score:
-      description: 'The strength of your relationship with the company. To look at
-        all the possible values or create custom values, please go to Admin -> Customer
-        Fields. Default values: "At risk", "Doing okay", "Happy".'
+      description: 'The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin ->
+        Customer Fields. Default values: "At risk", "Doing okay", "Happy".'
       title: Health Score
       format: string
     account-tier:
-      description: 'Classification based on how much value the company brings to your
-        business. To look at all the possible values or create custom values, please
-        go to Admin -> Customer Fields. Default values: "Basic", "Premium", "Enterprise".'
+      description: 'Classification based on how much value the company brings to your business. To look at all the possible values or create custom values,
+        please go to Admin -> Customer Fields. Default values: "Basic", "Premium", "Enterprise".'
       title: Account Tier
       format: string
     renewal-date:
-      description: Date when your contract or relationship with the company is due
-        for renewal.
+      description: Date when your contract or relationship with the company is due for renewal.
       title: Renewal Date
       format: string
     industry:
-      description: The industry in which the company operates. To look at all the
-        possible values or create custom values, please go to Admin -> Customer Fields.
+      description: The industry in which the company operates. To look at all the possible values or create custom values, please go to Admin -> Customer
+        Fields.
       title: Industry
       format: string
     created-at:
@@ -499,13 +476,11 @@ $defs:
       title: Created At
       format: string
     updated-at:
-      description: Timestamp that denotes when the company was last updated. In UTC
-        format.
+      description: Timestamp that denotes when the company was last updated. In UTC format.
       title: Updated At
       format: string
     custom-fields:
-      description: Custom fields that the company have. Custom fields can be created
-        or modified in Admin -> Customer Fields.
+      description: Custom fields that the company have. Custom fields can be created or modified in Admin -> Customer Fields.
       title: Custom Fields
       format: object
 TASK_GET_TICKET:
@@ -517,10 +492,10 @@ TASK_GET_TICKET:
       ticket-id:
         $ref: '#/$defs/ticket/ticket-id'
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 0
     required:
-    - ticket-id
+      - ticket-id
     title: Input
     format: object
   output:
@@ -575,8 +550,7 @@ TASK_GET_TICKET:
         $ref: '#/$defs/ticket/cc-emails'
         items:
           title: CC Email
-          description: One of the email address added in the 'cc' field of the incoming
-            ticket email.
+          description: One of the email address added in the 'cc' field of the incoming ticket email.
           format: string
         uiOrder: 9
         format: array
@@ -624,8 +598,7 @@ TASK_GET_TICKET:
         $ref: '#/$defs/ticket/to-emails'
         items:
           title: To Email
-          description: One of the email address to which the ticket was originally
-            sent.
+          description: One of the email address to which the ticket was originally sent.
           format: string
         uiOrder: 18
         format: array
@@ -686,9 +659,9 @@ TASK_GET_TICKET:
               title: Attachment URL
               format: string
           required:
-          - name
-          - content-type
-          - url
+            - name
+            - content-type
+            - url
           format: object
         uiOrder: 28
         format: array
@@ -706,14 +679,14 @@ TASK_GET_TICKET:
         uiOrder: 31
         format: json
     required:
-    - requester-id
-    - subject
-    - description-text
-    - source
-    - status
-    - priority
-    - created-at
-    - updated-at
+      - requester-id
+      - subject
+      - description-text
+      - source
+      - status
+      - priority
+      - created-at
+      - updated-at
     title: Output
     format: object
 TASK_CREATE_TICKET:
@@ -723,139 +696,134 @@ TASK_CREATE_TICKET:
     uiOrder: 0
     properties:
       requester-id:
-        description: ID of the requester. Must be an existing contact. If you fill
-          in this field, you don't need to fill in the email field. Only one of the
-          two fields is required.
+        description: ID of the requester. Must be an existing contact. If you fill in this field, you don't need to fill in the email field. Only one of
+          the two fields is required.
         title: Requester ID
         uiOrder: 0
         acceptFormats:
-        - integer
+          - integer
         format: integer
       email:
-        description: Email address of the requester. If you fill in the Requester
-          ID above, it will be ignored. Only one of the two fields is required. If
-          no contact exists with this email address in Freshdesk, it will be added
-          as a new contact.
+        description: Email address of the requester. If you fill in the Requester ID above, it will be ignored. Only one of the two fields is required.
+          If no contact exists with this email address in Freshdesk, it will be added as a new contact.
         title: Email
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         format: string
       subject:
         $ref: '#/$defs/ticket/subject'
         uiOrder: 2
         acceptFormats:
-        - string
+          - string
       description:
         description: Content of the ticket. You can use HTML tags in the content.
         title: Description
         uiOrder: 3
         acceptFormats:
-        - string
+          - string
         format: string
       source:
         $ref: '#/$defs/ticket/source'
         enum:
-        - Email
-        - Portal
-        - Phone
-        - Twitter
-        - Facebook
-        - Chat
-        - Feedback Widget
-        - Outbound Email
-        - Ecommerce
+          - Email
+          - Portal
+          - Phone
+          - Twitter
+          - Facebook
+          - Chat
+          - Feedback Widget
+          - Outbound Email
+          - Ecommerce
         example: Portal
         uiOrder: 4
         acceptFormats:
-        - string
+          - string
       status:
         $ref: '#/$defs/ticket/status'
         enum:
-        - Open
-        - Pending
-        - Resolved
-        - Closed
-        - Waiting on Customer
-        - Waiting on Third Party
+          - Open
+          - Pending
+          - Resolved
+          - Closed
+          - Waiting on Customer
+          - Waiting on Third Party
         example: Open
         uiOrder: 5
         acceptFormats:
-        - string
+          - string
       priority:
         $ref: '#/$defs/ticket/priority'
         enum:
-        - Low
-        - Medium
-        - High
-        - Urgent
+          - Low
+          - Medium
+          - High
+          - Urgent
         example: Low
         uiOrder: 6
         acceptFormats:
-        - string
+          - string
       ticket-type:
         $ref: '#/$defs/ticket/ticket-type'
         uiOrder: 7
         acceptFormats:
-        - string
+          - string
       company-id:
         $ref: '#/$defs/ticket/company-id'
         uiOrder: 8
         acceptFormats:
-        - integer
+          - integer
       product-id:
         $ref: '#/$defs/ticket/product-id'
         uiOrder: 9
         acceptFormats:
-        - integer
+          - integer
       group-id:
         $ref: '#/$defs/ticket/group-id'
         uiOrder: 10
         acceptFormats:
-        - integer
+          - integer
       responder-id:
         $ref: '#/$defs/ticket/responder-id'
         uiOrder: 11
         acceptFormats:
-        - integer
+          - integer
       tags:
         $ref: '#/$defs/ticket/tags'
         uiOrder: 12
         acceptFormats:
-        - array
+          - array
         items:
           format: string
       cc-emails:
         $ref: '#/$defs/ticket/cc-emails'
         uiOrder: 13
         acceptFormats:
-        - array
+          - array
         items:
           format: string
       parent-id:
-        description: ID of the parent ticket. Need to be filled out if you want to
-          create a child ticket.
+        description: ID of the parent ticket. Need to be filled out if you want to create a child ticket.
         title: Parent ID
         uiOrder: 14
         acceptFormats:
-        - integer
+          - integer
         format: integer
       related-ticket-ids:
-        description: List of related ticket IDs. Need to be filled out if you want
-          to create a tracker ticket.
+        description: List of related ticket IDs. Need to be filled out if you want to create a tracker ticket.
         title: Related Ticket IDs
         uiOrder: 15
         acceptFormats:
-        - array
+          - array
         items:
           format: integer
         format: array
     required:
-    - subject
-    - description
-    - source
-    - status
-    - priority
+      - subject
+      - description
+      - source
+      - status
+      - priority
     title: Input
     format: object
   output:
@@ -871,8 +839,8 @@ TASK_CREATE_TICKET:
         uiOrder: 1
         format: string
     required:
-    - ticket-id
-    - created-at
+      - ticket-id
+      - created-at
     title: Output
     format: object
 TASK_REPLY_TO_TICKET:
@@ -885,54 +853,50 @@ TASK_REPLY_TO_TICKET:
         $ref: '#/$defs/ticket/ticket-id'
         uiOrder: 0
         acceptFormats:
-        - integer
+          - integer
       body:
         description: Content of the reply. Can be in HTML format.
         title: Body
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
         format: string
       from-email:
-        description: Email address that is replying to the ticket. You need to have
-          this email address registered in Freshdesk by going to Admin -> Emails.
+        description: Email address that is replying to the ticket. You need to have this email address registered in Freshdesk by going to Admin -> Emails.
           If you leave this field empty, the global support email will be used.
         title: From Email
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         format: string
       user-id:
-        description: ID of the agent/contact replying to the ticket. If you fill this
-          field using a contact ID, there will be no email sent to the requester.
+        description: ID of the agent/contact replying to the ticket. If you fill this field using a contact ID, there will be no email sent to the requester.
         title: User ID
         uiOrder: 2
         acceptFormats:
-        - integer
+          - integer
         format: integer
       cc-emails:
-        description: Email addresses added in the 'cc' field of the outgoing ticket
-          email.
+        description: Email addresses added in the 'cc' field of the outgoing ticket email.
         title: CC Emails
         uiOrder: 3
         acceptFormats:
-        - array
+          - array
         items:
           format: string
         format: array
       bcc-emails:
-        description: Email addresses added in the 'bcc' field of the outgoing ticket
-          email.
+        description: Email addresses added in the 'bcc' field of the outgoing ticket email.
         title: BCC Emails
         uiOrder: 4
         acceptFormats:
-        - array
+          - array
         items:
           format: string
         format: array
     required:
-    - ticket-id
-    - body
+      - ticket-id
+      - body
     title: Input
     format: object
   output:
@@ -948,8 +912,8 @@ TASK_REPLY_TO_TICKET:
         uiOrder: 1
         format: string
     required:
-    - conversation-id
-    - created-at
+      - conversation-id
+      - created-at
     title: Output
     format: object
 TASK_CREATE_TICKET_NOTE:
@@ -962,22 +926,21 @@ TASK_CREATE_TICKET_NOTE:
         $ref: '#/$defs/ticket/ticket-id'
         uiOrder: 0
         acceptFormats:
-        - integer
+          - integer
       body:
         description: Content of the note. Can be in HTML format.
         title: Body
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         format: string
       notify-emails:
-        description: Email addresses of agents/users who need to be notified about
-          this note. The emails need to exist in Freshdesk agent. Agent list can be
-          seen in Admin -> Agents.
+        description: Email addresses of agents/users who need to be notified about this note. The emails need to exist in Freshdesk agent. Agent list can
+          be seen in Admin -> Agents.
         title: Notify Emails
         uiOrder: 2
         acceptFormats:
-        - array
+          - array
         items:
           format: string
         format: array
@@ -986,26 +949,25 @@ TASK_CREATE_TICKET_NOTE:
         title: User ID
         uiOrder: 3
         acceptFormats:
-        - integer
+          - integer
         format: integer
       private:
         description: Set to true if the note is private.
         title: Private
         uiOrder: 4
         acceptFormats:
-        - boolean
+          - boolean
         format: boolean
       incoming:
-        description: Set to true if a particular note should appear as being created
-          from outside (i.e., not through web portal).
+        description: Set to true if a particular note should appear as being created from outside (i.e., not through web portal).
         title: Incoming
         uiOrder: 5
         acceptFormats:
-        - boolean
+          - boolean
         format: boolean
     required:
-    - ticket-id
-    - body
+      - ticket-id
+      - body
     title: Input
     format: object
   output:
@@ -1021,13 +983,12 @@ TASK_CREATE_TICKET_NOTE:
         uiOrder: 1
         format: string
     required:
-    - conversation-id
-    - created-at
+      - conversation-id
+      - created-at
     title: Output
     format: object
 TASK_GET_ALL_CONVERSATIONS:
-  shortDescription: Get all the conversations in a ticket. (Conversations are replies
-    and notes that are added to a ticket)
+  shortDescription: Get all the conversations in a ticket. (Conversations are replies and notes that are added to a ticket)
   input:
     description: Ticket ID.
     uiOrder: 0
@@ -1037,10 +998,10 @@ TASK_GET_ALL_CONVERSATIONS:
         title: Ticket ID
         uiOrder: 2
         acceptFormats:
-        - integer
+          - integer
         format: integer
     required:
-    - ticket-id
+      - ticket-id
     title: Input
     format: object
   output:
@@ -1068,31 +1029,27 @@ TASK_GET_ALL_CONVERSATIONS:
               uiOrder: 2
               format: string
             to-emails:
-              description: Email addresses of agents/users who need to be notified
-                about this conversation.
+              description: Email addresses of agents/users who need to be notified about this conversation.
               title: To Emails
               uiOrder: 3
               items:
                 title: To Email
-                description: One of the email addresses of agents/users who need to
-                  be notified about this conversation.
+                description: One of the email addresses of agents/users who need to be notified about this conversation.
                 format: string
               format: array
             from-email:
-              description: Email address that is replying to the ticket or adding
-                the note.
+              description: Email address that is replying to the ticket or adding the note.
               title: From Email
               uiOrder: 4
               acceptFormats:
-              - string
+                - string
               format: string
             cc-emails:
               $ref: '#/$defs/ticket/cc-emails'
               uiOrder: 5
               items:
                 title: CC Email
-                description: One of the email address added in the 'cc' field of the
-                  incoming ticket email.
+                description: One of the email address added in the 'cc' field of the incoming ticket email.
                 format: string
               format: array
             bcc-emails:
@@ -1100,13 +1057,11 @@ TASK_GET_ALL_CONVERSATIONS:
               uiOrder: 6
               items:
                 title: BCC Email
-                description: One of the email address added in the 'bcc' field of
-                  the incoming ticket email.
+                description: One of the email address added in the 'bcc' field of the incoming ticket email.
                 format: string
               format: array
             incoming:
-              description: Set to true if a particular conversation should appear
-                as being created from outside.
+              description: Set to true if a particular conversation should appear as being created from outside.
               title: Incoming
               uiOrder: 7
               format: boolean
@@ -1125,8 +1080,8 @@ TASK_GET_ALL_CONVERSATIONS:
               uiOrder: 10
               format: string
           required:
-          - body-text
-          - created-at
+            - body-text
+            - created-at
           format: object
         format: array
       conversations-length:
@@ -1135,8 +1090,8 @@ TASK_GET_ALL_CONVERSATIONS:
         uiOrder: 1
         format: integer
     required:
-    - conversations
-    - conversations-length
+      - conversations
+      - conversations-length
     title: Output
     format: object
 TASK_GET_CONTACT:
@@ -1148,10 +1103,10 @@ TASK_GET_CONTACT:
       contact-id:
         $ref: '#/$defs/contact/contact-id'
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 0
     required:
-    - contact-id
+      - contact-id
     title: Input
     format: object
   output:
@@ -1245,14 +1200,13 @@ TASK_GET_CONTACT:
               title: Company ID
               format: integer
             view-all-tickets:
-              description: Set to true if the contact can see all the tickets that
-                are associated with the company.
+              description: Set to true if the contact can see all the tickets that are associated with the company.
               uiOrder: 1
               title: View All Tickets
               format: boolean
           required:
-          - company-id
-          - view-all-tickets
+            - company-id
+            - view-all-tickets
           format: object
         uiOrder: 17
         format: array
@@ -1278,7 +1232,7 @@ TASK_GET_CONTACT:
         uiOrder: 21
         format: json
     required:
-    - name
+      - name
     title: Output
     format: object
 TASK_CREATE_CONTACT:
@@ -1291,42 +1245,42 @@ TASK_CREATE_CONTACT:
         $ref: '#/$defs/contact/name'
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
       email:
         $ref: '#/$defs/contact/email'
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
       phone:
         $ref: '#/$defs/contact/phone'
         uiOrder: 2
         acceptFormats:
-        - string
+          - string
       mobile:
         $ref: '#/$defs/contact/mobile'
         uiOrder: 3
         acceptFormats:
-        - string
+          - string
       description:
         $ref: '#/$defs/contact/description'
         uiOrder: 4
         acceptFormats:
-        - string
+          - string
       address:
         $ref: '#/$defs/contact/address'
         uiOrder: 5
         acceptFormats:
-        - string
+          - string
       job-title:
         $ref: '#/$defs/contact/job-title'
         uiOrder: 6
         acceptFormats:
-        - string
+          - string
       tags:
         $ref: '#/$defs/contact/tags'
         uiOrder: 7
         acceptFormats:
-        - array
+          - array
         items:
           format: string
       language:
@@ -1335,7 +1289,7 @@ TASK_CREATE_CONTACT:
         $ref: '#/$defs/language'
         uiOrder: 8
         acceptFormats:
-        - string
+          - string
         format: string
       time-zone:
         description: Time zone of the contact.
@@ -1343,44 +1297,42 @@ TASK_CREATE_CONTACT:
         $ref: '#/$defs/time-zone'
         uiOrder: 9
         acceptFormats:
-        - string
+          - string
         format: string
       company-id:
         $ref: '#/$defs/contact/company-id'
         uiOrder: 10
         acceptFormats:
-        - integer
+          - integer
       unique-external-id:
         $ref: '#/$defs/contact/unique-external-id'
         uiOrder: 11
         acceptFormats:
-        - string
+          - string
       twitter-id:
         $ref: '#/$defs/contact/twitter-id'
         uiOrder: 12
         acceptFormats:
-        - string
+          - string
       view-all-tickets:
-        description: 'Used to determine if the contact can see all the tickets that
-          are associated with the primary company. Note: this property will be ignored
-          if the Company ID is not provided.'
+        description: 'Used to determine if the contact can see all the tickets that are associated with the primary company. Note: this property will be
+          ignored if the Company ID is not provided.'
         title: View All Tickets
         uiOrder: 13
         acceptFormats:
-        - boolean
+          - boolean
         format: boolean
       other-emails:
         $ref: '#/$defs/contact/other-emails'
         uiOrder: 14
         acceptFormats:
-        - array
+          - array
         items:
           format: string
       other-companies:
         title: Other Companies
-        description: 'List of other companies to which the contact belongs. Each company
-          should be in the format of company-id;view-all-tickets(boolean "true"/"false")
-          Example: 123;true.'
+        description: 'List of other companies to which the contact belongs. Each company should be in the format of company-id;view-all-tickets(boolean
+          "true"/"false") Example: 123;true.'
         items:
           format: string
         uiOrder: 15
@@ -1389,11 +1341,11 @@ TASK_CREATE_CONTACT:
         $ref: '#/$defs/contact/other-phone-numbers'
         uiOrder: 16
         acceptFormats:
-        - array
+          - array
         items:
           format: string
     required:
-    - name
+      - name
     title: Input
     format: object
   output:
@@ -1409,8 +1361,8 @@ TASK_CREATE_CONTACT:
         uiOrder: 1
         format: string
     required:
-    - contact-id
-    - created-at
+      - contact-id
+      - created-at
     title: Output
     format: object
 TASK_GET_COMPANY:
@@ -1422,10 +1374,10 @@ TASK_GET_COMPANY:
       company-id:
         $ref: '#/$defs/contact/company-id'
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 0
     required:
-    - company-id
+      - company-id
     title: Input
     format: object
   output:
@@ -1482,9 +1434,9 @@ TASK_GET_COMPANY:
         uiOrder: 10
         format: json
     required:
-    - name
-    - created-at
-    - updated-at
+      - name
+      - created-at
+      - updated-at
     title: Output
     format: object
 TASK_CREATE_COMPANY:
@@ -1497,49 +1449,48 @@ TASK_CREATE_COMPANY:
         $ref: '#/$defs/company/name'
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
       description:
         $ref: '#/$defs/company/description'
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
       note:
         $ref: '#/$defs/company/note'
         uiOrder: 2
         acceptFormats:
-        - string
+          - string
       domains:
         $ref: '#/$defs/company/domains'
         uiOrder: 3
         acceptFormats:
-        - array
+          - array
         items:
           format: string
       health-score:
         $ref: '#/$defs/company/health-score'
         uiOrder: 4
         acceptFormats:
-        - string
+          - string
       account-tier:
         $ref: '#/$defs/company/account-tier'
         uiOrder: 5
         acceptFormats:
-        - string
+          - string
       renewal-date:
-        description: Date when your contract or relationship with the company is due
-          for renewal. Enter in the format YYYY-MM-DD.
+        description: Date when your contract or relationship with the company is due for renewal. Enter in the format YYYY-MM-DD.
         title: Renewal Date
         uiOrder: 6
         acceptFormats:
-        - string
+          - string
         format: string
       industry:
         $ref: '#/$defs/company/industry'
         uiOrder: 7
         acceptFormats:
-        - string
+          - string
     required:
-    - name
+      - name
     title: Input
     format: object
   output:
@@ -1555,15 +1506,13 @@ TASK_CREATE_COMPANY:
         uiOrder: 1
         format: string
     required:
-    - company-id
-    - created-at
+      - company-id
+      - created-at
     title: Output
     format: object
 TASK_GET_ALL:
-  shortDescription: 'Task to get all the IDs of existing contacts, companies, tickets,
-    products, agents, roles, or skills. Note: products, agents, roles, and skills
-    require admin privileges. Some of these might not work, depending on the plan
-    you are on.'
+  shortDescription: 'Task to get all the IDs of existing contacts, companies, tickets, products, agents, roles, or skills. Note: products, agents, roles,
+    and skills require admin privileges. Some of these might not work, depending on the plan you are on.'
   input:
     description: Object type.
     uiOrder: 0
@@ -1572,29 +1521,28 @@ TASK_GET_ALL:
         description: Type of object to get IDs for.
         title: Object Type
         enum:
-        - Contacts
-        - Companies
-        - Tickets
-        - Products
-        - Agents
-        - Roles
-        - Skills
+          - Contacts
+          - Companies
+          - Tickets
+          - Products
+          - Agents
+          - Roles
+          - Skills
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
         format: string
       length:
-        description: The maximum number of IDs allowed is 500. The most recent IDs
-          will be retrieved.
+        description: The maximum number of IDs allowed is 500. The most recent IDs will be retrieved.
         default: 500
         title: Length
         uiOrder: 1
         acceptFormats:
-        - integer
+          - integer
         format: integer
     required:
-    - object-type
-    - length
+      - object-type
+      - length
     title: Input
     format: object
   output:
@@ -1616,13 +1564,12 @@ TASK_GET_ALL:
         uiOrder: 1
         format: integer
     required:
-    - ids
-    - id-length
+      - ids
+      - id-length
     title: Output
     format: object
 TASK_GET_PRODUCT:
-  shortDescription: Get product using ID. This task will only work if you have admin
-    privileges.
+  shortDescription: Get product using ID. This task will only work if you have admin privileges.
   input:
     description: Product ID.
     uiOrder: 0
@@ -1632,10 +1579,10 @@ TASK_GET_PRODUCT:
         title: Product ID
         uiOrder: 0
         acceptFormats:
-        - integer
+          - integer
         format: integer
     required:
-    - product-id
+      - product-id
     title: Input
     format: object
   output:
@@ -1673,17 +1620,16 @@ TASK_GET_PRODUCT:
         uiOrder: 5
         format: boolean
     required:
-    - name
-    - description
-    - primary-email
-    - created-at
-    - updated-at
-    - default
+      - name
+      - description
+      - primary-email
+      - created-at
+      - updated-at
+      - default
     title: Output
     format: object
 TASK_GET_AGENT:
-  shortDescription: Get agent using ID. This task will only work if you have admin
-    privileges. Agents are those in your team who will login to Freshdesk.
+  shortDescription: Get agent using ID. This task will only work if you have admin privileges. Agents are those in your team who will login to Freshdesk.
   input:
     description: Agent ID.
     uiOrder: 0
@@ -1693,10 +1639,10 @@ TASK_GET_AGENT:
         title: Agent ID
         uiOrder: 0
         acceptFormats:
-        - integer
+          - integer
         format: integer
     required:
-    - agent-id
+      - agent-id
     title: Input
     format: object
   output:
@@ -1744,14 +1690,12 @@ TASK_GET_AGENT:
         uiOrder: 7
         format: string
       ticket-scope:
-        description: Ticket permission of the agent. Can be "Global Access", "Group
-          Access" or "Restricted Access".
+        description: Ticket permission of the agent. Can be "Global Access", "Group Access" or "Restricted Access".
         title: Ticket Scope
         uiOrder: 9
         format: string
       available:
-        description: Set to true if the agent is in a group that has enabled "Automatic
-          Ticket Assignment".
+        description: Set to true if the agent is in a group that has enabled "Automatic Ticket Assignment".
         title: Available
         uiOrder: 10
         format: boolean
@@ -1818,15 +1762,14 @@ TASK_GET_AGENT:
         uiOrder: 8
         format: string
     required:
-    - email
-    - type
-    - ticket-scope
-    - occasional
+      - email
+      - type
+      - ticket-scope
+      - occasional
     title: Output
     format: object
 TASK_GET_ROLE:
-  shortDescription: Get role using ID. This task will only work if you have admin
-    privileges. Roles allow agents/collaborators to have different privileges.
+  shortDescription: Get role using ID. This task will only work if you have admin privileges. Roles allow agents/collaborators to have different privileges.
   input:
     description: Role ID.
     uiOrder: 0
@@ -1836,10 +1779,10 @@ TASK_GET_ROLE:
         title: Role ID
         uiOrder: 0
         acceptFormats:
-        - integer
+          - integer
         format: integer
     required:
-    - role-id
+      - role-id
     title: Input
     format: object
   output:
@@ -1877,17 +1820,16 @@ TASK_GET_ROLE:
         uiOrder: 5
         format: string
     required:
-    - name
-    - description
-    - default
-    - agent-type
-    - created-at
-    - updated-at
+      - name
+      - description
+      - default
+      - agent-type
+      - created-at
+      - updated-at
     title: Output
     format: object
 TASK_GET_GROUP:
-  shortDescription: Get group using ID. This task will only work if you have admin
-    privileges. Agents can be classified into groups such as Customer Support.
+  shortDescription: Get group using ID. This task will only work if you have admin privileges. Agents can be classified into groups such as Customer Support.
   input:
     description: Group ID.
     uiOrder: 0
@@ -1897,10 +1839,10 @@ TASK_GET_GROUP:
         title: Group ID
         uiOrder: 0
         acceptFormats:
-        - integer
+          - integer
         format: integer
     required:
-    - group-id
+      - group-id
     title: Input
     format: object
   output:
@@ -1932,8 +1874,7 @@ TASK_GET_GROUP:
         uiOrder: 3
         format: string
       escalate-to:
-        description: The ID of the user to whom an escalation email is sent if a ticket
-          is unassigned.
+        description: The ID of the user to whom an escalation email is sent if a ticket is unassigned.
         title: Escalate To
         uiOrder: 4
         format: integer
@@ -1948,8 +1889,7 @@ TASK_GET_GROUP:
         uiOrder: 6
         format: string
       agent-availability-status:
-        description: The availability status of the agent in the group. Automatically
-          set to true if the group has enabled "Automatic Ticket Assignment".
+        description: The availability status of the agent in the group. Automatically set to true if the group has enabled "Automatic Ticket Assignment".
         title: Agent Availability Status
         uiOrder: 7
         format: boolean
@@ -1964,17 +1904,16 @@ TASK_GET_GROUP:
         uiOrder: 9
         format: string
     required:
-    - name
-    - description
-    - auto-ticket-assign
-    - created-at
-    - updated-at
+      - name
+      - description
+      - auto-ticket-assign
+      - created-at
+      - updated-at
     title: Output
     format: object
 TASK_GET_SKILL:
-  shortDescription: Get skill using ID. This task will only work if you have admin
-    privileges. Agents can be assigned skills, and it is possible for tickets to be
-    automatically assigned to agents based on the skills they have.
+  shortDescription: Get skill using ID. This task will only work if you have admin privileges. Agents can be assigned skills, and it is possible for tickets
+    to be automatically assigned to agents based on the skills they have.
   input:
     description: Skill ID.
     uiOrder: 0
@@ -1984,10 +1923,10 @@ TASK_GET_SKILL:
         title: Skill ID
         uiOrder: 0
         acceptFormats:
-        - integer
+          - integer
         format: integer
     required:
-    - skill-id
+      - skill-id
     title: Input
     format: object
   output:
@@ -2028,11 +1967,11 @@ TASK_GET_SKILL:
         uiOrder: 5
         format: string
     required:
-    - name
-    - rank
-    - condition-match-type
-    - conditions
-    - created-at
-    - updated-at
+      - name
+      - rank
+      - condition-match-type
+      - conditions
+      - created-at
+      - updated-at
     title: Output
     format: object

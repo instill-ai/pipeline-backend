@@ -2,7 +2,7 @@ $defs:
   bucket-name:
     description: Name of the bucket to be used for object storage.
     acceptFormats:
-    - string
+      - string
     instillSecret: false
     uiOrder: 0
     title: Bucket Name
@@ -67,7 +67,7 @@ $defs:
         title: Storage Class
         format: string
     acceptFormats:
-    - object
+      - object
     required: []
     uiOrder: 1
     title: Attributes
@@ -82,29 +82,28 @@ TASK_UPLOAD:
       data:
         description: The data to be saved in the object.
         acceptFormats:
-        - '*'
+          - '*'
         uiOrder: 1
         title: Data
         format: string
       object-name:
         description: The name of the object to be created.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Object Name
         format: string
     required:
-    - object-name
-    - bucket-name
-    - data
+      - object-name
+      - bucket-name
+      - data
     title: Input
     format: object
   output:
     uiOrder: 0
     properties:
       authenticated-url:
-        description: Only users granted permission can access the object with this
-          link.
+        description: Only users granted permission can access the object with this link.
         format: string
         uiOrder: 0
         title: Authenticated URL
@@ -129,7 +128,7 @@ TASK_UPLOAD:
         title: Upload Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_READ_OBJECTS:
@@ -142,61 +141,61 @@ TASK_READ_OBJECTS:
       delimiter:
         description: The delimiter to use when listing objects.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Delimiter
         format: string
       prefix:
         description: The prefix to use when listing objects.
         acceptFormats:
-        - string
+          - string
         uiOrder: 2
         title: Prefix
         format: string
       versions:
         description: Whether to list all versions of an object.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 3
         title: Versions
         format: boolean
       start-offset:
         description: The offset to start listing objects from.
         acceptFormats:
-        - string
+          - string
         uiOrder: 4
         title: Start Offset
         format: string
       end-offset:
         description: The offset to stop listing objects at.
         acceptFormats:
-        - string
+          - string
         uiOrder: 5
         title: End Offset
         format: string
       include-trailing-delimiter:
         description: Whether to include the delimiter in the object name.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 6
         title: Include Trailing Delimiter
         format: boolean
       match-glob:
         description: Whether to match objects using a glob pattern.
         acceptFormats:
-        - string
+          - string
         uiOrder: 7
         title: Match Glob
         format: string
       include-folders-as-prefixes:
         description: Whether to include folders as prefixes.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 8
         title: Include Folders As Prefixes
         format: boolean
     required:
-    - bucket-name
+      - bucket-name
     title: Input
     format: object
   output:
@@ -205,7 +204,7 @@ TASK_READ_OBJECTS:
       text-objects:
         description: The text objects in the bucket.
         acceptFormats:
-        - array
+          - array
         uiOrder: 0
         title: Text Objects
         items:
@@ -220,7 +219,7 @@ TASK_READ_OBJECTS:
       image-objects:
         description: The image objects in the bucket.
         acceptFormats:
-        - array
+          - array
         uiOrder: 1
         title: Image Objects
         items:
@@ -235,7 +234,7 @@ TASK_READ_OBJECTS:
       document-objects:
         description: The document objects in the bucket.
         acceptFormats:
-        - array
+          - array
         uiOrder: 2
         title: Document Objects
         items:
@@ -251,7 +250,7 @@ TASK_READ_OBJECTS:
       audio-objects:
         description: The audio objects in the bucket.
         acceptFormats:
-        - array
+          - array
         uiOrder: 3
         title: Audio Objects
         items:
@@ -267,7 +266,7 @@ TASK_READ_OBJECTS:
       video-objects:
         description: The video objects in the bucket.
         acceptFormats:
-        - array
+          - array
         uiOrder: 4
         title: Video Objects
         items:
@@ -293,20 +292,20 @@ TASK_CREATE_BUCKET:
       project-id:
         description: The project ID to create the bucket in.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Project ID
         format: string
       location:
         description: The location to create the bucket in.
         acceptFormats:
-        - string
+          - string
         uiOrder: 2
         title: Location
         format: string
     required:
-    - bucket-name
-    - project-id
+      - bucket-name
+      - project-id
     title: Input
     format: object
   output:

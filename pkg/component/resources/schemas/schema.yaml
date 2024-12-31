@@ -25,10 +25,10 @@ $defs:
           title: Width
           format: number
       required:
-      - left
-      - top
-      - width
-      - height
+        - left
+        - top
+        - width
+        - height
       title: Bounding Box
       format: object
     chat-messages:
@@ -52,8 +52,8 @@ $defs:
             title: Role
             format: string
         required:
-        - role
-        - content
+          - role
+          - content
         format: object
       title: Chat Message
       format: array
@@ -71,8 +71,8 @@ $defs:
           title: Score
           format: number
       required:
-      - category
-      - score
+        - category
+        - score
       format: object
     detection:
       additionalProperties: false
@@ -93,21 +93,20 @@ $defs:
                 title: Category
                 format: string
               score:
-                description: The confidence score of the predicted category of the
-                  bounding box.
+                description: The confidence score of the predicted category of the bounding box.
                 uiOrder: 3
                 title: Score
                 format: number
             required:
-            - bounding-box
-            - category
-            - score
+              - bounding-box
+              - category
+              - score
             title: Object
             format: object
           title: Objects
           format: array
       required:
-      - objects
+        - objects
       format: object
     embedding:
       items:
@@ -133,8 +132,7 @@ $defs:
                 title: Category
                 format: string
               rle:
-                description: Run Length Encoding (RLE) of instance mask within the
-                  bounding box.
+                description: Run Length Encoding (RLE) of instance mask within the bounding box.
                 uiOrder: 0
                 title: RLE
                 format: string
@@ -144,23 +142,22 @@ $defs:
                 title: Score
                 format: number
             required:
-            - rle
-            - bounding-box
-            - category
-            - score
+              - rle
+              - bounding-box
+              - category
+              - score
             title: Object
             format: object
           title: Objects
           format: array
       required:
-      - objects
+        - objects
       format: object
     keypoint:
       additionalProperties: false
       properties:
         objects:
-          description: A list of keypoint objects, a keypoint object includes all
-            the pre-defined keypoints of a detected object.
+          description: A list of keypoint objects, a keypoint object includes all the pre-defined keypoints of a detected object.
           uiOrder: 0
           items:
             properties:
@@ -169,8 +166,7 @@ $defs:
                 uiOrder: 2
                 title: Bounding Box
               keypoints:
-                description: A keypoint group is composed of a list of pre-defined
-                  keypoints of a detected object.
+                description: A keypoint group is composed of a list of pre-defined keypoints of a detected object.
                 uiOrder: 0
                 items:
                   uiOrder: 0
@@ -191,9 +187,9 @@ $defs:
                       title: Y Coordinate
                       format: number
                   required:
-                  - x
-                  - y
-                  - v
+                    - x
+                    - y
+                    - v
                   title: Keypoints
                   format: object
                 title: Keypoints
@@ -204,15 +200,15 @@ $defs:
                 title: Score
                 format: number
             required:
-            - keypoints
-            - score
-            - bounding-box
+              - keypoints
+              - score
+              - bounding-box
             title: Object
             format: object
           title: Objects
           format: array
       required:
-      - objects
+        - objects
       format: object
     multi-modal-content:
       items:
@@ -220,13 +216,12 @@ $defs:
           image-url:
             properties:
               url:
-                description: Either a URL of the image or the base64 encoded image
-                  data.
+                description: Either a URL of the image or the base64 encoded image data.
                 title: URL
                 uiOrder: 0
                 format: string
             required:
-            - url
+              - url
             title: Image URL
             description: The image URL
             uiOrder: 0
@@ -239,13 +234,13 @@ $defs:
           type:
             description: The type of the content part.
             enum:
-            - text
-            - image-url
+              - text
+              - image-url
             title: Type
             uiOrder: 2
             format: string
         required:
-        - type
+          - type
         format: object
       format: array
     ocr:
@@ -271,15 +266,15 @@ $defs:
                 title: Text
                 format: string
             required:
-            - bounding-box
-            - text
-            - score
+              - bounding-box
+              - text
+              - score
             title: Object
             format: object
           title: Objects
           format: array
       required:
-      - objects
+        - objects
       format: object
     semantic-segmentation:
       additionalProperties: false
@@ -295,18 +290,17 @@ $defs:
                 title: Category
                 format: string
               rle:
-                description: Run Length Encoding (RLE) of each stuff mask within the
-                  image.
+                description: Run Length Encoding (RLE) of each stuff mask within the image.
                 uiOrder: 0
                 title: RLE
                 format: string
             required:
-            - rle
-            - category
+              - rle
+              - category
             title: Object
             format: object
           title: Stuffs
           format: array
       required:
-      - stuffs
+        - stuffs
       format: object

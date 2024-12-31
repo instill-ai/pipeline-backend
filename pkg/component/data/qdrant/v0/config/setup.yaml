@@ -1,25 +1,23 @@
 additionalProperties: false
 properties:
   api-key:
-    description: Fill in your Qdrant API key. Please refer to clusters in Qdrant data
-      access control.
+    description: Fill in your Qdrant API key. Please refer to clusters in Qdrant data access control.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     uiOrder: 0
     title: API Key
     format: string
   url:
-    description: Fill in your Qdrant URL endpoint. Please refer to clusters in Qdrant
-      cluster details.
+    description: Fill in your Qdrant URL endpoint. Please refer to clusters in Qdrant cluster details.
     acceptFormats:
-    - string
+      - string
     instillSecret: false
     uiOrder: 1
     title: Qdrant URL Endpoint
     format: string
 required:
-- api-key
-- url
+  - api-key
+  - url
 title: Qdrant Connection
 format: object

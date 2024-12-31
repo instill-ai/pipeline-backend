@@ -6,22 +6,22 @@ TASK_VECTOR_SEARCH:
       collection-name:
         description: The name of the collection to perform vector search on.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       partition-name:
         description: The name of the partition to vector search the data from.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Partition Name
         format: string
       vector:
         description: An array of dimensions for the vector search.
         acceptFormats:
-        - array
-        - array
+          - array
+          - array
         uiOrder: 2
         items:
           description: A dimension of the vector.
@@ -33,22 +33,21 @@ TASK_VECTOR_SEARCH:
       vector-field:
         description: The name of the field to perform vector search on.
         acceptFormats:
-        - string
+          - string
         uiOrder: 3
         title: Vector Field
         format: string
       limit:
         description: The limit of the data to return.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 4
         title: Limit
         format: integer
       fields:
-        description: The fields to return in the data. If empty then all fields will
-          be returned.
+        description: The fields to return in the data. If empty then all fields will be returned.
         acceptFormats:
-        - array
+          - array
         shortDescription: Fields to be returned, empty for all fields
         uiOrder: 4
         title: Fields
@@ -58,42 +57,40 @@ TASK_VECTOR_SEARCH:
           format: string
         format: array
       filter:
-        description: The properties filter to be applied to the data with zilliz scalar
-          filter, please refer to [filtered-search](https://docs.zilliz.com/docs/single-vector-search?_highlight=filter/docs/single-vector-search#filtered-search).
+        description: The properties filter to be applied to the data with zilliz scalar filter, please refer to [filtered-search](https://docs.zilliz.com/docs/single-vector-search?_highlight=filter/docs/single-vector-search#filtered-search).
         uiOrder: 5
         acceptFormats:
-        - string
+          - string
         title: Filter
         format: string
       offset:
         description: The offset of the data to return.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 6
         title: Offset
         format: integer
       grouping-field:
         description: The name of the field to group the data by, please refer to [grouping-search](https://docs.zilliz.com/docs/release-notes-290?_highlight=grouping&_highlight=field/docs/release-notes-290#grouping-search).
         acceptFormats:
-        - string
+          - string
         uiOrder: 7
         title: Grouping Field
         format: string
       search-params:
-        description: The search parameters to be applied to the data with zilliz search
-          parameters, please refer to [search-parameters](https://docs.zilliz.com/docs/single-vector-search?_highlight=search&_highlight=params/docs/single-vector-search#search-parameters).
+        description: The search parameters to be applied to the data with zilliz search parameters, please refer to [search-parameters](https://docs.zilliz.com/docs/single-vector-search?_highlight=search&_highlight=params/docs/single-vector-search#search-parameters).
         uiOrder: 8
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         title: Search Parameters
         required: []
         format: object
     required:
-    - collection-name
-    - vector
-    - vector-field
-    - limit
+      - collection-name
+      - vector
+      - vector-field
+      - limit
     title: Input
     format: object
   output:
@@ -156,8 +153,8 @@ TASK_VECTOR_SEARCH:
         required: []
         format: object
     required:
-    - status
-    - result
+      - status
+      - result
     title: Output
     format: object
 TASK_UPSERT:
@@ -168,30 +165,29 @@ TASK_UPSERT:
       collection-name:
         description: The name of the collection to upsert the data into.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       partition-name:
-        description: The name of the partition to upsert the data from. If empty then
-          default partition will be used.
+        description: The name of the partition to upsert the data from. If empty then default partition will be used.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Partition Name
         format: string
       data:
         description: The data.
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 2
         title: Data
         required: []
         format: object
     required:
-    - collection-name
-    - data
+      - collection-name
+      - data
     title: Input
     format: object
   output:
@@ -203,7 +199,7 @@ TASK_UPSERT:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_BATCH_UPSERT:
@@ -214,25 +210,24 @@ TASK_BATCH_UPSERT:
       collection-name:
         description: The name of the collection to upsert the data into.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       partition-name:
-        description: The name of the partition to upsert the data from. If empty then
-          default partition will be used.
+        description: The name of the partition to upsert the data from. If empty then default partition will be used.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Partition Name
         format: string
       array-data:
         description: The data.
         acceptFormats:
-        - array
-        - array
-        - array
-        - array
+          - array
+          - array
+          - array
+          - array
         uiOrder: 2
         title: Array Data
         items:
@@ -241,8 +236,8 @@ TASK_BATCH_UPSERT:
           format: object
         format: array
     required:
-    - collection-name
-    - array-data
+      - collection-name
+      - array-data
     title: Input
     format: object
   output:
@@ -254,7 +249,7 @@ TASK_BATCH_UPSERT:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_DELETE:
@@ -265,28 +260,26 @@ TASK_DELETE:
       collection-name:
         description: The name of the collection to delete the data from.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       partition-name:
-        description: The name of the partition to delete the data from. If empty then
-          default partition will be used.
+        description: The name of the partition to delete the data from. If empty then default partition will be used.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Partition Name
         format: string
       filter:
-        description: The properties filter to be applied to the data with zilliz scalar
-          filter, please refer to [filtered-search](https://docs.zilliz.com/docs/single-vector-search?_highlight=filter/docs/single-vector-search#filtered-search).
+        description: The properties filter to be applied to the data with zilliz scalar filter, please refer to [filtered-search](https://docs.zilliz.com/docs/single-vector-search?_highlight=filter/docs/single-vector-search#filtered-search).
         uiOrder: 2
         acceptFormats:
-        - string
+          - string
         title: Filter
         format: string
     required:
-    - collection-name
+      - collection-name
     title: Input
     format: object
   output:
@@ -298,7 +291,7 @@ TASK_DELETE:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_CREATE_COLLECTION:
@@ -309,29 +302,29 @@ TASK_CREATE_COLLECTION:
       collection-name:
         description: The name of the collection to create.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       dimension:
         description: The dimension of the collection.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 1
         title: Dimension
         format: integer
       id-type:
         description: The type of the id.
         acceptFormats:
-        - string
+          - string
         uiOrder: 3
         title: ID Type
         format: string
       schema:
         description: The schema of the collection.
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 4
         title: Schema
         required: []
@@ -339,7 +332,7 @@ TASK_CREATE_COLLECTION:
       auto-id:
         description: Whether to auto generate id.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 5
         title: Auto ID
         default: false
@@ -347,38 +340,36 @@ TASK_CREATE_COLLECTION:
       metric-type:
         description: The metric type of the collection.
         acceptFormats:
-        - string
+          - string
         uiOrder: 6
         title: Metric Type
         enum:
-        - L2
-        - IP
-        - COSINE
+          - L2
+          - IP
+          - COSINE
         default: L2
         format: string
       index-params:
-        description: The index parameters to be applied to the collection with zilliz
-          index parameters, please refer to [index-parameter](https://zilliz.io/docs/single-vector-search.md#Index-parameters).
+        description: The index parameters to be applied to the collection with zilliz index parameters, please refer to [index-parameter](https://zilliz.io/docs/single-vector-search.md#Index-parameters).
         uiOrder: 7
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         title: Index Parameters
         required: []
         format: object
       params:
-        description: The parameters to be applied to the collection with zilliz parameters,
-          please refer to [parameters](https://zilliz.io/docs/single-vector-search.md#Parameters).
+        description: The parameters to be applied to the collection with zilliz parameters, please refer to [parameters](https://zilliz.io/docs/single-vector-search.md#Parameters).
         uiOrder: 8
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         title: Parameters
         required: []
         format: object
     required:
-    - collection-name
-    - dimension
+      - collection-name
+      - dimension
     title: Input
     format: object
   output:
@@ -390,7 +381,7 @@ TASK_CREATE_COLLECTION:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_DROP_COLLECTION:
@@ -401,12 +392,12 @@ TASK_DROP_COLLECTION:
       collection-name:
         description: The name of the collection to drop.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
     required:
-    - collection-name
+      - collection-name
     title: Input
     format: object
   output:
@@ -418,7 +409,7 @@ TASK_DROP_COLLECTION:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_CREATE_PARTITION:
@@ -429,20 +420,20 @@ TASK_CREATE_PARTITION:
       collection-name:
         description: The name of the collection to create the partition in.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       partition-name:
         description: The name of the partition to create.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Partition Name
         format: string
     required:
-    - collection-name
-    - partition-name
+      - collection-name
+      - partition-name
     title: Input
     format: object
   output:
@@ -454,7 +445,7 @@ TASK_CREATE_PARTITION:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_DROP_PARTITION:
@@ -465,20 +456,20 @@ TASK_DROP_PARTITION:
       collection-name:
         description: The name of the collection to drop the partition from.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       partition-name:
         description: The name of the partition to drop.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Partition Name
         format: string
     required:
-    - collection-name
-    - partition-name
+      - collection-name
+      - partition-name
     title: Input
     format: object
   output:
@@ -490,6 +481,6 @@ TASK_DROP_PARTITION:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object

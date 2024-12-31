@@ -1,15 +1,14 @@
 additionalProperties: false
 properties:
   token:
-    description: Fill in your WhatsApp access token. Go [here](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started)
-      for more information.
+    description: Fill in your WhatsApp access token. Go [here](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started) for more information.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     uiOrder: 0
     title: Token
     format: string
 required:
-- token
+  - token
 title: WhatsApp Connection
 format: object

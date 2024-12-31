@@ -10,7 +10,7 @@ $defs:
               uiOrder: 0
               format: string
           required:
-          - url
+            - url
           title: Image URL
           description: The image URL.
           uiOrder: 0
@@ -23,13 +23,13 @@ $defs:
         type:
           description: The type of the content part.
           enum:
-          - text
-          - image_url
+            - text
+            - image_url
           title: Type
           uiOrder: 2
           format: string
       required:
-      - type
+        - type
       format: object
     format: array
   chat-message:
@@ -45,8 +45,8 @@ $defs:
         title: Role
         format: string
     required:
-    - role
-    - content
+      - role
+      - content
     title: Chat Message
     format: object
   chat-usage:
@@ -64,8 +64,8 @@ $defs:
         title: Output Tokens
         format: number
     required:
-    - input-tokens
-    - output-tokens
+      - input-tokens
+      - output-tokens
     title: Usage
     format: object
   embedding-usage:
@@ -78,32 +78,27 @@ $defs:
         title: Token Count
         format: number
     required:
-    - tokens
+      - tokens
     title: Usage
     format: object
 TASK_TEXT_GENERATION_CHAT:
   shortDescription: Provide text outputs in response to text inputs.
-  description: Mistral AI's text generation models (often called generative pre-trained
-    transformers or large language models) have been trained to understand natural
-    language, code, and images. The models provide text outputs in response to their
-    inputs. The inputs to these models are also referred to as "prompts". Designing
-    a prompt is essentially how you “program” a large language model model, usually
-    by providing instructions or some examples of how to successfully complete a task.
+  description: Mistral AI's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand
+    natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as
+    "prompts". Designing a prompt is essentially how you “program” a large language model model, usually by providing instructions or some examples of how
+    to successfully complete a task.
   input:
     description: Input.
     uiOrder: 0
     properties:
       chat-history:
-        description: 'Incorporate external chat history, specifically previous messages
-          within the conversation. Please note that System Message will be ignored
-          and will not have any effect when this field is populated. Each message
-          should adhere to the format: : {"role": "The message role, i.e. ''system'',
-          ''user'' or ''assistant''", "content": "message content"}.'
+        description: 'Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be
+          ignored and will not have any effect when this field is populated. Each message should adhere to the format: : {"role": "The message role, i.e.
+          ''system'', ''user'' or ''assistant''", "content": "message content"}.'
         acceptFormats:
-        - object
-        shortDescription: 'Incorporate external chat history, specifically previous
-          messages within the conversation. (Note: The Mistral models are not trained
-          to process images, thus images will be omitted)'
+          - object
+        shortDescription: 'Incorporate external chat history, specifically previous messages within the conversation. (Note: The Mistral models are not
+          trained to process images, thus images will be omitted)'
         uiOrder: 4
         items:
           $ref: '#/$defs/chat-message'
@@ -113,47 +108,46 @@ TASK_TEXT_GENERATION_CHAT:
         default: 50
         description: The maximum number of tokens for model to generate.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 6
         title: Max New Tokens
         format: integer
       model-name:
         enum:
-        - open-mixtral-8x22b
-        - open-mixtral-8x7b
-        - open-mistral-7b
-        - mistral-large-latest
-        - mistral-small-latest
-        - codestral-latest
-        example: open-mixtral-8x22b
-        description: The Mistral model to be used.
-        acceptFormats:
-        - string
-        uiOrder: 0
-        instillCredentialMap:
-          values:
           - open-mixtral-8x22b
           - open-mixtral-8x7b
           - open-mistral-7b
           - mistral-large-latest
           - mistral-small-latest
           - codestral-latest
+        example: open-mixtral-8x22b
+        description: The Mistral model to be used.
+        acceptFormats:
+          - string
+        uiOrder: 0
+        instillCredentialMap:
+          values:
+            - open-mixtral-8x22b
+            - open-mixtral-8x7b
+            - open-mistral-7b
+            - mistral-large-latest
+            - mistral-small-latest
+            - codestral-latest
           targets:
-          - setup.api-key
+            - setup.api-key
         title: Model Name
         format: string
       prompt:
         description: The prompt text.
         acceptFormats:
-        - string
+          - string
         uiOrder: 2
         title: Prompt
         format: string
       prompt-images:
-        description: 'The prompt images (Note: The Mistral models are not trained
-          to process images, thus images will be omitted).'
+        description: 'The prompt images (Note: The Mistral models are not trained to process images, thus images will be omitted).'
         acceptFormats:
-        - array
+          - array
         uiOrder: 3
         items:
           format: string
@@ -162,19 +156,17 @@ TASK_TEXT_GENERATION_CHAT:
       seed:
         description: The seed.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 4
         title: Seed
         format: integer
       system-message:
         default: You are a helpful assistant.
-        description: The system message helps set the behavior of the assistant. For
-          example, you can modify the personality of the assistant or provide specific
-          instructions about how it should behave throughout the conversation. By
-          default, the model’s behavior is set using a generic message as "You are
-          a helpful assistant.".
+        description: The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
+          specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message
+          as "You are a helpful assistant.".
         acceptFormats:
-        - string
+          - string
         shortDescription: The system message helps set the behavior of the assistant
         uiOrder: 2
         title: System Message
@@ -183,43 +175,40 @@ TASK_TEXT_GENERATION_CHAT:
         default: 0.7
         description: The temperature for sampling.
         acceptFormats:
-        - number
+          - number
         uiOrder: 5
         title: Temperature
         format: number
       top-k:
         default: 10
-        description: 'Integer to define the top tokens considered within the sample
-          operation to create new text (Note: The Mistral models does not support
+        description: 'Integer to define the top tokens considered within the sample operation to create new text (Note: The Mistral models does not support
           top-k sampling).'
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 5
         title: Top K
         format: integer
       top-p:
         default: 0.5
-        description: Float to define the tokens that are within the sample operation
-          of text generation. Add tokens in the sample for more probable to least
+        description: Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least
           probable until the sum of the probabilities is greater than top-p (default=0.5).
         acceptFormats:
-        - number
-        - integer
-        shortDescription: Float to define the tokens that are within the sample operation
-          of text generation
+          - number
+          - integer
+        shortDescription: Float to define the tokens that are within the sample operation of text generation
         uiOrder: 6
         title: Top P
         format: number
       safe:
         description: Safe generation mode.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 7
         title: Safe
         format: boolean
     required:
-    - prompt
-    - model-name
+      - prompt
+      - model-name
     title: Input
     format: object
   output:
@@ -234,42 +223,40 @@ TASK_TEXT_GENERATION_CHAT:
       usage:
         $ref: '#/$defs/chat-usage'
     required:
-    - text
+      - text
     title: Output
     format: object
 TASK_TEXT_EMBEDDINGS:
-  shortDescription: Turn text into a vector of numbers that capture its meaning, unlocking
-    use cases like semantic search.
-  description: An embedding is a list of floating point numbers that captures semantic
-    information about the text that it represents.
+  shortDescription: Turn text into a vector of numbers that capture its meaning, unlocking use cases like semantic search.
+  description: An embedding is a list of floating point numbers that captures semantic information about the text that it represents.
   input:
     uiOrder: 0
     properties:
       model-name:
         enum:
-        - mistral-embed
+          - mistral-embed
         example: mistral-embed
         description: The Mistral embed model to be used.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Model Name
         instillCredentialMap:
           values:
-          - mistral-embed
+            - mistral-embed
           targets:
-          - setup.api-key
+            - setup.api-key
         format: string
       text:
         description: The text.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Text
         format: string
     required:
-    - text
-    - model-name
+      - text
+      - model-name
     title: Input
     format: object
   output:
@@ -286,6 +273,6 @@ TASK_TEXT_EMBEDDINGS:
       usage:
         $ref: '#/$defs/embedding-usage'
     required:
-    - embedding
+      - embedding
     title: Output
     format: object

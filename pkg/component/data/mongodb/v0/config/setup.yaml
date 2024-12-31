@@ -3,12 +3,12 @@ properties:
   uri:
     description: Fill in your MongoDB URI.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     uiOrder: 0
     title: URI
     format: string
 required:
-- uri
+  - uri
 title: MongoDB Connection
 format: object

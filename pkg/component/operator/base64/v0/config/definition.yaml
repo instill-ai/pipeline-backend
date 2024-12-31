@@ -1,6 +1,6 @@
 availableTasks:
-- TASK_ENCODE
-- TASK_DECODE
+  - TASK_ENCODE
+  - TASK_DECODE
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/operator/base64
 icon: assets/base64.svg

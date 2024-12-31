@@ -6,37 +6,37 @@ TASK_INSERT:
       database-name:
         description: The name of the database in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Database Name
         format: string
       collection-name:
         description: The name of the collection in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Collection Name
         format: string
       id:
         description: The ID of the document.
         acceptFormats:
-        - string
+          - string
         uiOrder: 2
         title: ID
         format: string
       data:
         description: The data to be inserted.
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 3
         title: Data
         required: []
         format: object
     required:
-    - database-name
-    - collection-name
-    - data
+      - database-name
+      - collection-name
+      - data
     title: Input
     format: object
   output:
@@ -49,7 +49,7 @@ TASK_INSERT:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_INSERT_MANY:
@@ -60,21 +60,21 @@ TASK_INSERT_MANY:
       database-name:
         description: The name of the database in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Database Name
         format: string
       collection-name:
         description: The name of the collection in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Collection Name
         format: string
       array-id:
         description: The array of id.
         acceptFormats:
-        - array
+          - array
         uiOrder: 2
         items:
           description: An id of the document.
@@ -86,10 +86,10 @@ TASK_INSERT_MANY:
       array-data:
         description: The array data to be inserted.
         acceptFormats:
-        - array
-        - array
-        - array
-        - array
+          - array
+          - array
+          - array
+          - array
         uiOrder: 3
         title: Data
         items:
@@ -100,9 +100,9 @@ TASK_INSERT_MANY:
         minItems: 1
         format: array
     required:
-    - database-name
-    - collection-name
-    - array-data
+      - database-name
+      - collection-name
+      - array-data
     title: Input
     format: object
   output:
@@ -114,7 +114,7 @@ TASK_INSERT_MANY:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_FIND:
@@ -125,21 +125,21 @@ TASK_FIND:
       database-name:
         description: The name of the database in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Database Name
         format: string
       collection-name:
         description: The name of the collection in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Collection Name
         format: string
       id:
         description: The ID of the document.
         acceptFormats:
-        - string
+          - string
         uiOrder: 2
         title: ID
         format: string
@@ -147,28 +147,25 @@ TASK_FIND:
         description: The filter to find documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/).
           If empty then all documents will be returned.
         acceptFormats:
-        - json
-        - object
-        shortDescription: The mongodb language query to filter the documents, empty
-          for no filter
+          - json
+          - object
+        shortDescription: The mongodb language query to filter the documents, empty for no filter
         uiOrder: 3
         title: Filter
         required: []
         format: object
       limit:
-        description: The number of documents to return. If empty then all documents
-          will be returned.
+        description: The number of documents to return. If empty then all documents will be returned.
         acceptFormats:
-        - integer
+          - integer
         shortDescription: Limit the documents, empty for all documents
         uiOrder: 4
         title: Limit
         format: integer
       fields:
-        description: The fields to return in the documents. If empty then all fields
-          will be returned.
+        description: The fields to return in the documents. If empty then all fields will be returned.
         acceptFormats:
-        - array
+          - array
         shortDescription: Fields to be returned, empty for all fields
         uiOrder: 5
         title: Fields
@@ -178,8 +175,8 @@ TASK_FIND:
         minItems: 1
         format: array
     required:
-    - database-name
-    - collection-name
+      - database-name
+      - collection-name
     title: Input
     format: object
   output:
@@ -229,8 +226,8 @@ TASK_FIND:
         required: []
         format: object
     required:
-    - status
-    - result
+      - status
+      - result
     title: Output
     format: object
 TASK_UPDATE:
@@ -241,21 +238,21 @@ TASK_UPDATE:
       database-name:
         description: The name of the database in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Database Name
         format: string
       collection-name:
         description: The name of the collection in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Collection Name
         format: string
       id:
         description: The ID of the document.
         acceptFormats:
-        - string
+          - string
         uiOrder: 2
         title: ID
         format: string
@@ -263,8 +260,8 @@ TASK_UPDATE:
         description: The filter to update documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/).
           If empty then all documents will be returned.
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         shortDescription: The mongodb language query to filter the documents
         uiOrder: 3
         title: Filter
@@ -273,16 +270,16 @@ TASK_UPDATE:
       update-data:
         description: The updated data to be applied to the documents.
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 4
         title: Update
         required: []
         format: object
     required:
-    - database-name
-    - collection-name
-    - update-data
+      - database-name
+      - collection-name
+      - update-data
     title: Input
     format: object
   output:
@@ -295,7 +292,7 @@ TASK_UPDATE:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_DELETE:
@@ -306,21 +303,21 @@ TASK_DELETE:
       database-name:
         description: The name of the database in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Database Name
         format: string
       collection-name:
         description: The name of the collection in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Collection Name
         format: string
       id:
         description: The ID of the document.
         acceptFormats:
-        - string
+          - string
         uiOrder: 2
         title: ID
         format: string
@@ -328,16 +325,16 @@ TASK_DELETE:
         description: The filter to delete documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/).
           If empty then all documents will be returned.
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         shortDescription: The mongodb language query to filter the documents
         uiOrder: 3
         title: Filter
         required: []
         format: object
     required:
-    - database-name
-    - collection-name
+      - database-name
+      - collection-name
     title: Input
     format: object
   output:
@@ -350,7 +347,7 @@ TASK_DELETE:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_DROP_COLLECTION:
@@ -361,20 +358,20 @@ TASK_DROP_COLLECTION:
       database-name:
         description: The name of the database in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Database Name
         format: string
       collection-name:
         description: The name of the collection in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Collection Name
         format: string
     required:
-    - database-name
-    - collection-name
+      - database-name
+      - collection-name
     title: Input
     format: object
   output:
@@ -387,7 +384,7 @@ TASK_DROP_COLLECTION:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_DROP_DATABASE:
@@ -398,12 +395,12 @@ TASK_DROP_DATABASE:
       database-name:
         description: The name of the database in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Database Name
         format: string
     required:
-    - database-name
+      - database-name
     title: Input
     format: object
   output:
@@ -416,7 +413,7 @@ TASK_DROP_DATABASE:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_CREATE_SEARCH_INDEX:
@@ -427,21 +424,21 @@ TASK_CREATE_SEARCH_INDEX:
       database-name:
         description: The name of the database in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Database Name
         format: string
       collection-name:
         description: The name of the collection in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Collection Name
         format: string
       index-name:
         description: The name of the index to be created.
         acceptFormats:
-        - string
+          - string
         shortDescription: Index Name
         uiOrder: 2
         title: Index Name
@@ -449,32 +446,31 @@ TASK_CREATE_SEARCH_INDEX:
       index-type:
         description: The type of the index to be created.
         acceptFormats:
-        - string
+          - string
         shortDescription: Index Type
         uiOrder: 3
         enum:
-        - search
-        - vectorSearch
+          - search
+          - vectorSearch
         title: Index Type
         format: string
       syntax:
-        description: The syntax structure of the search index, please refer to the
-          MongoDB documentation for more information. search [here](https://www.mongodb.com/docs/atlas/atlas-search/create-index/).
+        description: The syntax structure of the search index, please refer to the MongoDB documentation for more information. search [here](https://www.mongodb.com/docs/atlas/atlas-search/create-index/).
           vectorSearch [here](https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-type/).
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         shortDescription: Syntax Structure, please refer to the MongoDB documentation
         uiOrder: 4
         title: Syntax
         required: []
         format: object
     required:
-    - database-name
-    - collection-name
-    - index-type
-    - index-name
-    - syntax
+      - database-name
+      - collection-name
+      - index-type
+      - index-name
+      - syntax
     title: Input
     format: object
   output:
@@ -487,7 +483,7 @@ TASK_CREATE_SEARCH_INDEX:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_DROP_SEARCH_INDEX:
@@ -498,29 +494,29 @@ TASK_DROP_SEARCH_INDEX:
       database-name:
         description: The name of the database in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Database Name
         format: string
       collection-name:
         description: The name of the collection in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Collection Name
         format: string
       index-name:
         description: The name of the index to be dropped.
         acceptFormats:
-        - string
+          - string
         shortDescription: Index Name
         uiOrder: 2
         title: Index Name
         format: string
     required:
-    - database-name
-    - collection-name
-    - index-name
+      - database-name
+      - collection-name
+      - index-name
     title: Input
     format: object
   output:
@@ -533,7 +529,7 @@ TASK_DROP_SEARCH_INDEX:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_VECTOR_SEARCH:
@@ -544,21 +540,21 @@ TASK_VECTOR_SEARCH:
       database-name:
         description: The name of the database in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Database Name
         format: string
       collection-name:
         description: The name of the collection in MongoDB.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Collection Name
         format: string
       index-name:
         description: The name of the index to be used for vector search.
         acceptFormats:
-        - string
+          - string
         shortDescription: Index Name
         uiOrder: 2
         title: Index Name
@@ -566,8 +562,8 @@ TASK_VECTOR_SEARCH:
       query-vector:
         description: The query vector to be used for vector search.
         acceptFormats:
-        - array
-        - array
+          - array
+          - array
         shortDescription: Query Vector
         uiOrder: 3
         title: Query Vector
@@ -578,10 +574,9 @@ TASK_VECTOR_SEARCH:
         minItems: 1
         format: array
       exact:
-        description: The exact value for vector search. If true, then ENN search will
-          be performed, otherwise ANN search will be performed. Default to false.
+        description: The exact value for vector search. If true, then ENN search will be performed, otherwise ANN search will be performed. Default to false.
         acceptFormats:
-        - boolean
+          - boolean
         shortDescription: Exact Search, true for ENN search, false for ANN search
         uiOrder: 4
         title: Exact
@@ -590,16 +585,15 @@ TASK_VECTOR_SEARCH:
       limit:
         description: Limit the documents to be returned.
         acceptFormats:
-        - integer
+          - integer
         shortDescription: Limit Documents
         uiOrder: 5
         title: Limit
         format: integer
       num-candidates:
-        description: The number of candidates to the field to be used for vector search.
-          Default to 3 times limit.
+        description: The number of candidates to the field to be used for vector search. Default to 3 times limit.
         acceptFormats:
-        - integer
+          - integer
         shortDescription: Number of Candidates, default to 3 times limit
         uiOrder: 6
         title: Number of Candidates
@@ -607,29 +601,26 @@ TASK_VECTOR_SEARCH:
       path:
         description: The path to the field to be used for vector search.
         acceptFormats:
-        - string
+          - string
         shortDescription: Path, need to first create vectorSearch search index
         uiOrder: 7
         title: Path
         format: string
       filter:
-        description: The filter to be used for vector search, need to first create
-          filter vectorSearch search index, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/).
+        description: The filter to be used for vector search, need to first create filter vectorSearch search index, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/).
           If empty then all documents will be returned to be used for vector search.
         acceptFormats:
-        - json
-        - object
-        shortDescription: The mongodb language query to filter the documents, empty
-          for all documents
+          - json
+          - object
+        shortDescription: The mongodb language query to filter the documents, empty for all documents
         uiOrder: 8
         title: Filter
         required: []
         format: object
       fields:
-        description: The fields to return in the documents. If empty then all fields
-          will be returned.
+        description: The fields to return in the documents. If empty then all fields will be returned.
         acceptFormats:
-        - array
+          - array
         shortDescription: Fields to be returned, empty for all fields
         uiOrder: 9
         title: Fields
@@ -639,12 +630,12 @@ TASK_VECTOR_SEARCH:
         minItems: 1
         format: array
     required:
-    - database-name
-    - collection-name
-    - index-name
-    - query-vector
-    - path
-    - limit
+      - database-name
+      - collection-name
+      - index-name
+      - query-vector
+      - path
+      - limit
     title: Input
     format: object
   output:
@@ -708,7 +699,7 @@ TASK_VECTOR_SEARCH:
         required: []
         format: object
     required:
-    - status
-    - result
+      - status
+      - result
     title: Output
     format: object

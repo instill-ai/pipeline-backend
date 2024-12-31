@@ -1,15 +1,14 @@
 additionalProperties: false
 properties:
   token:
-    description: Fill in your Asana Personal Access Token (PAT). You can generate
-      one from <a href="https://app.asana.com/0/my-apps">developer console</a>.
+    description: Fill in your Asana Personal Access Token (PAT). You can generate one from <a href="https://app.asana.com/0/my-apps">developer console</a>.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     uiOrder: 0
     title: Token
     format: string
 required:
-- token
+  - token
 title: Asana Connection
 format: object

@@ -1,7 +1,7 @@
 availableTasks:
-- TASK_UPLOAD
-- TASK_READ_OBJECTS
-- TASK_CREATE_BUCKET
+  - TASK_UPLOAD
+  - TASK_READ_OBJECTS
+  - TASK_CREATE_BUCKET
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/data/gcs
 icon: assets/gcs.svg

@@ -1,7 +1,7 @@
 availableTasks:
-- TASK_RETRIEVE_CHAT_HISTORY
-- TASK_WRITE_CHAT_MESSAGE
-- TASK_WRITE_MULTI_MODAL_CHAT_MESSAGE
+  - TASK_RETRIEVE_CHAT_HISTORY
+  - TASK_WRITE_CHAT_MESSAGE
+  - TASK_WRITE_MULTI_MODAL_CHAT_MESSAGE
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/data/redis
 icon: assets/redis.svg

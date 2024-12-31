@@ -2,30 +2,30 @@ TASK_MARSHAL:
   input:
     description: Input
     instillEditOnNodeFields:
-    - object
+      - object
     uiOrder: 0
     properties:
       object:
         description: Json object to be marshaled
         instillAcceptFormats:
-        - object
-        - semi-structured/*
-        - structured/*
+          - object
+          - semi-structured/*
+          - structured/*
         instillEditOnNodeFields: []
         uiOrder: 0
         instillUpstreamTypes:
-        - reference
+          - reference
         required: []
         title: Object
         type: object
     required:
-    - object
+      - object
     title: Input
     type: object
   output:
     description: Output
     instillEditOnNodeFields:
-    - string
+      - string
     uiOrder: 0
     properties:
       string:
@@ -36,6 +36,6 @@ TASK_MARSHAL:
         title: Data
         type: string
     required:
-    - string
+      - string
     title: Output
     type: object

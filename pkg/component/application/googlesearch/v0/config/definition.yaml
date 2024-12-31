@@ -1,5 +1,5 @@
 availableTasks:
-- TASK_SEARCH
+  - TASK_SEARCH
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/application/google-search
 icon: assets/google-search.svg

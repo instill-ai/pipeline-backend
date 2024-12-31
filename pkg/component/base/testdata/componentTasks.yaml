@@ -6,20 +6,20 @@ TASK_TEXT_EMBEDDINGS:
       model:
         $ref: additional.yaml#/components/schemas/CreateEmbeddingRequest/properties/model
         acceptFormats:
-        - string
+          - string
         shortDescription: ID of the model to use
         uiOrder: 0
         title: Model
       text:
         description: The text
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Text
         type: string
     required:
-    - text
-    - model
+      - text
+      - model
     title: Input
     type: object
   output:
@@ -30,6 +30,6 @@ TASK_TEXT_EMBEDDINGS:
         uiOrder: 0
         title: Embedding
     required:
-    - embedding
+      - embedding
     title: Output
     type: object

@@ -3,14 +3,14 @@ properties:
   dataset-id:
     description: Fill in your BigQuery Dataset ID.
     acceptFormats:
-    - string
+      - string
     uiOrder: 2
     title: BigQuery Dataset ID
     format: string
   json-key:
     description: Contents of the JSON key file with access to the bucket.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     uiOrder: 0
     title: JSON Key File contents
@@ -18,21 +18,21 @@ properties:
   project-id:
     description: Fill in your BigQuery Project ID.
     acceptFormats:
-    - string
+      - string
     uiOrder: 1
     title: BigQuery Project ID
     format: string
   table-name:
     description: Fill in your BigQuery Table Name.
     acceptFormats:
-    - string
+      - string
     uiOrder: 3
     title: BigQuery Table Name
     format: string
 required:
-- json-key
-- project-id
-- dataset-id
-- table-name
+  - json-key
+  - project-id
+  - dataset-id
+  - table-name
 title: BigQuery Connection
 format: object

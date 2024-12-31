@@ -2,42 +2,42 @@ $defs:
   search-subject:
     description: Search for emails with a specific subject.
     acceptFormats:
-    - string
+      - string
     uiOrder: 4
     title: Search Subject
     format: string
   search-from:
     description: Search for emails from a specific email address.
     acceptFormats:
-    - string
+      - string
     uiOrder: 2
     title: Search From
     format: string
   search-to:
     description: Search for emails to a specific email address.
     acceptFormats:
-    - string
+      - string
     uiOrder: 3
     title: Search To
     format: string
   limit:
     description: The maximum number of emails to search for.
     acceptFormats:
-    - integer
+      - integer
     uiOrder: 5
     title: Limit
     format: integer
   date:
     description: Search for emails with the date the email was sent.
     acceptFormats:
-    - string
+      - string
     uiOrder: 6
     title: Search Date
     format: string
   search-email-message:
     description: Search for emails with a specific message.
     acceptFormats:
-    - string
+      - string
     uiOrder: 7
     title: Search Message
     format: string
@@ -50,7 +50,7 @@ TASK_SEND_EMAIL:
       recipients:
         description: The email addresses of the recipients.
         acceptFormats:
-        - array
+          - array
         items:
           format: string
         uiOrder: 2
@@ -59,7 +59,7 @@ TASK_SEND_EMAIL:
       cc:
         description: The email addresses for Carbon Copy.
         acceptFormats:
-        - array
+          - array
         items:
           format: string
         uiOrder: 3
@@ -68,7 +68,7 @@ TASK_SEND_EMAIL:
       bcc:
         description: The email addresses for Blind Carbon Copy.
         acceptFormats:
-        - array
+          - array
         items:
           format: string
         uiOrder: 4
@@ -77,20 +77,20 @@ TASK_SEND_EMAIL:
       subject:
         description: The subject of the email.
         acceptFormats:
-        - string
+          - string
         uiOrder: 5
         title: Subject
         format: string
       message:
         description: The message to be sent.
         acceptFormats:
-        - string
+          - string
         uiOrder: 6
         title: Message
         format: string
     required:
-    - recipients
-    - message
+      - recipients
+      - message
     title: Input
     format: object
   output:
@@ -103,7 +103,7 @@ TASK_SEND_EMAIL:
         title: Result
         format: string
     required:
-    - result
+      - result
     title: Output
     format: object
 TASK_READ_EMAILS:
@@ -119,7 +119,7 @@ TASK_READ_EMAILS:
           mailbox:
             description: The mailbox to search for emails.
             acceptFormats:
-            - string
+              - string
             uiOrder: 1
             title: Mailbox
             format: string
@@ -136,7 +136,7 @@ TASK_READ_EMAILS:
           search-email-message:
             $ref: '#/$defs/search-email-message'
         required:
-        - mailbox
+          - mailbox
         title: Search
         format: object
     required: []
@@ -184,6 +184,6 @@ TASK_READ_EMAILS:
         title: Emails
         format: array
     required:
-    - emails
+      - emails
     title: Output
     format: object

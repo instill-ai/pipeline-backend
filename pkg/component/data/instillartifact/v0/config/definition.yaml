@@ -1,12 +1,12 @@
 availableTasks:
-- TASK_UPLOAD_FILE
-- TASK_UPLOAD_FILES
-- TASK_GET_FILES_METADATA
-- TASK_GET_CHUNKS_METADATA
-- TASK_GET_FILE_IN_MARKDOWN
-- TASK_MATCH_FILE_STATUS
-- TASK_RETRIEVE
-- TASK_ASK
+  - TASK_UPLOAD_FILE
+  - TASK_UPLOAD_FILES
+  - TASK_GET_FILES_METADATA
+  - TASK_GET_CHUNKS_METADATA
+  - TASK_GET_FILE_IN_MARKDOWN
+  - TASK_MATCH_FILE_STATUS
+  - TASK_RETRIEVE
+  - TASK_ASK
 documentationUrl: https://www.instill.tech/docs/component/data/instill-artifact
 icon: assets/instill-artifact.svg
 id: instill-artifact

@@ -1,14 +1,12 @@
 TASK_QUERY:
-  shortDescription: Retrieve the ids of the most similar items in a namespace, along
-    with their similarity scores.
+  shortDescription: Retrieve the ids of the most similar items in a namespace, along with their similarity scores.
   input:
     uiOrder: 0
     properties:
       id:
-        description: The unique ID of the vector to be used as a query vector. If
-          present, the vector parameter will be ignored.
+        description: The unique ID of the vector to be used as a query vector. If present, the vector parameter will be ignored.
         acceptFormats:
-        - string
+          - string
         shortDescription: Query by vector ID instead of by vector
         uiOrder: 0
         title: ID
@@ -16,8 +14,8 @@ TASK_QUERY:
       vector:
         description: An array of dimensions for the query vector.
         acceptFormats:
-        - array
-        - array
+          - array
+          - array
         uiOrder: 1
         items:
           description: A dimension of the vector.
@@ -29,22 +27,21 @@ TASK_QUERY:
       top-k:
         description: The number of results to return for each query.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 2
         title: Top K
         format: integer
       namespace:
         description: The namespace to query.
         acceptFormats:
-        - string
+          - string
         uiOrder: 3
         title: Namespace
         format: string
       filter:
-        description: The filter to apply. You can use vector metadata to limit your
-          search. See more details <a href="https://www.pinecone.io/docs/metadata-filtering/">here</a>.
+        description: The filter to apply. You can use vector metadata to limit your search. See more details <a href="https://www.pinecone.io/docs/metadata-filtering/">here</a>.
         acceptFormats:
-        - json
+          - json
         shortDescription: The filter to apply on vector metadata
         uiOrder: 4
         order: 1
@@ -54,17 +51,16 @@ TASK_QUERY:
       min-score:
         description: Exclude results whose score is below this value.
         acceptFormats:
-        - number
-        - integer
+          - number
+          - integer
         uiOrder: 5
         title: Minimum Score
         format: number
       include-metadata:
         default: false
-        description: Indicates whether metadata is included in the response as well
-          as the IDs.
+        description: Indicates whether metadata is included in the response as well as the IDs.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 6
         title: Include Metadata
         format: boolean
@@ -72,13 +68,13 @@ TASK_QUERY:
         default: false
         description: Indicates whether vector values are included in the response.
         acceptFormats:
-        - boolean
+          - boolean
         uiOrder: 7
         title: Include Values
         format: boolean
     required:
-    - top-k
-    - vector
+      - top-k
+      - vector
     title: Input
     format: object
   output:
@@ -101,8 +97,7 @@ TASK_QUERY:
               title: Metadata
               format: json
             score:
-              description: A measure of similarity between this vector and the query
-                vector. The higher the score, the more similar they are.
+              description: A measure of similarity between this vector and the query vector. The higher the score, the more similar they are.
               uiOrder: 1
               title: Score
               format: number
@@ -116,8 +111,8 @@ TASK_QUERY:
               title: Values
               format: array
           required:
-          - id
-          - score
+            - id
+            - score
           title: Match
           format: object
         title: Matches
@@ -128,30 +123,28 @@ TASK_QUERY:
         title: Namespace
         format: string
     required:
-    - namespace
-    - matches
+      - namespace
+      - matches
     title: Output
     format: object
 TASK_UPSERT:
-  shortDescription: Writes vectors into a namespace. If a new value is upserted for
-    an existing vector id, it will overwrite the previous value.
-  description: Writes vectors into a namespace. If a new value is upserted for an
-    existing vector id, it will overwrite the previous value. This task will be soon
-    replaced by `TASK_BATCH_UPSERT`, which extends its functionality.
+  shortDescription: Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value.
+  description: Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value. This task will
+    be soon replaced by `TASK_BATCH_UPSERT`, which extends its functionality.
   input:
     uiOrder: 0
     properties:
       id:
         description: This is the vector's unique id.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: ID
         format: string
       metadata:
         description: The vector metadata.
         acceptFormats:
-        - json
+          - json
         shortDescription: The vector metadata
         uiOrder: 3
         order: 1
@@ -161,8 +154,8 @@ TASK_UPSERT:
       values:
         description: An array of dimensions for the vector to be saved.
         acceptFormats:
-        - array
-        - array
+          - array
+          - array
         uiOrder: 1
         items:
           description: A dimension of the vector.
@@ -174,13 +167,13 @@ TASK_UPSERT:
       namespace:
         description: The namespace to query.
         acceptFormats:
-        - string
+          - string
         uiOrder: 2
         title: Namespace
         format: string
     required:
-    - id
-    - values
+      - id
+      - values
     title: Input
     format: object
   output:
@@ -192,12 +185,11 @@ TASK_UPSERT:
         title: Upserted Count
         format: integer
     required:
-    - upserted-count
+      - upserted-count
     title: Output
     format: object
 TASK_BATCH_UPSERT:
-  shortDescription: Writes vectors into a namespace. If a new value is upserted for
-    an existing vector ID, it will overwrite the previous value.
+  shortDescription: Writes vectors into a namespace. If a new value is upserted for an existing vector ID, it will overwrite the previous value.
   input:
     uiOrder: 0
     properties:
@@ -210,17 +202,15 @@ TASK_BATCH_UPSERT:
               description: The unique ID of the vector.
               uiOrder: 0
               acceptFormats:
-              - string
+                - string
               title: ID
               format: string
             metadata:
-              description: 'The vector metadata. This is a set of key-value pairs
-                that can be used to store additional information about the vector.
-                The values can have the following types: string, number, boolean,
-                or array of strings.'
+              description: 'The vector metadata. This is a set of key-value pairs that can be used to store additional information about the vector. The
+                values can have the following types: string, number, boolean, or array of strings.'
               uiOrder: 1
               acceptFormats:
-              - json
+                - json
               shortDescription: The vector metadata
               required: []
               title: Metadata
@@ -229,8 +219,8 @@ TASK_BATCH_UPSERT:
               description: An array of dimensions for the vector to be saved.
               uiOrder: 2
               acceptFormats:
-              - array
-              - array
+                - array
+                - array
               items:
                 description: A dimension of the vector.
                 example: 0.8167237
@@ -239,8 +229,8 @@ TASK_BATCH_UPSERT:
               title: Values
               format: array
           required:
-          - id
-          - values
+            - id
+            - values
           format: object
         minItems: 1
         title: Vectors
@@ -248,12 +238,12 @@ TASK_BATCH_UPSERT:
       namespace:
         description: The namespace to query.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Namespace
         format: string
     required:
-    - vectors
+      - vectors
     title: Input
     format: object
   output:
@@ -265,22 +255,20 @@ TASK_BATCH_UPSERT:
         title: Upserted Count
         format: integer
     required:
-    - upserted-count
+      - upserted-count
     title: Output
     format: object
 TASK_RERANK:
-  shortDescription: Rerank documents, such as text passages, according to their relevance
-    to a query.
-  description: Rerank documents, such as text passages, according to their relevance
-    to a query. The input is a list of documents and a query. The output is a list
-    of documents, sorted by relevance to the query.
+  shortDescription: Rerank documents, such as text passages, according to their relevance to a query.
+  description: Rerank documents, such as text passages, according to their relevance to a query. The input is a list of documents and a query. The output
+    is a list of documents, sorted by relevance to the query.
   input:
     uiOrder: 0
     properties:
       query:
         description: The query to rerank the documents.
         acceptFormats:
-        - string
+          - string
         instullUIMultiline: false
         uiOrder: 0
         title: Query
@@ -294,16 +282,15 @@ TASK_RERANK:
         title: Documents
         format: array
       top-n:
-        description: The number of results to return sorted by relevance. Defaults
-          to the number of inputs.
+        description: The number of results to return sorted by relevance. Defaults to the number of inputs.
         acceptFormats:
-        - integer
+          - integer
         uiOrder: 2
         title: Top N
         format: integer
     required:
-    - query
-    - documents
+      - query
+      - documents
     title: Input
     format: object
   output:
@@ -318,8 +305,7 @@ TASK_RERANK:
         title: Reranked documents.
         format: array
       scores:
-        description: The relevance score of the documents normalized between 0 and
-          1.
+        description: The relevance score of the documents normalized between 0 and 1.
         items:
           title: Score
           format: number
@@ -327,7 +313,7 @@ TASK_RERANK:
         title: Scores
         format: array
     required:
-    - documents
-    - scores
+      - documents
+      - scores
     title: Output
     format: object

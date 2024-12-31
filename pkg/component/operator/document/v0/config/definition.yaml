@@ -1,7 +1,7 @@
 availableTasks:
-- TASK_CONVERT_TO_MARKDOWN
-- TASK_CONVERT_TO_TEXT
-- TASK_CONVERT_TO_IMAGES
+  - TASK_CONVERT_TO_MARKDOWN
+  - TASK_CONVERT_TO_TEXT
+  - TASK_CONVERT_TO_IMAGES
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/operator/document
 icon: assets/document.svg

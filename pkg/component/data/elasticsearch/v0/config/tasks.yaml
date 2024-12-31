@@ -6,29 +6,29 @@ TASK_INDEX:
       index-name:
         description: Name of the Elasticsearch index.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Index Name
         format: string
       id:
         description: The ID of the document.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: ID
         format: string
       data:
         description: Data to be indexed.
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 2
         title: Data
         required: []
         format: object
     required:
-    - index-name
-    - data
+      - index-name
+      - data
     title: Input
     format: object
   output:
@@ -41,7 +41,7 @@ TASK_INDEX:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_MULTI_INDEX:
@@ -52,14 +52,14 @@ TASK_MULTI_INDEX:
       index-name:
         description: Name of the Elasticsearch index.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Index Name
         format: string
       array-id:
         description: The array of id.
         acceptFormats:
-        - array
+          - array
         uiOrder: 1
         items:
           description: An id of the document.
@@ -71,10 +71,10 @@ TASK_MULTI_INDEX:
       array-data:
         description: Array data to be indexed.
         acceptFormats:
-        - array
-        - array
-        - array
-        - array
+          - array
+          - array
+          - array
+          - array
         uiOrder: 2
         title: Array Data
         items:
@@ -85,8 +85,8 @@ TASK_MULTI_INDEX:
         minItems: 1
         format: array
     required:
-    - index-name
-    - array-data
+      - index-name
+      - array-data
     title: Input
     format: object
   output:
@@ -99,7 +99,7 @@ TASK_MULTI_INDEX:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_UPDATE:
@@ -110,59 +110,55 @@ TASK_UPDATE:
       index-name:
         description: Name of the Elasticsearch index.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Index Name
         format: string
       id:
         description: The ID of the document.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: ID
         format: string
       query:
-        description: Full text search query for update task, query will be prioritised
-          over filter if both are provided, if both query and filter are not provided,
-          all documents will be selected.
+        description: Full text search query for update task, query will be prioritised over filter if both are provided, if both query and filter are not
+          provided, all documents will be selected.
         acceptFormats:
-        - string
+          - string
         shortDescription: Full text search query, (empty for all documents)
         uiOrder: 2
         title: Query
         format: string
       filter:
-        description: The query dsl filter which starts with "query" field, please
-          refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html).
+        description: The query dsl filter which starts with "query" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html).
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 3
         title: Filter
         required: []
         format: object
       filter-sql:
-        shortDescription: The filter sql to be applied to the data, if filter or id
-          is provided, this field will be ignored
-        description: The filter to be applied to the data with SQL syntax, which starts
-          with WHERE clause, empty for no filter.
+        shortDescription: The filter sql to be applied to the data, if filter or id is provided, this field will be ignored
+        description: The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter.
         uiOrder: 4
         acceptFormats:
-        - string
+          - string
         title: Filter SQL
         format: string
       update-data:
         description: Update data.
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 4
         title: Update
         required: []
         format: object
     required:
-    - index-name
-    - update-data
+      - index-name
+      - update-data
     title: Input
     format: object
   output:
@@ -175,7 +171,7 @@ TASK_UPDATE:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_SEARCH:
@@ -186,61 +182,55 @@ TASK_SEARCH:
       index-name:
         description: Name of the Elasticsearch index.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Index Name
         format: string
       id:
         description: The ID of the document.
         acceptFormats:
-        - string
+          - string
         uiOrder: 2
         title: ID
         format: string
       query:
-        description: Full text search query for search task, query will be prioritised
-          over filter if both are provided, if both query and filter are not provided,
-          all documents will be selected.
+        description: Full text search query for search task, query will be prioritised over filter if both are provided, if both query and filter are not
+          provided, all documents will be selected.
         acceptFormats:
-        - string
+          - string
         shortDescription: Full text search query, (empty for all documents)
         uiOrder: 3
         title: Query
         format: string
       filter:
-        description: The query dsl filter which starts with "query" field, please
-          refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html).
+        description: The query dsl filter which starts with "query" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html).
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 4
         title: Filter
         required: []
         format: object
       filter-sql:
-        shortDescription: The filter sql to be applied to the data, if filter or id
-          is provided, this field will be ignored
-        description: The filter to be applied to the data with SQL syntax, which starts
-          with WHERE clause, empty for no filter.
+        shortDescription: The filter sql to be applied to the data, if filter or id is provided, this field will be ignored
+        description: The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter.
         uiOrder: 5
         acceptFormats:
-        - string
+          - string
         title: Filter SQL
         format: string
       size:
-        description: Number of documents to return. If empty then all documents will
-          be returned.
+        description: Number of documents to return. If empty then all documents will be returned.
         acceptFormats:
-        - integer
+          - integer
         shortDescription: Size of documents to return, (empty for all documents)
         uiOrder: 6
         title: Size
         format: integer
       fields:
-        description: The fields to return in the documents. If empty then all fields
-          will be returned.
+        description: The fields to return in the documents. If empty then all fields will be returned.
         acceptFormats:
-        - array
+          - array
         shortDescription: Fields to be returned, empty for all fields
         uiOrder: 7
         title: Fields
@@ -250,16 +240,15 @@ TASK_SEARCH:
         minItems: 1
         format: array
       min-score:
-        description: Minimum score to consider for search results. If empty then no
-          minimum score will be considered.
+        description: Minimum score to consider for search results. If empty then no minimum score will be considered.
         acceptFormats:
-        - number
+          - number
         shortDescription: Minimum Score
         uiOrder: 8
         title: Minimum Score
         format: number
     required:
-    - index-name
+      - index-name
     title: Input
     format: object
   output:
@@ -309,8 +298,8 @@ TASK_SEARCH:
         required: []
         format: object
     required:
-    - result
-    - status
+      - result
+      - status
     title: Output
     format: object
 TASK_VECTOR_SEARCH:
@@ -321,14 +310,14 @@ TASK_VECTOR_SEARCH:
       index-name:
         description: Name of the Elasticsearch index.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Index Name
         format: string
       field:
         description: Field name of the vector to search for similar vectors.
         acceptFormats:
-        - string
+          - string
         shortDescription: Field name of the vector
         uiOrder: 2
         title: Field
@@ -336,8 +325,8 @@ TASK_VECTOR_SEARCH:
       query-vector:
         description: Query vector to search for similar vectors.
         acceptFormats:
-        - array
-        - array
+          - array
+          - array
         shortDescription: ''
         uiOrder: 3
         items:
@@ -350,46 +339,40 @@ TASK_VECTOR_SEARCH:
       k:
         description: K of documents to do kNN vector search.
         acceptFormats:
-        - integer
+          - integer
         shortDescription: K of documents to return
         uiOrder: 4
         title: K
         format: integer
       num-candidates:
-        description: Number of candidates to be considered for kNN vector search.
-          Default to 2 times of k.
+        description: Number of candidates to be considered for kNN vector search. Default to 2 times of k.
         acceptFormats:
-        - integer
-        shortDescription: Number of candidates to be considered for kNN, default to
-          2 times of k
+          - integer
+        shortDescription: Number of candidates to be considered for kNN, default to 2 times of k
         uiOrder: 5
         title: Num Candidates
         format: integer
       filter:
-        description: The query dsl filter which starts with "filter" field, please
-          refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/knn-search.html#knn-search-filter-example).
+        description: The query dsl filter which starts with "filter" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/knn-search.html#knn-search-filter-example).
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 6
         title: Filter
         required: []
         format: object
       filter-sql:
-        shortDescription: The filter sql to be applied to the data, if filter or id
-          is provided, this field will be ignored
-        description: The filter to be applied to the data with SQL syntax, which starts
-          with WHERE clause, empty for no filter.
+        shortDescription: The filter sql to be applied to the data, if filter or id is provided, this field will be ignored
+        description: The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter.
         uiOrder: 7
         acceptFormats:
-        - string
+          - string
         title: Filter SQL
         format: string
       fields:
-        description: The fields to return in the documents. If empty then all fields
-          will be returned.
+        description: The fields to return in the documents. If empty then all fields will be returned.
         acceptFormats:
-        - array
+          - array
         shortDescription: Fields to be returned, empty for all fields
         uiOrder: 8
         title: Fields
@@ -399,17 +382,16 @@ TASK_VECTOR_SEARCH:
         minItems: 1
         format: array
       min-score:
-        description: Minimum score to consider for search results. If empty then no
-          minimum score will be considered.
+        description: Minimum score to consider for search results. If empty then no minimum score will be considered.
         acceptFormats:
-        - number
+          - number
         shortDescription: Minimum Score
         uiOrder: 9
         title: Minimum Score
         format: number
     required:
-    - index-name
-    - field
+      - index-name
+      - field
     title: Input
     format: object
   output:
@@ -473,8 +455,8 @@ TASK_VECTOR_SEARCH:
         required: []
         format: object
     required:
-    - result
-    - status
+      - result
+      - status
     title: Output
     format: object
 TASK_DELETE:
@@ -485,50 +467,46 @@ TASK_DELETE:
       index-name:
         description: Name of the Elasticsearch index.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Index Name
         format: string
       id:
         description: The ID of the document.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: ID
         format: string
       query:
-        description: Full text search query for delete task, query will be prioritised
-          over filter if both are provided, if both query and filter are not provided,
-          all documents will be selected.
+        description: Full text search query for delete task, query will be prioritised over filter if both are provided, if both query and filter are not
+          provided, all documents will be selected.
         acceptFormats:
-        - string
+          - string
         shortDescription: Full text search query, (empty for all documents)
         uiOrder: 2
         title: Query
         format: string
       filter:
-        description: The query dsl filter which starts with "query" field, please
-          refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html).
+        description: The query dsl filter which starts with "query" field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html).
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 3
         title: Filter
         required: []
         format: object
       filter-sql:
-        shortDescription: The filter sql to be applied to the data, if filter or id
-          is provided, this field will be ignored
-        description: The filter to be applied to the data with SQL syntax, which starts
-          with WHERE clause, empty for no filter.
+        shortDescription: The filter sql to be applied to the data, if filter or id is provided, this field will be ignored
+        description: The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter.
         uiOrder: 4
         acceptFormats:
-        - string
+          - string
         required: []
         title: Filter SQL
         format: string
     required:
-    - index-name
+      - index-name
     title: Input
     format: object
   output:
@@ -541,7 +519,7 @@ TASK_DELETE:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_CREATE_INDEX:
@@ -552,24 +530,22 @@ TASK_CREATE_INDEX:
       index-name:
         description: Name of the Elasticsearch index.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Index Name
         format: string
       mappings:
-        description: Index mappings which starts with {"mappings":{"properties"}}
-          field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html)
-          for vector search and [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
-          for other mappings.
+        description: Index mappings which starts with {"mappings":{"properties"}} field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html)
+          for vector search and [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html) for other mappings.
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 1
         title: Mappings
         required: []
         format: object
     required:
-    - index-name
+      - index-name
     title: Input
     format: object
   output:
@@ -582,7 +558,7 @@ TASK_CREATE_INDEX:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_DELETE_INDEX:
@@ -593,12 +569,12 @@ TASK_DELETE_INDEX:
       index-name:
         description: Name of the Elasticsearch index.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Index Name
         format: string
     required:
-    - index-name
+      - index-name
     title: Input
     format: object
   output:
@@ -611,6 +587,6 @@ TASK_DELETE_INDEX:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object

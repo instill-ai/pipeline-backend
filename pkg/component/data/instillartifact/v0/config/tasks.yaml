@@ -1,18 +1,16 @@
 $defs:
   file:
-    description: Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into
-      catalog.
+    description: Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into catalog.
     uiOrder: 2
     acceptFormats:
-    - '*/*'
+      - '*/*'
     title: File
     format: string
   files:
-    description: Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML files to be uploaded into
-      catalog.
+    description: Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML files to be uploaded into catalog.
     uiOrder: 2
     acceptFormats:
-    - array
+      - array
     items:
       format: string
     title: Files
@@ -55,7 +53,7 @@ $defs:
         title: Catalog ID
         format: string
     required:
-    - catalog-id
+      - catalog-id
     title: File
     format: object
   chunk-item:
@@ -81,17 +79,16 @@ $defs:
         title: Source File Name
         format: string
     required:
-    - chunk-uid
-    - similarity-score
-    - text-content
-    - source-file-name
+      - chunk-uid
+      - similarity-score
+      - text-content
+      - source-file-name
     title: Chunk
     format: object
   namespace:
-    description: Fill in your namespace, you can get namespace through the tab of
-      switching namespace.
+    description: Fill in your namespace, you can get namespace through the tab of switching namespace.
     acceptFormats:
-    - string
+      - string
     uiOrder: 0
     title: Namespace
     format: string
@@ -99,7 +96,7 @@ $defs:
     description: File contents and metadata from third-part data storage.
     uiOrder: 2
     acceptFormats:
-    - array
+      - array
     items:
       properties:
         id:
@@ -113,8 +110,7 @@ $defs:
           title: Name
           format: string
         content:
-          description: Base64 encoded content of the binary file without the `data:[MIME_TYPE];base64,`
-            prefix.
+          description: Base64 encoded content of the binary file without the `data:[MIME_TYPE];base64,` prefix.
           uiOrder: 2
           title: Content
           format: string
@@ -124,8 +120,7 @@ $defs:
           title: Created time
           format: string
         modified-time:
-          description: 'Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ`.
-            It will be used to check if the file has been updated.'
+          description: 'Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ`. It will be used to check if the file has been updated.'
           uiOrder: 4
           title: Modified time
           format: string
@@ -140,8 +135,7 @@ $defs:
           title: MIME type
           format: string
         md5-checksum:
-          description: MD5 checksum of the file. This reflects every change made to
-            the file on the server, even those not visible to the user.
+          description: MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user.
           uiOrder: 7
           title: MD5 checksum
           format: string
@@ -151,9 +145,8 @@ $defs:
           title: Version
           format: integer
         web-view-link:
-          description: Link for opening the file in a relevant third-party data storage
-            editor or viewer in a browser. It will be used to check the source of
-            the file.
+          description: Link for opening the file in a relevant third-party data storage editor or viewer in a browser. It will be used to check the source
+            of the file.
           uiOrder: 9
           title: Web View Link
           format: string
@@ -163,14 +156,14 @@ $defs:
           title: Web Content Link
           format: string
       required:
-      - id
-      - name
-      - created-time
-      - modified-time
-      - size
-      - mime-type
-      - version
-      - web-view-link
+        - id
+        - name
+        - created-time
+        - modified-time
+        - size
+        - mime-type
+        - version
+        - web-view-link
       title: Third Party File
       format: object
     title: Third Party Files
@@ -182,101 +175,98 @@ TASK_UPLOAD_FILE:
     uiOrder: 0
     properties:
       options:
-        description: Choose to upload the files to existing catalog or create a new
-          catalog.
+        description: Choose to upload the files to existing catalog or create a new catalog.
         title: Options
         additionalProperties: true
         uiOrder: 0
         required:
-        - option
+          - option
         oneOf:
-        - properties:
-            option:
-              const: existing catalog
-              title: Option
-              description: Existing catalog.
-              uiOrder: 0
-              format: string
-            namespace:
-              $ref: '#/$defs/namespace'
-            catalog-id:
-              description: Catalog ID that you input in the Catalog.
-              uiOrder: 1
-              acceptFormats:
-              - string
-              title: Catalog ID
-              format: string
-            file:
-              $ref: '#/$defs/file'
-            file-name:
-              description: Name of the file, including the extension (e.g. `example.pdf`).
-                The length of this field is limited to 100 characters.
-              uiOrder: 2
-              acceptFormats:
-              - string
-              title: File Name
-              format: string
-          required:
-          - option
-          - namespace
-          - catalog-id
-          - file
-          - file-name
-          title: Existing Catalog
-          format: object
-        - properties:
-            option:
-              const: create new catalog
-              title: Option
-              description: Create new catalog.
-              uiOrder: 0
-              format: string
-            namespace:
-              $ref: '#/$defs/namespace'
-            catalog-id:
-              description: Catalog ID for new catalog you want to create.
-              uiOrder: 1
-              acceptFormats:
-              - string
-              title: Catalog ID
-              format: string
-            file:
-              $ref: '#/$defs/file'
-            file-name:
-              description: Name of the file, including the extension (e.g. `example.pdf`).
-                The length of this field is limited to 100 characters.
-              uiOrder: 3
-              acceptFormats:
-              - string
-              title: File Name
-              format: string
-            description:
-              description: Description of the catalog.
-              uiOrder: 4
-              acceptFormats:
-              - string
-              title: Description
-              format: string
-            tags:
-              description: Tags for the catalog.
-              uiOrder: 5
-              acceptFormats:
-              - array
-              items:
+          - properties:
+              option:
+                const: existing catalog
+                title: Option
+                description: Existing catalog.
+                uiOrder: 0
                 format: string
-              title: Tags
-              format: array
-          required:
-          - option
-          - namespace
-          - catalog-id
-          - file
-          - file-name
-          title: Create New Catalog
-          format: object
+              namespace:
+                $ref: '#/$defs/namespace'
+              catalog-id:
+                description: Catalog ID that you input in the Catalog.
+                uiOrder: 1
+                acceptFormats:
+                  - string
+                title: Catalog ID
+                format: string
+              file:
+                $ref: '#/$defs/file'
+              file-name:
+                description: Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.
+                uiOrder: 2
+                acceptFormats:
+                  - string
+                title: File Name
+                format: string
+            required:
+              - option
+              - namespace
+              - catalog-id
+              - file
+              - file-name
+            title: Existing Catalog
+            format: object
+          - properties:
+              option:
+                const: create new catalog
+                title: Option
+                description: Create new catalog.
+                uiOrder: 0
+                format: string
+              namespace:
+                $ref: '#/$defs/namespace'
+              catalog-id:
+                description: Catalog ID for new catalog you want to create.
+                uiOrder: 1
+                acceptFormats:
+                  - string
+                title: Catalog ID
+                format: string
+              file:
+                $ref: '#/$defs/file'
+              file-name:
+                description: Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.
+                uiOrder: 3
+                acceptFormats:
+                  - string
+                title: File Name
+                format: string
+              description:
+                description: Description of the catalog.
+                uiOrder: 4
+                acceptFormats:
+                  - string
+                title: Description
+                format: string
+              tags:
+                description: Tags for the catalog.
+                uiOrder: 5
+                acceptFormats:
+                  - array
+                items:
+                  format: string
+                title: Tags
+                format: array
+            required:
+              - option
+              - namespace
+              - catalog-id
+              - file
+              - file-name
+            title: Create New Catalog
+            format: object
         format: object
     required:
-    - options
+      - options
     title: Input
     format: object
   output:
@@ -288,13 +278,13 @@ TASK_UPLOAD_FILE:
         properties:
           $ref: '#/$defs/file-item/properties'
         required:
-        - file-uid
-        - file-name
-        - file-type
-        - create-time
-        - update-time
-        - size
-        - catalog-id
+          - file-uid
+          - file-name
+          - file-type
+          - create-time
+          - update-time
+          - size
+          - catalog-id
         title: File
         format: object
       status:
@@ -303,8 +293,8 @@ TASK_UPLOAD_FILE:
         title: Status
         format: boolean
     required:
-    - file
-    - status
+      - file
+      - status
     title: Output
     format: object
 TASK_UPLOAD_FILES:
@@ -314,105 +304,102 @@ TASK_UPLOAD_FILES:
     uiOrder: 0
     properties:
       options:
-        description: Choose to upload the files to existing catalog or create a new
-          catalog.
+        description: Choose to upload the files to existing catalog or create a new catalog.
         title: Options
         additionalProperties: true
         uiOrder: 0
         required:
-        - option
+          - option
         oneOf:
-        - properties:
-            option:
-              const: existing catalog
-              title: Option
-              description: Existing catalog.
-              uiOrder: 0
-              format: string
-            namespace:
-              $ref: '#/$defs/namespace'
-            catalog-id:
-              description: Catalog ID that you input in the Catalog.
-              uiOrder: 1
-              acceptFormats:
-              - string
-              title: Catalog ID
-              format: string
-            files:
-              $ref: '#/$defs/files'
-            file-names:
-              description: Name of the file, including the extension (e.g. `example.pdf`).
-                The length of this field is limited to 100 characters.
-              uiOrder: 2
-              acceptFormats:
-              - array
-              items:
+          - properties:
+              option:
+                const: existing catalog
+                title: Option
+                description: Existing catalog.
+                uiOrder: 0
                 format: string
-              title: File Names
-              format: array
-          required:
-          - option
-          - namespace
-          - catalog-id
-          - files
-          - file-names
-          title: Existing Catalog
-          format: object
-        - properties:
-            option:
-              const: create new catalog
-              title: Option
-              description: Create new catalog.
-              uiOrder: 0
-              format: string
-            namespace:
-              $ref: '#/$defs/namespace'
-            catalog-id:
-              description: Catalog ID for new catalog you want to create.
-              uiOrder: 1
-              acceptFormats:
-              - string
-              title: Catalog ID
-              format: string
-            files:
-              $ref: '#/$defs/files'
-            file-names:
-              description: Name of the file, including the extension (e.g. `example.pdf`).
-                The length of this field is limited to 100 characters.
-              uiOrder: 3
-              acceptFormats:
-              - array
-              items:
+              namespace:
+                $ref: '#/$defs/namespace'
+              catalog-id:
+                description: Catalog ID that you input in the Catalog.
+                uiOrder: 1
+                acceptFormats:
+                  - string
+                title: Catalog ID
                 format: string
-              title: File Names
-              format: array
-            description:
-              description: Description of the catalog.
-              uiOrder: 4
-              acceptFormats:
-              - string
-              title: Description
-              format: string
-            tags:
-              description: Tags for the catalog.
-              uiOrder: 5
-              acceptFormats:
-              - array
-              items:
+              files:
+                $ref: '#/$defs/files'
+              file-names:
+                description: Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.
+                uiOrder: 2
+                acceptFormats:
+                  - array
+                items:
+                  format: string
+                title: File Names
+                format: array
+            required:
+              - option
+              - namespace
+              - catalog-id
+              - files
+              - file-names
+            title: Existing Catalog
+            format: object
+          - properties:
+              option:
+                const: create new catalog
+                title: Option
+                description: Create new catalog.
+                uiOrder: 0
                 format: string
-              title: Tags
-              format: array
-          required:
-          - option
-          - namespace
-          - catalog-id
-          - files
-          - file-names
-          title: Create New Catalog
-          format: object
+              namespace:
+                $ref: '#/$defs/namespace'
+              catalog-id:
+                description: Catalog ID for new catalog you want to create.
+                uiOrder: 1
+                acceptFormats:
+                  - string
+                title: Catalog ID
+                format: string
+              files:
+                $ref: '#/$defs/files'
+              file-names:
+                description: Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.
+                uiOrder: 3
+                acceptFormats:
+                  - array
+                items:
+                  format: string
+                title: File Names
+                format: array
+              description:
+                description: Description of the catalog.
+                uiOrder: 4
+                acceptFormats:
+                  - string
+                title: Description
+                format: string
+              tags:
+                description: Tags for the catalog.
+                uiOrder: 5
+                acceptFormats:
+                  - array
+                items:
+                  format: string
+                title: Tags
+                format: array
+            required:
+              - option
+              - namespace
+              - catalog-id
+              - files
+              - file-names
+            title: Create New Catalog
+            format: object
         format: object
     required:
-    - options
+      - options
     title: Input
     format: object
   output:
@@ -426,14 +413,13 @@ TASK_UPLOAD_FILES:
         title: Files
         format: array
       status:
-        description: The status of trigger file processing, if ALL succeeded, return
-          true.
+        description: The status of trigger file processing, if ALL succeeded, return true.
         uiOrder: 1
         title: Status
         format: boolean
     required:
-    - files
-    - status
+      - files
+      - status
     title: Output
     format: object
 TASK_GET_FILES_METADATA:
@@ -447,12 +433,12 @@ TASK_GET_FILES_METADATA:
         description: Catalog ID that you input to search files in the Catalog.
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         title: Catalog ID
         format: string
     required:
-    - namespace
-    - catalog-id
+      - namespace
+      - catalog-id
     title: Input
     format: object
   output:
@@ -467,7 +453,7 @@ TASK_GET_FILES_METADATA:
         title: Files
         format: array
     required:
-    - files
+      - files
     title: Output
     format: object
 TASK_GET_CHUNKS_METADATA:
@@ -481,20 +467,20 @@ TASK_GET_CHUNKS_METADATA:
         description: Catalog ID that you input to search files in the Catalog.
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
         title: Catalog ID
         format: string
       file-uid:
         description: The unique identifier of the file.
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         title: File UID
         format: string
     required:
-    - namespace
-    - catalog-id
-    - file-uid
+      - namespace
+      - catalog-id
+      - file-uid
     title: Input
     format: object
   output:
@@ -542,19 +528,19 @@ TASK_GET_CHUNKS_METADATA:
               title: File UID
               format: string
           required:
-          - chunk-uid
-          - retrievable
-          - start-position
-          - end-position
-          - token-count
-          - create-time
-          - original-file-uid
+            - chunk-uid
+            - retrievable
+            - start-position
+            - end-position
+            - token-count
+            - create-time
+            - original-file-uid
           title: Chunk
           format: object
         title: Chunks
         format: array
     required:
-    - chunks
+      - chunks
     title: Output
     format: object
 TASK_GET_FILE_IN_MARKDOWN:
@@ -568,20 +554,20 @@ TASK_GET_FILE_IN_MARKDOWN:
         description: Catalog ID that you input to search files in the Catalog.
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
         title: Catalog ID
         format: string
       file-uid:
         description: The unique identifier of the file.
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         title: File UID
         format: string
     required:
-    - namespace
-    - catalog-id
-    - file-uid
+      - namespace
+      - catalog-id
+      - file-uid
     title: Input
     format: object
   output:
@@ -609,10 +595,10 @@ TASK_GET_FILE_IN_MARKDOWN:
         title: Update Time
         format: string
     required:
-    - original-file-uid
-    - content
-    - create-time
-    - update-time
+      - original-file-uid
+      - content
+      - create-time
+      - update-time
     title: Output
     format: object
 TASK_RETRIEVE:
@@ -626,29 +612,28 @@ TASK_RETRIEVE:
         description: Catalog ID that you input to search files in the Catalog.
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
         title: Catalog ID
         format: string
       text-prompt:
         description: The prompt string to search the chunks.
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         title: Text Prompt
         format: string
       top-k:
-        description: The number of top chunks to return. The range is from 1~20, and
-          default is 5.
+        description: The number of top chunks to return. The range is from 1~20, and default is 5.
         default: 5
         uiOrder: 2
         acceptFormats:
-        - integer
+          - integer
         title: Top K
         format: integer
     required:
-    - namespace
-    - catalog-id
-    - text-prompt
+      - namespace
+      - catalog-id
+      - text-prompt
     title: Input
     format: object
   output:
@@ -662,7 +647,7 @@ TASK_RETRIEVE:
         title: Chunks
         format: array
     required:
-    - chunks
+      - chunks
     title: Output
     format: object
 TASK_ASK:
@@ -676,29 +661,28 @@ TASK_ASK:
         description: Catalog ID that you input to search files in the Catalog.
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
         title: Catalog ID
         format: string
       question:
         description: The question to reply.
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         title: Question
         format: string
       top-k:
-        description: The number of top answers to return. The range is from 1~20,
-          and default is 5.
+        description: The number of top answers to return. The range is from 1~20, and default is 5.
         default: 5
         uiOrder: 2
         acceptFormats:
-        - integer
+          - integer
         title: Top K
         format: integer
     required:
-    - namespace
-    - catalog-id
-    - question
+      - namespace
+      - catalog-id
+      - question
     title: Input
     format: object
   output:
@@ -717,7 +701,7 @@ TASK_ASK:
         title: Chunks
         format: array
     required:
-    - answer
+      - answer
     title: Output
     format: object
 TASK_MATCH_FILE_STATUS:
@@ -728,24 +712,23 @@ TASK_MATCH_FILE_STATUS:
       namespace:
         $ref: '#/$defs/namespace'
       catalog-id:
-        description: Catalog ID that you input to check files' processing status in
-          the Catalog.
+        description: Catalog ID that you input to check files' processing status in the Catalog.
         uiOrder: 0
         acceptFormats:
-        - string
+          - string
         title: Catalog ID
         format: string
       file-uid:
         description: The unique identifier of the file.
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         title: File UID
         format: string
     required:
-    - namespace
-    - catalog-id
-    - file-uid
+      - namespace
+      - catalog-id
+      - file-uid
     title: Input
     format: object
   output:
@@ -757,58 +740,52 @@ TASK_MATCH_FILE_STATUS:
         title: Status
         format: boolean
     required:
-    - succeeded
+      - succeeded
     title: Output
     format: object
 TASK_SYNC_FILES:
-  shortDescription: This task synchronizes files from third-party storage to Instill
-    Catalog. New files are uploaded, and updated files are overwritten based on third-party
-    metadata. Files added through other channels, like the Artifact API or additional
-    storage services, will not be removed. Currently, only Google Drive is supported
-    as a third-party storage service.
+  shortDescription: This task synchronizes files from third-party storage to Instill Catalog. New files are uploaded, and updated files are overwritten
+    based on third-party metadata. Files added through other channels, like the Artifact API or additional storage services, will not be removed. Currently,
+    only Google Drive is supported as a third-party storage service.
   input:
     uiOrder: 0
     properties:
       namespace:
         $ref: '#/$defs/namespace'
       catalog-id:
-        description: Catalog ID that you input to synchronize files from third-party
-          data storage to catalog.
+        description: Catalog ID that you input to synchronize files from third-party data storage to catalog.
         uiOrder: 1
         acceptFormats:
-        - string
+          - string
         title: Catalog ID
         format: string
       third-party-files:
         $ref: '#/$defs/third-party-files'
     required:
-    - namespace
-    - catalog-id
-    - third-party-files
+      - namespace
+      - catalog-id
+      - third-party-files
     title: Input
     format: object
   output:
     uiOrder: 1
     properties:
       uploaded-files:
-        description: Files metadata in catalog. The metadata here is from Instill
-          Artifact rather than third-party storage.
+        description: Files metadata in catalog. The metadata here is from Instill Artifact rather than third-party storage.
         uiOrder: 0
         items:
           $ref: '#/$defs/file-item'
         title: Uploaded Files
         format: array
       updated_files:
-        description: Files that were updated. The metadata here is from Instill Artifact
-          rather than third-party storage.
+        description: Files that were updated. The metadata here is from Instill Artifact rather than third-party storage.
         uiOrder: 1
         items:
           $ref: '#/$defs/file-item'
         title: Updated Files
         format: array
       failure-files:
-        description: Files that failed to upload or overwrite. The metadata here is
-          from third-party storage.
+        description: Files that failed to upload or overwrite. The metadata here is from third-party storage.
         uiOrder: 2
         items:
           $ref: '#/$defs/third-party-files/items'
@@ -822,8 +799,7 @@ TASK_SYNC_FILES:
         title: Error Messages
         format: array
       status:
-        description: The status of the triggering processing files, if succeeded,
-          return true.
+        description: The status of the triggering processing files, if succeeded, return true.
         uiOrder: 4
         title: Status
         format: boolean

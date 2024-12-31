@@ -3,7 +3,7 @@ properties:
   bot-token:
     description: Token associated to the application bot.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     uiOrder: 0
     title: Bot OAuth Token
@@ -11,24 +11,24 @@ properties:
   user-token:
     description: Token to act on behalf of a Slack user.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     uiOrder: 1
     title: User OAuth Token
     format: string
 required:
-- bot-token
+  - bot-token
 instillOAuthConfig:
   authUrl: https://slack.com/oauth/v2/authorize
   accessUrl: https://slack.com/api/oauth.v2.access
   scopes:
-  - channels:history
-  - channels:read
-  - groups:history
-  - groups:read
-  - chat:write
-  - users:read
-  - users:read.email
-  - users.profile:read
+    - channels:history
+    - channels:read
+    - groups:history
+    - groups:read
+    - chat:write
+    - users:read
+    - users:read.email
+    - users.profile:read
 title: Slack Connection
 format: object

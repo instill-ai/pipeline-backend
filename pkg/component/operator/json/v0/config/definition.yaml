@@ -1,8 +1,8 @@
 availableTasks:
-- TASK_MARSHAL
-- TASK_UNMARSHAL
-- TASK_JQ
-- TASK_RENAME_FIELDS
+  - TASK_MARSHAL
+  - TASK_UNMARSHAL
+  - TASK_JQ
+  - TASK_RENAME_FIELDS
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/operator/json
 icon: assets/json.svg

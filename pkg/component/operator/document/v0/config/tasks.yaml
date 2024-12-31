@@ -12,33 +12,29 @@ TASK_CONVERT_TO_MARKDOWN:
     uiOrder: 0
     properties:
       document:
-        description: Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML/XLSX/XLS/CSV to be
-          converted to text in Markdown format.
+        description: Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML/XLSX/XLS/CSV to be converted to text in Markdown format.
         acceptFormats:
-        - '*/*'
+          - '*/*'
         uiOrder: 0
         title: Document
         format: string
       filename:
-        description: The name of the file, please remember to add the file extension
-          in the end of file name. e.g. 'example.pdf'.
+        description: The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Filename
         format: string
       display-image-tag:
         default: false
-        description: Whether to display image tag in the markdown text. Default is
-          'false'. It is only applicable for convert-2024-08-28 converter. And, it
-          is only applicable for the type of PPTX/PPT/DOCX/DOC/PDF.
+        description: Whether to display image tag in the markdown text. Default is 'false'. It is only applicable for convert-2024-08-28 converter. And,
+          it is only applicable for the type of PPTX/PPT/DOCX/DOC/PDF.
         uiOrder: 2
         title: Display Image Tag
         format: boolean
       display-all-page-image:
         default: false
-        description: Whether to respond the whole page as the images if we detect
-          there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF.
+        description: Whether to respond the whole page as the images if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF.
         uiOrder: 3
         title: Display All Page Image
         format: boolean
@@ -46,7 +42,7 @@ TASK_CONVERT_TO_MARKDOWN:
         $ref: '#/$defs/resolution'
         uiOrder: 4
     required:
-    - document
+      - document
     title: Input
     format: object
   output:
@@ -76,8 +72,7 @@ TASK_CONVERT_TO_MARKDOWN:
         title: Error
         format: string
       all-page-images:
-        description: The image contains all the pages in the document if we detect
-          there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF.
+        description: The image contains all the pages in the document if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF.
         uiOrder: 4
         items:
           format: string
@@ -91,7 +86,7 @@ TASK_CONVERT_TO_MARKDOWN:
         title: Markdowns
         format: array
     required:
-    - body
+      - body
     title: Output
     format: object
 TASK_CONVERT_TO_TEXT:
@@ -101,23 +96,21 @@ TASK_CONVERT_TO_TEXT:
     uiOrder: 0
     properties:
       document:
-        description: Base64 encoded PDF/DOC/DOCX/XML/HTML/RTF/MD/PPTX/ODT/TIF/CSV/TXT/PNG
-          document to be converted to plain text.
+        description: Base64 encoded PDF/DOC/DOCX/XML/HTML/RTF/MD/PPTX/ODT/TIF/CSV/TXT/PNG document to be converted to plain text.
         acceptFormats:
-        - '*/*'
+          - '*/*'
         uiOrder: 0
         title: Document
         format: string
       filename:
-        description: The name of the file, please remember to add the file extension
-          in the end of file name. e.g. 'example.pdf'.
+        description: The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Filename
         format: string
     required:
-    - document
+      - document
     title: Input
     format: object
   output:
@@ -151,10 +144,10 @@ TASK_CONVERT_TO_TEXT:
         title: Filename
         format: string
     required:
-    - body
-    - meta
-    - msecs
-    - error
+      - body
+      - meta
+      - msecs
+      - error
     title: Output
     format: object
 TASK_CONVERT_TO_IMAGES:
@@ -166,15 +159,14 @@ TASK_CONVERT_TO_IMAGES:
       document:
         description: Base64 encoded PDF/DOCX/DOC/PPT/PPTX to be converted to images.
         acceptFormats:
-        - '*/*'
+          - '*/*'
         uiOrder: 0
         title: PDF
         format: string
       filename:
-        description: The name of the file, please remember to add the file extension
-          in the end of file name. e.g. 'example.pdf'.
+        description: The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: Filename
         format: string
@@ -182,7 +174,7 @@ TASK_CONVERT_TO_IMAGES:
         $ref: '#/$defs/resolution'
         uiOrder: 4
     required:
-    - document
+      - document
     title: Input
     format: object
   output:
@@ -197,14 +189,13 @@ TASK_CONVERT_TO_IMAGES:
         title: Images
         format: array
       filenames:
-        description: The filenames of the images. The filenames will be appended with
-          the page number. e.g. 'example-1.jpg'.
+        description: The filenames of the images. The filenames will be appended with the page number. e.g. 'example-1.jpg'.
         uiOrder: 1
         items:
           format: string
         title: Filenames
         format: array
     required:
-    - images
+      - images
     title: Output
     format: object

@@ -1,5 +1,5 @@
 availableTasks:
-- TASK_TEXT_GENERATION_CHAT
+  - TASK_TEXT_GENERATION_CHAT
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/ai/anthropic
 icon: assets/anthropic.svg

@@ -1,10 +1,9 @@
 additionalProperties: false
 properties:
   api-key:
-    description: Fill in your Anthropic API key. To find your keys, visit the Anthropic
-      console page.
+    description: Fill in your Anthropic API key. To find your keys, visit the Anthropic console page.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     instillCredential: true
     uiOrder: 0

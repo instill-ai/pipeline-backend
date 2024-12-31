@@ -4,18 +4,17 @@ TASK_VECTOR_SEARCH:
     uiOrder: 0
     properties:
       collection-name:
-        description: The name of the collection to perform vector similarity search
-          on.
+        description: The name of the collection to perform vector similarity search on.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       vector:
         description: An array of dimensions for the vector query.
         acceptFormats:
-        - array
-        - array
+          - array
+          - array
         uiOrder: 1
         items:
           description: A dimension of the vector.
@@ -27,16 +26,15 @@ TASK_VECTOR_SEARCH:
       limit:
         description: The limit of points, empty for all points.
         acceptFormats:
-        - integer
+          - integer
         shortDescription: Limit Rows
         uiOrder: 2
         title: Limit
         format: integer
       payloads:
-        description: The payloads to return in the points. If empty then all payloads
-          will be returned.
+        description: The payloads to return in the points. If empty then all payloads will be returned.
         acceptFormats:
-        - array
+          - array
         shortDescription: Payloads to be returned, empty for all payloads
         uiOrder: 3
         title: Payloads
@@ -46,21 +44,19 @@ TASK_VECTOR_SEARCH:
           format: string
         format: array
       filter:
-        description: The properties filter to be applied to the data with Qdrant filter,
-          please refer to [filter section](https://api.qdrant.tech/api-reference/search/points).
+        description: The properties filter to be applied to the data with Qdrant filter, please refer to [filter section](https://api.qdrant.tech/api-reference/search/points).
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 4
         title: Filter
         required: []
         format: object
       params:
-        description: The additional parameters to be passed to the search, please
-          refer to [params section](https://api.qdrant.tech/api-reference/search/points).
+        description: The additional parameters to be passed to the search, please refer to [params section](https://api.qdrant.tech/api-reference/search/points).
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 5
         title: Params
         required: []
@@ -68,14 +64,14 @@ TASK_VECTOR_SEARCH:
       min-score:
         description: The minimum score of the points to be returned.
         acceptFormats:
-        - number
+          - number
         uiOrder: 6
         title: Min Score
         format: number
     required:
-    - collection-name
-    - vector
-    - limit
+      - collection-name
+      - vector
+      - limit
     title: Input
     format: object
   output:
@@ -138,8 +134,8 @@ TASK_VECTOR_SEARCH:
         required: []
         format: object
     required:
-    - status
-    - result
+      - status
+      - result
     title: Output
     format: object
 TASK_BATCH_UPSERT:
@@ -150,14 +146,14 @@ TASK_BATCH_UPSERT:
       collection-name:
         description: The name of the collection to upsert the point into.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       array-id:
         description: The array of id.
         acceptFormats:
-        - array
+          - array
         uiOrder: 1
         items:
           description: An id of the point.
@@ -169,10 +165,10 @@ TASK_BATCH_UPSERT:
       array-metadata:
         description: The array of vector metadata payload.
         acceptFormats:
-        - array
-        - array
-        - array
-        - array
+          - array
+          - array
+          - array
+          - array
         uiOrder: 2
         minItems: 1
         title: Array Metadata
@@ -185,13 +181,13 @@ TASK_BATCH_UPSERT:
       array-vector:
         description: The array of vector values.
         acceptFormats:
-        - array
+          - array
         uiOrder: 3
         items:
           description: An array of dimensions for the vector value.
           acceptFormats:
-          - array
-          - array
+            - array
+            - array
           items:
             description: A dimension of the vector.
             example: 0.8167237
@@ -203,19 +199,19 @@ TASK_BATCH_UPSERT:
       ordering:
         description: The ordering guarantees of the batch upsert.
         acceptFormats:
-        - string
+          - string
         default: weak
         uiOrder: 4
         title: Ordering
         enum:
-        - weak
-        - medium
-        - strong
+          - weak
+          - medium
+          - strong
         format: string
     required:
-    - collection-name
-    - array-id
-    - array-vector
+      - collection-name
+      - array-id
+      - array-vector
     title: Input
     format: object
   output:
@@ -227,7 +223,7 @@ TASK_BATCH_UPSERT:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_UPSERT:
@@ -238,22 +234,22 @@ TASK_UPSERT:
       collection-name:
         description: The name of the collection to upsert the point into.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       id:
         description: The ID of the point.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: ID
         format: string
       metadata:
         description: The vector metadata payload.
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 2
         title: Metadata
         required: []
@@ -261,8 +257,8 @@ TASK_UPSERT:
       vector:
         description: An array of dimensions for the vector value.
         acceptFormats:
-        - array
-        - array
+          - array
+          - array
         uiOrder: 3
         items:
           description: A dimension of the vector.
@@ -274,19 +270,19 @@ TASK_UPSERT:
       ordering:
         description: The ordering guarantees of the batch upsert.
         acceptFormats:
-        - string
+          - string
         default: weak
         uiOrder: 4
         title: Ordering
         enum:
-        - weak
-        - medium
-        - strong
+          - weak
+          - medium
+          - strong
         format: string
     required:
-    - collection-name
-    - id
-    - vector
+      - collection-name
+      - id
+      - vector
     title: Input
     format: object
   output:
@@ -298,7 +294,7 @@ TASK_UPSERT:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_DELETE:
@@ -309,23 +305,22 @@ TASK_DELETE:
       collection-name:
         description: The name of the collection to delete the object from.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       id:
         description: The ID of the point.
         acceptFormats:
-        - string
+          - string
         uiOrder: 1
         title: ID
         format: string
       filter:
-        description: The properties filter to be applied to the data with Qdrant filter,
-          please refer to [filter section](https://api.qdrant.tech/api-reference/points/delete-points).
+        description: The properties filter to be applied to the data with Qdrant filter, please refer to [filter section](https://api.qdrant.tech/api-reference/points/delete-points).
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 2
         title: Filter
         required: []
@@ -333,17 +328,17 @@ TASK_DELETE:
       ordering:
         description: The ordering guarantees of the batch upsert.
         acceptFormats:
-        - string
+          - string
         default: weak
         uiOrder: 3
         title: Ordering
         enum:
-        - weak
-        - medium
-        - strong
+          - weak
+          - medium
+          - strong
         format: string
     required:
-    - collection-name
+      - collection-name
     title: Input
     format: object
   output:
@@ -355,7 +350,7 @@ TASK_DELETE:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_CREATE_COLLECTION:
@@ -366,22 +361,22 @@ TASK_CREATE_COLLECTION:
       collection-name:
         description: The name of the collection to create.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
       config:
         description: The configuration of the collection. Please refer to [here](https://api.qdrant.tech/api-reference/collections/create-collection).
         acceptFormats:
-        - json
-        - object
+          - json
+          - object
         uiOrder: 1
         title: Config
         required: []
         format: object
     required:
-    - collection-name
-    - config
+      - collection-name
+      - config
     title: Input
     format: object
   output:
@@ -393,7 +388,7 @@ TASK_CREATE_COLLECTION:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object
 TASK_DELETE_COLLECTION:
@@ -404,12 +399,12 @@ TASK_DELETE_COLLECTION:
       collection-name:
         description: The name of the collection to delete.
         acceptFormats:
-        - string
+          - string
         uiOrder: 0
         title: Collection Name
         format: string
     required:
-    - collection-name
+      - collection-name
     title: Input
     format: object
   output:
@@ -421,6 +416,6 @@ TASK_DELETE_COLLECTION:
         title: Status
         format: string
     required:
-    - status
+      - status
     title: Output
     format: object

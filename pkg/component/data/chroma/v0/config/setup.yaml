@@ -3,7 +3,7 @@ properties:
   api-key:
     description: Fill in your Chroma API key.
     acceptFormats:
-    - string
+      - string
     instillSecret: true
     uiOrder: 0
     title: API Key
@@ -11,13 +11,13 @@ properties:
   url:
     description: Fill in your Chroma hosted public URL endpoint with port, e.g http://1.2.3:8000.
     acceptFormats:
-    - string
+      - string
     instillSecret: false
     uiOrder: 1
     title: Chroma URL Endpoint
     format: string
 required:
-- api-key
-- url
+  - api-key
+  - url
 title: Chroma Connection
 format: object

@@ -1,5 +1,5 @@
 availableTasks:
-- TASK_CHUNK_TEXT
+  - TASK_CHUNK_TEXT
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/operator/text
 icon: assets/text.svg

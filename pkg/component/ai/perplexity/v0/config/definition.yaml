@@ -1,5 +1,5 @@
 availableTasks:
-- TASK_CHAT
+  - TASK_CHAT
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/ai/perplexity
 icon: assets/perplexity.svg

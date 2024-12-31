@@ -1,8 +1,8 @@
 availableTasks:
-- TASK_QUERY
-- TASK_UPSERT
-- TASK_BATCH_UPSERT
-- TASK_RERANK
+  - TASK_QUERY
+  - TASK_UPSERT
+  - TASK_BATCH_UPSERT
+  - TASK_RERANK
 custom: false
 documentationUrl: https://www.instill.tech/docs/component/data/pinecone
 icon: assets/pinecone.svg
