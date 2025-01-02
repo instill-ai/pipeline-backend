@@ -18,7 +18,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 			input: createReviewCommentInput{
 				RepoInfo: RepoInfo{
 					Owner:      "test_owner",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				PRNumber: 1,
 				Comment: PullRequestComment{
@@ -51,7 +51,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 			input: createReviewCommentInput{
 				RepoInfo: RepoInfo{
 					Owner:      "test_owner",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				PRNumber: 1,
 				Comment: PullRequestComment{
@@ -83,7 +83,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 			input: createReviewCommentInput{
 				RepoInfo: RepoInfo{
 					Owner:      "rate_limit",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				PRNumber: 1,
 				Comment: PullRequestComment{
@@ -103,7 +103,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 			input: createReviewCommentInput{
 				RepoInfo: RepoInfo{
 					Owner:      "not_found",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				PRNumber: 1,
 				Comment: PullRequestComment{
@@ -123,7 +123,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 			input: createReviewCommentInput{
 				RepoInfo: RepoInfo{
 					Owner:      "unprocessable_entity",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				PRNumber: 1,
 				Comment: PullRequestComment{
@@ -143,7 +143,7 @@ func TestComponent_CreateReviewCommentTask(t *testing.T) {
 			input: createReviewCommentInput{
 				RepoInfo: RepoInfo{
 					Owner:      "test_owner",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				PRNumber: 1,
 				Comment: PullRequestComment{

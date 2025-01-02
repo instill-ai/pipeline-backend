@@ -2,7 +2,6 @@ package github
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/google/go-github/v62/github"
@@ -31,7 +30,7 @@ func (client *Client) listPullRequests(ctx context.Context, job *base.Job) error
 			PerPage: min(input.PerPage, 100), // GitHub API only allows 100 per page
 		},
 	}
-	prs, _, err := client.PullRequests.List(ctx, owner, repository, opts)
+	prs, resp, err := client.PullRequests.List(ctx, owner, repository, opts)
 	if err != nil {
 		return addErrMsgToClientError(err)
 	}
@@ -45,6 +44,7 @@ func (client *Client) listPullRequests(ctx context.Context, job *base.Job) error
 
 	output := listPullRequestsOutput{
 		PullRequests: PullRequests,
+		Response:     client.extractResponse(resp),
 	}
 	if err := job.Output.WriteData(ctx, output); err != nil {
 		return err

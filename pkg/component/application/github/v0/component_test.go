@@ -16,9 +16,11 @@ const (
 )
 
 var MockGithubClient = &Client{
-	Repositories: &MockRepositoriesService{},
-	PullRequests: &MockPullRequestService{},
-	Issues:       &MockIssuesService{},
+	Repositories:  &MockRepositoriesService{},
+	PullRequests:  &MockPullRequestsService{},
+	Issues:        &MockIssuesService{},
+	Users:         &MockUsersService{},
+	Organizations: &MockOrganizationsService{},
 }
 
 type TaskCase[inType any, outType any] struct {

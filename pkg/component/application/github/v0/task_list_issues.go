@@ -15,6 +15,7 @@ func (client *Client) listIssues(ctx context.Context, job *base.Job) error {
 	if err := job.Input.ReadData(ctx, &input); err != nil {
 		return fmt.Errorf("reading input data: %w", err)
 	}
+
 	owner, repository, err := parseTargetRepo(input)
 	if err != nil {
 		return err
@@ -42,7 +43,7 @@ func (client *Client) listIssues(ctx context.Context, job *base.Job) error {
 		opts.Mentioned = ""
 	}
 
-	issues, _, err := client.Issues.ListByRepo(ctx, owner, repository, opts)
+	issues, resp, err := client.Issues.ListByRepo(ctx, owner, repository, opts)
 	if err != nil {
 		return addErrMsgToClientError(err)
 	}
@@ -56,8 +57,11 @@ func (client *Client) listIssues(ctx context.Context, job *base.Job) error {
 	if input.NoPullRequest {
 		issueList = filterOutPullRequests(issueList)
 	}
-	var output listIssuesOutput
-	output.Issues = issueList
+
+	output := listIssuesOutput{
+		Issues:   issueList,
+		Response: client.extractResponse(resp),
+	}
 	if err := job.Output.WriteData(ctx, output); err != nil {
 		return err
 	}

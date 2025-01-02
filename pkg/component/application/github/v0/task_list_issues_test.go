@@ -13,11 +13,11 @@ func TestComponent_ListIssuesTask(t *testing.T) {
 	testCases := []TaskCase[listIssuesInput, listIssuesOutput]{
 		{
 			_type: "ok",
-			name:  "get all issues",
+			name:  "list all issues",
 			input: listIssuesInput{
 				RepoInfo: RepoInfo{
-					Owner:      "test_owner",
-					Repository: "test_repo",
+					Owner:      "non-paginated",
+					Repository: "test-repo",
 				},
 				State:         "open",
 				Direction:     "asc",
@@ -37,6 +37,107 @@ func TestComponent_ListIssuesTask(t *testing.T) {
 						Labels:    []string{"label1", "label2"},
 					},
 				},
+				Response: &Response{},
+			},
+		},
+		{
+			_type: "ok",
+			name:  "paginated issues",
+			input: listIssuesInput{
+				PageOptions: PageOptions{
+					Page:    2,
+					PerPage: 2,
+				},
+				RepoInfo: RepoInfo{
+					Owner:      "paginated",
+					Repository: "test-repo",
+				},
+				State:     "open",
+				Direction: "asc",
+				Sort:      "created",
+				Since:     "2021-01-01",
+			},
+			wantOutput: listIssuesOutput{
+				Issues: []Issue{
+					{
+						Number:    3,
+						Title:     "This is a fake Issue #3",
+						State:     "open",
+						Body:      "Issue Body #3",
+						Assignee:  "assignee3",
+						Assignees: []string{"assignee3_1", "assignee3_2"},
+						Labels:    []string{"label3_1", "label3_2"},
+					},
+					{
+						Number:    4,
+						Title:     "This is a fake Issue #4",
+						State:     "open",
+						Body:      "Issue Body #4",
+						Assignee:  "assignee4",
+						Assignees: []string{"assignee4_1", "assignee4_2"},
+						Labels:    []string{"label4_1", "label4_2"},
+					},
+				},
+				Response: &Response{
+					NextPage:      3,
+					PrevPage:      1,
+					FirstPage:     1,
+					LastPage:      5,
+					NextPageToken: "page_3",
+					Cursor:        "cursor_2",
+					Before:        "before_2",
+					After:         "after_2",
+				},
+			},
+		},
+		{
+			_type: "ok",
+			name:  "paginated issues last page",
+			input: listIssuesInput{
+				PageOptions: PageOptions{
+					Page:    5,
+					PerPage: 2,
+				},
+				RepoInfo: RepoInfo{
+					Owner:      "paginated",
+					Repository: "test-repo",
+				},
+				State:     "open",
+				Direction: "asc",
+				Sort:      "created",
+				Since:     "2021-01-01",
+			},
+			wantOutput: listIssuesOutput{
+				Issues: []Issue{
+					{
+						Number:    9,
+						Title:     "This is a fake Issue #9",
+						State:     "open",
+						Body:      "Issue Body #9",
+						Assignee:  "assignee9",
+						Assignees: []string{"assignee9_1", "assignee9_2"},
+						Labels:    []string{"label9_1", "label9_2"},
+					},
+					{
+						Number:    10,
+						Title:     "This is a fake Issue #10",
+						State:     "open",
+						Body:      "Issue Body #10",
+						Assignee:  "assignee10",
+						Assignees: []string{"assignee10_1", "assignee10_2"},
+						Labels:    []string{"label10_1", "label10_2"},
+					},
+				},
+				Response: &Response{
+					NextPage:      0,
+					PrevPage:      4,
+					FirstPage:     1,
+					LastPage:      5,
+					NextPageToken: "",
+					Cursor:        "cursor_5",
+					Before:        "before_5",
+					After:         "after_5",
+				},
 			},
 		},
 		{
@@ -45,7 +146,7 @@ func TestComponent_ListIssuesTask(t *testing.T) {
 			input: listIssuesInput{
 				RepoInfo: RepoInfo{
 					Owner:      "rate_limit",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				State:         "open",
 				Direction:     "asc",
@@ -61,7 +162,7 @@ func TestComponent_ListIssuesTask(t *testing.T) {
 			input: listIssuesInput{
 				RepoInfo: RepoInfo{
 					Owner:      "not_found",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				State:         "open",
 				Direction:     "asc",
@@ -77,7 +178,7 @@ func TestComponent_ListIssuesTask(t *testing.T) {
 			input: listIssuesInput{
 				RepoInfo: RepoInfo{
 					Owner:      "not_found",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				State:         "open",
 				Direction:     "asc",

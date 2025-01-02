@@ -17,7 +17,7 @@ func TestComponent_GetIssueTask(t *testing.T) {
 			input: getIssueInput{
 				RepoInfo: RepoInfo{
 					Owner:      "test_owner",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				IssueNumber: 1,
 			},
@@ -40,7 +40,7 @@ func TestComponent_GetIssueTask(t *testing.T) {
 			input: getIssueInput{
 				RepoInfo: RepoInfo{
 					Owner:      "rate_limit",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				IssueNumber: 1,
 			},
@@ -52,7 +52,7 @@ func TestComponent_GetIssueTask(t *testing.T) {
 			input: getIssueInput{
 				RepoInfo: RepoInfo{
 					Owner:      "not_found",
-					Repository: "test_repo",
+					Repository: "test-repo",
 				},
 				IssueNumber: 1,
 			},
