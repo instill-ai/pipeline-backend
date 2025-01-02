@@ -40,7 +40,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | API Key | `api-key` | string | Fill in your OpenAI API key. To find your keys, visit your OpenAI's API Keys page.  |
 | Organization ID | `organization` | string | Specify which organization is used for the requests. Usage will count against the specified organization's subscription quota.  |
@@ -59,7 +59,7 @@ OpenAI's text generation models (often called generative pre-trained transformer
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION` |
 | Model (required) | `model` | string | ID of the model to use. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`o1-preview`</li><li>`o1-mini`</li><li>`gpt-4o-mini`</li><li>`gpt-4o`</li><li>`gpt-4o-2024-05-13`</li><li>`gpt-4o-2024-08-06`</li><li>`gpt-4-turbo`</li><li>`gpt-4-turbo-2024-04-09`</li><li>`gpt-4-0125-preview`</li><li>`gpt-4-turbo-preview`</li><li>`gpt-4-1106-preview`</li><li>`gpt-4-vision-preview`</li><li>`gpt-4`</li><li>`gpt-4-0314`</li><li>`gpt-4-0613`</li><li>`gpt-4-32k`</li><li>`gpt-4-32k-0314`</li><li>`gpt-4-32k-0613`</li><li>`gpt-3.5-turbo`</li><li>`gpt-3.5-turbo-16k`</li><li>`gpt-3.5-turbo-0301`</li><li>`gpt-3.5-turbo-0613`</li><li>`gpt-3.5-turbo-1106`</li><li>`gpt-3.5-turbo-0125`</li><li>`gpt-3.5-turbo-16k-0613`</li></ul></details>  |
@@ -70,7 +70,7 @@ OpenAI's text generation models (often called generative pre-trained transformer
 | Temperature | `temperature` | number | What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.  We generally recommend altering this or `top-p` but not both. . |
 | N | `n` | integer | How many chat completion choices to generate for each input message. Note that you will be charged based on the number of generated tokens across all of the choices. Keep `n` as `1` to minimize costs. |
 | Max Tokens | `max-tokens` | integer | The maximum number of tokens that can be generated in the chat completion.  The total length of input tokens and generated tokens is limited by the model's context length. |
-| [Response Format](#text-generation-response-format) | `response-format` | object | Response format. |
+| [Response Format](#text-generation-response-format) | `response-type` | object | Response format. |
 | Top P | `top-p` | number | An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.  We generally recommend altering this or `temperature` but not both. . |
 | Presence Penalty | `presence-penalty` | number | Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics. |
 | Frequency Penalty | `frequency-penalty` | number | Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim. |
@@ -86,7 +86,7 @@ Incorporate external chat history, specifically previous messages within the con
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Content](#text-generation-content) | `content` | array | The message content.  |
 | Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
@@ -97,7 +97,7 @@ The message content.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Image URL](#text-generation-image-url) | `image-url` | object | The image URL  |
 | Text | `text` | string | The text content.  |
@@ -109,24 +109,24 @@ The image URL
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
 </div>
 </details>
 
 <details>
-<summary>The <code>response-format</code> Object </summary>
+<summary>The <code>response-type</code> Object </summary>
 
-<h4 id="text-generation-response-format">Response Format</h4>
+<h4 id="text-generation-response-type">Response Type</h4>
 
-`response-format` must fulfill one of the following schemas:
+`response-type` must fulfill one of the following schemas:
 
 <h5 id="text-generation-text"><code>Text</code></h5>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Type | `type` | string |  Must be `"text"`   |
 </div>
@@ -135,7 +135,7 @@ The image URL
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Type | `type` | string |  Must be `"json_object"`   |
 </div>
@@ -144,7 +144,7 @@ The image URL
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | JSON Schema | `json-schema` | string |  Set up the schema of the structured output.  |
 | Type | `type` | string |  Must be `"json_schema"`   |
@@ -153,7 +153,7 @@ The image URL
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Texts | `texts` | array[string] | Texts. |
 | [Usage](#text-generation-usage) (optional) | `usage` | object | Usage statistics related to the query. |
@@ -166,7 +166,7 @@ The image URL
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Completion tokens | `completion-tokens` | integer | Total number of tokens used (completion). |
 | Prompt tokens | `prompt-tokens` | integer | Total number of tokens used (prompt). |
@@ -181,7 +181,7 @@ Turn text into numbers, unlocking use cases like search.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
 | Model (required) | `model` | string | ID of the model to use. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text-embedding-ada-002`</li><li>`text-embedding-3-small`</li><li>`text-embedding-3-large`</li></ul></details>  |
@@ -196,7 +196,7 @@ Turn text into numbers, unlocking use cases like search.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Embedding | `embedding` | array[number] | Embedding of the input text. |
 </div>
@@ -208,11 +208,11 @@ Turn audio into text.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SPEECH_RECOGNITION` |
 | Model (required) | `model` | string | ID of the model to use. Only `whisper-1` is currently available. . <br/><details><summary><strong>Enum values</strong></summary><ul><li>`whisper-1`</li></ul></details>  |
-| Audio (required) | `audio` | string | The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm. . |
+| Audio (required) | `audio` | audio/* | The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm. . |
 | Prompt | `prompt` | string | An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language. . |
 | Language | `language` | string | The language of the input audio. Supplying the input language in <a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO-639-1</a> format will improve accuracy and latency. . |
 | Temperature | `temperature` | number | The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. If set to 0, the model will use <a href="https://en.wikipedia.org/wiki/Log_probability">log probability</a> to automatically increase the temperature until certain thresholds are hit. . |
@@ -225,7 +225,7 @@ Turn audio into text.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Text | `text` | string | Generated text. |
 </div>
@@ -237,13 +237,13 @@ Turn text into lifelike spoken audio
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_TO_SPEECH` |
 | Model (required) | `model` | string | One of the available TTS models: `tts-1` or `tts-1-hd` . <br/><details><summary><strong>Enum values</strong></summary><ul><li>`tts-1`</li><li>`tts-1-hd`</li></ul></details>  |
 | Text (required) | `text` | string | The text to generate audio for. The maximum length is 4096 characters. |
 | Voice (required) | `voice` | string | The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`alloy`</li><li>`echo`</li><li>`fable`</li><li>`onyx`</li><li>`nova`</li><li>`shimmer`</li></ul></details>  |
-| Response Format | `response-format` | string | The format to audio in. Supported formats are `mp3`, `opus`, `aac`, and `flac`. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`mp3`</li><li>`opus`</li><li>`aac`</li><li>`flac`</li></ul></details>  |
+| Response Format | `response-type` | string | The format to audio in. Supported formats are `mp3`, `opus`, `aac`, and `flac`. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`mp3`</li><li>`opus`</li><li>`aac`</li><li>`flac`</li></ul></details>  |
 | Speed | `speed` | number | The speed of the generated audio. Select a value from `0.25` to `4.0`. `1.0` is the default. |
 </div>
 
@@ -254,7 +254,7 @@ Turn text into lifelike spoken audio
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Audio (optional) | `audio` | audio/wav | AI generated audio. |
 </div>
@@ -266,7 +266,7 @@ Generate or manipulate images with DALL·E.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_TO_IMAGE` |
 | Model (required) | `model` | string | The model to use for image generation. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`dall-e-2`</li><li>`dall-e-3`</li></ul></details>  |
@@ -284,7 +284,7 @@ Generate or manipulate images with DALL·E.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Images](#text-to-image-images) | `results` | array[object] | Generated results. |
 </div>
@@ -296,7 +296,7 @@ Generate or manipulate images with DALL·E.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Generated Image | `image` | image/webp | Generated image. |
 | Revised Prompt | `revised-prompt` | string | Revised prompt. |
@@ -363,17 +363,17 @@ variable:
   colour:
     title: Colour
     description: Describe the main colour to use i.e. blue, random
-    format: string
+    type: string
     instill-ui-order: 1
   period:
     title: Period
     description: |
       Input different Picasso periods i.e. Blue, Rose, African, Synthetic Cubism, etc.
-    format: string
+    type: string
   prompt:
     title: Prompt
     description: Input prompt here i.e. "A cute baby wombat"
-    format: string
+    type: string
 output:
   image:
     title: Image
@@ -405,11 +405,11 @@ variable:
   language:
     title: Language
     description: Input a language i.e. Chinese, Japanese, French, etc.
-    format: string
+    type: string
   prompt:
     title: Prompt
     description: Write the topic you want to ask about here i.e. "Tell me about small LLMs"
-    format: string
+    type: string
 output:
   result:
     title: Result

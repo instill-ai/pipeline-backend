@@ -1,46 +1,34 @@
 $defs:
   search-subject:
     description: Search for emails with a specific subject.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 4
     title: Search Subject
-    format: string
   search-from:
     description: Search for emails from a specific email address.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 2
     title: Search From
-    format: string
   search-to:
     description: Search for emails to a specific email address.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 3
     title: Search To
-    format: string
   limit:
     description: The maximum number of emails to search for.
-    acceptFormats:
-      - integer
+    type: integer
     uiOrder: 5
     title: Limit
-    format: integer
   date:
     description: Search for emails with the date the email was sent.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 6
     title: Search Date
-    format: string
   search-email-message:
     description: Search for emails with a specific message.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 7
     title: Search Message
-    format: string
 TASK_SEND_EMAIL:
   shortDescription: Send an email to recipients
   input:
@@ -49,50 +37,40 @@ TASK_SEND_EMAIL:
     properties:
       recipients:
         description: The email addresses of the recipients.
-        acceptFormats:
-          - array
+        type: array
         items:
-          format: string
+          type: string
         uiOrder: 2
         title: Recipient
-        format: array
       cc:
         description: The email addresses for Carbon Copy.
-        acceptFormats:
-          - array
+        type: array
         items:
-          format: string
+          type: string
         uiOrder: 3
         title: Cc
-        format: array
       bcc:
         description: The email addresses for Blind Carbon Copy.
-        acceptFormats:
-          - array
+        type: array
         items:
-          format: string
+          type: string
         uiOrder: 4
         title: Bcc
-        format: array
       subject:
         description: The subject of the email.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 5
         title: Subject
-        format: string
       message:
         description: The message to be sent.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 6
         title: Message
-        format: string
     required:
       - recipients
       - message
     title: Input
-    format: object
+    type: object
   output:
     description: The result of sending the email.
     uiOrder: 0
@@ -101,11 +79,11 @@ TASK_SEND_EMAIL:
         description: The result of sending the email.
         uiOrder: 0
         title: Result
-        format: string
+        type: string
     required:
       - result
     title: Output
-    format: object
+    type: object
 TASK_READ_EMAILS:
   shortDescription: Read emails from a mailbox
   input:
@@ -118,11 +96,9 @@ TASK_READ_EMAILS:
         properties:
           mailbox:
             description: The mailbox to search for emails.
-            acceptFormats:
-              - string
+            type: string
             uiOrder: 1
             title: Mailbox
-            format: string
           search-subject:
             $ref: '#/$defs/search-subject'
           search-from:
@@ -138,10 +114,10 @@ TASK_READ_EMAILS:
         required:
           - mailbox
         title: Search
-        format: object
+        type: object
     required: []
     title: Input
-    format: object
+    type: object
   output:
     description: The emails that match the search criteria.
     uiOrder: 0
@@ -155,35 +131,35 @@ TASK_READ_EMAILS:
               description: The date the email was sent.
               uiOrder: 0
               title: Date
-              format: string
+              type: string
             from:
               description: The email address of the sender.
               uiOrder: 1
               title: From
-              format: string
+              type: string
             to:
               description: The email addresses of the recipient.
               uiOrder: 2
               items:
                 description: The email address of the recipient.
-                format: string
+                type: string
               title: To
-              format: array
+              type: array
             subject:
               description: The subject of the email.
               uiOrder: 3
               title: Subject
-              format: string
+              type: string
             message:
               description: The message of the email.
               uiOrder: 4
               title: Message
-              format: string
+              type: string
           required: []
-          format: object
+          type: object
         title: Emails
-        format: array
+        type: array
     required:
       - emails
     title: Output
-    format: object
+    type: object

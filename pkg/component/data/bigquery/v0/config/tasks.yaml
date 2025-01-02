@@ -10,10 +10,10 @@ TASK_INSERT:
         uiOrder: 0
         required: []
         title: Data
-        format: object
+        type: object
     required: []
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -21,11 +21,11 @@ TASK_INSERT:
         description: Status of the upload operation.
         uiOrder: 0
         title: Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object
 TASK_READ:
   shortDescription: Read data from BigQuery.
   input:
@@ -37,10 +37,10 @@ TASK_READ:
         uiOrder: 0
         required: []
         title: Filtering
-        format: string
+        type: string
     required: []
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     description: The data to be read from BigQuery.
@@ -52,9 +52,9 @@ TASK_READ:
         items:
           title: Data item
           required: []
-          format: object
-        format: array
+          type: object
+        type: array
     required:
       - data
     title: Output
-    format: object
+    type: object

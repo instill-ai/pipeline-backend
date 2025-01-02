@@ -30,10 +30,8 @@ var (
 	setupYAML []byte
 	//go:embed config/tasks.yaml
 	tasksYAML []byte
-	//go:embed config/stabilityai.yaml
-	stabilityaiJSON []byte
-	once            sync.Once
-	comp            *component
+	once      sync.Once
+	comp      *component
 )
 
 // Component executes queries against StabilityAI.
@@ -47,7 +45,7 @@ type component struct {
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionYAML, setupYAML, tasksYAML, nil, map[string][]byte{"stabilityai.yaml": stabilityaiJSON})
+		err := comp.LoadDefinition(definitionYAML, setupYAML, tasksYAML, nil, nil)
 		if err != nil {
 			panic(err)
 		}

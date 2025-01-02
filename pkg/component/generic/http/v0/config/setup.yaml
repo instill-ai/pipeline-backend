@@ -11,7 +11,7 @@ properties:
             uiOrder: 0
             order: 0
             title: Auth Type
-            format: string
+            type: string
         required:
           - auth-type
         title: No Auth
@@ -22,24 +22,20 @@ properties:
             uiOrder: 0
             order: 0
             title: Auth Type
-            format: string
+            type: string
           password:
             description: Password for Basic auth.
-            acceptFormats:
-              - string
+            type: string
             instillSecret: true
             uiOrder: 2
             order: 2
             title: Password
-            format: string
           username:
             description: Username for Basic Auth.
-            acceptFormats:
-              - string
+            type: string
             uiOrder: 1
             order: 1
             title: Username
-            format: string
         required:
           - auth-type
           - username
@@ -52,37 +48,31 @@ properties:
             enum:
               - header
               - query
-            acceptFormats:
-              - string
+            type: string
             uiOrder: 3
             order: 3
             title: Auth Location
-            format: string
           auth-type:
             const: API_KEY
             description: API key authentication.
             uiOrder: 0
             order: 0
             title: Auth Type
-            format: string
+            type: string
           key:
             default: X-API-Key
             description: Key name for API key authentication.
-            acceptFormats:
-              - string
+            type: string
             uiOrder: 1
             order: 1
             title: Key Name
-            format: string
           value:
             description: Key value for API key authentication.
-            acceptFormats:
-              - string
+            type: string
             instillSecret: true
             uiOrder: 2
             order: 2
             title: Key Value
-            format: string
         required:
           - auth-type
           - key
@@ -96,24 +86,22 @@ properties:
             uiOrder: 0
             order: 0
             title: Auth Type
-            format: string
+            type: string
           token:
             description: Bearer token.
-            acceptFormats:
-              - string
+            type: string
             instillSecret: true
             uiOrder: 1
             order: 1
             title: Token
-            format: string
         required:
           - auth-type
           - token
         title: Bearer Token
     order: 1
     title: Authentication
-    format: object
+    type: object
 required:
   - authentication
 title: REST API Connection
-format: object
+type: object

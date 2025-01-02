@@ -43,7 +43,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Cloud ID (required) | `cloud-id` | string | Fill in the Cloud ID for the Elasticsearch instance.  |
 | API Key (required) | `api-key` | string | Fill in the API key for the Elasticsearch instance (please use encoded one).  |
@@ -62,7 +62,7 @@ Search for documents in Elasticsearch, support full text search
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEARCH` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
@@ -82,7 +82,7 @@ Search for documents in Elasticsearch, support full text search
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Search operation status. |
 | [Result](#search-result) | `result` | object | Result of the search operation. |
@@ -95,7 +95,7 @@ Search for documents in Elasticsearch, support full text search
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Data](#search-data) | `data` | array | The data returned from the search operation. |
 | [Documents](#search-documents) | `documents` | array | The documents returned from the search operation. |
@@ -110,7 +110,7 @@ Search for vector similarity search in Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
@@ -131,7 +131,7 @@ Search for vector similarity search in Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Search operation status. |
 | [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
@@ -144,7 +144,7 @@ Search for vector similarity search in Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Documents](#vector-search-documents) | `documents` | array | The documents returned from the vector search operation. |
 | IDs | `ids` | array | The ids returned from the vector search operation. |
@@ -160,7 +160,7 @@ Index a document into Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INDEX` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
@@ -175,7 +175,7 @@ Index a document into Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Index operation status. |
 </div>
@@ -187,7 +187,7 @@ Index multiple documents into Elasticsearch with bulk API
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_MULTI_INDEX` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
@@ -202,7 +202,7 @@ Index multiple documents into Elasticsearch with bulk API
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Index operation status. |
 </div>
@@ -214,7 +214,7 @@ Update a document in Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
@@ -232,7 +232,7 @@ Update a document in Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Update operation status. |
 </div>
@@ -244,7 +244,7 @@ Delete documents from Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
@@ -261,7 +261,7 @@ Delete documents from Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete operation status. |
 </div>
@@ -273,7 +273,7 @@ Create an index in Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_INDEX` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
@@ -287,7 +287,7 @@ Create an index in Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create index operation status. |
 </div>
@@ -299,7 +299,7 @@ Delete an index in Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE_INDEX` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
@@ -312,7 +312,7 @@ Delete an index in Elasticsearch
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete index operation status. |
 </div>

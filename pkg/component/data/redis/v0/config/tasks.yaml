@@ -6,32 +6,26 @@ TASK_RETRIEVE_CHAT_HISTORY:
       include-system-message:
         default: true
         description: Include system message in the retrieved conversation turns if exists.
-        acceptFormats:
-          - boolean
+        type: boolean
         uiOrder: 2
         title: Include System Message If Exists
-        format: boolean
       latest-k:
         default: 5
         description: The number of latest conversation turns to retrieve. A conversation turn typically includes one participant speaking or sending a message,
           and the other participant(s) responding to it.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 1
         minimum: 1
         title: Latest K
-        format: integer
       session-id:
         description: A unique identifier for the chat session.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Session ID
-        format: string
     required:
       - session-id
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -42,7 +36,7 @@ TASK_RETRIEVE_CHAT_HISTORY:
     required:
       - messages
     title: Output
-    format: object
+    type: object
 TASK_WRITE_CHAT_MESSAGE:
   shortDescription: Write chat message into Redis.
   input:
@@ -50,38 +44,32 @@ TASK_WRITE_CHAT_MESSAGE:
     properties:
       content:
         description: The message content.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 2
         title: Content
-        format: string
       metadata:
         additionalProperties: true
         description: The message metadata.
         uiOrder: 3
         required: []
         title: Metadata
-        format: object
+        type: object
       role:
         description: The message role, i.e. 'system', 'user' or 'assistant'.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: Role
-        format: string
       session-id:
         description: A unique identifier for the chat session.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Session ID
-        format: string
     required:
       - session-id
       - role
       - content
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -89,11 +77,11 @@ TASK_WRITE_CHAT_MESSAGE:
         description: The status of the write operation.
         uiOrder: 0
         title: Status
-        format: boolean
+        type: boolean
     required:
       - status
     title: Output
-    format: object
+    type: object
 TASK_WRITE_MULTI_MODAL_CHAT_MESSAGE:
   shortDescription: Write multi-modal chat message into Redis.
   input:
@@ -102,38 +90,32 @@ TASK_WRITE_MULTI_MODAL_CHAT_MESSAGE:
       content:
         $ref: schema.yaml#/$defs/instill-types/multi-modal-content
         description: The multi-modal message content.
-        acceptFormats:
-          - array
+        type: string
         uiOrder: 2
         title: Content
-        format: string
       metadata:
         additionalProperties: true
         description: The message metadata.
         uiOrder: 3
         required: []
         title: Metadata
-        format: object
+        type: object
       role:
         description: The message role, i.e. 'system', 'user' or 'assistant'.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: Role
-        format: string
       session-id:
         description: A unique identifier for the chat session.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Session ID
-        format: string
     required:
       - session-id
       - role
       - content
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -141,8 +123,8 @@ TASK_WRITE_MULTI_MODAL_CHAT_MESSAGE:
         description: The status of the write operation.
         uiOrder: 0
         title: Status
-        format: boolean
+        type: boolean
     required:
       - status
     title: Output
-    format: object
+    type: object

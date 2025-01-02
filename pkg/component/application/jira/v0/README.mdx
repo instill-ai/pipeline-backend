@@ -44,7 +44,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Token (required) | `token` | string | Fill in your Jira API token. You can generate one from your Jira account "settings > security > API tokens".  |
 | Base URL (required) | `base-url` | string | Fill in your Jira base URL. For example, if your Jira URL is "https://mycompany.atlassian.net/...", then your base URL is https://mycompany.atlassian.net.  |
@@ -64,7 +64,7 @@ Create an issue in Jira.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_ISSUE` |
 | Project Key (required) | `project-key` | string | The key of the project, e.g. `INS`. |
@@ -89,7 +89,7 @@ Epic.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Issue Type | `issue-type` | string |  Must be `"Epic"`   |
 </div>
@@ -100,7 +100,7 @@ Task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Issue Type | `issue-type` | string |  Must be `"Task"`   |
 </div>
@@ -111,7 +111,7 @@ Subtask.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Issue Type | `issue-type` | string |  Must be `"Subtask"`   |
 | Parent Key | `parent-key` | string |  The key of the parent issue, e.g. `JRA-1330`.  |
@@ -123,7 +123,7 @@ Other.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Issue Type | `custom-issue-type` | string |  The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc.  |
 | Issue Type | `issue-type` | string |  Must be `"Other"`   |
@@ -132,7 +132,7 @@ Other.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | string | The ID of the issue. |
 | Key | `key` | string | The key of the issue, e.g. `JRA-1330`. |
@@ -151,7 +151,7 @@ Create a sprint in Jira.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_SPRINT` |
 | Board Name (required) | `board-name` | string | The name of the board. |
@@ -168,7 +168,7 @@ Create a sprint in Jira.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | integer | The ID of the sprint. |
 | Self | `self` | string | The URL of the sprint. |
@@ -188,7 +188,7 @@ Get an issue in Jira. The issue will only be returned if the user has permission
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ISSUE` |
 | Issue Key (required) | `issue-key` | string | The key of the issue, e.g. `JRA-1330`. |
@@ -202,7 +202,7 @@ Get an issue in Jira. The issue will only be returned if the user has permission
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | string | The ID of the issue. |
 | Key | `key` | string | The key of the issue, e.g. `JRA-1330`. |
@@ -221,7 +221,7 @@ Get a sprint in Jira. The sprint will only be returned if the user can view the 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_SPRINT` |
 | Sprint ID (required) | `sprint-id` | integer | The ID of the sprint. The sprint will only be returned if you can view the board that the sprint was created on, or view at least one of the issues in the sprint. |
@@ -234,7 +234,7 @@ Get a sprint in Jira. The sprint will only be returned if the user can view the 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | ID (optional) | `id` | integer | The ID of the sprint. |
 | Self (optional) | `self` | string | The URL of the sprint. |
@@ -254,7 +254,7 @@ List all boards in Jira
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_BOARDS` |
 | Project Key or ID | `project-key-or-id` | string | This filters results to boards that are relevant to a project. Relevance meaning that the JQL filter defined in board contains a reference to a project. |
@@ -271,7 +271,7 @@ List all boards in Jira
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Boards](#list-boards-boards) (optional) | `boards` | array[object] | A array of boards in Jira. |
 | Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. |
@@ -287,7 +287,7 @@ List all boards in Jira
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | integer | The ID of the board. |
 | Name | `name` | string | The name of the board. |
@@ -303,7 +303,7 @@ List issues in Jira.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_ISSUES` |
 | Board Name (required) | `board-name` | string | The name of the board. |
@@ -328,7 +328,7 @@ All issues.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Range | `range` | string |  Must be `"All"`   |
 </div>
@@ -339,7 +339,7 @@ Standard issues.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Range | `range` | string |  Must be `"Standard Issues"`   |
 </div>
@@ -350,7 +350,7 @@ Epics only.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Range | `range` | string |  Must be `"Epics only"`   |
 </div>
@@ -361,7 +361,7 @@ In backlog only.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Range | `range` | string |  Must be `"In backlog only"`   |
 </div>
@@ -372,7 +372,7 @@ Issues of an epic.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Epic Key | `epic-key` | string |  The Key of the epic, e.g. `JRA-1330`.  |
 | Range | `range` | string |  Must be `"Issues of an epic"`   |
@@ -384,7 +384,7 @@ Issues of a sprint.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Range | `range` | string |  Must be `"Issues of a sprint"`   |
 | Sprint Name | `sprint-name` | string |  The name of the sprint.  |
@@ -396,7 +396,7 @@ Issues without Epic Assigned.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Range | `range` | string |  Must be `"Issues without epic assigned"`   |
 </div>
@@ -407,7 +407,7 @@ JQL query.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | JQL | `jql` | string |  The JQL query. For example, `type = "Task" AND status = "Done"`. For more information, see <a href="https://support.atlassian.com/jira-software-cloud/docs/what-is-advanced-search-in-jira-cloud/">Advanced searching</a>.  |
 | Range | `range` | string |  Must be `"JQL query"`   |
@@ -416,7 +416,7 @@ JQL query.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Issues](#list-issues-issues) (optional) | `issues` | array[object] | A array of issues in Jira. |
 | Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. |
@@ -431,7 +431,7 @@ JQL query.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Description | `description` | string | The description of the issue. |
 | Fields | `fields` | json | The fields of the issue. All navigable and Agile fields are returned. |
@@ -451,7 +451,7 @@ List sprints in Jira.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_SPRINTS` |
 | Board ID (required) | `board-id` | integer | The ID of the board. |
@@ -466,7 +466,7 @@ List sprints in Jira.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Sprints](#list-sprints-sprints) (optional) | `sprints` | array[object] | A array of sprints in Jira. |
 | Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. |
@@ -481,7 +481,7 @@ List sprints in Jira.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Complete Date | `complete-date` | string | The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
 | End Date | `end-date` | string | The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
@@ -502,7 +502,7 @@ Update an issue in Jira.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE_ISSUE` |
 | Issue Key (required) | `issue-key` | string | The key of the issue, e.g. `JRA-1330`. |
@@ -526,7 +526,7 @@ Custom update.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Update | `update` | string |  Must be `"Custom Update"`   |
 | Update Fields | `update-fields` | array |  The fields to update.  |
@@ -538,7 +538,7 @@ Move issue to epic.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Epic Key | `epic-key` | string |  The key of the epic, e.g. `JRA-1330`.  |
 | Update | `update` | string |  Must be `"Move Issue to Epic"`   |
@@ -547,7 +547,7 @@ Move issue to epic.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | string | The ID of the issue. |
 | Key | `key` | string | The key of the issue, e.g. `JRA-1330`. |
@@ -566,7 +566,7 @@ Update a sprint in Jira.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE_SPRINT` |
 | Sprint ID (required) | `sprint-id` | integer | The ID of the sprint. |
@@ -585,7 +585,7 @@ Update a sprint in Jira.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | integer | The ID of the sprint. |
 | Self | `self` | string | The URL of the sprint. |
@@ -651,17 +651,17 @@ variable:
     description: |+
       Your Jira base URL i.e. https://<_YOUR_COMPANY_>.atlassian.net
 
-    format: string
+    type: string
   board-name:
     title: Jira Board Name
     description: |+
       The name of your Jira board i.e. "KANBAN board".
 
-    format: string
+    type: string
   jira-email:
     title: Jira Email
     description: The email you are using for Jira i.e. hello@world.com
-    format: string
+    type: string
 output:
   output:
     title: Output

@@ -9,40 +9,40 @@ version: v1beta
 variable:
   campaign-name:
     title: Campaign Name
-    format: string
+    type: string
   timezone:
     title: Timezone
-    format: string
+    type: string
   days-of-week:
     title: Days of Week
-    format: array:string
+    type: array:string
   start-hour:
     title: Start Hour
-    format: string
+    type: string
   end-hour:
     title: End Hour
-    format: string
+    type: string
   schedule-start-time:
     title: Schedule Start Time
-    format: string
+    type: string
   stop-lead-settings:
     title: Stop Lead Settings
-    format: string
+    type: string
   send-as-plain-text:
     title: Send as Plain Text
-    format: boolean
+    type: boolean
   min-time-btw-emails:
     title: Min Time Between Emails
-    format: number
+    type: number
   max-new-leads-per-day:
     title: Max New Leads Per Days
-    format: number
+    type: number
   email-body:
     title: Email Body
-    format: string
+    type: string
   subject:
     title: Subject
-    format: string
+    type: string
 
 component:
   create-campaign:
@@ -114,25 +114,25 @@ version: v1beta
 variable:
   campaign-name:
     title: Campaign Name
-    format: string
+    type: string
   company:
     title: Company
-    format: string
+    type: string
   custom-keys:
     title: Custom Keys
-    format: array:string
+    type: array:string
   custom-values:
     title: Custom Values
-    format: array:string
+    type: array:string
   emails:
     title: Emails
-    format: array:string
+    type: array:string
   first-names:
     title: First Names
-    format: array:string
+    type: array:string
   last-names:
     title: Last Names
-    format: array:string
+    type: array:string
 
 
 component:
@@ -179,13 +179,13 @@ version: v1beta
 variable:
   campaign-name:
     title: Campaign Name
-    format: string
+    type: string
   email:
     title: Email
-    format: string
+    type: string
   status:
     title: Status
-    format: string
+    type: string
 
 component:
   add-sender:
@@ -228,7 +228,7 @@ version: v1beta
 variable:
   campaign-name:
     title: Campaign Name
-    format: string
+    type: string
 
 component:
   create-campaign:
@@ -257,34 +257,34 @@ version: v1beta
 variable:
   campaign-name:
     title: Campaign Name
-    format: string
+    type: string
   timezone:
     title: Timezone
-    format: string
+    type: string
   days-of-week:
     title: Days of Week
-    format: array:string
+    type: array:string
   start-hour:
     title: Start Hour
-    format: string
+    type: string
   end-hour:
     title: End Hour
-    format: string
+    type: string
   schedule-start-time:
     title: Schedule Start Time
-    format: string
+    type: string
   stop-lead-settings:
     title: Stop Lead Settings
-    format: string
+    type: string
   send-as-plain-text:
     title: Send as Plain Text
-    format: boolean
+    type: boolean
   min-time-btw-emails:
     title: Min Time Between Emails
-    format: number
+    type: number
   max-new-leads-per-day:
     title: Max New Leads Per Days
-    format: number
+    type: number
 
 component:
   setup-campaign:
@@ -323,7 +323,7 @@ version: v1beta
 variable:
   campaign-name:
     title: Campaign Name
-    format: string
+    type: string
 
 component:
   get-sequence:
@@ -350,13 +350,13 @@ version: v1beta
 variable:
   campaign-name:
     title: Campaign Name
-    format: string
+    type: string
   email-body:
     title: Email Body
-    format: string
+    type: string
   subject:
     title: Subject
-    format: string
+    type: string
 
 component:
   save-sequence:
@@ -391,16 +391,16 @@ version: v1beta
 variable:
   campaign-name:
     title: Campaign Name
-    format: string
+    type: string
   company:
     title: Company
-    format: string
+    type: string
   subject:
     title: Subject
-    format: string
+    type: string
   body:
     title: Body
-    format: string
+    type: string
 
 component:
   add-leads:
@@ -442,10 +442,10 @@ version: v1beta
 variable:
   campaign-name:
     title: Campaign Name
-    format: string
+    type: string
   email:
     title: Email
-    format: string
+    type: string
 
 component:
   add-sender:
@@ -472,10 +472,10 @@ version: v1beta
 variable:
   campaign-name:
     title: Campaign Name
-    format: string
+    type: string
   status:
     title: Status
-    format: string
+    type: string
 
 component:
   update-campaign-status:
@@ -502,7 +502,7 @@ version: v1beta
 variable:
   campaign-name:
     title: Campaign Name
-    format: string
+    type: string
 
 
 component:
@@ -529,10 +529,10 @@ version: v1beta
 variable:
   campaign-name:
     title: Campaign Name
-    format: string
+    type: string
   limit:
     title: Limit
-    format: number
+    type: number
 
 component:
   get-leads:

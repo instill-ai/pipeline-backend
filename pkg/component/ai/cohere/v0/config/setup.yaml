@@ -2,13 +2,11 @@ additionalProperties: false
 properties:
   api-key:
     description: Fill in your Cohere API key. To find your keys, visit the Cohere dashboard page.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: true
     instillCredential: true
     uiOrder: 0
     title: API Key
-    format: string
 required: []
 title: Cohere Connection
-format: object
+type: object

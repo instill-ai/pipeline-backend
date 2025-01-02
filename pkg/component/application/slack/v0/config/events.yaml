@@ -7,16 +7,16 @@ EVENT_NEW_MESSAGE:
         description: Names of the Slack channels to listen to.
         title: Channel Names
         items:
-          format: string
-        format: array
-    format: object
+          type: string
+        type: array
+    type: object
   messageSchema:
     description: A new message event from Slack.
     properties:
       timestamp:
         description: Timestamp of the message.
         title: Timestamp
-        format: string
+        type: string
       channel:
         description: Channel information.
         uiOrder: 1
@@ -24,16 +24,16 @@ EVENT_NEW_MESSAGE:
           id:
             description: Unique ID of the Slack channel.
             title: Channel ID
-            format: string
+            type: string
           name:
             description: Name of the Slack channel.
             title: Channel Name
-            format: string
+            type: string
         required:
           - id
           - name
         title: Channel
-        format: object
+        type: object
       user:
         description: User information.
         uiOrder: 2
@@ -41,44 +41,44 @@ EVENT_NEW_MESSAGE:
           id:
             description: Unique ID of the Slack user.
             title: User ID
-            format: string
+            type: string
           name:
             description: Username of the Slack user.
             title: User Name
-            format: string
+            type: string
           real-name:
             description: Real name of the Slack user.
             title: Real Name
-            format: string
+            type: string
           profile:
             description: User profile information.
             properties:
               display-name:
                 description: Display name of the Slack user.
                 title: Display Name
-                format: string
+                type: string
             required:
               - display-name
             title: Profile
-            format: object
+            type: object
         required:
           - id
           - name
           - real-name
           - profile
         title: User
-        format: object
+        type: object
       text:
         description: Content of the message.
         title: Message Text
-        format: string
+        type: string
     required:
       - timestamp
       - channel
       - user
       - text
     title: New Message Event
-    format: object
+    type: object
   messageExamples:
     - timestamp: '1715159446.644219'
       channel:

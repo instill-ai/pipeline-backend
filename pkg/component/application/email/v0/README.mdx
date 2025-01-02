@@ -40,7 +40,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Server Address (required) | `server-address` | string | The address of the email server.  |
 | Server Port (required) | `server-port` | integer | The port of the email server.  |
@@ -86,7 +86,7 @@ Send an email to recipients
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEND_EMAIL` |
 | Recipient (required) | `recipients` | array[string] | The email addresses of the recipients. |
@@ -103,7 +103,7 @@ Send an email to recipients
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Result | `result` | string | The result of sending the email. |
 </div>
@@ -115,7 +115,7 @@ Read emails from a mailbox
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_EMAILS` |
 | [Search](#read-emails-search) | `search` | object | The search criteria for the emails. |
@@ -131,7 +131,7 @@ The search criteria for the emails.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Search Date | `date` | string | Search for emails with the date the email was sent.  |
 | Limit | `limit` | integer | The maximum number of emails to search for.  |
@@ -147,7 +147,7 @@ The search criteria for the emails.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Emails](#read-emails-emails) | `emails` | array[object] | The emails that match the search criteria. |
 </div>
@@ -159,7 +159,7 @@ The search criteria for the emails.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Date | `date` | string | The date the email was sent. |
 | From | `from` | string | The email address of the sender. |

@@ -35,7 +35,7 @@ Chunk text with different strategies
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CHUNK_TEXT` |
 | Text (required) | `text` | string | Text to be chunked. |
@@ -52,7 +52,7 @@ Chunking strategy.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Setting](#chunk-text-setting) | `setting` | object | Chunk Setting.  |
 </div>
@@ -71,7 +71,7 @@ Language models have a token limit. You should not exceed the token limit. When 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Allowed Special Tokens | `allowed-special` | array |  A list of special tokens that are allowed within chunks.  |
 | Chunk Method | `chunk-method` | string |  Must be `"Token"`   |
@@ -87,7 +87,7 @@ This text splitter is the recommended one for generic text. It is parameterized 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Chunk Method | `chunk-method` | string |  Must be `"Recursive"`   |
 | Chunk Overlap | `chunk-overlap` | integer |  Determines the number of tokens that overlap between consecutive chunks.  |
@@ -103,7 +103,7 @@ This text splitter is specially designed for Markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Chunk Method | `chunk-method` | string |  Must be `"Markdown"`   |
 | Chunk Overlap | `chunk-overlap` | integer |  Determines the number of tokens that overlap between consecutive chunks.  |
@@ -115,7 +115,7 @@ This text splitter is specially designed for Markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Token Count | `token-count` | integer | Total count of tokens in the original input text. |
 | [Text Chunks](#chunk-text-text-chunks) | `text-chunks` | array[object] | Text chunks after splitting. |
@@ -130,7 +130,7 @@ This text splitter is specially designed for Markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | End Position | `end-position` | integer | The ending position of the chunk in the original text. |
 | Start Position | `start-position` | integer | The starting position of the chunk in the original text. |

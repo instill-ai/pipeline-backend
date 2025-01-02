@@ -37,7 +37,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | JSON Key File Contents (required) | `json-key` | string | Contents of the JSON key file with access to the bucket.  |
 | BigQuery Project ID (required) | `project-id` | string | Fill in your BigQuery Project ID.  |
@@ -58,7 +58,7 @@ Insert data to BigQuery.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT` |
 | Data | `data` | object | The data to be inserted to BigQuery. |
@@ -71,7 +71,7 @@ Insert data to BigQuery.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Status of the upload operation. |
 </div>
@@ -83,7 +83,7 @@ Read data from BigQuery.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ` |
 | Filtering | `filtering` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
@@ -96,7 +96,7 @@ Read data from BigQuery.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Data](#read-data) | `data` | array[object] | The data to be read from BigQuery. |
 </div>

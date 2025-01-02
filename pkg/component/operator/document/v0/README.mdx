@@ -37,7 +37,7 @@ Convert document to text in Markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONVERT_TO_MARKDOWN` |
 | Document (required) | `document` | string | Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML/XLSX/XLS/CSV to be converted to text in Markdown format. |
@@ -54,7 +54,7 @@ Convert document to text in Markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Body | `body` | string | Markdown text converted from the PDF document. |
 | Filename (optional) | `filename` | string | The name of the file. |
@@ -71,7 +71,7 @@ Convert document to text.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONVERT_TO_TEXT` |
 | Document (required) | `document` | string | Base64 encoded PDF/DOC/DOCX/XML/HTML/RTF/MD/PPTX/ODT/TIF/CSV/TXT/PNG document to be converted to plain text. |
@@ -85,7 +85,7 @@ Convert document to text.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Body | `body` | string | Plain text converted from the document. |
 | Filename (optional) | `filename` | string | The name of the file. |
@@ -101,7 +101,7 @@ Convert Document to images.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONVERT_TO_IMAGES` |
 | PDF (required) | `document` | string | Base64 encoded PDF/DOCX/DOC/PPT/PPTX to be converted to images. |
@@ -116,7 +116,7 @@ Convert Document to images.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Images | `images` | array[string] | Images converted from the document. |
 | Filenames (optional) | `filenames` | array[string] | The filenames of the images. The filenames will be appended with the page number. e.g. 'example-1.jpg'. |
@@ -172,10 +172,10 @@ component:
 variable:
   contract_pdf_file:
     title: Contract PDF file
-    format: "*/*"
+    type: "*/*"
   question:
     title: Question
-    format: string
+    type: string
 
 output:
   contract_question_answering:

@@ -2,8 +2,7 @@ additionalProperties: false
 properties:
   engine:
     description: Choose the engine of your database.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 0
     title: Engine
     enum:
@@ -13,44 +12,33 @@ properties:
       - Oracle
       - MariaDB
       - Firebird
-    format: string
   username:
     description: Fill in your account username.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 1
     title: Username
-    format: string
   password:
     description: Fill in your account password.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: true
     uiOrder: 2
     title: Password
-    format: string
   database-name:
     description: Fill in the name of your database.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 3
     title: Database Name
-    format: string
   host:
     description: Fill in the host of your database.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 4
     title: Host
-    format: string
   port:
     description: Fill in the port of your database.
     default: 3306
-    acceptFormats:
-      - number
+    type: number
     uiOrder: 5
     title: Port
-    format: number
   ssl-tls:
     description: Enable SSL / TLS.
     uiOrder: 6
@@ -62,7 +50,7 @@ properties:
             uiOrder: 0
             order: 0
             title: SSL / TLS Type
-            format: string
+            type: string
         required:
           - ssl-tls-type
         title: No SSL / TLS
@@ -73,16 +61,14 @@ properties:
             uiOrder: 0
             order: 0
             title: SSL / TLS Type
-            format: string
+            type: string
           ssl-tls-ca:
             description: Base64 encoded CA certificate file.
             shortDescription: Base64 encoded CA certificate file
-            acceptFormats:
-              - string
+            type: string
             uiOrder: 1
             order: 1
             title: CA Certificate
-            format: string
         required:
           - ssl-tls-type
           - ssl-tls-ca
@@ -94,34 +80,28 @@ properties:
             uiOrder: 0
             order: 0
             title: SSL / TLS Type
-            format: string
+            type: string
           ssl-tls-ca:
             description: Base64 encoded CA certificate file.
             shortDescription: Base64 encoded CA certificate file
-            acceptFormats:
-              - string
+            type: string
             uiOrder: 1
             order: 1
             title: CA Certificate
-            format: string
           ssl-tls-cert:
             description: Base64 encoded client certificate file.
             shortDescription: Base64 encoded client certificate file
-            acceptFormats:
-              - string
+            type: string
             uiOrder: 2
             order: 2
             title: Client Certificate
-            format: string
           ssl-tls-key:
             description: Base64 encoded client key file.
             shortDescription: Base64 encoded client key file
-            acceptFormats:
-              - string
+            type: string
             uiOrder: 3
             order: 3
             title: Client Key
-            format: string
         required:
           - ssl-tls-type
           - ssl-tls-ca
@@ -130,7 +110,7 @@ properties:
         title: mTLS
     order: 6
     title: SSL / TLS
-    format: object
+    type: object
 required:
   - engine
   - username
@@ -140,4 +120,4 @@ required:
   - port
   - ssl-tls
 title: SQL Connection
-format: object
+type: object

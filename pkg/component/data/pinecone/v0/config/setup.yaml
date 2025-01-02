@@ -2,21 +2,17 @@ additionalProperties: false
 properties:
   api-key:
     description: Fill in your Pinecone AI API key. You can create an api key in Pinecone Console.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: true
     uiOrder: 0
     title: API Key
-    format: string
   url:
     description: Fill in your Pinecone index URL. It is in the form.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: false
     uiOrder: 1
     title: Pinecone Index URL
-    format: string
 required:
   - api-key
 title: Pinecone Connection
-format: object
+type: object

@@ -30,7 +30,7 @@ const conditionJSON = `
 {
 	"uiOrder": 1,
 	"shortDescription": "config whether the component will be executed or skipped",
-	"acceptFormats": ["string"],
+	"type": "string",
 	"upstreamTypes": ["value", "template"]
 }
 `
@@ -212,7 +212,7 @@ func convertDataSpecToCompSpec(dataSpec *structpb.Struct) (*structpb.Struct, err
 		}
 	}
 
-	if compSpec.Fields["format"] != nil && compSpec.Fields["format"].GetStringValue() == "object" {
+	if compSpec.Fields["type"] != nil && compSpec.Fields["type"].GetStringValue() == "object" {
 		// Always add required field for object type if missing
 		if _, ok := compSpec.Fields["required"]; !ok {
 			compSpec.Fields["required"] = structpb.NewListValue(&structpb.ListValue{Values: []*structpb.Value{}})
@@ -297,72 +297,6 @@ func convertDataSpecToCompSpec(dataSpec *structpb.Struct) (*structpb.Struct, err
 	if _, ok := compSpec.Fields["uiOrder"]; !ok {
 		compSpec.Fields["uiOrder"] = structpb.NewNumberValue(0)
 	}
-	if compSpec.Fields["acceptFormats"] != nil {
-
-		original := proto.Clone(compSpec).(*structpb.Struct)
-		delete(original.Fields, "title")
-		delete(original.Fields, "description")
-		delete(original.Fields, "shortDescription")
-		delete(original.Fields, "acceptFormats")
-		delete(original.Fields, "uiOrder")
-		delete(original.Fields, "upstreamTypes")
-
-		newCompSpec := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
-		newCompSpec.Fields["acceptFormats"] = structpb.NewListValue(compSpec.Fields["acceptFormats"].GetListValue())
-
-		newCompSpec.Fields["title"] = structpb.NewStringValue(compSpec.Fields["title"].GetStringValue())
-		newCompSpec.Fields["description"] = structpb.NewStringValue(compSpec.Fields["description"].GetStringValue())
-		if _, ok := compSpec.Fields["shortDescription"]; ok {
-			newCompSpec.Fields["shortDescription"] = compSpec.Fields["shortDescription"]
-		} else {
-			newCompSpec.Fields["shortDescription"] = newCompSpec.Fields["description"]
-		}
-		newCompSpec.Fields["uiOrder"] = structpb.NewNumberValue(compSpec.Fields["uiOrder"].GetNumberValue())
-
-		if _, ok := newCompSpec.Fields["acceptFormats"]; ok {
-			newCompSpec.Fields["upstreamTypes"] = structpb.NewListValue(&structpb.ListValue{Values: []*structpb.Value{
-				structpb.NewStringValue("value"),
-				structpb.NewStringValue("reference"),
-				structpb.NewStringValue("template"),
-			}})
-			newCompSpec.Fields["anyOf"] = structpb.NewListValue(&structpb.ListValue{Values: []*structpb.Value{}})
-			for _, v := range newCompSpec.Fields["upstreamTypes"].GetListValue().GetValues() {
-
-				if v.GetStringValue() == "value" {
-					original.Fields["upstreamType"] = v
-					newCompSpec.Fields["anyOf"].GetListValue().Values = append(newCompSpec.Fields["anyOf"].GetListValue().Values, structpb.NewStructValue(original))
-				}
-				if v.GetStringValue() == "reference" {
-					item, err := structpb.NewValue(
-						map[string]any{
-							"type":         "string",
-							"pattern":      "^\\{.*\\}$",
-							"upstreamType": "reference",
-						},
-					)
-					if err != nil {
-						return nil, err
-					}
-					newCompSpec.Fields["anyOf"].GetListValue().Values = append(newCompSpec.Fields["anyOf"].GetListValue().Values, item)
-				}
-				if v.GetStringValue() == "template" {
-					item, err := structpb.NewValue(
-						map[string]any{
-							"type":         "string",
-							"upstreamType": "template",
-						},
-					)
-					if err != nil {
-						return nil, err
-					}
-					newCompSpec.Fields["anyOf"].GetListValue().Values = append(newCompSpec.Fields["anyOf"].GetListValue().Values, item)
-				}
-
-			}
-		}
-
-		compSpec = newCompSpec
-	}
 
 	return compSpec, nil
 }
@@ -440,7 +374,7 @@ func generateComponentSpec(title string, tasks []*pb.ComponentTask, taskStructs 
 	var err error
 	componentSpec := &structpb.Struct{Fields: map[string]*structpb.Value{}}
 	componentSpec.Fields["title"] = structpb.NewStringValue(fmt.Sprintf("%s Component", title))
-	componentSpec.Fields["format"] = structpb.NewStringValue("object")
+	componentSpec.Fields["type"] = structpb.NewStringValue("object")
 
 	oneOfList := &structpb.ListValue{
 		Values: []*structpb.Value{},
@@ -449,7 +383,7 @@ func generateComponentSpec(title string, tasks []*pb.ComponentTask, taskStructs 
 		taskName := task.Name
 
 		oneOf := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-		oneOf.Fields["format"] = structpb.NewStringValue("object")
+		oneOf.Fields["type"] = structpb.NewStringValue("object")
 		oneOf.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
 		oneOf.Fields["properties"].GetStructValue().Fields["task"], err = structpb.NewValue(map[string]any{
@@ -718,26 +652,26 @@ func (c *Component) GetDefinition(sysVars map[string]any, compConfig *ComponentC
 
 	var err error
 	definition := proto.Clone(c.definition).(*pb.ComponentDefinition)
-	definition.Spec.ComponentSpecification, err = convertFormatFields(definition.Spec.ComponentSpecification)
+	definition.Spec.ComponentSpecification, err = convertFormatFields(definition.Spec.ComponentSpecification, true)
 	if err != nil {
 		return nil, err
 	}
 	for k := range definition.Spec.DataSpecifications {
-		definition.Spec.DataSpecifications[k].Input, err = convertFormatFields(definition.Spec.DataSpecifications[k].Input)
+		definition.Spec.DataSpecifications[k].Input, err = convertFormatFields(definition.Spec.DataSpecifications[k].Input, false)
 		if err != nil {
 			return nil, err
 		}
-		definition.Spec.DataSpecifications[k].Output, err = convertFormatFields(definition.Spec.DataSpecifications[k].Output)
+		definition.Spec.DataSpecifications[k].Output, err = convertFormatFields(definition.Spec.DataSpecifications[k].Output, false)
 		if err != nil {
 			return nil, err
 		}
 	}
 	for k := range definition.Spec.EventSpecifications {
-		definition.Spec.EventSpecifications[k].ConfigSchema, err = convertFormatFields(definition.Spec.EventSpecifications[k].ConfigSchema)
+		definition.Spec.EventSpecifications[k].ConfigSchema, err = convertFormatFields(definition.Spec.EventSpecifications[k].ConfigSchema, false)
 		if err != nil {
 			return nil, err
 		}
-		definition.Spec.EventSpecifications[k].MessageSchema, err = convertFormatFields(definition.Spec.EventSpecifications[k].MessageSchema)
+		definition.Spec.EventSpecifications[k].MessageSchema, err = convertFormatFields(definition.Spec.EventSpecifications[k].MessageSchema, false)
 		if err != nil {
 			return nil, err
 		}
@@ -1002,7 +936,7 @@ func (c *Component) traverseSecretField(input *structpb.Value, prefix string, se
 				secretFields = append(secretFields, fmt.Sprintf("%s%s", prefix, key))
 			}
 		}
-		if tp, ok := v.GetStructValue().GetFields()["format"]; ok {
+		if tp, ok := v.GetStructValue().GetFields()["type"]; ok {
 			if tp.GetStringValue() == "object" {
 				if l, ok := v.GetStructValue().GetFields()["oneOf"]; ok {
 					for _, v := range l.GetListValue().Values {

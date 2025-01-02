@@ -39,7 +39,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | API Key (required) | `api-key` | string | Fill in your Pinecone AI API key. You can create an api key in Pinecone Console.  |
 | Pinecone Index URL | `url` | string | Fill in your Pinecone index URL. It is in the form.  |
@@ -58,7 +58,7 @@ Retrieve the ids of the most similar items in a namespace, along with their simi
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_QUERY` |
 | ID | `id` | string | The unique ID of the vector to be used as a query vector. If present, the vector parameter will be ignored. |
@@ -78,7 +78,7 @@ Retrieve the ids of the most similar items in a namespace, along with their simi
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Namespace | `namespace` | string | The namespace of the query. |
 | [Matches](#query-matches) | `matches` | array[object] | The matches returned for the query. |
@@ -91,7 +91,7 @@ Retrieve the ids of the most similar items in a namespace, along with their simi
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | string | The ID of the matched vector. |
 | Metadata | `metadata` | json | Metadata. |
@@ -107,7 +107,7 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPSERT` |
 | ID (required) | `id` | string | This is the vector's unique id. |
@@ -123,7 +123,7 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Upserted Count | `upserted-count` | integer | Number of records modified or added. |
 </div>
@@ -135,7 +135,7 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
 | [Vectors](#batch-upsert-vectors) (required) | `vectors` | array[object] | Array of vectors to upsert |
@@ -152,7 +152,7 @@ Array of vectors to upsert
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | string | The unique ID of the vector.  |
 | Metadata | `metadata` | object | The vector metadata. This is a set of key-value pairs that can be used to store additional information about the vector. The values can have the following types: string, number, boolean, or array of strings.  |
@@ -164,7 +164,7 @@ Array of vectors to upsert
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Upserted Count | `upserted-count` | integer | Number of records modified or added. |
 </div>
@@ -176,7 +176,7 @@ Rerank documents, such as text passages, according to their relevance to a query
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_RERANK` |
 | Query (required) | `query` | string | The query to rerank the documents. |
@@ -191,7 +191,7 @@ Rerank documents, such as text passages, according to their relevance to a query
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Reranked Documents. | `documents` | array[string] | Reranked documents. |
 | Scores | `scores` | array[number] | The relevance score of the documents normalized between 0 and 1. |

@@ -44,7 +44,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Token (required) | `token` | string | Fill in your WhatsApp access token. Go [here](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started) for more information.  |
 
@@ -62,7 +62,7 @@ Send text-based template message. This task support header(text), body and butto
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEND_TEXT_BASED_TEMPLATE_MESSAGE` |
 | Phone Number ID (required) | `phone-number-id` | string | Phone Number ID. Obtainable through the app dashboard. Note: This is for sender. |
@@ -81,7 +81,7 @@ Send text-based template message. This task support header(text), body and butto
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
@@ -95,7 +95,7 @@ Send media-based template message. This task support header(image, document & vi
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEND_MEDIA_BASED_TEMPLATE_MESSAGE` |
 | Phone Number ID (required) | `phone-number-id` | string | Phone Number ID. Obtainable through the app dashboard. Note: This is for sender. |
@@ -116,7 +116,7 @@ Send media-based template message. This task support header(image, document & vi
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
@@ -130,7 +130,7 @@ Send location-based template message. This task support header(location), body a
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEND_LOCATION_BASED_TEMPLATE_MESSAGE` |
 | Phone Number ID (required) | `phone-number-id` | string | Phone Number ID. Obtainable through the app dashboard. Note: This is for sender. |
@@ -152,7 +152,7 @@ Send location-based template message. This task support header(location), body a
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
@@ -166,7 +166,7 @@ Send authentication template message with one-time password button (The button i
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEND_AUTHENTICATION_TEMPLATE_MESSAGE` |
 | Phone Number ID (required) | `phone-number-id` | string | Phone Number ID. Obtainable through the app dashboard. Note: This is for sender. |
@@ -183,7 +183,7 @@ Send authentication template message with one-time password button (The button i
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
@@ -197,7 +197,7 @@ Send text message. Note: Message can only be sent when the 24-hour customer serv
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEND_TEXT_MESSAGE` |
 | Phone Number ID (required) | `phone-number-id` | string | Phone Number ID. Obtainable through the app dashboard. Note: This is for sender. |
@@ -213,7 +213,7 @@ Send text message. Note: Message can only be sent when the 24-hour customer serv
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
@@ -226,7 +226,7 @@ Send media message. Media supported: video, audio, document, image. Note: Messag
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEND_MEDIA_MESSAGE` |
 | Phone Number ID (required) | `phone-number-id` | string | Phone Number ID. Obtainable through the app dashboard. Note: This is for sender. |
@@ -244,7 +244,7 @@ Send media message. Media supported: video, audio, document, image. Note: Messag
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
@@ -257,7 +257,7 @@ Send location message. Note: Message can only be sent when the 24-hour customer 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEND_LOCATION_MESSAGE` |
 | Phone Number ID (required) | `phone-number-id` | string | Phone Number ID. Obtainable through the app dashboard. Note: This is for sender. |
@@ -275,7 +275,7 @@ Send location message. Note: Message can only be sent when the 24-hour customer 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
@@ -288,7 +288,7 @@ Send contact message. Note: Message can only be sent when the 24-hour customer s
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEND_CONTACT_MESSAGE` |
 | Phone Number ID (required) | `phone-number-id` | string | Phone Number ID. Obtainable through the app dashboard. Note: This is for sender. |
@@ -310,7 +310,7 @@ Send contact message. Note: Message can only be sent when the 24-hour customer s
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
@@ -323,7 +323,7 @@ Send interactive Call-To-Action URL button message. Note: Message can only be se
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEND_INTERACTIVE_CALL_TO_ACTION_URL_BUTTON_MESSAGE` |
 | Phone Number ID (required) | `phone-number-id` | string | Phone Number ID. Obtainable through the app dashboard. Note: This is for sender. |
@@ -342,7 +342,7 @@ Send interactive Call-To-Action URL button message. Note: Message can only be se
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |

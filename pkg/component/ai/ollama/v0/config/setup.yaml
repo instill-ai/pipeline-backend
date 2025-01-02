@@ -3,21 +3,17 @@ properties:
   endpoint:
     description: 'Fill in your Ollama hosting endpoint. ### WARNING ###: As of 2024-07-26, the Ollama component does not support authentication methods.
       To prevent unauthorized access to your Ollama serving resources, please implement additional security measures such as IP whitelisting.'
-    acceptFormats:
-      - string
+    type: string
     default: http://localhost:11434
     uiOrder: 0
     title: Endpoint
-    format: string
   auto-pull:
     description: Automatically pull the requested models from the Ollama server if the model is not found in the local cache.
-    acceptFormats:
-      - boolean
+    type: boolean
     uiOrder: 1
     title: Model Auto-Pull
-    format: boolean
 required:
   - endpoint
   - auto-pull
 title: Ollama Connection
-format: object
+type: object

@@ -9,32 +9,17 @@ spec:
     oneOf:
       - properties:
           condition:
-            instillAcceptFormats:
-              - string
             instillShortDescription: config whether the component will be executed or skipped
             instillUIOrder: 1
-            instillUpstreamTypes:
-              - value
-              - template
             type: string
           input:
             description: Input
             instillUIOrder: 0
             properties:
               object:
-                anyOf:
-                  - instillUpstreamType: reference
-                    pattern: ^\{.*\}$
-                    type: string
                 description: Json object to be marshaled
-                instillAcceptFormats:
-                  - object
-                  - semi-structured/*
-                  - structured/*
                 instillShortDescription: Json object to be marshaled
                 instillUIOrder: 0
-                instillUpstreamTypes:
-                  - reference
                 title: Object
             required:
               - object
@@ -55,13 +40,7 @@ spec:
         properties:
           object:
             description: Json object to be marshaled
-            instillAcceptFormats:
-              - object
-              - semi-structured/*
-              - structured/*
             instillUIOrder: 0
-            instillUpstreamTypes:
-              - reference
             required: []
             title: Object
             type: object

@@ -5,18 +5,15 @@ TASK_TEXT_EMBEDDINGS:
     properties:
       model:
         $ref: additional.yaml#/components/schemas/CreateEmbeddingRequest/properties/model
-        acceptFormats:
-          - string
+        type: string
         shortDescription: ID of the model to use
         uiOrder: 0
         title: Model
       text:
         description: The text
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: Text
-        type: string
     required:
       - text
       - model

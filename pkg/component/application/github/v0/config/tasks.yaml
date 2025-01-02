@@ -6,12 +6,12 @@ $defs:
         description: SHA of the commit.
         uiOrder: 1
         title: Commit SHA
-        format: string
+        type: string
       message:
         description: Message of the commit.
         uiOrder: 2
         title: Commit message
-        format: string
+        type: string
       stats:
         uiOrder: 3
         $ref: "#/$defs/commitStats"
@@ -24,10 +24,10 @@ $defs:
           $ref: "#/$defs/commitFile"
           required: []
           description: A file in the commit.
-        format: array
+        type: array
     required: []
     title: Commit
-    format: object
+    type: object
   commitStats:
     description: Stats of changes.
     uiOrder: 1
@@ -36,20 +36,20 @@ $defs:
         description: Number of additions in the commit.
         uiOrder: 1
         title: Additions
-        format: integer
+        type: integer
       deletions:
         description: Number of deletions in the commit.
         uiOrder: 2
         title: Deletions
-        format: integer
+        type: integer
       changes:
         description: Total number of changes in the commit.
         uiOrder: 3
         title: Total changes
-        format: integer
+        type: integer
     required: []
     title: Commit stats
-    format: object
+    type: object
   commitFile:
     description: A commit file object.
     properties:
@@ -57,16 +57,16 @@ $defs:
         description: Name of the file.
         uiOrder: 1
         title: File name
-        format: string
+        type: string
       $ref: "#/$defs/commitStats/properties"
       patch:
         description: Patch of the file.
         uiOrder: 3
         title: Patch
-        format: string
+        type: string
     required: []
     title: Commit File
-    format: object
+    type: object
   issue:
     description: An issue object.
     properties:
@@ -74,203 +74,278 @@ $defs:
         description: Number of the issue.
         uiOrder: 2
         title: Issue Number
-        format: integer
+        type: integer
       state:
         description: State of the issue.
         uiOrder: 3
         title: Issue state
-        format: string
+        type: string
       title:
         description: Title of the issue.
         uiOrder: 4
         title: Issue title
-        format: string
+        type: string
       body:
         description: Body of the issue.
         uiOrder: 5
         title: Issue body
-        format: string
+        type: string
       assignee:
         description: Assignee of the issue.
         uiOrder: 6
         title: Assignee
-        format: string
+        type: string
       assignees:
         description: Assignees of the issue.
         uiOrder: 7
         title: Assignees
         items:
-          format: string
-        format: array
+          type: string
+        type: array
       labels:
         description: Labels of the issue.
         uiOrder: 8
         title: Labels
         items:
-          format: string
-        format: array
+          type: string
+        type: array
       is-pull-request:
         description: Whether the issue is a pull request.
         uiOrder: 9
         title: Is Pull Request
-        format: boolean
+        type: boolean
     title: Issue
-    format: object
+    type: object
   organization:
     description: Organization Full
     properties:
       login:
-        format: string # type: string
+        description: The organization's username.
+        title: Login
+        type: string # type: string
         examples: [github]
         uiOrder: 0
       id:
-        format: integer # type: integer
+        description: The unique identifier of the organization.
+        title: ID
+        type: integer # type: integer
         examples: [1]
         uiOrder: 1
       node-id:
-        format: string # type: string
+        description: The GraphQL node ID of the organization.
+        title: Node ID
+        type: string # type: string
         examples: [MDEyOk9yZ2FuaXphdGlvbjE=]
         uiOrder: 2
       url:
-        format: string # type: string, format: uri
+        description: The URL of the organization's API endpoint.
+        title: URL
+        type: string # type: string, format: uri
         examples: ["https://api.github.com/orgs/github"]
         uiOrder: 3
       repos-url:
-        format: string # type: string, format: uri
+        description: The URL of the organization's repositories API endpoint.
+        title: Repositories URL
+        type: string # type: string, format: uri
         examples: ["https://api.github.com/orgs/github/repos"]
         uiOrder: 4
       events-url:
-        format: string # type: string, format: uri
+        description: The URL of the organization's events API endpoint.
+        title: Events URL
+        type: string # type: string, format: uri
         examples: ["https://api.github.com/orgs/github/events"]
         uiOrder: 5
       hooks-url:
-        format: string # type: string
+        description: The URL of the organization's webhooks API endpoint.
+        title: Hooks URL
+        type: string # type: string
         examples: ["https://api.github.com/orgs/github/hooks"]
         uiOrder: 6
       issues-url:
-        format: string # type: string
+        description: The URL of the organization's issues API endpoint.
+        title: Issues URL
+        type: string # type: string
         examples: ["https://api.github.com/orgs/github/issues"]
         uiOrder: 7
       members-url:
-        format: string # type: string
+        description: The URL of the organization's members API endpoint.
+        title: Members URL
+        type: string # type: string
         examples: ["https://api.github.com/orgs/github/members{/member}"]
         uiOrder: 8
       public-members-url:
-        format: string # type: string
+        description: The URL of the organization's public members API endpoint.
+        title: Public Members URL
+        type: string # type: string
         examples: ["https://api.github.com/orgs/github/public_members{/member}"]
         uiOrder: 9
       avatar-url:
-        format: string # type: string
+        description: The URL of the organization's avatar image.
+        title: Avatar URL
+        type: string # type: string
         examples: ["https://github.com/images/error/octocat_happy.gif"]
         uiOrder: 10
       description:
-        format: string # type: [string, null]
+        description: The description of the organization.
+        title: Description
+        type: string # type: [string, null]
         examples: [A great organization]
         uiOrder: 11
       name:
-        format: string # type: string
+        description: The display name of the organization.
+        title: Name
+        type: string # type: string
         examples: [github]
         uiOrder: 12
       company:
-        format: string # type: string
+        description: The company name associated with the organization.
+        title: Company
+        type: string # type: string
         examples: [GitHub]
         uiOrder: 13
       blog:
-        format: string # type: string, format: uri
+        description: The blog URL of the organization.
+        title: Blog
+        type: string # type: string, format: uri
         examples: ["https://github.com/blog"]
         uiOrder: 14
       location:
-        format: string # type: string
+        description: The location of the organization.
+        title: Location
+        type: string # type: string
         examples: [San Francisco]
         uiOrder: 15
       email:
-        format: string # type: string, format: email
+        description: The public email address of the organization.
+        title: Email
+        type: string # type: string, format: email
         examples: [octocat@github.com]
         uiOrder: 16
       twitter-username:
-        format: string # type: [string, null]
+        description: The Twitter username of the organization.
+        title: Twitter Username
+        type: string # type: [string, null]
         examples: [github]
         uiOrder: 17
       is-verified:
-        format: boolean # type: boolean
+        description: Whether the organization is verified by GitHub.
+        title: Is Verified
+        type: boolean # type: boolean
         examples: [true]
         uiOrder: 18
       has-organization-projects:
-        format: boolean # type: boolean
+        description: Whether organization projects are enabled.
+        title: Has Organization Projects
+        type: boolean # type: boolean
         examples: [true]
         uiOrder: 19
       has-repository-projects:
-        format: boolean # type: boolean
+        description: Whether repository projects are enabled.
+        title: Has Repository Projects
+        type: boolean # type: boolean
         examples: [true]
         uiOrder: 20
       public-repos:
-        format: integer # type: integer
+        description: The number of public repositories.
+        title: Public Repositories
+        type: integer # type: integer
         examples: [2]
         uiOrder: 21
       public-gists:
-        format: integer # type: integer
+        description: The number of public gists.
+        title: Public Gists
+        type: integer # type: integer
         examples: [1]
         uiOrder: 22
       followers:
-        format: integer # type: integer
+        description: The number of followers.
+        title: Followers
+        type: integer # type: integer
         examples: [20]
         uiOrder: 23
       following:
-        format: integer # type: integer
+        description: The number of users the organization is following.
+        title: Following
+        type: integer # type: integer
         examples: [0]
         uiOrder: 24
       html-url:
-        format: string # type: string, format: uri
+        description: The URL of the organization's GitHub homepage.
+        title: HTML URL
+        type: string # type: string, format: uri
         examples: ["https://github.com/octocat"]
         uiOrder: 25
       type:
-        format: string # type: string
+        description: The type of the account.
+        title: Type
+        type: string # type: string
         examples: [Organization]
         uiOrder: 26
       total-private-repos:
-        format: integer # type: integer
+        description: The total number of private repositories.
+        title: Total Private Repositories
+        type: integer # type: integer
         examples: [100]
         uiOrder: 27
       owned-private-repos:
-        format: integer # type: integer
+        description: The number of private repositories owned by the organization.
+        title: Owned Private Repositories
+        type: integer # type: integer
         examples: [100]
         uiOrder: 28
       private-gists:
-        format: integer # type: [integer, null]
+        description: The number of private gists.
+        title: Private Gists
+        type: integer # type: [integer, null]
         examples: [81]
         uiOrder: 29
       disk-usage:
-        format: integer # type: [integer, null]
+        description: The amount of disk space used by the organization.
+        title: Disk Usage
+        type: integer # type: [integer, null]
         examples: [10000]
         uiOrder: 30
       collaborators:
-        format: integer # type: [integer, null]
-        description: >
-          The number of collaborators on private repositories.
-          This field may be null if the number of private repositories is over 50,000.
+        description: The number of collaborators on private repositories.
+        title: Collaborators
+        type: integer # type: [integer, null]
         examples: [8]
         uiOrder: 31
       billing-email:
-        format: string # type: [string, null], format: email
+        description: The billing email address for the organization.
+        title: Billing Email
+        type: string # type: [string, null], format: email
         examples: [org@example.com]
         uiOrder: 32
       plan:
-        format: object # type: object
+        description: The organization's plan details.
+        title: Plan
+        type: object # type: object
         properties:
           name:
-            format: string # type: string
+            description: The name of the plan.
+            title: Name
+            type: string # type: string
             uiOrder: 0
           space:
-            format: integer # type: integer
+            description: The amount of disk space included in the plan.
+            title: Space
+            type: integer # type: integer
             uiOrder: 1
           private-repos:
-            format: integer # type: integer
+            description: The number of private repositories included in the plan.
+            title: Private Repositories
+            type: integer # type: integer
             uiOrder: 2
           filled-seats:
-            format: integer # type: integer
+            description: The number of filled seats in the plan.
+            title: Filled Seats
+            type: integer # type: integer
             uiOrder: 3
           seats:
-            format: integer # type: integer
+            description: The total number of seats in the plan.
+            title: Seats
+            type: integer # type: integer
             uiOrder: 4
         required:
           - name
@@ -278,129 +353,150 @@ $defs:
           - private-repos
         uiOrder: 33
       default-repository-permission:
-        format: string # type: [string, null]
+        description: The default repository permission level for organization members.
+        title: Default Repository Permission
+        type: string # type: [string, null]
         uiOrder: 34
       members-can-create-repositories:
-        format: boolean # type: [boolean, null]
+        description: Whether organization members can create repositories.
+        title: Members Can Create Repositories
+        type: boolean # type: [boolean, null]
         examples: [true]
         uiOrder: 35
       two-factor-requirement-enabled:
-        format: boolean # type: [boolean, null]
+        description: Whether two-factor authentication is required for all members.
+        title: Two Factor Requirement Enabled
+        type: boolean # type: [boolean, null]
         examples: [true]
         uiOrder: 36
       members-allowed-repository-creation-type:
-        format: string # type: string
+        description: The type of repositories members are allowed to create.
+        title: Members Allowed Repository Creation Type
+        type: string # type: string
         examples: [all]
         uiOrder: 37
       members-can-create-public-repositories:
-        format: boolean # type: boolean
+        description: Whether members can create public repositories.
+        title: Members Can Create Public Repositories
+        type: boolean # type: boolean
         examples: [true]
         uiOrder: 38
       members-can-create-private-repositories:
-        format: boolean # type: boolean
+        description: Whether members can create private repositories.
+        title: Members Can Create Private Repositories
+        type: boolean # type: boolean
         examples: [true]
         uiOrder: 39
       members-can-create-internal-repositories:
-        format: boolean # type: boolean
+        description: Whether members can create internal repositories.
+        title: Members Can Create Internal Repositories
+        type: boolean # type: boolean
         examples: [true]
         uiOrder: 40
       members-can-create-pages:
-        format: boolean # type: boolean
+        description: Whether members can create GitHub Pages sites.
+        title: Members Can Create Pages
+        type: boolean # type: boolean
         examples: [true]
         uiOrder: 41
       members-can-create-public-pages:
-        format: boolean # type: boolean
+        description: Whether members can create public GitHub Pages sites.
+        title: Members Can Create Public Pages
+        type: boolean # type: boolean
         examples: [true]
         uiOrder: 42
       members-can-create-private-pages:
-        format: boolean # type: boolean
+        description: Whether members can create private GitHub Pages sites.
+        title: Members Can Create Private Pages
+        type: boolean # type: boolean
         examples: [true]
         uiOrder: 43
       members-can-fork-private-repositories:
-        format: boolean # type: [boolean, null]
+        description: Whether members can fork private repositories.
+        title: Members Can Fork Private Repositories
+        type: boolean # type: [boolean, null]
         examples: [false]
         uiOrder: 44
       web-commit-signoff-required:
-        format: boolean # type: boolean
+        description: Whether web commit sign-off is required.
+        title: Web Commit Signoff Required
+        type: boolean # type: boolean
         examples: [false]
         uiOrder: 45
       advanced-security-enabled-for-new-repositories:
-        format: boolean # type: boolean
-        description: >
-          **Endpoint closing down notice.** Please use [code security configurations](https://docs.github.com/rest/code-security/configurations) instead.
-          Whether GitHub Advanced Security is enabled for new repositories and repositories transferred to this organization.
-          This field is only visible to organization owners or members of a team with the security manager role.
-        examples: [false]
+        description: Whether GitHub Advanced Security is enabled for new repositories.
+        title: Advanced Security Enabled For New Repositories
+        type: boolean # type: boolean
         deprecated: true
+        examples: [false]
         uiOrder: 46
       dependabot-alerts-enabled-for-new-repositories:
-        format: boolean # type: boolean
-        description: >
-          **Endpoint closing down notice.** Please use [code security configurations](https://docs.github.com/rest/code-security/configurations) instead.
-          Whether Dependabot alerts are automatically enabled for new repositories and repositories transferred to this organization.
-          This field is only visible to organization owners or members of a team with the security manager role.
-        examples: [false]
+        description: Whether Dependabot alerts are enabled for new repositories.
+        title: Dependabot Alerts Enabled For New Repositories
+        type: boolean # type: boolean
         deprecated: true
+        examples: [false]
         uiOrder: 47
       dependabot-security-updates-enabled-for-new-repositories:
-        format: boolean # type: boolean
-        description: >
-          **Endpoint closing down notice.** Please use [code security configurations](https://docs.github.com/rest/code-security/configurations) instead.
-          Whether Dependabot security updates are automatically enabled for new repositories and repositories transferred to this organization.
-          This field is only visible to organization owners or members of a team with the security manager role.
-        examples: [false]
+        description: Whether Dependabot security updates are enabled for new repositories.
+        title: Dependabot Security Updates Enabled For New Repositories
+        type: boolean # type: boolean
         deprecated: true
+        examples: [false]
         uiOrder: 48
       dependency-graph-enabled-for-new-repositories:
-        format: boolean # type: boolean
-        description: >
-          **Endpoint closing down notice.** Please use [code security configurations](https://docs.github.com/rest/code-security/configurations) instead.
-          Whether dependency graph is automatically enabled for new repositories and repositories transferred to this organization.
-          This field is only visible to organization owners or members of a team with the security manager role.
-        examples: [false]
+        description: Whether dependency graph is enabled for new repositories.
+        title: Dependency Graph Enabled For New Repositories
+        type: boolean # type: boolean
         deprecated: true
+        examples: [false]
         uiOrder: 49
       secret-scanning-enabled-for-new-repositories:
-        format: boolean # type: boolean
-        description: >
-          **Endpoint closing down notice.** Please use [code security configurations](https://docs.github.com/rest/code-security/configurations) instead.
-          Whether secret scanning is automatically enabled for new repositories and repositories transferred to this organization.
-          This field is only visible to organization owners or members of a team with the security manager role.
-        examples: [false]
+        description: Whether secret scanning is enabled for new repositories.
+        title: Secret Scanning Enabled For New Repositories
+        type: boolean # type: boolean
         deprecated: true
+        examples: [false]
         uiOrder: 50
       secret-scanning-push-protection-enabled-for-new-repositories:
-        format: boolean # type: boolean
-        description: >
-          **Endpoint closing down notice.** Please use [code security configurations](https://docs.github.com/rest/code-security/configurations) instead.
-          Whether secret scanning push protection is automatically enabled for new repositories and repositories transferred to this organization.
-          This field is only visible to organization owners or members of a team with the security manager role.
-        examples: [false]
+        description: Whether secret scanning push protection is enabled for new repositories.
+        title: Secret Scanning Push Protection Enabled For New Repositories
+        type: boolean # type: boolean
         deprecated: true
+        examples: [false]
         uiOrder: 51
       secret-scanning-push-protection-custom-link-enabled:
-        format: boolean # type: boolean
         description: Whether a custom link is shown to contributors who are blocked from pushing a secret by push protection.
+        title: Secret Scanning Push Protection Custom Link Enabled
+        type: boolean # type: boolean
         examples: [false]
         uiOrder: 52
       secret-scanning-push-protection-custom-link:
-        format: string # type: [string, null]
         description: An optional URL string to display to contributors who are blocked from pushing a secret.
+        title: Secret Scanning Push Protection Custom Link
+        type: string # type: [string, null]
         examples: ["https://github.com/test-org/test-repo/blob/main/README.md"]
         uiOrder: 53
       created-at:
-        format: string # type: string, format: date-time
+        description: The timestamp when the organization was created.
+        title: Created At
+        type: string # type: string, format: date-time
         examples: ["2008-01-14T04:33:35Z"]
         uiOrder: 54
       updated-at:
-        format: string # type: string, format: date-time
+        description: The timestamp when the organization was last updated.
+        title: Updated At
+        type: string # type: string, format: date-time
         uiOrder: 55
       archived-at:
-        format: string # type: [string, null], format: date-time
+        description: The timestamp when the organization was archived, if applicable.
+        title: Archived At
+        type: string # type: [string, null], format: date-time
         uiOrder: 56
       deploy-keys-enabled-for-repositories:
-        format: boolean # type: boolean
         description: Controls whether or not deploy keys may be added and used for repositories in the organization.
+        title: Deploy Keys Enabled For Repositories
+        type: boolean # type: boolean
         examples: [false]
         uiOrder: 57
     required:
@@ -428,7 +524,7 @@ $defs:
       - updated-at
       - archived-at
     title: Organization Full
-    format: object # type: object
+    type: object # type: object
   pageOptions:
     title: Page Options
     description: Options for listing pages.
@@ -438,18 +534,14 @@ $defs:
       description: Page number of the results to fetch. Default is 1.
       uiOrder: 100
       title: Page
-      acceptFormats:
-        - integer
-      format: integer
+      type: integer
     per-page:
       default: 30
       description: Number of results to fetch per page. Default is 30.
       uiOrder: 101
       title: Per Page
-      acceptFormats:
-        - integer
-      format: integer
-    format: object
+      type: integer
+    type: object
   pullRequest:
     description: A pull request object.
     properties:
@@ -457,57 +549,57 @@ $defs:
         description: ID of the PR.
         uiOrder: 1
         title: PR id
-        format: integer
+        type: integer
       number:
         description: Number of the PR.
         uiOrder: 2
         title: PR number
-        format: integer
+        type: integer
       state:
         description: State of the PR.
         uiOrder: 3
         title: PR state
-        format: string
+        type: string
       title:
         description: Title of the PR.
         uiOrder: 4
         title: PR Title
-        format: string
+        type: string
       body:
         description: Body of the PR.
         uiOrder: 5
         title: PR body
-        format: string
+        type: string
       diff-url:
         description: URL to the diff of the PR.
         uiOrder: 6
         title: PR diff url
-        format: string
+        type: string
       head:
         description: Head commit of the PR (in SHA value).
         uiOrder: 8
         title: PR head
-        format: string
+        type: string
       base:
         description: Base commit of the PR (in SHA value).
         uiOrder: 9
         title: PR base
-        format: string
+        type: string
       comments-num:
         description: Number of comments on the PR.
         uiOrder: 10
         title: Number of PR comments
-        format: integer
+        type: integer
       commits-num:
         description: Number of commits in the PR.
         uiOrder: 11
         title: Number of PR commits
-        format: integer
+        type: integer
       review-comments-num:
         description: Number of review comments in the PR.
         uiOrder: 12
         title: Number of PR review comments
-        format: integer
+        type: integer
       commits:
         description: Commits in the PR.
         uiOrder: 13
@@ -516,25 +608,21 @@ $defs:
           $ref: "#/$defs/commit"
           required: []
           description: A commit in the PR.
-        format: array
+        type: array
     required: []
     title: Pull Request
-    format: object
+    type: object
   repositoryInfo:
     owner:
       description: Owner of the repository.
       uiOrder: 0
-      acceptFormats:
-        - string
+      type: string
       title: Owner
-      format: string
     repository:
       description: Repository name.
       uiOrder: 1
-      acceptFormats:
-        - string
+      type: string
       title: Repository
-      format: string
   reviewComments:
     description: A review comment object.
     properties:
@@ -542,39 +630,39 @@ $defs:
         description: ID of the comment.
         uiOrder: 1
         title: Comment id
-        format: integer
+        type: integer
       in-reply-to-id:
         description: ID of the comment this comment is in reply to.
         uiOrder: 2
         title: In Reply To
-        format: integer
+        type: integer
       commit-id:
         description: SHA of the commit on which you want to comment.
         uiOrder: 3
         title: Commit SHA
-        format: string
+        type: string
       body:
         description: Body of the comment.
         uiOrder: 4
         title: Comment body
-        format: string
+        type: string
       path:
         description: Path of the file the comment is on.
         uiOrder: 5
         title: Comment path
-        format: string
+        type: string
       line:
         shortDescription: The last line of the range that your comment applies to. Your comment will be placed under this line.
         description: The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that
           your comment applies to.
         uiOrder: 6
         title: Comment end line
-        format: integer
+        type: integer
       start-line:
         description: The first line in the pull request diff that your multi-line comment applies to. Only multi-line comment needs to fill this field.
         uiOrder: 7
         title: Comment start line
-        format: integer
+        type: integer
       side:
         shortDescription: "Side of the end line, can be one of: LEFT, RIGHT, side. Default is side."
         description: "Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the\
@@ -586,7 +674,7 @@ $defs:
           - side
         uiOrder: 8
         title: Comment end side
-        format: string
+        type: string
       start-side:
         shortDescription: "Side of the start line, can be one of: LEFT, RIGHT, side. Default is side."
         description: "Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of\
@@ -598,7 +686,7 @@ $defs:
           - side
         uiOrder: 9
         title: Comment start side
-        format: string
+        type: string
       subject-type:
         description: "Subject type of the comment, can be one of: line, file. Default is line."
         uiOrder: 10
@@ -607,17 +695,17 @@ $defs:
         enum:
           - line
           - file
-        format: string
+        type: string
       created-at:
         description: Time the comment was created.
         uiOrder: 11
         title: Comment created at
-        format: string
+        type: string
       updated-at:
         description: Time the comment was updated.
         uiOrder: 12
         title: Comment updated at
-        format: string
+        type: string
       user:
         description: User who created the comment.
         uiOrder: 13
@@ -627,193 +715,283 @@ $defs:
             description: ID of the user.
             uiOrder: 14
             title: User id
-            format: integer
+            type: integer
           url:
             description: URL of the user.
             uiOrder: 15
             title: User URL
-            format: string
+            type: string
         required: []
-        format: object
+        type: object
     title: Review Comment
-    format: object
+    type: object
   user:
     oneOf:
       - title: Private User
         description: Private User
-        format: object # type: object
+        type: object # type: object
         properties:
           login:
-            format: string # type: string
+            type: string # type: string
+            title: Username
+            description: The user's username/login
             examples: [octocat]
             uiOrder: 0
           id:
-            format: integer # type: integer, format: int64
+            type: integer # type: integer, format: int64
+            title: User ID
+            description: The unique identifier of the user
             examples: [1]
             uiOrder: 1
           user_view_type:
-            format: string # type: string
+            type: string # type: string
+            title: User View Type
+            description: The type of view for this user
             uiOrder: 2
           node_id:
-            format: string # type: string
+            type: string # type: string
+            title: Node ID
+            description: The GraphQL node ID of the user
             examples: [MDQ6VXNlcjE=]
             uiOrder: 3
           avatar_url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: Avatar URL
+            description: URL of the user's avatar image
             examples: ["https://github.com/images/error/octocat_happy.gif"]
             uiOrder: 4
           gravatar_id:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Gravatar ID
+            description: The user's Gravatar ID
             examples: [41d064eb2195891e12d0413f63227ea7]
             uiOrder: 5
           url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: API URL
+            description: The URL to the user's GitHub API endpoint
             examples: ["https://api.github.com/users/octocat"]
             uiOrder: 6
           html_url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: Profile URL
+            description: The URL to the user's GitHub profile
             examples: ["https://github.com/octocat"]
             uiOrder: 7
           followers_url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: Followers URL
+            description: The URL to the user's followers list
             examples: ["https://api.github.com/users/octocat/followers"]
             uiOrder: 8
           following_url:
-            format: string # type: string
+            type: string # type: string
+            title: Following URL
+            description: The URL to the user's following list
             examples: ["https://api.github.com/users/octocat/following{/other_user}"]
             uiOrder: 9
           gists_url:
-            format: string # type: string
+            type: string # type: string
+            title: Gists URL
+            description: The URL to the user's gists
             examples: ["https://api.github.com/users/octocat/gists{/gist_id}"]
             uiOrder: 10
           starred_url:
-            format: string # type: string
+            type: string # type: string
+            title: Starred URL
+            description: The URL to the user's starred repositories
             examples: ["https://api.github.com/users/octocat/starred{/owner}{/repo}"]
             uiOrder: 11
           subscriptions_url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: Subscriptions URL
+            description: The URL to the user's repository subscriptions
             examples: ["https://api.github.com/users/octocat/subscriptions"]
             uiOrder: 12
           organizations_url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: Organizations URL
+            description: The URL to the user's organizations
             examples: ["https://api.github.com/users/octocat/orgs"]
             uiOrder: 13
           repos_url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: Repositories URL
+            description: The URL to the user's repositories
             examples: ["https://api.github.com/users/octocat/repos"]
             uiOrder: 14
           events_url:
-            format: string # type: string
+            type: string # type: string
+            title: Events URL
+            description: The URL to the user's events
             examples: ["https://api.github.com/users/octocat/events{/privacy}"]
             uiOrder: 15
           received_events_url:
-            format: string # type: string, format: uri
+            type: string # type: string, type: uri
+            title: Received Events URL
+            description: The URL to events received by the user
             examples: ["https://api.github.com/users/octocat/received_events"]
             uiOrder: 16
           type:
-            format: string # type: string
+            type: string # type: string
+            title: User Type
+            description: The type of GitHub user account
             examples: [User]
             uiOrder: 17
           site_admin:
-            format: boolean # type: boolean
+            type: boolean # type: boolean
+            title: Site Admin
+            description: Whether the user is a GitHub site admin
             uiOrder: 18
           name:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Full Name
+            description: The user's full name
             examples: [monalisa octocat]
             uiOrder: 19
           company:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Company
+            description: The user's company or organization
             examples: [GitHub]
             uiOrder: 20
           blog:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Blog URL
+            description: The URL to the user's blog
             examples: ["https://github.com/blog"]
             uiOrder: 21
           location:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Location
+            description: The user's geographical location
             examples: [San Francisco]
             uiOrder: 22
           email:
-            format: string # type: [string, null], format: email
+            type: string # type: [string, null], format: email
+            title: Email
+            description: The user's primary email address
             examples: [octocat@github.com]
             uiOrder: 23
           notification_email:
-            format: string # type: [string, null], format: email
+            type: string # type: [string, null], format: email
+            title: Notification Email
+            description: The email address used for notifications
             examples: [octocat@github.com]
             uiOrder: 24
           hireable:
-            format: boolean # type: [boolean, null]
+            type: boolean # type: [boolean, null]
+            title: Hireable Status
+            description: Whether the user is available for hire
             uiOrder: 25
           bio:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Biography
+            description: The user's biography or profile description
             examples: [There once was...]
             uiOrder: 26
           twitter_username:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Twitter Username
+            description: The user's Twitter username
             examples: [monalisa]
             uiOrder: 27
           public_repos:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Public Repositories
+            description: Number of public repositories owned by the user
             examples: [2]
             uiOrder: 28
           public_gists:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Public Gists
+            description: Number of public gists owned by the user
             examples: [1]
             uiOrder: 29
           followers:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Followers Count
+            description: Number of users following this user
             examples: [20]
             uiOrder: 30
           following:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Following Count
+            description: Number of users this user is following
             examples: [0]
             uiOrder: 31
           created_at:
-            format: string # type: string, format: date-time
+            type: string # type: string, format: date-time
+            title: Account Created At
+            description: Timestamp when the user account was created
             examples: ["2008-01-14T04:33:35Z"]
             uiOrder: 32
           updated_at:
-            format: string # type: string, format: date-time
+            type: string # type: string, format: date-time
+            title: Account Updated At
+            description: Timestamp when the user account was last updated
             examples: ["2008-01-14T04:33:35Z"]
             uiOrder: 33
           private_gists:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Private Gists
+            description: Number of private gists owned by the user
             examples: [81]
             uiOrder: 34
           total_private_repos:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Total Private Repositories
+            description: Total number of private repositories
             examples: [100]
             uiOrder: 35
           owned_private_repos:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Owned Private Repositories
+            description: Number of private repositories owned by the user
             examples: [100]
             uiOrder: 36
           disk_usage:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Disk Usage
+            description: Amount of disk space used by the user's repositories
             examples: [10000]
             uiOrder: 37
           collaborators:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Collaborators
+            description: Number of collaborators across all repositories
             examples: [8]
             uiOrder: 38
           two_factor_authentication:
-            format: boolean # type: boolean
+            type: boolean # type: boolean
+            title: Two Factor Authentication
+            description: Whether two-factor authentication is enabled
             examples: [true]
             uiOrder: 39
           plan:
-            format: object # type: object
+            type: object # type: object
+            title: GitHub Plan
+            description: The user's GitHub plan details
             properties:
               collaborators:
-                format: integer # type: integer
+                type: integer # type: integer
+                title: Plan Collaborators
+                description: Number of collaborators allowed under the plan
                 uiOrder: 0
               name:
-                format: string # type: string
+                type: string # type: string
+                title: Plan Name
+                description: Name of the GitHub plan
                 uiOrder: 1
               space:
-                format: integer # type: integer
+                type: integer # type: integer
+                title: Plan Space
+                description: Amount of space included in the plan
                 uiOrder: 2
               private_repos:
-                format: integer # type: integer
+                type: integer # type: integer
+                title: Plan Private Repositories
+                description: Number of private repositories allowed under the plan
                 uiOrder: 3
             required:
               - collaborators
@@ -822,10 +1000,14 @@ $defs:
               - private_repos
             uiOrder: 40
           business_plus:
-            format: boolean # type: boolean
+            type: boolean # type: boolean
+            title: Business Plus
+            description: Whether the user has GitHub Business Plus
             uiOrder: 41
           ldap_dn:
-            format: string # type: string
+            type: string # type: string
+            title: LDAP DN
+            description: The user's LDAP Distinguished Name
             uiOrder: 42
         required:
           - avatar_url
@@ -867,124 +1049,202 @@ $defs:
           - two_factor_authentication
       - title: Public User
         description: Public User
-        format: object # type: object
+        type: object # type: object
         properties:
           login:
-            format: string # type: string
+            type: string # type: string
+            title: Username
+            description: The user's username/login
             uiOrder: 0
           id:
-            format: integer # type: integer, format: int64
+            type: integer # type: integer, format: int64
+            title: User ID
+            description: The unique identifier of the user
             uiOrder: 1
           user_view_type:
-            format: string # type: string
+            type: string # type: string
+            title: User View Type
+            description: The type of view for this user
             uiOrder: 2
           node_id:
-            format: string # type: string
+            type: string # type: string
+            title: Node ID
+            description: The GraphQL node ID of the user
             uiOrder: 3
           avatar_url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: Avatar URL
+            description: URL of the user's avatar image
             uiOrder: 4
           gravatar_id:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Gravatar ID
+            description: The user's Gravatar ID
             uiOrder: 5
           url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: API URL
+            description: The URL to the user's GitHub API endpoint
             uiOrder: 6
           html_url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: Profile URL
+            description: The URL to the user's GitHub profile
             uiOrder: 7
           followers_url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: Followers URL
+            description: The URL to get the user's followers
             uiOrder: 8
           following_url:
-            format: string # type: string
+            type: string # type: string
+            title: Following URL
+            description: The URL to get who the user is following
             uiOrder: 9
           gists_url:
-            format: string # type: string
+            type: string # type: string
+            title: Gists URL
+            description: The URL to get the user's gists
             uiOrder: 10
           starred_url:
-            format: string # type: string
+            type: string # type: string
+            title: Starred URL
+            description: The URL to get the user's starred repositories
             uiOrder: 11
           subscriptions_url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: Subscriptions URL
+            description: The URL to get the user's subscriptions
             uiOrder: 12
           organizations_url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: Organizations URL
+            description: The URL to get the user's organizations
             uiOrder: 13
           repos_url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: Repositories URL
+            description: The URL to get the user's repositories
             uiOrder: 14
           events_url:
-            format: string # type: string
+            type: string # type: string
+            title: Events URL
+            description: The URL to get the user's events
             uiOrder: 15
           received_events_url:
-            format: string # type: string, format: uri
+            type: string # type: string, format: uri
+            title: Received Events URL
+            description: The URL to get events received by the user
             uiOrder: 16
           type:
-            format: string # type: string
+            type: string # type: string
+            title: User Type
+            description: The type of user account
             uiOrder: 17
           site_admin:
-            format: boolean # type: boolean
+            type: boolean # type: boolean
+            title: Site Admin
+            description: Whether the user is a GitHub site admin
             uiOrder: 18
           name:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Name
+            description: The user's full name
             uiOrder: 19
           company:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Company
+            description: The user's company
             uiOrder: 20
           blog:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Blog
+            description: The user's blog URL
             uiOrder: 21
           location:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Location
+            description: The user's location
             uiOrder: 22
           email:
-            format: string # type: [string, null], format: email
+            type: string # type: [string, null], format: email
+            title: Email
+            description: The user's email address
             uiOrder: 23
           notification_email:
-            format: string # type: [string, null], format: email
+            type: string # type: [string, null], format: email
+            title: Notification Email
+            description: The user's notification email address
             uiOrder: 24
           hireable:
-            format: boolean # type: [boolean, null]
+            type: boolean # type: [boolean, null]
+            title: Hireable
+            description: Whether the user is available for hire
             uiOrder: 25
           bio:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Bio
+            description: The user's biography
             uiOrder: 26
           twitter_username:
-            format: string # type: [string, null]
+            type: string # type: [string, null]
+            title: Twitter Username
+            description: The user's Twitter username
             uiOrder: 27
           public_repos:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Public Repositories
+            description: Number of public repositories
             uiOrder: 28
           public_gists:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Public Gists
+            description: Number of public gists
             uiOrder: 29
           followers:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Followers
+            description: Number of followers
             uiOrder: 30
           following:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Following
+            description: Number of users being followed
             uiOrder: 31
           created_at:
-            format: string # type: string, format: date-time
+            type: string # type: string, format: date-time
+            title: Created At
+            description: When the user account was created
             uiOrder: 32
           updated_at:
-            format: string # type: string, format: date-time
+            type: string # type: string, format: date-time
+            title: Updated At
+            description: When the user account was last updated
             uiOrder: 33
           plan:
-            format: object # type: object
+            type: object # type: object
+            title: Plan
+            description: The user's GitHub plan
             properties:
               collaborators:
-                format: integer # type: integer
+                type: integer # type: integer
+                title: Collaborators
+                description: Number of collaborators allowed
                 uiOrder: 0
               name:
-                format: string # type: string
+                type: string # type: string
+                title: Plan Name
+                description: Name of the GitHub plan
                 uiOrder: 1
               space:
-                format: integer # type: integer
+                type: integer # type: integer
+                title: Space
+                description: Space allowed in the plan
                 uiOrder: 2
               private_repos:
-                format: integer # type: integer
+                type: integer # type: integer
+                title: Private Repositories
+                description: Number of private repositories allowed
                 uiOrder: 3
             required:
               - collaborators
@@ -993,23 +1253,33 @@ $defs:
               - private_repos
             uiOrder: 34
           private_gists:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Private Gists
+            description: Number of private gists
             examples: [1]
             uiOrder: 35
           total_private_repos:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Total Private Repositories
+            description: Total number of private repositories
             examples: [2]
             uiOrder: 36
           owned_private_repos:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Owned Private Repositories
+            description: Number of private repositories owned
             examples: [2]
             uiOrder: 37
           disk_usage:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Disk Usage
+            description: Amount of disk space used
             examples: [1]
             uiOrder: 38
           collaborators:
-            format: integer # type: integer
+            type: integer # type: integer
+            title: Collaborators
+            description: Number of collaborators
             examples: [3]
             uiOrder: 39
         required:
@@ -1054,28 +1324,24 @@ TASK_CREATE_ISSUE:
       $ref: "#/$defs/repositoryInfo"
       title:
         $ref: "#/$defs/issue/properties/title"
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 3
       body:
         $ref: "#/$defs/issue/properties/body"
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 4
       assignees:
         $ref: "#/$defs/issue/properties/assignees"
-        acceptFormats:
-          - array
+        type: array
         items:
-          format: string
+          type: string
         title: Assignees
         uiOrder: 5
       labels:
         $ref: "#/$defs/issue/properties/labels"
-        acceptFormats:
-          - array
+        type: array
         items:
-          format: string
+          type: string
         title: Labels
         uiOrder: 6
     required:
@@ -1084,7 +1350,7 @@ TASK_CREATE_ISSUE:
       - title
       - body
     title: Input
-    format: object
+    type: object
   output:
     description: The created issue.
     uiOrder: 0
@@ -1092,7 +1358,7 @@ TASK_CREATE_ISSUE:
       $ref: "#/$defs/issue/properties"
     required: []
     title: Output
-    format: object
+    type: object
 TASK_CREATE_REVIEW_COMMENT:
   shortDescription: Create a review comment in pull request.
   description: Create a review comment in a pull request. The comment can be a general comment or a review comment. The comment can be on a specific line
@@ -1105,10 +1371,8 @@ TASK_CREATE_REVIEW_COMMENT:
       pr-number:
         title: PR Number
         description: Number of the PR.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 3
-        format: integer
       comment:
         title: Comment
         description: The comment to be added.
@@ -1116,56 +1380,40 @@ TASK_CREATE_REVIEW_COMMENT:
         properties:
           commit-id:
             $ref: "#/$defs/reviewComments/properties/commit-id"
-            acceptFormats:
-              - string
             uiOrder: 0
           body:
             $ref: "#/$defs/reviewComments/properties/body"
-            acceptFormats:
-              - string
             uiOrder: 1
           path:
             $ref: "#/$defs/reviewComments/properties/path"
-            acceptFormats:
-              - string
             uiOrder: 2
           start-line:
             $ref: "#/$defs/reviewComments/properties/start-line"
-            acceptFormats:
-              - integer
             uiOrder: 3
           line:
             $ref: "#/$defs/reviewComments/properties/line"
-            acceptFormats:
-              - integer
             uiOrder: 4
           start-side:
             $ref: "#/$defs/reviewComments/properties/start-side"
-            acceptFormats:
-              - string
             uiOrder: 5
           side:
             $ref: "#/$defs/reviewComments/properties/side"
-            acceptFormats:
-              - string
             uiOrder: 6
           subject-type:
             $ref: "#/$defs/reviewComments/properties/subject-type"
-            acceptFormats:
-              - string
             uiOrder: 7
         required:
           - body
           - path
           - commit-id
-        format: object
+        type: object
     required:
       - owner
       - repository
       - pr-number
       - comment
     title: Input
-    format: object
+    type: object
   output:
     description: The created comment.
     uiOrder: 0
@@ -1173,7 +1421,7 @@ TASK_CREATE_REVIEW_COMMENT:
       $ref: "#/$defs/reviewComments/properties"
     required: []
     title: Output
-    format: object
+    type: object
 TASK_CREATE_WEBHOOK:
   description: Create a webhook for a repository.
   input:
@@ -1184,30 +1432,22 @@ TASK_CREATE_WEBHOOK:
       hook-url:
         title: Webhook URL
         description: URL to send the payload to.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 3
-        format: string
       events:
         title: Events
         description: Events to trigger the webhook. Please see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads">the github document</a>
           for more information.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 4
         items:
-          acceptFormats:
-            - string
-          format: string
-        format: array
+          type: string
       active:
         title: Active
         default: false
         description: Whether the webhook is active. Default is false.
-        acceptFormats:
-          - boolean
+        type: boolean
         uiOrder: 5
-        format: boolean
       content-type:
         default: json
         title: Content Type
@@ -1215,26 +1455,22 @@ TASK_CREATE_WEBHOOK:
         enum:
           - json
           - form
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 6
-        format: string
       hook-secret:
         title: Hook Secret
         description: If provided, the secret will be used as the key to generate the HMAC hex digest value for delivery signature headers. (see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#delivery-headers">the
           document</a>).
         instillSecret: true
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 7
-        format: string
     required:
       - owner
       - repository
       - hook-url
       - events
     title: Input
-    format: object
+    type: object
   output:
     description: The created webhook.
     uiOrder: 0
@@ -1243,22 +1479,22 @@ TASK_CREATE_WEBHOOK:
         description: ID of the webhook.
         uiOrder: 1
         title: Webhook ID
-        format: integer
+        type: integer
       url:
         description: URL of the webhook.
         uiOrder: 2
         title: Webhook URL
-        format: string
+        type: string
       ping-url:
         description: URL to ping the webhook.
         uiOrder: 3
         title: Ping URL
-        format: string
+        type: string
       test-url:
         description: URL to test the webhook.
         uiOrder: 4
         title: Test URL
-        format: string
+        type: string
       config:
         description: Configuration of the webhook.
         uiOrder: 6
@@ -1268,22 +1504,22 @@ TASK_CREATE_WEBHOOK:
             description: URL of the webhook.
             uiOrder: 1
             title: Webhook URL
-            format: string
+            type: string
           content-type:
             description: Content type of the webhook.
             uiOrder: 2
             title: Content Type
-            format: string
+            type: string
           insecure-ssl:
             description: Whether the webhook is insecure.
             uiOrder: 3
             title: Insecure SSL
-            format: string
+            type: string
         required: []
-        format: object
+        type: object
     required: []
     title: Output
-    format: object
+    type: object
 TASK_GET_COMMIT:
   shortDescription: Get a commit from a repository, given the commit SHA
   input:
@@ -1293,15 +1529,14 @@ TASK_GET_COMMIT:
       $ref: "#/$defs/repositoryInfo"
       sha:
         $ref: "#/$defs/commit/properties/sha"
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 3
     required:
       - owner
       - repository
       - sha
     title: Input
-    format: object
+    type: object
   output:
     description: The specific commit in GitHub repository.
     uiOrder: 0
@@ -1309,7 +1544,7 @@ TASK_GET_COMMIT:
       $ref: "#/$defs/commit/properties"
     required: []
     title: Output
-    format: object
+    type: object
 TASK_GET_ISSUE:
   description: Get an issue. This can be a pull request or a general issue, and you can tell by the `is-pull-request` field.
   shortDescription: Get an issue.
@@ -1322,16 +1557,14 @@ TASK_GET_ISSUE:
         default: 0
         title: Issue Number
         description: Number of the issue.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 4
-        format: integer
     required:
       - owner
       - repository
       - issue-number
     title: Input
-    format: object
+    type: object
   output:
     description: The specific issue in GitHub repository.
     uiOrder: 0
@@ -1339,47 +1572,35 @@ TASK_GET_ISSUE:
       $ref: "#/$defs/issue/properties"
     required: []
     title: Output
-    format: object
+    type: object
 TASK_GET_ORGANIZATION:
   description: Get an organization by name or ID.
   shortDescription: Get an organization by name or ID.
   input:
     description: Please input either the organization name or organization ID.
-    editOnNodeFields:
-      - name
-      - id
     properties:
       name:
         title: Name
         description: The GitHub organization name.
-        format: string
-        acceptFormats:
-          - string
-        upstreamTypes:
-          - value
-          - reference
+        type: string
         uiOrder: 0
       id:
         title: ID
         description: The GitHub organization ID. If both `name` and `id` are provided, `id` takes precedence.
-        format: integer
-        acceptFormats:
-          - integer
-        upstreamTypes:
-          - value
-          - reference
+        type: integer
         uiOrder: 1
     required: []
     title: Input
-    format: object
+    type: object
   output:
     description: The GitHub organization information.
     properties:
       organization:
         $ref: "#/$defs/organization"
+        uiOrder: 0
     required: []
     title: Output
-    format: object
+    type: object
 TASK_GET_PULL_REQUEST:
   shortDescription: Get a pull request from a repository, given the PR number. This will default to the latest PR if no PR number is provided.
   input:
@@ -1391,62 +1612,50 @@ TASK_GET_PULL_REQUEST:
         default: 0
         title: PR Number
         description: Number of the PR. `0` for the latest PR.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 4
-        format: integer
     required:
       - owner
       - repository
     title: Input
-    format: object
+    type: object
   output:
     description: The specific pr in GitHub repository.
     uiOrder: 0
     $ref: "#/$defs/pullRequest"
     required: []
     title: Output
-    format: object
+    type: object
 TASK_GET_USER:
   description: Get a user by name or ID.
   shortDescription: Get a user by name or ID.
   input:
     description: Please input either the username or user ID.
-    editOnNodeFields:
-      - name
-      - id
     properties:
       name:
         title: Name
         description: The GitHub username of the user.
-        format: string
-        acceptFormats:
-          - string
-        upstreamTypes:
-          - value
-          - reference
+        type: string
         uiOrder: 0
       id:
         title: ID
         description: The GitHub user ID. If both `name` and `id` are provided, `id` takes precedence.
-        format: integer
-        acceptFormats:
-          - integer
-        upstreamTypes:
-          - value
-          - reference
+        type: integer
         uiOrder: 1
     required: []
     title: Input
-    format: object
+    type: object
   output:
     description: The GitHub user information.
     properties:
       user:
         $ref: "#/$defs/user"
+        title: User
+        description: The GitHub user information.
+        uiOrder: 0
     required: []
     title: Output
-    format: object
+    type: object
 TASK_LIST_ISSUES:
   description: Get the list of all issues in a repository,This can be a pull request or a general issue, and you can tell by the `is-pull-request` field.
   shortDescription: Get the list of all issues in a repository
@@ -1463,10 +1672,8 @@ TASK_LIST_ISSUES:
           - open
           - closed
           - all
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 10
-        format: string
       sort:
         default: created
         title: Sort
@@ -1476,10 +1683,8 @@ TASK_LIST_ISSUES:
           - updated
           - popularity
           - long-running
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 11
-        format: string
       direction:
         default: desc
         title: Direction
@@ -1487,47 +1692,37 @@ TASK_LIST_ISSUES:
         enum:
           - asc
           - desc
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 12
-        format: string
       since:
         default: "2021-01-01"
         title: Since
         description: Date (in `YYYY-MM-DD` format) from which issues will start to be fetched. The date will be in the UTC timezone.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 13
-        format: string
       no-pull-request:
         title: No Pull Request
         description: Whether to `not` include pull requests in the response. Since issue and pr use the same indexing system in GitHub, the API returns
           all relevant objects (issues and pr). Default is false.
-        acceptFormats:
-          - boolean
+        type: boolean
         uiOrder: 14
-        format: boolean
       page:
         default: 1
         description: Page number of the results to fetch. Default is 1.
         uiOrder: 100
         title: Page
-        acceptFormats:
-          - integer
-        format: integer
+        type: integer
       per-page:
         default: 30
         description: Number of results to fetch per page. Default is 30.
         uiOrder: 101
         title: Per Page
-        acceptFormats:
-          - integer
-        format: integer
+        type: integer
     required:
       - owner
       - repository
     title: Input
-    format: object
+    type: object
   output:
     description: All issues in GitHub repository.
     uiOrder: 0
@@ -1540,11 +1735,11 @@ TASK_LIST_ISSUES:
           $ref: "#/$defs/issue"
           required: []
           description: An issue in GitHub.
-        format: array
+        type: array
     required:
       - issues
     title: Output
-    format: object
+    type: object
 TASK_LIST_PULL_REQUESTS:
   shortDescription: Get the list of all pull requests in a repository
   description: Get the list of all pull requests in a repository. Detailed information about each commit in a PR is omitted, please use the `Get Commit`
@@ -1562,10 +1757,8 @@ TASK_LIST_PULL_REQUESTS:
           - open
           - closed
           - all
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 10
-        format: string
       sort:
         default: created
         title: Sort
@@ -1575,10 +1768,8 @@ TASK_LIST_PULL_REQUESTS:
           - updated
           - popularity
           - long-running
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 11
-        format: string
       direction:
         default: desc
         title: Direction
@@ -1586,31 +1777,25 @@ TASK_LIST_PULL_REQUESTS:
         enum:
           - asc
           - desc
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 12
-        format: string
       page:
         default: 1
         description: Page number of the results to fetch. Default is 1.
         uiOrder: 100
         title: Page
-        acceptFormats:
-          - integer
-        format: integer
+        type: integer
       per-page:
         default: 30
         description: Number of results to fetch per page. Default is 30.
         uiOrder: 101
         title: Per Page
-        acceptFormats:
-          - integer
-        format: integer
+        type: integer
     required:
       - owner
       - repository
     title: Input
-    format: object
+    type: object
   output:
     description: All PRs in GitHub repository.
     uiOrder: 0
@@ -1623,11 +1808,11 @@ TASK_LIST_PULL_REQUESTS:
           $ref: "#/$defs/pullRequest"
           required: []
           description: A pull request in GitHub.
-        format: array
+        type: array
     required:
       - pull-requests
     title: Output
-    format: object
+    type: object
 TASK_LIST_REVIEW_COMMENTS:
   shortDescription: Get the review comments in a pull request
   description: Get the review comments in a pull request. The comments can be on a specific line or on the PR as a whole.
@@ -1640,10 +1825,8 @@ TASK_LIST_REVIEW_COMMENTS:
         default: 0
         title: PR Number
         description: Number of the PR. Default is `0`, which retrieves all comments on all PRs in the repository.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 4
-        format: integer
       sort:
         default: created
         title: Sort
@@ -1651,10 +1834,8 @@ TASK_LIST_REVIEW_COMMENTS:
         enum:
           - created
           - updated
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 11
-        format: string
       direction:
         default: desc
         title: Direction
@@ -1662,39 +1843,31 @@ TASK_LIST_REVIEW_COMMENTS:
         enum:
           - asc
           - desc
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 12
-        format: string
       since:
         default: "2021-01-01"
         title: Since
         description: Date (in `YYYY-MM-DD` format) from which comments will start to be fetched. The date will be in the UTC timezone.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 13
-        format: string
       page:
         default: 1
         description: Page number of the results to fetch. Default is 1.
         uiOrder: 100
         title: Page
-        acceptFormats:
-          - integer
-        format: integer
+        type: integer
       per-page:
         default: 30
         description: Number of results to fetch per page. Default is 30.
         uiOrder: 101
         title: Per Page
-        acceptFormats:
-          - integer
-        format: integer
+        type: integer
     required:
       - owner
       - repository
     title: Input
-    format: object
+    type: object
   output:
     description: Comments in the PR.
     uiOrder: 0
@@ -1708,8 +1881,8 @@ TASK_LIST_REVIEW_COMMENTS:
           required: []
           uiOrder: 1
           description: Comments in the PR.
-        format: array
+        type: array
     required:
       - comments
     title: Output
-    format: object
+    type: object

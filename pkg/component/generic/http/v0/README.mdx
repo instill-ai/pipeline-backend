@@ -43,7 +43,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Authentication](#authentication) (required) | `authentication` | object | Authentication method to use for the REST API.  |
 
@@ -61,7 +61,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Auth Type | `auth-type` | string |  Must be `"NO_AUTH"`   |
 </div>
@@ -70,7 +70,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Auth Type | `auth-type` | string |  Must be `"BASIC_AUTH"`   |
 | Password | `password` | string |  Password for Basic auth.  |
@@ -81,7 +81,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Auth Location | `auth-location` | string |  Add the API key to the header or query params.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`header`</li><li>`query`</li></ul></details>  |
 | Auth Type | `auth-type` | string |  Must be `"API_KEY"`   |
@@ -93,7 +93,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Auth Type | `auth-type` | string |  Must be `"BEARER_TOKEN"`   |
 | Token | `token` | string |  Bearer token.  |
@@ -109,7 +109,7 @@ Send a HTTP GET request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
@@ -123,7 +123,7 @@ Send a HTTP GET request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
@@ -137,7 +137,7 @@ Send a HTTP POST request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_POST` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
@@ -152,7 +152,7 @@ Send a HTTP POST request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
@@ -166,7 +166,7 @@ Send a HTTP PATCH request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_PATCH` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
@@ -181,7 +181,7 @@ Send a HTTP PATCH request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
@@ -195,7 +195,7 @@ Send a HTTP PUT request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_PUT` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
@@ -210,7 +210,7 @@ Send a HTTP PUT request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
@@ -224,7 +224,7 @@ Send a HTTP DELETE request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
@@ -239,7 +239,7 @@ Send a HTTP DELETE request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
@@ -253,7 +253,7 @@ Send a HTTP HEAD request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_HEAD` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
@@ -267,7 +267,7 @@ Send a HTTP HEAD request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
@@ -281,7 +281,7 @@ Send a HTTP OPTIONS request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_OPTIONS` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
@@ -296,7 +296,7 @@ Send a HTTP OPTIONS request.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |

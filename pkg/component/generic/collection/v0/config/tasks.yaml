@@ -7,24 +7,20 @@ TASK_APPEND:
       data:
         description: The input data. If it's an array, the value will be appended. If it's an object, the key-value pairs from value will be added. If it's
           a primitive type (string, number, boolean), it will be converted to a single-element array before appending.
-        acceptFormats:
-          - '*'
+        type: '*'
         uiOrder: 0
         title: Data
-        format: '*'
       value:
         description: 'The value to append. For arrays: the value will be appended as a new element. For objects: if value is an object, its key-value pairs
           will be added to the input object. For primitives: value will be appended to create/extend an array.'
-        acceptFormats:
-          - '*'
+        type: '*'
         uiOrder: 1
         title: Value
-        format: '*'
     required:
       - data
       - value
     title: Input
-    format: object
+    type: object
   output:
     description: Output containing the modified data structure.
     uiOrder: 0
@@ -35,11 +31,11 @@ TASK_APPEND:
         uiOrder: 0
         required: []
         title: Data
-        format: '*'
+        type: '*'
     required:
       - data
     title: Output
-    format: object
+    type: object
 TASK_ASSIGN:
   shortDescription: Assign a value to a specific path in a data structure.
   input:
@@ -48,32 +44,26 @@ TASK_ASSIGN:
     properties:
       data:
         description: The input data structure to modify. Can be an array, object, or primitive value.
-        acceptFormats:
-          - '*'
+        type: '*'
         uiOrder: 0
         title: Data
-        format: '*'
       path:
         description: 'The path where to assign the value. Use dot notation for nested objects and [n] for array indices. Examples: ''users.[0].name'', ''.[0].key'',
           ''metadata.tags.[2]''.'
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: Path
-        format: string
       value:
         description: The value to assign at the specified path. Can be any type (string, number, boolean, array, or object).
-        acceptFormats:
-          - '*'
+        type: '*'
         uiOrder: 2
         title: Value
-        format: '*'
     required:
       - data
       - path
       - value
     title: Input
-    format: object
+    type: object
   output:
     description: Output containing the modified data structure.
     uiOrder: 0
@@ -82,11 +72,11 @@ TASK_ASSIGN:
         description: The resulting data structure after the assign operation.
         uiOrder: 0
         title: Data
-        format: '*'
+        type: '*'
     required:
       - data
     title: Output
-    format: object
+    type: object
 TASK_CONCAT:
   shortDescription: Concatenate multiple arrays or merge multiple objects into a single collection.
   input:
@@ -96,17 +86,15 @@ TASK_CONCAT:
       data:
         description: 'An array of arrays or objects to be concatenated/merged. For arrays: [[1, 2], [3, 4]] becomes [1, 2, 3, 4]. For objects: [{''a'':
           1}, {''b'': 2}] becomes {''a'': 1, ''b'': 2}. Later values override earlier ones for objects.'
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 0
         items:
-          format: '*'
+          type: '*'
         title: Data
-        format: array
     required:
       - data
     title: Input
-    format: object
+    type: object
   output:
     description: Output containing the concatenated/merged result.
     uiOrder: 0
@@ -115,11 +103,11 @@ TASK_CONCAT:
         description: The resulting array or object after concat operation.
         uiOrder: 0
         title: Data
-        format: '*'
+        type: '*'
     required:
       - data
     title: Output
-    format: object
+    type: object
 TASK_DIFFERENCE:
   shortDescription: Find elements that exist in the first array or object but not in any of the other arrays or objects.
   input:
@@ -129,18 +117,16 @@ TASK_DIFFERENCE:
         description: 'An array of arrays or objects to find the difference. The first element is compared against all subsequent elements. For example,
           given arrays [[1, 2, 3], [2, 3, 4], [3, 4, 5]], the result will be [1]. For objects, given [{''a'': 1, ''b'': 2}, {''b'': 2, ''c'': 3}], the result
           will be {''a'': 1}.'
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 0
         items:
-          format: '*'
+          type: '*'
         required: []
         title: Data
-        format: array
     required:
       - data
     title: Input
-    format: object
+    type: object
   output:
     description: Output containing the difference result.
     uiOrder: 0
@@ -149,11 +135,11 @@ TASK_DIFFERENCE:
         description: The resulting array or object after the difference operation.
         uiOrder: 0
         title: Data
-        format: '*'
+        type: '*'
     required:
       - data
     title: Output
-    format: object
+    type: object
 TASK_INTERSECTION:
   shortDescription: Find common elements that exist in all input arrays or objects.
   input:
@@ -163,17 +149,15 @@ TASK_INTERSECTION:
       data:
         description: 'An array of arrays or objects to find common elements. For arrays: given [[1, 2, 3], [2, 3, 4]], the result will be [2, 3]. For objects:
           given [{''a'': 1, ''b'': 2}, {''b'': 2, ''c'': 3}], the result will be {''b'': 2}.'
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 0
         items:
-          format: '*'
+          type: '*'
         title: Data
-        format: array
     required:
       - data
     title: Input
-    format: object
+    type: object
   output:
     description: Output containing the intersection result.
     uiOrder: 0
@@ -182,11 +166,11 @@ TASK_INTERSECTION:
         description: The resulting array or object after the intersection operation.
         uiOrder: 0
         title: Data
-        format: '*'
+        type: '*'
     required:
       - data
     title: Output
-    format: object
+    type: object
 TASK_SPLIT:
   shortDescription: Split arrays or objects into smaller chunks.
   input:
@@ -196,23 +180,19 @@ TASK_SPLIT:
       data:
         description: 'The source data to be split. Can be: 1) An array to split into groups 2) An object to split by property count (keys are sorted alphabetically
           for consistent ordering)'
-        acceptFormats:
-          - '*'
+        type: '*'
         uiOrder: 0
         title: Data
-        format: '*'
       size:
         description: Number of elements per group
         uiOrder: 1
-        acceptFormats:
-          - integer
+        type: integer
         title: Size
-        format: integer
     required:
       - data
       - size
     title: Input
-    format: object
+    type: object
   output:
     description: Output containing the split results. For objects, the properties in each chunk maintain alphabetical ordering of keys.
     uiOrder: 1
@@ -222,13 +202,13 @@ TASK_SPLIT:
           keys'
         uiOrder: 0
         items:
-          format: '*'
+          type: '*'
         title: Data
-        format: array
+        type: array
     required:
       - data
     title: Output
-    format: object
+    type: object
 TASK_SYMMETRIC_DIFFERENCE:
   shortDescription: Find elements that exist in exactly one of the input arrays or objects, but not in multiple inputs.
   input:
@@ -238,17 +218,15 @@ TASK_SYMMETRIC_DIFFERENCE:
       data:
         description: 'An array of arrays or objects to find symmetric difference. For arrays: given [[1, 2], [2, 3]], the result will be [1, 3]. For objects:
           given [{''a'': 1, ''b'': 2}, {''b'': 2, ''c'': 3}], the result will be {''a'': 1, ''c'': 3}.'
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 0
         items:
-          format: '*'
+          type: '*'
         title: Data
-        format: array
     required:
       - data
     title: Input
-    format: object
+    type: object
   output:
     description: Output containing the symmetric difference result.
     uiOrder: 0
@@ -257,11 +235,11 @@ TASK_SYMMETRIC_DIFFERENCE:
         description: The resulting array or object after the symmetric difference operation.
         uiOrder: 0
         title: Data
-        format: '*'
+        type: '*'
     required:
       - data
     title: Output
-    format: object
+    type: object
 TASK_UNION:
   shortDescription: Find unique elements that exist in any of the input arrays or objects.
   input:
@@ -271,17 +249,15 @@ TASK_UNION:
       data:
         description: 'An array of arrays or objects to find unique elements. For arrays: given [[1, 2], [2, 3]], the result will be [1, 2, 3]. For objects:
           given [{''a'': 1, ''b'': 2}, {''b'': 2, ''c'': 3}], the result will be {''a'': 1, ''b'': 2, ''c'': 3}.'
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 0
         items:
-          format: '*'
+          type: '*'
         title: Data
-        format: array
     required:
       - data
     title: Input
-    format: object
+    type: object
   output:
     description: Output containing the union result.
     uiOrder: 0
@@ -290,8 +266,8 @@ TASK_UNION:
         description: The resulting array or object after the union operation.
         uiOrder: 0
         title: Data
-        format: '*'
+        type: '*'
     required:
       - data
     title: Output
-    format: object
+    type: object

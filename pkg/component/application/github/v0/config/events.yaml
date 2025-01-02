@@ -4,8 +4,8 @@ EVENT_STAR_CREATED:
   configSchema:
     properties:
       repository:
-        format: string
-    format: object
+        type: string
+    type: object
   messageSchema:
     $schema: http://json-schema.org/draft-07/schema
     required:
@@ -17,9 +17,9 @@ EVENT_STAR_CREATED:
       action:
         enum:
           - created
-        format: string
+        type: string
       starred-at:
-        format: string
+        type: string
         description: "The time the star was created. This is a timestamp in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. Will be `null` for the `deleted` action."
       repository:
         $schema: http://json-schema.org/draft-07/schema
@@ -105,19 +105,19 @@ EVENT_STAR_CREATED:
         properties:
           id:
             description: Unique identifier of the repository
-            format: integer
+            type: integer
           node-id:
             description: The GraphQL identifier of the repository.
-            format: string
+            type: string
           name:
             description: The name of the repository.
-            format: string
+            type: string
           full-name:
             description: The full, globally unique, name of the repository.
-            format: string
+            type: string
           private:
             description: Whether the repository is private or public.
-            format: boolean
+            type: boolean
           owner:
             $schema: http://json-schema.org/draft-07/schema
             required:
@@ -141,246 +141,240 @@ EVENT_STAR_CREATED:
               - site-admin
             properties:
               login:
-                format: string
+                type: string
               id:
-                format: integer
+                type: integer
               node-id:
-                format: string
+                type: string
               name:
-                format: string
+                type: string
               email:
-                format:
-                  - string
-                  - "null"
+                type: string
               avatar-url:
-                format: string
+                type: string
               gravatar-id:
-                format: string
+                type: string
               url:
-                format: string
+                type: string
               html-url:
-                format: string
+                type: string
               followers-url:
-                format: string
+                type: string
               following-url:
-                format: string
+                type: string
               gists-url:
-                format: string
+                type: string
               starred-url:
-                format: string
+                type: string
               subscriptions-url:
-                format: string
+                type: string
               organizations-url:
-                format: string
+                type: string
               repos-url:
-                format: string
+                type: string
               events-url:
-                format: string
+                type: string
               received-events-url:
-                format: string
+                type: string
               site-admin:
-                format: boolean
+                type: boolean
               type:
                 enum:
                   - Bot
                   - User
                   - Organization
-                format: string
+                type: string
             additionalProperties: false
             title: User
-            format: object
+            type: object
           html-url:
-            format: string
+            type: string
             description: The URL to view the repository on GitHub.com.
           description:
             description: The repository description.
-            format:
-              - string
-              - "null"
+            type: string
           fork:
             description: Whether the repository is a fork.
-            format: boolean
+            type: boolean
           url:
-            format: string
+            type: string
             description: The URL to get more information about the repository from the GitHub API.
           forks-url:
-            format: string
+            type: string
             description: The API URL to list the forks of the repository.
           keys-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about deploy keys on the repository.
           collaborators-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about collaborators of the repository.
           teams-url:
-            format: string
+            type: string
             description: The API URL to list the teams on the repository.
           hooks-url:
-            format: string
+            type: string
             description: The API URL to list the hooks on the repository.
           issue-events-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about issue events on the repository.
           events-url:
-            format: string
+            type: string
             description: The API URL to list the events of the repository.
           assignees-url:
-            format: string
+            type: string
             description: A template for the API URL to list the available assignees for issues in the repository.
           branches-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about branches in the repository.
           tags-url:
-            format: string
+            type: string
             description: The API URL to get information about tags on the repository.
           blobs-url:
-            format: string
+            type: string
             description: A template for the API URL to create or retrieve a raw Git blob in the repository.
           git-tags-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about Git tags of the repository.
           git-refs-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about Git refs of the repository.
           trees-url:
-            format: string
+            type: string
             description: A template for the API URL to create or retrieve a raw Git tree of the repository.
           statuses-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about statuses of a commit.
           languages-url:
-            format: string
+            type: string
             description: The API URL to get information about the languages of the repository.
           stargazers-url:
-            format: string
+            type: string
             description: The API URL to list the stargazers on the repository.
           contributors-url:
-            format: string
+            type: string
             description: A template for the API URL to list the contributors to the repository.
           subscribers-url:
-            format: string
+            type: string
             description: The API URL to list the subscribers on the repository.
           subscription-url:
-            format: string
+            type: string
             description: The API URL to subscribe to notifications for this repository.
           commits-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about commits on the repository.
           git-commits-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about Git commits of the repository.
           comments-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about comments on the repository.
           issue-comment-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about issue comments on the repository.
           contents-url:
-            format: string
+            type: string
             description: A template for the API URL to get the contents of the repository.
           compare-url:
-            format: string
+            type: string
             description: A template for the API URL to compare two commits or refs.
           merges-url:
-            format: string
+            type: string
             description: The API URL to merge branches in the repository.
           archive-url:
-            format: string
+            type: string
             description: A template for the API URL to download the repository as an archive.
           downloads-url:
-            format: string
+            type: string
             description: The API URL to list the downloads on the repository.
           issues-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about issues on the repository.
           pulls-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about pull requests on the repository.
           milestones-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about milestones of the repository.
           notifications-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about notifications on the repository.
           labels-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about labels of the repository.
           releases-url:
-            format: string
+            type: string
             description: A template for the API URL to get information about releases on the repository.
           deployments-url:
-            format: string
+            type: string
             description: The API URL to list the deployments of the repository.
           created-at:
             oneOf:
-              - format: integer
-              - format: string
+              - type: integer
+              - type: string
           updated-at:
-            format: string
+            type: string
           pushed-at:
             oneOf:
-              - format: integer
-              - format: string
-              - format: "null"
+              - type: integer
+              - type: string
+              - type: 'null'
           git-url:
-            format: string
+            type: string
           ssh-url:
-            format: string
+            type: string
           clone-url:
-            format: string
+            type: string
           svn-url:
-            format: string
+            type: string
           homepage:
-            format:
+            type:
               - string
               - "null"
           size:
-            format: integer
+            type: integer
           stargazers-count:
-            format: integer
+            type: integer
           watchers-count:
-            format: integer
+            type: integer
           language:
-            format:
+            type:
               - string
               - "null"
           has-issues:
             description: Whether issues are enabled.
             default: true
-            format: boolean
+            type: boolean
           has-projects:
             description: Whether projects are enabled.
             default: true
-            format: boolean
+            type: boolean
           has-downloads:
             description: Whether downloads are enabled.
             default: true
-            format: boolean
+            type: boolean
           has-wiki:
             description: Whether the wiki is enabled.
             default: true
-            format: boolean
+            type: boolean
           has-pages:
-            format: boolean
+            type: boolean
           has-discussions:
             description: Whether discussions are enabled.
             default: true
-            format: boolean
+            type: boolean
           forks-count:
-            format: integer
+            type: integer
           mirror-url:
-            format:
-              - string
-              - "null"
+            type: string
           archived:
             description: Whether the repository is archived.
             default: false
-            format: boolean
+            type: boolean
           disabled:
             description: Returns whether or not this repository is disabled.
-            format: boolean
+            type: boolean
           open-issues-count:
-            format: integer
+            type: integer
           license:
             oneOf:
               - $schema: http://json-schema.org/draft-07/schema
@@ -392,83 +386,80 @@ EVENT_STAR_CREATED:
                   - node-id
                 properties:
                   key:
-                    format: string
+                    type: string
                   name:
-                    format: string
+                    type: string
                   spdx-id:
-                    format: string
+                    type: string
                   url:
-                    format:
-                      - string
-                      - "null"
+                    type: string
                   node-id:
-                    format: string
+                    type: string
                 additionalProperties: false
                 title: License
-                format: object
-              - format: "null"
+                type: object
           forks:
-            format: integer
+            type: integer
           open-issues:
-            format: integer
+            type: integer
           watchers:
-            format: integer
+            type: integer
           stargazers:
-            format: integer
+            type: integer
           default-branch:
             description: The default branch of the repository.
-            format: string
+            type: string
           allow-squash-merge:
             description: Whether to allow squash merges for pull requests.
             default: true
-            format: boolean
+            type: boolean
           allow-merge-commit:
             description: Whether to allow merge commits for pull requests.
             default: true
-            format: boolean
+            type: boolean
           allow-rebase-merge:
             description: Whether to allow rebase merges for pull requests.
             default: true
-            format: boolean
+            type: boolean
           allow-auto-merge:
             description: Whether to allow auto-merge for pull requests.
             default: false
-            format: boolean
+            type: boolean
           allow-forking:
             description: Whether to allow private forks
-            format: boolean
+            type: boolean
           allow-update-branch:
-            format: boolean
+            type: boolean
           use-squash-pr-title-as-default:
-            format: boolean
+            type: boolean
           squash-merge-commit-message:
-            format: string
+            type: string
           squash-merge-commit-title:
-            format: string
+            type: string
           merge-commit-message:
-            format: string
+            type: string
           merge-commit-title:
-            format: string
+            type: string
           is-template:
-            format: boolean
+            type: boolean
           web-commit-signoff-required:
-            format: boolean
+            type: boolean
           topics:
             items:
-              format: string
-            format: array
+              type: string
+            type: array
           visibility:
             enum:
               - public
               - private
               - internal
-            format: string
+            type: string
           delete-branch-on-merge:
             description: Whether to delete head branches when pull requests are merged
             default: false
-            format: boolean
+            type: boolean
           master-branch:
-            format: string
+            type: string
           permissions:
             required:
               - pull
@@ -476,33 +467,32 @@ EVENT_STAR_CREATED:
               - admin
             properties:
               pull:
-                format: boolean
+                type: boolean
               push:
-                format: boolean
+                type: boolean
               admin:
-                format: boolean
+                type: boolean
               maintain:
-                format: boolean
+                type: boolean
               triage:
-                format: boolean
+                type: boolean
             additionalProperties: false
-            format: object
+            type: object
           public:
-            format: boolean
+            type: boolean
           organization:
-            format: string
+            type: string
           custom-properties:
             additionalProperties:
               oneOf:
-                - format: "null"
-                - format: string
+                - type: string
                 - items:
-                    format: string
-                  format: array
-            format: object
+                    type: string
+                  type: array
+            type: object
         additionalProperties: false
         title: Repository
-        format: object
+        type: object
       sender:
         $schema: http://json-schema.org/draft-07/schema
         required:
@@ -526,54 +516,52 @@ EVENT_STAR_CREATED:
           - site-admin
         properties:
           login:
-            format: string
+            type: string
           id:
-            format: integer
+            type: integer
           node-id:
-            format: string
+            type: string
           name:
-            format: string
+            type: string
           email:
-            format:
-              - string
-              - "null"
+            type: string
           avatar-url:
-            format: string
+            type: string
           gravatar-id:
-            format: string
+            type: string
           url:
-            format: string
+            type: string
           html-url:
-            format: string
+            type: string
           followers-url:
-            format: string
+            type: string
           following-url:
-            format: string
+            type: string
           gists-url:
-            format: string
+            type: string
           starred-url:
-            format: string
+            type: string
           subscriptions-url:
-            format: string
+            type: string
           organizations-url:
-            format: string
+            type: string
           repos-url:
-            format: string
+            type: string
           events-url:
-            format: string
+            type: string
           received-events-url:
-            format: string
+            type: string
           site-admin:
-            format: boolean
+            type: boolean
           type:
             enum:
               - Bot
               - User
               - Organization
-            format: string
+            type: string
         additionalProperties: false
         title: User
-        format: object
+        type: object
       organization:
         $schema: http://json-schema.org/draft-07/schema
         required:
@@ -591,36 +579,34 @@ EVENT_STAR_CREATED:
           - description
         properties:
           login:
-            format: string
+            type: string
           id:
-            format: integer
+            type: integer
           node-id:
-            format: string
+            type: string
           url:
-            format: string
+            type: string
           html-url:
-            format: string
+            type: string
           repos-url:
-            format: string
+            type: string
           events-url:
-            format: string
+            type: string
           hooks-url:
-            format: string
+            type: string
           issues-url:
-            format: string
+            type: string
           members-url:
-            format: string
+            type: string
           public-members-url:
-            format: string
+            type: string
           avatar-url:
-            format: string
+            type: string
           description:
-            format:
-              - string
-              - "null"
+            type: string
         additionalProperties: false
         title: Organization
-        format: object
+        type: object
       installation:
         $schema: http://json-schema.org/draft-07/schema
         description: Installation
@@ -630,15 +616,15 @@ EVENT_STAR_CREATED:
         properties:
           id:
             description: The ID of the installation.
-            format: integer
+            type: integer
           node-id:
-            format: string
+            type: string
         additionalProperties: false
         title: InstallationLite
-        format: object
+        type: object
     additionalProperties: false
     title: star created event
-    format: object
+    type: object
   messageExamples:
     - action: created
       starred-at: "2019-05-15T15:20:40Z"

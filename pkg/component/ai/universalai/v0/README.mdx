@@ -37,7 +37,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Model Name (required) | `model` | string | The model to be used. Now, it only supports OpenAI model, and will support more models in the future.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`o1-preview`</li><li>`o1-mini`</li><li>`gpt-4o-mini`</li><li>`gpt-4o`</li><li>`gpt-4o-2024-05-13`</li><li>`gpt-4o-2024-08-06`</li><li>`gpt-4-turbo`</li><li>`gpt-4-turbo-2024-04-09`</li><li>`gpt-4-0125-preview`</li><li>`gpt-4-turbo-preview`</li><li>`gpt-4-1106-preview`</li><li>`gpt-4-vision-preview`</li><li>`gpt-4`</li><li>`gpt-4-0314`</li><li>`gpt-4-0613`</li><li>`gpt-4-32k`</li><li>`gpt-4-32k-0314`</li><li>`gpt-4-32k-0613`</li><li>`gpt-3.5-turbo`</li><li>`gpt-3.5-turbo-16k`</li><li>`gpt-3.5-turbo-0301`</li><li>`gpt-3.5-turbo-0613`</li><li>`gpt-3.5-turbo-1106`</li><li>`gpt-3.5-turbo-0125`</li><li>`gpt-3.5-turbo-16k-0613`</li></ul></details>  |
 | API Key | `api-key` | string | Fill in your API key from the vendor's platform.  |
@@ -57,7 +57,7 @@ Generate response base on conversation input
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CHAT` |
 | [Chat Data](#chat-chat-data) (required) | `data` | object | Input data. |
@@ -74,7 +74,7 @@ Input data.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Chat Messages](#chat-chat-messages) | `messages` | array | List of chat messages.  |
 </div>
@@ -84,7 +84,7 @@ List of chat messages.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Content](#chat-content) | `content` | array | The message content.  |
 | Name | `name` | string | An optional name for the participant. Provides the model information to differentiate between participants of the same role.  |
@@ -96,7 +96,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Max New Tokens | `max-tokens` | integer | The maximum number of tokens for model to generate.  |
 | Number of Choices | `n` | integer | How many chat completion choices to generate for each input message.  |
@@ -111,7 +111,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Output Data](#chat-output-data) | `data` | object | Output data. |
 | [Output Metadata](#chat-output-metadata) (optional) | `metadata` | object | Output metadata. |
@@ -124,7 +124,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Choices](#chat-choices) | `choices` | array | List of chat completion choices. |
 </div>
@@ -133,7 +133,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Created | `created` | integer | The Unix timestamp (in seconds) of when the chat completion was created. |
 | Finish Reason | `finish-reason` | string | The reason the model stopped generating tokens. |
@@ -145,7 +145,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Content | `content` | string | The contents of the message. |
 | Role | `role` | string | The role of the author of this message. |
@@ -155,7 +155,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Usage](#chat-usage) | `usage` | object | Usage statistics for the request. |
 </div>
@@ -164,7 +164,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Completion Tokens | `completion-tokens` | integer | Number of tokens in the generated response. |
 | Prompt Tokens | `prompt-tokens` | integer | Number of tokens in the prompt. |
@@ -186,7 +186,7 @@ variable:
   prompt:
     title: Prompt
     description: "User input message to be sent to the AI model."
-    format: string
+    type: string
 
 output:
   ai-output:

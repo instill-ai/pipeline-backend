@@ -8,29 +8,29 @@ $defs:
           description: Bounding box height value
           uiOrder: 3
           title: Height
-          format: number
+          type: number
         left:
           description: Bounding box left x-axis value
           uiOrder: 0
           title: Left
-          format: number
+          type: number
         top:
           description: Bounding box top y-axis value
           uiOrder: 1
           title: Top
-          format: number
+          type: number
         width:
           description: Bounding box width value
           uiOrder: 2
           title: Width
-          format: number
+          type: number
       required:
         - left
         - top
         - width
         - height
       title: Bounding Box
-      format: object
+      type: object
     chat-messages:
       items:
         properties:
@@ -45,18 +45,18 @@ $defs:
             uiOrder: 2
             required: []
             title: Metadata
-            format: json
+            type: json
           role:
             description: The message role, i.e. 'system', 'user' or 'assistant'
             uiOrder: 0
             title: Role
-            format: string
+            type: string
         required:
           - role
           - content
-        format: object
+        type: object
       title: Chat Message
-      format: array
+      type: array
     classification:
       additionalProperties: false
       properties:
@@ -64,16 +64,16 @@ $defs:
           description: The predicted category of the input.
           uiOrder: 0
           title: Category
-          format: string
+          type: string
         score:
           description: The confidence score of the predicted category of the input.
           uiOrder: 1
           title: Score
-          format: number
+          type: number
       required:
         - category
         - score
-      format: object
+      type: object
     detection:
       additionalProperties: false
       properties:
@@ -91,29 +91,29 @@ $defs:
                 description: The predicted category of the bounding box.
                 uiOrder: 2
                 title: Category
-                format: string
+                type: string
               score:
                 description: The confidence score of the predicted category of the bounding box.
                 uiOrder: 3
                 title: Score
-                format: number
+                type: number
             required:
               - bounding-box
               - category
               - score
             title: Object
-            format: object
+            type: object
           title: Objects
-          format: array
+          type: array
       required:
         - objects
-      format: object
+      type: object
     embedding:
       items:
         title: Embedding
-        format: number
+        type: number
       title: Embedding
-      format: array
+      type: array
     instance-segmentation:
       additionalProperties: false
       properties:
@@ -130,29 +130,29 @@ $defs:
                 description: The predicted category of the bounding box.
                 uiOrder: 2
                 title: Category
-                format: string
+                type: string
               rle:
                 description: Run Length Encoding (RLE) of instance mask within the bounding box.
                 uiOrder: 0
                 title: RLE
-                format: string
+                type: string
               score:
                 description: The confidence score of the predicted instance object.
                 uiOrder: 3
                 title: Score
-                format: number
+                type: number
             required:
               - rle
               - bounding-box
               - category
               - score
             title: Object
-            format: object
+            type: object
           title: Objects
-          format: array
+          type: array
       required:
         - objects
-      format: object
+      type: object
     keypoint:
       additionalProperties: false
       properties:
@@ -175,41 +175,41 @@ $defs:
                       description: visibility score of the keypoint.
                       uiOrder: 2
                       title: Visibility Score
-                      format: number
+                      type: number
                     x:
                       description: x coordinate of the keypoint.
                       uiOrder: 0
                       title: X Coordinate
-                      format: number
+                      type: number
                     y:
                       description: y coordinate of the keypoint.
                       uiOrder: 1
                       title: Y Coordinate
-                      format: number
+                      type: number
                   required:
                     - x
                     - y
                     - v
                   title: Keypoints
-                  format: object
+                  type: object
                 title: Keypoints
-                format: array
+                type: array
               score:
                 description: The confidence score of the predicted object.
                 uiOrder: 1
                 title: Score
-                format: number
+                type: number
             required:
               - keypoints
               - score
               - bounding-box
             title: Object
-            format: object
+            type: object
           title: Objects
-          format: array
+          type: array
       required:
         - objects
-      format: object
+      type: object
     multi-modal-content:
       items:
         properties:
@@ -219,18 +219,18 @@ $defs:
                 description: Either a URL of the image or the base64 encoded image data.
                 title: URL
                 uiOrder: 0
-                format: string
+                type: string
             required:
               - url
             title: Image URL
             description: The image URL
             uiOrder: 0
-            format: object
+            type: object
           text:
             description: The text content.
             title: Text
             uiOrder: 1
-            format: string
+            type: string
           type:
             description: The type of the content part.
             enum:
@@ -238,11 +238,11 @@ $defs:
               - image-url
             title: Type
             uiOrder: 2
-            format: string
+            type: string
         required:
           - type
-        format: object
-      format: array
+        type: object
+      type: array
     ocr:
       additionalProperties: false
       properties:
@@ -259,23 +259,23 @@ $defs:
                 description: The confidence score of the predicted object.
                 uiOrder: 2
                 title: Score
-                format: number
+                type: number
               text:
                 description: Text string recognised per bounding box.
                 uiOrder: 1
                 title: Text
-                format: string
+                type: string
             required:
               - bounding-box
               - text
               - score
             title: Object
-            format: object
+            type: object
           title: Objects
-          format: array
+          type: array
       required:
         - objects
-      format: object
+      type: object
     semantic-segmentation:
       additionalProperties: false
       properties:
@@ -288,19 +288,19 @@ $defs:
                 description: Category text string corresponding to each stuff mask.
                 uiOrder: 1
                 title: Category
-                format: string
+                type: string
               rle:
                 description: Run Length Encoding (RLE) of each stuff mask within the image.
                 uiOrder: 0
                 title: RLE
-                format: string
+                type: string
             required:
               - rle
               - category
             title: Object
-            format: object
+            type: object
           title: Stuffs
-          format: array
+          type: array
       required:
         - stuffs
-      format: object
+      type: object

@@ -10,45 +10,41 @@ $defs:
         description: The message role, i.e. 'system', 'user' or 'assistant'.
         uiOrder: 0
         title: Role
-        format: string
+        type: string
     required:
       - role
       - content
     title: Chat Message
-    format: object
+    type: object
 TASK_SPEECH_RECOGNITION:
   shortDescription: Turn audio into text.
   input:
     uiOrder: 0
     properties:
       audio:
-        description: |-
-          The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm.
-          .
-        format: string
-        acceptFormats:
-          - audio/*
+        description: 'The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm.
+
+          .'
+        type: audio/*
         uiOrder: 1
         title: Audio
       language:
-        description: |-
-          The language of the input audio. Supplying the input language in <a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO-639-1</a> format will improve accuracy and latency.
-          .
-        acceptFormats:
-          - string
+        description: 'The language of the input audio. Supplying the input language in <a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO-639-1</a>
+          format will improve accuracy and latency.
+
+          .'
+        type: string
         shortDescription: The language of the input audio.
         uiOrder: 3
         title: Language
-        format: string
       model:
-        description: |-
-          ID of the model to use. Only `whisper-1` is currently available.
-          .
+        description: 'ID of the model to use. Only `whisper-1` is currently available.
+
+          .'
         enum:
           - whisper-1
         example: whisper-1
-        acceptFormats:
-          - string
+        type: string
         shortDescription: ID of the model to use
         uiOrder: 0
         instillCredentialMap:
@@ -57,34 +53,30 @@ TASK_SPEECH_RECOGNITION:
           targets:
             - setup.api-key
         title: Model
-        format: string
       prompt:
-        description: |-
-          An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.
-          .
-        acceptFormats:
-          - string
+        description: 'An optional text to guide the model''s style or continue a previous audio segment. The prompt should match the audio language.
+
+          .'
+        type: string
         shortDescription: An optional text to guide the model's style or continue a previous audio segment.
         uiOrder: 2
         title: Prompt
-        format: string
       temperature:
         default: 0
-        description: |-
-          The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. If set to 0, the model will use <a href="https://en.wikipedia.org/wiki/Log_probability">log probability</a> to automatically increase the temperature until certain thresholds are hit.
-          .
-        acceptFormats:
-          - number
-          - integer
+        description: 'The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will
+          make it more focused and deterministic. If set to 0, the model will use <a href="https://en.wikipedia.org/wiki/Log_probability">log probability</a>
+          to automatically increase the temperature until certain thresholds are hit.
+
+          .'
+        type: number
         shortDescription: The sampling temperature, between 0 and 1.
         uiOrder: 4
         title: Temperature
-        format: number
     required:
       - audio
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -92,11 +84,11 @@ TASK_SPEECH_RECOGNITION:
         description: Generated text.
         uiOrder: 0
         title: Text
-        format: string
+        type: string
     required:
       - text
     title: Output
-    format: object
+    type: object
 TASK_TEXT_EMBEDDINGS:
   shortDescription: Turn text into numbers, unlocking use cases like search.
   input:
@@ -109,8 +101,7 @@ TASK_TEXT_EMBEDDINGS:
           - text-embedding-3-small
           - text-embedding-3-large
         example: text-embedding-3-small
-        acceptFormats:
-          - string
+        type: string
         shortDescription: ID of the model to use
         uiOrder: 0
         instillCredentialMap:
@@ -120,26 +111,21 @@ TASK_TEXT_EMBEDDINGS:
           targets:
             - setup.api-key
         title: Model
-        format: string
       text:
         description: The text.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: Text
-        format: string
       dimensions:
         description: The number of dimensions the resulting output embeddings should have. Only supported in text-embedding-3 and later models.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 2
         title: Dimensions
-        format: integer
     required:
       - text
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -151,7 +137,7 @@ TASK_TEXT_EMBEDDINGS:
     required:
       - embedding
     title: Output
-    format: object
+    type: object
 TASK_TEXT_GENERATION:
   shortDescription: Provide text outputs in response to their inputs.
   description: OpenAI's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand
@@ -165,8 +151,7 @@ TASK_TEXT_GENERATION:
         description: 'Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be
           ignored and will not have any effect when this field is populated. Each message should adhere to the format {"role": "The message role, i.e. ''system'',
           ''user'' or ''assistant''", "content": "message content"}.'
-        acceptFormats:
-          - object
+        type: array
         shortDescription: 'Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will
           be ignored and will not have any effect when this field is populated. Each message should be an ojbect adhere to the format: {"role": "The message
           role, i.e. ''system'', ''user'' or ''assistant''", "content": "message content"}.'
@@ -174,7 +159,6 @@ TASK_TEXT_GENERATION:
         items:
           $ref: '#/$defs/chat-message'
         title: Chat history
-        format: array
       frequency-penalty:
         default: 0
         description: Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the
@@ -182,34 +166,27 @@ TASK_TEXT_GENERATION:
         maximum: 2
         minimum: -2
         nullable: true
-        acceptFormats:
-          - number
-          - integer
+        type: number
         shortDescription: Number between -2.0 and 2.0
         uiOrder: 11
         title: Frequency Penalty
-        format: number
       images:
         description: The images.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 3
         items:
-          format: string
+          type: string
         title: Image
-        format: array
       max-tokens:
-        description: |-
-          The maximum number of tokens that can be generated in the chat completion.
+        description: 'The maximum number of tokens that can be generated in the chat completion.
 
-          The total length of input tokens and generated tokens is limited by the model's context length.
+
+          The total length of input tokens and generated tokens is limited by the model''s context length.'
         nullable: true
-        acceptFormats:
-          - integer
+        type: integer
         shortDescription: The maximum number of tokens to generate in the chat completion.
         uiOrder: 7
         title: Max Tokens
-        format: integer
       model:
         description: ID of the model to use.
         enum:
@@ -239,8 +216,7 @@ TASK_TEXT_GENERATION:
           - gpt-3.5-turbo-0125
           - gpt-3.5-turbo-16k-0613
         example: gpt-4o
-        acceptFormats:
-          - string
+        type: string
         shortDescription: ID of the model to use
         uiOrder: 0
         instillCredentialMap:
@@ -258,7 +234,6 @@ TASK_TEXT_GENERATION:
           targets:
             - setup.api-key
         title: Model
-        format: string
       n:
         default: 1
         description: How many chat completion choices to generate for each input message. Note that you will be charged based on the number of generated
@@ -267,11 +242,9 @@ TASK_TEXT_GENERATION:
         maximum: 128
         minimum: 1
         nullable: true
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 6
         title: N
-        format: integer
       presence-penalty:
         default: 0
         description: Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's
@@ -279,21 +252,16 @@ TASK_TEXT_GENERATION:
         maximum: 2
         minimum: -2
         nullable: true
-        acceptFormats:
-          - number
-          - integer
+        type: number
         shortDescription: Number between -2.0 and 2.0
         uiOrder: 10
         title: Presence Penalty
-        format: number
       prompt:
         description: The prompt text.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: Prompt
-        format: string
-      response-format:
+      response-type:
         description: Response format.
         uiOrder: 8
         additionalProperties: true
@@ -306,96 +274,90 @@ TASK_TEXT_GENERATION:
                 title: Type
                 description: Text.
                 uiOrder: 0
-                format: string
+                type: string
             required:
               - type
             title: Text
-            format: object
+            type: object
           - properties:
               type:
                 const: json_object
                 title: Type
                 description: JSON Object.
                 uiOrder: 0
-                format: string
+                type: string
             required:
               - type
             title: JSON Object
-            format: object
+            type: object
           - properties:
               type:
                 const: json_schema
                 title: Type
                 description: JSON Schema.
                 uiOrder: 0
-                format: string
+                type: string
               json-schema:
                 description: Set up the schema of the structured output.
-                acceptFormats:
-                  - string
+                type: string
                 title: JSON Schema
                 shortDescription: Specify the schema of the structured output.
                 uiOrder: 1
-                format: string
             required:
               - type
               - json-schema
             title: JSON Schema
-            format: object
+            type: object
         title: Response Format
-        format: object
+        type: object
       system-message:
         default: You are a helpful assistant.
         description: The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
           specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You
           are a helpful assistant.".
-        acceptFormats:
-          - string
+        type: string
         shortDescription: The system message helps set the behavior of the assistant
         uiOrder: 2
         title: System Message
-        format: string
       temperature:
         default: 1
-        description: |-
-          What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
+        description: 'What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like
+          0.2 will make it more focused and deterministic.
+
 
           We generally recommend altering this or `top-p` but not both.
-          .
+
+          .'
         example: 1
         maximum: 2
         minimum: 0
         nullable: true
-        acceptFormats:
-          - number
-          - integer
+        type: number
         shortDescription: What sampling temperature to use, between 0 and 2.
         uiOrder: 5
         title: Temperature
-        format: number
       top-p:
         default: 1
-        description: |-
-          An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+        description: 'An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p
+          probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+
 
           We generally recommend altering this or `temperature` but not both.
-          .
+
+          .'
         example: 1
         maximum: 1
         minimum: 0
         nullable: true
-        acceptFormats:
-          - number
-          - integer
+        type: number
         shortDescription: An alternative to sampling with temperature, called nucleus sampling
         uiOrder: 9
         title: Top P
-        format: number
     required:
       - model
       - prompt
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -403,10 +365,10 @@ TASK_TEXT_GENERATION:
         uiOrder: 0
         items:
           title: Text
-          format: string
+          type: string
         description: Texts.
         title: Texts
-        format: array
+        type: array
       usage:
         description: Usage statistics related to the query.
         uiOrder: 1
@@ -415,25 +377,25 @@ TASK_TEXT_GENERATION:
             title: Total tokens
             description: Total number of tokens used (prompt + completion).
             uiOrder: 0
-            format: integer
+            type: integer
           completion-tokens:
             title: Completion tokens
             description: Total number of tokens used (completion).
             uiOrder: 1
-            format: integer
+            type: integer
           prompt-tokens:
             title: Prompt tokens
             description: Total number of tokens used (prompt).
             uiOrder: 2
-            format: integer
+            type: integer
         required:
           - total-tokens
         title: Usage
-        format: object
+        type: object
     required:
       - texts
     title: Output
-    format: object
+    type: object
 TASK_TEXT_TO_IMAGE:
   shortDescription: Generate or manipulate images with DALL·E.
   input:
@@ -452,12 +414,10 @@ TASK_TEXT_TO_IMAGE:
             - dall-e-3
           targets:
             - setup.api-key
-        acceptFormats:
-          - string
+        type: string
         shortDescription: ID of the model to use
         uiOrder: 0
         title: Model
-        format: string
       n:
         default: 1
         description: The number of images to generate. Must be between 1 and 10. For `dall-e-3`, only `n=1` is supported.
@@ -465,20 +425,16 @@ TASK_TEXT_TO_IMAGE:
         maximum: 10
         minimum: 1
         nullable: true
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 2
         title: N
-        format: integer
       prompt:
         description: A text description of the desired image(s). The maximum length is 1000 characters for `dall-e-2` and 4000 characters for `dall-e-3`.
         example: A cute baby sea otter
-        acceptFormats:
-          - string
+        type: string
         shortDescription: A text description of the desired image(s).
         uiOrder: 1
         title: Prompt
-        format: string
       quality:
         default: standard
         description: The quality of the image that will be generated. `hd` creates images with finer details and greater consistency across the image. This
@@ -487,12 +443,10 @@ TASK_TEXT_TO_IMAGE:
           - standard
           - hd
         example: standard
-        acceptFormats:
-          - string
+        type: string
         shortDescription: The quality of the image that will be generated.
         uiOrder: 3
         title: Quality
-        format: string
       size:
         default: 1024x1024
         description: The size of the generated images. Must be one of `256x256`, `512x512`, or `1024x1024` for `dall-e-2`. Must be one of `1024x1024`, `1792x1024`,
@@ -505,12 +459,10 @@ TASK_TEXT_TO_IMAGE:
           - 1024x1792
         example: 1024x1024
         nullable: true
-        acceptFormats:
-          - string
+        type: string
         shortDescription: The size of the generated images.
         uiOrder: 4
         title: Size
-        format: string
       style:
         default: vivid
         description: The style of the generated images. Must be one of `vivid` or `natural`. Vivid causes the model to lean towards generating hyper-real
@@ -520,17 +472,15 @@ TASK_TEXT_TO_IMAGE:
           - natural
         example: vivid
         nullable: true
-        acceptFormats:
-          - string
+        type: string
         shortDescription: The style of the generated images.
         uiOrder: 5
         title: N
-        format: string
     required:
       - prompt
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -544,38 +494,37 @@ TASK_TEXT_TO_IMAGE:
               title: Generated Image
               description: Generated image.
               uiOrder: 0
-              format: image/webp
+              type: image/webp
             revised-prompt:
               title: Revised Prompt
               description: Revised prompt.
               uiOrder: 1
-              format: string
+              type: string
           required:
             - image
             - revised-prompt
           title: Image
-          format: object
+          type: object
         title: Images
-        format: array
+        type: array
     required:
       - results
     title: Output
-    format: object
+    type: object
 TASK_TEXT_TO_SPEECH:
   shortDescription: Turn text into lifelike spoken audio
   input:
     uiOrder: 0
     properties:
       model:
-        description: |-
-          One of the available TTS models: `tts-1` or `tts-1-hd`
-          .
+        description: 'One of the available TTS models: `tts-1` or `tts-1-hd`
+
+          .'
         default: tts-1
         enum:
           - tts-1
           - tts-1-hd
-        acceptFormats:
-          - string
+        type: string
         instillCredentialMap:
           values:
             - tts-1
@@ -585,8 +534,7 @@ TASK_TEXT_TO_SPEECH:
         shortDescription: ID of the model to use
         uiOrder: 0
         title: Model
-        format: string
-      response-format:
+      response-type:
         default: mp3
         description: The format to audio in. Supported formats are `mp3`, `opus`, `aac`, and `flac`.
         enum:
@@ -594,32 +542,26 @@ TASK_TEXT_TO_SPEECH:
           - opus
           - aac
           - flac
-        acceptFormats:
-          - string
+        type: string
         shortDescription: The format to audio
         uiOrder: 3
         title: Response Format
-        format: string
       speed:
         default: 1
         description: The speed of the generated audio. Select a value from `0.25` to `4.0`. `1.0` is the default.
         maximum: 4
         minimum: 0.25
-        acceptFormats:
-          - number
+        type: number
         shortDescription: The speed of the generated audio
         uiOrder: 4
         title: Speed
-        format: number
       text:
         description: The text to generate audio for. The maximum length is 4096 characters.
         maxLength: 4096
-        acceptFormats:
-          - string
+        type: string
         shortDescription: The text to generate audio for
         uiOrder: 1
         title: Text
-        format: string
       voice:
         description: The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`.
         enum:
@@ -629,19 +571,17 @@ TASK_TEXT_TO_SPEECH:
           - onyx
           - nova
           - shimmer
-        acceptFormats:
-          - string
+        type: string
         default: alloy
         shortDescription: The voice to use when generating the audio
         uiOrder: 2
         title: Voice
-        format: string
     required:
       - text
       - model
       - voice
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -649,7 +589,7 @@ TASK_TEXT_TO_SPEECH:
         description: AI generated audio.
         uiOrder: 0
         title: Audio
-        format: audio/wav
+        type: audio/wav
     required: []
     title: Output
-    format: object
+    type: object

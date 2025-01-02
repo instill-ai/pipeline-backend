@@ -6,18 +6,18 @@ $defs:
         title: Start Time
         description: The number of seconds from the beginning of the audio file to the start of this segment.
         uiOrder: 0
-        format: number
+        type: number
       end-time:
         title: End Time
         description: The number of seconds from the beginning of the audio file to the end of this segment.
         uiOrder: 1
-        format: number
+        type: number
     required:
       - start-time
       - end-time
     title: Segment
     description: A time segment of audio data, defined by its start and end times in seconds.
-    format: object
+    type: object
 TASK_SEGMENT:
   shortDescription: Split a video into multiple shorter clips based on user-defined time segments. This task takes a video input and an optional list of
     time ranges, then produces an array of video segments corresponding to those ranges. Each segment becomes a separate video clip, enabling precise extraction
@@ -28,12 +28,9 @@ TASK_SEGMENT:
     properties:
       video:
         description: The source video file to be segmented. This video will be split into multiple clips based on the specified time segments.
-        acceptFormats:
-          - video/*
-          - application/octet-stream
+        type: string
         uiOrder: 0
         title: Video
-        format: string
       segments:
         description: An array of time segments defining the portions of the video to be extracted. Each segment specifies a start and end time, and the
           task will create separate video clips for each of these segments. If not provided, the entire video will be treated as a single segment.
@@ -41,11 +38,11 @@ TASK_SEGMENT:
         items:
           $ref: '#/$defs/segment'
         title: Segments
-        format: array
+        type: array
     required:
       - video
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 0
@@ -55,13 +52,13 @@ TASK_SEGMENT:
           and contains the video data for that specific time range from the original video.
         uiOrder: 0
         items:
-          format: string
+          type: string
         title: Videos
-        format: array
+        type: array
     required:
       - video-segments
     title: Output
-    format: object
+    type: object
 TASK_SUBSAMPLE:
   shortDescription: Reduce video file size by adjusting frame rate, bitrate, and dimensions while maintaining visual content. This task optimizes storage
     and bandwidth requirements with minimal quality loss.
@@ -71,59 +68,43 @@ TASK_SUBSAMPLE:
     properties:
       video:
         description: The source video file to be subsampled.
-        acceptFormats:
-          - video/*
-          - application/octet-stream
+        type: string
         uiOrder: 0
         title: Video
-        format: string
       video-bitrate:
         description: 'The target video bitrate for the subsampled video, in bits per second. Controls the output video''s data rate, affecting file size
           and quality. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height.'
-        acceptFormats:
-          - number
-          - integer
+        type: number
         uiOrder: 2
         title: Video Bitrate
-        format: number
       audio-bitrate:
         description: 'The target audio bitrate for the subsampled video, in bits per second. Controls the output video''s audio data rate, affecting file
           size and quality. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height.'
-        acceptFormats:
-          - number
-          - integer
+        type: number
         uiOrder: 3
         title: Audio Bitrate
-        format: number
       fps:
         description: 'The target frame rate for the subsampled video, in frames per second. Determines the number of frames in the output video. Must provide
           at least one of: video-bitrate, audio-bitrate, fps, width, or height.'
-        acceptFormats:
-          - number
-          - integer
+        type: number
         uiOrder: 1
         title: FPS
-        format: number
       width:
         description: 'The width of the subsampled video, in pixels. Controls the output video''s horizontal resolution. If only width is provided, height
           is auto-calculated to maintain aspect ratio. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height.'
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 2
         title: Width
-        format: integer
       height:
         description: 'The height of the subsampled video, in pixels. Controls the output video''s vertical resolution. If only height is provided, width
           is auto-calculated to maintain aspect ratio. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height.'
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 3
         title: Height
-        format: integer
     required:
       - video
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 1
@@ -133,11 +114,11 @@ TASK_SUBSAMPLE:
           potentially reduced file size due to changes in frame rate, bitrate, or dimensions.
         uiOrder: 0
         title: Video
-        format: video/*
+        type: video/*
     required:
       - video
     title: Output
-    format: object
+    type: object
 TASK_EXTRACT_AUDIO:
   shortDescription: Extract the audio track from a video file, creating a standalone audio output. This task takes a video input and isolates its sound
     component, removing all visual elements. The resulting audio data is provided as a single output, suitable for further audio processing, analysis, or
@@ -149,16 +130,13 @@ TASK_EXTRACT_AUDIO:
       video:
         description: The source video file from which the audio will be extracted. The video's visual content will be discarded, and only the audio track
           will be processed.
-        acceptFormats:
-          - video/*
-          - application/octet-stream
+        type: string
         uiOrder: 0
         title: Video
-        format: string
     required:
       - video
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 1
@@ -168,11 +146,11 @@ TASK_EXTRACT_AUDIO:
           video, with all visual elements removed. The audio format may vary depending on the original video's audio codec and the extraction process.
         uiOrder: 0
         title: Audio
-        format: audio/*
+        type: audio/*
     required:
       - audio
     title: Output
-    format: object
+    type: object
 TASK_EMBED_AUDIO:
   shortDescription: Embed an audio to the existing video
   input:
@@ -181,20 +159,14 @@ TASK_EMBED_AUDIO:
     properties:
       audio:
         description: Audio data to embed to video
-        acceptFormats:
-          - audio
-          - application/octet-stream
+        type: audio
         uiOrder: 0
         title: Audio
-        type: string
       video:
         description: Video input to be embedded with provided audio
-        acceptFormats:
-          - video
-          - application/octet-stream
+        type: video
         uiOrder: 1
         title: Video
-        type: string
     required:
       - video
       - audio
@@ -206,10 +178,9 @@ TASK_EMBED_AUDIO:
     properties:
       video:
         description: Final video embedded with audio
-        format: video
+        type: video
         uiOrder: 0
         title: Video
-        type: string
     required:
       - video
     title: Output
@@ -224,31 +195,25 @@ TASK_EXTRACT_FRAMES:
     properties:
       video:
         description: The source video file from which frames will be extracted.
-        acceptFormats:
-          - video/*
-          - application/octet-stream
+        type: string
         uiOrder: 0
         title: Video
-        format: string
       interval:
         description: The time interval between extracted frames, in seconds. If specified, frames will be extracted at regular intervals throughout the
           video. This parameter is mutually exclusive with `timestamps`.
-        acceptFormats:
-          - number
-          - integer
+        type: number
         uiOrder: 1
         title: Interval
-        format: number
       timestamps:
         description: An array of specific timestamps (in seconds) at which to extract frames from the video. If provided, frames will be extracted only
           at these exact times. This parameter is mutually exclusive with `interval`.
         uiOrder: 2
         title: Timestamps
-        format: array
+        type: array
     required:
       - video
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 1
@@ -258,10 +223,10 @@ TASK_EXTRACT_FRAMES:
         uiOrder: 0
         items:
           title: Frame
-          format: string
+          type: string
         title: Frames
-        format: array
+        type: array
     required:
       - frames
     title: Output
-    format: object
+    type: object

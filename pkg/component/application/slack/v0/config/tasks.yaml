@@ -3,12 +3,12 @@ $defs:
     description: unique id from Slack.
     uiOrder: 0
     title: User UID
-    format: string
+    type: string
   user-name:
     description: user name in Slack.
     uiOrder: 1
     title: User Name
-    format: string
+    type: string
 TASK_READ_MESSAGE:
   shortDescription: Get the latest message since specific date
   input:
@@ -17,23 +17,19 @@ TASK_READ_MESSAGE:
     properties:
       channel-name:
         description: Channel name, as displayed on Slack.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Channel Name
-        format: string
       start-to-read-date:
         description: Date (in `YYYY-MM-DD` format) from which messages will start to be fetched. If not provided, it will be 7 days before the current date.
           The date will be in the UTC timezone.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: Start to read date
-        format: string
     required:
       - channel-name
     title: Input
-    format: object
+    type: object
   output:
     description: All messages in Slack channel.
     uiOrder: 0
@@ -53,19 +49,19 @@ TASK_READ_MESSAGE:
               description: message to start a conversation.
               uiOrder: 2
               title: Start Conversation Message
-              format: string
+              type: string
             start-date:
               description: when a conversation starts.
               uiOrder: 3
               required: []
               title: Start Date
-              format: string
+              type: string
             last-date:
               description: Date of the last message.
               uiOrder: 4
               required: []
               title: Last Date
-              format: string
+              type: string
             thread-reply-messages:
               description: replies in a conversation.
               uiOrder: 5
@@ -81,28 +77,28 @@ TASK_READ_MESSAGE:
                     description: replied datetime.
                     uiOrder: 2
                     title: Replied Time
-                    format: string
+                    type: string
                   message:
                     description: message to reply a conversation.
                     uiOrder: 3
                     title: Replied Message
-                    format: string
+                    type: string
                 required:
                   - user-id
                   - datetime
                   - message
-                format: object
-              format: array
+                type: object
+              type: array
           required:
             - user-id
             - message
             - start-date
-          format: object
-        format: array
+          type: object
+        type: array
     required:
       - conversations
     title: Output
-    format: object
+    type: object
 TASK_WRITE_MESSAGE:
   shortDescription: send message to a specific channel
   title: Send Message
@@ -112,31 +108,25 @@ TASK_WRITE_MESSAGE:
     properties:
       channel-name:
         description: Channel name, as displayed on Slack.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Channel Name
-        format: string
       message:
         description: The message to be sent to the target channel.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: Message
-        format: string
       as-user:
         default: false
         description: Send the message on behalf of the user identified by the <code>setup.user-token</code> field.
         uiOrder: 2
         title: Send As User
-        acceptFormats:
-          - boolean
-        format: boolean
+        type: boolean
     required:
       - channel-name
       - message
     title: Input
-    format: object
+    type: object
   output:
     description: The greeting sentence.
     uiOrder: 0
@@ -146,8 +136,8 @@ TASK_WRITE_MESSAGE:
         uiOrder: 0
         required: []
         title: Result
-        format: string
+        type: string
     required:
       - result
     title: Output
-    format: object
+    type: object

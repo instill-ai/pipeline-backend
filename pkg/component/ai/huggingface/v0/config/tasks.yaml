@@ -1,42 +1,34 @@
 $defs:
   model:
     description: The Hugging Face model to be used.
-    acceptFormats:
-      - string
+    type: string
     title: Model
-    format: string
   options:
     properties:
       use-cache:
         description: There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models
           are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent
           the caching mechanism from being used resulting in a real new query.
-        acceptFormats:
-          - boolean
+        type: boolean
         shortDescription: Enable the cache of inference API
         uiOrder: 1
         title: Use Cache
-        format: boolean
       wait-for-model:
         description: If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done.
           It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.
-        acceptFormats:
-          - boolean
+        type: boolean
         shortDescription: Wait for model ready
         uiOrder: 0
         title: Wait For Model
-        format: boolean
     required: []
     description: Options for the model.
     title: Options
-    format: object
+    type: object
   string-input:
     description: String input.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 0
     title: String Input
-    format: string
 TASK_AUDIO_CLASSIFICATION:
   shortDescription: Audio classification is the task of assigning a label or class to a given audio.
   description: Audio classification is the task of assigning a label or class to a given audio. It can be used for recognizing which command a user is giving
@@ -46,11 +38,9 @@ TASK_AUDIO_CLASSIFICATION:
     properties:
       audio:
         description: The audio file.
-        acceptFormats:
-          - audio/*
+        type: string
         uiOrder: 1
         title: Audio
-        format: string
       model:
         $ref: '#/$defs/model'
         uiOrder: 0
@@ -58,7 +48,7 @@ TASK_AUDIO_CLASSIFICATION:
       - audio
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -70,25 +60,25 @@ TASK_AUDIO_CLASSIFICATION:
               description: The label for the class (model specific).
               uiOrder: 0
               title: Label
-              format: string
+              type: string
             score:
               description: A float that represents how likely it is that the audio file belongs to this class.
               uiOrder: 1
               title: Score
-              format: number
+              type: number
           required:
             - label
             - score
           description: Class.
           title: Class
-          format: object
+          type: object
         description: Classes.
         title: Classes
-        format: array
+        type: array
     required:
       - classes
     title: Output
-    format: object
+    type: object
 TASK_CONVERSATIONAL:
   shortDescription: Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgable given a
     prompt.
@@ -102,37 +92,31 @@ TASK_CONVERSATIONAL:
         properties:
           generated-responses:
             description: A list of strings corresponding to the earlier replies from the model.
-            acceptFormats:
-              - array
+            type: array
             uiOrder: 0
             items:
               description: Items.
-              format: string
+              type: string
             title: Generated Responses
-            format: array
           past-user-inputs:
             description: A list of strings corresponding to the earlier replies from the user. Should be of the same length of generated-responses.
-            acceptFormats:
-              - array
+            type: array
             shortDescription: A list of strings corresponding to the earlier replies from the user.
             uiOrder: 1
             items:
               description: Items.
-              format: string
+              type: string
             title: Past User Inputs
-            format: array
           text:
             description: The last input from the user in the conversation.
-            acceptFormats:
-              - string
+            type: string
             uiOrder: 2
             title: Text
-            format: string
         required:
           - text
         description: Inputs.
         title: Inputs
-        format: object
+        type: object
       model:
         $ref: '#/$defs/model'
         uiOrder: 0
@@ -144,78 +128,60 @@ TASK_CONVERSATIONAL:
         properties:
           max-length:
             description: Integer to define the maximum length in tokens of the output summary.
-            acceptFormats:
-              - integer
+            type: integer
             uiOrder: 0
             title: Max Length
-            format: integer
           max-time:
             description: The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit.
-            acceptFormats:
-              - number
-              - integer
+            type: number
             shortDescription: The amount of time in seconds that the query should take maximum.
             uiOrder: 1
             maximum: 120.0
             minimum: 0.0
             title: Max Time
-            format: number
           min-length:
             description: Integer to define the minimum length in tokens of the output summary.
-            acceptFormats:
-              - integer
+            type: integer
             uiOrder: 2
             title: Min Length
-            format: integer
           repetition-penalty:
             description: The more a token is used within generation the more it is penalized to not be picked in successive generation passes.
-            acceptFormats:
-              - number
-              - integer
+            type: number
             uiOrder: 3
             maximum: 100.0
             minimum: 0.0
             title: Repetition Penalty
-            format: number
           temperature:
             default: 1.0
             description: The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer
               to uniform probability.
-            acceptFormats:
-              - number
-              - integer
+            type: number
             shortDescription: The temperature of the sampling operation.
             uiOrder: 4
             maximum: 100.0
             minimum: 0.0
             title: Temperature
-            format: number
           top-k:
             description: Integer to define the top tokens considered within the sample operation to create new text.
-            acceptFormats:
-              - integer
+            type: integer
             uiOrder: 5
             title: Top K
-            format: integer
           top-p:
             description: Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable
               to least probable until the sum of the probabilities is greater than top-p.
-            acceptFormats:
-              - number
-              - integer
+            type: number
             shortDescription: Float to define the tokens that are within the sample operation of text generation.
             uiOrder: 6
             title: Top P
-            format: number
         required: []
         description: Parameters.
         title: Parameters
-        format: object
+        type: object
     required:
       - inputs
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -229,32 +195,32 @@ TASK_CONVERSATIONAL:
             items:
               title: Generated Response
               description: Generated Response.
-              format: string
+              type: string
             title: Generated Responses
-            format: array
+            type: array
           past-user-inputs:
             description: List of strings. The last inputs from the user in the conversation, after the model has run.
             uiOrder: 1
             items:
               title: Past User Input
               description: Past User Input.
-              format: string
+              type: string
             title: Past User Inputs
-            format: array
+            type: array
         required:
           - generated-responses
           - past-user-inputs
         title: Conversation
-        format: object
+        type: object
       generated-text:
         description: The answer of the bot.
         uiOrder: 1
         title: Generated Text
-        format: string
+        type: string
     required:
       - generated-text
     title: Output
-    format: object
+    type: object
 TASK_FILL_MASK:
   shortDescription: Masked language modeling is the task of masking some of the words in a sentence and predicting which words should replace those masks.
   description: Masked language modeling is the task of masking some of the words in a sentence and predicting which words should replace those masks. These
@@ -276,7 +242,7 @@ TASK_FILL_MASK:
       - inputs
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -288,33 +254,33 @@ TASK_FILL_MASK:
               description: The probability for this token.
               uiOrder: 0
               title: Score
-              format: number
+              type: number
             sequence:
               description: The actual sequence of tokens that ran against the model (may contain special tokens).
               uiOrder: 1
               title: Sequence
-              format: string
+              type: string
             token:
               description: The id of the token.
               uiOrder: 2
               title: Token
-              format: integer
+              type: integer
             token-str:
               description: The string representation of the token.
               uiOrder: 3
               title: Token Str
-              format: string
+              type: string
           description: Result.
           title: Result
           required: []
-          format: object
+          type: object
         description: Results.
         title: Results
-        format: array
+        type: array
     required:
       - results
     title: Output
-    format: object
+    type: object
 TASK_IMAGE_CLASSIFICATION:
   shortDescription: Image classification is the task of assigning a label or class to an entire image.
   description: Image classification is the task of assigning a label or class to an entire image. Images are expected to have only one class for each image.
@@ -324,11 +290,9 @@ TASK_IMAGE_CLASSIFICATION:
     properties:
       image:
         description: The image file.
-        acceptFormats:
-          - image/*
+        type: string
         uiOrder: 1
         title: Image
-        format: string
       model:
         $ref: '#/$defs/model'
         uiOrder: 0
@@ -336,7 +300,7 @@ TASK_IMAGE_CLASSIFICATION:
       - image
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -348,25 +312,25 @@ TASK_IMAGE_CLASSIFICATION:
               description: The label for the class (model specific).
               uiOrder: 0
               title: Label
-              format: string
+              type: string
             score:
               description: A float that represents how likely it is that the image file belongs to this class.
               uiOrder: 0
               title: Score
-              format: number
+              type: number
           required:
             - label
             - score
           description: Class.
           title: Class
-          format: object
+          type: object
         description: Classes.
         title: Classes
-        format: array
+        type: array
     required:
       - classes
     title: Output
-    format: object
+    type: object
 TASK_IMAGE_SEGMENTATION:
   shortDescription: Image Segmentation divides an image into segments where each pixel in the image is mapped to an object.
   description: Image Segmentation divides an image into segments where each pixel in the image is mapped to an object. This task has multiple variants such
@@ -376,11 +340,9 @@ TASK_IMAGE_SEGMENTATION:
     properties:
       image:
         description: The image file.
-        acceptFormats:
-          - image/*
+        type: string
         uiOrder: 1
         title: Image
-        format: string
       model:
         $ref: '#/$defs/model'
         uiOrder: 0
@@ -388,7 +350,7 @@ TASK_IMAGE_SEGMENTATION:
       - image
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -400,31 +362,31 @@ TASK_IMAGE_SEGMENTATION:
               description: The label for the class (model specific) of a segment.
               uiOrder: 0
               title: Label
-              format: string
+              type: string
             mask:
               description: A str (base64 str of a single channel black-and-white img) representing the mask of a segment.
               uiOrder: 1
               title: Mask
-              format: image/png
+              type: image/png
             score:
               description: A float that represents how likely it is that the segment belongs to the given class.
               uiOrder: 2
               title: Score
-              format: number
+              type: number
           required:
             - label
             - mask
             - score
           description: Segment.
           title: Segment
-          format: object
+          type: object
         description: Segments.
         title: Segments
-        format: array
+        type: array
     required:
       - segments
     title: Output
-    format: object
+    type: object
 TASK_IMAGE_TO_TEXT:
   shortDescription: Image to text models output a text from a given image.
   description: Image to text models output a text from a given image. Image captioning or optical character recognition can be considered as the most common
@@ -434,11 +396,9 @@ TASK_IMAGE_TO_TEXT:
     properties:
       image:
         description: The image file.
-        acceptFormats:
-          - image/*
+        type: string
         uiOrder: 1
         title: Image
-        format: string
       model:
         $ref: '#/$defs/model'
         uiOrder: 0
@@ -446,7 +406,7 @@ TASK_IMAGE_TO_TEXT:
       - image
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -454,11 +414,11 @@ TASK_IMAGE_TO_TEXT:
         description: Generated text.
         uiOrder: 0
         title: Text
-        format: string
+        type: string
     required:
       - text
     title: Output
-    format: object
+    type: object
 TASK_OBJECT_DETECTION:
   shortDescription: Object Detection models allow users to identify objects of certain defined classes.
   description: Object Detection models allow users to identify objects of certain defined classes. Object detection models receive an image as input and
@@ -468,11 +428,9 @@ TASK_OBJECT_DETECTION:
     properties:
       image:
         description: The image file.
-        acceptFormats:
-          - image/*
+        type: string
         uiOrder: 1
         title: Image
-        format: string
       model:
         $ref: '#/$defs/model'
         uiOrder: 0
@@ -480,7 +438,7 @@ TASK_OBJECT_DETECTION:
       - image
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -496,53 +454,53 @@ TASK_OBJECT_DETECTION:
                   description: X max.
                   uiOrder: 0
                   title: X Max
-                  format: number
+                  type: number
                 xmin:
                   description: X min.
                   uiOrder: 1
                   title: X Min
-                  format: number
+                  type: number
                 ymax:
                   description: Y Max.
                   uiOrder: 2
                   title: Y Max
-                  format: number
+                  type: number
                 ymin:
                   description: Y min.
                   uiOrder: 3
                   title: Y min
-                  format: number
+                  type: number
               required:
                 - xmax
                 - xmin
                 - ymax
                 - ymin
               title: Box
-              format: object
+              type: object
             label:
               description: The label for the class (model specific) of a detected object.
               uiOrder: 1
               title: Label
-              format: string
+              type: string
             score:
               description: A float that represents how likely it is that the detected object belongs to the given class.
               uiOrder: 2
               title: Score
-              format: number
+              type: number
           required:
             - box
             - label
             - score
           description: Object.
           title: Object
-          format: object
+          type: object
         description: Objects.
         title: Objects
-        format: array
+        type: array
     required:
       - objects
     title: Output
-    format: object
+    type: object
 TASK_QUESTION_ANSWERING:
   shortDescription: Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a
     document.
@@ -556,24 +514,20 @@ TASK_QUESTION_ANSWERING:
         properties:
           context:
             description: The context for answering the question.
-            acceptFormats:
-              - string
+            type: string
             uiOrder: 0
             title: Context
-            format: string
           question:
             description: The question.
-            acceptFormats:
-              - string
+            type: string
             uiOrder: 1
             title: Question
-            format: string
         required:
           - question
           - context
         description: Inputs.
         title: Inputs
-        format: object
+        type: object
       model:
         $ref: '#/$defs/model'
         uiOrder: 0
@@ -584,7 +538,7 @@ TASK_QUESTION_ANSWERING:
       - inputs
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -592,26 +546,26 @@ TASK_QUESTION_ANSWERING:
         description: A string that’s the answer within the text.
         uiOrder: 0
         title: Answer
-        format: string
+        type: string
       score:
         description: A float that represents how likely that the answer is correct.
         uiOrder: 2
         title: Score
-        format: number
+        type: number
       start:
         description: The index (string wise) of the start of the answer within context.
         uiOrder: 3
         title: Start
-        format: integer
+        type: integer
       stop:
         description: The index (string wise) of the stop of the answer within context.
         uiOrder: 1
         title: Stop
-        format: integer
+        type: integer
     required:
       - answer
     title: Output
-    format: object
+    type: object
 TASK_SENTENCE_SIMILARITY:
   shortDescription: Sentence Similarity is the task of determining how similar two texts are.
   description: Sentence Similarity is the task of determining how similar two texts are. Sentence similarity models convert input texts into vectors (embeddings)
@@ -625,29 +579,25 @@ TASK_SENTENCE_SIMILARITY:
         properties:
           sentences:
             description: A list of strings which will be compared against the source-sentence.
-            acceptFormats:
-              - array
+            type: array
             uiOrder: 0
             items:
               description: Items.
-              format: string
+              type: string
             title: Sentences
-            format: array
           source-sentence:
             description: The string that you wish to compare the other strings with. This can be a phrase, sentence, or longer passage, depending on the
               model being used.
-            acceptFormats:
-              - string
+            type: string
             shortDescription: The string that you wish to compare the other strings with.
             uiOrder: 1
             title: Source Sentence
-            format: string
         required:
           - source-sentence
           - sentences
         description: Inputs.
         title: Inputs
-        format: object
+        type: object
       model:
         $ref: '#/$defs/model'
         uiOrder: 0
@@ -658,7 +608,7 @@ TASK_SENTENCE_SIMILARITY:
       - inputs
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -668,13 +618,13 @@ TASK_SENTENCE_SIMILARITY:
         items:
           description: The associated similarity score for of the given string.
           title: Score
-          format: number
+          type: number
         title: Scores
-        format: array
+        type: array
     required:
       - scores
     title: Output
-    format: object
+    type: object
 TASK_SPEECH_RECOGNITION:
   shortDescription: Automatic Speech Recognition (ASR), also known as Speech to Text (STT), is the task of transcribing a given audio to text.
   description: Automatic Speech Recognition (ASR), also known as Speech to Text (STT), is the task of transcribing a given audio to text. It has many applications,
@@ -684,11 +634,9 @@ TASK_SPEECH_RECOGNITION:
     properties:
       audio:
         description: The audio file.
-        acceptFormats:
-          - audio/*
+        type: string
         uiOrder: 1
         title: Audio
-        format: string
       model:
         $ref: '#/$defs/model'
         uiOrder: 0
@@ -696,7 +644,7 @@ TASK_SPEECH_RECOGNITION:
       - audio
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -704,11 +652,11 @@ TASK_SPEECH_RECOGNITION:
         description: The string that was recognized within the audio file.
         uiOrder: 0
         title: Text
-        format: string
+        type: string
     required:
       - text
     title: Output
-    format: object
+    type: object
 TASK_SUMMARIZATION:
   shortDescription: Summarization is the task of producing a shorter version of a document while preserving its important information.
   description: Summarization is the task of producing a shorter version of a document while preserving its important information. Some models can extract
@@ -730,77 +678,59 @@ TASK_SUMMARIZATION:
         properties:
           max-length:
             description: Integer to define the maximum length in tokens of the output summary.
-            acceptFormats:
-              - integer
+            type: integer
             uiOrder: 0
             title: Max Length
-            format: integer
           max-time:
-            acceptFormats:
-              - number
-              - integer
+            type: number
             uiOrder: 1
             maximum: 120.0
             minimum: 0.0
             description: The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit.
             title: Max Time
-            format: number
           min-length:
             description: Integer to define the minimum length in tokens of the output summary.
-            acceptFormats:
-              - integer
+            type: integer
             uiOrder: 2
             title: Min Length
-            format: integer
           repetition-penalty:
             description: The more a token is used within generation the more it is penalized to not be picked in successive generation passes.
-            acceptFormats:
-              - number
-              - integer
+            type: number
             uiOrder: 3
             maximum: 100.0
             minimum: 0.0
             title: Repetition Penalty
-            format: number
           temperature:
             default: 1.0
             description: The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer
               to uniform probability.
-            acceptFormats:
-              - number
-              - integer
+            type: number
             shortDescription: The temperature of the sampling operation.
             uiOrder: 4
             maximum: 100.0
             minimum: 0.0
             title: Temperature
-            format: number
           top-k:
             description: Integer to define the top tokens considered within the sample operation to create new text.
-            acceptFormats:
-              - integer
+            type: integer
             uiOrder: 5
             title: Top K
-            format: integer
           top-p:
             description: Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable
               to least probable until the sum of the probabilities is greater than top-p.
-            acceptFormats:
-              - number
-              - integer
+            type: number
             shortDescription: Float to define the tokens that are within the sample operation of text generation.
             uiOrder: 6
             title: Top P
-            format: number
         required: []
         description: Parameters.
         title: Parameters
-        format: object
+        type: object
     required:
       - inputs
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -808,11 +738,11 @@ TASK_SUMMARIZATION:
         description: The string after summarization.
         uiOrder: 0
         title: Summary Text
-        format: string
+        type: string
     required:
       - summary-text
     title: Output
-    format: object
+    type: object
 TASK_TABLE_QUESTION_ANSWERING:
   shortDescription: Table Question Answering (Table QA) is the answering a question about an information on a given table.
   input:
@@ -823,26 +753,22 @@ TASK_TABLE_QUESTION_ANSWERING:
         properties:
           query:
             description: The query in plain text that you want to ask the table.
-            acceptFormats:
-              - string
+            type: string
             uiOrder: 0
             title: Query
-            format: string
           table:
             description: A table of data represented as a dict of list where entries are headers and the lists are all the values, all lists must have the
               same size.
-            acceptFormats:
-              - '*'
+            type: object
             uiOrder: 1
             required: []
             title: Table
-            format: object
         required:
           - query
           - table
         description: Inputs.
         title: Inputs
-        format: object
+        type: object
       model:
         $ref: '#/$defs/model'
         uiOrder: 0
@@ -853,7 +779,7 @@ TASK_TABLE_QUESTION_ANSWERING:
       - inputs
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -861,21 +787,21 @@ TASK_TABLE_QUESTION_ANSWERING:
         description: The aggregator used to get the answer.
         uiOrder: 0
         title: Aggregator
-        format: string
+        type: string
       answer:
         description: The plaintext answer.
         uiOrder: 1
         title: Answer
-        format: string
+        type: string
       cells:
         description: a list of coordinates of the cells contents.
         uiOrder: 2
         items:
           description: coordinate of the cell content.
           title: Cell
-          format: string
+          type: string
         title: Cells
-        format: array
+        type: array
       coordinates:
         description: a list of coordinates of the cells referenced in the answer.
         uiOrder: 3
@@ -883,14 +809,14 @@ TASK_TABLE_QUESTION_ANSWERING:
           items:
             description: coordinate of the cell referenced in the answer.
             title: Coordinate
-            format: integer
-          format: array
+            type: integer
+          type: array
         title: Coordinates
-        format: array
+        type: array
     required:
       - answer
     title: Output
-    format: object
+    type: object
 TASK_TEXT_CLASSIFICATION:
   shortDescription: Text Classification is the task of assigning a label or class to a given text.
   description: Text Classification is the task of assigning a label or class to a given text. Some use cases are sentiment analysis, natural language inference,
@@ -911,7 +837,7 @@ TASK_TEXT_CLASSIFICATION:
       - inputs
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -923,25 +849,25 @@ TASK_TEXT_CLASSIFICATION:
               description: The label for the class (model specific).
               uiOrder: 0
               title: Label
-              format: string
+              type: string
             score:
               description: A floats that represents how likely is that the text belongs the this class.
               uiOrder: 1
               title: Score
-              format: number
+              type: number
           required:
             - label
             - score
           description: Result.
           title: Result
-          format: object
+          type: object
         description: Results.
         title: Results
-        format: array
+        type: array
     required:
       - results
     title: Output
-    format: object
+    type: object
 TASK_TEXT_GENERATION:
   shortDescription: Generating text is the task of producing new text. These models can, for example, fill in incomplete text or paraphrase.
   description: Generating text is the task of producing new text. These models can, for example, fill in incomplete text or paraphrase.
@@ -962,88 +888,66 @@ TASK_TEXT_GENERATION:
         properties:
           do-sample:
             description: Whether or not to use sampling, use greedy decoding otherwise.
-            acceptFormats:
-              - boolean
+            type: boolean
             uiOrder: 0
             title: Do Sample
-            format: boolean
           max-new-tokens:
             description: The amount of new tokens to be generated, this does not include the input length it is a estimate of the size of generated text
               you want. Each new tokens slows down the request, so look for balance between response times and length of text generated.
-            acceptFormats:
-              - integer
+            type: integer
             shortDescription: The amount of new tokens to be generated.
             uiOrder: 1
             title: Max New Tokens
-            format: integer
           max-time:
             description: The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit. Use
               that in combination with max-new-tokens for best results.
-            acceptFormats:
-              - number
-              - integer
+            type: number
             shortDescription: The amount of time in seconds that the query should take maximum.
             uiOrder: 2
             title: Max Time
-            format: number
           num-return-sequences:
             description: The number of proposition you want to be returned.
-            acceptFormats:
-              - integer
+            type: integer
             uiOrder: 3
             title: Num Return Sequences
-            format: integer
           repetition-penalty:
             description: The more a token is used within generation the more it is penalized to not be picked in successive generation passes.
-            acceptFormats:
-              - number
-              - integer
+            type: number
             uiOrder: 4
             title: Repetition Penalty
-            format: number
           return-full-text:
             description: If set to False, the return results will not contain the original query making it easier for prompting.
-            acceptFormats:
-              - boolean
+            type: boolean
             uiOrder: 5
             title: Return Full Text
-            format: boolean
           temperature:
             description: The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer
               to uniform probability.
-            acceptFormats:
-              - number
-              - integer
+            type: number
             shortDescription: The temperature of the sampling operation.
             uiOrder: 6
             title: Temperature
-            format: number
           top-k:
             description: Integer to define the top tokens considered within the sample operation to create new text.
-            acceptFormats:
-              - integer
+            type: integer
             uiOrder: 7
             title: Top K
-            format: integer
           top-p:
             description: Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable
               to least probable until the sum of the probabilities is greater than top-p.
-            acceptFormats:
-              - number
-              - integer
+            type: number
             shortDescription: Float to define the tokens that are within the sample operation of text generation.
             uiOrder: 8
             title: Top P
-            format: number
         required: []
         description: Parameters.
         title: Parameters
-        format: object
+        type: object
     required:
       - inputs
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -1051,11 +955,11 @@ TASK_TEXT_GENERATION:
         description: The continuated string.
         uiOrder: 1
         title: Generated Text
-        format: string
+        type: string
     required:
       - generated-text
     title: Output
-    format: object
+    type: object
 TASK_TEXT_TO_IMAGE:
   shortDescription: Generates images from input text.
   description: Generates images from input text. These models can be used to generate and modify images based on text prompts.
@@ -1076,49 +980,38 @@ TASK_TEXT_TO_IMAGE:
         properties:
           guidance-scale:
             description: Guidance scale.
-            acceptFormats:
-              - number
-              - integer
+            type: number
             uiOrder: 0
             title: Guidance Scale
-            format: number
           height:
             description: Image Height.
-            acceptFormats:
-              - integer
+            type: integer
             uiOrder: 1
             title: Height
-            format: integer
           negative-prompt:
             description: Negative prompt for generating the image.
-            acceptFormats:
-              - string
+            type: string
             uiOrder: 2
             title: Negative Prompt
-            format: string
           num-inference-steps:
             description: Number of inference steps.
-            acceptFormats:
-              - integer
+            type: integer
             uiOrder: 3
             title: Num Inference Steps
-            format: integer
           width:
             description: Image width.
-            acceptFormats:
-              - integer
+            type: integer
             uiOrder: 4
             title: Width
-            format: integer
         required: []
         description: Parameters.
         title: Parameters
-        format: object
+        type: object
     required:
       - inputs
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -1126,11 +1019,11 @@ TASK_TEXT_TO_IMAGE:
         uiOrder: 0
         description: Image.
         title: Image
-        format: image/jpeg
+        type: image/jpeg
     required:
       - image
     title: Output
-    format: object
+    type: object
 TASK_TOKEN_CLASSIFICATION:
   shortDescription: Token classification is a natural language understanding task in which a label is assigned to some tokens in a text.
   description: Token classification is a natural language understanding task in which a label is assigned to some tokens in a text. Some popular token classification
@@ -1152,28 +1045,32 @@ TASK_TOKEN_CLASSIFICATION:
         uiOrder: 2
         properties:
           aggregation-strategy:
-            description: |-
-              There are several aggregation strategies:
+            description: 'There are several aggregation strategies:
+
               none: Every token gets classified without further aggregation.
+
               simple: Entities are grouped according to the default schema (B-, I- tags get merged when the tag is similar).
-              first: Same as the simple strategy except words cannot end up with different tags. Words will use the tag of the first token when there is ambiguity.
-              average: Same as the simple strategy except words cannot end up with different tags. Scores are averaged across tokens and then the maximum label is applied.
-              max: Same as the simple strategy except words cannot end up with different tags. Word entity will be the token with the maximum score.
-            acceptFormats:
-              - string
+
+              first: Same as the simple strategy except words cannot end up with different tags. Words will use the tag of the first token when there is
+              ambiguity.
+
+              average: Same as the simple strategy except words cannot end up with different tags. Scores are averaged across tokens and then the maximum
+              label is applied.
+
+              max: Same as the simple strategy except words cannot end up with different tags. Word entity will be the token with the maximum score.'
+            type: string
             shortDescription: 'There are several aggregation strategies: none, simple, first, average, and max.'
             uiOrder: 0
             title: Aggregation Strategy
-            format: string
         required: []
         description: Parameters.
         title: Parameters
-        format: object
+        type: object
     required:
       - inputs
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -1185,37 +1082,37 @@ TASK_TOKEN_CLASSIFICATION:
               description: The offset stringwise where the answer is located. Useful to disambiguate if word occurs multiple times.
               uiOrder: 0
               title: End
-              format: integer
+              type: integer
             entity-group:
               description: The type for the entity being recognized (model specific).
               uiOrder: 1
               title: Entity Group
-              format: string
+              type: string
             score:
               description: How likely the entity was recognized.
               uiOrder: 2
               title: Score
-              format: number
+              type: number
             start:
               description: The offset stringwise where the answer is located. Useful to disambiguate if word occurs multiple times.
               uiOrder: 3
               title: Start
-              format: integer
+              type: integer
             word:
               description: The string that was captured.
               uiOrder: 4
               title: Word
-              format: string
+              type: string
           required: []
           title: Result
-          format: object
+          type: object
         description: Results.
         title: Results
-        format: array
+        type: array
     required:
       - results
     title: Output
-    format: object
+    type: object
 TASK_TRANSLATION:
   shortDescription: Translation is the task of converting text from one language to another.
   input:
@@ -1234,7 +1131,7 @@ TASK_TRANSLATION:
       - inputs
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -1242,11 +1139,11 @@ TASK_TRANSLATION:
         description: The string after translation.
         uiOrder: 0
         title: Translation Text
-        format: string
+        type: string
     required:
       - translation-text
     title: Output
-    format: object
+    type: object
 TASK_ZERO_SHOT_CLASSIFICATION:
   shortDescription: Zero-shot text classification is a task in natural language processing where a model is trained on a set of labeled examples but is
     then able to classify new examples from previously unseen classes.
@@ -1274,26 +1171,24 @@ TASK_ZERO_SHOT_CLASSIFICATION:
             items:
               description: a string that are potential class for inputs.
               title: candidate-label
-              format: string
+              type: string
             title: Candidate Labels
-            format: array
+            type: array
           multi-label:
             description: Boolean that is set to True if classes can overlap.
-            acceptFormats:
-              - boolean
+            type: boolean
             uiOrder: 1
             title: Multi Label
-            format: boolean
         required:
           - candidate-labels
         description: Parameters.
         title: Parameters
-        format: object
+        type: object
     required:
       - inputs
       - model
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -1303,25 +1198,25 @@ TASK_ZERO_SHOT_CLASSIFICATION:
         items:
           description: The string for label that you sent (in order).
           title: Label
-          format: string
+          type: string
         title: Labels
-        format: array
+        type: array
       scores:
         description: a list of floats that correspond the the probability of label, in the same order as labels.
         uiOrder: 0
         items:
           description: float that correspond the the probability of label.
           title: Score
-          format: number
+          type: number
         title: Scores
-        format: array
+        type: array
       sequence:
         description: The string sent as an input.
         uiOrder: 1
         title: Sequence
-        format: string
+        type: string
     required:
       - labels
       - scores
     title: Output
-    format: object
+    type: object

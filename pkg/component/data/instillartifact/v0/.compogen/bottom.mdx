@@ -17,15 +17,15 @@ variable:
   catalog_name:
     title: catalog-name
     description: The name of your catalog i.e. "instill-ai"
-    format: string
+    type: string
   namespace:
     title: namespace
     description: The namespace of your catalog i.e. "instill-ai"
-    format: string
+    type: string
   question:
     title: question
     description: The question to ask your catalog i.e. "What is Instill AI doing?", "What is Artifact?"
-    format: string
+    type: string
 output:
   answer:
     title: answer
@@ -42,13 +42,13 @@ version: v1beta
 variable:
   namespace:
     title: Namespace
-    format: string
+    type: string
   catalog:
     title: Catalog
-    format: string
+    type: string
   folder-link:
     title: Folder Link
-    format: string
+    type: string
 
 component:
   read-folder:

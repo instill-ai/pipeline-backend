@@ -39,7 +39,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Token (required) | `token` | string | Fill in your Asana Personal Access Token (PAT). You can generate one from <a href="https://app.asana.com/0/my-apps">developer console</a>.  |
 
@@ -57,7 +57,7 @@ Create, Update, Delete, Read and Duplicate goal in Asana.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRUD_GOAL` |
 | [Action](#crud-goal-action) | `action` | object | action. |
@@ -79,7 +79,7 @@ Get Goal.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"get"`   |
 | Goal ID | `goal-gid` | string |  Globally unique identifier (GID) for the goal. You can find the GID of a goal from the URL of the goal in Asana. For example, if the URL of the goal is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.  |
@@ -91,7 +91,7 @@ Update Goal.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"update"`   |
 | Due Date | `due-on` | string |  The date on which the goal is due. In the format YYYY-MM-DD.  |
@@ -109,7 +109,7 @@ Delete Goal.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"delete"`   |
 | Goal ID | `goal-gid` | string |  Globally unique identifier (GID) for the goal. You can find the GID of a goal from the URL of the goal in Asana. For example, if the URL of the goal is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.  |
@@ -121,7 +121,7 @@ Create Goal.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"create"`   |
 | Due Date | `due-on` | string |  The date on which the goal is due. In the format YYYY-MM-DD.  |
@@ -137,7 +137,7 @@ Create Goal.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Goal ID (optional) | `gid` | string | Globally unique identifier (GID) for the goal. |
 | Goal Name (optional) | `name` | string | The name of the goal. |
@@ -157,7 +157,7 @@ Create Goal.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Owner ID | `gid` | string | Globally unique identifier (GID) for the owner. |
 | Owner Name | `name` | string | The name of the owner. |
@@ -167,7 +167,7 @@ Create Goal.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Like ID | `like-gid` | string | Globally unique identifier (GID) for the like. |
 | User Name | `name` | string | The name of the user. |
@@ -182,7 +182,7 @@ Create, Update, Delete, Read and Duplicate Task in Asana.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRUD_TASK` |
 | [Action](#crud-task-action) | `action` | object | Action. |
@@ -204,7 +204,7 @@ Get Task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"get"`   |
 | Task ID | `task-gid` | string |  Globally unique identifier (GID) for the task.  |
@@ -216,7 +216,7 @@ Update Task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"update"`   |
 | Approval Status | `approval-status` | string |  The approval status of the task. If you set completed to true, this field will be set to approved.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`pending`</li><li>`approved`</li><li>`rejected`</li><li>`changes_requested`</li></ul></details>  |
@@ -236,7 +236,7 @@ Delete Task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"delete"`   |
 | Task ID | `task-gid` | string |  Globally unique identifier (GID) for the task.  |
@@ -248,7 +248,7 @@ Create Task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"create"`   |
 | Approval Status | `approval-status` | string |  The approval status of the task. If you set completed to true, this field will be set to approved.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`pending`</li><li>`approved`</li><li>`rejected`</li><li>`changes_requested`</li></ul></details>  |
@@ -270,7 +270,7 @@ Duplicate Task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"duplicate"`   |
 | Name | `name` | string |  Name of the new task. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.  |
@@ -283,7 +283,7 @@ Set Parent Task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"set parent"`   |
 | Parent Task | `parent` | string |  GID of the parent task.  |
@@ -296,7 +296,7 @@ Edit Tag.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"edit tag"`   |
 | Edit option | `edit-option` | string |  Edit option. You can choose to add or remove the tag.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`add`</li><li>`remove`</li></ul></details>  |
@@ -310,7 +310,7 @@ Edit Follower.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"edit follower"`   |
 | Edit option | `edit-option` | string |  Edit option. You can choose to add or remove the follower.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`add`</li><li>`remove`</li></ul></details>  |
@@ -324,7 +324,7 @@ Edit Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"edit project"`   |
 | Edit option | `edit-option` | string |  Edit option. You can choose to add or remove the project.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`add`</li><li>`remove`</li></ul></details>  |
@@ -335,7 +335,7 @@ Edit Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (optional) | `gid` | string | Globally unique identifier (GID) for the task. |
 | Task Name (optional) | `name` | string | The name of the task. |
@@ -360,7 +360,7 @@ Edit Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Project ID | `gid` | string | Globally unique identifier (GID) for the project. |
 | Project Name | `name` | string | The name of the project. |
@@ -370,7 +370,7 @@ Edit Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Like ID | `like-gid` | string | Globally unique identifier (GID) for the like. |
 | User Name | `name` | string | The name of the user. |
@@ -385,7 +385,7 @@ Create, Update, Delete, Read and Duplicate project in Asana.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRUD_PROJECT` |
 | [Action](#crud-project-action) | `action` | object | action. |
@@ -407,7 +407,7 @@ Get Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"get"`   |
 | Project ID | `project-gid` | string |  Globally unique identifier (GID) for the project.  |
@@ -419,7 +419,7 @@ Update Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"update"`   |
 | Archived | `archived` | boolean |  Whether the project is archived.  |
@@ -438,7 +438,7 @@ Delete Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"delete"`   |
 | Project ID | `project-gid` | string |  Globally unique identifier (GID) for the project.  |
@@ -450,7 +450,7 @@ Create Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"create"`   |
 | Update Color | `color` | string |  The color of the project.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`dark-pink`</li><li>`dark-green`</li><li>`dark-blue`</li><li>`dark-red`</li><li>`dark-teal`</li><li>`dark-brown`</li><li>`dark-orange`</li><li>`dark-purple`</li><li>`dark-warm-gray`</li><li>`light-pink`</li><li>`light-green`</li><li>`light-blue`</li><li>`light-red`</li><li>`light-teal`</li><li>`light-brown`</li><li>`light-orange`</li><li>`light-purple`</li><li>`light-warm-gray`</li><li>`none`</li><li>`null`</li></ul></details>  |
@@ -469,7 +469,7 @@ Duplicate Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"duplicate"`   |
 | Due Date | `due-on` | string |  Sets the last due date in the duplicated project to the given date. The rest of the due dates will be offset by the same amount as the due dates in the original project. In the format YYYY-MM-DD.  |
@@ -483,7 +483,7 @@ Duplicate Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Project ID (optional) | `gid` | string | Globally unique identifier (GID) for the project. |
 | Project Name (optional) | `name` | string | The name of the project. |
@@ -510,7 +510,7 @@ Duplicate Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Owner ID | `gid` | string | Globally unique identifier (GID) for the owner. |
 | Owner Name | `name` | string | The name of the owner. |
@@ -520,7 +520,7 @@ Duplicate Project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | User ID | `gid` | string | Globally unique identifier (GID) for the user. |
 | User Name | `name` | string | The name of the user. |
@@ -534,7 +534,7 @@ Create, Update, Delete and Read portfolio in Asana.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRUD_PORTFOLIO` |
 | [Action](#crud-portfolio-action) | `action` | object | action. |
@@ -556,7 +556,7 @@ Get Portfolio.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"get"`   |
 | Portfolio ID | `portfolio-gid` | string |  Globally unique identifier (GID) for the portfolio.  |
@@ -568,7 +568,7 @@ Update Portfolio.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"update"`   |
 | Update Color | `color` | string |  The color of the portfolio.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`dark-pink`</li><li>`dark-green`</li><li>`dark-blue`</li><li>`dark-red`</li><li>`dark-teal`</li><li>`dark-brown`</li><li>`dark-orange`</li><li>`dark-purple`</li><li>`dark-warm-gray`</li><li>`light-pink`</li><li>`light-green`</li><li>`light-blue`</li><li>`light-red`</li><li>`light-teal`</li><li>`light-brown`</li><li>`light-orange`</li><li>`light-purple`</li><li>`light-warm-gray`</li><li>`none`</li><li>`null`</li></ul></details>  |
@@ -584,7 +584,7 @@ Delete Portfolio.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"delete"`   |
 | Portfolio ID | `portfolio-gid` | string |  Globally unique identifier (GID) for the portfolio.  |
@@ -596,7 +596,7 @@ Create Portfolio.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Action | `action` | string |  Must be `"create"`   |
 | Color | `color` | string |  The color of the portfolio.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`dark-pink`</li><li>`dark-green`</li><li>`dark-blue`</li><li>`dark-red`</li><li>`dark-teal`</li><li>`dark-brown`</li><li>`dark-orange`</li><li>`dark-purple`</li><li>`dark-warm-gray`</li><li>`light-pink`</li><li>`light-green`</li><li>`light-blue`</li><li>`light-red`</li><li>`light-teal`</li><li>`light-brown`</li><li>`light-orange`</li><li>`light-purple`</li><li>`light-warm-gray`</li><li>`none`</li><li>`null`</li></ul></details>  |
@@ -608,7 +608,7 @@ Create Portfolio.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Portfolio ID (optional) | `gid` | string | Globally unique identifier (GID) for the portfolio. |
 | Portfolio Name (optional) | `name` | string | The name of the portfolio. |
@@ -630,7 +630,7 @@ Create Portfolio.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Owner ID | `gid` | string | Globally unique identifier (GID) for the owner. |
 | Owner Name | `name` | string | The name of the owner. |
@@ -640,7 +640,7 @@ Create Portfolio.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | User ID | `gid` | string | Globally unique identifier (GID) for the user. |
 | User Name | `name` | string | The name of the user. |

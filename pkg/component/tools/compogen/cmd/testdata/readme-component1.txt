@@ -33,12 +33,12 @@ properties:
     description: Specify which organization is used for the requests
     uiOrder: 1
     title: Organization ID
-    format: string
+    type: string
   api-key:
     description: Fill in your Dummy API key
     uiOrder: 0
     title: API Key
-    format: string
+    type: string
   authentication:
     description: Authentication method to use for the Dummy
     uiOrder: 0
@@ -50,7 +50,7 @@ properties:
             uiOrder: 0
             order: 0
             title: Auth Format
-            format: string
+            type: string
         required:
           - auth-type
         title: No Auth
@@ -61,29 +61,27 @@ properties:
             uiOrder: 0
             order: 0
             title: Auth Format
-            format: string
+            type: string
           auth-way:
             description: ways for Auth 1
-            acceptFormats:
-              - string
+            type: string
             enum:
               - header
               - query
             uiOrder: 1
             order: 1
             title: Auth Way
-            format: string
         required:
           - auth-type
           - auth-way
         title: Auth 1
     order: 1
     title: Authentication
-    format: object
+    type: object
 required:
   - api-key
 title: OpenAI Connection
-format: object
+type: object
 
 -- tasks.yaml --
 TASK_DUMMY:
@@ -94,7 +92,7 @@ TASK_DUMMY:
         description: Lorem ipsum dolor sit amet, consectetur adipiscing elit
         uiOrder: 0
         title: Durna
-        format: string
+        type: string
       strategy:
         description: Chunking strategy
         uiOrder: 1
@@ -102,7 +100,7 @@ TASK_DUMMY:
           setting:
             description: Chunk Setting
             additionalProperties: true
-            format: object
+            type: object
             title: Chunk Setting
             uiOrder: 0
             required:
@@ -111,7 +109,7 @@ TASK_DUMMY:
               - properties:
                   chunk-method:
                     const: Token
-                    format: string
+                    type: string
                     title: Chunk Method
                     description: Chunking based on tokenization.
                     uiOrder: 0
@@ -122,16 +120,16 @@ TASK_DUMMY:
                       - gpt-3.5-turbo
                     uiOrder: 1
                     title: Model
-                    format: string
+                    type: string
                 title: Token
                 required:
                   - chunk-method
-                format: object
+                type: object
                 description: Language models have a token limit. You should not exceed the token limit. When you split your text into chunks it is therefore a good idea to count the number of tokens. There are many tokenizers. When you count tokens in your text you should use the same tokenizer as used in the language model.
               - properties:
                   chunk-method:
                     const: Markdown
-                    format: string
+                    type: string
                     title: Chunk Method
                     description: Chunking based on recursive splitting with markdown format.
                     uiOrder: 0
@@ -142,33 +140,33 @@ TASK_DUMMY:
                       - gpt-3.5-turbo
                     uiOrder: 1
                     title: Model
-                    format: string
+                    type: string
                 title: Markdown
                 required:
                   - chunk-method
-                format: object
+                type: object
                 description: This text splitter is specially designed for Markdown format.
         title: Strategy
         required:
           - setting
-        format: object
+        type: object
       dummy-string:
         description: '{{dummy_string}}'
         uiOrder: 0
         title: Dummy String
-        format: string
+        type: string
       dummy-file:
         description: this is a file
         uiOrder: 0
         title: Dummy File
-        format: '*'
+        type: '*'
       dummy-array:
         description: this is an array
         uiOrder: 0
         title: Dummy Array
-        format: array
+        type: array
         items:
-          format: '*'
+          type: '*'
     required:
       - durna
     title: Input
@@ -176,48 +174,47 @@ TASK_DUMMY:
     properties:
       orci:
         description: Orci sagittis eu volutpat odio facilisis mauris sit
-        format: string
+        type: string
         uiOrder: 0
         title: Orci
       conversations:
         description: An array of conversations with thread messages
         uiOrder: 0
         title: Conversations
-        format: array
+        type: array
         items:
           title: conversation details
-          format: object
+          type: object
           properties:
             message:
               description: message to start a conversation
               uiOrder: 0
               title: Start Conversation Message
-              format: string
+              type: string
             start-date:
               description: when a conversation starts
               uiOrder: 1
               title: Start Date
-              format: string
+              type: string
             last-date:
               description: Date of the last message
               uiOrder: 2
               title: Last Date
-              format: string
+              type: string
             thread-reply-messages:
               description: replies in a conversation
               uiOrder: 0
               title: Replied messages
-              format: array
+              type: array
               items:
                 title: relied details
-                format: object
+                type: object
                 properties:
                   message:
                     description: message to reply a conversation
-                    instillFormat: string
+                    type: string
                     uiOrder: 3
                     title: Replied Message
-                    format: string
                 required:
                   - message
           required:
@@ -266,7 +263,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | API Key (required) | `api-key` | string | Fill in your Dummy API key  |
 | [Authentication](#authentication) | `authentication` | object | Authentication method to use for the Dummy  |
@@ -287,7 +284,7 @@ This is some crucial information about setup: do it before execution.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Auth Format | `auth-type` | string |  Must be `"NO_AUTH"`   |
 </div>
@@ -296,7 +293,7 @@ This is some crucial information about setup: do it before execution.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Auth Format | `auth-type` | string |  Must be `"AUTH_1"`   |
 | Auth Way | `auth-way` | string |  ways for Auth 1  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`header`</li><li>`query`</li></ul></details>  |
@@ -312,7 +309,7 @@ Perform a dummy task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DUMMY` |
 | Dummy Array | `dummy-array` | array[any] | this is an array |
@@ -332,7 +329,7 @@ Chunking strategy
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Chunk Setting](#dummy-chunk-setting) | `setting` | object | Chunk Setting  |
 </div>
@@ -351,7 +348,7 @@ Language models have a token limit. You should not exceed the token limit. When 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Chunk Method | `chunk-method` | string |  Must be `"Token"`   |
 | Model | `model-name` | string |  The name of the model used for tokenization.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`gpt-4`</li><li>`gpt-3.5-turbo`</li></ul></details>  |
@@ -363,7 +360,7 @@ This text splitter is specially designed for Markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Chunk Method | `chunk-method` | string |  Must be `"Markdown"`   |
 | Model | `model-name` | string |  The name of the model used for tokenization.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`gpt-4`</li><li>`gpt-3.5-turbo`</li></ul></details>  |
@@ -372,7 +369,7 @@ This text splitter is specially designed for Markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Conversations](#dummy-conversations) (optional) | `conversations` | array[object] | An array of conversations with thread messages |
 | Orci (optional) | `orci` | string | Orci sagittis eu volutpat odio facilisis mauris sit |
@@ -385,7 +382,7 @@ This text splitter is specially designed for Markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Last Date | `last-date` | string | Date of the last message |
 | Start Conversation Message | `message` | string | message to start a conversation |
@@ -397,7 +394,7 @@ This text splitter is specially designed for Markdown format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Replied Message | `message` | string | message to reply a conversation |
 </div>

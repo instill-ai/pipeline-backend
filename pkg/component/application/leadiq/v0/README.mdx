@@ -36,7 +36,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | API Key (required) | `api-key` | string | Fill in your LeadIQ Secret Base64 API key, you can find it in [API Key](https://account.leadiq.com/app/settings/api-keys).  |
 
@@ -54,7 +54,7 @@ Find prospects' contact information based on the company name you provide. And, 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_FIND_PROSPECTS` |
 | [Company](#find-prospects-company) (required) | `company` | object | Provide the company information for which you want to find prospects. |
@@ -72,7 +72,7 @@ Provide the company information for which you want to find prospects.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Cities | `cities` | array | Provide the cities of the company you want to find prospects. If you don't provide any value, it will return all the prospects.  |
 | Countries | `countries` | array | Provide the countries of the company you want to find prospects. If you don't provide any value, it will return all the prospects.  |
@@ -89,7 +89,7 @@ Provide the min or max revenue size of the company you want to find prospects. I
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Max | `max` | integer | Provide the maximum revenue size of the company you want to find prospects.  |
 | Min | `min` | integer | Provide the minimum revenue size of the company you want to find prospects.  |
@@ -100,7 +100,7 @@ Provide the information about the prospects you want to filter. You can filter t
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Function | `function` | string | Provide the function of the prospects you want to filter with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions).  |
 | Job Title | `job-title` | string | Provide the job title of the prospects you want to filter with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions).  |
@@ -112,7 +112,7 @@ Provide the information about the prospects you want to filter. You can filter t
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Prospects](#find-prospects-prospects) (optional) | `prospects` | array[object] | The list of prospects' contact information based on the company information you provide. |
 </div>
@@ -124,7 +124,7 @@ Provide the information about the prospects you want to filter. You can filter t
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Company Address | `company-address` | string | The address of the company from LeadIQ. It combines the city, state, and country. |
 | Company Description | `company-description` | string | The description of the company from LeadIQ. |
@@ -144,7 +144,7 @@ Provide the information about the prospects you want to filter. You can filter t
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Description | `description` | string | The description of the revenue size of the company from LeadIQ. |
 | Max | `max` | integer | The maximum revenue size of the company from LeadIQ. |
@@ -186,23 +186,23 @@ version: v1beta
 variable:
   city:
     title: City
-    format: string
+    type: string
     default: "London"
   country:
     title: Country
-    format: string
+    type: string
     default: "United Kingdom"
   industry:
     title: Industry
-    format: string
+    type: string
     default: "Software Development"
   description:
     title: Description
-    format: string
+    type: string
     default: "AI"
   technology:
     title: Technology
-    format: string
+    type: string
     default: "HTTP"
 
 component:

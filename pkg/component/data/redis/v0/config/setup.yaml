@@ -5,47 +5,37 @@ properties:
     description: Redis host to connect to.
     examples:
       - localhost,127.0.0.1
-    acceptFormats:
-      - string
+    type: string
     instillSecret: false
     uiOrder: 0
     title: Host
-    format: string
   password:
     description: Password associated with Redis.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: true
     uiOrder: 3
     title: Password
-    format: string
   port:
     default: 6379
     description: Port of Redis.
-    acceptFormats:
-      - integer
+    type: integer
     uiOrder: 1
     maximum: 65536
     minimum: 0
     title: Port
-    format: integer
   ssl:
     default: false
     description: Indicates whether SSL encryption protocol will be used to connect to Redis. It is recommended to use SSL connection if possible.
-    acceptFormats:
-      - boolean
+    type: boolean
     uiOrder: 4
     title: SSL Connection
-    format: boolean
   username:
     description: Username associated with Redis.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 2
     title: Username
-    format: string
 required:
   - host
   - port
 title: Redis Connection
-format: object
+type: object

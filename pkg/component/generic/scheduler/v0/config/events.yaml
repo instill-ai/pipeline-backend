@@ -7,8 +7,8 @@ EVENT_CRON_JOB_TRIGGERED:
     properties:
       cron:
         pattern: ^[0-9*,-/]+\s+[0-9*,-/]+\s+[0-9*,-/]+\s+[0-9*,-/]+\s+[0-9*,-/]+$
-        format: string
-    format: object
+        type: string
+    type: object
   messageSchema:
     $schema: http://json-schema.org/draft-07/schema
     required:
@@ -16,9 +16,9 @@ EVENT_CRON_JOB_TRIGGERED:
     properties:
       triggered-at:
         description: The ISO 8601 timestamp when the cron job was triggered
-        format: string
+        type: string
     additionalProperties: false
     title: Cron job triggered event
-    format: object
+    type: object
   messageExamples:
     - triggered-at: '2024-01-01T00:00:00.000Z'

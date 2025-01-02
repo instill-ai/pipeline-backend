@@ -210,11 +210,11 @@ variable:
   repository-name:
     title: Repository Name
     description: Name of the repository i.e. instill-core
-    format: string
+    type: string
   repository-owner:
     title: Repository Owner
     description: Name of the repository owner i.e. instill-ai
-    format: string
+    type: string
 output:
   result:
     title: Result
@@ -237,22 +237,22 @@ on:
 variable:
   repository:
     title: repository
-    format: string
+    type: string
     listen:
       - ${on.github-0.message.repository.full-name}
   user:
     title: user
-    format: string
+    type: string
     listen:
       - ${on.github-0.message.sender.login}
   description:
     title: user
-    format: string
+    type: string
     listen:
       - ${on.github-0.message.repository.description}
   stargazers-count:
     title: stargazers-count
-    format: number
+    type: number
     listen:
       - ${on.github-0.message.repository.stargazers-count}
 

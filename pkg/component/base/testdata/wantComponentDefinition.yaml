@@ -6,13 +6,9 @@ documentationUrl: https://www.instill.tech/docs/component/ai/openai
 icon: OpenAI/openai.svg
 spec:
   componentSpecification:
-    instillFormat: object
     oneOf:
-      - instillFormat: object
-        properties:
+      - properties:
           condition:
-            instillAcceptFormats:
-              - string
             instillShortDescription: config whether the component will be executed or skipped
             instillUIOrder: 1
             instillUpstreamTypes:
@@ -23,45 +19,17 @@ spec:
             instillUIOrder: 0
             properties:
               model:
-                anyOf:
-                  - enum:
-                      - text-embedding-ada-002
-                    instillUpstreamType: value
-                    type: string
-                  - instillUpstreamType: reference
-                    pattern: ^\{.*\}$
-                    type: string
-                  - instillUpstreamType: template
-                    type: string
+                enum:
+                  - text-embedding-ada-002
                 description: ID of the model to use
-                instillAcceptFormats:
-                  - string
                 instillShortDescription: ID of the model to use
                 instillUIOrder: 0
-                instillUpstreamTypes:
-                  - value
-                  - reference
-                  - template
                 title: Model
                 type: string
               text:
-                anyOf:
-                  - instillUpstreamType: value
-                    type: string
-                  - instillUpstreamType: reference
-                    pattern: ^\{.*\}$
-                    type: string
-                  - instillUpstreamType: template
-                    type: string
                 description: The text
-                instillAcceptFormats:
-                  - string
                 instillShortDescription: The text
                 instillUIOrder: 1
-                instillUpstreamTypes:
-                  - value
-                  - reference
-                  - template
                 title: Text
                 type: string
             required:
@@ -99,8 +67,6 @@ spec:
         properties:
           model:
             description: ID of the model to use
-            instillAcceptFormats:
-              - string
             enum:
               - text-embedding-ada-002
             instillShortDescription: ID of the model to use
@@ -109,8 +75,6 @@ spec:
             type: string
           text:
             description: The text
-            instillAcceptFormats:
-              - string
             instillShortDescription: The text
             instillUIOrder: 1
             title: Text
@@ -125,9 +89,7 @@ spec:
         properties:
           embedding:
             instillUIOrder: 0
-            instillFormat: array
             items:
-              instillFormat: number
               title: Embedding
               type: number
             title: Embedding

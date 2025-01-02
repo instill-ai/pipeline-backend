@@ -43,7 +43,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Engine (required) | `engine` | string | Choose the engine of your database.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MySQL`</li><li>`PostgreSQL`</li><li>`SQL Server`</li><li>`Oracle`</li><li>`MariaDB`</li><li>`Firebird`</li></ul></details>  |
 | Username (required) | `username` | string | Fill in your account username.  |
@@ -67,7 +67,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | SSL / TLS Type | `ssl-tls-type` | string |  Must be `"NO TLS"`   |
 </div>
@@ -76,7 +76,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file.  |
 | SSL / TLS Type | `ssl-tls-type` | string |  Must be `"TLS"`   |
@@ -86,7 +86,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file.  |
 | Client Certificate | `ssl-tls-cert` | string |  Base64 encoded client certificate file.  |
@@ -104,7 +104,7 @@ Perform insert operation
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT` |
 | Table Name (required) | `table-name` | string | The table name in the database to insert data into. |
@@ -118,7 +118,7 @@ Perform insert operation
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Insert status. |
 </div>
@@ -130,7 +130,7 @@ Perform insert operation with multiple rows
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT_MANY` |
 | Table Name (required) | `table-name` | string | The table name in the database to insert data into. |
@@ -144,7 +144,7 @@ Perform insert operation with multiple rows
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Insert many status. |
 </div>
@@ -156,7 +156,7 @@ Perform update operation
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE` |
 | Table Name (required) | `table-name` | string | The table name in the database to update data into. |
@@ -171,7 +171,7 @@ Perform update operation
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Update status. |
 </div>
@@ -183,7 +183,7 @@ Perform select operation
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SELECT` |
 | Table Name (required) | `table-name` | string | The table name in the database to be selected. |
@@ -199,7 +199,7 @@ Perform select operation
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Rows | `rows` | array[json] | The rows returned from the select operation. |
 | Status | `status` | string | Select status. |
@@ -212,7 +212,7 @@ Perform delete operation
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
 | Table Name (required) | `table-name` | string | The table name in the database to be deleted. |
@@ -226,7 +226,7 @@ Perform delete operation
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete status. |
 </div>
@@ -238,7 +238,7 @@ Create a table in the database
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_TABLE` |
 | Table Name (required) | `table-name` | string | The table name in the database to be created. |
@@ -252,7 +252,7 @@ Create a table in the database
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create table status. |
 </div>
@@ -264,7 +264,7 @@ Drop a table in the database
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_TABLE` |
 | Table Name (required) | `table-name` | string | The table name in the database to be dropped. |
@@ -277,7 +277,7 @@ Drop a table in the database
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Drop table status. |
 </div>

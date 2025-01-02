@@ -2,22 +2,18 @@ additionalProperties: false
 properties:
   api-key:
     description: Fill in your Weaviate API key. Please refer to clusters in Weaviate Console.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: true
     uiOrder: 0
     title: API Key
-    format: string
   url:
     description: Fill in your Weaviate base URL without https:// or http://. Please refer to clusters in Weaviate Console.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: false
     uiOrder: 1
     title: Weaviate URL Endpoint
-    format: string
 required:
   - api-key
   - url
 title: Weaviate Connection
-format: object
+type: object

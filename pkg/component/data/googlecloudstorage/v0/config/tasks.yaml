@@ -1,17 +1,15 @@
 $defs:
   bucket-name:
     description: Name of the bucket to be used for object storage.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: false
     uiOrder: 0
     title: Bucket Name
-    format: string
   data:
     description: The data of the object.
     uiOrder: 0
     title: Data
-    format: string
+    type: string
   attributes:
     description: The attributes of the object.
     properties:
@@ -19,59 +17,57 @@ $defs:
         description: The name of the object.
         uiOrder: 0
         title: Object Name
-        format: string
+        type: string
       content-type:
         description: The content type of the object.
         uiOrder: 1
         title: Content Type
-        format: string
+        type: string
       content-language:
         description: The content language of the object.
         uiOrder: 2
         title: Content Language
-        format: string
+        type: string
       owner:
         description: The owner of the object.
         uiOrder: 3
         title: Owner
-        format: string
+        type: string
       size:
         description: The size of the object.
         uiOrder: 4
         title: Size
-        format: integer
+        type: integer
       content-encoding:
         description: The content encoding of the object.
         uiOrder: 5
         title: Content Encoding
-        format: string
+        type: string
       content-disposition:
         description: The content disposition of the object.
         uiOrder: 6
         title: Content Disposition
-        format: string
+        type: string
       media-link:
         description: The media link of the object.
         uiOrder: 7
         title: Media Link
-        format: string
+        type: string
       metadata:
         description: The object metadata.
         uiOrder: 8
         title: Metadata
         required: []
-        format: object
+        type: object
       storage-class:
         description: The storage class of the object.
         uiOrder: 9
         title: Storage Class
-        format: string
-    acceptFormats:
-      - object
+        type: string
+    type: object
     required: []
     uiOrder: 1
     title: Attributes
-    format: object
 TASK_UPLOAD:
   shortDescription: Upload data to Google Cloud Storage.
   input:
@@ -81,56 +77,52 @@ TASK_UPLOAD:
         $ref: '#/$defs/bucket-name'
       data:
         description: The data to be saved in the object.
-        acceptFormats:
-          - '*'
+        type: string
         uiOrder: 1
         title: Data
-        format: string
       object-name:
         description: The name of the object to be created.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Object Name
-        format: string
     required:
       - object-name
       - bucket-name
       - data
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
       authenticated-url:
         description: Only users granted permission can access the object with this link.
-        format: string
+        type: string
         uiOrder: 0
         title: Authenticated URL
       gsutil-uri:
         description: File path to this resource in Cloud Storage.
-        format: string
+        type: string
         uiOrder: 1
         title: Gsutil URI
       public-access:
         description: Whether the object is publicly accessible.
         uiOrder: 2
         title: Public Access
-        format: boolean
+        type: boolean
       public-url:
         description: Anyone with this link can access the object on the public Internet.
         uiOrder: 3
         title: Public URL
-        format: string
+        type: string
       status:
         description: Status of the upload operation.
         uiOrder: 4
         title: Upload Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object
 TASK_READ_OBJECTS:
   shortDescription: Read objects from Google Cloud Storage.
   input:
@@ -140,71 +132,54 @@ TASK_READ_OBJECTS:
         $ref: '#/$defs/bucket-name'
       delimiter:
         description: The delimiter to use when listing objects.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: Delimiter
-        format: string
       prefix:
         description: The prefix to use when listing objects.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 2
         title: Prefix
-        format: string
       versions:
         description: Whether to list all versions of an object.
-        acceptFormats:
-          - boolean
+        type: boolean
         uiOrder: 3
         title: Versions
-        format: boolean
       start-offset:
         description: The offset to start listing objects from.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 4
         title: Start Offset
-        format: string
       end-offset:
         description: The offset to stop listing objects at.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 5
         title: End Offset
-        format: string
       include-trailing-delimiter:
         description: Whether to include the delimiter in the object name.
-        acceptFormats:
-          - boolean
+        type: boolean
         uiOrder: 6
         title: Include Trailing Delimiter
-        format: boolean
       match-glob:
         description: Whether to match objects using a glob pattern.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 7
         title: Match Glob
-        format: string
       include-folders-as-prefixes:
         description: Whether to include folders as prefixes.
-        acceptFormats:
-          - boolean
+        type: boolean
         uiOrder: 8
         title: Include Folders As Prefixes
-        format: boolean
     required:
       - bucket-name
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
       text-objects:
         description: The text objects in the bucket.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 0
         title: Text Objects
         items:
@@ -214,12 +189,10 @@ TASK_READ_OBJECTS:
             attributes:
               $ref: '#/$defs/attributes'
           required: []
-          format: object
-        format: array
+          type: object
       image-objects:
         description: The image objects in the bucket.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 1
         title: Image Objects
         items:
@@ -229,12 +202,10 @@ TASK_READ_OBJECTS:
             attributes:
               $ref: '#/$defs/attributes'
           required: []
-          format: object
-        format: array
+          type: object
       document-objects:
         description: The document objects in the bucket.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 2
         title: Document Objects
         items:
@@ -245,12 +216,10 @@ TASK_READ_OBJECTS:
               $ref: '#/$defs/attributes'
           required: []
           title: Object
-          format: object
-        format: array
+          type: object
       audio-objects:
         description: The audio objects in the bucket.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 3
         title: Audio Objects
         items:
@@ -261,12 +230,10 @@ TASK_READ_OBJECTS:
               $ref: '#/$defs/attributes'
           required: []
           title: Object
-          format: object
-        format: array
+          type: object
       video-objects:
         description: The video objects in the bucket.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 4
         title: Video Objects
         items:
@@ -277,11 +244,10 @@ TASK_READ_OBJECTS:
               $ref: '#/$defs/attributes'
           required: []
           title: Object
-          format: object
-        format: array
+          type: object
     required: []
     title: Output
-    format: object
+    type: object
 TASK_CREATE_BUCKET:
   shortDescription: Read objects from Google Cloud Storage.
   input:
@@ -291,23 +257,19 @@ TASK_CREATE_BUCKET:
         $ref: '#/$defs/bucket-name'
       project-id:
         description: The project ID to create the bucket in.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: Project ID
-        format: string
       location:
         description: The location to create the bucket in.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 2
         title: Location
-        format: string
     required:
       - bucket-name
       - project-id
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -315,17 +277,17 @@ TASK_CREATE_BUCKET:
         description: The result of the operation.
         uiOrder: 0
         title: Result
-        format: string
+        type: string
       name:
         description: The name of the bucket.
         uiOrder: 1
         title: Bucket Name
-        format: string
+        type: string
       location:
         description: The location of the bucket.
         uiOrder: 2
         title: Location
-        format: string
+        type: string
     required: []
     title: Output
-    format: object
+    type: object

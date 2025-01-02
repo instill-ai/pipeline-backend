@@ -5,29 +5,24 @@ TASK_INSERT:
     properties:
       table-name:
         description: The table name in the database to insert data into.
-        acceptFormats:
-          - string
+        type: string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
-        format: string
       data:
         description: The data to be inserted.
-        acceptFormats:
-          - json
-          - object
+        type: object
         uiOrder: 1
         items:
           title: Object
-          format: json
+          type: json
         title: Data
         required: []
-        format: object
     required:
       - data
       - table-name
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -36,11 +31,11 @@ TASK_INSERT:
         required: []
         uiOrder: 0
         title: Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object
 TASK_INSERT_MANY:
   shortDescription: Perform insert operation with multiple rows
   input:
@@ -48,33 +43,26 @@ TASK_INSERT_MANY:
     properties:
       table-name:
         description: The table name in the database to insert data into.
-        acceptFormats:
-          - string
+        type: string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
-        format: string
       array-data:
         description: The array data to be inserted.
-        acceptFormats:
-          - array
-          - array
-          - array
-          - array
+        type: array
         uiOrder: 1
         title: Data
         items:
           description: The data to be inserted.
           title: Data
           required: []
-          format: object
+          type: object
         minItems: 1
-        format: array
     required:
       - array-data
       - table-name
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -83,11 +71,11 @@ TASK_INSERT_MANY:
         required: []
         uiOrder: 0
         title: Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object
 TASK_UPDATE:
   shortDescription: Perform update operation
   input:
@@ -95,38 +83,31 @@ TASK_UPDATE:
     properties:
       table-name:
         description: The table name in the database to update data into.
-        acceptFormats:
-          - string
+        type: string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
-        format: string
       filter:
         shortDescription: The filter to be applied to the data
         description: The filter to be applied to the data with SQL syntax, which starts with WHERE clause.
         uiOrder: 1
-        acceptFormats:
-          - string
+        type: string
         title: Filter
-        format: string
       update-data:
         description: The new data to be updated to.
-        acceptFormats:
-          - json
-          - object
+        type: object
         uiOrder: 2
         items:
           title: Object
-          format: json
+          type: json
         title: Update
         required: []
-        format: object
     required:
       - filter
       - update-data
       - table-name
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -135,11 +116,11 @@ TASK_UPDATE:
         required: []
         uiOrder: 0
         title: Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object
 TASK_SELECT:
   shortDescription: Perform select operation
   input:
@@ -147,44 +128,36 @@ TASK_SELECT:
     properties:
       table-name:
         description: The table name in the database to be selected.
-        acceptFormats:
-          - string
+        type: string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
-        format: string
       filter:
         shortDescription: The filter to be applied to the data. If empty, then all rows will be updated
         description: The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for all rows.
         uiOrder: 1
-        acceptFormats:
-          - string
+        type: string
         title: Filter
-        format: string
       limit:
         description: The limit of rows to be selected, empty for all rows.
-        acceptFormats:
-          - integer
+        type: integer
         shortDescription: Limit Rows
         uiOrder: 2
         title: Limit
-        format: integer
       columns:
         description: The columns to return in the rows. If empty then all columns will be returned.
-        acceptFormats:
-          - array
+        type: array
         shortDescription: Columns to be returned, empty for all columns
         uiOrder: 3
         title: Columns
         items:
           title: Column
-          format: string
+          type: string
         minItems: 1
-        format: array
     required:
       - table-name
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 0
@@ -197,19 +170,19 @@ TASK_SELECT:
         items:
           title: Row
           required: []
-          format: json
-        format: array
+          type: json
+        type: array
       status:
         description: Select status.
         required: []
         uiOrder: 0
         title: Status
-        format: string
+        type: string
     required:
       - status
       - rows
     title: Output
-    format: object
+    type: object
 TASK_DELETE:
   shortDescription: Perform delete operation
   input:
@@ -217,25 +190,21 @@ TASK_DELETE:
     properties:
       table-name:
         description: The table name in the database to be deleted.
-        acceptFormats:
-          - string
+        type: string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
-        format: string
       filter:
         shortDescription: The filter to be applied to the data
         description: The filter to be applied to the data with SQL syntax, which starts with WHERE clause.
         uiOrder: 1
-        acceptFormats:
-          - string
+        type: string
         title: Filter
-        format: string
     required:
       - filter
       - table-name
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -244,11 +213,11 @@ TASK_DELETE:
         required: []
         uiOrder: 0
         title: Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object
 TASK_CREATE_TABLE:
   shortDescription: Create a table in the database
   input:
@@ -256,27 +225,22 @@ TASK_CREATE_TABLE:
     properties:
       table-name:
         description: The table name in the database to be created.
-        acceptFormats:
-          - string
+        type: string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
-        format: string
       columns-structure:
         description: 'The columns structure to be created in the table, json with value string, e.g {"name": "VARCHAR(255)", "age": "INT not null"}.'
-        acceptFormats:
-          - json
-          - object
+        type: object
         shortDescription: 'Columns Structure, e.g {"name": "VARCHAR(255)", "age": "INT not null"}'
         uiOrder: 1
         title: Columns
         required: []
-        format: object
     required:
       - table-name
       - columns-structure
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -285,11 +249,11 @@ TASK_CREATE_TABLE:
         required: []
         uiOrder: 0
         title: Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object
 TASK_DROP_TABLE:
   shortDescription: Drop a table in the database
   input:
@@ -297,16 +261,14 @@ TASK_DROP_TABLE:
     properties:
       table-name:
         description: The table name in the database to be dropped.
-        acceptFormats:
-          - string
+        type: string
         shortDescription: Database Table Name
         uiOrder: 0
         title: Table Name
-        format: string
     required:
       - table-name
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -315,8 +277,8 @@ TASK_DROP_TABLE:
         required: []
         uiOrder: 0
         title: Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object

@@ -37,7 +37,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Endpoint (required) | `endpoint` | string | Fill in your Ollama hosting endpoint. ### WARNING ###: As of 2024-07-26, the Ollama component does not support authentication methods. To prevent unauthorized access to your Ollama serving resources, please implement additional security measures such as IP whitelisting.  |
 | Model Auto-Pull (required) | `auto-pull` | boolean | Automatically pull the requested models from the Ollama server if the model is not found in the local cache.  |
@@ -56,14 +56,14 @@ Open-source large language models (OSS LLMs) are artificial intelligence models 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
 | Model Name (required) | `model` | string | The OSS model to be used, check [here](https://ollama.com/library) for list of models available. |
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message as "You are a helpful assistant.". |
 | Prompt Images | `prompt-images` | array[string] | The prompt images. |
-| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
+| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
 | Seed | `seed` | integer | The seed. |
 | Temperature | `temperature` | number | The temperature for sampling. |
 | Top K | `top-k` | integer | Top k for sampling. |
@@ -76,11 +76,11 @@ Open-source large language models (OSS LLMs) are artificial intelligence models 
 
 <h4 id="text-generation-chat-chat-history">Chat History</h4>
 
-Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}.
+Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Content](#text-generation-chat-content) | `content` | array | The message content.  |
 | Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
@@ -91,7 +91,7 @@ The message content.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL.  |
 | Text | `text` | string | The text content.  |
@@ -103,7 +103,7 @@ The image URL.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
 </div>
@@ -113,7 +113,7 @@ The image URL.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Text | `text` | string | Model Output. |
 </div>
@@ -138,7 +138,7 @@ An embedding is a list of floating point numbers that captures semantic informat
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
 | Model Name (required) | `model` | string | The OSS model to be used, check [here](https://ollama.com/library) for list of models available. |
@@ -152,7 +152,7 @@ An embedding is a list of floating point numbers that captures semantic informat
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Embedding | `embedding` | array[number] | Embedding of the input text. |
 </div>
