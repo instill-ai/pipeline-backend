@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.50.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.49.1-beta...v0.50.0-beta) (2025-01-03)
+
+
+### Features
+
+* **component,github:** add more user and org tasks ([#880](https://github.com/instill-ai/pipeline-backend/issues/880)) ([d6466bf](https://github.com/instill-ai/pipeline-backend/commit/d6466bfae501f54b6cd6e6edb9410ce1e10c933f))
+
 ## [0.49.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.49.0-beta...v0.49.1-beta) (2024-12-23)
 
 
