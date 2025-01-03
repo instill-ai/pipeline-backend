@@ -2,20 +2,16 @@ additionalProperties: false
 properties:
   bot-token:
     description: Token associated to the application bot.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: true
     uiOrder: 0
     title: Bot OAuth Token
-    format: string
   user-token:
     description: Token to act on behalf of a Slack user.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: true
     uiOrder: 1
     title: User OAuth Token
-    format: string
 required:
   - bot-token
 instillOAuthConfig:
@@ -31,4 +27,4 @@ instillOAuthConfig:
     - users:read.email
     - users.profile:read
 title: Slack Connection
-format: object
+type: object

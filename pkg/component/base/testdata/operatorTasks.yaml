@@ -1,17 +1,10 @@
 TASK_MARSHAL:
   input:
     description: Input
-    instillEditOnNodeFields:
-      - object
     uiOrder: 0
     properties:
       object:
         description: Json object to be marshaled
-        instillAcceptFormats:
-          - object
-          - semi-structured/*
-          - structured/*
-        instillEditOnNodeFields: []
         uiOrder: 0
         instillUpstreamTypes:
           - reference
@@ -24,14 +17,10 @@ TASK_MARSHAL:
     type: object
   output:
     description: Output
-    instillEditOnNodeFields:
-      - string
     uiOrder: 0
     properties:
       string:
         description: Data
-        instillFormat: string
-        instillUIMultiline: true
         uiOrder: 0
         title: Data
         type: string

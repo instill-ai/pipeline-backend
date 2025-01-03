@@ -2,38 +2,30 @@ additionalProperties: false
 properties:
   email-address:
     description: The email address of the user.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: false
     uiOrder: 2
     title: Email Address
-    format: string
   password:
     description: The password of the App passwords in Gmail settings.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: true
     uiOrder: 3
     title: App Password
-    format: string
   server-address:
     description: The address of the email server.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 0
     title: Server Address
-    format: string
   server-port:
     description: The port of the email server.
-    acceptFormats:
-      - integer
+    type: integer
     uiOrder: 1
     title: Server Port
-    format: integer
 required:
   - email-address
   - password
   - server-address
   - server-port
 title: Email
-format: object
+type: object

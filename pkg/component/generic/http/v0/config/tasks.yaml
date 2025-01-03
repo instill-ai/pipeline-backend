@@ -4,8 +4,7 @@ $defs:
     properties:
       body:
         description: The request body.
-        acceptFormats:
-          - '*'
+        type: '*'
         shortDescription: The request body
         uiOrder: 1
         order: 1
@@ -13,49 +12,41 @@ $defs:
         title: Body
       endpoint-url:
         description: The API endpoint url.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Endpoint Url
-        format: string
       output-body-schema:
         description: The JSON schema of output body.
-        acceptFormats:
-          - string
+        type: string
         shortDescription: The JSON schema of output body
         uiOrder: 1
         order: 2
         required: []
         title: Body
-        format: string
     required:
       - endpoint-url
     title: Input
-    format: object
+    type: object
   inputWithoutBody:
     uiOrder: 0
     properties:
       endpoint-url:
         description: The API endpoint url.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Endpoint Url
-        format: string
       output-body-schema:
         description: The request body.
-        acceptFormats:
-          - string
+        type: string
         shortDescription: The request body
         uiOrder: 1
         order: 1
         required: []
         title: Body
-        format: string
     required:
       - endpoint-url
     title: Input Without Body
-    format: object
+    type: object
   output:
     description: The HTTP response from the API.
     uiOrder: 0
@@ -65,24 +56,24 @@ $defs:
         uiOrder: 1
         required: []
         title: Body
-        format: '*'
+        type: '*'
       header:
         description: The HTTP header of the response.
         uiOrder: 2
         required: []
         title: Header
-        format: json
+        type: json
       status-code:
         description: The HTTP status code of the response.
         uiOrder: 0
         title: Status Code
-        format: integer
+        type: integer
     required:
       - status-code
       - body
       - header
     title: Output
-    format: object
+    type: object
 TASK_DELETE:
   shortDescription: Send a HTTP DELETE request.
   input:

@@ -7,17 +7,14 @@ TASK_MARSHAL:
       json:
         description: JSON entity to be marshaled. It can be any valid JSON datatype (e.g. number, string, hash, array).
         shortDescription: JSON entity to be marshaled
-        acceptFormats:
-          - object
-          - json
-          - object
+        type: object
         uiOrder: 0
         required: []
         title: JSON
     required:
       - json
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 0
@@ -26,11 +23,11 @@ TASK_MARSHAL:
         description: String representation of the JSON input.
         uiOrder: 0
         title: JSON string
-        format: string
+        type: string
     required:
       - string
     title: Output
-    format: object
+    type: object
 TASK_UNMARSHAL:
   shortDescription: Convert a string to JSON
   input:
@@ -40,15 +37,13 @@ TASK_UNMARSHAL:
       string:
         description: JSON string to be unmarshaled. It can represent any valid JSON datatype (e.g. number, string, hash, array).
         shortDescription: JSON string to be unmarshaled
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: String
-        format: string
     required:
       - string
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 0
@@ -58,11 +53,11 @@ TASK_UNMARSHAL:
         uiOrder: 0
         required: []
         title: JSON
-        format: json
+        type: json
     required:
       - json
     title: Output
-    format: object
+    type: object
 TASK_JQ:
   shortDescription: Process JSON through a `jq` command
   title: jq
@@ -76,29 +71,22 @@ TASK_JQ:
         description: (DEPRECATED, use 'JSON value' instead) String with the JSON value to be processed. This field allows templated inputs, but the data
           might require preprocessing (marshalling). This field will be used in absence of 'JSON value' for backwards compatibility reasons.
         shortDescription: (DEPRECATED) JSON string to be processed
-        acceptFormats:
-          - string
+        type: string
         title: (DEPRECATED) JSON string
-        format: string
       json-value:
         uiOrder: 0
         description: JSON entity to be processed by the filter. It can be any valid JSON datatype (e.g. number, string, hash, array).
-        acceptFormats:
-          - object
-          - object
-          - json
+        type: object
         title: JSON value
       jq-filter:
         uiOrder: 1
         description: Filter, in `jq` syntax, that will be applied to the JSON input.
-        acceptFormats:
-          - string
+        type: string
         title: Filter
-        format: string
     required:
       - jq-filter
     title: Input
-    format: object
+    type: object
   output:
     description: Results of the `jq` command applied to the input JSON.
     uiOrder: 0
@@ -110,12 +98,12 @@ TASK_JQ:
         title: Results
         items:
           title: Result
-          format: json
-        format: array
+          type: json
+        type: array
     required:
       - results
     title: Output
-    format: object
+    type: object
 TASK_RENAME_FIELDS:
   shortDescription: Rename fields in a JSON object with a conflict resolution strategy. If the new field already exists, it will be overwritten by default.
   title: Rename Fields
@@ -126,10 +114,7 @@ TASK_RENAME_FIELDS:
       json:
         description: JSON object to be edited. It can be any valid JSON datatype (e.g. number, string, hash, array).
         shortDescription: JSON object to be edited.
-        acceptFormats:
-          - object
-          - json
-          - object
+        type: object
         uiOrder: 0
         required: []
         title: JSON
@@ -137,8 +122,7 @@ TASK_RENAME_FIELDS:
         description: An array of objects specifying the fields to be renamed.
         shortDescription: Array of fields to be renamed.
         uiOrder: 1
-        acceptFormats:
-          - array
+        type: array
         items:
           description: Field to be renamed.
           shortDescription: Field to be renamed.
@@ -146,26 +130,21 @@ TASK_RENAME_FIELDS:
             from:
               description: The field in the original data that needs to be renamed.
               shortDescription: Field to be renamed.
-              acceptFormats:
-                - string
+              type: string
               uiOrder: 0
               title: From
-              format: string
             to:
               description: The new name for the field.
               shortDescription: New name for the field.
-              acceptFormats:
-                - string
+              type: string
               uiOrder: 1
               title: To
-              format: string
           required:
             - from
             - to
           title: Field
-          format: object
+          type: object
         title: Fields
-        format: array
       conflict-resolution:
         description: Defines how conflicts are handled when the new field already exists in the data. If the new field already exists, it will be overwritten
           by default. If the new field does not exist, it will be created. When set to 'error', the component will throw an error if the new field already
@@ -178,12 +157,12 @@ TASK_RENAME_FIELDS:
           - skip
           - error
         default: overwrite
-        format: string
+        type: string
     required:
       - json
       - fields
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 1
@@ -193,8 +172,8 @@ TASK_RENAME_FIELDS:
         uiOrder: 0
         required: []
         title: JSON
-        format: json
+        type: json
     required:
       - json
     title: Output
-    format: object
+    type: object

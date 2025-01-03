@@ -6,15 +6,13 @@ TASK_DECODE:
     properties:
       data:
         description: Base64 string to be decoded.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Data
-        format: string
     required:
       - data
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 0
@@ -23,11 +21,11 @@ TASK_DECODE:
         description: Data.
         uiOrder: 0
         title: Data
-        format: string
+        type: string
     required:
       - data
     title: Output
-    format: object
+    type: object
 TASK_ENCODE:
   shortDescription: Encode data into base64 string
   input:
@@ -36,15 +34,13 @@ TASK_ENCODE:
     properties:
       data:
         description: Data to be encoded.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Data
-        format: string
     required:
       - data
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 0
@@ -53,8 +49,8 @@ TASK_ENCODE:
         description: Data.
         uiOrder: 0
         title: Data
-        format: string
+        type: string
     required:
       - data
     title: Output
-    format: object
+    type: object

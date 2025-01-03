@@ -5,63 +5,49 @@ TASK_VECTOR_SEARCH:
     properties:
       collection-name:
         description: The name of the collection to perform vector search on.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Collection Name
-        format: string
       vector:
         description: An array of dimensions for the vector query, optional. If not provided, all objects will be returned.
-        acceptFormats:
-          - array
-          - array
+        type: array
         uiOrder: 1
         items:
           description: A dimension of the vector.
           example: 0.8167237
-          format: number
+          type: number
         minItems: 1
         title: Vector
-        format: array
       limit:
         description: The limit of objects, empty for all objects.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 2
         title: Limit
-        format: integer
       fields:
         description: The fields to return in the objects. If empty then all fields will be returned.
-        acceptFormats:
-          - array
+        type: array
         shortDescription: Fields to be returned, empty for all fields
         uiOrder: 3
         title: Fields
         minItems: 1
         items:
           title: Field
-          format: string
-        format: array
+          type: string
       filter:
         description: The properties filter to be applied to the data with GraphQL queries, which starts with WHERE field, please refer to [here](https://weaviate.io/developers/weaviate/search/filters).
-        acceptFormats:
-          - json
-          - object
+        type: object
         uiOrder: 4
         title: Filter
         required: []
-        format: object
       tenant:
         description: The tenant to perform the vector search on.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 5
         title: Tenant
-        format: string
     required:
       - collection-name
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -69,7 +55,7 @@ TASK_VECTOR_SEARCH:
         description: Upsert status.
         uiOrder: 0
         title: Status
-        format: string
+        type: string
       result:
         description: Result of the vector search operation.
         uiOrder: 0
@@ -83,8 +69,8 @@ TASK_VECTOR_SEARCH:
             items:
               description: An id of the object.
               example: c8faa-4b3b-4b3b-4b3b
-              format: string
-            format: array
+              type: string
+            type: array
           objects:
             description: The objects returned from the vector search operation.
             uiOrder: 1
@@ -92,9 +78,9 @@ TASK_VECTOR_SEARCH:
             title: Objects
             items:
               title: Object
-              format: object
+              type: object
               required: []
-            format: array
+            type: array
           vectors:
             description: The vectors returned from the vector search operation.
             uiOrder: 2
@@ -106,9 +92,9 @@ TASK_VECTOR_SEARCH:
               items:
                 description: A dimension of the vector.
                 example: 0.8167237
-                format: number
-              format: array
-            format: array
+                type: number
+              type: array
+            type: array
           metadata:
             description: The metadata returned from the vector search operation.
             uiOrder: 3
@@ -116,16 +102,16 @@ TASK_VECTOR_SEARCH:
             required: []
             items:
               title: Metadatum
-              format: object
+              type: object
               required: []
-            format: array
+            type: array
         required: []
-        format: object
+        type: object
     required:
       - status
       - result
     title: Output
-    format: object
+    type: object
 TASK_INSERT:
   shortDescription: Insert a vector object into a collection
   input:
@@ -133,46 +119,36 @@ TASK_INSERT:
     properties:
       collection-name:
         description: The name of the collection to upsert the object into.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Collection Name
-        format: string
       id:
         description: The ID of the object.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: ID
-        format: string
       vector:
         description: An array of dimensions for the vector value.
-        acceptFormats:
-          - array
-          - array
+        type: array
         uiOrder: 2
         items:
           description: A dimension of the vector.
           example: 0.8167237
-          format: number
+          type: number
         minItems: 1
         title: Vector
-        format: array
       metadata:
         description: The vector metadata properties.
-        acceptFormats:
-          - json
-          - object
+        type: object
         uiOrder: 3
         title: Metadata
         required: []
-        format: object
     required:
       - collection-name
       - vector
       - metadata
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -180,11 +156,11 @@ TASK_INSERT:
         description: Upsert status.
         uiOrder: 0
         title: Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object
 TASK_BATCH_INSERT:
   shortDescription: Insert multiple vector objects into a collection
   input:
@@ -192,30 +168,22 @@ TASK_BATCH_INSERT:
     properties:
       collection-name:
         description: The name of the collection to upsert the object into.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Collection Name
-        format: string
       array-id:
         description: The array of id.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 1
         items:
           description: An id of the object.
           example: 1
-          format: string
+          type: string
         minItems: 1
         title: Array ID
-        format: array
       array-metadata:
         description: The array of vector metadata properties.
-        acceptFormats:
-          - array
-          - array
-          - array
-          - array
+        type: array
         shortDescription: The vector metadata properties
         uiOrder: 2
         minItems: 1
@@ -224,32 +192,26 @@ TASK_BATCH_INSERT:
           description: The vector metadata properties.
           title: Metadatum
           required: []
-          format: object
-        format: array
+          type: object
       array-vector:
         description: The array of vector values.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 3
         items:
           description: An array of dimensions for the vector value.
-          acceptFormats:
-            - array
-            - array
+          type: array
           items:
             description: A dimension of the vector.
             example: 0.8167237
-            format: number
-          format: array
+            type: number
         minItems: 1
         title: Array Vector
-        format: array
     required:
       - collection-name
       - array-metadata
       - array-vector
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -257,11 +219,11 @@ TASK_BATCH_INSERT:
         description: Batch insert status.
         uiOrder: 0
         title: Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object
 TASK_DELETE:
   shortDescription: Delete vector objects from a collection
   input:
@@ -269,31 +231,24 @@ TASK_DELETE:
     properties:
       collection-name:
         description: The name of the collection to delete the object from.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Collection Name
-        format: string
       id:
         description: The ID of the object.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: ID
-        format: string
       filter:
         description: The properties filter to be applied to the data with GraphQL queries, which starts with WHERE field, please refer to [here](https://weaviate.io/developers/weaviate/search/filters).
-        acceptFormats:
-          - json
-          - object
+        type: object
         uiOrder: 2
         title: Filter
         required: []
-        format: object
     required:
       - collection-name
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -301,11 +256,11 @@ TASK_DELETE:
         description: Delete status.
         uiOrder: 0
         title: Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object
 TASK_UPDATE:
   shortDescription: Update vector object in a collection
   input:
@@ -313,45 +268,35 @@ TASK_UPDATE:
     properties:
       collection-name:
         description: The name of the collection to update the object in.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Collection Name
-        format: string
       id:
         description: The ID of the object.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: ID
-        format: string
       update-vector:
         description: The updated vector value, optional.
-        acceptFormats:
-          - array
-          - array
+        type: array
         uiOrder: 2
         items:
           description: A dimension of the vector.
           example: 0.8167237
-          format: number
+          type: number
         minItems: 1
         title: Update Vector
-        format: array
       update-metadata:
         description: The updated vector metadata properties, optional.
-        acceptFormats:
-          - json
-          - object
+        type: object
         uiOrder: 3
         title: Update Metadata
         required: []
-        format: object
     required:
       - collection-name
       - id
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -359,11 +304,11 @@ TASK_UPDATE:
         description: Update status.
         uiOrder: 0
         title: Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object
 TASK_DELETE_COLLECTION:
   shortDescription: Delete a collection
   input:
@@ -371,15 +316,13 @@ TASK_DELETE_COLLECTION:
     properties:
       collection-name:
         description: The name of the collection to delete.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Collection Name
-        format: string
     required:
       - collection-name
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -387,8 +330,8 @@ TASK_DELETE_COLLECTION:
         description: Delete collection status.
         uiOrder: 0
         title: Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object

@@ -48,13 +48,13 @@ TASK_DUMMY:
         description: Lorem ipsum dolor sit amet, consectetur adipiscing elit
         uiOrder: 0
         title: Durna
-        format: string
+        type: string
       parra:
         deprecated: true
         description: Shouldn't appear, it's deprecated
         uiOrder: 1
         title: Parra
-        format: string
+        type: string
     required:
       - durna
     title: Input
@@ -64,7 +64,7 @@ TASK_DUMMY:
         description: Orci sagittis eu volutpat odio facilisis mauris sit
         uiOrder: 0
         title: Orci
-        format: string
+        type: string
     title: Output
 
 TASK_DUMMIER_THAN_DUMMY:
@@ -76,7 +76,7 @@ TASK_DUMMIER_THAN_DUMMY:
         description: Cursus mattis molestie a iaculis at erat pellentesque adipiscing commodo
         uiOrder: 0
         title: Cursus
-        format: string
+        type: string
     required:
       - cursus
     title: Input
@@ -86,14 +86,14 @@ TASK_DUMMIER_THAN_DUMMY:
         description: Tellus elementum sagittis vitae et
         uiOrder: 0
         title: Elementum
-        format: string
+        type: string
       errors:
         description: Error messages, if any, during the dummy process
         uiOrder: 3
         title: Errors
         items:
-          format: string
-        format: array
+          type: string
+        type: array
       context:
         description: Free-form metadata
         uiOrder: 4
@@ -103,24 +103,24 @@ TASK_DUMMIER_THAN_DUMMY:
         description: 'This object should comply witht he format {"tortor": "something", "arcu": "something else"}'
         uiOrder: 1
         title: Atem
-        format: object
+        type: object
         properties:
           tortor:
             description: Tincidunt tortor aliquam nulla
             uiOrder: 0
             title: Tincidunt tortor
-            format: string
+            type: string
           arcu:
             description: Bibendum arcu vitae elementum curabitur vitae nunc sed velit
             uiOrder: 1
             title: Arcu
-            format: string
+            type: string
         required: []
       nullam_non:
         description: Id faucibus nisl tincidunt eget nullam non
         uiOrder: 2
         title: Nullam non
-        format: number
+        type: number
     required:
       - elementum
       - atem
@@ -185,7 +185,7 @@ Perform a dummy task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DUMMY` |
 | Durna (required) | `durna` | string | Lorem ipsum dolor sit amet, consectetur adipiscing elit |
@@ -198,7 +198,7 @@ Perform a dummy task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Orci (optional) | `orci` | string | Orci sagittis eu volutpat odio facilisis mauris sit |
 </div>
@@ -214,7 +214,7 @@ This task is dummier than `TASK_DUMMY`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DUMMIER_THAN_DUMMY` |
 | Cursus (required) | `cursus` | string | Cursus mattis molestie a iaculis at erat pellentesque adipiscing commodo |
@@ -227,7 +227,7 @@ This task is dummier than `TASK_DUMMY`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Elementum | `elementum` | string | Tellus elementum sagittis vitae et |
 | [Atem](#dummier-atem) | `atem` | object | This object should comply witht he format \{"tortor": "something", "arcu": "something else"\} |
@@ -243,7 +243,7 @@ This task is dummier than `TASK_DUMMY`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Arcu | `arcu` | string | Bibendum arcu vitae elementum curabitur vitae nunc sed velit |
 | Tincidunt tortor | `tortor` | string | Tincidunt tortor aliquam nulla |

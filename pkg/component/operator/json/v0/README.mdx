@@ -38,10 +38,10 @@ Convert JSON to a string
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_MARSHAL` |
-| JSON (required) | `json` | any | JSON entity to be marshaled. It can be any valid JSON datatype (e.g. number, string, hash, array). |
+| JSON (required) | `json` | object | JSON entity to be marshaled. It can be any valid JSON datatype (e.g. number, string, hash, array). |
 </div>
 
 
@@ -51,7 +51,7 @@ Convert JSON to a string
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | JSON String | `string` | string | String representation of the JSON input. |
 </div>
@@ -63,7 +63,7 @@ Convert a string to JSON
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UNMARSHAL` |
 | String (required) | `string` | string | JSON string to be unmarshaled. It can represent any valid JSON datatype (e.g. number, string, hash, array). |
@@ -76,7 +76,7 @@ Convert a string to JSON
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | JSON | `json` | json | JSON entity extracted from the string input. |
 </div>
@@ -88,10 +88,10 @@ Process JSON through a `jq` command
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_JQ` |
-| JSON Value | `json-value` | any | JSON entity to be processed by the filter. It can be any valid JSON datatype (e.g. number, string, hash, array). |
+| JSON Value | `json-value` | object | JSON entity to be processed by the filter. It can be any valid JSON datatype (e.g. number, string, hash, array). |
 | Filter (required) | `jq-filter` | string | Filter, in `jq` syntax, that will be applied to the JSON input. |
 </div>
 
@@ -102,7 +102,7 @@ Process JSON through a `jq` command
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Results | `results` | array[json] | The `jq` command results. |
 </div>
@@ -137,10 +137,10 @@ Rename fields in a JSON object with a conflict resolution strategy. If the new f
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_RENAME_FIELDS` |
-| JSON (required) | `json` | any | JSON object to be edited. It can be any valid JSON datatype (e.g. number, string, hash, array). |
+| JSON (required) | `json` | object | JSON object to be edited. It can be any valid JSON datatype (e.g. number, string, hash, array). |
 | [Fields](#rename-fields-fields) (required) | `fields` | array[object] | An array of objects specifying the fields to be renamed. |
 | Conflict Resolution | `conflict-resolution` | string | Defines how conflicts are handled when the new field already exists in the data. If the new field already exists, it will be overwritten by default. If the new field does not exist, it will be created. When set to 'error', the component will throw an error if the new field already exists. When set to 'skip', the new field will be skipped if it already exists. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`overwrite`</li><li>`skip`</li><li>`error`</li></ul></details>  |
 </div>
@@ -155,7 +155,7 @@ An array of objects specifying the fields to be renamed.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | From | `from` | string | The field in the original data that needs to be renamed.  |
 | To | `to` | string | The new name for the field.  |
@@ -166,7 +166,7 @@ An array of objects specifying the fields to be renamed.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | JSON | `json` | json | JSON object with the renamed fields. |
 </div>
@@ -258,11 +258,11 @@ variable:
   job-description:
     title: job description
     description: The text of the job description.
-    format: string
+    type: string
   resume:
     title: resume
     description: The PDF file of the candidates resume
-    format: "*/*"
+    type: "*/*"
 output:
   output:
     title: output

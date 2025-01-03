@@ -43,7 +43,7 @@ Concatenate images horizontally or vertically. All images must have the same wid
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONCAT` |
 | Images (required) | `images` | array | Input images. |
@@ -59,7 +59,7 @@ Concatenate images horizontally or vertically. All images must have the same wid
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
 </div>
@@ -71,7 +71,7 @@ Crop image to the specified size.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CROP` |
 | Image (required) | `image` | string | Input image. |
@@ -90,7 +90,7 @@ Crop image to the specified size.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
 </div>
@@ -102,7 +102,7 @@ Resize image to the specified size.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_RESIZE` |
 | Image (required) | `image` | string | Input image. |
@@ -118,7 +118,7 @@ Resize image to the specified size.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
 </div>
@@ -130,7 +130,7 @@ Draw classification result on the image.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DRAW_CLASSIFICATION` |
 | Category (required) | `category` | string | The predicted category of the input. |
@@ -146,7 +146,7 @@ Draw classification result on the image.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
 </div>
@@ -158,7 +158,7 @@ Draw detection result on the image.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DRAW_DETECTION` |
 | Image (required) | `image` | string | Input image. |
@@ -176,7 +176,7 @@ A list of detected objects.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Bounding box](#draw-detection-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format.  |
 | Category | `category` | string | The predicted category of the bounding box.  |
@@ -188,7 +188,7 @@ The detected bounding box in (left, top, width, height) format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Height | `height` | number | Bounding box height value  |
 | Left | `left` | number | Bounding box left x-axis value  |
@@ -201,7 +201,7 @@ The detected bounding box in (left, top, width, height) format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
 </div>
@@ -213,7 +213,7 @@ Draw keypoint result on the image.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DRAW_KEYPOINT` |
 | Image (required) | `image` | string | Input image. |
@@ -231,7 +231,7 @@ A list of keypoint objects, a keypoint object includes all the pre-defined keypo
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Bounding Box](#draw-keypoint-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format.  |
 | [Keypoints](#draw-keypoint-keypoints) | `keypoints` | array | A keypoint group is composed of a list of pre-defined keypoints of a detected object.  |
@@ -243,7 +243,7 @@ A keypoint group is composed of a list of pre-defined keypoints of a detected ob
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Visibility Score | `v` | number | visibility score of the keypoint.  |
 | X Coordinate | `x` | number | x coordinate of the keypoint.  |
@@ -255,7 +255,7 @@ The detected bounding box in (left, top, width, height) format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Height | `height` | number | Bounding box height value  |
 | Left | `left` | number | Bounding box left x-axis value  |
@@ -268,7 +268,7 @@ The detected bounding box in (left, top, width, height) format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
 </div>
@@ -280,7 +280,7 @@ Draw OCR result on the image.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DRAW_OCR` |
 | Image (required) | `image` | string | Input image. |
@@ -298,7 +298,7 @@ A list of detected bounding boxes.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Bounding Box](#draw-ocr-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format.  |
 | Score | `score` | number | The confidence score of the predicted object.  |
@@ -310,7 +310,7 @@ The detected bounding box in (left, top, width, height) format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Height | `height` | number | Bounding box height value  |
 | Left | `left` | number | Bounding box left x-axis value  |
@@ -323,7 +323,7 @@ The detected bounding box in (left, top, width, height) format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
 </div>
@@ -335,7 +335,7 @@ Draw instance segmentation result on the image.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DRAW_INSTANCE_SEGMENTATION` |
 | Image (required) | `image` | string | Input image. |
@@ -353,7 +353,7 @@ A list of detected instance bounding boxes.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Bounding Box](#draw-instance-segmentation-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format.  |
 | Category | `category` | string | The predicted category of the bounding box.  |
@@ -366,7 +366,7 @@ The detected bounding box in (left, top, width, height) format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Height | `height` | number | Bounding box height value  |
 | Left | `left` | number | Bounding box left x-axis value  |
@@ -379,7 +379,7 @@ The detected bounding box in (left, top, width, height) format.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
 </div>
@@ -391,7 +391,7 @@ Draw semantic segmentation result on the image.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DRAW_SEMANTIC_SEGMENTATION` |
 | Image (required) | `image` | string | Input image. |
@@ -408,7 +408,7 @@ A list of RLE binary masks.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Category | `category` | string | Category text string corresponding to each stuff mask.  |
 | RLE | `rle` | string | Run Length Encoding (RLE) of each stuff mask within the image.  |
@@ -419,7 +419,7 @@ A list of RLE binary masks.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
 </div>

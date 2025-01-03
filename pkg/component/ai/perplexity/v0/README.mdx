@@ -36,7 +36,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | API Key | `api-key` | string | Fill in your API key from the vendor's platform.  |
 
@@ -54,7 +54,7 @@ Generate response base on conversation input.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CHAT` |
 | [Chat Data](#chat-chat-data) (required) | `data` | object | Input data. |
@@ -71,7 +71,7 @@ Input data.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Chat Messages](#chat-chat-messages) | `messages` | array | List of chat messages.  |
 | Model Name | `model` | string | The model to be used for `TASK_CHAT`.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`llama-3.1-sonar-small-128k-online`</li><li>`llama-3.1-sonar-large-128k-online`</li><li>`llama-3.1-sonar-huge-128k-online`</li></ul></details>  |
@@ -82,7 +82,7 @@ List of chat messages.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Content](#chat-content) | `content` | array | The message content.  |
 | Name | `name` | string | An optional name for the participant. Provides the model information to differentiate between participants of the same role.  |
@@ -94,7 +94,7 @@ The message content.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Text Message | `text` | string | Text message.  |
 | Text | `type` | string | Text content type.  |
@@ -105,7 +105,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Frequency Penalty | `frequency-penalty` | number | A multiplicative penalty greater than 0. Values greater than 1.0 penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim. A value of 1.0 means no penalty. Incompatible with `presence_penalty`.  |
 | Max New Tokens | `max-tokens` | integer | The maximum number of completion tokens returned by the API. The total number of tokens requested in max_tokens plus the number of prompt tokens sent in messages must not exceed the context window token limit of model requested. If left unspecified, then the model will generate tokens until either it reaches its stop token or the end of its context window.  |
@@ -123,7 +123,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Output Data](#chat-output-data) | `data` | object | Output data. |
 | [Output Metadata](#chat-output-metadata) (optional) | `metadata` | object | Output metadata. |
@@ -136,7 +136,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Choices](#chat-choices) | `choices` | array | List of chat completion choices. |
 | Citations | `citations` | array | List of citations. |
@@ -146,7 +146,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Created | `created` | integer | The timestamp of when the chat completion was created. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
 | Finish Reason | `finish-reason` | string | The reason the model stopped generating tokens. |
@@ -158,7 +158,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Content | `content` | string | The contents of the message. |
 | Role | `role` | string | The role of the author of this message. |
@@ -168,7 +168,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Usage](#chat-usage) | `usage` | object | Usage statistics for the request. |
 </div>
@@ -177,7 +177,7 @@ Input parameter.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Completion Tokens | `completion-tokens` | integer | Number of tokens in the generated response. |
 | Prompt Tokens | `prompt-tokens` | integer | Number of tokens in the prompt. |
@@ -195,7 +195,7 @@ version: v1beta
 
 variable:
   prompt:
-    format: string
+    type: string
     title: Prompt
 
 component:

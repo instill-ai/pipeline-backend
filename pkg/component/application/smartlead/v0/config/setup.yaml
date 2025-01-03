@@ -2,13 +2,11 @@ additionalProperties: false
 properties:
   api-key:
     description: Fill in your Smartlead API key. You can generate one from your [Smartlead account](https://app.smartlead.ai/app/settings/profile).
-    acceptFormats:
-      - string
+    type: string
     instillSecret: true
     uiOrder: 0
     title: API Key
-    format: string
 required:
   - api-key
 title: Smartlead Connection
-format: object
+type: object

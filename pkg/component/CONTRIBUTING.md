@@ -54,8 +54,8 @@ operator/hello/v0
  ├──assets
  │  └──hello.svg
  ├──config
- │  ├──definition.json
- │  └──tasks.json
+ │  ├──definition.yaml
+ │  └──tasks.yaml
  ├──main.go
  ├──main_test.go
  └──README.mdx
@@ -63,33 +63,30 @@ operator/hello/v0
 
 ### Add the configuration files
 
-Create a `config` directory and add the files `definition.json`, `tasks.json`,
-and `setup.json` (optional). Together, these files define the behavior of the
+Create a `config` directory and add the files `definition.yaml`, `tasks.yaml`,
+and `setup.yaml` (optional). Together, these files define the behavior of the
 component.
 
-#### `definition.json`
+#### `definition.yaml`
 
-The `definition.json` file describes the high-level information of the
+The `definition.yaml` file describes the high-level information of the
 component.
 
-```json
-{
-  "id": "hello",
-  "uid": "e05d3d71-779c-45f8-904d-e90a050ca3b2",
-  "title": "Hello",
-  "type": "COMPONENT_TYPE_OPERATOR",
-  "description": "'Hello, world' operator used as a template for adding components",
-  "spec": {},
-  "availableTasks": [
-    "TASK_GREET"
-  ],
-  "documentationUrl": "https://www.instill.tech/docs/component/operator/hello",
-  "icon": "assets/hello.svg",
-  "version": "0.1.0",
-  "sourceUrl": "https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/hello/v0",
-  "releaseStage": "RELEASE_STAGE_ALPHA",
-  "public": true
-}
+```yaml
+id: hello
+uid: e05d3d71-779c-45f8-904d-e90a050ca3b2
+title: Hello
+type: COMPONENT_TYPE_OPERATOR
+description: "'Hello, world' operator used as a template for adding components"
+spec: {}
+availableTasks:
+  - TASK_GREET
+documentationUrl: https://www.instill.tech/docs/component/operator/hello
+icon: assets/hello.svg
+version: 0.1.0
+sourceUrl: https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/hello/v0
+releaseStage: RELEASE_STAGE_ALPHA
+public: true
 ```
 
 This file defines the component properties:
@@ -106,7 +103,7 @@ This file defines the component properties:
 - **`availableTasks`** defines the tasks the component can perform.
   - When a component is created in a pipeline, one of the tasks has to be
     selected, i.e., a configured component can only execute one task.
-  - Task configurations are defined in `tasks.json`.
+  - Task configurations are defined in `tasks.yaml`.
 - **`documentationUrl`** points to the official documentation of the component.
 - **`icon`** is the local path to the icon that will be displayed in the console
   when creating the component. If left blank, a placeholder icon will be shown.
@@ -124,57 +121,42 @@ This file defines the component properties:
 - **`public`** indicates whether the component is visible to the public.
 
 
-#### `tasks.json`
+#### `tasks.yaml`
 
-The `tasks.json` file describes the task details of the component. The key
+The `tasks.yaml` file describes the task details of the component. The key
 should be in the format `TASK_NAME`.
 
-```json
-{
-  "TASK_GREET": {
-    "shortDescription": "Greet someone / something",
-    "title": "Greet",
-    "input": {
-      "description": "Input",
-      "uiOrder": 0,
-      "properties": {
-        "target": {
-          "uiOrder": 0,
-          "description": "The target of the greeting",
-          "acceptFormats": [
-            "string"
-          ],
-          "title": "Greeting target",
-          "format": "string"
-        }
-      },
-      "required": [
-        "target"
-      ],
-      "title": "Input",
-      "type": "object"
-    },
-    "output": {
-      "description": "The greeting sentence",
-      "uiOrder": 0,
-      "properties": {
-        "greeting": {
-          "description": "A greeting sentence addressed to the target",
-          "uiOrder": 0,
-          "required": [],
-          "title": "Greeting",
-          "type": "string",
-          "format": "string"
-        }
-      },
-      "required": [
-        "greeting"
-      ],
-      "title": "Output",
-      "type": "object"
-    }
-  }
-}
+```yaml
+TASK_GREET:
+  shortDescription: Greet someone / something
+  title: Greet
+  input:
+    description: Input
+    uiOrder: 0
+    properties:
+      target:
+        uiOrder: 0
+        description: The target of the greeting
+        type: string
+        title: Greeting target
+    required:
+      - target
+    title: Input
+    type: object
+  output:
+    description: The greeting sentence
+    uiOrder: 0
+    properties:
+      greeting:
+        description: A greeting sentence addressed to the target
+        uiOrder: 0
+        required: []
+        title: Greeting
+        type: string
+    required:
+      - greeting
+    title: Output
+    type: object
 ```
 
 This file defines the input and output schema of each task:
@@ -187,13 +169,13 @@ This file defines the input and output schema of each task:
   provide a description of the task in the component. If
   **`shortDescription`** does not exist, it will be the same as
   **`description`**.
-- **`input`** is a JSON Schema that describes the input of the task.
-- **`output`** is a JSON Schema that describes the output of the task.
+- **`input`** is a schema that describes the input of the task.
+- **`output`** is a schema that describes the output of the task.
 
 **Properties within `input` and `output` Objects**
 
 - **`required`** indicates whether the property is required.
-- **`format`**: describes the format of this field, which could be `string`,
+- **`type`**: describes the format of this field, which could be `string`,
   `number`, `boolean`, `file`, `document`, `image`, `video`, `audio`, `array`,
   or `object`.
 - **`title`** is used by the console to provide the title of the property in the component.
@@ -207,16 +189,17 @@ This file defines the input and output schema of each task:
 
 **Properties within `input` Objects**
 
-- **`acceptFormats`** is an array indicating the data types of acceptable
-  input fields. It should be an array of [**Instill
-  Format**](https://www.instill.tech/docs/vdp/instill-format).
-  - Currently, we do not support the `time` type. When the input is a `date` or `datetime`, it should be represented as a string. The `date` or `datetime` will be automatically parsed in UTC timezone by the YAML parser. Please ensure this point is noted in the documentation, specifically for the `start-to-read-date` in the Slack component.
+- **`type`** indicates the data type of the output field, which should be one
+  of `string`, `number`, `boolean`, `file`, `document`, `image`, `video`,
+  `audio`, `array`, or `object`. Please refer to [**Instill
+  Format**](https://www.instill.tech/docs/vdp/instill-format) for more details.
+
 - **`instillSecret`** indicates the data must reference the secrets and cannot
   be used in plaintext.
 
 **Properties within `output` Objects**
 
-- **`format`** indicates the data type of the output field, which should be one
+- **`type`** indicates the data type of the output field, which should be one
   of `string`, `number`, `boolean`, `file`, `document`, `image`, `video`,
   `audio`, `array`, or `object`. Please refer to [**Instill
   Format**](https://www.instill.tech/docs/vdp/instill-format) for more details.
@@ -224,12 +207,12 @@ This file defines the input and output schema of each task:
 See the [example recipe](#example-recipe) to understand how these fields map to
 the recipe of a pipeline when configured to use this operator.
 
-#### `setup.json`
+#### `setup.yaml`
 
 For components that need to set up some configuration before execution
 (typically, components that connect with 3rd party applications or services that
-need to set up a connection), `setup.json` can be used to describe these
-configurations. The format is the same as the `input` objects in `tasks.json`.
+need to set up a connection), `setup.yaml` can be used to describe these
+configurations. The format is the same as the `input` objects in `tasks.yaml`.
 
 The setup of a component can be defined within the recipe as key-value fields,
 or as a reference to a **Connection** (see the
@@ -237,7 +220,7 @@ or as a reference to a **Connection** (see the
 information). Certain components support OAuth 2.0 integrations. If you want
 your component to support this sort of connection:
 
-- In `setup.json`, add the OAuth information under the  `instillOAuthConfig`
+- In `setup.yaml`, add the OAuth information under the  `instillOAuthConfig`
   property.
   - `authUrl` contains the address where the authorization code can be
     requested.
@@ -289,10 +272,10 @@ const (
 )
 
 var (
-  //go:embed config/definition.json
-  definitionJSON []byte
-  //go:embed config/tasks.json
-  tasksJSON []byte
+  //go:embed config/definition.yaml
+  definitionYAML []byte
+  //go:embed config/tasks.yaml
+  tasksYAML []byte
 
   once   sync.Once
   comp   *component
@@ -307,7 +290,7 @@ type component struct {
 func Init(bc base.Component) *component {
   once.Do(func() {
     comp = &component{Component: bc}
-    err := comp.LoadDefinition(definitionJSON, nil, tasksJSON, nil)
+    err := comp.LoadDefinition(definitionYAML, nil, tasksYAML, nil)
     if err != nil {
       panic(err)
     }
@@ -619,8 +602,8 @@ output:
 
 Documentation helps user to integrate the component in their pipelines. A good
 component definition will have clear names for their fields, which will also
-contain useful descriptions. The information described in `definition.json` and
-`tasks.json` is enough to understand how a component should be used. `compogen`
+contain useful descriptions. The information described in `definition.yaml` and
+`tasks.yaml` is enough to understand how a component should be used. `compogen`
 is a tool that parses the component configuration and builds a `README.mdx` file
 document displaying its information in a human-readable way. To generate the
 document, just add the following line on top of `operator/hello/v0/main.go`:
@@ -673,7 +656,7 @@ Semantic Versioning guidelines.
 It is recommended to start a component at `v0.1.0`. A major version 0 is
 intended for rapid development.
 
-The `releaseStage` property in `definition.json` indicates the stability of a
+The `releaseStage` property in `definition.yaml` indicates the stability of a
 component.
 
 - A component skeleton (with only the minimal configuration files and a dummy

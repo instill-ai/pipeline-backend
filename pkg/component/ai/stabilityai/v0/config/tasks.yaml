@@ -11,10 +11,7 @@ TASK_IMAGE_TO_IMAGE:
         example: 7
         maximum: 35
         minimum: 0
-        format: number
-        acceptFormats:
-          - number
-          - integer
+        type: number
         uiOrder: 6
         title: Cfg Scale
       clip-guidance-preset:
@@ -28,10 +25,8 @@ TASK_IMAGE_TO_IMAGE:
           - SLOWER
           - SLOWEST
         example: FAST_BLUE
-        format: string
+        type: string
         description: Clip guidance preset.
-        acceptFormats:
-          - string
         uiOrder: 3
         title: Clip Guidance Preset
       engine:
@@ -44,30 +39,27 @@ TASK_IMAGE_TO_IMAGE:
           - esrgan-v1-x2plus
           - stable-diffusion-512-v2-1
           - stable-diffusion-xl-beta-v2-2-2
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Engine
-        format: string
       image-strength:
         default: 0.35
-        description: |
-          How much influence the `init_image` has on the diffusion process. Values close to `1` will yield images very similar to the `init_image` while values close to `0` will yield images wildly different than the `init_image`. The behavior of this is meant to mirror DreamStudio's "Image Strength" slider.  <br/> <br/> This parameter is just an alternate way to set `step_schedule_start`, which is done via the calculation `1 - image_strength`. For example, passing in an Image Strength of 35% (`0.35`) would result in a `step_schedule_start` of `0.65`.
+        description: 'How much influence the `init_image` has on the diffusion process. Values close to `1` will yield images very similar to the `init_image`
+          while values close to `0` will yield images wildly different than the `init_image`. The behavior of this is meant to mirror DreamStudio''s "Image
+          Strength" slider.  <br/> <br/> This parameter is just an alternate way to set `step_schedule_start`, which is done via the calculation `1 - image_strength`.
+          For example, passing in an Image Strength of 35% (`0.35`) would result in a `step_schedule_start` of `0.65`.
+
+          '
         example: 0.4
         maximum: 1
         minimum: 0
-        format: number
-        acceptFormats:
-          - number
-          - integer
+        type: number
         shortDescription: How much influence the `init-image` has on the diffusion process.
         uiOrder: 5
         title: Image Strength
       init-image:
         description: Image used to initialize the diffusion process, in lieu of random noise.
-        format: image
-        acceptFormats:
-          - image/*
+        type: image/*
         uiOrder: 2
         title: Init Image
       init-image-mode:
@@ -76,24 +68,20 @@ TASK_IMAGE_TO_IMAGE:
         enum:
           - IMAGE_STRENGTH
           - STEP_SCHEDULE
-        format: string
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 7
         title: Init Image Mode
       prompts:
         description: An array of prompts to use for generation.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 1
         items:
           description: The prompt itself
           example: A lighthouse on a cliff
           maxLength: 2000
-          format: string
+          type: string
         minItems: 1
         title: Prompts
-        format: array
       sampler:
         description: Which sampler to use for the diffusion process. If this value is omitted we'll automatically select an appropriate sampler for you.
         enum:
@@ -108,9 +96,7 @@ TASK_IMAGE_TO_IMAGE:
           - K_HEUN
           - K_LMS
         example: K_DPM_2_ANCESTRAL
-        format: string
-        acceptFormats:
-          - string
+        type: string
         shortDescription: Which sampler to use for the diffusion process
         uiOrder: 8
         title: Sampler
@@ -120,9 +106,7 @@ TASK_IMAGE_TO_IMAGE:
         example: 1
         maximum: 10
         minimum: 1
-        format: integer
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 9
         title: Samples
       seed:
@@ -131,10 +115,7 @@ TASK_IMAGE_TO_IMAGE:
         example: 0
         maximum: 4294967295
         minimum: 0
-        format: integer
-        acceptFormats:
-          - number
-          - integer
+        type: number
         uiOrder: 10
         title: Seed
       step-schedule-end:
@@ -143,10 +124,7 @@ TASK_IMAGE_TO_IMAGE:
         example: 0.01
         maximum: 1
         minimum: 0
-        format: number
-        acceptFormats:
-          - number
-          - integer
+        type: number
         shortDescription: Skips a proportion of the end of the diffusion steps
         uiOrder: 12
         title: Step Schedule End
@@ -158,10 +136,7 @@ TASK_IMAGE_TO_IMAGE:
         example: 0.4
         maximum: 1
         minimum: 0
-        format: number
-        acceptFormats:
-          - number
-          - integer
+        type: number
         shortDescription: Skips a proportion of the start of the diffusion steps
         uiOrder: 11
         title: Step Schedule Start
@@ -171,15 +146,13 @@ TASK_IMAGE_TO_IMAGE:
         example: 50
         maximum: 50
         minimum: 10
-        format: integer
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 13
         title: Steps
       style-preset:
-        description: |-
-          Pass in a style preset to guide the image model towards a particular style.
-          This list of style presets is subject to change.
+        description: 'Pass in a style preset to guide the image model towards a particular style.
+
+          This list of style presets is subject to change.'
         enum:
           - enhance
           - anime
@@ -198,29 +171,24 @@ TASK_IMAGE_TO_IMAGE:
           - 3d-model
           - pixel-art
           - tile-texture
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 14
         title: Style Preset
       weights:
         description: An array of weights to use for generation. If unspecified, the model will automatically assign a default weight of 1.0 to each prompt.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 2
         items:
           description: Weight of the prompt (use negative numbers for negative prompts)
           example: 0.8167237
-          acceptFormats:
-            - number
-            - integer
+          type: number
         minItems: 1
         title: Weights
-        format: array
     required:
       - prompts
       - engine
     title: Input
-    format: object
+    type: object
   output:
     $ref: '#/TASK_TEXT_TO_IMAGE/output'
 TASK_TEXT_TO_IMAGE:
@@ -236,10 +204,7 @@ TASK_TEXT_TO_IMAGE:
         example: 7
         maximum: 35
         minimum: 0
-        format: number
-        acceptFormats:
-          - number
-          - integer
+        type: number
         uiOrder: 3
         title: CFG Scale
       clip-guidance-preset:
@@ -253,10 +218,8 @@ TASK_TEXT_TO_IMAGE:
           - SLOWER
           - SLOWEST
         example: FAST_BLUE
-        format: string
+        type: string
         description: Clip guidance preset.
-        acceptFormats:
-          - string
         uiOrder: 4
         title: Clip Guidance Preset
       engine:
@@ -275,11 +238,9 @@ TASK_TEXT_TO_IMAGE:
             - stable-diffusion-v1-6
           targets:
             - setup.api-key
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Engine
-        format: string
       height:
         default: 1024
         description: "Height of the image to generate, in pixels, in an increment divible by 64.\n\nEngine-specific dimension validation:\n- SDXL Beta:\
@@ -289,25 +250,20 @@ TASK_TEXT_TO_IMAGE:
         example: 1024
         minimum: 128
         multipleOf: 64
-        format: integer
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 5
         title: Height
       prompts:
         description: An array of prompts to use for generation.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 1
         items:
           description: The prompt itself
           example: A lighthouse on a cliff
           maxLength: 2000
-          acceptFormats:
-            - string
+          type: string
         minItems: 1
         title: Prompts
-        format: array
       sampler:
         description: Which sampler to use for the diffusion process. If this value is omitted we'll automatically select an appropriate sampler for you.
         enum:
@@ -322,9 +278,7 @@ TASK_TEXT_TO_IMAGE:
           - K_HEUN
           - K_LMS
         example: K_DPM_2_ANCESTRAL
-        format: string
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 6
         title: Sampler
       samples:
@@ -333,9 +287,7 @@ TASK_TEXT_TO_IMAGE:
         example: 1
         maximum: 10
         minimum: 1
-        format: integer
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 7
         title: Samples
       seed:
@@ -344,10 +296,7 @@ TASK_TEXT_TO_IMAGE:
         example: 0
         maximum: 4294967295
         minimum: 0
-        format: integer
-        acceptFormats:
-          - number
-          - integer
+        type: number
         uiOrder: 8
         title: Seed
       steps:
@@ -356,15 +305,13 @@ TASK_TEXT_TO_IMAGE:
         example: 50
         maximum: 50
         minimum: 10
-        format: integer
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 9
         title: Steps
       style-preset:
-        description: |-
-          Pass in a style preset to guide the image model towards a particular style.
-          This list of style presets is subject to change.
+        description: 'Pass in a style preset to guide the image model towards a particular style.
+
+          This list of style presets is subject to change.'
         enum:
           - enhance
           - anime
@@ -383,26 +330,19 @@ TASK_TEXT_TO_IMAGE:
           - 3d-model
           - pixel-art
           - tile-texture
-        format: string
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 10
         title: Style Preset
       weights:
         description: An array of weights to use for generation.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 2
         items:
           description: Weight of the prompt (use negative numbers for negative prompts)
           example: 0.8167237
-          format: float
-          acceptFormats:
-            - number
-            - integer
+          type: number
         minItems: 1
         title: Weights
-        format: array
       width:
         default: 1024
         description: "Width of the image to generate, in pixels, in an increment divible by 64.\n\nEngine-specific dimension validation:\n- SDXL Beta: must\
@@ -412,16 +352,14 @@ TASK_TEXT_TO_IMAGE:
         example: 1024
         minimum: 128
         multipleOf: 64
-        format: integer
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 5
         title: Width
     required:
       - prompts
       - engine
     title: Input
-    format: object
+    type: object
   output:
     additionalProperties: false
     description: Output.
@@ -432,25 +370,22 @@ TASK_TEXT_TO_IMAGE:
         uiOrder: 0
         items:
           title: Image
-          format: image/png
+          type: image/png
         title: Images
-        format: array
+        type: array
       seeds:
         description: Seeds of generated images.
         uiOrder: 1
         items:
           description: The seed associated with this image
           example: 1229191277
-          format: number
-          acceptFormats:
-            - number
-            - integer
+          type: number
           title: Seed
           x-go-type-skip-optional-pointer: true
         title: Seeds
-        format: array
+        type: array
     required:
       - images
       - seeds
     title: Output
-    format: object
+    type: object

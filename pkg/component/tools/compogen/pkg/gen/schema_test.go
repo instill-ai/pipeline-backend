@@ -21,13 +21,13 @@ func TestObjectSchema_Validate(t *testing.T) {
 				"stringval": {
 					Description: "a string",
 					Title:       "String Value",
-					Format:      "string",
+					Type:        "string",
 					Order:       &zero,
 				},
 				"intval": {
 					Description: "an integer number",
 					Title:       "Integer value",
-					Format:      "integer",
+					Type:        "integer",
 					Order:       &one,
 				},
 			},
@@ -58,7 +58,7 @@ func TestObjectSchema_Validate(t *testing.T) {
 			modifier: func(rs *objectSchema) {
 				rs.Properties["wrong"] = property{
 					Description: "foo",
-					Format:      "zoot",
+					Type:        "zoot",
 					Order:       &two,
 				}
 			},
@@ -68,9 +68,9 @@ func TestObjectSchema_Validate(t *testing.T) {
 			name: "nok - no description",
 			modifier: func(rs *objectSchema) {
 				rs.Properties["wrong"] = property{
-					Title:  "bar",
-					Format: "zot",
-					Order:  &two,
+					Title: "bar",
+					Type:  "zot",
+					Order: &two,
 				}
 			},
 			wantErr: `^objectSchema\.Properties\[wrong\]\.Description: Description field is required$`,
@@ -81,7 +81,7 @@ func TestObjectSchema_Validate(t *testing.T) {
 				rs.Properties["wrong"] = property{
 					Description: "foo",
 					Title:       "bar",
-					Format:      "zot",
+					Type:        "zot",
 				}
 			},
 			wantErr: `^objectSchema\.Properties\[wrong\]\.Order: Order field is required$`,

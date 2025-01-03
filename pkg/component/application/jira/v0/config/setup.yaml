@@ -2,29 +2,23 @@ additionalProperties: false
 properties:
   token:
     description: Fill in your Jira API token. You can generate one from your Jira account "settings > security > API tokens".
-    acceptFormats:
-      - string
+    type: string
     instillSecret: true
     uiOrder: 0
     title: Token
-    format: string
   email:
     description: Fill in your Jira email address.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 1
     title: Email
-    format: string
   base-url:
     description: Fill in your Jira base URL. For example, if your Jira URL is "https://mycompany.atlassian.net/...", then your base URL is https://mycompany.atlassian.net.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 1
     title: Base URL
-    format: string
 required:
   - token
   - email
   - base-url
 title: Jira Connection
-format: object
+type: object

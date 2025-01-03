@@ -37,7 +37,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | API Key | `api-key` | string | Fill in your Mistral API key. To find your keys, visit the Mistral AI platform page.  |
 
@@ -55,14 +55,14 @@ Mistral AI's text generation models (often called generative pre-trained transfo
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
 | Model Name (required) | `model-name` | string | The Mistral model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open-mixtral-8x22b`</li><li>`open-mixtral-8x7b`</li><li>`open-mistral-7b`</li><li>`mistral-large-latest`</li><li>`mistral-small-latest`</li><li>`codestral-latest`</li></ul></details>  |
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message as "You are a helpful assistant.". |
 | Prompt Images | `prompt-images` | array[string] | The prompt images (Note: The Mistral models are not trained to process images, thus images will be omitted). |
-| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
+| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
 | Seed | `seed` | integer | The seed. |
 | Temperature | `temperature` | number | The temperature for sampling. |
 | Top K | `top-k` | integer | Integer to define the top tokens considered within the sample operation to create new text (Note: The Mistral models does not support top-k sampling). |
@@ -77,11 +77,11 @@ Mistral AI's text generation models (often called generative pre-trained transfo
 
 <h4 id="text-generation-chat-chat-history">Chat History</h4>
 
-Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}.
+Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Content](#text-generation-chat-content) | `content` | array | The message content.  |
 | Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
@@ -92,7 +92,7 @@ The message content.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL.  |
 | Text | `text` | string | The text content.  |
@@ -104,7 +104,7 @@ The image URL.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
 </div>
@@ -114,7 +114,7 @@ The image URL.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Text | `text` | string | Model Output. |
 | [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Token usage on the Mistral platform text generation models. |
@@ -127,7 +127,7 @@ The image URL.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Input Tokens | `input-tokens` | number | The input tokens used by Mistral models. |
 | Output Tokens | `output-tokens` | number | The output tokens generated by Mistral models. |
@@ -141,7 +141,7 @@ An embedding is a list of floating point numbers that captures semantic informat
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
 | Model Name (required) | `model-name` | string | The Mistral embed model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`mistral-embed`</li></ul></details>  |
@@ -155,7 +155,7 @@ An embedding is a list of floating point numbers that captures semantic informat
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Embedding | `embedding` | array[number] | Embedding of the input text. |
 | [Usage](#text-embeddings-usage) (optional) | `usage` | object | Token usage on the Mistral platform embedding models. |
@@ -168,7 +168,7 @@ An embedding is a list of floating point numbers that captures semantic informat
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Token Count | `tokens` | number | The token count used by Mistral models. |
 </div>
@@ -218,32 +218,32 @@ variable:
   conflict:
     title: Conflict
     description: The main problem or challenge faced by the characters i.e. existential crisis
-    format: string
+    type: string
   duration:
     title: Duration
     description: Approximate length of the film in minutes i.e. 5
-    format: string
+    type: string
   genre:
     title: Genre
     description: The type of genre for this film i.e. romance, comedy, horror, action, etc.
-    format: string
+    type: string
   num_actors:
     title: Num_actors
     description: The number of actors that will be in this film i.e. 2
-    format: string
+    type: string
   setting:
     title: Setting
     description: |
       The primary location where the story takes place i.e. Rome
-    format: string
+    type: string
   theme:
     title: Theme
     description: Insert the main theme or central idea of the film i.e. time travelling
-    format: string
+    type: string
   time-period:
     title: Time Period
     description: The era or time frame of the story i.e. stone age, 20th century, etc.
-    format: string
+    type: string
 output:
   result:
     title: Result
@@ -306,17 +306,17 @@ variable:
   colour:
     title: Colour
     description: Describe the main colour to use i.e. blue, random
-    format: string
+    type: string
     instill-ui-order: 1
   period:
     title: Period
     description: |
       Input different Picasso periods i.e. Blue, Rose, African, Synthetic Cubism, etc.
-    format: string
+    type: string
   prompt:
     title: Prompt
     description: Input prompt here i.e. "A cute baby wombat"
-    format: string
+    type: string
 output:
   image:
     title: Image

@@ -14,6 +14,8 @@ It can carry out the following tasks:
 - [Create Review Comment](#create-review-comment)
 - [List Issues](#list-issues)
 - [Get Issue](#get-issue)
+- [Get User](#get-user)
+- [Get Organization](#get-organization)
 - [Create Issue](#create-issue)
 - [Create Webhook](#create-webhook)
 
@@ -44,7 +46,7 @@ ${connection.<my-connection-id>}`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Token (required) | `token` | string | Fill in your GitHub access token for advanced usages. For more information about how to create tokens, please refer to the <a href="https://github.com/settings/tokens">github settings</a>.  |
 
@@ -62,7 +64,7 @@ Get the list of all pull requests in a repository. Detailed information about ea
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_PULL_REQUESTS` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -81,7 +83,7 @@ Get the list of all pull requests in a repository. Detailed information about ea
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Pull Requests](#list-pull-requests-pull-requests) | `pull-requests` | array[object] | An array of PRs. |
 </div>
@@ -93,7 +95,7 @@ Get the list of all pull requests in a repository. Detailed information about ea
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | PR base | `base` | string | Base commit of the PR (in SHA value). |
 | PR body | `body` | string | Body of the PR. |
@@ -113,7 +115,7 @@ Get the list of all pull requests in a repository. Detailed information about ea
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Files](#list-pull-requests-files) | `files` | array | Files in the commit. |
 | Commit message | `message` | string | Message of the commit. |
@@ -125,7 +127,7 @@ Get the list of all pull requests in a repository. Detailed information about ea
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Additions | `additions` | integer | Number of additions in the commit. |
 | Total changes | `changes` | integer | Total number of changes in the commit. |
@@ -136,7 +138,7 @@ Get the list of all pull requests in a repository. Detailed information about ea
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Additions | `additions` | integer | Number of additions in the commit. |
 | Total changes | `changes` | integer | Total number of changes in the commit. |
@@ -153,7 +155,7 @@ Get a pull request from a repository, given the PR number. This will default to 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_PULL_REQUEST` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -168,7 +170,7 @@ Get a pull request from a repository, given the PR number. This will default to 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | PR ID (optional) | `id` | integer | ID of the PR. |
 | PR Number (optional) | `number` | integer | Number of the PR. |
@@ -191,7 +193,7 @@ Get a pull request from a repository, given the PR number. This will default to 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Files](#get-pull-request-files) | `files` | array | Files in the commit. |
 | Commit message | `message` | string | Message of the commit. |
@@ -203,7 +205,7 @@ Get a pull request from a repository, given the PR number. This will default to 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Additions | `additions` | integer | Number of additions in the commit. |
 | Total changes | `changes` | integer | Total number of changes in the commit. |
@@ -214,7 +216,7 @@ Get a pull request from a repository, given the PR number. This will default to 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Additions | `additions` | integer | Number of additions in the commit. |
 | Total changes | `changes` | integer | Total number of changes in the commit. |
@@ -231,7 +233,7 @@ Get a commit from a repository, given the commit SHA
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_COMMIT` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -246,7 +248,7 @@ Get a commit from a repository, given the commit SHA
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Commit SHA (optional) | `sha` | string | SHA of the commit. |
 | Commit Message (optional) | `message` | string | Message of the commit. |
@@ -261,7 +263,7 @@ Get a commit from a repository, given the commit SHA
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Additions | `additions` | integer | Number of additions in the commit. |
 | Total changes | `changes` | integer | Total number of changes in the commit. |
@@ -272,7 +274,7 @@ Get a commit from a repository, given the commit SHA
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Additions | `additions` | integer | Number of additions in the commit. |
 | Total changes | `changes` | integer | Total number of changes in the commit. |
@@ -289,7 +291,7 @@ Get the review comments in a pull request. The comments can be on a specific lin
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_REVIEW_COMMENTS` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -309,7 +311,7 @@ Get the review comments in a pull request. The comments can be on a specific lin
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Comments](#list-review-comments-comments) | `comments` | array[object] | An array of comments. |
 </div>
@@ -321,7 +323,7 @@ Get the review comments in a pull request. The comments can be on a specific lin
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Comment body | `body` | string | Body of the comment. |
 | Commit SHA | `commit-id` | string | SHA of the commit on which you want to comment. |
@@ -342,7 +344,7 @@ Get the review comments in a pull request. The comments can be on a specific lin
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | User id | `id` | integer | ID of the user. |
 | User URL | `url` | string | URL of the user. |
@@ -356,7 +358,7 @@ Create a review comment in a pull request. The comment can be a general comment 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_REVIEW_COMMENT` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -375,7 +377,7 @@ The comment to be added.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Comment body | `body` | string | Body of the comment.  |
 | Commit SHA | `commit-id` | string | SHA of the commit on which you want to comment.  |
@@ -392,7 +394,7 @@ The comment to be added.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Comment ID (optional) | `id` | integer | ID of the comment. |
 | In Reply To (optional) | `in-reply-to-id` | integer | ID of the comment this comment is in reply to. |
@@ -416,7 +418,7 @@ The comment to be added.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | User id | `id` | integer | ID of the user. |
 | User URL | `url` | string | URL of the user. |
@@ -430,7 +432,7 @@ Get the list of all issues in a repository,This can be a pull request or a gener
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_ISSUES` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -451,7 +453,7 @@ Get the list of all issues in a repository,This can be a pull request or a gener
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Issues](#list-issues-issues) | `issues` | array[object] | An array of issues. |
 </div>
@@ -463,7 +465,7 @@ Get the list of all issues in a repository,This can be a pull request or a gener
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Assignee | `assignee` | string | Assignee of the issue. |
 | Assignees | `assignees` | array | Assignees of the issue. |
@@ -483,7 +485,7 @@ Get an issue. This can be a pull request or a general issue, and you can tell by
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ISSUE` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -498,7 +500,7 @@ Get an issue. This can be a pull request or a general issue, and you can tell by
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Issue Number (optional) | `number` | integer | Number of the issue. |
 | Issue State (optional) | `state` | string | State of the issue. |
@@ -511,13 +513,148 @@ Get an issue. This can be a pull request or a general issue, and you can tell by
 </div>
 
 
+### Get User
+
+Get a user by name or ID.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_USER` |
+| Name | `name` | string | The GitHub username of the user. |
+| ID | `id` | integer | The GitHub user ID. If both `name` and `id` are provided, `id` takes precedence. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| User (optional) | `user` | any | The GitHub user information. |
+</div>
+
+
+### Get Organization
+
+Get an organization by name or ID.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_GET_ORGANIZATION` |
+| Name | `name` | string | The GitHub organization name. |
+| ID | `id` | integer | The GitHub organization ID. If both `name` and `id` are provided, `id` takes precedence. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Organization Full](#get-organization-organization-full) (optional) | `organization` | object | Organization Full |
+</div>
+
+<details>
+<summary> Output Objects in Get Organization</summary>
+
+<h4 id="get-organization-organization-full">Organization Full</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Advanced Security Enabled For New Repositories | `advanced-security-enabled-for-new-repositories` | boolean | Whether GitHub Advanced Security is enabled for new repositories. |
+| Archived At | `archived-at` | string | The timestamp when the organization was archived, if applicable. |
+| Avatar URL | `avatar-url` | string | The URL of the organization's avatar image. |
+| Billing Email | `billing-email` | string | The billing email address for the organization. |
+| Blog | `blog` | string | The blog URL of the organization. |
+| Collaborators | `collaborators` | integer | The number of collaborators on private repositories. |
+| Company | `company` | string | The company name associated with the organization. |
+| Created At | `created-at` | string | The timestamp when the organization was created. |
+| Default Repository Permission | `default-repository-permission` | string | The default repository permission level for organization members. |
+| Dependabot Alerts Enabled For New Repositories | `dependabot-alerts-enabled-for-new-repositories` | boolean | Whether Dependabot alerts are enabled for new repositories. |
+| Dependabot Security Updates Enabled For New Repositories | `dependabot-security-updates-enabled-for-new-repositories` | boolean | Whether Dependabot security updates are enabled for new repositories. |
+| Dependency Graph Enabled For New Repositories | `dependency-graph-enabled-for-new-repositories` | boolean | Whether dependency graph is enabled for new repositories. |
+| Deploy Keys Enabled For Repositories | `deploy-keys-enabled-for-repositories` | boolean | Controls whether or not deploy keys may be added and used for repositories in the organization. |
+| Description | `description` | string | The description of the organization. |
+| Disk Usage | `disk-usage` | integer | The amount of disk space used by the organization. |
+| Email | `email` | string | The public email address of the organization. |
+| Events URL | `events-url` | string | The URL of the organization's events API endpoint. |
+| Followers | `followers` | integer | The number of followers. |
+| Following | `following` | integer | The number of users the organization is following. |
+| Has Organization Projects | `has-organization-projects` | boolean | Whether organization projects are enabled. |
+| Has Repository Projects | `has-repository-projects` | boolean | Whether repository projects are enabled. |
+| Hooks URL | `hooks-url` | string | The URL of the organization's webhooks API endpoint. |
+| HTML URL | `html-url` | string | The URL of the organization's GitHub homepage. |
+| ID | `id` | integer | The unique identifier of the organization. |
+| Is Verified | `is-verified` | boolean | Whether the organization is verified by GitHub. |
+| Issues URL | `issues-url` | string | The URL of the organization's issues API endpoint. |
+| Location | `location` | string | The location of the organization. |
+| Login | `login` | string | The organization's username. |
+| Members Allowed Repository Creation Type | `members-allowed-repository-creation-type` | string | The type of repositories members are allowed to create. |
+| Members Can Create Internal Repositories | `members-can-create-internal-repositories` | boolean | Whether members can create internal repositories. |
+| Members Can Create Pages | `members-can-create-pages` | boolean | Whether members can create GitHub Pages sites. |
+| Members Can Create Private Pages | `members-can-create-private-pages` | boolean | Whether members can create private GitHub Pages sites. |
+| Members Can Create Private Repositories | `members-can-create-private-repositories` | boolean | Whether members can create private repositories. |
+| Members Can Create Public Pages | `members-can-create-public-pages` | boolean | Whether members can create public GitHub Pages sites. |
+| Members Can Create Public Repositories | `members-can-create-public-repositories` | boolean | Whether members can create public repositories. |
+| Members Can Create Repositories | `members-can-create-repositories` | boolean | Whether organization members can create repositories. |
+| Members Can Fork Private Repositories | `members-can-fork-private-repositories` | boolean | Whether members can fork private repositories. |
+| Members URL | `members-url` | string | The URL of the organization's members API endpoint. |
+| Name | `name` | string | The display name of the organization. |
+| Node ID | `node-id` | string | The GraphQL node ID of the organization. |
+| Owned Private Repositories | `owned-private-repos` | integer | The number of private repositories owned by the organization. |
+| [Plan](#get-organization-plan) | `plan` | object | The organization's plan details. |
+| Private Gists | `private-gists` | integer | The number of private gists. |
+| Public Gists | `public-gists` | integer | The number of public gists. |
+| Public Members URL | `public-members-url` | string | The URL of the organization's public members API endpoint. |
+| Public Repositories | `public-repos` | integer | The number of public repositories. |
+| Repositories URL | `repos-url` | string | The URL of the organization's repositories API endpoint. |
+| Secret Scanning Enabled For New Repositories | `secret-scanning-enabled-for-new-repositories` | boolean | Whether secret scanning is enabled for new repositories. |
+| Secret Scanning Push Protection Custom Link | `secret-scanning-push-protection-custom-link` | string | An optional URL string to display to contributors who are blocked from pushing a secret. |
+| Secret Scanning Push Protection Custom Link Enabled | `secret-scanning-push-protection-custom-link-enabled` | boolean | Whether a custom link is shown to contributors who are blocked from pushing a secret by push protection. |
+| Secret Scanning Push Protection Enabled For New Repositories | `secret-scanning-push-protection-enabled-for-new-repositories` | boolean | Whether secret scanning push protection is enabled for new repositories. |
+| Total Private Repositories | `total-private-repos` | integer | The total number of private repositories. |
+| Twitter Username | `twitter-username` | string | The Twitter username of the organization. |
+| Two Factor Requirement Enabled | `two-factor-requirement-enabled` | boolean | Whether two-factor authentication is required for all members. |
+| Type | `type` | string | The type of the account. |
+| Updated At | `updated-at` | string | The timestamp when the organization was last updated. |
+| URL | `url` | string | The URL of the organization's API endpoint. |
+| Web Commit Signoff Required | `web-commit-signoff-required` | boolean | Whether web commit sign-off is required. |
+</div>
+
+<h4 id="get-organization-plan">Plan</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Filled Seats | `filled-seats` | integer | The number of filled seats in the plan. |
+| Name | `name` | string | The name of the plan. |
+| Private Repositories | `private-repos` | integer | The number of private repositories included in the plan. |
+| Seats | `seats` | integer | The total number of seats in the plan. |
+| Space | `space` | integer | The amount of disk space included in the plan. |
+</div>
+</details>
+
+
 ### Create Issue
 
 Create an issue.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_ISSUE` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -535,7 +672,7 @@ Create an issue.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Issue Number (optional) | `number` | integer | Number of the issue. |
 | Issue State (optional) | `state` | string | State of the issue. |
@@ -554,7 +691,7 @@ Create a webhook for a repository.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Format | Description |
+| Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_WEBHOOK` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -573,7 +710,7 @@ Create a webhook for a repository.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Format | Description |
+| Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Webhook ID (optional) | `id` | integer | ID of the webhook. |
 | Webhook URL (optional) | `url` | string | URL of the webhook. |
@@ -589,7 +726,7 @@ Create a webhook for a repository.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Format | Note |
+| Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Content Type | `content-type` | string | Content type of the webhook. |
 | Insecure SSL | `insecure-ssl` | string | Whether the webhook is insecure. |
@@ -811,11 +948,11 @@ variable:
   repository-name:
     title: Repository Name
     description: Name of the repository i.e. instill-core
-    format: string
+    type: string
   repository-owner:
     title: Repository Owner
     description: Name of the repository owner i.e. instill-ai
-    format: string
+    type: string
 output:
   result:
     title: Result
@@ -838,22 +975,22 @@ on:
 variable:
   repository:
     title: repository
-    format: string
+    type: string
     listen:
       - ${on.github-0.message.repository.full-name}
   user:
     title: user
-    format: string
+    type: string
     listen:
       - ${on.github-0.message.sender.login}
   description:
     title: user
-    format: string
+    type: string
     listen:
       - ${on.github-0.message.repository.description}
   stargazers-count:
     title: stargazers-count
-    format: number
+    type: number
     listen:
       - ${on.github-0.message.repository.stargazers-count}
 

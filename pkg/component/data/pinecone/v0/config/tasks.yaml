@@ -5,78 +5,60 @@ TASK_QUERY:
     properties:
       id:
         description: The unique ID of the vector to be used as a query vector. If present, the vector parameter will be ignored.
-        acceptFormats:
-          - string
+        type: string
         shortDescription: Query by vector ID instead of by vector
         uiOrder: 0
         title: ID
-        format: string
       vector:
         description: An array of dimensions for the query vector.
-        acceptFormats:
-          - array
-          - array
+        type: array
         uiOrder: 1
         items:
           description: A dimension of the vector.
           example: 0.8167237
-          format: number
+          type: number
         minItems: 1
         title: Vector
-        format: array
       top-k:
         description: The number of results to return for each query.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 2
         title: Top K
-        format: integer
       namespace:
         description: The namespace to query.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 3
         title: Namespace
-        format: string
       filter:
         description: The filter to apply. You can use vector metadata to limit your search. See more details <a href="https://www.pinecone.io/docs/metadata-filtering/">here</a>.
-        acceptFormats:
-          - json
+        type: object
         shortDescription: The filter to apply on vector metadata
         uiOrder: 4
         order: 1
         required: []
         title: Filter
-        format: object
       min-score:
         description: Exclude results whose score is below this value.
-        acceptFormats:
-          - number
-          - integer
+        type: number
         uiOrder: 5
         title: Minimum Score
-        format: number
       include-metadata:
         default: false
         description: Indicates whether metadata is included in the response as well as the IDs.
-        acceptFormats:
-          - boolean
+        type: boolean
         uiOrder: 6
         title: Include Metadata
-        format: boolean
       include-values:
         default: false
         description: Indicates whether vector values are included in the response.
-        acceptFormats:
-          - boolean
+        type: boolean
         uiOrder: 7
         title: Include Values
-        format: boolean
     required:
       - top-k
       - vector
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -89,44 +71,44 @@ TASK_QUERY:
               description: The ID of the matched vector.
               uiOrder: 0
               title: ID
-              format: string
+              type: string
             metadata:
               description: Metadata.
               uiOrder: 3
               required: []
               title: Metadata
-              format: json
+              type: json
             score:
               description: A measure of similarity between this vector and the query vector. The higher the score, the more similar they are.
               uiOrder: 1
               title: Score
-              format: number
+              type: number
             values:
               description: Vector data values.
               uiOrder: 2
               items:
                 description: Each float value represents one dimension.
                 title: Value
-                format: number
+                type: number
               title: Values
-              format: array
+              type: array
           required:
             - id
             - score
           title: Match
-          format: object
+          type: object
         title: Matches
-        format: array
+        type: array
       namespace:
         description: The namespace of the query.
         uiOrder: 0
         title: Namespace
-        format: string
+        type: string
     required:
       - namespace
       - matches
     title: Output
-    format: object
+    type: object
 TASK_UPSERT:
   shortDescription: Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value.
   description: Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value. This task will
@@ -136,46 +118,37 @@ TASK_UPSERT:
     properties:
       id:
         description: This is the vector's unique id.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: ID
-        format: string
       metadata:
         description: The vector metadata.
-        acceptFormats:
-          - json
+        type: object
         shortDescription: The vector metadata
         uiOrder: 3
         order: 1
         required: []
         title: Metadata
-        format: object
       values:
         description: An array of dimensions for the vector to be saved.
-        acceptFormats:
-          - array
-          - array
+        type: array
         uiOrder: 1
         items:
           description: A dimension of the vector.
           example: 0.8167237
-          format: number
+          type: number
         minItems: 1
         title: Values
-        format: array
       namespace:
         description: The namespace to query.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 2
         title: Namespace
-        format: string
     required:
       - id
       - values
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -183,11 +156,11 @@ TASK_UPSERT:
         description: Number of records modified or added.
         uiOrder: 0
         title: Upserted Count
-        format: integer
+        type: integer
     required:
       - upserted-count
     title: Output
-    format: object
+    type: object
 TASK_BATCH_UPSERT:
   shortDescription: Writes vectors into a namespace. If a new value is upserted for an existing vector ID, it will overwrite the previous value.
   input:
@@ -201,51 +174,42 @@ TASK_BATCH_UPSERT:
             id:
               description: The unique ID of the vector.
               uiOrder: 0
-              acceptFormats:
-                - string
+              type: string
               title: ID
-              format: string
             metadata:
               description: 'The vector metadata. This is a set of key-value pairs that can be used to store additional information about the vector. The
                 values can have the following types: string, number, boolean, or array of strings.'
               uiOrder: 1
-              acceptFormats:
-                - json
+              type: object
               shortDescription: The vector metadata
               required: []
               title: Metadata
-              format: object
             values:
               description: An array of dimensions for the vector to be saved.
               uiOrder: 2
-              acceptFormats:
-                - array
-                - array
+              type: array
               items:
                 description: A dimension of the vector.
                 example: 0.8167237
-                format: number
+                type: number
               minItems: 1
               title: Values
-              format: array
           required:
             - id
             - values
-          format: object
+          type: object
         minItems: 1
         title: Vectors
-        format: array
+        type: array
       namespace:
         description: The namespace to query.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: Namespace
-        format: string
     required:
       - vectors
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -253,11 +217,11 @@ TASK_BATCH_UPSERT:
         description: Number of records modified or added.
         uiOrder: 0
         title: Upserted Count
-        format: integer
+        type: integer
     required:
       - upserted-count
     title: Output
-    format: object
+    type: object
 TASK_RERANK:
   shortDescription: Rerank documents, such as text passages, according to their relevance to a query.
   description: Rerank documents, such as text passages, according to their relevance to a query. The input is a list of documents and a query. The output
@@ -267,32 +231,28 @@ TASK_RERANK:
     properties:
       query:
         description: The query to rerank the documents.
-        acceptFormats:
-          - string
+        type: string
         instullUIMultiline: false
         uiOrder: 0
         title: Query
-        format: string
       documents:
         description: The documents to rerank.
         uiOrder: 1
         items:
-          format: string
+          type: string
         minItems: 1
         title: Documents
-        format: array
+        type: array
       top-n:
         description: The number of results to return sorted by relevance. Defaults to the number of inputs.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 2
         title: Top N
-        format: integer
     required:
       - query
       - documents
     title: Input
-    format: object
+    type: object
   output:
     uiOrder: 0
     properties:
@@ -300,20 +260,20 @@ TASK_RERANK:
         description: Reranked documents.
         items:
           title: Documents
-          format: string
+          type: string
         uiOrder: 0
         title: Reranked documents.
-        format: array
+        type: array
       scores:
         description: The relevance score of the documents normalized between 0 and 1.
         items:
           title: Score
-          format: number
+          type: number
         uiOrder: 1
         title: Scores
-        format: array
+        type: array
     required:
       - documents
       - scores
     title: Output
-    format: object
+    type: object

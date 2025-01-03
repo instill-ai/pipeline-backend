@@ -76,17 +76,17 @@ on:
 variable:
   message:
     title: message
-    format: string
+    type: string
     listen:
       - ${on.slack-0.message.text}
   user:
     title: user
-    format: string
+    type: string
     listen:
       - ${on.slack-0.message.user.name}
   channel:
     title: channel
-    format: string
+    type: string
     listen:
       - ${on.slack-0.message.channel.name}
 

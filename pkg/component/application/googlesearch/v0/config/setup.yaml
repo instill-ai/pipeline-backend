@@ -5,7 +5,7 @@ properties:
     instillSecret: true
     uiOrder: 0
     title: API Key
-    format: string
+    type: string
   cse-id:
     description: 'ID of the Search Engine to use. Before using the Custom Search JSON API you will first need to create and configure your Programmable
       Search Engine. If you have not already created a Programmable Search Engine, you can start by visiting [the Programmable Search Engine control panel](https://programmablesearchengine.google.com/controlpanel/all).
@@ -14,9 +14,9 @@ properties:
     instillSecret: false
     uiOrder: 1
     title: Search Engine ID
-    format: string
+    type: string
 required:
   - api-key
   - cse-id
 title: Google Search Connection
-format: object
+type: object

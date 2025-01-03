@@ -348,18 +348,18 @@ func parseResourceProperties(o *objectSchema) []resourceProperty {
 		prop.Title = titleCase(prop.Title)
 		prop.replaceFormat()
 
-		// If format is array, extend the format with the element format.
-		switch prop.Format {
+		// If type is array, extend the type with the element type.
+		switch prop.Type {
 		case "array":
-			if prop.Items.Format != "" {
-				if prop.Items.Format == "*" {
-					prop.Format = "array[any]"
+			if prop.Items.Type != "" {
+				if prop.Items.Type == "*" {
+					prop.Type = "array[any]"
 				} else {
-					prop.Format += fmt.Sprintf("[%s]", prop.Items.Format)
+					prop.Type += fmt.Sprintf("[%s]", prop.Items.Type)
 				}
 			}
 		case "":
-			prop.Format = "any"
+			prop.Type = "any"
 		}
 		prop.replaceDescription()
 
@@ -403,15 +403,15 @@ func (rt *readmeTask) parseObjectProperties(properties map[string]property, isIn
 			continue
 		}
 
-		if op.Format != "object" && op.Format != "array[object]" && (op.Format != "array" || op.Items.Format != "object") {
+		if op.Type != "object" && op.Type != "array[object]" && (op.Type != "array" || op.Items.Type != "object") {
 			continue
 		}
 
-		if op.Format == "object" && op.Properties == nil {
+		if op.Type == "object" && op.Properties == nil {
 			continue
 		}
 
-		if op.Format == "array[object]" && op.Items.Properties == nil {
+		if op.Type == "array[object]" && op.Items.Properties == nil {
 			continue
 		}
 
@@ -426,7 +426,7 @@ func (rt *readmeTask) parseObjectProperties(properties map[string]property, isIn
 		op.replaceDescription()
 		op.replaceFormat()
 
-		if op.Format == "object" {
+		if op.Type == "object" {
 
 			if isInput {
 				rt.InputObjects = append(rt.InputObjects, map[string]objectSchema{
@@ -445,7 +445,7 @@ func (rt *readmeTask) parseObjectProperties(properties map[string]property, isIn
 				})
 				rt.parseObjectProperties(op.Properties, isInput)
 			}
-		} else { // op.Format == "array[object]" || (op.Format == "array" || op.Items.Format == "object")
+		} else { // op.Type == "array[object]" || (op.Type == "array" || op.Items.Type == "object")
 
 			props := op.Items.Properties
 			for key := range props {
@@ -520,12 +520,12 @@ func (rt *readmeTask) parseOneOfsProperties(properties map[string]property) {
 			continue
 		}
 
-		if op.Format != "object" && op.Format != "array" {
+		if op.Type != "object" && op.Type != "array" {
 			continue
 		}
 
-		if op.Format == "array" {
-			if op.Items.Format != "object" {
+		if op.Type == "array" {
+			if op.Items.Type != "object" {
 				continue
 			}
 
@@ -614,20 +614,20 @@ func anchorSetupFromProperty(prop property) string {
 	if isSemiStructuredObject(prop) {
 		return prop.Title
 	}
-	if prop.Format == "object" ||
-		(prop.Format == "array" && prop.Items.Format == "object") ||
-		(prop.Format == "array[object]") {
+	if prop.Type == "object" ||
+		(prop.Type == "array" && prop.Items.Type == "object") ||
+		(prop.Type == "array[object]") {
 		return fmt.Sprintf("[%s](#%s)", prop.Title, blackfriday.SanitizedAnchorName(prop.Title))
 	}
 	return prop.Title
 }
 
 func isSemiStructuredObject(p property) bool {
-	return p.Format == "object" && p.Properties == nil && p.OneOf == nil
+	return p.Type == "object" && p.Properties == nil && p.OneOf == nil
 }
 
 func arrayToBeSkipped(op property) bool {
-	return op.Format == "array" && op.Items.Format == "object" && op.Items.Properties == nil
+	return op.Type == "array" && op.Items.Type == "object" && op.Items.Properties == nil
 }
 
 func anchorTaskObject(p interface{}, task readmeTask) string {
@@ -646,9 +646,9 @@ func anchorTaskWithProperty(prop property, taskName string) string {
 	if isSemiStructuredObject(prop) {
 		return prop.Title
 	}
-	if prop.Format == "object" ||
-		(prop.Format == "array" && prop.Items.Format == "object") ||
-		(prop.Format == "array[object]") {
+	if prop.Type == "object" ||
+		(prop.Type == "array" && prop.Items.Type == "object") ||
+		(prop.Type == "array[object]") {
 		return fmt.Sprintf("[%s](#%s-%s)", prop.Title, blackfriday.SanitizedAnchorName(taskName), blackfriday.SanitizedAnchorName(prop.Title))
 	}
 	return prop.Title
@@ -706,10 +706,10 @@ func (prop *property) replaceDescription() {
 }
 
 func (prop *property) replaceFormat() {
-	if prop.Format == "*" {
-		prop.Format = "any"
+	if prop.Type == "*" {
+		prop.Type = "any"
 	}
-	if prop.Format == "array" && prop.Items.Format == "*" {
-		prop.Format = "array[any]"
+	if prop.Type == "array" && prop.Items.Type == "*" {
+		prop.Type = "array[any]"
 	}
 }

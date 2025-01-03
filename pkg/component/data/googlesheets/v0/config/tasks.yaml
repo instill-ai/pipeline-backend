@@ -3,45 +3,45 @@ $defs:
     description: Shared link of the spreadsheet. You can get the shared link by clicking 'Share' button and selecting 'Copy link'.
     uiOrder: 0
     title: Spreadsheet ID
-    format: string
+    type: string
   headers:
     description: Column headers for the sheet.
     items:
-      format: string
+      type: string
     uiOrder: 1
     title: Headers
-    format: array
+    type: array
   sheet-name:
     description: Name of the sheet.
     uiOrder: 2
     title: Sheet Name
-    format: string
+    type: string
   column-name:
     description: Name of the column.
     uiOrder: 3
     title: Column Name
-    format: string
+    type: string
   row-number:
     description: Row number to update (1-based index).
     uiOrder: 4
     title: Row Number
-    format: number
+    type: number
   row-numbers:
     description: Row numbers to update (1-based indices).
     items:
-      format: integer
+      type: integer
     uiOrder: 5
     title: Row Numbers
-    format: array
+    type: array
   row-value:
     description: Row data in JSON format where keys are column names and values are the corresponding cell values
     title: Row Data
     uiOrder: 6
     additionalProperties:
       description: Cell value for the corresponding column
-      format: string
+      type: string
     required: []
-    format: json
+    type: json
   row:
     description: Row data with row number and data.
     uiOrder: 7
@@ -51,26 +51,26 @@ $defs:
         description: Row number to update (1-based index)
         title: Row Number
         uiOrder: 0
-        format: number
+        type: number
       row-value:
         $ref: '#/$defs/row-value'
         uiOrder: 1
     required:
       - row-number
       - data
-    format: object
+    type: object
   rows:
     description: Multiple rows data with row numbers and data.
     items:
       $ref: '#/$defs/row'
     uiOrder: 8
     title: Rows Data
-    format: array
+    type: array
   success:
     description: Result of the operation.
     uiOrder: 9
     title: Success
-    format: boolean
+    type: boolean
 TASK_CREATE_SPREADSHEET:
   shortDescription: Create a new Google Sheets spreadsheet with multiple sheets.
   input:
@@ -80,7 +80,7 @@ TASK_CREATE_SPREADSHEET:
         description: Title of the new spreadsheet.
         uiOrder: 0
         title: Title
-        format: string
+        type: string
       sheets:
         title: Sheets
         description: Configuration for sheets to create.
@@ -92,14 +92,14 @@ TASK_CREATE_SPREADSHEET:
               $ref: '#/$defs/headers'
           required:
             - name
-          format: object
+          type: object
         uiOrder: 1
-        format: array
+        type: array
     required:
       - name
       - sheets
     title: Input
-    format: object
+    type: object
   output:
     properties:
       shared-link:
@@ -107,7 +107,7 @@ TASK_CREATE_SPREADSHEET:
     required:
       - shared-link
     title: Output
-    format: object
+    type: object
 TASK_DELETE_SPREADSHEET:
   shortDescription: Delete a Google Sheets spreadsheet.
   input:
@@ -118,7 +118,7 @@ TASK_DELETE_SPREADSHEET:
     required:
       - shared-link
     title: Input
-    format: object
+    type: object
   output:
     properties:
       success:
@@ -126,7 +126,7 @@ TASK_DELETE_SPREADSHEET:
     required:
       - success
     title: Output
-    format: object
+    type: object
 TASK_ADD_SHEET:
   shortDescription: Add a new sheet to an existing Google Sheets spreadsheet.
   input:
@@ -142,7 +142,7 @@ TASK_ADD_SHEET:
       - shared-link
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       success:
@@ -150,7 +150,7 @@ TASK_ADD_SHEET:
     required:
       - success
     title: Output
-    format: object
+    type: object
 TASK_DELETE_SHEET:
   shortDescription: Remove a sheet from a Google Sheets spreadsheet.
   input:
@@ -164,7 +164,7 @@ TASK_DELETE_SHEET:
       - shared-link
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       success:
@@ -172,7 +172,7 @@ TASK_DELETE_SHEET:
     required:
       - success
     title: Output
-    format: object
+    type: object
 TASK_CREATE_SPREADSHEET_COLUMN:
   shortDescription: Add a new column to a Google Sheets spreadsheet.
   input:
@@ -189,7 +189,7 @@ TASK_CREATE_SPREADSHEET_COLUMN:
       - column-name
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       success:
@@ -197,7 +197,7 @@ TASK_CREATE_SPREADSHEET_COLUMN:
     required:
       - success
     title: Output
-    format: object
+    type: object
 TASK_DELETE_SPREADSHEET_COLUMN:
   shortDescription: Delete a column from a Google Sheets spreadsheet.
   input:
@@ -214,7 +214,7 @@ TASK_DELETE_SPREADSHEET_COLUMN:
       - column-name
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       success:
@@ -222,7 +222,7 @@ TASK_DELETE_SPREADSHEET_COLUMN:
     required:
       - success
     title: Output
-    format: object
+    type: object
 TASK_GET_ROW:
   shortDescription: Get a single row from a Google Sheets spreadsheet.
   input:
@@ -237,13 +237,13 @@ TASK_GET_ROW:
         minimum: 1
         title: Row Number
         uiOrder: 0
-        format: number
+        type: number
     required:
       - shared-link
       - row-number
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       row:
@@ -251,7 +251,7 @@ TASK_GET_ROW:
     required:
       - row
     title: Output
-    format: object
+    type: object
 TASK_GET_MULTIPLE_ROWS:
   shortDescription: Get multiple rows from a Google Sheets spreadsheet.
   input:
@@ -265,16 +265,16 @@ TASK_GET_MULTIPLE_ROWS:
         description: The row numbers to retrieve (1-based indices).
         items:
           minimum: 1
-          format: integer
+          type: integer
         title: Row Numbers
         uiOrder: 0
-        format: array
+        type: array
     required:
       - shared-link
       - row-numbers
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       rows:
@@ -282,7 +282,7 @@ TASK_GET_MULTIPLE_ROWS:
     required:
       - rows
     title: Output
-    format: object
+    type: object
 TASK_LIST_ROWS:
   shortDescription: List all rows in a Google Sheets spreadsheet.
   input:
@@ -298,18 +298,18 @@ TASK_LIST_ROWS:
         default: 2
         title: Start Row
         uiOrder: 0
-        format: number
+        type: number
       end-row:
         description: The ending row number to retrieve (1-based index).
         minimum: 1
         title: End Row
         uiOrder: 1
-        format: number
+        type: number
     required:
       - shared-link
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       rows:
@@ -317,7 +317,7 @@ TASK_LIST_ROWS:
     required:
       - rows
     title: Output
-    format: object
+    type: object
 TASK_LOOKUP_ROWS:
   shortDescription: Find multiple rows based on column value in a Google Sheets spreadsheet.
   input:
@@ -333,14 +333,14 @@ TASK_LOOKUP_ROWS:
         description: Value to search for in the specified column.
         title: Search Value
         uiOrder: 10
-        format: string
+        type: string
     required:
       - shared-link
       - column-name
       - value
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       rows:
@@ -348,7 +348,7 @@ TASK_LOOKUP_ROWS:
     required:
       - rows
     title: Output
-    format: object
+    type: object
 TASK_INSERT_ROW:
   shortDescription: Insert a single row into a Google Sheets spreadsheet.
   input:
@@ -365,7 +365,7 @@ TASK_INSERT_ROW:
       - row
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       row:
@@ -374,7 +374,7 @@ TASK_INSERT_ROW:
       - row
       - row-number
     title: Output
-    format: object
+    type: object
 TASK_INSERT_MULTIPLE_ROWS:
   shortDescription: Insert multiple rows into a Google Sheets spreadsheet.
   input:
@@ -390,13 +390,13 @@ TASK_INSERT_MULTIPLE_ROWS:
           $ref: '#/$defs/row-value'
         uiOrder: 2
         title: Row Values
-        format: array
+        type: array
     required:
       - shared-link
       - rows
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       rows:
@@ -404,7 +404,7 @@ TASK_INSERT_MULTIPLE_ROWS:
     required:
       - rows
     title: Output
-    format: object
+    type: object
 TASK_UPDATE_ROW:
   shortDescription: Update a row in a Google Sheets spreadsheet.
   input:
@@ -422,7 +422,7 @@ TASK_UPDATE_ROW:
       - row
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       row:
@@ -430,7 +430,7 @@ TASK_UPDATE_ROW:
     required:
       - row
     title: Output
-    format: object
+    type: object
 TASK_UPDATE_MULTIPLE_ROWS:
   shortDescription: Update multiple rows in a Google Sheets spreadsheet.
   input:
@@ -448,7 +448,7 @@ TASK_UPDATE_MULTIPLE_ROWS:
       - rows
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       rows:
@@ -456,7 +456,7 @@ TASK_UPDATE_MULTIPLE_ROWS:
     required:
       - rows
     title: Output
-    format: object
+    type: object
 TASK_DELETE_ROW:
   shortDescription: Delete a row from a Google Sheets spreadsheet.
   input:
@@ -473,7 +473,7 @@ TASK_DELETE_ROW:
       - row-number
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       success:
@@ -481,7 +481,7 @@ TASK_DELETE_ROW:
     required:
       - success
     title: Output
-    format: object
+    type: object
 TASK_DELETE_MULTIPLE_ROWS:
   shortDescription: Delete multiple rows from a Google Sheets spreadsheet.
   input:
@@ -498,7 +498,7 @@ TASK_DELETE_MULTIPLE_ROWS:
       - row-numbers
       - sheet-name
     title: Input
-    format: object
+    type: object
   output:
     properties:
       success:
@@ -506,4 +506,4 @@ TASK_DELETE_MULTIPLE_ROWS:
     required:
       - success
     title: Output
-    format: object
+    type: object

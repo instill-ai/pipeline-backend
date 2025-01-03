@@ -5,132 +5,124 @@ $defs:
       description: 'The starting index of the returned boards. Base index: 0. Default is 0.'
       uiOrder: 3
       title: Start At
-      acceptFormats:
-        - integer
-      format: integer
+      type: integer
     max-results:
       default: 50
       description: The maximum number of boards to return. Default is 50.
       uiOrder: 4
       title: Max Results
-      acceptFormats:
-        - integer
-      format: integer
+      type: integer
     update-history:
       description: Whether the action taken is added to the user's Recent history, as shown under `Your Work` in Jira.
       title: Update History
       uiOrder: 5
-      acceptFormats:
-        - boolean
-      format: boolean
+      type: boolean
   issue:
     properties:
       id:
         description: The ID of the issue.
         uiOrder: 0
         title: ID
-        format: string
+        type: string
       key:
         title: Key
         description: The key of the issue, e.g. `JRA-1330`.
         shortDescription: The key of the issue
         uiOrder: 1
-        acceptFormats:
-          - string
-        format: string
+        type: string
       self:
         description: The URL of the issue.
         uiOrder: 2
         title: Self
-        format: string
+        type: string
       fields:
         description: The fields of the issue. All navigable and Agile fields are returned.
         uiOrder: 3
         title: Fields
         required: []
-        format: json
+        type: json
       issue-type:
         description: 'The type of the issue, can be: `Task`, `Epic`.'
         uiOrder: 4
         title: Issue Type
-        format: string
+        type: string
       summary:
         description: The summary of the issue.
         uiOrder: 5
         title: Summary
-        format: string
+        type: string
       description:
         description: The description of the issue.
         uiOrder: 6
         title: Description
-        format: string
+        type: string
       status:
         description: 'The status of the issue, can be: `To Do`, `In Progress`, `Done`.'
         uiOrder: 7
         title: Status
-        format: string
+        type: string
     required:
       - id
       - key
       - self
       - fields
     title: Issue
-    format: object
+    type: object
   sprint:
     properties:
       id:
         title: ID
         description: The ID of the sprint.
         uiOrder: 0
-        format: integer
+        type: integer
       self:
         title: Self
         description: The URL of the sprint.
         uiOrder: 1
-        format: string
+        type: string
       state:
         title: State
         description: 'The state of the sprint, can be: `active`, `closed`, `future`.'
         uiOrder: 2
-        format: string
+        type: string
       name:
         title: Name
         description: The name of the sprint.
         uiOrder: 3
-        format: string
+        type: string
       start-date:
         title: Start Date
         description: The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         uiOrder: 4
-        format: string
+        type: string
       end-date:
         title: End Date
         description: The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         uiOrder: 5
-        format: string
+        type: string
       complete-date:
         title: Complete Date
         description: The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         uiOrder: 6
-        format: string
+        type: string
       origin-board-id:
         title: Origin Board ID
         description: The ID of the origin board.
         uiOrder: 7
-        format: integer
+        type: integer
       goal:
         title: Goal
         description: The Goal of the sprint.
         uiOrder: 8
-        format: string
+        type: string
     required:
       - id
       - self
     title: Sprint
-    format: object
+    type: object
 TASK_CREATE_ISSUE:
   description: Create an issue in Jira.
   shortDescription: Create an issue in Jira
@@ -143,9 +135,7 @@ TASK_CREATE_ISSUE:
         description: The key of the project, e.g. `INS`.
         shortDescription: The key of the project
         uiOrder: 0
-        acceptFormats:
-          - string
-        format: string
+        type: string
       issue-type:
         title: Issue Type
         description: 'The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc.'
@@ -160,99 +150,91 @@ TASK_CREATE_ISSUE:
                 const: Epic
                 description: Epic.
                 uiOrder: 0
-                format: string
+                type: string
             required:
               - issue-type
             description: Epic.
             uiOrder: 0
             title: Epic
-            format: object
+            type: object
           - properties:
               issue-type:
                 title: Issue Type
                 const: Task
                 description: Task.
                 uiOrder: 0
-                format: string
+                type: string
             required:
               - issue-type
             description: Task.
             uiOrder: 0
             title: Task
-            format: object
+            type: object
           - properties:
               issue-type:
                 title: Issue Type
                 const: Subtask
                 description: Subtask.
                 uiOrder: 0
-                format: string
+                type: string
               parent-key:
                 title: Parent Key
                 description: The key of the parent issue, e.g. `JRA-1330`.
                 shortDescription: The key of the parent issue
                 uiOrder: 10
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - issue-type
               - parent-key
             description: Subtask.
             uiOrder: 0
             title: Subtask
-            format: object
+            type: object
           - properties:
               issue-type:
                 title: Issue Type
                 const: Other
                 description: Other.
                 uiOrder: 0
-                format: string
+                type: string
               custom-issue-type:
                 title: Issue Type
                 description: 'The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc.'
                 shortDescription: The type of the issue
                 uiOrder: 1
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - issue-type
               - custom-issue-type
             description: Other.
             uiOrder: 0
             title: Other
-            format: object
-        format: object
+            type: object
+        type: object
       summary:
         title: Summary
         description: The summary of the issue.
         shortDescription: The summary of the issue
         uiOrder: 2
-        acceptFormats:
-          - string
-        format: string
+        type: string
       description:
         title: Description
         description: The description of the issue.
         shortDescription: The description of the issue
         uiOrder: 3
-        acceptFormats:
-          - string
-        format: string
+        type: string
     required:
       - project-key
       - issue-type
     title: Input
-    format: object
+    type: object
   output:
     description: Create an issue in Jira.
     uiOrder: 0
     $ref: '#/$defs/issue'
     title: Output
-    format: object
-  format: object
+    type: object
+  type: object
 TASK_CREATE_SPRINT:
   description: Create a sprint in Jira.
   shortDescription: Create a sprint in Jira
@@ -265,43 +247,33 @@ TASK_CREATE_SPRINT:
         description: The name of the board.
         shortDescription: The name of the board
         uiOrder: 0
-        acceptFormats:
-          - string
-        format: string
+        type: string
       name:
         title: Name
         description: The name of the sprint.
         shortDescription: The name of the sprint
         uiOrder: 1
-        acceptFormats:
-          - string
-        format: string
+        type: string
       goal:
         title: Goal
         description: The goal of the sprint.
         shortDescription: The goal of the sprint
         uiOrder: 2
-        acceptFormats:
-          - string
-        format: string
+        type: string
       start-date:
         title: Start Date
         description: The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         shortDescription: The start date of the sprint
         uiOrder: 3
-        acceptFormats:
-          - string
-        format: string
+        type: string
       end-date:
         title: End Date
         description: The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         shortDescription: The end date of the sprint
         uiOrder: 4
-        acceptFormats:
-          - string
-        format: string
+        type: string
     required:
       - board-name
       - name
@@ -309,14 +281,14 @@ TASK_CREATE_SPRINT:
       - start-date
       - end-date
     title: Input
-    format: object
+    type: object
   output:
     description: Create a sprint in Jira.
     uiOrder: 0
     $ref: '#/$defs/sprint'
     title: Output
-    format: object
-  format: object
+    type: object
+  type: object
 TASK_GET_ISSUE:
   description: Get an issue in Jira. The issue will only be returned if the user has permission to view it. Issues returned from this resource include Agile
     fields, like sprint, closedSprints, flagged, and epic.
@@ -330,23 +302,21 @@ TASK_GET_ISSUE:
         description: The key of the issue, e.g. `JRA-1330`.
         shortDescription: The key of the issue
         uiOrder: 0
-        acceptFormats:
-          - string
-        format: string
+        type: string
       update-history:
         $ref: '#/$defs/common-query-params/update-history'
         uiOrder: 1
     required:
       - issue-key
     title: Input
-    format: object
+    type: object
   output:
     description: Get an issue in Jira.
     uiOrder: 0
     $ref: '#/$defs/issue'
     title: Output
-    format: object
-  format: object
+    type: object
+  type: object
 TASK_GET_SPRINT:
   description: Get a sprint in Jira. The sprint will only be returned if the user can view the board that the sprint was created on, or view at least one
     of the issues in the sprint.
@@ -361,21 +331,19 @@ TASK_GET_SPRINT:
           of the issues in the sprint.
         shortDescription: The ID of the sprint
         uiOrder: 0
-        acceptFormats:
-          - integer
-        format: integer
+        type: integer
     required:
       - sprint-id
     title: Input
-    format: object
+    type: object
   output:
     description: Get an sprint in Jira.
     uiOrder: 0
     $ref: '#/$defs/sprint'
     required: []
     title: Output
-    format: object
-  format: object
+    type: object
+  type: object
 TASK_LIST_BOARDS:
   shortDescription: List all boards in Jira
   input:
@@ -389,9 +357,7 @@ TASK_LIST_BOARDS:
           to a project.
         shortDescription: The project key or ID, e.g. `INS`. Default is empty
         uiOrder: 0
-        acceptFormats:
-          - string
-        format: string
+        type: string
       board-type:
         default: simple
         description: 'The type of board, can be: scrum, kanban, simple. Default is simple.'
@@ -401,17 +367,13 @@ TASK_LIST_BOARDS:
           - kanban
           - simple
         title: Board Type
-        acceptFormats:
-          - string
-        format: string
+        type: string
       name:
         default: ''
         description: Name filters results to boards that match or partially match the specified name. Default is empty.
         uiOrder: 2
         title: Name
-        acceptFormats:
-          - string
-        format: string
+        type: string
       start-at:
         $ref: '#/$defs/common-query-params/start-at'
         uiOrder: 3
@@ -420,7 +382,7 @@ TASK_LIST_BOARDS:
         uiOrder: 4
     required: []
     title: Input
-    format: object
+    type: object
   output:
     description: List all boards in Jira.
     uiOrder: 0
@@ -435,57 +397,57 @@ TASK_LIST_BOARDS:
               description: The ID of the board.
               uiOrder: 0
               title: ID
-              format: integer
+              type: integer
             name:
               description: The name of the board.
               uiOrder: 1
               title: Name
-              format: string
+              type: string
             self:
               description: The URL of the board.
               uiOrder: 3
               title: Self
-              format: string
+              type: string
             type:
               description: The type of the board.
               uiOrder: 2
               title: Type
-              format: string
+              type: string
           required:
             - id
             - name
             - type
             - self
-          format: object
-        format: array
+          type: object
+        type: array
       start-at:
         description: 'The starting index of the returned boards. Base index: 0.'
         uiOrder: 2
         title: Start At
-        format: integer
+        type: integer
       max-results:
         description: The maximum number of boards.
         uiOrder: 3
         title: Max Results
-        format: integer
+        type: integer
       total:
         description: The total number of boards.
         uiOrder: 4
         title: Total
-        format: integer
+        type: integer
       is-last:
         description: Whether the last board is reached.
         uiOrder: 5
         title: Is Last
-        format: boolean
+        type: boolean
     required:
       - start-at
       - max-results
       - total
       - is-last
     title: Output
-    format: object
-  format: object
+    type: object
+  type: object
 TASK_LIST_ISSUES:
   description: List issues in Jira.
   shortDescription: List issues in Jira
@@ -498,9 +460,7 @@ TASK_LIST_ISSUES:
         description: The name of the board.
         shortDescription: The name of the board
         uiOrder: 0
-        acceptFormats:
-          - string
-        format: string
+        type: string
       range:
         title: Range
         description: Choose the range of issues to return. Default is `all`.
@@ -515,133 +475,127 @@ TASK_LIST_ISSUES:
                 const: All
                 description: All issues.
                 uiOrder: 0
-                format: string
+                type: string
             required:
               - range
             description: All issues.
             uiOrder: 0
             title: All
-            format: object
+            type: object
           - properties:
               range:
                 title: Range
                 const: Standard Issues
                 description: Standard issues.
                 uiOrder: 0
-                format: string
+                type: string
             required:
               - range
             description: Standard issues.
             uiOrder: 0
             title: Standard Issues
-            format: object
+            type: object
           - properties:
               range:
                 title: Range
                 const: Epics only
                 description: Epics only.
                 uiOrder: 0
-                format: string
+                type: string
             required:
               - range
             description: Epics only.
             uiOrder: 0
             title: Epics only
-            format: object
+            type: object
           - properties:
               range:
                 title: Range
                 const: In backlog only
                 description: In backlog only.
                 uiOrder: 0
-                format: string
+                type: string
             required:
               - range
             description: In backlog only.
             uiOrder: 0
             title: In Backlog Only
-            format: object
+            type: object
           - properties:
               range:
                 title: Range
                 const: Issues of an epic
                 description: Issues of an epic.
                 uiOrder: 0
-                format: string
+                type: string
               epic-key:
                 title: Epic Key
                 description: The Key of the epic, e.g. `JRA-1330`.
                 shortDescription: The Key of the epic
                 uiOrder: 10
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - range
               - epic-key
             description: Issues of an epic.
             uiOrder: 0
             title: Issues of an Epic
-            format: object
+            type: object
           - properties:
               range:
                 title: Range
                 const: Issues of a sprint
                 description: Issues of a sprint.
                 uiOrder: 0
-                format: string
+                type: string
               sprint-name:
                 title: Sprint Name
                 description: The name of the sprint.
                 shortDescription: The Name of the sprint
                 uiOrder: 10
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - range
               - sprint-name
             description: Issues of a sprint.
             uiOrder: 0
             title: Issues of a Sprint
-            format: object
+            type: object
           - properties:
               range:
                 title: Range
                 const: Issues without epic assigned
                 description: Issues without epic assigned.
                 uiOrder: 0
-                format: string
+                type: string
             required:
               - range
             description: Issues without Epic Assigned.
             uiOrder: 0
             title: Issues without Epic Assigned
-            format: object
+            type: object
           - properties:
               range:
                 title: Range
                 const: JQL query
                 description: JQL query.
                 uiOrder: 0
-                format: string
+                type: string
               jql:
                 title: JQL
                 description: The JQL query. For example, `type = "Task" AND status = "Done"`. For more information, see <a href="https://support.atlassian.com/jira-software-cloud/docs/what-is-advanced-search-in-jira-cloud/">Advanced
                   searching</a>.
                 shortDescription: The JQL query
                 uiOrder: 10
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - range
               - jql
             description: JQL query.
             uiOrder: 0
             title: JQL Query
-            format: object
-        format: object
+            type: object
+        type: object
       start-at:
         $ref: '#/$defs/common-query-params/start-at'
         uiOrder: 3
@@ -651,7 +605,7 @@ TASK_LIST_ISSUES:
     required:
       - board-name
     title: Input
-    format: object
+    type: object
   output:
     description: Get issues in Jira.
     uiOrder: 0
@@ -662,29 +616,29 @@ TASK_LIST_ISSUES:
         title: Issues
         items:
           $ref: '#/$defs/issue'
-        format: array
+        type: array
       start-at:
         description: 'The starting index of the returned boards. Base index: 0.'
         uiOrder: 2
         title: Start At
-        format: integer
+        type: integer
       max-results:
         description: The maximum number of boards.
         uiOrder: 3
         title: Max Results
-        format: integer
+        type: integer
       total:
         description: The total number of boards.
         uiOrder: 4
         title: Total
-        format: integer
+        type: integer
     required:
       - start-at
       - max-results
       - total
     title: Output
-    format: object
-  format: object
+    type: object
+  type: object
 TASK_LIST_SPRINTS:
   description: List sprints in Jira.
   shortDescription: List sprints in Jira
@@ -697,9 +651,7 @@ TASK_LIST_SPRINTS:
         description: The ID of the board.
         shortDescription: The ID of the board
         uiOrder: 0
-        acceptFormats:
-          - integer
-        format: integer
+        type: integer
       start-at:
         $ref: '#/$defs/common-query-params/start-at'
         uiOrder: 1
@@ -709,7 +661,7 @@ TASK_LIST_SPRINTS:
     required:
       - board-id
     title: Input
-    format: object
+    type: object
   output:
     description: Get sprints in Jira.
     uiOrder: 0
@@ -720,29 +672,29 @@ TASK_LIST_SPRINTS:
         title: Sprints
         items:
           $ref: '#/$defs/sprint'
-        format: array
+        type: array
       start-at:
         description: 'The starting index of the returned boards. Base index: 0.'
         uiOrder: 2
         title: Start At
-        format: integer
+        type: integer
       max-results:
         description: The maximum number of boards.
         uiOrder: 3
         title: Max Results
-        format: integer
+        type: integer
       total:
         description: The total number of boards.
         uiOrder: 4
         title: Total
-        format: integer
+        type: integer
     required:
       - start-at
       - max-results
       - total
     title: Output
-    format: object
-  format: object
+    type: object
+  type: object
 TASK_UPDATE_ISSUE:
   description: Update an issue in Jira.
   shortDescription: Update an issue in Jira
@@ -758,9 +710,7 @@ TASK_UPDATE_ISSUE:
         title: Notify Users
         description: Whether to notify users.
         uiOrder: 1
-        acceptFormats:
-          - boolean
-        format: boolean
+        type: boolean
       update:
         title: Update
         description: Update an issue in Jira.
@@ -775,12 +725,11 @@ TASK_UPDATE_ISSUE:
                 const: Custom Update
                 description: Custom update.
                 uiOrder: 0
-                format: string
+                type: string
               update-fields:
                 title: Update Fields
                 description: The fields to update.
-                acceptFormats:
-                  - array
+                type: array
                 items:
                   properties:
                     action:
@@ -793,64 +742,61 @@ TASK_UPDATE_ISSUE:
                         - set
                       uiOrder: 3
                       title: Action
-                      format: string
+                      type: string
                     field-name:
                       description: The name of the field to update.
                       uiOrder: 4
                       title: Field Name
-                      format: string
+                      type: string
                     value:
                       description: The value of the field to update.
                       uiOrder: 5
                       title: Value
-                      format: string
+                      type: string
                   required:
                     - action
                     - field-name
-                  format: object
+                  type: object
                 uiOrder: 1
-                format: array
             required:
               - update
               - update-fields
             description: Custom update.
             uiOrder: 0
             title: Custom Update
-            format: object
+            type: object
           - properties:
               update:
                 title: Update
                 const: Move Issue to Epic
                 description: Move issue to epic.
                 uiOrder: 0
-                format: string
+                type: string
               epic-key:
                 title: Epic Key
                 description: The key of the epic, e.g. `JRA-1330`.
                 shortDescription: The key of the epic
                 uiOrder: 11
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - update
               - epic-key
             description: Move issue to epic.
             uiOrder: 0
             title: Move Issue to Epic
-            format: object
-        format: object
+            type: object
+        type: object
     required:
       - issue-key
     title: Input
-    format: object
+    type: object
   output:
     description: Update an issue in Jira.
     uiOrder: 0
     $ref: '#/$defs/issue'
     title: Output
-    format: object
-  format: object
+    type: object
+  type: object
 TASK_UPDATE_SPRINT:
   description: Update a sprint in Jira.
   shortDescription: Update a sprint in Jira
@@ -863,59 +809,45 @@ TASK_UPDATE_SPRINT:
         description: The ID of the sprint.
         shortDescription: The ID of the sprint
         uiOrder: 0
-        acceptFormats:
-          - integer
-        format: integer
+        type: integer
       name:
         title: Name
         description: The name of the sprint.
         shortDescription: The name of the sprint
         uiOrder: 1
-        acceptFormats:
-          - string
-        format: string
+        type: string
       goal:
         title: Goal
         description: The goal of the sprint.
         shortDescription: The goal of the sprint
         uiOrder: 2
-        acceptFormats:
-          - string
-        format: string
+        type: string
       start-date:
         title: Start Date
         description: The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         shortDescription: The start date of the sprint
         uiOrder: 3
-        acceptFormats:
-          - string
-        format: string
+        type: string
       end-date:
         title: End Date
         description: The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         shortDescription: The end date of the sprint
         uiOrder: 4
-        acceptFormats:
-          - string
-        format: string
+        type: string
       current-state:
         title: Current State
         description: 'The current state of the sprint, can be: `future`, `active`, `closed`.'
         shortDescription: The current state of the sprint
         uiOrder: 5
-        acceptFormats:
-          - string
-        format: string
+        type: string
       enter-next-state:
         title: Enter Next State
         description: Whether to enter the next state. If `true`, the sprint will enter the next state, i.e., `future` -> `active` -> `closed`.
         shortDescription: Whether to enter the next state
         uiOrder: 6
-        acceptFormats:
-          - boolean
-        format: boolean
+        type: boolean
     required:
       - sprint-id
       - name
@@ -923,11 +855,11 @@ TASK_UPDATE_SPRINT:
       - end-date
       - current-state
     title: Input
-    format: object
+    type: object
   output:
     description: Update a sprint in Jira.
     uiOrder: 0
     $ref: '#/$defs/sprint'
     title: Output
-    format: object
-  format: object
+    type: object
+  type: object

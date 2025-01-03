@@ -3,8 +3,7 @@ properties:
   model:
     description: The model to be used. Now, it only supports OpenAI model, and will support more models in the future.
     shortDescription: The model to be used.
-    acceptFormats:
-      - string
+    type: string
     enum:
       - o1-preview
       - o1-mini
@@ -47,24 +46,19 @@ properties:
         - setup.api-key
     uiOrder: 0
     title: Model Name
-    format: string
   api-key:
     description: Fill in your API key from the vendor's platform.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: true
     instillCredential: true
     uiOrder: 1
     title: API Key
-    format: string
   organization:
     description: Specify which organization is used for the requests. Usage will count against the specified organization's subscription quota.
-    acceptFormats:
-      - string
+    type: string
     uiOrder: 2
     title: Organization ID
-    format: string
 required:
   - model
 title: Universal AI Connection
-format: object
+type: object

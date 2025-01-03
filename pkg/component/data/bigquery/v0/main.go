@@ -281,11 +281,9 @@ func constructTableProperties(tables []TableColumns) ([]*structpb.Struct, error)
 				"title":         column.Name,
 				"uiOrder":       idx,
 				"description":   "Column " + column.Name + " of table " + table.TableName,
-				"format":        getInstillAcceptFormat(column.Type),
+				"type":          getInstillType(column.Type),
 				"upstreamTypes": instillUpstreamTypes,
-				"acceptFormats": []string{getInstillAcceptFormat(column.Type)},
 				"required":      []string{},
-				"type":          getInstillAcceptFormat(column.Type),
 			}
 		}
 		propertyStructPB, err := base.ConvertToStructpb(propertiesMap)
@@ -298,7 +296,7 @@ func constructTableProperties(tables []TableColumns) ([]*structpb.Struct, error)
 	return tableProperties, nil
 }
 
-func getInstillAcceptFormat(tableType string) string {
+func getInstillType(tableType string) string {
 	switch tableType {
 	case "STRING":
 		return "string"

@@ -7,36 +7,28 @@ TASK_CONCAT:
     properties:
       images:
         description: Input images.
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 0
         title: Images
-        format: array
       grid-width:
         description: Grid width. If `grid-width` is provided, `grid-height` will be ignored.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 1
         title: Grid Width
-        format: integer
       grid-height:
         description: Grid height. If `grid-height` is provided, `grid-width` will be ignored.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 2
         title: Grid Height
-        format: integer
       padding:
         description: Padding between images. If `padding` is provided, it will be applied to all four sides of the image.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 3
         title: Padding
-        format: integer
     required:
       - images
     title: Input
-    format: object
+    type: object
   output:
     description: Output concatenated image.
     uiOrder: 0
@@ -45,11 +37,11 @@ TASK_CONCAT:
         description: Output image.
         uiOrder: 0
         title: Image
-        format: image/png
+        type: image/png
     required:
       - image
     title: Output
-    format: object
+    type: object
 TASK_CROP:
   shortDescription: Crop image to the specified size.
   input:
@@ -58,59 +50,45 @@ TASK_CROP:
     properties:
       image:
         description: Input image.
-        acceptFormats:
-          - image/*
+        type: string
         uiOrder: 0
         title: Image
-        format: string
       corner-radius:
         description: Radius from the corner of the image to crop the image. If `corner-radius` is provided, `circle-radius` will be ignored. If the `corner-radius`
           is larger than half of min(width, height), the min(width, height) will be applied to `corner-radius` .
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 1
         title: Corner Radius
-        format: integer
       circle-radius:
         description: Radius from the center of the circle to crop the image. If `circle-radius` is provided, `corner-radius` will be ignored. If the `circle-radius`
           is larger than half of min(width, height), the min(width, height) will be applied to `circle-radius`.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 2
         title: Circle Radius
-        format: integer
       top-offset:
         description: Top offset of the crop.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 3
         title: Top Offset
-        format: integer
       right-offset:
         description: Right offset of the crop.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 4
         title: Right Offset
-        format: integer
       bottom-offset:
         description: Bottom offset of the crop.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 5
         title: Bottom Offset
-        format: integer
       left-offset:
         description: Left offset of the crop.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 6
         title: Left Offset
-        format: integer
     required:
       - image
     title: Input
-    format: object
+    type: object
   output:
     description: Output cropped image.
     uiOrder: 0
@@ -119,11 +97,11 @@ TASK_CROP:
         description: Output image.
         uiOrder: 0
         title: Image
-        format: image/png
+        type: image/png
     required:
       - image
     title: Output
-    format: object
+    type: object
 TASK_RESIZE:
   shortDescription: Resize image to the specified size.
   input:
@@ -132,36 +110,28 @@ TASK_RESIZE:
     properties:
       image:
         description: Input image.
-        acceptFormats:
-          - image/*
+        type: string
         uiOrder: 0
         title: Image
-        format: string
       ratio:
         description: Resize ratio (e.g., 0.5 for half size, 2 for double size) to resize the image. If ratio is provided, width and height will be ignored.
-        acceptFormats:
-          - number
+        type: number
         uiOrder: 1
         title: Ratio
-        format: number
       width:
         description: Width of the output image.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 2
         title: Width
-        format: integer
       height:
         description: Height of the output image.
-        acceptFormats:
-          - integer
+        type: integer
         uiOrder: 3
         title: Height
-        format: integer
     required:
       - image
     title: Input
-    format: object
+    type: object
   output:
     description: Output resized image.
     uiOrder: 0
@@ -170,11 +140,11 @@ TASK_RESIZE:
         description: Output image.
         uiOrder: 0
         title: Image
-        format: image/png
+        type: image/png
     required:
       - image
     title: Output
-    format: object
+    type: object
 TASK_DRAW_CLASSIFICATION:
   shortDescription: Draw classification result on the image.
   input:
@@ -183,33 +153,26 @@ TASK_DRAW_CLASSIFICATION:
     properties:
       category:
         $ref: schema.yaml#/$defs/instill-types/classification/properties/category
-        acceptFormats:
-          - string
+        type: string
       image:
         description: Input image.
-        acceptFormats:
-          - image/*
+        type: string
         uiOrder: 0
         title: Image
-        format: string
       score:
         $ref: schema.yaml#/$defs/instill-types/classification/properties/score
-        acceptFormats:
-          - number
-          - integer
+        type: number
       show-score:
         description: Show model confidence score on each instance.
-        acceptFormats:
-          - boolean
+        type: boolean
         uiOrder: 0
         title: Show Score
-        format: boolean
     required:
       - image
       - category
       - score
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 0
@@ -218,11 +181,11 @@ TASK_DRAW_CLASSIFICATION:
         description: Output image.
         uiOrder: 0
         title: Image
-        format: image/png
+        type: image/png
     required:
       - image
     title: Output
-    format: object
+    type: object
 TASK_DRAW_DETECTION:
   shortDescription: Draw detection result on the image.
   input:
@@ -231,27 +194,22 @@ TASK_DRAW_DETECTION:
     properties:
       image:
         description: Input image.
-        acceptFormats:
-          - image/*
+        type: string
         uiOrder: 0
         title: Image
-        format: string
       objects:
         $ref: schema.yaml#/$defs/instill-types/detection/properties/objects
-        acceptFormats:
-          - array
+        type: array
       show-score:
         description: Show model confidence score on each instance.
-        acceptFormats:
-          - boolean
+        type: boolean
         uiOrder: 0
         title: Show Score
-        format: boolean
     required:
       - image
       - objects
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 0
@@ -260,11 +218,11 @@ TASK_DRAW_DETECTION:
         description: Output image.
         uiOrder: 0
         title: Image
-        format: image/png
+        type: image/png
     required:
       - image
     title: Output
-    format: object
+    type: object
 TASK_DRAW_KEYPOINT:
   shortDescription: Draw keypoint result on the image.
   input:
@@ -273,27 +231,22 @@ TASK_DRAW_KEYPOINT:
     properties:
       image:
         description: Input image.
-        acceptFormats:
-          - image/*
+        type: string
         uiOrder: 0
         title: Image
-        format: string
       objects:
         $ref: schema.yaml#/$defs/instill-types/keypoint/properties/objects
-        acceptFormats:
-          - array
+        type: array
       show-score:
         description: Show model confidence score on each instance.
-        acceptFormats:
-          - boolean
+        type: boolean
         uiOrder: 0
         title: Show Score
-        format: boolean
     required:
       - image
       - objects
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 0
@@ -302,11 +255,11 @@ TASK_DRAW_KEYPOINT:
         description: Output image.
         uiOrder: 0
         title: Image
-        format: image/png
+        type: image/png
     required:
       - image
     title: Output
-    format: object
+    type: object
 TASK_DRAW_SEMANTIC_SEGMENTATION:
   shortDescription: Draw semantic segmentation result on the image.
   input:
@@ -315,20 +268,17 @@ TASK_DRAW_SEMANTIC_SEGMENTATION:
     properties:
       image:
         description: Input image.
-        acceptFormats:
-          - image/*
+        type: string
         uiOrder: 0
         title: Image
-        format: string
       stuffs:
         $ref: schema.yaml#/$defs/instill-types/semantic-segmentation/properties/stuffs
-        acceptFormats:
-          - array
+        type: array
     required:
       - image
       - stuffs
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 0
@@ -337,11 +287,11 @@ TASK_DRAW_SEMANTIC_SEGMENTATION:
         description: Output image.
         uiOrder: 0
         title: Image
-        format: image/png
+        type: image/png
     required:
       - image
     title: Output
-    format: object
+    type: object
 TASK_DRAW_INSTANCE_SEGMENTATION:
   shortDescription: Draw instance segmentation result on the image.
   input:
@@ -350,27 +300,22 @@ TASK_DRAW_INSTANCE_SEGMENTATION:
     properties:
       image:
         description: Input image.
-        acceptFormats:
-          - image/*
+        type: string
         uiOrder: 0
         title: Image
-        format: string
       objects:
         $ref: schema.yaml#/$defs/instill-types/instance-segmentation/properties/objects
-        acceptFormats:
-          - array
+        type: array
       show-score:
         description: Show model confidence score on each instance.
-        acceptFormats:
-          - boolean
+        type: boolean
         uiOrder: 0
         title: Show Score
-        format: boolean
     required:
       - image
       - objects
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 0
@@ -379,11 +324,11 @@ TASK_DRAW_INSTANCE_SEGMENTATION:
         description: Output image.
         uiOrder: 0
         title: Image
-        format: image/png
+        type: image/png
     required:
       - image
     title: Output
-    format: object
+    type: object
 TASK_DRAW_OCR:
   shortDescription: Draw OCR result on the image.
   input:
@@ -392,27 +337,22 @@ TASK_DRAW_OCR:
     properties:
       image:
         description: Input image.
-        acceptFormats:
-          - image/*
+        type: string
         uiOrder: 0
         title: Image
-        format: string
       objects:
         $ref: schema.yaml#/$defs/instill-types/ocr/properties/objects
-        acceptFormats:
-          - array
+        type: array
       show-score:
         description: Show model confidence score on each instance.
-        acceptFormats:
-          - boolean
+        type: boolean
         uiOrder: 0
         title: Show Score
-        format: boolean
     required:
       - image
       - objects
     title: Input
-    format: object
+    type: object
   output:
     description: Output.
     uiOrder: 0
@@ -421,8 +361,8 @@ TASK_DRAW_OCR:
         description: Output image.
         uiOrder: 0
         title: Image
-        format: image/png
+        type: image/png
     required:
       - image
     title: Output
-    format: object
+    type: object

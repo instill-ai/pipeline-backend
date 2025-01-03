@@ -19,79 +19,65 @@ TASK_CRUD_GOAL:
                 const: get
                 description: Get Goal.
                 uiOrder: 0
-                format: string
+                type: string
               goal-gid:
                 description: Globally unique identifier (GID) for the goal. You can find the GID of a goal from the URL of the goal in Asana. For example,
                   if the URL of the goal is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.
                 shortDescription: Goal ID
                 uiOrder: 0
                 title: Goal ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - goal-gid
             title: Get
             description: Get Goal.
             uiOrder: 0
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: update
                 description: Update Goal.
                 uiOrder: 0
-                format: string
+                type: string
               goal-gid:
                 description: Globally unique identifier (GID) for the goal. You can find the GID of a goal from the URL of the goal in Asana. For example,
                   if the URL of the goal is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.
                 shortDescription: Goal ID
                 uiOrder: 0
                 title: Goal ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               name:
                 description: The name of the goal.
                 shortDescription: Update Goal Name
                 uiOrder: 1
                 title: Goal Name
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               notes:
                 description: The notes of the goal.
                 shortDescription: Update Goal Note
                 uiOrder: 2
                 title: Goal Note
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               due-on:
                 description: The date on which the goal is due. In the format YYYY-MM-DD.
                 shortDescription: Update Due Date
                 uiOrder: 2
                 title: Due Date
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               start-on:
                 description: The date on which the goal starts. In the format YYYY-MM-DD.
                 shortDescription: Update Start Date
                 uiOrder: 3
                 title: Start Date
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               liked:
                 description: Whether the goal is liked by the user.
                 shortDescription: Liked
                 uiOrder: 4
                 title: Liked
-                acceptFormats:
-                  - boolean
-                format: boolean
+                type: boolean
               status:
                 description: The current status of this goal. When the goal is open, its status can be green, yellow, and red to reflect "On Track", "At
                   Risk", and "Off Track", respectively. When the goal is closed, the value can be missed, achieved, partial, or dropped.
@@ -106,9 +92,7 @@ TASK_CRUD_GOAL:
                   - partial
                   - dropped
                 title: Status
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - goal-gid
@@ -116,104 +100,86 @@ TASK_CRUD_GOAL:
             title: Update
             description: Update Goal.
             uiOrder: 0
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: delete
                 uiOrder: 0
                 description: Delete goal.
-                format: string
+                type: string
               goal-gid:
                 description: Globally unique identifier (GID) for the goal. You can find the GID of a goal from the URL of the goal in Asana. For example,
                   if the URL of the goal is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.
                 shortDescription: Goal ID
                 uiOrder: 0
                 title: Goal ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - goal-gid
             title: Delete
             description: Delete Goal.
             uiOrder: 0
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: create
                 description: Create Goal.
                 uiOrder: 0
-                format: string
+                type: string
               name:
                 description: The name of the goal.
                 shortDescription: Goal Name
                 uiOrder: 1
                 title: Goal Name
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               notes:
                 description: The notes of the goal.
                 shortDescription: Goal Note
                 uiOrder: 2
                 title: Goal Note
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               due-on:
                 description: The date on which the goal is due. In the format YYYY-MM-DD.
                 shortDescription: Due Date
                 uiOrder: 2
                 title: Due Date
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               start-on:
                 description: The date on which the goal starts. In the format YYYY-MM-DD.
                 shortDescription: Start Date
                 uiOrder: 3
                 title: Start Date
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               liked:
                 description: Whether the goal is liked by the user.
                 shortDescription: Liked
                 uiOrder: 4
                 title: Liked
-                acceptFormats:
-                  - boolean
-                format: boolean
+                type: boolean
               workspace:
                 description: GID of the workspace.  You can find one by filling the access token in the <a href="https://developers.asana.com/reference/getworkspaces">Asana
                   API Playground</a>.
                 shortDescription: GID of the workspace
                 uiOrder: 5
                 title: Workspace
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               time-period:
                 description: GID of the time period. You can find one by filling the workspace id in the <a href="https://developers.asana.com/reference/gettimeperiods">Asana
                   API Playground</a>.
                 shortDescription: Time Period
                 uiOrder: 6
                 title: Time Period
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               owner:
                 description: User GID of the Owner. You can find one by filling the workspace id in the <a href="https://developers.asana.com/reference/getusers">Asana
                   API Playground</a>.
                 shortDescription: Owner
                 uiOrder: 7
                 title: Owner
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - name
@@ -221,11 +187,11 @@ TASK_CRUD_GOAL:
             title: Create
             description: Create Goal.
             uiOrder: 0
-            format: object
-        format: object
+            type: object
+        type: object
     required: []
     title: Input
-    format: object
+    type: object
   output:
     description: Goal.
     uiOrder: 0
@@ -235,13 +201,13 @@ TASK_CRUD_GOAL:
         shortDescription: Goal ID
         uiOrder: 0
         title: Goal ID
-        format: string
+        type: string
       name:
         description: The name of the goal.
         shortDescription: Goal Name
         uiOrder: 1
         title: Goal Name
-        format: string
+        type: string
       owner:
         description: The owner of the goal.
         shortDescription: The owner of the goal.
@@ -253,47 +219,47 @@ TASK_CRUD_GOAL:
             shortDescription: Owner ID
             uiOrder: 0
             title: Owner ID
-            format: string
+            type: string
           name:
             description: The name of the owner.
             shortDescription: Owner Name
             uiOrder: 1
             title: Owner Name
-            format: string
+            type: string
         required:
           - gid
           - name
-        format: object
+        type: object
       notes:
         description: The notes of the goal.
         shortDescription: The notes of the goal.
         uiOrder: 2
         title: Goal Note
-        format: string
+        type: string
       html-notes:
         description: The notes of the goal in HTML format.
         shortDescription: The notes of the goal in HTML format.
         uiOrder: 3
         title: Goal HTML Note
-        format: string
+        type: string
       due-on:
         description: The date on which the goal is due. In the format YYYY-MM-DD.
         shortDescription: Due Date
         uiOrder: 4
         title: Due Date
-        format: string
+        type: string
       start-on:
         description: The date on which the goal starts. In the format YYYY-MM-DD.
         shortDescription: Start Date
         uiOrder: 5
         title: Start Date
-        format: string
+        type: string
       liked:
         description: Whether the goal is liked by the user.
         shortDescription: Liked
         uiOrder: 6
         title: Liked
-        format: boolean
+        type: boolean
       likes:
         description: The users who likes the goal.
         shortDescription: The users who likes the goal.
@@ -306,28 +272,28 @@ TASK_CRUD_GOAL:
               shortDescription: Like ID
               uiOrder: 0
               title: Like ID
-              format: string
+              type: string
             user-gid:
               description: Globally unique identifier (GID) for the user.
               shortDescription: User ID
               uiOrder: 0
               title: User ID
-              format: string
+              type: string
             name:
               description: The name of the user.
               shortDescription: User Name
               uiOrder: 1
               title: User Name
-              format: string
+              type: string
           required:
             - like-gid
             - user-gid
             - name
-          format: object
-        format: array
+          type: object
+        type: array
     required: []
     title: Output
-    format: object
+    type: object
 TASK_CRUD_TASK:
   description: Create, Update, Delete, Read and Duplicate Task in Asana.
   shortDescription: Task Related Task, including get, update, delete, create, duplicate
@@ -350,46 +316,40 @@ TASK_CRUD_TASK:
                 const: get
                 description: Get Task.
                 uiOrder: 0
-                format: string
+                type: string
               task-gid:
                 description: Globally unique identifier (GID) for the task.
                 shortDescription: Task ID
                 uiOrder: 0
                 title: Task ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - task-gid
             title: Get
             description: Get Task.
             uiOrder: 0
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: update
                 description: Update Task.
                 uiOrder: 0
-                format: string
+                type: string
               task-gid:
                 description: Globally unique identifier (GID) for the task.
                 shortDescription: Task ID
                 uiOrder: 0
                 title: Task ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               name:
                 description: Name of the task. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However,
                   it can be longer.
                 shortDescription: Name of the task
                 uiOrder: 1
                 title: Name of the task
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               resource-subtype:
                 description: The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in
                   Asana or represent resources with different semantic meaning.
@@ -402,9 +362,7 @@ TASK_CRUD_TASK:
                   - section
                   - approval
                   - custom
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               approval-status:
                 description: The approval status of the task. If you set completed to true, this field will be set to approved.
                 shortDescription: The approval status of the task
@@ -415,49 +373,37 @@ TASK_CRUD_TASK:
                   - approved
                   - rejected
                   - changes_requested
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               completed:
                 description: Whether the task is currently marked complete.
                 shortDescription: Whether the task is currently marked complete
                 uiOrder: 4
                 title: Completed
-                acceptFormats:
-                  - boolean
-                format: boolean
+                type: boolean
               liked:
                 description: Whether the task is liked by the user.
                 shortDescription: Whether the task is liked by the user
                 uiOrder: 5
                 title: Liked
-                acceptFormats:
-                  - boolean
-                format: boolean
+                type: boolean
               notes:
                 description: Free-form textual information associated with the task (i.e. its description).
                 shortDescription: Notes of the task
                 uiOrder: 6
                 title: Notes of the task
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               assignee:
                 description: GID of the assignee.
                 shortDescription: GID of the assignee
                 uiOrder: 7
                 title: Assignee
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               parent:
                 description: GID of the parent task.
                 shortDescription: GID of the parent task
                 uiOrder: 8
                 title: Parent Task
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - task-gid
@@ -465,52 +411,46 @@ TASK_CRUD_TASK:
             description: Update Task.
             uiOrder: 0
             title: Update
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: delete
                 description: Delete Task.
                 uiOrder: 0
-                format: string
+                type: string
               task-gid:
                 description: Globally unique identifier (GID) for the task.
                 shortDescription: Task ID
                 uiOrder: 0
                 title: Task ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - task-gid
             description: Delete Task.
             uiOrder: 0
             title: Delete
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: create
                 description: Create Task.
                 uiOrder: 0
-                format: string
+                type: string
               name:
                 description: The name of the task.
                 shortDescription: Task Name
                 uiOrder: 1
                 title: Task Name
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               notes:
                 description: The notes of the task.
                 shortDescription: Task Notes
                 uiOrder: 2
                 title: Task Notes
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               resource-subtype:
                 default: default_task
                 description: The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in
@@ -524,9 +464,7 @@ TASK_CRUD_TASK:
                   - section
                   - approval
                   - custom
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               approval-status:
                 description: The approval status of the task. If you set completed to true, this field will be set to approved.
                 shortDescription: The approval status of the task
@@ -537,68 +475,52 @@ TASK_CRUD_TASK:
                   - approved
                   - rejected
                   - changes_requested
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               completed:
                 description: Whether the task is currently marked complete.
                 shortDescription: Whether the task is currently marked complete
                 uiOrder: 4
                 title: Completed
-                acceptFormats:
-                  - boolean
-                format: boolean
+                type: boolean
               liked:
                 description: Whether the task is liked by the user.
                 shortDescription: Whether the task is liked by the user
                 uiOrder: 5
                 title: Liked
-                acceptFormats:
-                  - boolean
-                format: boolean
+                type: boolean
               assignee:
                 description: GID of the assignee.
                 shortDescription: GID of the assignee
                 uiOrder: 7
                 title: Assignee
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               parent:
                 description: GID of the parent task.
                 shortDescription: GID of the parent task
                 uiOrder: 8
                 title: Parent Task
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               start-at:
                 description: The UTC date and time on which this task is due, or null if the task has no due time. This takes an ISO 8601 date string in
                   UTC.
                 shortDescription: Start Date & Time. In format like 2021-09-01T00:00:00Z
                 uiOrder: 9
                 title: Start Date & Time
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               due-at:
                 description: Date and time on which work begins for the task, or null if the task has no start time. This takes an ISO 8601 date string
                   in UTC.
                 shortDescription: Due Date & Time. In format like 2021-09-01T00:00:00Z
                 uiOrder: 10
                 title: Due Date & Time
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               workspace:
                 description: GID of the workspace.  You can find one by filling the access token in the <a href="https://developers.asana.com/reference/getworkspaces">Asana
                   API Playground</a>.
                 shortDescription: GID of the workspace
                 uiOrder: 11
                 title: Workspace
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - workspace
@@ -607,31 +529,27 @@ TASK_CRUD_TASK:
             description: Create Task.
             uiOrder: 0
             title: Create
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: duplicate
                 description: Duplicate Task.
                 uiOrder: 0
-                format: string
+                type: string
               task-gid:
                 description: Globally unique identifier (GID) for the task.
                 shortDescription: Task ID
                 uiOrder: 0
                 title: Task ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               name:
                 description: Name of the new task. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However,
                   it can be longer.
                 shortDescription: Name of the new task
                 uiOrder: 1
                 title: Name
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - task-gid
@@ -639,30 +557,26 @@ TASK_CRUD_TASK:
             description: Duplicate Task.
             uiOrder: 0
             title: Duplicate
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: set parent
                 description: Set Parent Task.
                 uiOrder: 0
-                format: string
+                type: string
               task-gid:
                 description: Globally unique identifier (GID) for the task.
                 shortDescription: Task ID
                 uiOrder: 0
                 title: Task ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               parent:
                 description: GID of the parent task.
                 shortDescription: GID of the parent task
                 uiOrder: 1
                 title: Parent Task
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - task-gid
@@ -670,30 +584,26 @@ TASK_CRUD_TASK:
             description: Set Parent Task.
             uiOrder: 0
             title: Set Parent
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: edit tag
                 description: Edit Tag.
                 uiOrder: 0
-                format: string
+                type: string
               task-gid:
                 description: Globally unique identifier (GID) for the task.
                 shortDescription: Task ID
                 uiOrder: 0
                 title: Task ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               tag-gid:
                 description: Globally unique identifier (GID) for the tag.
                 shortDescription: Tag ID
                 uiOrder: 1
                 title: Tag ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               edit-option:
                 default: add
                 description: Edit option. You can choose to add or remove the tag.
@@ -703,9 +613,7 @@ TASK_CRUD_TASK:
                 enum:
                   - add
                   - remove
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - task-gid
@@ -714,30 +622,26 @@ TASK_CRUD_TASK:
             description: Edit Tag.
             uiOrder: 0
             title: Edit Tag
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: edit follower
                 description: Edit follower.
                 uiOrder: 0
-                format: string
+                type: string
               task-gid:
                 description: Globally unique identifier (GID) for the task.
                 shortDescription: Task ID
                 uiOrder: 0
                 title: Task ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               followers:
                 description: This can either be the string "me", an email, or the gid of a user. For multiple followers, separate them with commas.
                 shortDescription: Followers' Identifications, can either be the string "me", an email, or the gid of a user.
                 uiOrder: 1
                 title: Followers
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               edit-option:
                 default: add
                 description: Edit option. You can choose to add or remove the follower.
@@ -747,9 +651,7 @@ TASK_CRUD_TASK:
                 enum:
                   - add
                   - remove
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - task-gid
@@ -758,30 +660,26 @@ TASK_CRUD_TASK:
             description: Edit Follower.
             uiOrder: 0
             title: Edit Follower
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: edit project
                 description: Edit project.
                 uiOrder: 0
-                format: string
+                type: string
               task-gid:
                 description: Globally unique identifier (GID) for the task.
                 shortDescription: Task ID
                 uiOrder: 0
                 title: Task ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               project-gid:
                 description: Globally unique identifier (GID) for the project.
                 shortDescription: Project ID
                 uiOrder: 1
                 title: Project ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               edit-option:
                 default: add
                 description: Edit option. You can choose to add or remove the project.
@@ -791,9 +689,7 @@ TASK_CRUD_TASK:
                 enum:
                   - add
                   - remove
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - task-gid
@@ -802,11 +698,11 @@ TASK_CRUD_TASK:
             description: Edit Project.
             uiOrder: 0
             title: Edit Project
-            format: object
-        format: object
+            type: object
+        type: object
     required: []
     title: Input
-    format: object
+    type: object
   output:
     description: Task.
     uiOrder: 0
@@ -816,25 +712,25 @@ TASK_CRUD_TASK:
         shortDescription: Task ID
         uiOrder: 0
         title: Task ID
-        format: string
+        type: string
       name:
         description: The name of the task.
         shortDescription: Task Name
         uiOrder: 1
         title: Task Name
-        format: string
+        type: string
       notes:
         description: The notes of the task.
         shortDescription: Task Notes
         uiOrder: 2
         title: Task Notes
-        format: string
+        type: string
       html-notes:
         description: The notes of the task in HTML format.
         shortDescription: Task Notes in HTML format
         uiOrder: 3
         title: Task Notes in HTML format
-        format: string
+        type: string
       projects:
         description: The projects of the task.
         shortDescription: The projects of the task.
@@ -847,36 +743,36 @@ TASK_CRUD_TASK:
               shortDescription: Project ID
               uiOrder: 0
               title: Project ID
-              format: string
+              type: string
             name:
               description: The name of the project.
               shortDescription: Project Name
               uiOrder: 1
               title: Project Name
-              format: string
+              type: string
           required:
             - gid
             - name
-          format: object
-        format: array
+          type: object
+        type: array
       due-on:
         description: The date on which the task is due. In the format YYYY-MM-DD.
         shortDescription: Due Date
         uiOrder: 4
         title: Due Date
-        format: string
+        type: string
       start-on:
         description: The date on which the task starts. In the format YYYY-MM-DD.
         shortDescription: Start Date
         uiOrder: 5
         title: Start Date
-        format: string
+        type: string
       liked:
         description: Whether the task is liked by the user.
         shortDescription: Liked
         uiOrder: 6
         title: Liked
-        format: boolean
+        type: boolean
       likes:
         description: The users who likes the task.
         shortDescription: The users who likes the task.
@@ -889,59 +785,59 @@ TASK_CRUD_TASK:
               shortDescription: Like ID
               uiOrder: 0
               title: Like ID
-              format: string
+              type: string
             user-gid:
               description: Globally unique identifier (GID) for the user.
               shortDescription: User ID
               uiOrder: 0
               title: User ID
-              format: string
+              type: string
             name:
               description: The name of the user.
               shortDescription: User Name
               uiOrder: 1
               title: User Name
-              format: string
+              type: string
           required:
             - like-gid
             - user-gid
             - name
-          format: object
-        format: array
+          type: object
+        type: array
       approval-status:
         description: The approval status of the task. If you set completed to true, this field will be set to approved.
         shortDescription: The approval status of the task
         uiOrder: 8
         title: Approval Status
-        format: string
+        type: string
       resource-subtype:
         description: The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or
           represent resources with different semantic meaning.
         shortDescription: The subtype of this resource
         uiOrder: 9
         title: Resource Subtype
-        format: string
+        type: string
       completed:
         description: Whether the task is currently marked complete.
         shortDescription: Whether the task is currently marked complete
         uiOrder: 10
         title: Completed
-        format: boolean
+        type: boolean
       assignee:
         description: GID of the assignee.
         shortDescription: GID of the assignee
         uiOrder: 11
         title: Assignee
-        format: string
+        type: string
       parent:
         description: GID of the parent task.
         shortDescription: GID of the parent task
         uiOrder: 12
         title: Parent Task
-        format: string
+        type: string
     required: []
     title: Output
-    format: object
+    type: object
 TASK_CRUD_PROJECT:
   description: Create, Update, Delete, Read and Duplicate project in Asana.
   shortDescription: Project Related Task, including get, update, delete, create, duplicate
@@ -963,69 +859,57 @@ TASK_CRUD_PROJECT:
                 const: get
                 description: Get Project.
                 uiOrder: 0
-                format: string
+                type: string
               project-gid:
                 description: Globally unique identifier (GID) for the project.
                 shortDescription: Project ID
                 uiOrder: 0
                 title: Project ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - project-gid
             description: Get Project.
             uiOrder: 0
             title: Get
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: update
                 description: Update Project.
                 uiOrder: 0
-                format: string
+                type: string
               project-gid:
                 description: Globally unique identifier (GID) for the project.
                 shortDescription: Project ID
                 uiOrder: 0
                 title: Project ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               name:
                 description: The name of the project.
                 shortDescription: Update Project Name
                 uiOrder: 1
                 title: Project Name
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               notes:
                 description: The notes of the project.
                 shortDescription: Update Project Note
                 uiOrder: 2
                 title: Project Note
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               due-on:
                 description: The date on which the project is due. In the format YYYY-MM-DD.
                 shortDescription: Update Due Date
                 uiOrder: 2
                 title: Due Date
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               start-on:
                 description: The date on which the project starts. In the format YYYY-MM-DD.
                 shortDescription: Update Start Date
                 uiOrder: 3
                 title: Start Date
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               color:
                 description: The color of the project.
                 shortDescription: Update Color
@@ -1052,9 +936,7 @@ TASK_CRUD_PROJECT:
                   - none
                   - 'null'
                 title: Update Color
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               privacy-setting:
                 description: The privacy setting of the project.
                 shortDescription: Update Privacy Setting
@@ -1064,17 +946,13 @@ TASK_CRUD_PROJECT:
                   - public to workspace
                   - private to team
                   - private
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               archived:
                 description: Whether the project is archived.
                 shortDescription: Whether the project is archived
                 uiOrder: 7
                 title: Archived
-                acceptFormats:
-                  - boolean
-                format: boolean
+                type: boolean
             required:
               - action
               - project-gid
@@ -1082,68 +960,58 @@ TASK_CRUD_PROJECT:
             description: Update Project.
             uiOrder: 0
             title: Update
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: delete
                 description: Delete project.
                 uiOrder: 0
-                format: string
+                type: string
               project-gid:
                 description: Globally unique identifier (GID) for the project.
                 shortDescription: Project ID
                 uiOrder: 0
                 title: Project ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - project-gid
             description: Delete Project.
             uiOrder: 0
             title: Delete
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: create
                 description: Create project.
                 uiOrder: 0
-                format: string
+                type: string
               name:
                 description: The name of the project.
                 shortDescription: Update Project Name
                 uiOrder: 1
                 title: Project Name
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               notes:
                 description: The notes of the project.
                 shortDescription: Update Project Note
                 uiOrder: 2
                 title: Project Note
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               due-on:
                 description: The date on which the project is due. In the format YYYY-MM-DD.
                 shortDescription: Update Due Date
                 uiOrder: 2
                 title: Due Date
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               start-on:
                 description: The date on which the project starts. In the format YYYY-MM-DD.
                 shortDescription: Update Start Date
                 uiOrder: 3
                 title: Start Date
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               color:
                 description: The color of the project.
                 shortDescription: Update Color
@@ -1170,9 +1038,7 @@ TASK_CRUD_PROJECT:
                   - none
                   - 'null'
                 title: Update Color
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               privacy-setting:
                 description: The privacy setting of the project.
                 shortDescription: Update Privacy Setting
@@ -1182,92 +1048,74 @@ TASK_CRUD_PROJECT:
                   - public to workspace
                   - private to team
                   - private
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               workspace:
                 description: Globally unique identifier (GID) for the workspace. You can find one by filling the access token in the <a href="https://developers.asana.com/reference/getworkspaces">Asana
                   API Playground</a>.
                 shortDescription: Workspace ID
                 uiOrder: 7
                 title: Workspace ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               team:
                 description: Globally unique identifier (GID) for the team of the new project.
                 shortDescription: Team ID of the new project
                 uiOrder: 8
                 title: Team ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - name
             description: Create Project.
             uiOrder: 0
             title: Create
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: duplicate
                 description: Duplicate project.
                 uiOrder: 0
-                format: string
+                type: string
               project-gid:
                 description: Globally unique identifier (GID) for the project. You can find the GID of a goal from the URL of the project in Asana. For
                   example, if the URL of the project is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.
                 shortDescription: Project ID
                 uiOrder: 0
                 title: Project ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               name:
                 description: The name of the new project.
                 shortDescription: New Project Name
                 uiOrder: 1
                 title: New Project Name
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               team:
                 description: Globally unique identifier (GID) for the team of the new project. If team is not defined, the new project will be in the same
                   team as the the original project.
                 shortDescription: Team ID of the new project
                 uiOrder: 2
                 title: Team ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               due-on:
                 description: Sets the last due date in the duplicated project to the given date. The rest of the due dates will be offset by the same amount
                   as the due dates in the original project. In the format YYYY-MM-DD.
                 shortDescription: Due Date (You should only specify exactly one of due-on or start-on)
                 uiOrder: 3
                 title: Due Date
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               start-on:
                 description: Sets the first start date in the duplicated project to the given date. The rest of the start dates will be offset by the same
                   amount as the start dates in the original project. In the format YYYY-MM-DD.
                 shortDescription: Start Date (You should only specify exactly one of due-on or start-on)
                 uiOrder: 4
                 title: Start Date
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               should-skip-weekends:
                 description: Determines if the auto-shifted dates should skip weekends.
                 shortDescription: Determines if the auto-shifted dates should skip weekends.
                 uiOrder: 5
                 title: Should Skip Weekends (For auto-shifted dates)
-                acceptFormats:
-                  - boolean
-                format: boolean
+                type: boolean
             required:
               - action
               - project-gid
@@ -1275,11 +1123,11 @@ TASK_CRUD_PROJECT:
             description: Duplicate Project.
             uiOrder: 0
             title: Duplicate
-            format: object
-        format: object
+            type: object
+        type: object
     required: []
     title: Input
-    format: object
+    type: object
   output:
     description: Project.
     uiOrder: 0
@@ -1289,13 +1137,13 @@ TASK_CRUD_PROJECT:
         shortDescription: Project ID
         uiOrder: 0
         title: Project ID
-        format: string
+        type: string
       name:
         description: The name of the project.
         shortDescription: Project Name
         uiOrder: 1
         title: Project Name
-        format: string
+        type: string
       owner:
         description: The owner of the project.
         shortDescription: The owner of the project.
@@ -1307,65 +1155,65 @@ TASK_CRUD_PROJECT:
             shortDescription: Owner ID
             uiOrder: 0
             title: Owner ID
-            format: string
+            type: string
           name:
             description: The name of the owner.
             shortDescription: Owner Name
             uiOrder: 1
             title: Owner Name
-            format: string
+            type: string
         required:
           - gid
           - name
-        format: object
+        type: object
       notes:
         description: The notes of the project.
         shortDescription: The notes of the project.
         uiOrder: 2
         title: Project Note
-        format: string
+        type: string
       html-notes:
         description: The notes of the project in HTML format.
         shortDescription: The notes of the project in HTML format.
         uiOrder: 3
         title: Project HTML Note
-        format: string
+        type: string
       due-on:
         description: The date on which the project is due. In the format YYYY-MM-DD.
         shortDescription: Due Date
         uiOrder: 4
         title: Due Date
-        format: string
+        type: string
       start-on:
         description: The date on which the project starts. In the format YYYY-MM-DD.
         shortDescription: Start Date
         uiOrder: 5
         title: Start Date
-        format: string
+        type: string
       completed:
         description: Whether the project is completed.
         shortDescription: Whether the project is completed
         uiOrder: 6
         title: Completed
-        format: boolean
+        type: boolean
       color:
         description: The color of the project.
         shortDescription: Color
         uiOrder: 7
         title: Color
-        format: string
+        type: string
       privacy-setting:
         description: The privacy setting of the project.
         shortDescription: Privacy Setting
         uiOrder: 8
         title: Privacy Setting
-        format: string
+        type: string
       archived:
         description: Whether the project is archived.
         shortDescription: Whether the project is archived
         uiOrder: 9
         title: Archived
-        format: boolean
+        type: boolean
       completed-by:
         description: The user who completed the project.
         shortDescription: The user who completed the project.
@@ -1377,17 +1225,17 @@ TASK_CRUD_PROJECT:
             shortDescription: User ID
             uiOrder: 0
             title: User ID
-            format: string
+            type: string
           name:
             description: The name of the user.
             shortDescription: User Name
             uiOrder: 1
             title: User Name
-            format: string
+            type: string
         required:
           - gid
           - name
-        format: object
+        type: object
       current-status:
         description: The current status of the project.
         shortDescription: The current status of the project.
@@ -1397,8 +1245,8 @@ TASK_CRUD_PROJECT:
         items:
           properties: {}
           required: []
-          format: json
-        format: array
+          type: json
+        type: array
       custom-fields:
         description: The custom fields of the project.
         shortDescription: The custom fields of the project.
@@ -1408,8 +1256,8 @@ TASK_CRUD_PROJECT:
         items:
           properties: {}
           required: []
-          format: json
-        format: array
+          type: json
+        type: array
       custom-field-settings:
         description: The custom field settings of the project.
         shortDescription: The custom field settings of the project.
@@ -1419,17 +1267,17 @@ TASK_CRUD_PROJECT:
         items:
           properties: {}
           required: []
-          format: json
-        format: array
+          type: json
+        type: array
       modified-at:
         description: The time at which the project was last modified.
         shortDescription: The time at which the project was last modified.
         uiOrder: 14
         title: Modified At
-        format: string
+        type: string
     required: []
     title: Output
-    format: object
+    type: object
 TASK_CRUD_PORTFOLIO:
   description: Create, Update, Delete and Read portfolio in Asana.
   shortDescription: Portfolio Related Task, including get, update, delete, create
@@ -1451,45 +1299,39 @@ TASK_CRUD_PORTFOLIO:
                 const: get
                 description: Get portfolio.
                 uiOrder: 0
-                format: string
+                type: string
               portfolio-gid:
                 description: Globally unique identifier (GID) for the portfolio.
                 shortDescription: Portfolio ID
                 uiOrder: 0
                 title: Portfolio ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - portfolio-gid
             description: Get Portfolio.
             uiOrder: 0
             title: Get
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: update
                 description: Update portfolio.
                 uiOrder: 0
-                format: string
+                type: string
               portfolio-gid:
                 description: Globally unique identifier (GID) for the portfolio.
                 shortDescription: Portfolio ID
                 uiOrder: 0
                 title: Portfolio ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               name:
                 description: The name of the portfolio.
                 shortDescription: Update Portfolio Name
                 uiOrder: 1
                 title: Portfolio Name
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               color:
                 description: The color of the portfolio.
                 shortDescription: Update Color
@@ -1516,69 +1358,59 @@ TASK_CRUD_PORTFOLIO:
                   - none
                   - 'null'
                 title: Update Color
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               public:
                 description: Whether the portfolio is public.
                 shortDescription: Whether the portfolio is public
                 uiOrder: 6
                 title: Public
-                acceptFormats:
-                  - boolean
-                format: boolean
+                type: boolean
               workspace:
                 description: The workspace of the portfolio. Please fill in the Globally unique identifier (GID) for the workspace.
                 shortDescription: The workspace of the portfolio.
                 uiOrder: 7
                 title: Workspace
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - portfolio-gid
             description: Update Portfolio.
             uiOrder: 0
             title: Update
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: delete
                 description: Delete portfolio.
                 uiOrder: 0
-                format: string
+                type: string
               portfolio-gid:
                 description: Globally unique identifier (GID) for the portfolio.
                 shortDescription: Portfolio ID
                 uiOrder: 0
                 title: Portfolio ID
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - portfolio-gid
             description: Delete Portfolio.
             uiOrder: 0
             title: Delete
-            format: object
+            type: object
           - properties:
               action:
                 title: Action
                 const: create
                 description: Create portfolio.
                 uiOrder: 0
-                format: string
+                type: string
               name:
                 description: The name of the portfolio.
                 shortDescription: Portfolio Name
                 uiOrder: 1
                 title: Portfolio Name
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               color:
                 description: The color of the portfolio.
                 shortDescription: Color
@@ -1605,25 +1437,19 @@ TASK_CRUD_PORTFOLIO:
                   - none
                   - 'null'
                 title: Color
-                acceptFormats:
-                  - string
-                format: string
+                type: string
               public:
                 description: Whether the portfolio is public.
                 shortDescription: Whether the portfolio is public
                 uiOrder: 6
                 title: Public
-                acceptFormats:
-                  - boolean
-                format: boolean
+                type: boolean
               workspace:
                 description: The workspace of the portfolio. Please fill in the Globally unique identifier (GID) for the workspace.
                 shortDescription: The workspace of the portfolio.
                 uiOrder: 7
                 title: Workspace
-                acceptFormats:
-                  - string
-                format: string
+                type: string
             required:
               - action
               - workspace
@@ -1632,11 +1458,11 @@ TASK_CRUD_PORTFOLIO:
             description: Create Portfolio.
             uiOrder: 0
             title: Create
-            format: object
-        format: object
+            type: object
+        type: object
     required: []
     title: Input
-    format: object
+    type: object
   output:
     description: Portfolio.
     uiOrder: 0
@@ -1646,13 +1472,13 @@ TASK_CRUD_PORTFOLIO:
         shortDescription: Portfolio ID
         uiOrder: 0
         title: Portfolio ID
-        format: string
+        type: string
       name:
         description: The name of the portfolio.
         shortDescription: Portfolio Name
         uiOrder: 1
         title: Portfolio Name
-        format: string
+        type: string
       owner:
         description: The owner of the portfolio.
         shortDescription: The owner of the portfolio.
@@ -1664,41 +1490,41 @@ TASK_CRUD_PORTFOLIO:
             shortDescription: Owner ID
             uiOrder: 0
             title: Owner ID
-            format: string
+            type: string
           name:
             description: The name of the owner.
             shortDescription: Owner Name
             uiOrder: 1
             title: Owner Name
-            format: string
+            type: string
         required:
           - gid
           - name
-        format: object
+        type: object
       due-on:
         description: The date on which the portfolio is due. In the format YYYY-MM-DD.
         shortDescription: Due Date
         uiOrder: 4
         title: Due Date
-        format: string
+        type: string
       start-on:
         description: The date on which the portfolio starts. In the format YYYY-MM-DD.
         shortDescription: Start Date
         uiOrder: 5
         title: Start Date
-        format: string
+        type: string
       color:
         description: The color of the portfolio.
         shortDescription: Color
         uiOrder: 7
         title: Color
-        format: string
+        type: string
       public:
         description: Whether the portfolio is public.
         shortDescription: Whether the portfolio is public
         uiOrder: 8
         title: Public
-        format: boolean
+        type: boolean
       created-by:
         description: The user who created the portfolio.
         shortDescription: The user who created the portfolio.
@@ -1710,17 +1536,17 @@ TASK_CRUD_PORTFOLIO:
             shortDescription: User ID
             uiOrder: 0
             title: User ID
-            format: string
+            type: string
           name:
             description: The name of the user.
             shortDescription: User Name
             uiOrder: 1
             title: User Name
-            format: string
+            type: string
         required:
           - gid
           - name
-        format: object
+        type: object
       current-status:
         description: The current status of the portfolio.
         shortDescription: The current status of the portfolio.
@@ -1730,8 +1556,8 @@ TASK_CRUD_PORTFOLIO:
         items:
           properties: {}
           required: []
-          format: json
-        format: array
+          type: json
+        type: array
       custom-fields:
         description: The custom fields of the portfolio.
         shortDescription: The custom fields of the portfolio.
@@ -1741,8 +1567,8 @@ TASK_CRUD_PORTFOLIO:
         items:
           properties: {}
           required: []
-          format: json
-        format: array
+          type: json
+        type: array
       custom-field-settings:
         description: The custom field settings of the portfolio.
         shortDescription: The custom field settings of the portfolio.
@@ -1752,8 +1578,8 @@ TASK_CRUD_PORTFOLIO:
         items:
           properties: {}
           required: []
-          format: json
-        format: array
+          type: json
+        type: array
     required: []
     title: Output
-    format: object
+    type: object

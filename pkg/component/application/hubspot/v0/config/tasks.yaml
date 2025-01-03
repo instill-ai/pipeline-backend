@@ -4,251 +4,243 @@ $defs:
       description: The user who is assigned to the object.
       title: Owner ID
       uiOrder: 0
-      format: string
+      type: string
     associated-contact-ids:
       description: Contact IDs associated with the object.
       title: Associated Contact IDs
       items:
         title: Associated Contact ID
         description: Contact ID associated with the object.
-        format: string
-      format: array
+        type: string
+      type: array
     create-contacts-association:
       description: Existing contact IDs to be associated with the object.
       title: Create Object -> Contact Association using contact IDs
-      acceptFormats:
-        - array
+      type: array
       items:
-        format: string
-      format: array
+        type: string
     create-deals-association:
       description: Existing deal IDs to be associated with the object.
       title: Create Object -> Deal Association using deal IDs
-      acceptFormats:
-        - array
+      type: array
       items:
-        format: string
-      format: array
+        type: string
     create-companies-association:
       description: Existing company IDs to be associated with the object.
       title: Create Object -> Company Association using company IDs
-      acceptFormats:
-        - array
+      type: array
       items:
-        format: string
-      format: array
+        type: string
     create-tickets-association:
       description: Existing ticket IDs to be associated with the object.
       title: Create Object -> Ticket Association using ticket IDs
-      acceptFormats:
-        - array
+      type: array
       items:
-        format: string
-      format: array
+        type: string
   contact:
     email:
       description: Email address.
       uiOrder: 1
       title: Email Address
-      format: string
+      type: string
     first-name:
       description: First name.
       uiOrder: 2
       title: First Name
-      format: string
+      type: string
     last-name:
       description: Last name.
       uiOrder: 3
       title: Last Name
-      format: string
+      type: string
     phone-number:
       description: 'Phone number. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example: +886xxxxxxxxx.'
       uiOrder: 4
       title: Phone Number
-      format: string
+      type: string
     company:
       description: Company.
       uiOrder: 5
       title: Company
-      format: string
+      type: string
     job-title:
       description: Job title.
       uiOrder: 6
       title: Job Title
-      format: string
+      type: string
     lifecycle-stage:
       description: 'Lifecycle stages are used to track how contacts or companies move forward in your process. Default format is in small letters, all words
         are combined. Example: salesqualifiedlead. However, remember to check internal value for custom fields.'
       uiOrder: 7
       title: Lifecycle Stage
-      format: string
+      type: string
     lead-status:
       description: 'The contact''s sales, prospecting or outreach status. Default format is in capital letters, with _ as space. Example: IN_PROGRESS. However,
         remember to check internal value for custom fields.'
       uiOrder: 8
       title: Lead Status
-      format: string
+      type: string
   deal:
     deal-name:
       description: Deal name.
       uiOrder: 1
       title: Deal Name
-      format: string
+      type: string
     pipeline:
       description: A pipeline is the place where you document and manage how your prospects move through the steps of your sales process. HubSpot uses interval
         value rather than the name displayed in the view.
       uiOrder: 2
       title: Pipeline
-      format: string
+      type: string
     deal-stage:
       description: 'Deal stages allow you to categorize and track the progress of the deals that you are working on. Default format is in small letters,
         all words are combined. Example: qualifiedtobuy. However, remember to check internal value for custom fields.'
       uiOrder: 3
       title: Deal Stage
-      format: string
+      type: string
     amount:
       description: The total amount of the deal.
       uiOrder: 4
       title: Amount
-      format: number
+      type: number
     deal-type:
       description: 'The type of deal. Default format is in small letters, all words are combined. Example: newbusiness. However, remember to check internal
         value for custom fields.'
       uiOrder: 5
       title: Deal Type
-      format: string
+      type: string
     close-date:
       description: 'Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.'
       uiOrder: 6
       title: Close Date
-      format: string
+      type: string
     create-date:
       description: 'Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.'
       uiOrder: 7
       title: Create Date
-      format: string
+      type: string
   company:
     company-name:
       description: Company name.
       uiOrder: 1
       title: Company Name
-      format: string
+      type: string
     company-domain:
       description: The domain name of the company.
       uiOrder: 2
       title: Company Domain
-      format: string
+      type: string
     description:
       description: Description of the company.
       uiOrder: 3
       title: Description
-      format: string
+      type: string
     phone-number:
       description: 'Phone number of the company. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example:
         +886xxxxxxxxx.'
       uiOrder: 4
       title: Phone Number
-      format: string
+      type: string
     industry:
       description: 'The industry the company belongs to. Default format is in capital letters, with _ as space. Example: BROADCAST_MEDIA.'
       uiOrder: 5
       title: Industry
-      format: string
+      type: string
     company-type:
       description: 'Type of company. Default format is capital letter. Example: RESELLER.'
       uiOrder: 6
       title: Company Type
-      format: string
+      type: string
     city:
       description: City.
       uiOrder: 7
       title: City
-      format: string
+      type: string
     state:
       description: State.
       uiOrder: 8
       title: State
-      format: string
+      type: string
     country:
       description: Country.
       uiOrder: 9
       title: Country
-      format: string
+      type: string
     postal-code:
       description: Postal code.
       uiOrder: 10
       title: Postal Code
-      format: string
+      type: string
     time-zone:
       description: Time zone.
       uiOrder: 11
       title: Time Zone
-      format: string
+      type: string
     annual-revenue:
       description: Annual revenue.
       uiOrder: 12
       title: Annual Revenue
-      format: number
+      type: number
     total-revenue:
       description: Total revenue. Calculated automatically by HubSpot.
       uiOrder: 13
       title: Total Revenue
-      format: number
+      type: number
     linkedin-page:
       description: Linkedin page of the company.
       uiOrder: 14
       title: Linkedin Page
-      format: string
+      type: string
   ticket:
     ticket-name:
       description: Ticket name.
       uiOrder: 1
       title: Ticket Name
-      format: string
+      type: string
     ticket-status:
       description: 'The pipeline stage that contains this ticket. Default format is number. Example: 1. However, remember to check internal value for custom
         fields. Note: In Instill AI, ticket-status is displayed as string because of the possible custom internal value.'
       uiOrder: 2
       title: Ticket Status
-      format: string
+      type: string
     pipeline:
       description: A pipeline organizes and tracks the progression of tickets through various stages of resolution within your support process. HubSpot
         uses interval value rather than the name displayed in the view.
       uiOrder: 3
       title: Pipeline
-      format: string
+      type: string
     categories:
       description: 'The main reason customer reached out for help. Default format is in capital letters. Example: BILLING_ISSUE. However, remember to check
         internal value for custom fields.'
       uiOrder: 4
       title: Categories
-      format: array
+      type: array
     priority:
       description: 'The level of attention needed on the ticket. Default format is in capital letters. Example: MEDIUM. However, remember to check internal
         value for custom fields.'
       uiOrder: 5
       title: Priority
-      format: string
+      type: string
     source:
       description: 'Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL.'
       uiOrder: 6
       title: Source
-      format: string
+      type: string
     record-source:
       description: How this record was created.
       uiOrder: 7
       title: Record Source
-      format: string
+      type: string
     create-date:
       description: 'Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.'
       uiOrder: 8
       title: Create Date
-      format: string
+      type: string
     last-modified-date:
       description: 'Last modified date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.'
       uiOrder: 9
       title: Last Modified Date
-      format: string
+      type: string
 TASK_GET_CONTACT:
   shortDescription: Get contact information using contact ID or Email
   input:
@@ -257,15 +249,13 @@ TASK_GET_CONTACT:
     properties:
       contact-id-or-email:
         description: Input contact ID or email. If the input has @, it will search the contact using email.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Contact ID or Email
-        format: string
     required:
       - contact-id-or-email
     title: Input
-    format: object
+    type: object
   output:
     description: Contact information.
     uiOrder: 0
@@ -273,49 +263,49 @@ TASK_GET_CONTACT:
       owner-id:
         $ref: '#/$defs/common/owner-id'
         required: []
-        format: string
+        type: string
       email:
         $ref: '#/$defs/contact/email'
         required: []
-        format: string
+        type: string
       first-name:
         $ref: '#/$defs/contact/first-name'
         required: []
-        format: string
+        type: string
       last-name:
         $ref: '#/$defs/contact/last-name'
         required: []
-        format: string
+        type: string
       phone-number:
         $ref: '#/$defs/contact/phone-number'
         required: []
-        format: string
+        type: string
       company:
         $ref: '#/$defs/contact/company'
         required: []
-        format: string
+        type: string
       job-title:
         $ref: '#/$defs/contact/job-title'
         required: []
-        format: string
+        type: string
       lifecycle-stage:
         $ref: '#/$defs/contact/lifecycle-stage'
         required: []
-        format: string
+        type: string
       lead-status:
         $ref: '#/$defs/contact/lead-status'
         required: []
-        format: string
+        type: string
       contact-id:
         description: Contact ID.
         uiOrder: 9
         required: []
         title: Contact ID
-        format: string
+        type: string
     required:
       - contact-id
     title: Output
-    format: object
+    type: object
 TASK_CREATE_CONTACT:
   shortDescription: Create new contact
   input:
@@ -324,40 +314,31 @@ TASK_CREATE_CONTACT:
     properties:
       owner-id:
         $ref: '#/$defs/common/owner-id'
-        acceptFormats:
-          - string
+        type: string
       email:
         $ref: '#/$defs/contact/email'
-        acceptFormats:
-          - string
+        type: string
       first-name:
         $ref: '#/$defs/contact/first-name'
-        acceptFormats:
-          - string
+        type: string
       last-name:
         $ref: '#/$defs/contact/last-name'
-        acceptFormats:
-          - string
+        type: string
       phone-number:
         $ref: '#/$defs/contact/phone-number'
-        acceptFormats:
-          - string
+        type: string
       company:
         $ref: '#/$defs/contact/company'
-        acceptFormats:
-          - string
+        type: string
       job-title:
         $ref: '#/$defs/contact/job-title'
-        acceptFormats:
-          - string
+        type: string
       lifecycle-stage:
         $ref: '#/$defs/contact/lifecycle-stage'
-        acceptFormats:
-          - string
+        type: string
       lead-status:
         $ref: '#/$defs/contact/lead-status'
-        acceptFormats:
-          - string
+        type: string
       create-deals-association:
         $ref: '#/$defs/common/create-deals-association'
         uiOrder: 9
@@ -370,7 +351,7 @@ TASK_CREATE_CONTACT:
     required:
       - email
     title: Input
-    format: object
+    type: object
   output:
     description: Obtain contact ID.
     uiOrder: 0
@@ -380,11 +361,11 @@ TASK_CREATE_CONTACT:
         uiOrder: 0
         required: []
         title: Contact ID
-        format: string
+        type: string
     required:
       - contact-id
     title: Output
-    format: object
+    type: object
 TASK_GET_DEAL:
   shortDescription: Get deal information using deal ID
   input:
@@ -393,15 +374,13 @@ TASK_GET_DEAL:
     properties:
       deal-id:
         description: Input deal ID.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Deal ID
-        format: string
     required:
       - deal-id
     title: Input
-    format: object
+    type: object
   output:
     description: Deal information.
     uiOrder: 0
@@ -409,35 +388,35 @@ TASK_GET_DEAL:
       owner-id:
         $ref: '#/$defs/common/owner-id'
         required: []
-        format: string
+        type: string
       deal-name:
         $ref: '#/$defs/deal/deal-name'
         required: []
-        format: string
+        type: string
       pipeline:
         $ref: '#/$defs/deal/pipeline'
         required: []
-        format: string
+        type: string
       deal-stage:
         $ref: '#/$defs/deal/deal-stage'
         required: []
-        format: string
+        type: string
       amount:
         $ref: '#/$defs/deal/amount'
         required: []
-        format: number
+        type: number
       deal-type:
         $ref: '#/$defs/deal/deal-type'
         required: []
-        format: string
+        type: string
       create-date:
         $ref: '#/$defs/deal/create-date'
         required: []
-        format: string
+        type: string
       close-date:
         $ref: '#/$defs/deal/close-date'
         required: []
-        format: string
+        type: string
       associated-contact-ids:
         $ref: '#/$defs/common/associated-contact-ids'
         uiOrder: 8
@@ -446,7 +425,7 @@ TASK_GET_DEAL:
       - pipeline
       - deal-stage
     title: Output
-    format: object
+    type: object
 TASK_CREATE_DEAL:
   shortDescription: Create new deal
   input:
@@ -455,32 +434,25 @@ TASK_CREATE_DEAL:
     properties:
       owner-id:
         $ref: '#/$defs/common/owner-id'
-        acceptFormats:
-          - string
+        type: string
       deal-name:
         $ref: '#/$defs/deal/deal-name'
-        acceptFormats:
-          - string
+        type: string
       pipeline:
         $ref: '#/$defs/deal/pipeline'
-        acceptFormats:
-          - string
+        type: string
       deal-stage:
         $ref: '#/$defs/deal/deal-stage'
-        acceptFormats:
-          - string
+        type: string
       amount:
         $ref: '#/$defs/deal/amount'
-        acceptFormats:
-          - number
+        type: number
       deal-type:
         $ref: '#/$defs/deal/deal-type'
-        acceptFormats:
-          - string
+        type: string
       close-date:
         $ref: '#/$defs/deal/close-date'
-        acceptFormats:
-          - string
+        type: string
       create-contacts-association:
         $ref: '#/$defs/common/create-contacts-association'
         uiOrder: 7
@@ -489,7 +461,7 @@ TASK_CREATE_DEAL:
       - pipeline
       - deal-stage
     title: Input
-    format: object
+    type: object
   output:
     description: Obtain deal ID.
     uiOrder: 0
@@ -499,11 +471,11 @@ TASK_CREATE_DEAL:
         uiOrder: 0
         required: []
         title: Deal ID
-        format: string
+        type: string
     required:
       - deal-id
     title: Output
-    format: object
+    type: object
 TASK_UPDATE_DEAL:
   shortDescription: Update existing deal
   input:
@@ -512,46 +484,37 @@ TASK_UPDATE_DEAL:
     properties:
       deal-id:
         description: Input deal ID.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Deal ID
-        format: string
       owner-id:
         $ref: '#/$defs/common/owner-id'
-        acceptFormats:
-          - string
+        type: string
       deal-name:
         $ref: '#/$defs/deal/deal-name'
-        acceptFormats:
-          - string
+        type: string
       pipeline:
         $ref: '#/$defs/deal/pipeline'
-        acceptFormats:
-          - string
+        type: string
       deal-stage:
         $ref: '#/$defs/deal/deal-stage'
-        acceptFormats:
-          - string
+        type: string
       amount:
         $ref: '#/$defs/deal/amount'
-        acceptFormats:
-          - number
+        type: number
       deal-type:
         $ref: '#/$defs/deal/deal-type'
-        acceptFormats:
-          - string
+        type: string
       close-date:
         $ref: '#/$defs/deal/close-date'
-        acceptFormats:
-          - string
+        type: string
       create-contacts-association:
         $ref: '#/$defs/common/create-contacts-association'
         uiOrder: 7
     required:
       - deal-id
     title: Input
-    format: object
+    type: object
   output:
     description: Obtain user ID that updated the deal and its update time.
     uiOrder: 0
@@ -561,18 +524,18 @@ TASK_UPDATE_DEAL:
         uiOrder: 0
         required: []
         title: Updated By User ID
-        format: string
+        type: string
       updated-at:
         description: The time when the deal was updated.
         uiOrder: 1
         required: []
         title: Updated At
-        format: string
+        type: string
     required:
       - updated-by-user-id
       - updated-at
     title: Output
-    format: object
+    type: object
 TASK_GET_COMPANY:
   shortDescription: Get company information using company ID
   input:
@@ -581,15 +544,13 @@ TASK_GET_COMPANY:
     properties:
       company-id:
         description: Input company ID.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Company ID
-        format: string
     required:
       - company-id
     title: Input
-    format: object
+    type: object
   output:
     description: Company information.
     uiOrder: 0
@@ -597,69 +558,69 @@ TASK_GET_COMPANY:
       owner-id:
         $ref: '#/$defs/common/owner-id'
         required: []
-        format: string
+        type: string
       company-name:
         $ref: '#/$defs/company/company-name'
         required: []
-        format: string
+        type: string
       company-domain:
         $ref: '#/$defs/company/company-domain'
         required: []
-        format: string
+        type: string
       description:
         $ref: '#/$defs/company/description'
         required: []
-        format: string
+        type: string
       phone-number:
         $ref: '#/$defs/company/phone-number'
         required: []
-        format: string
+        type: string
       industry:
         $ref: '#/$defs/company/industry'
         required: []
-        format: string
+        type: string
       company-type:
         $ref: '#/$defs/company/company-type'
         required: []
-        format: string
+        type: string
       city:
         $ref: '#/$defs/company/city'
         required: []
-        format: string
+        type: string
       state:
         $ref: '#/$defs/company/state'
         required: []
-        format: string
+        type: string
       country:
         $ref: '#/$defs/company/country'
         required: []
-        format: string
+        type: string
       postal-code,:
         $ref: '#/$defs/company/postal-code'
         required: []
-        format: string
+        type: string
       time-zone:
         $ref: '#/$defs/company/time-zone'
         required: []
-        format: string
+        type: string
       annual-revenue:
         $ref: '#/$defs/company/annual-revenue'
         required: []
-        format: number
+        type: number
       total-revenue:
         $ref: '#/$defs/company/total-revenue'
         required: []
-        format: number
+        type: number
       linkedin-page:
         $ref: '#/$defs/company/linkedin-page'
         required: []
-        format: string
+        type: string
       associated-contact-ids:
         $ref: '#/$defs/common/associated-contact-ids'
         uiOrder: 15
     required: []
     title: Output
-    format: object
+    type: object
 TASK_CREATE_COMPANY:
   shortDescription: Create new company
   input:
@@ -668,67 +629,53 @@ TASK_CREATE_COMPANY:
     properties:
       owner-id:
         $ref: '#/$defs/common/owner-id'
-        acceptFormats:
-          - string
+        type: string
       company-name:
         $ref: '#/$defs/company/company-name'
-        acceptFormats:
-          - string
+        type: string
       company-domain:
         $ref: '#/$defs/company/company-domain'
-        acceptFormats:
-          - string
+        type: string
       description:
         $ref: '#/$defs/company/description'
-        acceptFormats:
-          - string
+        type: string
       phone-number:
         $ref: '#/$defs/company/phone-number'
-        acceptFormats:
-          - string
+        type: string
       industry:
         $ref: '#/$defs/company/industry'
-        acceptFormats:
-          - string
+        type: string
       company-type:
         $ref: '#/$defs/company/company-type'
-        acceptFormats:
-          - string
+        type: string
       city:
         $ref: '#/$defs/company/city'
-        acceptFormats:
-          - string
+        type: string
       state:
         $ref: '#/$defs/company/state'
-        acceptFormats:
-          - string
+        type: string
       country:
         $ref: '#/$defs/company/country'
-        acceptFormats:
-          - string
+        type: string
       postal-code,:
         $ref: '#/$defs/company/postal-code'
-        acceptFormats:
-          - string
+        type: string
       time-zone:
         $ref: '#/$defs/company/time-zone'
-        acceptFormats:
-          - string
+        type: string
       annual-revenue:
         $ref: '#/$defs/company/annual-revenue'
-        acceptFormats:
-          - number
+        type: number
       linkedin-page:
         $ref: '#/$defs/company/linkedin-page'
-        acceptFormats:
-          - string
+        type: string
       create-contacts-association:
         $ref: '#/$defs/common/create-contacts-association'
         uiOrder: 15
     required:
       - company-domain
     title: Input
-    format: object
+    type: object
   output:
     description: Obtain company ID.
     uiOrder: 0
@@ -738,11 +685,11 @@ TASK_CREATE_COMPANY:
         uiOrder: 0
         required: []
         title: Company ID
-        format: string
+        type: string
     required:
       - company-id
     title: Output
-    format: object
+    type: object
 TASK_GET_TICKET:
   shortDescription: Get ticket information using ticket ID
   input:
@@ -751,15 +698,13 @@ TASK_GET_TICKET:
     properties:
       ticket-id:
         description: Input ticket ID.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Ticket ID
-        format: string
     required:
       - ticket-id
     title: Input
-    format: object
+    type: object
   output:
     description: Ticket information.
     uiOrder: 0
@@ -767,46 +712,46 @@ TASK_GET_TICKET:
       owner-id:
         $ref: '#/$defs/common/owner-id'
         required: []
-        format: string
+        type: string
       ticket-name:
         $ref: '#/$defs/ticket/ticket-name'
         required: []
-        format: string
+        type: string
       ticket-status:
         $ref: '#/$defs/ticket/ticket-status'
         required: []
-        format: string
+        type: string
       pipeline:
         $ref: '#/$defs/ticket/pipeline'
         required: []
-        format: string
+        type: string
       categories:
         $ref: '#/$defs/ticket/categories'
         items:
           title: Category Value
           description: Category value.
-          format: string
-        format: array
+          type: string
+        type: array
       priority:
         $ref: '#/$defs/ticket/priority'
         required: []
-        format: string
+        type: string
       source:
         $ref: '#/$defs/ticket/source'
         required: []
-        format: string
+        type: string
       record-source:
         $ref: '#/$defs/ticket/record-source'
         required: []
-        format: string
+        type: string
       create-date:
         $ref: '#/$defs/ticket/create-date'
         required: []
-        format: string
+        type: string
       last-modified-date:
         $ref: '#/$defs/ticket/last-modified-date'
         required: []
-        format: string
+        type: string
       associated-contact-ids:
         $ref: '#/$defs/common/associated-contact-ids'
         uiOrder: 10
@@ -815,7 +760,7 @@ TASK_GET_TICKET:
       - ticket-status
       - pipeline
     title: Output
-    format: object
+    type: object
 TASK_CREATE_TICKET:
   shortDescription: Create new ticket
   input:
@@ -824,34 +769,27 @@ TASK_CREATE_TICKET:
     properties:
       owner-id:
         $ref: '#/$defs/common/owner-id'
-        acceptFormats:
-          - string
+        type: string
       ticket-name:
         $ref: '#/$defs/ticket/ticket-name'
-        acceptFormats:
-          - string
+        type: string
       ticket-status:
         $ref: '#/$defs/ticket/ticket-status'
-        acceptFormats:
-          - string
+        type: string
       pipeline:
         $ref: '#/$defs/ticket/pipeline'
-        acceptFormats:
-          - string
+        type: string
       categories:
         $ref: '#/$defs/ticket/categories'
-        acceptFormats:
-          - array
+        type: array
         items:
-          format: string
+          type: string
       priority:
         $ref: '#/$defs/ticket/priority'
-        acceptFormats:
-          - string
+        type: string
       source:
         $ref: '#/$defs/ticket/source'
-        acceptFormats:
-          - string
+        type: string
       create-contacts-association:
         $ref: '#/$defs/common/create-contacts-association'
         uiOrder: 7
@@ -860,7 +798,7 @@ TASK_CREATE_TICKET:
       - ticket-status
       - pipeline
     title: Input
-    format: object
+    type: object
   output:
     description: Obtain ticket ID.
     uiOrder: 0
@@ -870,11 +808,11 @@ TASK_CREATE_TICKET:
         uiOrder: 0
         required: []
         title: Ticket ID
-        format: string
+        type: string
     required:
       - ticket-id
     title: Output
-    format: object
+    type: object
 TASK_UPDATE_TICKET:
   shortDescription: Update existing ticket
   input:
@@ -883,48 +821,39 @@ TASK_UPDATE_TICKET:
     properties:
       ticket-id:
         description: Input ticket ID.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Ticket ID
-        format: string
       owner-id:
         $ref: '#/$defs/common/owner-id'
-        acceptFormats:
-          - string
+        type: string
       ticket-name:
         $ref: '#/$defs/ticket/ticket-name'
-        acceptFormats:
-          - string
+        type: string
       ticket-status:
         $ref: '#/$defs/ticket/ticket-status'
-        acceptFormats:
-          - string
+        type: string
       pipeline:
         $ref: '#/$defs/ticket/pipeline'
-        acceptFormats:
-          - string
+        type: string
       categories:
         $ref: '#/$defs/ticket/categories'
-        acceptFormats:
-          - array
+        type: array
         items:
-          format: string
+          type: string
       priority:
         $ref: '#/$defs/ticket/priority'
-        acceptFormats:
-          - string
+        type: string
       source:
         $ref: '#/$defs/ticket/source'
-        acceptFormats:
-          - string
+        type: string
       create-contacts-association:
         $ref: '#/$defs/common/create-contacts-association'
         uiOrder: 7
     required:
       - ticket-id
     title: Input
-    format: object
+    type: object
   output:
     description: Update time.
     uiOrder: 0
@@ -934,11 +863,11 @@ TASK_UPDATE_TICKET:
         uiOrder: 0
         required: []
         title: Updated At
-        format: string
+        type: string
     required:
       - updated-at
     title: Output
-    format: object
+    type: object
 TASK_GET_THREAD:
   shortDescription: 'Retrieve all the messages inside a thread (conversation inbox). The messages will be sorted from most recent to least recent. Note:
     This task uses Conversation API from HubSpot, which is still in BETA.'
@@ -948,15 +877,13 @@ TASK_GET_THREAD:
     properties:
       thread-id:
         description: Input thread ID.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Thread ID
-        format: string
     required:
       - thread-id
     title: Input
-    format: object
+    type: object
   output:
     description: All messages in the thread.
     uiOrder: 0
@@ -972,7 +899,7 @@ TASK_GET_THREAD:
               description: message to start a conversation.
               uiOrder: 0
               title: Start Conversation Message
-              format: string
+              type: string
             sender:
               description: Sender's information.
               uiOrder: 1
@@ -982,25 +909,25 @@ TASK_GET_THREAD:
                   description: The name of the sender.
                   uiOrder: 0
                   title: Name
-                  format: string
+                  type: string
                 sender-type:
                   description: Specify the category of sender information.
                   uiOrder: 1
                   title: Type
-                  format: string
+                  type: string
                 sender-value:
                   description: 'Contains the actual sender information (e.g.: email address).'
                   uiOrder: 2
                   title: Value
-                  format: string
+                  type: string
                 sender-actor-id:
                   description: The actor ID of the sender.
                   uiOrder: 3
                   title: Actor ID
-                  format: string
+                  type: string
               required:
                 - sender-actor-id
-              format: object
+              type: object
             recipients:
               description: Recipients' information.
               uiOrder: 2
@@ -1012,63 +939,63 @@ TASK_GET_THREAD:
                     description: The name of the recipient.
                     uiOrder: 0
                     title: Name
-                    format: string
+                    type: string
                   value:
                     description: 'Contains the actual recipient information (e.g.: email address).'
                     uiOrder: 2
                     title: Value
-                    format: string
+                    type: string
                   type:
                     description: Specify the category of recipient information.
                     uiOrder: 1
                     title: Type
-                    format: string
+                    type: string
                 required: []
-                format: object
-              format: array
+                type: object
+              type: array
             text:
               description: The content of the message.
               uiOrder: 3
               required: []
               title: Text
-              format: string
+              type: string
             subject:
               description: The subject of the message.
               uiOrder: 4
               required: []
               title: Subject
-              format: string
+              type: string
             channel-id:
               description: The ID of a generic channel returned from the channels endpoint, like 1000 for live chat, 1001 for Facebook Messenger, 1002 for
                 email, etc.
               uiOrder: 5
               required: []
               title: Channel ID
-              format: string
+              type: string
             channel-account-id:
               description: The ID of an account that is part of the channel-id channel.
               uiOrder: 6
               required: []
               title: Channel Account ID
-              format: string
+              type: string
           required:
             - created-at
             - text
             - channel-id
             - channel-account-id
-          format: object
-        format: array
+          type: object
+        type: array
       no-of-messages:
         description: The number of messages in a thread.
         uiOrder: 1
         required: []
         title: Number of Messages
-        format: integer
+        type: integer
     required:
       - results
       - no-of-messages
     title: Output
-    format: object
+    type: object
 TASK_INSERT_MESSAGE:
   shortDescription: Insert message into a thread (only support email thread)
   input:
@@ -1077,50 +1004,38 @@ TASK_INSERT_MESSAGE:
     properties:
       thread-id:
         description: Input thread ID.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Thread ID
-        format: string
       sender-actor-id:
         description: 'Input sender actor id. Example: A-12345678. To obtain this, it is recommended to use and copy the ''Get Thread task'' sender output.
           For [more information](https://developers.hubspot.com/beta-docs/guides/api/conversations/inbox-and-messages#get-actors) about actor id.'
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: Sender Actor ID
-        format: string
       recipients:
         description: Recipients of the message.
         title: Recipients
-        acceptFormats:
-          - array
+        type: array
         uiOrder: 2
         items:
-          format: string
-        format: array
+          type: string
       channel-account-id:
         description: The ID of an account that is part of the channel-id channel. On an existing thread, it is recommended to copy channel-account-id of
           the most recent message on the thread.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 3
         title: Channel Account ID
-        format: string
       subject:
         description: The subject of the message.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 4
         title: Subject
-        format: string
       text:
         description: The body of the message.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 5
         title: Text
-        format: string
     required:
       - thread-id
       - sender-actor-id
@@ -1129,7 +1044,7 @@ TASK_INSERT_MESSAGE:
       - subject
       - text
     title: Input
-    format: object
+    type: object
   output:
     description: Status of the message.
     uiOrder: 0
@@ -1139,11 +1054,11 @@ TASK_INSERT_MESSAGE:
         uiOrder: 0
         required: []
         title: Status
-        format: string
+        type: string
     required:
       - status
     title: Output
-    format: object
+    type: object
 TASK_RETRIEVE_ASSOCIATION:
   shortDescription: 'Get the object IDs associated with contact ID (contact->objects). If you are trying to do the opposite (object->contacts), it is possible
     using the other tasks. Example: Go to get deal task to obtain deal->contacts. Remember to check that the contact ID you input exists, because there
@@ -1154,11 +1069,9 @@ TASK_RETRIEVE_ASSOCIATION:
     properties:
       contact-id:
         description: Input contact ID.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Contact ID
-        format: string
       object-type:
         enum:
           - Deals
@@ -1167,16 +1080,14 @@ TASK_RETRIEVE_ASSOCIATION:
           - Threads
         example: Deals
         description: 'Input object type (CRM objects or ''Threads''). Note: CRM objects include ''Deals'', ''Companies'', ''Tickets'', etc.'
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: Object Type
-        format: string
     required:
       - contact-id
       - object-type
     title: Input
-    format: object
+    type: object
   output:
     description: All object IDs.
     uiOrder: 0
@@ -1188,19 +1099,19 @@ TASK_RETRIEVE_ASSOCIATION:
         items:
           title: Object ID
           description: The object ID associated with the contact.
-          format: string
-        format: array
+          type: string
+        type: array
       object-ids-length:
         description: The number of object IDs.
         uiOrder: 1
         required: []
         title: Object IDs Length
-        format: integer
+        type: integer
     required:
       - object-ids
       - object-ids-length
     title: Output
-    format: object
+    type: object
 TASK_GET_OWNER:
   shortDescription: Get information about HubSpot owner using either owner ID or user ID. For more information about owner, please go to [here](https://developers.hubspot.com/docs/api/crm/owners)
   input:
@@ -1213,23 +1124,19 @@ TASK_GET_OWNER:
           - User ID
         example: Owner ID
         description: Specify the type of ID you will use to get owner's information.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: ID Type
-        format: string
       id:
         description: Can either be owner ID or user ID; according to the ID type you selected.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 1
         title: ID
-        format: string
     required:
       - id-type
       - id
     title: Input
-    format: object
+    type: object
   output:
     description: Owner's detailed information.
     uiOrder: 0
@@ -1239,31 +1146,31 @@ TASK_GET_OWNER:
         uiOrder: 0
         required: []
         title: First Name
-        format: string
+        type: string
       last-name:
         description: Last name.
         uiOrder: 1
         required: []
         title: Last Name
-        format: string
+        type: string
       email:
         description: Email.
         uiOrder: 2
         required: []
         title: Email
-        format: string
+        type: string
       owner-id:
         description: Owner ID. Usually used to associate the owner with other objects.
         uiOrder: 3
         required: []
         title: Owner ID
-        format: string
+        type: string
       user-id:
         description: User ID. Usually used to indicate the owner who performed the action. User ID can be seen in Update Deal task output.
         uiOrder: 4
         required: []
         title: User ID
-        format: string
+        type: string
       teams:
         description: The owner's teams information.
         uiOrder: 5
@@ -1275,41 +1182,41 @@ TASK_GET_OWNER:
               description: The name of the team.
               uiOrder: 0
               title: Team Name
-              format: string
+              type: string
             team-id:
               description: The ID of the team.
               uiOrder: 1
               title: Team ID
-              format: string
+              type: string
             team-primary:
               description: Indicate whether this team is the primary team of the owner.
               uiOrder: 2
               title: Team Primary
-              format: boolean
+              type: boolean
           required:
             - team-name
             - team-id
             - team-primary
-          format: object
-        format: array
+          type: object
+        type: array
       created-at:
         description: Created at.
         uiOrder: 6
         required: []
         title: Created At
-        format: string
+        type: string
       updated-at:
         description: Updated at.
         uiOrder: 7
         required: []
         title: Updated At
-        format: string
+        type: string
       archived:
         description: Archived.
         uiOrder: 8
         required: []
         title: Archived
-        format: boolean
+        type: boolean
     required:
       - first-name
       - last-name
@@ -1320,7 +1227,7 @@ TASK_GET_OWNER:
       - updated-at
       - archived
     title: Output
-    format: object
+    type: object
 TASK_GET_ALL:
   shortDescription: Get all the IDs for a specific object (e.g. all contact IDs)
   input:
@@ -1337,15 +1244,13 @@ TASK_GET_ALL:
           - Owners
         example: Contacts
         description: The object which you want to get all IDs for.
-        acceptFormats:
-          - string
+        type: string
         uiOrder: 0
         title: Object Type
-        format: string
     required:
       - object-type
     title: Input
-    format: object
+    type: object
   output:
     description: All the IDs of the object.
     uiOrder: 0
@@ -1357,16 +1262,16 @@ TASK_GET_ALL:
         items:
           title: Object ID
           description: Object ID.
-          format: string
-        format: array
+          type: string
+        type: array
       object-ids-length:
         description: The number of object IDs.
         uiOrder: 1
         required: []
         title: Object IDs Length
-        format: integer
+        type: integer
     required:
       - object-ids
       - object-ids-length
     title: Output
-    format: object
+    type: object

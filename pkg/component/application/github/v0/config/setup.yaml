@@ -3,12 +3,10 @@ properties:
   token:
     description: Fill in your GitHub access token for advanced usages. For more information about how to create tokens, please refer to the <a href="https://github.com/settings/tokens">github
       settings</a>.
-    acceptFormats:
-      - string
+    type: string
     instillSecret: true
     uiOrder: 0
     title: Token
-    format: string
 required:
   - token
 instillOAuthConfig:
@@ -18,4 +16,4 @@ instillOAuthConfig:
     - repo
     - admin:repo_hook
 title: GitHub Connection
-format: object
+type: object

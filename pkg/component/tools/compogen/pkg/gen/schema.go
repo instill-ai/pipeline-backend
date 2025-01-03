@@ -9,11 +9,11 @@ type property struct {
 	Title       string `json:"title" validate:"required"`
 	Order       *int   `json:"uiOrder" validate:"required"`
 
-	Format string `json:"format"`
+	Type string `json:"type"`
 
-	// If Format is array, Items defines the element format.
+	// If Type is array, Items defines the element format.
 	Items struct {
-		Format     string              `json:"format"`
+		Type       string              `json:"type"`
 		Properties map[string]property `json:"properties" validate:"omitempty,dive"`
 		OneOf      []objectSchema      `json:"oneOf" validate:"dive"`
 	} `json:"items"`
