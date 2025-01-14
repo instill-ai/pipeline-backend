@@ -180,3 +180,11 @@ func (f *fileData) Equal(other format.Value) bool {
 	}
 	return false
 }
+
+func (f *fileData) ToJSONValue() (v any, err error) {
+	base64str, err := f.Base64()
+	if err != nil {
+		return nil, err
+	}
+	return base64str.String(), nil
+}

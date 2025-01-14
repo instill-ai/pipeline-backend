@@ -81,3 +81,15 @@ func (m Map) String() string {
 	}
 	return fmt.Sprintf("{%s}", strings.Join(segments, ", "))
 }
+
+func (m Map) ToJSONValue() (v any, err error) {
+
+	jsonMap := make(map[string]any)
+	for k, v := range m {
+		jsonMap[k], err = v.ToJSONValue()
+		if err != nil {
+			return nil, err
+		}
+	}
+	return jsonMap, nil
+}

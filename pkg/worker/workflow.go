@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go/parser"
 	"strings"
 	"time"
 
@@ -1401,34 +1400,13 @@ func (w *worker) processCondition(ctx context.Context, wfm memory.WorkflowMemory
 		}
 
 		if condition != "" {
-			// TODO: these code should be refactored and shared some common functions with Render
-			condStr := condition
-			var varMapping map[string]string
-			condStr, _, varMapping = recipe.SanitizeCondition(condStr)
-
-			expr, err := parser.ParseExpr(condStr)
-			if err != nil {
-				return nil, err
-			}
 
 			allMemory, err := wfm.Get(ctx, idx, "")
 			if err != nil {
 				return nil, err
 			}
-			condMemoryForConditionStruct, err := allMemory.ToStructValue()
-			if err != nil {
-				return nil, err
-			}
-			b, _ := protojson.Marshal(condMemoryForConditionStruct)
-			condMemoryForCondition := map[string]any{}
-			_ = json.Unmarshal(b, &condMemoryForCondition)
 
-			sanitizedCondMemoryForCondition := map[string]any{}
-			for k, v := range condMemoryForCondition {
-				sanitizedCondMemoryForCondition[varMapping[k]] = v
-			}
-
-			cond, err := recipe.EvalCondition(expr, sanitizedCondMemoryForCondition)
+			cond, err := recipe.Eval(condition, allMemory)
 			if err != nil {
 				return nil, err
 			}

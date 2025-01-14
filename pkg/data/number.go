@@ -74,3 +74,7 @@ func (n *numberData) Equal(other format.Value) bool {
 	}
 	return false
 }
+
+func (n *numberData) ToJSONValue() (v any, err error) {
+	return n.Float64(), nil
+}

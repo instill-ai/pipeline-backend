@@ -45,3 +45,7 @@ func (s *stringData) Equal(other format.Value) bool {
 	}
 	return false
 }
+
+func (s *stringData) ToJSONValue() (v any, err error) {
+	return s.Raw, nil
+}

@@ -55,3 +55,7 @@ func (b *booleanData) Equal(other format.Value) bool {
 func (b *booleanData) Hash() string {
 	return fmt.Sprintf("%t", b.Raw)
 }
+
+func (b *booleanData) ToJSONValue() (v any, err error) {
+	return b.Raw, nil
+}
