@@ -386,7 +386,7 @@ func evalExpr(expr ast.Expr, value map[string]any) (any, error) {
 	case *ast.BasicLit:
 		switch e.Kind {
 		case token.INT:
-			i, err := strconv.ParseInt(e.Value, 10, 64)
+			i, err := strconv.ParseInt(e.Value, 10, 32)
 			if err != nil {
 				return nil, err
 			}
