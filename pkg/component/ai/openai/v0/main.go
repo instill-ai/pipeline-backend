@@ -21,6 +21,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
 	"github.com/instill-ai/pipeline-backend/pkg/component/resources/schemas"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/x/errmsg"
 )
 
@@ -214,6 +215,39 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		}
 		messages = append(messages, multiModalMessage{Role: "user", Content: userContents})
 
+		tools := make([]toolReqStruct, len(inputStruct.Tools))
+		for i, tool := range inputStruct.Tools {
+			params := make(map[string]any)
+			for k, v := range tool.Function.Parameters {
+				params[k], err = v.ToJSONValue()
+				if err != nil {
+					job.Error.Error(ctx, err)
+					return
+				}
+			}
+			tools[i] = toolReqStruct{
+				Type: "function",
+				Function: functionReqStruct{
+					Name:        tool.Function.Name,
+					Parameters:  params,
+					Strict:      tool.Function.Strict,
+					Description: tool.Function.Description,
+				},
+			}
+		}
+
+		var toolChoice any
+		switch choice := inputStruct.ToolChoice.(type) {
+		case data.Map:
+			toolChoice, err = choice.ToJSONValue()
+			if err != nil {
+				job.Error.Error(ctx, err)
+				return
+			}
+		case format.String:
+			toolChoice = choice.String()
+		}
+
 		body := textCompletionReq{
 			Messages:         messages,
 			Model:            inputStruct.Model,
@@ -227,6 +261,19 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			StreamOptions: &streamOptions{
 				IncludeUsage: true,
 			},
+		}
+
+		if inputStruct.Prediction != nil {
+			body.Prediction = &predictionReqStruct{
+				Type:    "content",
+				Content: inputStruct.Prediction.Content,
+			}
+		}
+		if len(tools) > 0 {
+			body.Tools = tools
+		}
+		if toolChoice != nil {
+			body.ToolChoice = toolChoice
 		}
 
 		// workaround, the OpenAI service can not accept this param
@@ -277,11 +324,11 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		scanner := bufio.NewScanner(restyResp.RawResponse.Body)
 
 		outputStruct := taskTextGenerationOutput{}
+		toolCalls := make(map[int]*toolCall)
 
 		u := usage{}
 		count := 0
 		for scanner.Scan() {
-
 			res := scanner.Text()
 
 			if len(res) == 0 {
@@ -289,8 +336,8 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			}
 			res = strings.Replace(res, "data: ", "", 1)
 
-			// Note: Since we haven’t provided delta updates for the
-			// messages, we’re reducing the number of event streams by
+			// Note: Since we haven't provided delta updates for the
+			// messages, we're reducing the number of event streams by
 			// returning the response every ten iterations.
 			if count == 3 || res == "[DONE]" {
 				err = job.Output.WriteData(ctx, outputStruct)
@@ -313,23 +360,55 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			}
 
 			for _, c := range response.Choices {
-				// Now, there is no document to describe it.
-				// But, when we test it, we found that the choices idx is not in order.
-				// So, we need to get idx from the choice, and the len of the choices is always 1.
 				responseIdx := c.Index
 				if len(outputStruct.Texts) <= responseIdx {
 					outputStruct.Texts = append(outputStruct.Texts, "")
 				}
 				outputStruct.Texts[responseIdx] += c.Delta.Content
 
+				// Collect tool calls
+				for _, t := range c.Delta.ToolCalls {
+					if _, exists := toolCalls[t.Index]; !exists {
+						toolCalls[t.Index] = &toolCall{
+							Type: t.Type,
+							Function: functionCall{
+								Name:      t.Function.Name,
+								Arguments: t.Function.Arguments,
+							},
+						}
+					} else {
+						// Append arguments for existing tool call
+						toolCalls[t.Index].Function.Arguments += t.Function.Arguments
+					}
+				}
 			}
 
 			u = usage{
 				PromptTokens:     response.Usage.PromptTokens,
 				CompletionTokens: response.Usage.CompletionTokens,
 				TotalTokens:      response.Usage.TotalTokens,
+				PromptTokenDetails: &promptTokenDetails{
+					AudioTokens:  response.Usage.PromptTokenDetails.AudioTokens,
+					CachedTokens: response.Usage.PromptTokenDetails.CachedTokens,
+				},
+				CompletionTokenDetails: &completionTokenDetails{
+					ReasoningTokens:          response.Usage.CompletionTokenDetails.ReasoningTokens,
+					AudioTokens:              response.Usage.CompletionTokenDetails.AudioTokens,
+					AcceptedPredictionTokens: response.Usage.CompletionTokenDetails.AcceptedPredictionTokens,
+					RejectedPredictionTokens: response.Usage.CompletionTokenDetails.RejectedPredictionTokens,
+				},
 			}
+		}
 
+		// Convert collected tool calls to output format
+		for _, tc := range toolCalls {
+			outputStruct.ToolCalls = append(outputStruct.ToolCalls, toolCall{
+				Type: tc.Type,
+				Function: functionCall{
+					Name:      tc.Function.Name,
+					Arguments: tc.Function.Arguments,
+				},
+			})
 		}
 
 		outputStruct.Usage = u
