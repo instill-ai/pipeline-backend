@@ -9,6 +9,7 @@ import (
 type Value interface {
 	IsValue()
 	ToStructValue() (v *structpb.Value, err error)
+	ToJSONValue() (v any, err error)
 	Get(p *path.Path) (v Value, err error)
 	Equal(other Value) bool
 	String() string

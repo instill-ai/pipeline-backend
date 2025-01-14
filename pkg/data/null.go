@@ -43,3 +43,7 @@ func (n *nullData) Equal(other format.Value) bool {
 func (n *nullData) String() string {
 	return "null"
 }
+
+func (n *nullData) ToJSONValue() (v any, err error) {
+	return nil, nil
+}

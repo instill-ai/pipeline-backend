@@ -92,3 +92,14 @@ func (a Array) String() string {
 	}
 	return fmt.Sprintf("[%s]", strings.Join(segments, ", "))
 }
+
+func (a Array) ToJSONValue() (v any, err error) {
+	jsonArr := make([]any, len(a))
+	for i, v := range a {
+		jsonArr[i], err = v.ToJSONValue()
+		if err != nil {
+			return nil, err
+		}
+	}
+	return jsonArr, nil
+}

@@ -50,3 +50,8 @@ func (b *byteArrayData) Equal(other format.Value) bool {
 	}
 	return false
 }
+
+func (b *byteArrayData) ToJSONValue() (v any, err error) {
+	base64str := base64.StdEncoding.EncodeToString(b.Raw)
+	return base64str, nil
+}
