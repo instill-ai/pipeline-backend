@@ -67,9 +67,7 @@ func (e *execution) createCampaign(ctx context.Context, job *base.Job) error {
 }
 
 func buildCreateCampaignRequest(input createCampaignInput) createCampaignReq {
-	return createCampaignReq{
-		Name: input.Name,
-	}
+	return createCampaignReq(input)
 }
 
 type createCampaignReq struct {

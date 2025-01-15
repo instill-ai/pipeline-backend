@@ -64,13 +64,7 @@ func (e *execution) addLeads(ctx context.Context, job *base.Job) error {
 		return err
 	}
 
-	outputStruct := addLeadsOutput{
-		UploadCount:            response.UploadCount,
-		TotalLeads:             response.TotalLeads,
-		AlreadyAddedToCampaign: response.AlreadyAddedToCampaign,
-		InvalidEmailCount:      response.InvalidEmailCount,
-		Error:                  response.Error,
-	}
+	outputStruct := addLeadsOutput(response)
 
 	err = job.Output.WriteData(ctx, outputStruct)
 

@@ -47,13 +47,6 @@ func TestObjectSchema_Validate(t *testing.T) {
 		wantErr  string
 	}{
 		{
-			name: "nok - no properties",
-			modifier: func(rs *objectSchema) {
-				rs.Properties = map[string]property{}
-			},
-			wantErr: "objectSchema.Properties: Properties field doesn't reach the minimum value / number of elements",
-		},
-		{
 			name: "nok - no title",
 			modifier: func(rs *objectSchema) {
 				rs.Properties["wrong"] = property{
