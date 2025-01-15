@@ -22,6 +22,26 @@ type textCompletionReq struct {
 	ResponseFormat   *responseFormatReqStruct `json:"response_format,omitempty"`
 	Stream           bool                     `json:"stream"`
 	StreamOptions    *streamOptions           `json:"stream_options,omitempty"`
+	Prediction       *predictionReqStruct     `json:"prediction,omitempty"`
+	Tools            []toolReqStruct          `json:"tools,omitempty"`
+	ToolChoice       any                      `json:"tool_choice,omitempty"`
+}
+
+type predictionReqStruct struct {
+	Type    string `json:"type"`
+	Content string `json:"content"`
+}
+
+type toolReqStruct struct {
+	Type     string            `json:"type"`
+	Function functionReqStruct `json:"function"`
+}
+
+type functionReqStruct struct {
+	Description string         `json:"description"`
+	Name        string         `json:"name"`
+	Parameters  map[string]any `json:"parameters"`
+	Strict      *bool          `json:"strict"`
 }
 
 type streamOptions struct {
@@ -62,8 +82,21 @@ type textCompletionStreamResp struct {
 }
 
 type outputMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+	Role      string         `json:"role"`
+	Content   string         `json:"content"`
+	ToolCalls []toolCallResp `json:"tool_calls,omitempty"`
+}
+
+type toolCallResp struct {
+	Index    int              `json:"index"`
+	ID       string           `json:"id"`
+	Type     string           `json:"type"`
+	Function functionCallResp `json:"function"`
+}
+
+type functionCallResp struct {
+	Name      string `json:"name"`
+	Arguments string `json:"arguments"`
 }
 
 type streamChoices struct {
@@ -73,7 +106,21 @@ type streamChoices struct {
 }
 
 type usageOpenAI struct {
-	PromptTokens     int `json:"prompt_tokens"`
-	CompletionTokens int `json:"completion_tokens"`
-	TotalTokens      int `json:"total_tokens"`
+	PromptTokens           int                          `json:"prompt_tokens"`
+	CompletionTokens       int                          `json:"completion_tokens"`
+	TotalTokens            int                          `json:"total_tokens"`
+	PromptTokenDetails     promptTokenDetailsOpenAI     `json:"prompt_token_details"`
+	CompletionTokenDetails completionTokenDetailsOpenAI `json:"completion_tokens_details"`
+}
+
+type promptTokenDetailsOpenAI struct {
+	AudioTokens  int `json:"audio_tokens"`
+	CachedTokens int `json:"cached_tokens"`
+}
+
+type completionTokenDetailsOpenAI struct {
+	ReasoningTokens          int `json:"reasoning_tokens"`
+	AudioTokens              int `json:"audio_tokens"`
+	AcceptedPredictionTokens int `json:"accepted_prediction_tokens"`
+	RejectedPredictionTokens int `json:"rejected_prediction_tokens"`
 }

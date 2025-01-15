@@ -18,22 +18,65 @@ type taskTextGenerationInput struct {
 	PresencePenalty  *float32                   `instill:"presence-penalty,default=0"`
 	FrequencyPenalty *float32                   `instill:"frequency-penalty,default=0"`
 	ResponseFormat   *responseFormatInputStruct `instill:"response-format"`
+	Prediction       *predictionStruct          `instill:"prediction"`
+	Tools            []toolStruct               `instill:"tools"`
+	ToolChoice       format.Value               `instill:"tool-choice"`
 }
 
 type taskTextGenerationOutput struct {
-	Texts []string `instill:"texts"`
-	Usage usage    `instill:"usage"`
+	Texts     []string   `instill:"texts"`
+	ToolCalls []toolCall `instill:"tool-calls"`
+	Usage     usage      `instill:"usage"`
+}
+
+type toolCall struct {
+	Type     string       `instill:"type"`
+	Function functionCall `instill:"function"`
+}
+
+type functionCall struct {
+	Name      string `instill:"name"`
+	Arguments string `instill:"arguments"`
 }
 
 type usage struct {
-	PromptTokens     int `instill:"prompt-tokens"`
-	CompletionTokens int `instill:"completion-tokens"`
-	TotalTokens      int `instill:"total-tokens"`
+	PromptTokens           int                     `instill:"prompt-tokens"`
+	CompletionTokens       int                     `instill:"completion-tokens"`
+	TotalTokens            int                     `instill:"total-tokens"`
+	CompletionTokenDetails *completionTokenDetails `instill:"completion-token-details"`
+	PromptTokenDetails     *promptTokenDetails     `instill:"prompt-token-details"`
+}
+
+type promptTokenDetails struct {
+	AudioTokens  int `instill:"audio-tokens"`
+	CachedTokens int `instill:"cached-tokens"`
+}
+
+type completionTokenDetails struct {
+	ReasoningTokens          int `instill:"reasoning-tokens"`
+	AudioTokens              int `instill:"audio-tokens"`
+	AcceptedPredictionTokens int `instill:"accepted-prediction-tokens"`
+	RejectedPredictionTokens int `instill:"rejected-prediction-tokens"`
 }
 
 type responseFormatInputStruct struct {
 	Type       string `instill:"type"`
 	JSONSchema string `instill:"json-schema"`
+}
+
+type predictionStruct struct {
+	Content string `instill:"content"`
+}
+
+type toolStruct struct {
+	Function functionStruct `instill:"function"`
+}
+
+type functionStruct struct {
+	Description string                  `instill:"description"`
+	Name        string                  `instill:"name"`
+	Parameters  map[string]format.Value `instill:"parameters"`
+	Strict      *bool                   `instill:"strict,default=false"`
 }
 
 type textMessage struct {

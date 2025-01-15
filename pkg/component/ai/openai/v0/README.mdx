@@ -62,7 +62,7 @@ OpenAI's text generation models (often called generative pre-trained transformer
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION` |
-| Model (required) | `model` | string | ID of the model to use. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`o1-preview`</li><li>`o1-mini`</li><li>`gpt-4o-mini`</li><li>`gpt-4o`</li><li>`gpt-4o-2024-05-13`</li><li>`gpt-4o-2024-08-06`</li><li>`gpt-4-turbo`</li><li>`gpt-4-turbo-2024-04-09`</li><li>`gpt-4-0125-preview`</li><li>`gpt-4-turbo-preview`</li><li>`gpt-4-1106-preview`</li><li>`gpt-4-vision-preview`</li><li>`gpt-4`</li><li>`gpt-4-0314`</li><li>`gpt-4-0613`</li><li>`gpt-4-32k`</li><li>`gpt-4-32k-0314`</li><li>`gpt-4-32k-0613`</li><li>`gpt-3.5-turbo`</li><li>`gpt-3.5-turbo-16k`</li><li>`gpt-3.5-turbo-0301`</li><li>`gpt-3.5-turbo-0613`</li><li>`gpt-3.5-turbo-1106`</li><li>`gpt-3.5-turbo-0125`</li><li>`gpt-3.5-turbo-16k-0613`</li></ul></details>  |
+| Model (required) | `model` | string | ID of the model to use. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`o1`</li><li>`o1-preview`</li><li>`o1-mini`</li><li>`gpt-4o-mini`</li><li>`gpt-4o`</li><li>`gpt-4o-2024-05-13`</li><li>`gpt-4o-2024-08-06`</li><li>`gpt-4-turbo`</li><li>`gpt-4-turbo-2024-04-09`</li><li>`gpt-4-0125-preview`</li><li>`gpt-4-turbo-preview`</li><li>`gpt-4-1106-preview`</li><li>`gpt-4-vision-preview`</li><li>`gpt-4`</li><li>`gpt-4-0314`</li><li>`gpt-4-0613`</li><li>`gpt-4-32k`</li><li>`gpt-4-32k-0314`</li><li>`gpt-4-32k-0613`</li><li>`gpt-3.5-turbo`</li><li>`gpt-3.5-turbo-16k`</li><li>`gpt-3.5-turbo-0301`</li><li>`gpt-3.5-turbo-0613`</li><li>`gpt-3.5-turbo-1106`</li><li>`gpt-3.5-turbo-0125`</li><li>`gpt-3.5-turbo-16k-0613`</li></ul></details>  |
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant.". |
 | Image | `images` | array[string] | The images. |
@@ -74,6 +74,9 @@ OpenAI's text generation models (often called generative pre-trained transformer
 | Top P | `top-p` | number | An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.  We generally recommend altering this or `temperature` but not both. . |
 | Presence Penalty | `presence-penalty` | number | Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics. |
 | Frequency Penalty | `frequency-penalty` | number | Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim. |
+| [Prediction](#text-generation-prediction) | `prediction` | object | Configuration for a Predicted Output, which can greatly improve response times when large parts of the model response are known ahead of time. This is most common when you are regenerating a file with only minor changes to most of the content. |
+| [Tools](#text-generation-tools) | `tools` | array[object] | A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported. |
+| Tool Choice | `tool-choice` | any | Controls which (if any) tool is called by the model. 'none' means the model will not call any tool and instead generates a message. 'auto' means the model can pick between generating a message or calling one or more tools. 'required' means the model must call one or more tools. |
 </div>
 
 
@@ -112,6 +115,39 @@ The image URL
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
+</div>
+<h4 id="text-generation-prediction">Prediction</h4>
+
+Configuration for a Predicted Output, which can greatly improve response times when large parts of the model response are known ahead of time. This is most common when you are regenerating a file with only minor changes to most of the content.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | string | The content that should be matched when generating a model response. If generated tokens would match this content, the entire model response can be returned much more quickly.  |
+</div>
+<h4 id="text-generation-tools">Tools</h4>
+
+A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Function](#text-generation-function) | `function` | object | The function to call.  |
+</div>
+<h4 id="text-generation-function">Function</h4>
+
+The function to call.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Description | `description` | string | A description of what the function does, used by the model to choose when and how to call the function.  |
+| Name | `name` | string | The name of the function to be called. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64.  |
+| Parameters | `parameters` | object | The parameters the functions accepts, described as a JSON Schema object. Omitting parameters defines a function with an empty parameter list.  |
+| Strict | `strict` | boolean | Whether to enable strict schema adherence when generating the function call. If set to true, the model will follow the exact schema defined in the parameters field.  |
 </div>
 </details>
 
@@ -156,11 +192,32 @@ The image URL
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Texts | `texts` | array[string] | Texts. |
+| [Tool Calls](#text-generation-tool-calls) (optional) | `tool-calls` | array[object] | The tool calls generated by the model, such as function calls. |
 | [Usage](#text-generation-usage) (optional) | `usage` | object | Usage statistics related to the query. |
 </div>
 
 <details>
 <summary> Output Objects in Text Generation</summary>
+
+<h4 id="text-generation-tool-calls">Tool Calls</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Function](#text-generation-function) | `function` | object | The function that the model called. |
+| Type | `type` | string | The type of the tool. Currently, only function is supported. |
+</div>
+
+<h4 id="text-generation-function">Function</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Arguments | `arguments` | string | The arguments to call the function with, as generated by the model in JSON format. Note that the model does not always generate valid JSON, and may hallucinate parameters not defined by your function schema. Validate the arguments in your code before calling your function. |
+| Name | `name` | string | The name of the function to call. |
+</div>
 
 <h4 id="text-generation-usage">Usage</h4>
 
@@ -168,9 +225,33 @@ The image URL
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
+| [Completion token details](#text-generation-completion-token-details) | `completion-token-details` | object | Breakdown of tokens used in a completion. |
 | Completion tokens | `completion-tokens` | integer | Total number of tokens used (completion). |
+| [Prompt token details](#text-generation-prompt-token-details) | `prompt-token-details` | object | Breakdown of tokens used in the prompt. |
 | Prompt tokens | `prompt-tokens` | integer | Total number of tokens used (prompt). |
 | Total tokens | `total-tokens` | integer | Total number of tokens used (prompt + completion). |
+</div>
+
+<h4 id="text-generation-prompt-token-details">Prompt Token Details</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Audio tokens | `audio-tokens` | integer | Audio input tokens present in the prompt. |
+| Cached tokens | `cached-tokens` | integer | Cached tokens present in the prompt. |
+</div>
+
+<h4 id="text-generation-completion-token-details">Completion Token Details</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Accepted prediction tokens | `accepted-prediction-tokens` | integer | When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion. |
+| Audio tokens | `audio-tokens` | integer | Audio input tokens generated by the model. |
+| Reasoning tokens | `reasoning-tokens` | integer | Tokens generated by the model for reasoning. |
+| Rejected prediction tokens | `rejected-prediction-tokens` | integer | When using Predicted Outputs, the number of tokens in the prediction that did not appear in the completion. However, like reasoning tokens, these tokens are still counted in the total completion tokens for purposes of billing, output, and context window limits. |
 </div>
 </details>
 

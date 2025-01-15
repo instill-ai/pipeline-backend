@@ -40,26 +40,7 @@ func convertRawRepository(r rawRepository) repository {
 }
 
 func convertRawUser(r rawUser) user {
-	return user{
-		Login:             r.Login,
-		ID:                r.ID,
-		NodeID:            r.NodeID,
-		AvatarURL:         r.AvatarURL,
-		GravatarID:        r.GravatarID,
-		URL:               r.URL,
-		HTMLURL:           r.HTMLURL,
-		FollowersURL:      r.FollowersURL,
-		FollowingURL:      r.FollowingURL,
-		GistsURL:          r.GistsURL,
-		StarredURL:        r.StarredURL,
-		SubscriptionsURL:  r.SubscriptionsURL,
-		OrganizationsURL:  r.OrganizationsURL,
-		ReposURL:          r.ReposURL,
-		EventsURL:         r.EventsURL,
-		ReceivedEventsURL: r.ReceivedEventsURL,
-		Type:              r.Type,
-		SiteAdmin:         r.SiteAdmin,
-	}
+	return user(r)
 }
 
 func convertRawLicense(r *rawLicense) *license {
