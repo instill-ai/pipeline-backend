@@ -646,6 +646,7 @@ func anchorTaskWithProperty(prop property, taskName string) string {
 	if isSemiStructuredObject(prop) {
 		return prop.Title
 	}
+
 	if prop.Type == "object" ||
 		(prop.Type == "array" && prop.Items.Type == "object") ||
 		(prop.Type == "array[object]") {
