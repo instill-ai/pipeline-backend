@@ -694,8 +694,6 @@ github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
-github.com/instill-ai/pipeline-backend v0.49.1-beta.0.20241224134251-c4a675c31007 h1:YrF2mMKfyiJm+itKDLEH3cDWDZjS7JAmfAdISTVlmxM=
-github.com/instill-ai/pipeline-backend v0.49.1-beta.0.20241224134251-c4a675c31007/go.mod h1:blCbRLxPUsNFFGldDRTQd4/Uu7KKNP0vfAT70STlS9E=
 github.com/instill-ai/pipeline-backend v0.49.1-beta.0.20241225070636-1d7ceb88b650 h1:FKXLGmv3kfLsW0OEU9DjQgyezxnGzXdwixzR4fUP1H8=
 github.com/instill-ai/pipeline-backend v0.49.1-beta.0.20241225070636-1d7ceb88b650/go.mod h1:blCbRLxPUsNFFGldDRTQd4/Uu7KKNP0vfAT70STlS9E=
 github.com/instill-ai/protogen-go v0.3.3-alpha.0.20241213145904-c3d8111872b5 h1:5338ZeuB/C50P8aUOUKstjBSAQaWqmrdrAK2i9AbWk8=

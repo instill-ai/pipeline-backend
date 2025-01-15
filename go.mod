@@ -1,6 +1,6 @@
 module github.com/instill-ai/pipeline-backend
 
-go 1.22.5
+go 1.23.4
 
 require (
 	cloud.google.com/go/bigquery v1.61.0
