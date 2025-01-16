@@ -14,26 +14,32 @@ import (
 )
 
 type setupReader struct {
+	memoryStore  memory.MemoryStore
+	workflowID   string
 	compID       string
-	wfm          memory.WorkflowMemory
 	conditionMap map[int]int
 }
 
-func NewSetupReader(wfm memory.WorkflowMemory, compID string, conditionMap map[int]int) *setupReader {
+func NewSetupReader(memoryStore memory.MemoryStore, workflowID string, compID string, conditionMap map[int]int) *setupReader {
 	return &setupReader{
+		memoryStore:  memoryStore,
+		workflowID:   workflowID,
 		compID:       compID,
-		wfm:          wfm,
 		conditionMap: conditionMap,
 	}
 }
 
 func (i *setupReader) Read(ctx context.Context) (setups []*structpb.Struct, err error) {
+	wfm, err := i.memoryStore.GetWorkflowMemory(ctx, i.workflowID)
+	if err != nil {
+		return nil, err
+	}
 	for idx := range len(i.conditionMap) {
-		setupTemplate, err := i.wfm.GetComponentData(ctx, i.conditionMap[idx], i.compID, memory.ComponentDataSetupTemplate)
+		setupTemplate, err := wfm.GetComponentData(ctx, i.conditionMap[idx], i.compID, memory.ComponentDataSetupTemplate)
 		if err != nil {
 			return nil, err
 		}
-		setupVal, err := recipe.Render(ctx, setupTemplate, i.conditionMap[idx], i.wfm, false)
+		setupVal, err := recipe.Render(ctx, setupTemplate, i.conditionMap[idx], wfm, false)
 		if err != nil {
 			return nil, err
 		}
@@ -48,16 +54,18 @@ func (i *setupReader) Read(ctx context.Context) (setups []*structpb.Struct, err 
 }
 
 type inputReader struct {
+	memoryStore   memory.MemoryStore
+	workflowID    string
 	compID        string
-	wfm           memory.WorkflowMemory
 	originalIdx   int
 	binaryFetcher external.BinaryFetcher
 }
 
-func NewInputReader(wfm memory.WorkflowMemory, compID string, originalIdx int, binaryFetcher external.BinaryFetcher) *inputReader {
+func NewInputReader(memoryStore memory.MemoryStore, workflowID string, compID string, originalIdx int, binaryFetcher external.BinaryFetcher) *inputReader {
 	return &inputReader{
+		memoryStore:   memoryStore,
+		workflowID:    workflowID,
 		compID:        compID,
-		wfm:           wfm,
 		originalIdx:   originalIdx,
 		binaryFetcher: binaryFetcher,
 	}
@@ -67,18 +75,22 @@ func NewInputReader(wfm memory.WorkflowMemory, compID string, originalIdx int, b
 // ReadData() instead.
 // structpb is not suitable for handling binary data and will be phased out gradually.
 func (i *inputReader) read(ctx context.Context) (inputVal format.Value, err error) {
-
-	inputTemplate, err := i.wfm.GetComponentData(ctx, i.originalIdx, i.compID, memory.ComponentDataInputTemplate)
+	wfm, err := i.memoryStore.GetWorkflowMemory(ctx, i.workflowID)
 	if err != nil {
 		return nil, err
 	}
 
-	inputVal, err = recipe.Render(ctx, inputTemplate, i.originalIdx, i.wfm, false)
+	inputTemplate, err := wfm.GetComponentData(ctx, i.originalIdx, i.compID, memory.ComponentDataInputTemplate)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = i.wfm.SetComponentData(ctx, i.originalIdx, i.compID, memory.ComponentDataInput, inputVal); err != nil {
+	inputVal, err = recipe.Render(ctx, inputTemplate, i.originalIdx, wfm, false)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = wfm.SetComponentData(ctx, i.originalIdx, i.compID, memory.ComponentDataInput, inputVal); err != nil {
 		return nil, err
 	}
 	return inputVal, nil
@@ -116,16 +128,18 @@ func (i *inputReader) ReadData(ctx context.Context, input any) (err error) {
 }
 
 type outputWriter struct {
+	memoryStore memory.MemoryStore
+	workflowID  string
 	compID      string
-	wfm         memory.WorkflowMemory
 	originalIdx int
 	streaming   bool
 }
 
-func NewOutputWriter(wfm memory.WorkflowMemory, compID string, originalIdx int, streaming bool) *outputWriter {
+func NewOutputWriter(memoryStore memory.MemoryStore, workflowID string, compID string, originalIdx int, streaming bool) *outputWriter {
 	return &outputWriter{
+		memoryStore: memoryStore,
+		workflowID:  workflowID,
 		compID:      compID,
-		wfm:         wfm,
 		originalIdx: originalIdx,
 		streaming:   streaming,
 	}
@@ -157,22 +171,26 @@ func (o *outputWriter) Write(ctx context.Context, output *structpb.Struct) (err 
 // Use WriteData() instead. structpb is not suitable for handling binary data
 // and will be phased out gradually.
 func (o *outputWriter) write(ctx context.Context, val format.Value) (err error) {
+	wfm, err := o.memoryStore.GetWorkflowMemory(ctx, o.workflowID)
+	if err != nil {
+		return err
+	}
 
-	if err := o.wfm.SetComponentData(ctx, o.originalIdx, o.compID, memory.ComponentDataOutput, val); err != nil {
+	if err := wfm.SetComponentData(ctx, o.originalIdx, o.compID, memory.ComponentDataOutput, val); err != nil {
 		return err
 	}
 
 	if o.streaming {
-		outputTemplate, err := o.wfm.Get(ctx, o.originalIdx, string(memory.PipelineOutputTemplate))
+		outputTemplate, err := wfm.Get(ctx, o.originalIdx, string(memory.PipelineOutputTemplate))
 		if err != nil {
 			return err
 		}
 
-		output, err := recipe.Render(ctx, outputTemplate, o.originalIdx, o.wfm, true)
+		output, err := recipe.Render(ctx, outputTemplate, o.originalIdx, wfm, true)
 		if err != nil {
 			return err
 		}
-		err = o.wfm.SetPipelineData(ctx, o.originalIdx, memory.PipelineOutput, output)
+		err = wfm.SetPipelineData(ctx, o.originalIdx, memory.PipelineOutput, output)
 		if err != nil {
 			return err
 		}
@@ -182,20 +200,44 @@ func (o *outputWriter) write(ctx context.Context, val format.Value) (err error) 
 }
 
 type errorHandler struct {
+	memoryStore memory.MemoryStore
+	workflowID  string
 	compID      string
-	wfm         memory.WorkflowMemory
 	originalIdx int
+
+	parentWorkflowID  *string
+	parentCompID      *string
+	parentOriginalIdx *int
 }
 
-func NewErrorHandler(wfm memory.WorkflowMemory, compID string, originalIdx int) *errorHandler {
+func NewErrorHandler(memoryStore memory.MemoryStore, workflowID string, compID string, originalIdx int, parentWorkflowID *string, parentCompID *string, parentOriginalIdx *int) *errorHandler {
 	return &errorHandler{
-		compID:      compID,
-		wfm:         wfm,
-		originalIdx: originalIdx,
+		memoryStore:       memoryStore,
+		workflowID:        workflowID,
+		compID:            compID,
+		originalIdx:       originalIdx,
+		parentWorkflowID:  parentWorkflowID,
+		parentCompID:      parentCompID,
+		parentOriginalIdx: parentOriginalIdx,
 	}
 }
 
 func (e *errorHandler) Error(ctx context.Context, err error) {
-	_ = e.wfm.SetComponentStatus(ctx, e.originalIdx, e.compID, memory.ComponentStatusErrored, true)
-	_ = e.wfm.SetComponentErrorMessage(ctx, e.originalIdx, e.compID, errmsg.MessageOrErr(err))
+
+	wfm, wfmErr := e.memoryStore.GetWorkflowMemory(ctx, e.workflowID)
+	if wfmErr != nil {
+		return
+	}
+
+	_ = wfm.SetComponentStatus(ctx, e.originalIdx, e.compID, memory.ComponentStatusErrored, true)
+	_ = wfm.SetComponentErrorMessage(ctx, e.originalIdx, e.compID, errmsg.MessageOrErr(err))
+
+	if e.parentWorkflowID != nil {
+		iterWfm, iterWfmErr := e.memoryStore.GetWorkflowMemory(ctx, *e.parentWorkflowID)
+		if iterWfmErr != nil {
+			return
+		}
+		_ = iterWfm.SetComponentStatus(ctx, *e.parentOriginalIdx, *e.parentCompID, memory.ComponentStatusErrored, true)
+		_ = iterWfm.SetComponentErrorMessage(ctx, *e.parentOriginalIdx, *e.parentCompID, errmsg.MessageOrErr(err))
+	}
 }

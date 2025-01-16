@@ -46,6 +46,11 @@ type TriggerPipelineWorkflowParam struct {
 	Mode            mgmtpb.Mode
 	TriggerFromAPI  bool
 	WorkerUID       uuid.UUID
+
+	// If the pipeline trigger is from an iterator, these fields will be set
+	ParentWorkflowID  *string
+	ParentCompID      *string
+	ParentOriginalIdx *int
 }
 
 type SchedulePipelineLoaderActivityParam struct {
@@ -69,6 +74,11 @@ type ComponentActivityParam struct {
 	Task            string
 	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 	Streaming       bool
+
+	// If the component belongs to an iterator, these fields will be set
+	ParentWorkflowID  *string
+	ParentCompID      *string
+	ParentOriginalIdx *int
 }
 
 type PreIteratorActivityParam struct {
@@ -301,13 +311,16 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				}).Get(ctx, nil)
 
 				args := &ComponentActivityParam{
-					WorkflowID:      workflowID,
-					ID:              compID,
-					UpstreamIDs:     upstreamIDs,
-					Type:            comp.Type,
-					Task:            comp.Task,
-					Condition:       comp.Condition,
-					SystemVariables: param.SystemVariables,
+					WorkflowID:        workflowID,
+					ID:                compID,
+					UpstreamIDs:       upstreamIDs,
+					Type:              comp.Type,
+					Task:              comp.Task,
+					Condition:         comp.Condition,
+					SystemVariables:   param.SystemVariables,
+					ParentWorkflowID:  param.ParentWorkflowID,
+					ParentCompID:      param.ParentCompID,
+					ParentOriginalIdx: param.ParentOriginalIdx,
 				}
 
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.ComponentActivity, args))
@@ -351,12 +364,13 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						workflow.WithChildOptions(ctx, childWorkflowOptions),
 						"TriggerPipelineWorkflow",
 						&TriggerPipelineWorkflowParam{
-							TriggerFromAPI:  false,
-							SystemVariables: param.SystemVariables,
-							Mode:            mgmtpb.Mode_MODE_SYNC,
-							WorkerUID:       param.WorkerUID,
-							// TODO: support streaming inside iterator.
-							// IsStreaming:     param.IsStreaming,
+							TriggerFromAPI:    false,
+							SystemVariables:   param.SystemVariables,
+							Mode:              mgmtpb.Mode_MODE_SYNC,
+							WorkerUID:         param.WorkerUID,
+							ParentWorkflowID:  &workflowID,
+							ParentCompID:      &compID,
+							ParentOriginalIdx: &iter,
 						}))
 				}
 				for iter := 0; iter < len(itFutures); iter++ {
@@ -538,7 +552,7 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		return nil
 	}
 
-	setups, err := NewSetupReader(wfm, param.ID, conditionMap).Read(ctx)
+	setups, err := NewSetupReader(w.memoryStore, param.WorkflowID, param.ID, conditionMap).Read(ctx)
 	if err != nil {
 		return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
 	}
@@ -563,10 +577,11 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 
 	jobs := make([]*componentbase.Job, len(conditionMap))
 	for idx, originalIdx := range conditionMap {
+
 		jobs[idx] = &componentbase.Job{
-			Input:  NewInputReader(wfm, param.ID, originalIdx, w.binaryFetcher),
-			Output: NewOutputWriter(wfm, param.ID, originalIdx, wfm.IsStreaming()),
-			Error:  NewErrorHandler(wfm, param.ID, originalIdx),
+			Input:  NewInputReader(w.memoryStore, param.WorkflowID, param.ID, originalIdx, w.binaryFetcher),
+			Output: NewOutputWriter(w.memoryStore, param.WorkflowID, param.ID, originalIdx, wfm.IsStreaming()),
+			Error:  NewErrorHandler(w.memoryStore, param.WorkflowID, param.ID, originalIdx, param.ParentWorkflowID, param.ParentCompID, param.ParentOriginalIdx),
 		}
 	}
 	err = execution.Execute(
@@ -903,6 +918,15 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 		childWFM, err := w.memoryStore.GetWorkflowMemory(ctx, childWorkflowID)
 		if err != nil {
 			return componentActivityError(ctx, wfm, err, postIteratorActivityErrorType, param.ID)
+		}
+
+		errored, err := wfm.GetComponentStatus(ctx, originalIdx, param.ID, memory.ComponentStatusErrored)
+
+		if err != nil {
+			return componentActivityError(ctx, wfm, err, postIteratorActivityErrorType, param.ID)
+		}
+		if errored {
+			return nil
 		}
 
 		output := data.Map{}
