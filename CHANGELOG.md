@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.50.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.49.1-beta...v0.50.0-beta) (2025-01-16)
+
+
+### Features
+
+* **component,github:** add more user and org tasks ([#880](https://github.com/instill-ai/pipeline-backend/issues/880)) ([d6466bf](https://github.com/instill-ai/pipeline-backend/commit/d6466bfae501f54b6cd6e6edb9410ce1e10c933f))
+* **component,openai:** add supports for tools and predicted output ([#953](https://github.com/instill-ai/pipeline-backend/issues/953)) ([fc808a7](https://github.com/instill-ai/pipeline-backend/commit/fc808a7cfb888c0f59c2f84a55a490601c7969ca))
+* **pipeline:** return the error from a component inside an iterator ([#955](https://github.com/instill-ai/pipeline-backend/issues/955)) ([bebe57f](https://github.com/instill-ai/pipeline-backend/commit/bebe57f58d7735e36e83c5181b0eacd4d550988a))
+
 ## [0.49.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.49.0-beta...v0.49.1-beta) (2024-12-23)
 
 
