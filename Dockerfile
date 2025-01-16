@@ -1,4 +1,4 @@
-ARG GOLANG_VERSION=1.23.4
+ARG GOLANG_VERSION
 FROM golang:${GOLANG_VERSION}-bullseye AS build
 
 ARG TARGETOS TARGETARCH
@@ -83,7 +83,7 @@ COPY --from=build --chown=nobody:nogroup /src/release-please ./release-please
 COPY --from=build --chown=nobody:nogroup /src/pkg/db/migration ./pkg/db/migration
 
 COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-migrate ./
-COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-init ./
+COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-init ./z
 COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-worker ./
 COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME} ./
 
