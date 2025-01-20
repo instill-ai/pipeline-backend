@@ -56,8 +56,8 @@ type Repository interface {
 	DeleteNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string) error
 	UpdateNamespacePipelineIDByID(ctx context.Context, ownerPermalink string, id string, newID string) error
 
-	AddPipelineRuns(ctx context.Context, uid uuid.UUID) error
-	AddPipelineClones(ctx context.Context, uid uuid.UUID) error
+	IncreasePipelineRuns(ctx context.Context, uid uuid.UUID) error
+	IncreasePipelineClones(ctx context.Context, uid uuid.UUID) error
 
 	CreateNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error
 	ListNamespacePipelineReleases(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) ([]*datamodel.PipelineRelease, int64, string, error)
@@ -453,6 +453,23 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 			return nil, result.Error
 		}
 		pipeline.Releases = pipelineReleases
+	}
+	pipeline.Recipe = nil
+
+	if pipeline.UseTemplate {
+		var recipeYAML string
+		if pipeline.TemplatePipelineReleaseUID.IsNil() {
+			err := db.Model(&datamodel.Pipeline{}).Where("uid = ?", pipeline.TemplatePipelineUID).Select("recipe_yaml").First(&recipeYAML).Error
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			err := db.Model(&datamodel.PipelineRelease{}).Where("uid = ?", pipeline.TemplatePipelineReleaseUID).Select("recipe_yaml").First(&recipeYAML).Error
+			if err != nil {
+				return nil, err
+			}
+		}
+		pipeline.RecipeYAML = recipeYAML
 	}
 
 	pipeline.Tags = []*datamodel.Tag{}
@@ -1107,7 +1124,7 @@ func (r *repository) ListPipelineTags(ctx context.Context, pipelineUID uuid.UUID
 
 }
 
-func (r *repository) AddPipelineRuns(ctx context.Context, pipelineUID uuid.UUID) error {
+func (r *repository) IncreasePipelineRuns(ctx context.Context, pipelineUID uuid.UUID) error {
 	db := r.db.WithContext(ctx)
 
 	result := db.Model(&datamodel.Pipeline{}).
@@ -1123,7 +1140,7 @@ func (r *repository) AddPipelineRuns(ctx context.Context, pipelineUID uuid.UUID)
 	return nil
 }
 
-func (r *repository) AddPipelineClones(ctx context.Context, pipelineUID uuid.UUID) error {
+func (r *repository) IncreasePipelineClones(ctx context.Context, pipelineUID uuid.UUID) error {
 
 	db := r.db
 

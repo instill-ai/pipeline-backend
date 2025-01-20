@@ -102,7 +102,8 @@ func AsGRPCError(err error) error {
 		errors.Is(err, service.ErrTriggerFail),
 		errors.Is(err, handler.ErrFieldMask),
 		errors.Is(err, handler.ErrSematicVersion),
-		errors.Is(err, handler.ErrUpdateMask):
+		errors.Is(err, handler.ErrUpdateMask),
+		errors.Is(err, errdomain.ErrCanNotUpdatePipelineWithTemplate):
 
 		code = codes.InvalidArgument
 	case

@@ -29,4 +29,7 @@ var (
 	// ErrAlreadyExists is used when a resource can't be created because it
 	// already exists.
 	ErrAlreadyExists = errmsg.AddMessage(fmt.Errorf("resource already exists"), "Resource already exists.")
+	// ErrCanNotUpdatePipelineWithTemplate is used when a request want to update
+	// a pipeline with template.
+	ErrCanNotUpdatePipelineWithTemplate = fmt.Errorf("can not update pipeline with template")
 )

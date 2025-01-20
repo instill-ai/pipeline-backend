@@ -1394,7 +1394,7 @@ func (w *worker) IncreasePipelineTriggerCountActivity(ctx context.Context, sv re
 	l = l.With(zap.Reflect("systemVariables", sv))
 	l.Info("IncreasePipelineTriggerCountActivity started")
 
-	if err := w.repository.AddPipelineRuns(ctx, sv.PipelineUID); err != nil {
+	if err := w.repository.IncreasePipelineRuns(ctx, sv.PipelineUID); err != nil {
 		l.With(zap.Error(err)).Error("Couldn't update number of pipeline runs.")
 	}
 

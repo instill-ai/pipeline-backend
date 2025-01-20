@@ -860,6 +860,7 @@ func (h *PublicHandler) CloneNamespacePipeline(ctx context.Context, req *pb.Clon
 
 	logger, _ := logger.GetZapLogger(ctx)
 
+	fmt.Println("0")
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -869,6 +870,7 @@ func (h *PublicHandler) CloneNamespacePipeline(ctx context.Context, req *pb.Clon
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
+	fmt.Println("1")
 
 	pbPipeline, err := h.service.CloneNamespacePipeline(
 		ctx,
@@ -878,6 +880,8 @@ func (h *PublicHandler) CloneNamespacePipeline(ctx context.Context, req *pb.Clon
 		req.GetTargetPipelineId(),
 		req.GetDescription(),
 		req.GetSharing(),
+		req.GetAsTemplate(),
+		req.GetTemplateOverrides(),
 	)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -928,6 +932,8 @@ func (h *PublicHandler) CloneNamespacePipelineRelease(ctx context.Context, req *
 		req.GetTargetPipelineId(),
 		req.GetDescription(),
 		req.GetSharing(),
+		req.GetAsTemplate(),
+		req.GetTemplateOverrides(),
 	)
 	if err != nil {
 		span.SetStatus(1, err.Error())
