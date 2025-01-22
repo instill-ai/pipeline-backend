@@ -15,7 +15,7 @@ component:
     task: TASK_CHAT
     input:
       data:
-        model: llama-3.1-sonar-small-128k-online
+        model: sonar
         messages:
           - content:
             - text: Be precise and concise.
@@ -25,7 +25,7 @@ component:
             - text: ${variable.prompt}
               type: text
             role: user
-            name: chunhao
+            name: Miles
       parameter:
         max-tokens: 500
         temperature: 0.2
@@ -37,8 +37,6 @@ component:
         top-k: 0
         presence-penalty: 0
         frequency-penalty: 1
-    setup:
-      api-key: ${secret.perplexity}
 
 output:
   perplexity:
