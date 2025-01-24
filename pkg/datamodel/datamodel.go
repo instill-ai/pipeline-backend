@@ -80,6 +80,11 @@ type Pipeline struct {
 	Recipe     *Recipe `gorm:"-"`
 	RecipeYAML string  `gorm:"recipe_yaml"`
 
+	UseTemplate                bool
+	TemplatePipelineUID        uuid.UUID
+	TemplatePipelineReleaseUID uuid.UUID
+	TemplateOverrides          datatypes.JSON `gorm:"type:jsonb"`
+
 	DefaultReleaseUID uuid.UUID
 	Sharing           *Sharing `gorm:"type:jsonb"`
 	ShareCode         string

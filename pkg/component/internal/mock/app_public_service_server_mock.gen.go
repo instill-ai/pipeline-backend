@@ -59,6 +59,13 @@ type AppPublicServiceServerMock struct {
 	beforeCreateMessageCounter uint64
 	CreateMessageMock          mAppPublicServiceServerMockCreateMessage
 
+	funcCreateTable          func(ctx context.Context, cp1 *mm_appv1alpha.CreateTableRequest) (cp2 *mm_appv1alpha.CreateTableResponse, err error)
+	funcCreateTableOrigin    string
+	inspectFuncCreateTable   func(ctx context.Context, cp1 *mm_appv1alpha.CreateTableRequest)
+	afterCreateTableCounter  uint64
+	beforeCreateTableCounter uint64
+	CreateTableMock          mAppPublicServiceServerMockCreateTable
+
 	funcDeleteAgent          func(ctx context.Context, dp1 *mm_appv1alpha.DeleteAgentRequest) (dp2 *mm_appv1alpha.DeleteAgentResponse, err error)
 	funcDeleteAgentOrigin    string
 	inspectFuncDeleteAgent   func(ctx context.Context, dp1 *mm_appv1alpha.DeleteAgentRequest)
@@ -94,12 +101,68 @@ type AppPublicServiceServerMock struct {
 	beforeDeleteMessageCounter uint64
 	DeleteMessageMock          mAppPublicServiceServerMockDeleteMessage
 
+	funcDeleteRow          func(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowRequest) (dp2 *mm_appv1alpha.DeleteRowResponse, err error)
+	funcDeleteRowOrigin    string
+	inspectFuncDeleteRow   func(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowRequest)
+	afterDeleteRowCounter  uint64
+	beforeDeleteRowCounter uint64
+	DeleteRowMock          mAppPublicServiceServerMockDeleteRow
+
+	funcDeleteRows          func(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowsRequest) (dp2 *mm_appv1alpha.DeleteRowsResponse, err error)
+	funcDeleteRowsOrigin    string
+	inspectFuncDeleteRows   func(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowsRequest)
+	afterDeleteRowsCounter  uint64
+	beforeDeleteRowsCounter uint64
+	DeleteRowsMock          mAppPublicServiceServerMockDeleteRows
+
+	funcDeleteTable          func(ctx context.Context, dp1 *mm_appv1alpha.DeleteTableRequest) (dp2 *mm_appv1alpha.DeleteTableResponse, err error)
+	funcDeleteTableOrigin    string
+	inspectFuncDeleteTable   func(ctx context.Context, dp1 *mm_appv1alpha.DeleteTableRequest)
+	afterDeleteTableCounter  uint64
+	beforeDeleteTableCounter uint64
+	DeleteTableMock          mAppPublicServiceServerMockDeleteTable
+
+	funcExport          func(ctx context.Context, ep1 *mm_appv1alpha.ExportRequest) (ep2 *mm_appv1alpha.ExportResponse, err error)
+	funcExportOrigin    string
+	inspectFuncExport   func(ctx context.Context, ep1 *mm_appv1alpha.ExportRequest)
+	afterExportCounter  uint64
+	beforeExportCounter uint64
+	ExportMock          mAppPublicServiceServerMockExport
+
+	funcGetColumnDefinitions          func(ctx context.Context, gp1 *mm_appv1alpha.GetColumnDefinitionsRequest) (gp2 *mm_appv1alpha.GetColumnDefinitionsResponse, err error)
+	funcGetColumnDefinitionsOrigin    string
+	inspectFuncGetColumnDefinitions   func(ctx context.Context, gp1 *mm_appv1alpha.GetColumnDefinitionsRequest)
+	afterGetColumnDefinitionsCounter  uint64
+	beforeGetColumnDefinitionsCounter uint64
+	GetColumnDefinitionsMock          mAppPublicServiceServerMockGetColumnDefinitions
+
 	funcGetPlaygroundConversation          func(ctx context.Context, gp1 *mm_appv1alpha.GetPlaygroundConversationRequest) (gp2 *mm_appv1alpha.GetPlaygroundConversationResponse, err error)
 	funcGetPlaygroundConversationOrigin    string
 	inspectFuncGetPlaygroundConversation   func(ctx context.Context, gp1 *mm_appv1alpha.GetPlaygroundConversationRequest)
 	afterGetPlaygroundConversationCounter  uint64
 	beforeGetPlaygroundConversationCounter uint64
 	GetPlaygroundConversationMock          mAppPublicServiceServerMockGetPlaygroundConversation
+
+	funcGetTable          func(ctx context.Context, gp1 *mm_appv1alpha.GetTableRequest) (gp2 *mm_appv1alpha.GetTableResponse, err error)
+	funcGetTableOrigin    string
+	inspectFuncGetTable   func(ctx context.Context, gp1 *mm_appv1alpha.GetTableRequest)
+	afterGetTableCounter  uint64
+	beforeGetTableCounter uint64
+	GetTableMock          mAppPublicServiceServerMockGetTable
+
+	funcGetTableEvents          func(gp1 *mm_appv1alpha.GetTableEventsRequest, a1 mm_appv1alpha.AppPublicService_GetTableEventsServer) (err error)
+	funcGetTableEventsOrigin    string
+	inspectFuncGetTableEvents   func(gp1 *mm_appv1alpha.GetTableEventsRequest, a1 mm_appv1alpha.AppPublicService_GetTableEventsServer)
+	afterGetTableEventsCounter  uint64
+	beforeGetTableEventsCounter uint64
+	GetTableEventsMock          mAppPublicServiceServerMockGetTableEvents
+
+	funcInsertRow          func(ctx context.Context, ip1 *mm_appv1alpha.InsertRowRequest) (ip2 *mm_appv1alpha.InsertRowResponse, err error)
+	funcInsertRowOrigin    string
+	inspectFuncInsertRow   func(ctx context.Context, ip1 *mm_appv1alpha.InsertRowRequest)
+	afterInsertRowCounter  uint64
+	beforeInsertRowCounter uint64
+	InsertRowMock          mAppPublicServiceServerMockInsertRow
 
 	funcListAgents          func(ctx context.Context, lp1 *mm_appv1alpha.ListAgentsRequest) (lp2 *mm_appv1alpha.ListAgentsResponse, err error)
 	funcListAgentsOrigin    string
@@ -143,6 +206,20 @@ type AppPublicServiceServerMock struct {
 	beforeListMessagesCounter uint64
 	ListMessagesMock          mAppPublicServiceServerMockListMessages
 
+	funcListRows          func(ctx context.Context, lp1 *mm_appv1alpha.ListRowsRequest) (lp2 *mm_appv1alpha.ListRowsResponse, err error)
+	funcListRowsOrigin    string
+	inspectFuncListRows   func(ctx context.Context, lp1 *mm_appv1alpha.ListRowsRequest)
+	afterListRowsCounter  uint64
+	beforeListRowsCounter uint64
+	ListRowsMock          mAppPublicServiceServerMockListRows
+
+	funcListTables          func(ctx context.Context, lp1 *mm_appv1alpha.ListTablesRequest) (lp2 *mm_appv1alpha.ListTablesResponse, err error)
+	funcListTablesOrigin    string
+	inspectFuncListTables   func(ctx context.Context, lp1 *mm_appv1alpha.ListTablesRequest)
+	afterListTablesCounter  uint64
+	beforeListTablesCounter uint64
+	ListTablesMock          mAppPublicServiceServerMockListTables
+
 	funcListTools          func(ctx context.Context, lp1 *mm_appv1alpha.ListToolsRequest) (lp2 *mm_appv1alpha.ListToolsResponse, err error)
 	funcListToolsOrigin    string
 	inspectFuncListTools   func(ctx context.Context, lp1 *mm_appv1alpha.ListToolsRequest)
@@ -156,6 +233,13 @@ type AppPublicServiceServerMock struct {
 	afterLivenessCounter  uint64
 	beforeLivenessCounter uint64
 	LivenessMock          mAppPublicServiceServerMockLiveness
+
+	funcMoveRows          func(ctx context.Context, mp1 *mm_appv1alpha.MoveRowsRequest) (mp2 *mm_appv1alpha.MoveRowsResponse, err error)
+	funcMoveRowsOrigin    string
+	inspectFuncMoveRows   func(ctx context.Context, mp1 *mm_appv1alpha.MoveRowsRequest)
+	afterMoveRowsCounter  uint64
+	beforeMoveRowsCounter uint64
+	MoveRowsMock          mAppPublicServiceServerMockMoveRows
 
 	funcReadiness          func(ctx context.Context, rp1 *mm_appv1alpha.ReadinessRequest) (rp2 *mm_appv1alpha.ReadinessResponse, err error)
 	funcReadinessOrigin    string
@@ -192,6 +276,13 @@ type AppPublicServiceServerMock struct {
 	beforeUpdateChatCounter uint64
 	UpdateChatMock          mAppPublicServiceServerMockUpdateChat
 
+	funcUpdateColumnDefinitions          func(ctx context.Context, up1 *mm_appv1alpha.UpdateColumnDefinitionsRequest) (up2 *mm_appv1alpha.UpdateColumnDefinitionsResponse, err error)
+	funcUpdateColumnDefinitionsOrigin    string
+	inspectFuncUpdateColumnDefinitions   func(ctx context.Context, up1 *mm_appv1alpha.UpdateColumnDefinitionsRequest)
+	afterUpdateColumnDefinitionsCounter  uint64
+	beforeUpdateColumnDefinitionsCounter uint64
+	UpdateColumnDefinitionsMock          mAppPublicServiceServerMockUpdateColumnDefinitions
+
 	funcUpdateConversation          func(ctx context.Context, up1 *mm_appv1alpha.UpdateConversationRequest) (up2 *mm_appv1alpha.UpdateConversationResponse, err error)
 	funcUpdateConversationOrigin    string
 	inspectFuncUpdateConversation   func(ctx context.Context, up1 *mm_appv1alpha.UpdateConversationRequest)
@@ -205,6 +296,27 @@ type AppPublicServiceServerMock struct {
 	afterUpdateMessageCounter  uint64
 	beforeUpdateMessageCounter uint64
 	UpdateMessageMock          mAppPublicServiceServerMockUpdateMessage
+
+	funcUpdateRow          func(ctx context.Context, up1 *mm_appv1alpha.UpdateRowRequest) (up2 *mm_appv1alpha.UpdateRowResponse, err error)
+	funcUpdateRowOrigin    string
+	inspectFuncUpdateRow   func(ctx context.Context, up1 *mm_appv1alpha.UpdateRowRequest)
+	afterUpdateRowCounter  uint64
+	beforeUpdateRowCounter uint64
+	UpdateRowMock          mAppPublicServiceServerMockUpdateRow
+
+	funcUpdateRows          func(ctx context.Context, up1 *mm_appv1alpha.UpdateRowsRequest) (up2 *mm_appv1alpha.UpdateRowsResponse, err error)
+	funcUpdateRowsOrigin    string
+	inspectFuncUpdateRows   func(ctx context.Context, up1 *mm_appv1alpha.UpdateRowsRequest)
+	afterUpdateRowsCounter  uint64
+	beforeUpdateRowsCounter uint64
+	UpdateRowsMock          mAppPublicServiceServerMockUpdateRows
+
+	funcUpdateTable          func(ctx context.Context, up1 *mm_appv1alpha.UpdateTableRequest) (up2 *mm_appv1alpha.UpdateTableResponse, err error)
+	funcUpdateTableOrigin    string
+	inspectFuncUpdateTable   func(ctx context.Context, up1 *mm_appv1alpha.UpdateTableRequest)
+	afterUpdateTableCounter  uint64
+	beforeUpdateTableCounter uint64
+	UpdateTableMock          mAppPublicServiceServerMockUpdateTable
 }
 
 // NewAppPublicServiceServerMock returns a mock for mm_appv1alpha.AppPublicServiceServer
@@ -233,6 +345,9 @@ func NewAppPublicServiceServerMock(t minimock.Tester) *AppPublicServiceServerMoc
 	m.CreateMessageMock = mAppPublicServiceServerMockCreateMessage{mock: m}
 	m.CreateMessageMock.callArgs = []*AppPublicServiceServerMockCreateMessageParams{}
 
+	m.CreateTableMock = mAppPublicServiceServerMockCreateTable{mock: m}
+	m.CreateTableMock.callArgs = []*AppPublicServiceServerMockCreateTableParams{}
+
 	m.DeleteAgentMock = mAppPublicServiceServerMockDeleteAgent{mock: m}
 	m.DeleteAgentMock.callArgs = []*AppPublicServiceServerMockDeleteAgentParams{}
 
@@ -248,8 +363,32 @@ func NewAppPublicServiceServerMock(t minimock.Tester) *AppPublicServiceServerMoc
 	m.DeleteMessageMock = mAppPublicServiceServerMockDeleteMessage{mock: m}
 	m.DeleteMessageMock.callArgs = []*AppPublicServiceServerMockDeleteMessageParams{}
 
+	m.DeleteRowMock = mAppPublicServiceServerMockDeleteRow{mock: m}
+	m.DeleteRowMock.callArgs = []*AppPublicServiceServerMockDeleteRowParams{}
+
+	m.DeleteRowsMock = mAppPublicServiceServerMockDeleteRows{mock: m}
+	m.DeleteRowsMock.callArgs = []*AppPublicServiceServerMockDeleteRowsParams{}
+
+	m.DeleteTableMock = mAppPublicServiceServerMockDeleteTable{mock: m}
+	m.DeleteTableMock.callArgs = []*AppPublicServiceServerMockDeleteTableParams{}
+
+	m.ExportMock = mAppPublicServiceServerMockExport{mock: m}
+	m.ExportMock.callArgs = []*AppPublicServiceServerMockExportParams{}
+
+	m.GetColumnDefinitionsMock = mAppPublicServiceServerMockGetColumnDefinitions{mock: m}
+	m.GetColumnDefinitionsMock.callArgs = []*AppPublicServiceServerMockGetColumnDefinitionsParams{}
+
 	m.GetPlaygroundConversationMock = mAppPublicServiceServerMockGetPlaygroundConversation{mock: m}
 	m.GetPlaygroundConversationMock.callArgs = []*AppPublicServiceServerMockGetPlaygroundConversationParams{}
+
+	m.GetTableMock = mAppPublicServiceServerMockGetTable{mock: m}
+	m.GetTableMock.callArgs = []*AppPublicServiceServerMockGetTableParams{}
+
+	m.GetTableEventsMock = mAppPublicServiceServerMockGetTableEvents{mock: m}
+	m.GetTableEventsMock.callArgs = []*AppPublicServiceServerMockGetTableEventsParams{}
+
+	m.InsertRowMock = mAppPublicServiceServerMockInsertRow{mock: m}
+	m.InsertRowMock.callArgs = []*AppPublicServiceServerMockInsertRowParams{}
 
 	m.ListAgentsMock = mAppPublicServiceServerMockListAgents{mock: m}
 	m.ListAgentsMock.callArgs = []*AppPublicServiceServerMockListAgentsParams{}
@@ -269,11 +408,20 @@ func NewAppPublicServiceServerMock(t minimock.Tester) *AppPublicServiceServerMoc
 	m.ListMessagesMock = mAppPublicServiceServerMockListMessages{mock: m}
 	m.ListMessagesMock.callArgs = []*AppPublicServiceServerMockListMessagesParams{}
 
+	m.ListRowsMock = mAppPublicServiceServerMockListRows{mock: m}
+	m.ListRowsMock.callArgs = []*AppPublicServiceServerMockListRowsParams{}
+
+	m.ListTablesMock = mAppPublicServiceServerMockListTables{mock: m}
+	m.ListTablesMock.callArgs = []*AppPublicServiceServerMockListTablesParams{}
+
 	m.ListToolsMock = mAppPublicServiceServerMockListTools{mock: m}
 	m.ListToolsMock.callArgs = []*AppPublicServiceServerMockListToolsParams{}
 
 	m.LivenessMock = mAppPublicServiceServerMockLiveness{mock: m}
 	m.LivenessMock.callArgs = []*AppPublicServiceServerMockLivenessParams{}
+
+	m.MoveRowsMock = mAppPublicServiceServerMockMoveRows{mock: m}
+	m.MoveRowsMock.callArgs = []*AppPublicServiceServerMockMoveRowsParams{}
 
 	m.ReadinessMock = mAppPublicServiceServerMockReadiness{mock: m}
 	m.ReadinessMock.callArgs = []*AppPublicServiceServerMockReadinessParams{}
@@ -290,11 +438,23 @@ func NewAppPublicServiceServerMock(t minimock.Tester) *AppPublicServiceServerMoc
 	m.UpdateChatMock = mAppPublicServiceServerMockUpdateChat{mock: m}
 	m.UpdateChatMock.callArgs = []*AppPublicServiceServerMockUpdateChatParams{}
 
+	m.UpdateColumnDefinitionsMock = mAppPublicServiceServerMockUpdateColumnDefinitions{mock: m}
+	m.UpdateColumnDefinitionsMock.callArgs = []*AppPublicServiceServerMockUpdateColumnDefinitionsParams{}
+
 	m.UpdateConversationMock = mAppPublicServiceServerMockUpdateConversation{mock: m}
 	m.UpdateConversationMock.callArgs = []*AppPublicServiceServerMockUpdateConversationParams{}
 
 	m.UpdateMessageMock = mAppPublicServiceServerMockUpdateMessage{mock: m}
 	m.UpdateMessageMock.callArgs = []*AppPublicServiceServerMockUpdateMessageParams{}
+
+	m.UpdateRowMock = mAppPublicServiceServerMockUpdateRow{mock: m}
+	m.UpdateRowMock.callArgs = []*AppPublicServiceServerMockUpdateRowParams{}
+
+	m.UpdateRowsMock = mAppPublicServiceServerMockUpdateRows{mock: m}
+	m.UpdateRowsMock.callArgs = []*AppPublicServiceServerMockUpdateRowsParams{}
+
+	m.UpdateTableMock = mAppPublicServiceServerMockUpdateTable{mock: m}
+	m.UpdateTableMock.callArgs = []*AppPublicServiceServerMockUpdateTableParams{}
 
 	t.Cleanup(m.MinimockFinish)
 
@@ -2359,6 +2519,349 @@ func (m *AppPublicServiceServerMock) MinimockCreateMessageInspect() {
 	}
 }
 
+type mAppPublicServiceServerMockCreateTable struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockCreateTableExpectation
+	expectations       []*AppPublicServiceServerMockCreateTableExpectation
+
+	callArgs []*AppPublicServiceServerMockCreateTableParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockCreateTableExpectation specifies expectation struct of the AppPublicServiceServer.CreateTable
+type AppPublicServiceServerMockCreateTableExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockCreateTableParams
+	paramPtrs          *AppPublicServiceServerMockCreateTableParamPtrs
+	expectationOrigins AppPublicServiceServerMockCreateTableExpectationOrigins
+	results            *AppPublicServiceServerMockCreateTableResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockCreateTableParams contains parameters of the AppPublicServiceServer.CreateTable
+type AppPublicServiceServerMockCreateTableParams struct {
+	ctx context.Context
+	cp1 *mm_appv1alpha.CreateTableRequest
+}
+
+// AppPublicServiceServerMockCreateTableParamPtrs contains pointers to parameters of the AppPublicServiceServer.CreateTable
+type AppPublicServiceServerMockCreateTableParamPtrs struct {
+	ctx *context.Context
+	cp1 **mm_appv1alpha.CreateTableRequest
+}
+
+// AppPublicServiceServerMockCreateTableResults contains results of the AppPublicServiceServer.CreateTable
+type AppPublicServiceServerMockCreateTableResults struct {
+	cp2 *mm_appv1alpha.CreateTableResponse
+	err error
+}
+
+// AppPublicServiceServerMockCreateTableOrigins contains origins of expectations of the AppPublicServiceServer.CreateTable
+type AppPublicServiceServerMockCreateTableExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originCp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmCreateTable *mAppPublicServiceServerMockCreateTable) Optional() *mAppPublicServiceServerMockCreateTable {
+	mmCreateTable.optional = true
+	return mmCreateTable
+}
+
+// Expect sets up expected params for AppPublicServiceServer.CreateTable
+func (mmCreateTable *mAppPublicServiceServerMockCreateTable) Expect(ctx context.Context, cp1 *mm_appv1alpha.CreateTableRequest) *mAppPublicServiceServerMockCreateTable {
+	if mmCreateTable.mock.funcCreateTable != nil {
+		mmCreateTable.mock.t.Fatalf("AppPublicServiceServerMock.CreateTable mock is already set by Set")
+	}
+
+	if mmCreateTable.defaultExpectation == nil {
+		mmCreateTable.defaultExpectation = &AppPublicServiceServerMockCreateTableExpectation{}
+	}
+
+	if mmCreateTable.defaultExpectation.paramPtrs != nil {
+		mmCreateTable.mock.t.Fatalf("AppPublicServiceServerMock.CreateTable mock is already set by ExpectParams functions")
+	}
+
+	mmCreateTable.defaultExpectation.params = &AppPublicServiceServerMockCreateTableParams{ctx, cp1}
+	mmCreateTable.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmCreateTable.expectations {
+		if minimock.Equal(e.params, mmCreateTable.defaultExpectation.params) {
+			mmCreateTable.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreateTable.defaultExpectation.params)
+		}
+	}
+
+	return mmCreateTable
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.CreateTable
+func (mmCreateTable *mAppPublicServiceServerMockCreateTable) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockCreateTable {
+	if mmCreateTable.mock.funcCreateTable != nil {
+		mmCreateTable.mock.t.Fatalf("AppPublicServiceServerMock.CreateTable mock is already set by Set")
+	}
+
+	if mmCreateTable.defaultExpectation == nil {
+		mmCreateTable.defaultExpectation = &AppPublicServiceServerMockCreateTableExpectation{}
+	}
+
+	if mmCreateTable.defaultExpectation.params != nil {
+		mmCreateTable.mock.t.Fatalf("AppPublicServiceServerMock.CreateTable mock is already set by Expect")
+	}
+
+	if mmCreateTable.defaultExpectation.paramPtrs == nil {
+		mmCreateTable.defaultExpectation.paramPtrs = &AppPublicServiceServerMockCreateTableParamPtrs{}
+	}
+	mmCreateTable.defaultExpectation.paramPtrs.ctx = &ctx
+	mmCreateTable.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmCreateTable
+}
+
+// ExpectCp1Param2 sets up expected param cp1 for AppPublicServiceServer.CreateTable
+func (mmCreateTable *mAppPublicServiceServerMockCreateTable) ExpectCp1Param2(cp1 *mm_appv1alpha.CreateTableRequest) *mAppPublicServiceServerMockCreateTable {
+	if mmCreateTable.mock.funcCreateTable != nil {
+		mmCreateTable.mock.t.Fatalf("AppPublicServiceServerMock.CreateTable mock is already set by Set")
+	}
+
+	if mmCreateTable.defaultExpectation == nil {
+		mmCreateTable.defaultExpectation = &AppPublicServiceServerMockCreateTableExpectation{}
+	}
+
+	if mmCreateTable.defaultExpectation.params != nil {
+		mmCreateTable.mock.t.Fatalf("AppPublicServiceServerMock.CreateTable mock is already set by Expect")
+	}
+
+	if mmCreateTable.defaultExpectation.paramPtrs == nil {
+		mmCreateTable.defaultExpectation.paramPtrs = &AppPublicServiceServerMockCreateTableParamPtrs{}
+	}
+	mmCreateTable.defaultExpectation.paramPtrs.cp1 = &cp1
+	mmCreateTable.defaultExpectation.expectationOrigins.originCp1 = minimock.CallerInfo(1)
+
+	return mmCreateTable
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.CreateTable
+func (mmCreateTable *mAppPublicServiceServerMockCreateTable) Inspect(f func(ctx context.Context, cp1 *mm_appv1alpha.CreateTableRequest)) *mAppPublicServiceServerMockCreateTable {
+	if mmCreateTable.mock.inspectFuncCreateTable != nil {
+		mmCreateTable.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.CreateTable")
+	}
+
+	mmCreateTable.mock.inspectFuncCreateTable = f
+
+	return mmCreateTable
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.CreateTable
+func (mmCreateTable *mAppPublicServiceServerMockCreateTable) Return(cp2 *mm_appv1alpha.CreateTableResponse, err error) *AppPublicServiceServerMock {
+	if mmCreateTable.mock.funcCreateTable != nil {
+		mmCreateTable.mock.t.Fatalf("AppPublicServiceServerMock.CreateTable mock is already set by Set")
+	}
+
+	if mmCreateTable.defaultExpectation == nil {
+		mmCreateTable.defaultExpectation = &AppPublicServiceServerMockCreateTableExpectation{mock: mmCreateTable.mock}
+	}
+	mmCreateTable.defaultExpectation.results = &AppPublicServiceServerMockCreateTableResults{cp2, err}
+	mmCreateTable.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmCreateTable.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.CreateTable method
+func (mmCreateTable *mAppPublicServiceServerMockCreateTable) Set(f func(ctx context.Context, cp1 *mm_appv1alpha.CreateTableRequest) (cp2 *mm_appv1alpha.CreateTableResponse, err error)) *AppPublicServiceServerMock {
+	if mmCreateTable.defaultExpectation != nil {
+		mmCreateTable.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.CreateTable method")
+	}
+
+	if len(mmCreateTable.expectations) > 0 {
+		mmCreateTable.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.CreateTable method")
+	}
+
+	mmCreateTable.mock.funcCreateTable = f
+	mmCreateTable.mock.funcCreateTableOrigin = minimock.CallerInfo(1)
+	return mmCreateTable.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.CreateTable which will trigger the result defined by the following
+// Then helper
+func (mmCreateTable *mAppPublicServiceServerMockCreateTable) When(ctx context.Context, cp1 *mm_appv1alpha.CreateTableRequest) *AppPublicServiceServerMockCreateTableExpectation {
+	if mmCreateTable.mock.funcCreateTable != nil {
+		mmCreateTable.mock.t.Fatalf("AppPublicServiceServerMock.CreateTable mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockCreateTableExpectation{
+		mock:               mmCreateTable.mock,
+		params:             &AppPublicServiceServerMockCreateTableParams{ctx, cp1},
+		expectationOrigins: AppPublicServiceServerMockCreateTableExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmCreateTable.expectations = append(mmCreateTable.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.CreateTable return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockCreateTableExpectation) Then(cp2 *mm_appv1alpha.CreateTableResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockCreateTableResults{cp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.CreateTable should be invoked
+func (mmCreateTable *mAppPublicServiceServerMockCreateTable) Times(n uint64) *mAppPublicServiceServerMockCreateTable {
+	if n == 0 {
+		mmCreateTable.mock.t.Fatalf("Times of AppPublicServiceServerMock.CreateTable mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmCreateTable.expectedInvocations, n)
+	mmCreateTable.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmCreateTable
+}
+
+func (mmCreateTable *mAppPublicServiceServerMockCreateTable) invocationsDone() bool {
+	if len(mmCreateTable.expectations) == 0 && mmCreateTable.defaultExpectation == nil && mmCreateTable.mock.funcCreateTable == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmCreateTable.mock.afterCreateTableCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmCreateTable.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// CreateTable implements mm_appv1alpha.AppPublicServiceServer
+func (mmCreateTable *AppPublicServiceServerMock) CreateTable(ctx context.Context, cp1 *mm_appv1alpha.CreateTableRequest) (cp2 *mm_appv1alpha.CreateTableResponse, err error) {
+	mm_atomic.AddUint64(&mmCreateTable.beforeCreateTableCounter, 1)
+	defer mm_atomic.AddUint64(&mmCreateTable.afterCreateTableCounter, 1)
+
+	mmCreateTable.t.Helper()
+
+	if mmCreateTable.inspectFuncCreateTable != nil {
+		mmCreateTable.inspectFuncCreateTable(ctx, cp1)
+	}
+
+	mm_params := AppPublicServiceServerMockCreateTableParams{ctx, cp1}
+
+	// Record call args
+	mmCreateTable.CreateTableMock.mutex.Lock()
+	mmCreateTable.CreateTableMock.callArgs = append(mmCreateTable.CreateTableMock.callArgs, &mm_params)
+	mmCreateTable.CreateTableMock.mutex.Unlock()
+
+	for _, e := range mmCreateTable.CreateTableMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.cp2, e.results.err
+		}
+	}
+
+	if mmCreateTable.CreateTableMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmCreateTable.CreateTableMock.defaultExpectation.Counter, 1)
+		mm_want := mmCreateTable.CreateTableMock.defaultExpectation.params
+		mm_want_ptrs := mmCreateTable.CreateTableMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockCreateTableParams{ctx, cp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmCreateTable.t.Errorf("AppPublicServiceServerMock.CreateTable got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreateTable.CreateTableMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.cp1 != nil && !minimock.Equal(*mm_want_ptrs.cp1, mm_got.cp1) {
+				mmCreateTable.t.Errorf("AppPublicServiceServerMock.CreateTable got unexpected parameter cp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreateTable.CreateTableMock.defaultExpectation.expectationOrigins.originCp1, *mm_want_ptrs.cp1, mm_got.cp1, minimock.Diff(*mm_want_ptrs.cp1, mm_got.cp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmCreateTable.t.Errorf("AppPublicServiceServerMock.CreateTable got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmCreateTable.CreateTableMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmCreateTable.CreateTableMock.defaultExpectation.results
+		if mm_results == nil {
+			mmCreateTable.t.Fatal("No results are set for the AppPublicServiceServerMock.CreateTable")
+		}
+		return (*mm_results).cp2, (*mm_results).err
+	}
+	if mmCreateTable.funcCreateTable != nil {
+		return mmCreateTable.funcCreateTable(ctx, cp1)
+	}
+	mmCreateTable.t.Fatalf("Unexpected call to AppPublicServiceServerMock.CreateTable. %v %v", ctx, cp1)
+	return
+}
+
+// CreateTableAfterCounter returns a count of finished AppPublicServiceServerMock.CreateTable invocations
+func (mmCreateTable *AppPublicServiceServerMock) CreateTableAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreateTable.afterCreateTableCounter)
+}
+
+// CreateTableBeforeCounter returns a count of AppPublicServiceServerMock.CreateTable invocations
+func (mmCreateTable *AppPublicServiceServerMock) CreateTableBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreateTable.beforeCreateTableCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.CreateTable.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmCreateTable *mAppPublicServiceServerMockCreateTable) Calls() []*AppPublicServiceServerMockCreateTableParams {
+	mmCreateTable.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockCreateTableParams, len(mmCreateTable.callArgs))
+	copy(argCopy, mmCreateTable.callArgs)
+
+	mmCreateTable.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockCreateTableDone returns true if the count of the CreateTable invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockCreateTableDone() bool {
+	if m.CreateTableMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.CreateTableMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.CreateTableMock.invocationsDone()
+}
+
+// MinimockCreateTableInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockCreateTableInspect() {
+	for _, e := range m.CreateTableMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.CreateTable at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterCreateTableCounter := mm_atomic.LoadUint64(&m.afterCreateTableCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.CreateTableMock.defaultExpectation != nil && afterCreateTableCounter < 1 {
+		if m.CreateTableMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.CreateTable at\n%s", m.CreateTableMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.CreateTable at\n%s with params: %#v", m.CreateTableMock.defaultExpectation.expectationOrigins.origin, *m.CreateTableMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcCreateTable != nil && afterCreateTableCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.CreateTable at\n%s", m.funcCreateTableOrigin)
+	}
+
+	if !m.CreateTableMock.invocationsDone() && afterCreateTableCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.CreateTable at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.CreateTableMock.expectedInvocations), m.CreateTableMock.expectedInvocationsOrigin, afterCreateTableCounter)
+	}
+}
+
 type mAppPublicServiceServerMockDeleteAgent struct {
 	optional           bool
 	mock               *AppPublicServiceServerMock
@@ -4074,6 +4577,1721 @@ func (m *AppPublicServiceServerMock) MinimockDeleteMessageInspect() {
 	}
 }
 
+type mAppPublicServiceServerMockDeleteRow struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockDeleteRowExpectation
+	expectations       []*AppPublicServiceServerMockDeleteRowExpectation
+
+	callArgs []*AppPublicServiceServerMockDeleteRowParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockDeleteRowExpectation specifies expectation struct of the AppPublicServiceServer.DeleteRow
+type AppPublicServiceServerMockDeleteRowExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockDeleteRowParams
+	paramPtrs          *AppPublicServiceServerMockDeleteRowParamPtrs
+	expectationOrigins AppPublicServiceServerMockDeleteRowExpectationOrigins
+	results            *AppPublicServiceServerMockDeleteRowResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockDeleteRowParams contains parameters of the AppPublicServiceServer.DeleteRow
+type AppPublicServiceServerMockDeleteRowParams struct {
+	ctx context.Context
+	dp1 *mm_appv1alpha.DeleteRowRequest
+}
+
+// AppPublicServiceServerMockDeleteRowParamPtrs contains pointers to parameters of the AppPublicServiceServer.DeleteRow
+type AppPublicServiceServerMockDeleteRowParamPtrs struct {
+	ctx *context.Context
+	dp1 **mm_appv1alpha.DeleteRowRequest
+}
+
+// AppPublicServiceServerMockDeleteRowResults contains results of the AppPublicServiceServer.DeleteRow
+type AppPublicServiceServerMockDeleteRowResults struct {
+	dp2 *mm_appv1alpha.DeleteRowResponse
+	err error
+}
+
+// AppPublicServiceServerMockDeleteRowOrigins contains origins of expectations of the AppPublicServiceServer.DeleteRow
+type AppPublicServiceServerMockDeleteRowExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originDp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmDeleteRow *mAppPublicServiceServerMockDeleteRow) Optional() *mAppPublicServiceServerMockDeleteRow {
+	mmDeleteRow.optional = true
+	return mmDeleteRow
+}
+
+// Expect sets up expected params for AppPublicServiceServer.DeleteRow
+func (mmDeleteRow *mAppPublicServiceServerMockDeleteRow) Expect(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowRequest) *mAppPublicServiceServerMockDeleteRow {
+	if mmDeleteRow.mock.funcDeleteRow != nil {
+		mmDeleteRow.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRow mock is already set by Set")
+	}
+
+	if mmDeleteRow.defaultExpectation == nil {
+		mmDeleteRow.defaultExpectation = &AppPublicServiceServerMockDeleteRowExpectation{}
+	}
+
+	if mmDeleteRow.defaultExpectation.paramPtrs != nil {
+		mmDeleteRow.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRow mock is already set by ExpectParams functions")
+	}
+
+	mmDeleteRow.defaultExpectation.params = &AppPublicServiceServerMockDeleteRowParams{ctx, dp1}
+	mmDeleteRow.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmDeleteRow.expectations {
+		if minimock.Equal(e.params, mmDeleteRow.defaultExpectation.params) {
+			mmDeleteRow.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmDeleteRow.defaultExpectation.params)
+		}
+	}
+
+	return mmDeleteRow
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.DeleteRow
+func (mmDeleteRow *mAppPublicServiceServerMockDeleteRow) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockDeleteRow {
+	if mmDeleteRow.mock.funcDeleteRow != nil {
+		mmDeleteRow.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRow mock is already set by Set")
+	}
+
+	if mmDeleteRow.defaultExpectation == nil {
+		mmDeleteRow.defaultExpectation = &AppPublicServiceServerMockDeleteRowExpectation{}
+	}
+
+	if mmDeleteRow.defaultExpectation.params != nil {
+		mmDeleteRow.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRow mock is already set by Expect")
+	}
+
+	if mmDeleteRow.defaultExpectation.paramPtrs == nil {
+		mmDeleteRow.defaultExpectation.paramPtrs = &AppPublicServiceServerMockDeleteRowParamPtrs{}
+	}
+	mmDeleteRow.defaultExpectation.paramPtrs.ctx = &ctx
+	mmDeleteRow.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmDeleteRow
+}
+
+// ExpectDp1Param2 sets up expected param dp1 for AppPublicServiceServer.DeleteRow
+func (mmDeleteRow *mAppPublicServiceServerMockDeleteRow) ExpectDp1Param2(dp1 *mm_appv1alpha.DeleteRowRequest) *mAppPublicServiceServerMockDeleteRow {
+	if mmDeleteRow.mock.funcDeleteRow != nil {
+		mmDeleteRow.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRow mock is already set by Set")
+	}
+
+	if mmDeleteRow.defaultExpectation == nil {
+		mmDeleteRow.defaultExpectation = &AppPublicServiceServerMockDeleteRowExpectation{}
+	}
+
+	if mmDeleteRow.defaultExpectation.params != nil {
+		mmDeleteRow.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRow mock is already set by Expect")
+	}
+
+	if mmDeleteRow.defaultExpectation.paramPtrs == nil {
+		mmDeleteRow.defaultExpectation.paramPtrs = &AppPublicServiceServerMockDeleteRowParamPtrs{}
+	}
+	mmDeleteRow.defaultExpectation.paramPtrs.dp1 = &dp1
+	mmDeleteRow.defaultExpectation.expectationOrigins.originDp1 = minimock.CallerInfo(1)
+
+	return mmDeleteRow
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.DeleteRow
+func (mmDeleteRow *mAppPublicServiceServerMockDeleteRow) Inspect(f func(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowRequest)) *mAppPublicServiceServerMockDeleteRow {
+	if mmDeleteRow.mock.inspectFuncDeleteRow != nil {
+		mmDeleteRow.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.DeleteRow")
+	}
+
+	mmDeleteRow.mock.inspectFuncDeleteRow = f
+
+	return mmDeleteRow
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.DeleteRow
+func (mmDeleteRow *mAppPublicServiceServerMockDeleteRow) Return(dp2 *mm_appv1alpha.DeleteRowResponse, err error) *AppPublicServiceServerMock {
+	if mmDeleteRow.mock.funcDeleteRow != nil {
+		mmDeleteRow.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRow mock is already set by Set")
+	}
+
+	if mmDeleteRow.defaultExpectation == nil {
+		mmDeleteRow.defaultExpectation = &AppPublicServiceServerMockDeleteRowExpectation{mock: mmDeleteRow.mock}
+	}
+	mmDeleteRow.defaultExpectation.results = &AppPublicServiceServerMockDeleteRowResults{dp2, err}
+	mmDeleteRow.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmDeleteRow.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.DeleteRow method
+func (mmDeleteRow *mAppPublicServiceServerMockDeleteRow) Set(f func(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowRequest) (dp2 *mm_appv1alpha.DeleteRowResponse, err error)) *AppPublicServiceServerMock {
+	if mmDeleteRow.defaultExpectation != nil {
+		mmDeleteRow.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.DeleteRow method")
+	}
+
+	if len(mmDeleteRow.expectations) > 0 {
+		mmDeleteRow.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.DeleteRow method")
+	}
+
+	mmDeleteRow.mock.funcDeleteRow = f
+	mmDeleteRow.mock.funcDeleteRowOrigin = minimock.CallerInfo(1)
+	return mmDeleteRow.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.DeleteRow which will trigger the result defined by the following
+// Then helper
+func (mmDeleteRow *mAppPublicServiceServerMockDeleteRow) When(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowRequest) *AppPublicServiceServerMockDeleteRowExpectation {
+	if mmDeleteRow.mock.funcDeleteRow != nil {
+		mmDeleteRow.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRow mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockDeleteRowExpectation{
+		mock:               mmDeleteRow.mock,
+		params:             &AppPublicServiceServerMockDeleteRowParams{ctx, dp1},
+		expectationOrigins: AppPublicServiceServerMockDeleteRowExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmDeleteRow.expectations = append(mmDeleteRow.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.DeleteRow return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockDeleteRowExpectation) Then(dp2 *mm_appv1alpha.DeleteRowResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockDeleteRowResults{dp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.DeleteRow should be invoked
+func (mmDeleteRow *mAppPublicServiceServerMockDeleteRow) Times(n uint64) *mAppPublicServiceServerMockDeleteRow {
+	if n == 0 {
+		mmDeleteRow.mock.t.Fatalf("Times of AppPublicServiceServerMock.DeleteRow mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmDeleteRow.expectedInvocations, n)
+	mmDeleteRow.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmDeleteRow
+}
+
+func (mmDeleteRow *mAppPublicServiceServerMockDeleteRow) invocationsDone() bool {
+	if len(mmDeleteRow.expectations) == 0 && mmDeleteRow.defaultExpectation == nil && mmDeleteRow.mock.funcDeleteRow == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmDeleteRow.mock.afterDeleteRowCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmDeleteRow.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// DeleteRow implements mm_appv1alpha.AppPublicServiceServer
+func (mmDeleteRow *AppPublicServiceServerMock) DeleteRow(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowRequest) (dp2 *mm_appv1alpha.DeleteRowResponse, err error) {
+	mm_atomic.AddUint64(&mmDeleteRow.beforeDeleteRowCounter, 1)
+	defer mm_atomic.AddUint64(&mmDeleteRow.afterDeleteRowCounter, 1)
+
+	mmDeleteRow.t.Helper()
+
+	if mmDeleteRow.inspectFuncDeleteRow != nil {
+		mmDeleteRow.inspectFuncDeleteRow(ctx, dp1)
+	}
+
+	mm_params := AppPublicServiceServerMockDeleteRowParams{ctx, dp1}
+
+	// Record call args
+	mmDeleteRow.DeleteRowMock.mutex.Lock()
+	mmDeleteRow.DeleteRowMock.callArgs = append(mmDeleteRow.DeleteRowMock.callArgs, &mm_params)
+	mmDeleteRow.DeleteRowMock.mutex.Unlock()
+
+	for _, e := range mmDeleteRow.DeleteRowMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.dp2, e.results.err
+		}
+	}
+
+	if mmDeleteRow.DeleteRowMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmDeleteRow.DeleteRowMock.defaultExpectation.Counter, 1)
+		mm_want := mmDeleteRow.DeleteRowMock.defaultExpectation.params
+		mm_want_ptrs := mmDeleteRow.DeleteRowMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockDeleteRowParams{ctx, dp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmDeleteRow.t.Errorf("AppPublicServiceServerMock.DeleteRow got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteRow.DeleteRowMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.dp1 != nil && !minimock.Equal(*mm_want_ptrs.dp1, mm_got.dp1) {
+				mmDeleteRow.t.Errorf("AppPublicServiceServerMock.DeleteRow got unexpected parameter dp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteRow.DeleteRowMock.defaultExpectation.expectationOrigins.originDp1, *mm_want_ptrs.dp1, mm_got.dp1, minimock.Diff(*mm_want_ptrs.dp1, mm_got.dp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmDeleteRow.t.Errorf("AppPublicServiceServerMock.DeleteRow got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmDeleteRow.DeleteRowMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmDeleteRow.DeleteRowMock.defaultExpectation.results
+		if mm_results == nil {
+			mmDeleteRow.t.Fatal("No results are set for the AppPublicServiceServerMock.DeleteRow")
+		}
+		return (*mm_results).dp2, (*mm_results).err
+	}
+	if mmDeleteRow.funcDeleteRow != nil {
+		return mmDeleteRow.funcDeleteRow(ctx, dp1)
+	}
+	mmDeleteRow.t.Fatalf("Unexpected call to AppPublicServiceServerMock.DeleteRow. %v %v", ctx, dp1)
+	return
+}
+
+// DeleteRowAfterCounter returns a count of finished AppPublicServiceServerMock.DeleteRow invocations
+func (mmDeleteRow *AppPublicServiceServerMock) DeleteRowAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteRow.afterDeleteRowCounter)
+}
+
+// DeleteRowBeforeCounter returns a count of AppPublicServiceServerMock.DeleteRow invocations
+func (mmDeleteRow *AppPublicServiceServerMock) DeleteRowBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteRow.beforeDeleteRowCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.DeleteRow.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmDeleteRow *mAppPublicServiceServerMockDeleteRow) Calls() []*AppPublicServiceServerMockDeleteRowParams {
+	mmDeleteRow.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockDeleteRowParams, len(mmDeleteRow.callArgs))
+	copy(argCopy, mmDeleteRow.callArgs)
+
+	mmDeleteRow.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockDeleteRowDone returns true if the count of the DeleteRow invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockDeleteRowDone() bool {
+	if m.DeleteRowMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.DeleteRowMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.DeleteRowMock.invocationsDone()
+}
+
+// MinimockDeleteRowInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockDeleteRowInspect() {
+	for _, e := range m.DeleteRowMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteRow at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterDeleteRowCounter := mm_atomic.LoadUint64(&m.afterDeleteRowCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.DeleteRowMock.defaultExpectation != nil && afterDeleteRowCounter < 1 {
+		if m.DeleteRowMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteRow at\n%s", m.DeleteRowMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteRow at\n%s with params: %#v", m.DeleteRowMock.defaultExpectation.expectationOrigins.origin, *m.DeleteRowMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcDeleteRow != nil && afterDeleteRowCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteRow at\n%s", m.funcDeleteRowOrigin)
+	}
+
+	if !m.DeleteRowMock.invocationsDone() && afterDeleteRowCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.DeleteRow at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.DeleteRowMock.expectedInvocations), m.DeleteRowMock.expectedInvocationsOrigin, afterDeleteRowCounter)
+	}
+}
+
+type mAppPublicServiceServerMockDeleteRows struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockDeleteRowsExpectation
+	expectations       []*AppPublicServiceServerMockDeleteRowsExpectation
+
+	callArgs []*AppPublicServiceServerMockDeleteRowsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockDeleteRowsExpectation specifies expectation struct of the AppPublicServiceServer.DeleteRows
+type AppPublicServiceServerMockDeleteRowsExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockDeleteRowsParams
+	paramPtrs          *AppPublicServiceServerMockDeleteRowsParamPtrs
+	expectationOrigins AppPublicServiceServerMockDeleteRowsExpectationOrigins
+	results            *AppPublicServiceServerMockDeleteRowsResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockDeleteRowsParams contains parameters of the AppPublicServiceServer.DeleteRows
+type AppPublicServiceServerMockDeleteRowsParams struct {
+	ctx context.Context
+	dp1 *mm_appv1alpha.DeleteRowsRequest
+}
+
+// AppPublicServiceServerMockDeleteRowsParamPtrs contains pointers to parameters of the AppPublicServiceServer.DeleteRows
+type AppPublicServiceServerMockDeleteRowsParamPtrs struct {
+	ctx *context.Context
+	dp1 **mm_appv1alpha.DeleteRowsRequest
+}
+
+// AppPublicServiceServerMockDeleteRowsResults contains results of the AppPublicServiceServer.DeleteRows
+type AppPublicServiceServerMockDeleteRowsResults struct {
+	dp2 *mm_appv1alpha.DeleteRowsResponse
+	err error
+}
+
+// AppPublicServiceServerMockDeleteRowsOrigins contains origins of expectations of the AppPublicServiceServer.DeleteRows
+type AppPublicServiceServerMockDeleteRowsExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originDp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmDeleteRows *mAppPublicServiceServerMockDeleteRows) Optional() *mAppPublicServiceServerMockDeleteRows {
+	mmDeleteRows.optional = true
+	return mmDeleteRows
+}
+
+// Expect sets up expected params for AppPublicServiceServer.DeleteRows
+func (mmDeleteRows *mAppPublicServiceServerMockDeleteRows) Expect(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowsRequest) *mAppPublicServiceServerMockDeleteRows {
+	if mmDeleteRows.mock.funcDeleteRows != nil {
+		mmDeleteRows.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRows mock is already set by Set")
+	}
+
+	if mmDeleteRows.defaultExpectation == nil {
+		mmDeleteRows.defaultExpectation = &AppPublicServiceServerMockDeleteRowsExpectation{}
+	}
+
+	if mmDeleteRows.defaultExpectation.paramPtrs != nil {
+		mmDeleteRows.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRows mock is already set by ExpectParams functions")
+	}
+
+	mmDeleteRows.defaultExpectation.params = &AppPublicServiceServerMockDeleteRowsParams{ctx, dp1}
+	mmDeleteRows.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmDeleteRows.expectations {
+		if minimock.Equal(e.params, mmDeleteRows.defaultExpectation.params) {
+			mmDeleteRows.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmDeleteRows.defaultExpectation.params)
+		}
+	}
+
+	return mmDeleteRows
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.DeleteRows
+func (mmDeleteRows *mAppPublicServiceServerMockDeleteRows) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockDeleteRows {
+	if mmDeleteRows.mock.funcDeleteRows != nil {
+		mmDeleteRows.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRows mock is already set by Set")
+	}
+
+	if mmDeleteRows.defaultExpectation == nil {
+		mmDeleteRows.defaultExpectation = &AppPublicServiceServerMockDeleteRowsExpectation{}
+	}
+
+	if mmDeleteRows.defaultExpectation.params != nil {
+		mmDeleteRows.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRows mock is already set by Expect")
+	}
+
+	if mmDeleteRows.defaultExpectation.paramPtrs == nil {
+		mmDeleteRows.defaultExpectation.paramPtrs = &AppPublicServiceServerMockDeleteRowsParamPtrs{}
+	}
+	mmDeleteRows.defaultExpectation.paramPtrs.ctx = &ctx
+	mmDeleteRows.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmDeleteRows
+}
+
+// ExpectDp1Param2 sets up expected param dp1 for AppPublicServiceServer.DeleteRows
+func (mmDeleteRows *mAppPublicServiceServerMockDeleteRows) ExpectDp1Param2(dp1 *mm_appv1alpha.DeleteRowsRequest) *mAppPublicServiceServerMockDeleteRows {
+	if mmDeleteRows.mock.funcDeleteRows != nil {
+		mmDeleteRows.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRows mock is already set by Set")
+	}
+
+	if mmDeleteRows.defaultExpectation == nil {
+		mmDeleteRows.defaultExpectation = &AppPublicServiceServerMockDeleteRowsExpectation{}
+	}
+
+	if mmDeleteRows.defaultExpectation.params != nil {
+		mmDeleteRows.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRows mock is already set by Expect")
+	}
+
+	if mmDeleteRows.defaultExpectation.paramPtrs == nil {
+		mmDeleteRows.defaultExpectation.paramPtrs = &AppPublicServiceServerMockDeleteRowsParamPtrs{}
+	}
+	mmDeleteRows.defaultExpectation.paramPtrs.dp1 = &dp1
+	mmDeleteRows.defaultExpectation.expectationOrigins.originDp1 = minimock.CallerInfo(1)
+
+	return mmDeleteRows
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.DeleteRows
+func (mmDeleteRows *mAppPublicServiceServerMockDeleteRows) Inspect(f func(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowsRequest)) *mAppPublicServiceServerMockDeleteRows {
+	if mmDeleteRows.mock.inspectFuncDeleteRows != nil {
+		mmDeleteRows.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.DeleteRows")
+	}
+
+	mmDeleteRows.mock.inspectFuncDeleteRows = f
+
+	return mmDeleteRows
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.DeleteRows
+func (mmDeleteRows *mAppPublicServiceServerMockDeleteRows) Return(dp2 *mm_appv1alpha.DeleteRowsResponse, err error) *AppPublicServiceServerMock {
+	if mmDeleteRows.mock.funcDeleteRows != nil {
+		mmDeleteRows.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRows mock is already set by Set")
+	}
+
+	if mmDeleteRows.defaultExpectation == nil {
+		mmDeleteRows.defaultExpectation = &AppPublicServiceServerMockDeleteRowsExpectation{mock: mmDeleteRows.mock}
+	}
+	mmDeleteRows.defaultExpectation.results = &AppPublicServiceServerMockDeleteRowsResults{dp2, err}
+	mmDeleteRows.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmDeleteRows.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.DeleteRows method
+func (mmDeleteRows *mAppPublicServiceServerMockDeleteRows) Set(f func(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowsRequest) (dp2 *mm_appv1alpha.DeleteRowsResponse, err error)) *AppPublicServiceServerMock {
+	if mmDeleteRows.defaultExpectation != nil {
+		mmDeleteRows.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.DeleteRows method")
+	}
+
+	if len(mmDeleteRows.expectations) > 0 {
+		mmDeleteRows.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.DeleteRows method")
+	}
+
+	mmDeleteRows.mock.funcDeleteRows = f
+	mmDeleteRows.mock.funcDeleteRowsOrigin = minimock.CallerInfo(1)
+	return mmDeleteRows.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.DeleteRows which will trigger the result defined by the following
+// Then helper
+func (mmDeleteRows *mAppPublicServiceServerMockDeleteRows) When(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowsRequest) *AppPublicServiceServerMockDeleteRowsExpectation {
+	if mmDeleteRows.mock.funcDeleteRows != nil {
+		mmDeleteRows.mock.t.Fatalf("AppPublicServiceServerMock.DeleteRows mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockDeleteRowsExpectation{
+		mock:               mmDeleteRows.mock,
+		params:             &AppPublicServiceServerMockDeleteRowsParams{ctx, dp1},
+		expectationOrigins: AppPublicServiceServerMockDeleteRowsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmDeleteRows.expectations = append(mmDeleteRows.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.DeleteRows return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockDeleteRowsExpectation) Then(dp2 *mm_appv1alpha.DeleteRowsResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockDeleteRowsResults{dp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.DeleteRows should be invoked
+func (mmDeleteRows *mAppPublicServiceServerMockDeleteRows) Times(n uint64) *mAppPublicServiceServerMockDeleteRows {
+	if n == 0 {
+		mmDeleteRows.mock.t.Fatalf("Times of AppPublicServiceServerMock.DeleteRows mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmDeleteRows.expectedInvocations, n)
+	mmDeleteRows.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmDeleteRows
+}
+
+func (mmDeleteRows *mAppPublicServiceServerMockDeleteRows) invocationsDone() bool {
+	if len(mmDeleteRows.expectations) == 0 && mmDeleteRows.defaultExpectation == nil && mmDeleteRows.mock.funcDeleteRows == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmDeleteRows.mock.afterDeleteRowsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmDeleteRows.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// DeleteRows implements mm_appv1alpha.AppPublicServiceServer
+func (mmDeleteRows *AppPublicServiceServerMock) DeleteRows(ctx context.Context, dp1 *mm_appv1alpha.DeleteRowsRequest) (dp2 *mm_appv1alpha.DeleteRowsResponse, err error) {
+	mm_atomic.AddUint64(&mmDeleteRows.beforeDeleteRowsCounter, 1)
+	defer mm_atomic.AddUint64(&mmDeleteRows.afterDeleteRowsCounter, 1)
+
+	mmDeleteRows.t.Helper()
+
+	if mmDeleteRows.inspectFuncDeleteRows != nil {
+		mmDeleteRows.inspectFuncDeleteRows(ctx, dp1)
+	}
+
+	mm_params := AppPublicServiceServerMockDeleteRowsParams{ctx, dp1}
+
+	// Record call args
+	mmDeleteRows.DeleteRowsMock.mutex.Lock()
+	mmDeleteRows.DeleteRowsMock.callArgs = append(mmDeleteRows.DeleteRowsMock.callArgs, &mm_params)
+	mmDeleteRows.DeleteRowsMock.mutex.Unlock()
+
+	for _, e := range mmDeleteRows.DeleteRowsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.dp2, e.results.err
+		}
+	}
+
+	if mmDeleteRows.DeleteRowsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmDeleteRows.DeleteRowsMock.defaultExpectation.Counter, 1)
+		mm_want := mmDeleteRows.DeleteRowsMock.defaultExpectation.params
+		mm_want_ptrs := mmDeleteRows.DeleteRowsMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockDeleteRowsParams{ctx, dp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmDeleteRows.t.Errorf("AppPublicServiceServerMock.DeleteRows got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteRows.DeleteRowsMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.dp1 != nil && !minimock.Equal(*mm_want_ptrs.dp1, mm_got.dp1) {
+				mmDeleteRows.t.Errorf("AppPublicServiceServerMock.DeleteRows got unexpected parameter dp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteRows.DeleteRowsMock.defaultExpectation.expectationOrigins.originDp1, *mm_want_ptrs.dp1, mm_got.dp1, minimock.Diff(*mm_want_ptrs.dp1, mm_got.dp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmDeleteRows.t.Errorf("AppPublicServiceServerMock.DeleteRows got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmDeleteRows.DeleteRowsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmDeleteRows.DeleteRowsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmDeleteRows.t.Fatal("No results are set for the AppPublicServiceServerMock.DeleteRows")
+		}
+		return (*mm_results).dp2, (*mm_results).err
+	}
+	if mmDeleteRows.funcDeleteRows != nil {
+		return mmDeleteRows.funcDeleteRows(ctx, dp1)
+	}
+	mmDeleteRows.t.Fatalf("Unexpected call to AppPublicServiceServerMock.DeleteRows. %v %v", ctx, dp1)
+	return
+}
+
+// DeleteRowsAfterCounter returns a count of finished AppPublicServiceServerMock.DeleteRows invocations
+func (mmDeleteRows *AppPublicServiceServerMock) DeleteRowsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteRows.afterDeleteRowsCounter)
+}
+
+// DeleteRowsBeforeCounter returns a count of AppPublicServiceServerMock.DeleteRows invocations
+func (mmDeleteRows *AppPublicServiceServerMock) DeleteRowsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteRows.beforeDeleteRowsCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.DeleteRows.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmDeleteRows *mAppPublicServiceServerMockDeleteRows) Calls() []*AppPublicServiceServerMockDeleteRowsParams {
+	mmDeleteRows.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockDeleteRowsParams, len(mmDeleteRows.callArgs))
+	copy(argCopy, mmDeleteRows.callArgs)
+
+	mmDeleteRows.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockDeleteRowsDone returns true if the count of the DeleteRows invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockDeleteRowsDone() bool {
+	if m.DeleteRowsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.DeleteRowsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.DeleteRowsMock.invocationsDone()
+}
+
+// MinimockDeleteRowsInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockDeleteRowsInspect() {
+	for _, e := range m.DeleteRowsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteRows at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterDeleteRowsCounter := mm_atomic.LoadUint64(&m.afterDeleteRowsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.DeleteRowsMock.defaultExpectation != nil && afterDeleteRowsCounter < 1 {
+		if m.DeleteRowsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteRows at\n%s", m.DeleteRowsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteRows at\n%s with params: %#v", m.DeleteRowsMock.defaultExpectation.expectationOrigins.origin, *m.DeleteRowsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcDeleteRows != nil && afterDeleteRowsCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteRows at\n%s", m.funcDeleteRowsOrigin)
+	}
+
+	if !m.DeleteRowsMock.invocationsDone() && afterDeleteRowsCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.DeleteRows at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.DeleteRowsMock.expectedInvocations), m.DeleteRowsMock.expectedInvocationsOrigin, afterDeleteRowsCounter)
+	}
+}
+
+type mAppPublicServiceServerMockDeleteTable struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockDeleteTableExpectation
+	expectations       []*AppPublicServiceServerMockDeleteTableExpectation
+
+	callArgs []*AppPublicServiceServerMockDeleteTableParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockDeleteTableExpectation specifies expectation struct of the AppPublicServiceServer.DeleteTable
+type AppPublicServiceServerMockDeleteTableExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockDeleteTableParams
+	paramPtrs          *AppPublicServiceServerMockDeleteTableParamPtrs
+	expectationOrigins AppPublicServiceServerMockDeleteTableExpectationOrigins
+	results            *AppPublicServiceServerMockDeleteTableResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockDeleteTableParams contains parameters of the AppPublicServiceServer.DeleteTable
+type AppPublicServiceServerMockDeleteTableParams struct {
+	ctx context.Context
+	dp1 *mm_appv1alpha.DeleteTableRequest
+}
+
+// AppPublicServiceServerMockDeleteTableParamPtrs contains pointers to parameters of the AppPublicServiceServer.DeleteTable
+type AppPublicServiceServerMockDeleteTableParamPtrs struct {
+	ctx *context.Context
+	dp1 **mm_appv1alpha.DeleteTableRequest
+}
+
+// AppPublicServiceServerMockDeleteTableResults contains results of the AppPublicServiceServer.DeleteTable
+type AppPublicServiceServerMockDeleteTableResults struct {
+	dp2 *mm_appv1alpha.DeleteTableResponse
+	err error
+}
+
+// AppPublicServiceServerMockDeleteTableOrigins contains origins of expectations of the AppPublicServiceServer.DeleteTable
+type AppPublicServiceServerMockDeleteTableExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originDp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmDeleteTable *mAppPublicServiceServerMockDeleteTable) Optional() *mAppPublicServiceServerMockDeleteTable {
+	mmDeleteTable.optional = true
+	return mmDeleteTable
+}
+
+// Expect sets up expected params for AppPublicServiceServer.DeleteTable
+func (mmDeleteTable *mAppPublicServiceServerMockDeleteTable) Expect(ctx context.Context, dp1 *mm_appv1alpha.DeleteTableRequest) *mAppPublicServiceServerMockDeleteTable {
+	if mmDeleteTable.mock.funcDeleteTable != nil {
+		mmDeleteTable.mock.t.Fatalf("AppPublicServiceServerMock.DeleteTable mock is already set by Set")
+	}
+
+	if mmDeleteTable.defaultExpectation == nil {
+		mmDeleteTable.defaultExpectation = &AppPublicServiceServerMockDeleteTableExpectation{}
+	}
+
+	if mmDeleteTable.defaultExpectation.paramPtrs != nil {
+		mmDeleteTable.mock.t.Fatalf("AppPublicServiceServerMock.DeleteTable mock is already set by ExpectParams functions")
+	}
+
+	mmDeleteTable.defaultExpectation.params = &AppPublicServiceServerMockDeleteTableParams{ctx, dp1}
+	mmDeleteTable.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmDeleteTable.expectations {
+		if minimock.Equal(e.params, mmDeleteTable.defaultExpectation.params) {
+			mmDeleteTable.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmDeleteTable.defaultExpectation.params)
+		}
+	}
+
+	return mmDeleteTable
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.DeleteTable
+func (mmDeleteTable *mAppPublicServiceServerMockDeleteTable) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockDeleteTable {
+	if mmDeleteTable.mock.funcDeleteTable != nil {
+		mmDeleteTable.mock.t.Fatalf("AppPublicServiceServerMock.DeleteTable mock is already set by Set")
+	}
+
+	if mmDeleteTable.defaultExpectation == nil {
+		mmDeleteTable.defaultExpectation = &AppPublicServiceServerMockDeleteTableExpectation{}
+	}
+
+	if mmDeleteTable.defaultExpectation.params != nil {
+		mmDeleteTable.mock.t.Fatalf("AppPublicServiceServerMock.DeleteTable mock is already set by Expect")
+	}
+
+	if mmDeleteTable.defaultExpectation.paramPtrs == nil {
+		mmDeleteTable.defaultExpectation.paramPtrs = &AppPublicServiceServerMockDeleteTableParamPtrs{}
+	}
+	mmDeleteTable.defaultExpectation.paramPtrs.ctx = &ctx
+	mmDeleteTable.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmDeleteTable
+}
+
+// ExpectDp1Param2 sets up expected param dp1 for AppPublicServiceServer.DeleteTable
+func (mmDeleteTable *mAppPublicServiceServerMockDeleteTable) ExpectDp1Param2(dp1 *mm_appv1alpha.DeleteTableRequest) *mAppPublicServiceServerMockDeleteTable {
+	if mmDeleteTable.mock.funcDeleteTable != nil {
+		mmDeleteTable.mock.t.Fatalf("AppPublicServiceServerMock.DeleteTable mock is already set by Set")
+	}
+
+	if mmDeleteTable.defaultExpectation == nil {
+		mmDeleteTable.defaultExpectation = &AppPublicServiceServerMockDeleteTableExpectation{}
+	}
+
+	if mmDeleteTable.defaultExpectation.params != nil {
+		mmDeleteTable.mock.t.Fatalf("AppPublicServiceServerMock.DeleteTable mock is already set by Expect")
+	}
+
+	if mmDeleteTable.defaultExpectation.paramPtrs == nil {
+		mmDeleteTable.defaultExpectation.paramPtrs = &AppPublicServiceServerMockDeleteTableParamPtrs{}
+	}
+	mmDeleteTable.defaultExpectation.paramPtrs.dp1 = &dp1
+	mmDeleteTable.defaultExpectation.expectationOrigins.originDp1 = minimock.CallerInfo(1)
+
+	return mmDeleteTable
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.DeleteTable
+func (mmDeleteTable *mAppPublicServiceServerMockDeleteTable) Inspect(f func(ctx context.Context, dp1 *mm_appv1alpha.DeleteTableRequest)) *mAppPublicServiceServerMockDeleteTable {
+	if mmDeleteTable.mock.inspectFuncDeleteTable != nil {
+		mmDeleteTable.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.DeleteTable")
+	}
+
+	mmDeleteTable.mock.inspectFuncDeleteTable = f
+
+	return mmDeleteTable
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.DeleteTable
+func (mmDeleteTable *mAppPublicServiceServerMockDeleteTable) Return(dp2 *mm_appv1alpha.DeleteTableResponse, err error) *AppPublicServiceServerMock {
+	if mmDeleteTable.mock.funcDeleteTable != nil {
+		mmDeleteTable.mock.t.Fatalf("AppPublicServiceServerMock.DeleteTable mock is already set by Set")
+	}
+
+	if mmDeleteTable.defaultExpectation == nil {
+		mmDeleteTable.defaultExpectation = &AppPublicServiceServerMockDeleteTableExpectation{mock: mmDeleteTable.mock}
+	}
+	mmDeleteTable.defaultExpectation.results = &AppPublicServiceServerMockDeleteTableResults{dp2, err}
+	mmDeleteTable.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmDeleteTable.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.DeleteTable method
+func (mmDeleteTable *mAppPublicServiceServerMockDeleteTable) Set(f func(ctx context.Context, dp1 *mm_appv1alpha.DeleteTableRequest) (dp2 *mm_appv1alpha.DeleteTableResponse, err error)) *AppPublicServiceServerMock {
+	if mmDeleteTable.defaultExpectation != nil {
+		mmDeleteTable.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.DeleteTable method")
+	}
+
+	if len(mmDeleteTable.expectations) > 0 {
+		mmDeleteTable.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.DeleteTable method")
+	}
+
+	mmDeleteTable.mock.funcDeleteTable = f
+	mmDeleteTable.mock.funcDeleteTableOrigin = minimock.CallerInfo(1)
+	return mmDeleteTable.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.DeleteTable which will trigger the result defined by the following
+// Then helper
+func (mmDeleteTable *mAppPublicServiceServerMockDeleteTable) When(ctx context.Context, dp1 *mm_appv1alpha.DeleteTableRequest) *AppPublicServiceServerMockDeleteTableExpectation {
+	if mmDeleteTable.mock.funcDeleteTable != nil {
+		mmDeleteTable.mock.t.Fatalf("AppPublicServiceServerMock.DeleteTable mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockDeleteTableExpectation{
+		mock:               mmDeleteTable.mock,
+		params:             &AppPublicServiceServerMockDeleteTableParams{ctx, dp1},
+		expectationOrigins: AppPublicServiceServerMockDeleteTableExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmDeleteTable.expectations = append(mmDeleteTable.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.DeleteTable return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockDeleteTableExpectation) Then(dp2 *mm_appv1alpha.DeleteTableResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockDeleteTableResults{dp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.DeleteTable should be invoked
+func (mmDeleteTable *mAppPublicServiceServerMockDeleteTable) Times(n uint64) *mAppPublicServiceServerMockDeleteTable {
+	if n == 0 {
+		mmDeleteTable.mock.t.Fatalf("Times of AppPublicServiceServerMock.DeleteTable mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmDeleteTable.expectedInvocations, n)
+	mmDeleteTable.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmDeleteTable
+}
+
+func (mmDeleteTable *mAppPublicServiceServerMockDeleteTable) invocationsDone() bool {
+	if len(mmDeleteTable.expectations) == 0 && mmDeleteTable.defaultExpectation == nil && mmDeleteTable.mock.funcDeleteTable == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmDeleteTable.mock.afterDeleteTableCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmDeleteTable.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// DeleteTable implements mm_appv1alpha.AppPublicServiceServer
+func (mmDeleteTable *AppPublicServiceServerMock) DeleteTable(ctx context.Context, dp1 *mm_appv1alpha.DeleteTableRequest) (dp2 *mm_appv1alpha.DeleteTableResponse, err error) {
+	mm_atomic.AddUint64(&mmDeleteTable.beforeDeleteTableCounter, 1)
+	defer mm_atomic.AddUint64(&mmDeleteTable.afterDeleteTableCounter, 1)
+
+	mmDeleteTable.t.Helper()
+
+	if mmDeleteTable.inspectFuncDeleteTable != nil {
+		mmDeleteTable.inspectFuncDeleteTable(ctx, dp1)
+	}
+
+	mm_params := AppPublicServiceServerMockDeleteTableParams{ctx, dp1}
+
+	// Record call args
+	mmDeleteTable.DeleteTableMock.mutex.Lock()
+	mmDeleteTable.DeleteTableMock.callArgs = append(mmDeleteTable.DeleteTableMock.callArgs, &mm_params)
+	mmDeleteTable.DeleteTableMock.mutex.Unlock()
+
+	for _, e := range mmDeleteTable.DeleteTableMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.dp2, e.results.err
+		}
+	}
+
+	if mmDeleteTable.DeleteTableMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmDeleteTable.DeleteTableMock.defaultExpectation.Counter, 1)
+		mm_want := mmDeleteTable.DeleteTableMock.defaultExpectation.params
+		mm_want_ptrs := mmDeleteTable.DeleteTableMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockDeleteTableParams{ctx, dp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmDeleteTable.t.Errorf("AppPublicServiceServerMock.DeleteTable got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteTable.DeleteTableMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.dp1 != nil && !minimock.Equal(*mm_want_ptrs.dp1, mm_got.dp1) {
+				mmDeleteTable.t.Errorf("AppPublicServiceServerMock.DeleteTable got unexpected parameter dp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteTable.DeleteTableMock.defaultExpectation.expectationOrigins.originDp1, *mm_want_ptrs.dp1, mm_got.dp1, minimock.Diff(*mm_want_ptrs.dp1, mm_got.dp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmDeleteTable.t.Errorf("AppPublicServiceServerMock.DeleteTable got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmDeleteTable.DeleteTableMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmDeleteTable.DeleteTableMock.defaultExpectation.results
+		if mm_results == nil {
+			mmDeleteTable.t.Fatal("No results are set for the AppPublicServiceServerMock.DeleteTable")
+		}
+		return (*mm_results).dp2, (*mm_results).err
+	}
+	if mmDeleteTable.funcDeleteTable != nil {
+		return mmDeleteTable.funcDeleteTable(ctx, dp1)
+	}
+	mmDeleteTable.t.Fatalf("Unexpected call to AppPublicServiceServerMock.DeleteTable. %v %v", ctx, dp1)
+	return
+}
+
+// DeleteTableAfterCounter returns a count of finished AppPublicServiceServerMock.DeleteTable invocations
+func (mmDeleteTable *AppPublicServiceServerMock) DeleteTableAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteTable.afterDeleteTableCounter)
+}
+
+// DeleteTableBeforeCounter returns a count of AppPublicServiceServerMock.DeleteTable invocations
+func (mmDeleteTable *AppPublicServiceServerMock) DeleteTableBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteTable.beforeDeleteTableCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.DeleteTable.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmDeleteTable *mAppPublicServiceServerMockDeleteTable) Calls() []*AppPublicServiceServerMockDeleteTableParams {
+	mmDeleteTable.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockDeleteTableParams, len(mmDeleteTable.callArgs))
+	copy(argCopy, mmDeleteTable.callArgs)
+
+	mmDeleteTable.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockDeleteTableDone returns true if the count of the DeleteTable invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockDeleteTableDone() bool {
+	if m.DeleteTableMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.DeleteTableMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.DeleteTableMock.invocationsDone()
+}
+
+// MinimockDeleteTableInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockDeleteTableInspect() {
+	for _, e := range m.DeleteTableMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteTable at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterDeleteTableCounter := mm_atomic.LoadUint64(&m.afterDeleteTableCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.DeleteTableMock.defaultExpectation != nil && afterDeleteTableCounter < 1 {
+		if m.DeleteTableMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteTable at\n%s", m.DeleteTableMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteTable at\n%s with params: %#v", m.DeleteTableMock.defaultExpectation.expectationOrigins.origin, *m.DeleteTableMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcDeleteTable != nil && afterDeleteTableCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.DeleteTable at\n%s", m.funcDeleteTableOrigin)
+	}
+
+	if !m.DeleteTableMock.invocationsDone() && afterDeleteTableCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.DeleteTable at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.DeleteTableMock.expectedInvocations), m.DeleteTableMock.expectedInvocationsOrigin, afterDeleteTableCounter)
+	}
+}
+
+type mAppPublicServiceServerMockExport struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockExportExpectation
+	expectations       []*AppPublicServiceServerMockExportExpectation
+
+	callArgs []*AppPublicServiceServerMockExportParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockExportExpectation specifies expectation struct of the AppPublicServiceServer.Export
+type AppPublicServiceServerMockExportExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockExportParams
+	paramPtrs          *AppPublicServiceServerMockExportParamPtrs
+	expectationOrigins AppPublicServiceServerMockExportExpectationOrigins
+	results            *AppPublicServiceServerMockExportResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockExportParams contains parameters of the AppPublicServiceServer.Export
+type AppPublicServiceServerMockExportParams struct {
+	ctx context.Context
+	ep1 *mm_appv1alpha.ExportRequest
+}
+
+// AppPublicServiceServerMockExportParamPtrs contains pointers to parameters of the AppPublicServiceServer.Export
+type AppPublicServiceServerMockExportParamPtrs struct {
+	ctx *context.Context
+	ep1 **mm_appv1alpha.ExportRequest
+}
+
+// AppPublicServiceServerMockExportResults contains results of the AppPublicServiceServer.Export
+type AppPublicServiceServerMockExportResults struct {
+	ep2 *mm_appv1alpha.ExportResponse
+	err error
+}
+
+// AppPublicServiceServerMockExportOrigins contains origins of expectations of the AppPublicServiceServer.Export
+type AppPublicServiceServerMockExportExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originEp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmExport *mAppPublicServiceServerMockExport) Optional() *mAppPublicServiceServerMockExport {
+	mmExport.optional = true
+	return mmExport
+}
+
+// Expect sets up expected params for AppPublicServiceServer.Export
+func (mmExport *mAppPublicServiceServerMockExport) Expect(ctx context.Context, ep1 *mm_appv1alpha.ExportRequest) *mAppPublicServiceServerMockExport {
+	if mmExport.mock.funcExport != nil {
+		mmExport.mock.t.Fatalf("AppPublicServiceServerMock.Export mock is already set by Set")
+	}
+
+	if mmExport.defaultExpectation == nil {
+		mmExport.defaultExpectation = &AppPublicServiceServerMockExportExpectation{}
+	}
+
+	if mmExport.defaultExpectation.paramPtrs != nil {
+		mmExport.mock.t.Fatalf("AppPublicServiceServerMock.Export mock is already set by ExpectParams functions")
+	}
+
+	mmExport.defaultExpectation.params = &AppPublicServiceServerMockExportParams{ctx, ep1}
+	mmExport.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmExport.expectations {
+		if minimock.Equal(e.params, mmExport.defaultExpectation.params) {
+			mmExport.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmExport.defaultExpectation.params)
+		}
+	}
+
+	return mmExport
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.Export
+func (mmExport *mAppPublicServiceServerMockExport) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockExport {
+	if mmExport.mock.funcExport != nil {
+		mmExport.mock.t.Fatalf("AppPublicServiceServerMock.Export mock is already set by Set")
+	}
+
+	if mmExport.defaultExpectation == nil {
+		mmExport.defaultExpectation = &AppPublicServiceServerMockExportExpectation{}
+	}
+
+	if mmExport.defaultExpectation.params != nil {
+		mmExport.mock.t.Fatalf("AppPublicServiceServerMock.Export mock is already set by Expect")
+	}
+
+	if mmExport.defaultExpectation.paramPtrs == nil {
+		mmExport.defaultExpectation.paramPtrs = &AppPublicServiceServerMockExportParamPtrs{}
+	}
+	mmExport.defaultExpectation.paramPtrs.ctx = &ctx
+	mmExport.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmExport
+}
+
+// ExpectEp1Param2 sets up expected param ep1 for AppPublicServiceServer.Export
+func (mmExport *mAppPublicServiceServerMockExport) ExpectEp1Param2(ep1 *mm_appv1alpha.ExportRequest) *mAppPublicServiceServerMockExport {
+	if mmExport.mock.funcExport != nil {
+		mmExport.mock.t.Fatalf("AppPublicServiceServerMock.Export mock is already set by Set")
+	}
+
+	if mmExport.defaultExpectation == nil {
+		mmExport.defaultExpectation = &AppPublicServiceServerMockExportExpectation{}
+	}
+
+	if mmExport.defaultExpectation.params != nil {
+		mmExport.mock.t.Fatalf("AppPublicServiceServerMock.Export mock is already set by Expect")
+	}
+
+	if mmExport.defaultExpectation.paramPtrs == nil {
+		mmExport.defaultExpectation.paramPtrs = &AppPublicServiceServerMockExportParamPtrs{}
+	}
+	mmExport.defaultExpectation.paramPtrs.ep1 = &ep1
+	mmExport.defaultExpectation.expectationOrigins.originEp1 = minimock.CallerInfo(1)
+
+	return mmExport
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.Export
+func (mmExport *mAppPublicServiceServerMockExport) Inspect(f func(ctx context.Context, ep1 *mm_appv1alpha.ExportRequest)) *mAppPublicServiceServerMockExport {
+	if mmExport.mock.inspectFuncExport != nil {
+		mmExport.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.Export")
+	}
+
+	mmExport.mock.inspectFuncExport = f
+
+	return mmExport
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.Export
+func (mmExport *mAppPublicServiceServerMockExport) Return(ep2 *mm_appv1alpha.ExportResponse, err error) *AppPublicServiceServerMock {
+	if mmExport.mock.funcExport != nil {
+		mmExport.mock.t.Fatalf("AppPublicServiceServerMock.Export mock is already set by Set")
+	}
+
+	if mmExport.defaultExpectation == nil {
+		mmExport.defaultExpectation = &AppPublicServiceServerMockExportExpectation{mock: mmExport.mock}
+	}
+	mmExport.defaultExpectation.results = &AppPublicServiceServerMockExportResults{ep2, err}
+	mmExport.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmExport.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.Export method
+func (mmExport *mAppPublicServiceServerMockExport) Set(f func(ctx context.Context, ep1 *mm_appv1alpha.ExportRequest) (ep2 *mm_appv1alpha.ExportResponse, err error)) *AppPublicServiceServerMock {
+	if mmExport.defaultExpectation != nil {
+		mmExport.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.Export method")
+	}
+
+	if len(mmExport.expectations) > 0 {
+		mmExport.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.Export method")
+	}
+
+	mmExport.mock.funcExport = f
+	mmExport.mock.funcExportOrigin = minimock.CallerInfo(1)
+	return mmExport.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.Export which will trigger the result defined by the following
+// Then helper
+func (mmExport *mAppPublicServiceServerMockExport) When(ctx context.Context, ep1 *mm_appv1alpha.ExportRequest) *AppPublicServiceServerMockExportExpectation {
+	if mmExport.mock.funcExport != nil {
+		mmExport.mock.t.Fatalf("AppPublicServiceServerMock.Export mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockExportExpectation{
+		mock:               mmExport.mock,
+		params:             &AppPublicServiceServerMockExportParams{ctx, ep1},
+		expectationOrigins: AppPublicServiceServerMockExportExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmExport.expectations = append(mmExport.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.Export return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockExportExpectation) Then(ep2 *mm_appv1alpha.ExportResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockExportResults{ep2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.Export should be invoked
+func (mmExport *mAppPublicServiceServerMockExport) Times(n uint64) *mAppPublicServiceServerMockExport {
+	if n == 0 {
+		mmExport.mock.t.Fatalf("Times of AppPublicServiceServerMock.Export mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmExport.expectedInvocations, n)
+	mmExport.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmExport
+}
+
+func (mmExport *mAppPublicServiceServerMockExport) invocationsDone() bool {
+	if len(mmExport.expectations) == 0 && mmExport.defaultExpectation == nil && mmExport.mock.funcExport == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmExport.mock.afterExportCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmExport.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// Export implements mm_appv1alpha.AppPublicServiceServer
+func (mmExport *AppPublicServiceServerMock) Export(ctx context.Context, ep1 *mm_appv1alpha.ExportRequest) (ep2 *mm_appv1alpha.ExportResponse, err error) {
+	mm_atomic.AddUint64(&mmExport.beforeExportCounter, 1)
+	defer mm_atomic.AddUint64(&mmExport.afterExportCounter, 1)
+
+	mmExport.t.Helper()
+
+	if mmExport.inspectFuncExport != nil {
+		mmExport.inspectFuncExport(ctx, ep1)
+	}
+
+	mm_params := AppPublicServiceServerMockExportParams{ctx, ep1}
+
+	// Record call args
+	mmExport.ExportMock.mutex.Lock()
+	mmExport.ExportMock.callArgs = append(mmExport.ExportMock.callArgs, &mm_params)
+	mmExport.ExportMock.mutex.Unlock()
+
+	for _, e := range mmExport.ExportMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.ep2, e.results.err
+		}
+	}
+
+	if mmExport.ExportMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmExport.ExportMock.defaultExpectation.Counter, 1)
+		mm_want := mmExport.ExportMock.defaultExpectation.params
+		mm_want_ptrs := mmExport.ExportMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockExportParams{ctx, ep1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmExport.t.Errorf("AppPublicServiceServerMock.Export got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmExport.ExportMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.ep1 != nil && !minimock.Equal(*mm_want_ptrs.ep1, mm_got.ep1) {
+				mmExport.t.Errorf("AppPublicServiceServerMock.Export got unexpected parameter ep1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmExport.ExportMock.defaultExpectation.expectationOrigins.originEp1, *mm_want_ptrs.ep1, mm_got.ep1, minimock.Diff(*mm_want_ptrs.ep1, mm_got.ep1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmExport.t.Errorf("AppPublicServiceServerMock.Export got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmExport.ExportMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmExport.ExportMock.defaultExpectation.results
+		if mm_results == nil {
+			mmExport.t.Fatal("No results are set for the AppPublicServiceServerMock.Export")
+		}
+		return (*mm_results).ep2, (*mm_results).err
+	}
+	if mmExport.funcExport != nil {
+		return mmExport.funcExport(ctx, ep1)
+	}
+	mmExport.t.Fatalf("Unexpected call to AppPublicServiceServerMock.Export. %v %v", ctx, ep1)
+	return
+}
+
+// ExportAfterCounter returns a count of finished AppPublicServiceServerMock.Export invocations
+func (mmExport *AppPublicServiceServerMock) ExportAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmExport.afterExportCounter)
+}
+
+// ExportBeforeCounter returns a count of AppPublicServiceServerMock.Export invocations
+func (mmExport *AppPublicServiceServerMock) ExportBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmExport.beforeExportCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.Export.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmExport *mAppPublicServiceServerMockExport) Calls() []*AppPublicServiceServerMockExportParams {
+	mmExport.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockExportParams, len(mmExport.callArgs))
+	copy(argCopy, mmExport.callArgs)
+
+	mmExport.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockExportDone returns true if the count of the Export invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockExportDone() bool {
+	if m.ExportMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ExportMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ExportMock.invocationsDone()
+}
+
+// MinimockExportInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockExportInspect() {
+	for _, e := range m.ExportMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.Export at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterExportCounter := mm_atomic.LoadUint64(&m.afterExportCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ExportMock.defaultExpectation != nil && afterExportCounter < 1 {
+		if m.ExportMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.Export at\n%s", m.ExportMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.Export at\n%s with params: %#v", m.ExportMock.defaultExpectation.expectationOrigins.origin, *m.ExportMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcExport != nil && afterExportCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.Export at\n%s", m.funcExportOrigin)
+	}
+
+	if !m.ExportMock.invocationsDone() && afterExportCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.Export at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.ExportMock.expectedInvocations), m.ExportMock.expectedInvocationsOrigin, afterExportCounter)
+	}
+}
+
+type mAppPublicServiceServerMockGetColumnDefinitions struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockGetColumnDefinitionsExpectation
+	expectations       []*AppPublicServiceServerMockGetColumnDefinitionsExpectation
+
+	callArgs []*AppPublicServiceServerMockGetColumnDefinitionsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockGetColumnDefinitionsExpectation specifies expectation struct of the AppPublicServiceServer.GetColumnDefinitions
+type AppPublicServiceServerMockGetColumnDefinitionsExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockGetColumnDefinitionsParams
+	paramPtrs          *AppPublicServiceServerMockGetColumnDefinitionsParamPtrs
+	expectationOrigins AppPublicServiceServerMockGetColumnDefinitionsExpectationOrigins
+	results            *AppPublicServiceServerMockGetColumnDefinitionsResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockGetColumnDefinitionsParams contains parameters of the AppPublicServiceServer.GetColumnDefinitions
+type AppPublicServiceServerMockGetColumnDefinitionsParams struct {
+	ctx context.Context
+	gp1 *mm_appv1alpha.GetColumnDefinitionsRequest
+}
+
+// AppPublicServiceServerMockGetColumnDefinitionsParamPtrs contains pointers to parameters of the AppPublicServiceServer.GetColumnDefinitions
+type AppPublicServiceServerMockGetColumnDefinitionsParamPtrs struct {
+	ctx *context.Context
+	gp1 **mm_appv1alpha.GetColumnDefinitionsRequest
+}
+
+// AppPublicServiceServerMockGetColumnDefinitionsResults contains results of the AppPublicServiceServer.GetColumnDefinitions
+type AppPublicServiceServerMockGetColumnDefinitionsResults struct {
+	gp2 *mm_appv1alpha.GetColumnDefinitionsResponse
+	err error
+}
+
+// AppPublicServiceServerMockGetColumnDefinitionsOrigins contains origins of expectations of the AppPublicServiceServer.GetColumnDefinitions
+type AppPublicServiceServerMockGetColumnDefinitionsExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originGp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetColumnDefinitions *mAppPublicServiceServerMockGetColumnDefinitions) Optional() *mAppPublicServiceServerMockGetColumnDefinitions {
+	mmGetColumnDefinitions.optional = true
+	return mmGetColumnDefinitions
+}
+
+// Expect sets up expected params for AppPublicServiceServer.GetColumnDefinitions
+func (mmGetColumnDefinitions *mAppPublicServiceServerMockGetColumnDefinitions) Expect(ctx context.Context, gp1 *mm_appv1alpha.GetColumnDefinitionsRequest) *mAppPublicServiceServerMockGetColumnDefinitions {
+	if mmGetColumnDefinitions.mock.funcGetColumnDefinitions != nil {
+		mmGetColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.GetColumnDefinitions mock is already set by Set")
+	}
+
+	if mmGetColumnDefinitions.defaultExpectation == nil {
+		mmGetColumnDefinitions.defaultExpectation = &AppPublicServiceServerMockGetColumnDefinitionsExpectation{}
+	}
+
+	if mmGetColumnDefinitions.defaultExpectation.paramPtrs != nil {
+		mmGetColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.GetColumnDefinitions mock is already set by ExpectParams functions")
+	}
+
+	mmGetColumnDefinitions.defaultExpectation.params = &AppPublicServiceServerMockGetColumnDefinitionsParams{ctx, gp1}
+	mmGetColumnDefinitions.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetColumnDefinitions.expectations {
+		if minimock.Equal(e.params, mmGetColumnDefinitions.defaultExpectation.params) {
+			mmGetColumnDefinitions.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetColumnDefinitions.defaultExpectation.params)
+		}
+	}
+
+	return mmGetColumnDefinitions
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.GetColumnDefinitions
+func (mmGetColumnDefinitions *mAppPublicServiceServerMockGetColumnDefinitions) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockGetColumnDefinitions {
+	if mmGetColumnDefinitions.mock.funcGetColumnDefinitions != nil {
+		mmGetColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.GetColumnDefinitions mock is already set by Set")
+	}
+
+	if mmGetColumnDefinitions.defaultExpectation == nil {
+		mmGetColumnDefinitions.defaultExpectation = &AppPublicServiceServerMockGetColumnDefinitionsExpectation{}
+	}
+
+	if mmGetColumnDefinitions.defaultExpectation.params != nil {
+		mmGetColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.GetColumnDefinitions mock is already set by Expect")
+	}
+
+	if mmGetColumnDefinitions.defaultExpectation.paramPtrs == nil {
+		mmGetColumnDefinitions.defaultExpectation.paramPtrs = &AppPublicServiceServerMockGetColumnDefinitionsParamPtrs{}
+	}
+	mmGetColumnDefinitions.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetColumnDefinitions.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetColumnDefinitions
+}
+
+// ExpectGp1Param2 sets up expected param gp1 for AppPublicServiceServer.GetColumnDefinitions
+func (mmGetColumnDefinitions *mAppPublicServiceServerMockGetColumnDefinitions) ExpectGp1Param2(gp1 *mm_appv1alpha.GetColumnDefinitionsRequest) *mAppPublicServiceServerMockGetColumnDefinitions {
+	if mmGetColumnDefinitions.mock.funcGetColumnDefinitions != nil {
+		mmGetColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.GetColumnDefinitions mock is already set by Set")
+	}
+
+	if mmGetColumnDefinitions.defaultExpectation == nil {
+		mmGetColumnDefinitions.defaultExpectation = &AppPublicServiceServerMockGetColumnDefinitionsExpectation{}
+	}
+
+	if mmGetColumnDefinitions.defaultExpectation.params != nil {
+		mmGetColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.GetColumnDefinitions mock is already set by Expect")
+	}
+
+	if mmGetColumnDefinitions.defaultExpectation.paramPtrs == nil {
+		mmGetColumnDefinitions.defaultExpectation.paramPtrs = &AppPublicServiceServerMockGetColumnDefinitionsParamPtrs{}
+	}
+	mmGetColumnDefinitions.defaultExpectation.paramPtrs.gp1 = &gp1
+	mmGetColumnDefinitions.defaultExpectation.expectationOrigins.originGp1 = minimock.CallerInfo(1)
+
+	return mmGetColumnDefinitions
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.GetColumnDefinitions
+func (mmGetColumnDefinitions *mAppPublicServiceServerMockGetColumnDefinitions) Inspect(f func(ctx context.Context, gp1 *mm_appv1alpha.GetColumnDefinitionsRequest)) *mAppPublicServiceServerMockGetColumnDefinitions {
+	if mmGetColumnDefinitions.mock.inspectFuncGetColumnDefinitions != nil {
+		mmGetColumnDefinitions.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.GetColumnDefinitions")
+	}
+
+	mmGetColumnDefinitions.mock.inspectFuncGetColumnDefinitions = f
+
+	return mmGetColumnDefinitions
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.GetColumnDefinitions
+func (mmGetColumnDefinitions *mAppPublicServiceServerMockGetColumnDefinitions) Return(gp2 *mm_appv1alpha.GetColumnDefinitionsResponse, err error) *AppPublicServiceServerMock {
+	if mmGetColumnDefinitions.mock.funcGetColumnDefinitions != nil {
+		mmGetColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.GetColumnDefinitions mock is already set by Set")
+	}
+
+	if mmGetColumnDefinitions.defaultExpectation == nil {
+		mmGetColumnDefinitions.defaultExpectation = &AppPublicServiceServerMockGetColumnDefinitionsExpectation{mock: mmGetColumnDefinitions.mock}
+	}
+	mmGetColumnDefinitions.defaultExpectation.results = &AppPublicServiceServerMockGetColumnDefinitionsResults{gp2, err}
+	mmGetColumnDefinitions.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetColumnDefinitions.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.GetColumnDefinitions method
+func (mmGetColumnDefinitions *mAppPublicServiceServerMockGetColumnDefinitions) Set(f func(ctx context.Context, gp1 *mm_appv1alpha.GetColumnDefinitionsRequest) (gp2 *mm_appv1alpha.GetColumnDefinitionsResponse, err error)) *AppPublicServiceServerMock {
+	if mmGetColumnDefinitions.defaultExpectation != nil {
+		mmGetColumnDefinitions.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.GetColumnDefinitions method")
+	}
+
+	if len(mmGetColumnDefinitions.expectations) > 0 {
+		mmGetColumnDefinitions.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.GetColumnDefinitions method")
+	}
+
+	mmGetColumnDefinitions.mock.funcGetColumnDefinitions = f
+	mmGetColumnDefinitions.mock.funcGetColumnDefinitionsOrigin = minimock.CallerInfo(1)
+	return mmGetColumnDefinitions.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.GetColumnDefinitions which will trigger the result defined by the following
+// Then helper
+func (mmGetColumnDefinitions *mAppPublicServiceServerMockGetColumnDefinitions) When(ctx context.Context, gp1 *mm_appv1alpha.GetColumnDefinitionsRequest) *AppPublicServiceServerMockGetColumnDefinitionsExpectation {
+	if mmGetColumnDefinitions.mock.funcGetColumnDefinitions != nil {
+		mmGetColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.GetColumnDefinitions mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockGetColumnDefinitionsExpectation{
+		mock:               mmGetColumnDefinitions.mock,
+		params:             &AppPublicServiceServerMockGetColumnDefinitionsParams{ctx, gp1},
+		expectationOrigins: AppPublicServiceServerMockGetColumnDefinitionsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetColumnDefinitions.expectations = append(mmGetColumnDefinitions.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.GetColumnDefinitions return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockGetColumnDefinitionsExpectation) Then(gp2 *mm_appv1alpha.GetColumnDefinitionsResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockGetColumnDefinitionsResults{gp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.GetColumnDefinitions should be invoked
+func (mmGetColumnDefinitions *mAppPublicServiceServerMockGetColumnDefinitions) Times(n uint64) *mAppPublicServiceServerMockGetColumnDefinitions {
+	if n == 0 {
+		mmGetColumnDefinitions.mock.t.Fatalf("Times of AppPublicServiceServerMock.GetColumnDefinitions mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetColumnDefinitions.expectedInvocations, n)
+	mmGetColumnDefinitions.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetColumnDefinitions
+}
+
+func (mmGetColumnDefinitions *mAppPublicServiceServerMockGetColumnDefinitions) invocationsDone() bool {
+	if len(mmGetColumnDefinitions.expectations) == 0 && mmGetColumnDefinitions.defaultExpectation == nil && mmGetColumnDefinitions.mock.funcGetColumnDefinitions == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetColumnDefinitions.mock.afterGetColumnDefinitionsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetColumnDefinitions.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetColumnDefinitions implements mm_appv1alpha.AppPublicServiceServer
+func (mmGetColumnDefinitions *AppPublicServiceServerMock) GetColumnDefinitions(ctx context.Context, gp1 *mm_appv1alpha.GetColumnDefinitionsRequest) (gp2 *mm_appv1alpha.GetColumnDefinitionsResponse, err error) {
+	mm_atomic.AddUint64(&mmGetColumnDefinitions.beforeGetColumnDefinitionsCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetColumnDefinitions.afterGetColumnDefinitionsCounter, 1)
+
+	mmGetColumnDefinitions.t.Helper()
+
+	if mmGetColumnDefinitions.inspectFuncGetColumnDefinitions != nil {
+		mmGetColumnDefinitions.inspectFuncGetColumnDefinitions(ctx, gp1)
+	}
+
+	mm_params := AppPublicServiceServerMockGetColumnDefinitionsParams{ctx, gp1}
+
+	// Record call args
+	mmGetColumnDefinitions.GetColumnDefinitionsMock.mutex.Lock()
+	mmGetColumnDefinitions.GetColumnDefinitionsMock.callArgs = append(mmGetColumnDefinitions.GetColumnDefinitionsMock.callArgs, &mm_params)
+	mmGetColumnDefinitions.GetColumnDefinitionsMock.mutex.Unlock()
+
+	for _, e := range mmGetColumnDefinitions.GetColumnDefinitionsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.gp2, e.results.err
+		}
+	}
+
+	if mmGetColumnDefinitions.GetColumnDefinitionsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetColumnDefinitions.GetColumnDefinitionsMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetColumnDefinitions.GetColumnDefinitionsMock.defaultExpectation.params
+		mm_want_ptrs := mmGetColumnDefinitions.GetColumnDefinitionsMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockGetColumnDefinitionsParams{ctx, gp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetColumnDefinitions.t.Errorf("AppPublicServiceServerMock.GetColumnDefinitions got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetColumnDefinitions.GetColumnDefinitionsMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.gp1 != nil && !minimock.Equal(*mm_want_ptrs.gp1, mm_got.gp1) {
+				mmGetColumnDefinitions.t.Errorf("AppPublicServiceServerMock.GetColumnDefinitions got unexpected parameter gp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetColumnDefinitions.GetColumnDefinitionsMock.defaultExpectation.expectationOrigins.originGp1, *mm_want_ptrs.gp1, mm_got.gp1, minimock.Diff(*mm_want_ptrs.gp1, mm_got.gp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetColumnDefinitions.t.Errorf("AppPublicServiceServerMock.GetColumnDefinitions got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetColumnDefinitions.GetColumnDefinitionsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetColumnDefinitions.GetColumnDefinitionsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetColumnDefinitions.t.Fatal("No results are set for the AppPublicServiceServerMock.GetColumnDefinitions")
+		}
+		return (*mm_results).gp2, (*mm_results).err
+	}
+	if mmGetColumnDefinitions.funcGetColumnDefinitions != nil {
+		return mmGetColumnDefinitions.funcGetColumnDefinitions(ctx, gp1)
+	}
+	mmGetColumnDefinitions.t.Fatalf("Unexpected call to AppPublicServiceServerMock.GetColumnDefinitions. %v %v", ctx, gp1)
+	return
+}
+
+// GetColumnDefinitionsAfterCounter returns a count of finished AppPublicServiceServerMock.GetColumnDefinitions invocations
+func (mmGetColumnDefinitions *AppPublicServiceServerMock) GetColumnDefinitionsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetColumnDefinitions.afterGetColumnDefinitionsCounter)
+}
+
+// GetColumnDefinitionsBeforeCounter returns a count of AppPublicServiceServerMock.GetColumnDefinitions invocations
+func (mmGetColumnDefinitions *AppPublicServiceServerMock) GetColumnDefinitionsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetColumnDefinitions.beforeGetColumnDefinitionsCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.GetColumnDefinitions.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetColumnDefinitions *mAppPublicServiceServerMockGetColumnDefinitions) Calls() []*AppPublicServiceServerMockGetColumnDefinitionsParams {
+	mmGetColumnDefinitions.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockGetColumnDefinitionsParams, len(mmGetColumnDefinitions.callArgs))
+	copy(argCopy, mmGetColumnDefinitions.callArgs)
+
+	mmGetColumnDefinitions.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetColumnDefinitionsDone returns true if the count of the GetColumnDefinitions invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockGetColumnDefinitionsDone() bool {
+	if m.GetColumnDefinitionsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetColumnDefinitionsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetColumnDefinitionsMock.invocationsDone()
+}
+
+// MinimockGetColumnDefinitionsInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockGetColumnDefinitionsInspect() {
+	for _, e := range m.GetColumnDefinitionsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.GetColumnDefinitions at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetColumnDefinitionsCounter := mm_atomic.LoadUint64(&m.afterGetColumnDefinitionsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetColumnDefinitionsMock.defaultExpectation != nil && afterGetColumnDefinitionsCounter < 1 {
+		if m.GetColumnDefinitionsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.GetColumnDefinitions at\n%s", m.GetColumnDefinitionsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.GetColumnDefinitions at\n%s with params: %#v", m.GetColumnDefinitionsMock.defaultExpectation.expectationOrigins.origin, *m.GetColumnDefinitionsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetColumnDefinitions != nil && afterGetColumnDefinitionsCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.GetColumnDefinitions at\n%s", m.funcGetColumnDefinitionsOrigin)
+	}
+
+	if !m.GetColumnDefinitionsMock.invocationsDone() && afterGetColumnDefinitionsCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.GetColumnDefinitions at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetColumnDefinitionsMock.expectedInvocations), m.GetColumnDefinitionsMock.expectedInvocationsOrigin, afterGetColumnDefinitionsCounter)
+	}
+}
+
 type mAppPublicServiceServerMockGetPlaygroundConversation struct {
 	optional           bool
 	mock               *AppPublicServiceServerMock
@@ -4414,6 +6632,1034 @@ func (m *AppPublicServiceServerMock) MinimockGetPlaygroundConversationInspect() 
 	if !m.GetPlaygroundConversationMock.invocationsDone() && afterGetPlaygroundConversationCounter > 0 {
 		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.GetPlaygroundConversation at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.GetPlaygroundConversationMock.expectedInvocations), m.GetPlaygroundConversationMock.expectedInvocationsOrigin, afterGetPlaygroundConversationCounter)
+	}
+}
+
+type mAppPublicServiceServerMockGetTable struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockGetTableExpectation
+	expectations       []*AppPublicServiceServerMockGetTableExpectation
+
+	callArgs []*AppPublicServiceServerMockGetTableParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockGetTableExpectation specifies expectation struct of the AppPublicServiceServer.GetTable
+type AppPublicServiceServerMockGetTableExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockGetTableParams
+	paramPtrs          *AppPublicServiceServerMockGetTableParamPtrs
+	expectationOrigins AppPublicServiceServerMockGetTableExpectationOrigins
+	results            *AppPublicServiceServerMockGetTableResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockGetTableParams contains parameters of the AppPublicServiceServer.GetTable
+type AppPublicServiceServerMockGetTableParams struct {
+	ctx context.Context
+	gp1 *mm_appv1alpha.GetTableRequest
+}
+
+// AppPublicServiceServerMockGetTableParamPtrs contains pointers to parameters of the AppPublicServiceServer.GetTable
+type AppPublicServiceServerMockGetTableParamPtrs struct {
+	ctx *context.Context
+	gp1 **mm_appv1alpha.GetTableRequest
+}
+
+// AppPublicServiceServerMockGetTableResults contains results of the AppPublicServiceServer.GetTable
+type AppPublicServiceServerMockGetTableResults struct {
+	gp2 *mm_appv1alpha.GetTableResponse
+	err error
+}
+
+// AppPublicServiceServerMockGetTableOrigins contains origins of expectations of the AppPublicServiceServer.GetTable
+type AppPublicServiceServerMockGetTableExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originGp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetTable *mAppPublicServiceServerMockGetTable) Optional() *mAppPublicServiceServerMockGetTable {
+	mmGetTable.optional = true
+	return mmGetTable
+}
+
+// Expect sets up expected params for AppPublicServiceServer.GetTable
+func (mmGetTable *mAppPublicServiceServerMockGetTable) Expect(ctx context.Context, gp1 *mm_appv1alpha.GetTableRequest) *mAppPublicServiceServerMockGetTable {
+	if mmGetTable.mock.funcGetTable != nil {
+		mmGetTable.mock.t.Fatalf("AppPublicServiceServerMock.GetTable mock is already set by Set")
+	}
+
+	if mmGetTable.defaultExpectation == nil {
+		mmGetTable.defaultExpectation = &AppPublicServiceServerMockGetTableExpectation{}
+	}
+
+	if mmGetTable.defaultExpectation.paramPtrs != nil {
+		mmGetTable.mock.t.Fatalf("AppPublicServiceServerMock.GetTable mock is already set by ExpectParams functions")
+	}
+
+	mmGetTable.defaultExpectation.params = &AppPublicServiceServerMockGetTableParams{ctx, gp1}
+	mmGetTable.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetTable.expectations {
+		if minimock.Equal(e.params, mmGetTable.defaultExpectation.params) {
+			mmGetTable.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetTable.defaultExpectation.params)
+		}
+	}
+
+	return mmGetTable
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.GetTable
+func (mmGetTable *mAppPublicServiceServerMockGetTable) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockGetTable {
+	if mmGetTable.mock.funcGetTable != nil {
+		mmGetTable.mock.t.Fatalf("AppPublicServiceServerMock.GetTable mock is already set by Set")
+	}
+
+	if mmGetTable.defaultExpectation == nil {
+		mmGetTable.defaultExpectation = &AppPublicServiceServerMockGetTableExpectation{}
+	}
+
+	if mmGetTable.defaultExpectation.params != nil {
+		mmGetTable.mock.t.Fatalf("AppPublicServiceServerMock.GetTable mock is already set by Expect")
+	}
+
+	if mmGetTable.defaultExpectation.paramPtrs == nil {
+		mmGetTable.defaultExpectation.paramPtrs = &AppPublicServiceServerMockGetTableParamPtrs{}
+	}
+	mmGetTable.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetTable.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetTable
+}
+
+// ExpectGp1Param2 sets up expected param gp1 for AppPublicServiceServer.GetTable
+func (mmGetTable *mAppPublicServiceServerMockGetTable) ExpectGp1Param2(gp1 *mm_appv1alpha.GetTableRequest) *mAppPublicServiceServerMockGetTable {
+	if mmGetTable.mock.funcGetTable != nil {
+		mmGetTable.mock.t.Fatalf("AppPublicServiceServerMock.GetTable mock is already set by Set")
+	}
+
+	if mmGetTable.defaultExpectation == nil {
+		mmGetTable.defaultExpectation = &AppPublicServiceServerMockGetTableExpectation{}
+	}
+
+	if mmGetTable.defaultExpectation.params != nil {
+		mmGetTable.mock.t.Fatalf("AppPublicServiceServerMock.GetTable mock is already set by Expect")
+	}
+
+	if mmGetTable.defaultExpectation.paramPtrs == nil {
+		mmGetTable.defaultExpectation.paramPtrs = &AppPublicServiceServerMockGetTableParamPtrs{}
+	}
+	mmGetTable.defaultExpectation.paramPtrs.gp1 = &gp1
+	mmGetTable.defaultExpectation.expectationOrigins.originGp1 = minimock.CallerInfo(1)
+
+	return mmGetTable
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.GetTable
+func (mmGetTable *mAppPublicServiceServerMockGetTable) Inspect(f func(ctx context.Context, gp1 *mm_appv1alpha.GetTableRequest)) *mAppPublicServiceServerMockGetTable {
+	if mmGetTable.mock.inspectFuncGetTable != nil {
+		mmGetTable.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.GetTable")
+	}
+
+	mmGetTable.mock.inspectFuncGetTable = f
+
+	return mmGetTable
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.GetTable
+func (mmGetTable *mAppPublicServiceServerMockGetTable) Return(gp2 *mm_appv1alpha.GetTableResponse, err error) *AppPublicServiceServerMock {
+	if mmGetTable.mock.funcGetTable != nil {
+		mmGetTable.mock.t.Fatalf("AppPublicServiceServerMock.GetTable mock is already set by Set")
+	}
+
+	if mmGetTable.defaultExpectation == nil {
+		mmGetTable.defaultExpectation = &AppPublicServiceServerMockGetTableExpectation{mock: mmGetTable.mock}
+	}
+	mmGetTable.defaultExpectation.results = &AppPublicServiceServerMockGetTableResults{gp2, err}
+	mmGetTable.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetTable.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.GetTable method
+func (mmGetTable *mAppPublicServiceServerMockGetTable) Set(f func(ctx context.Context, gp1 *mm_appv1alpha.GetTableRequest) (gp2 *mm_appv1alpha.GetTableResponse, err error)) *AppPublicServiceServerMock {
+	if mmGetTable.defaultExpectation != nil {
+		mmGetTable.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.GetTable method")
+	}
+
+	if len(mmGetTable.expectations) > 0 {
+		mmGetTable.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.GetTable method")
+	}
+
+	mmGetTable.mock.funcGetTable = f
+	mmGetTable.mock.funcGetTableOrigin = minimock.CallerInfo(1)
+	return mmGetTable.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.GetTable which will trigger the result defined by the following
+// Then helper
+func (mmGetTable *mAppPublicServiceServerMockGetTable) When(ctx context.Context, gp1 *mm_appv1alpha.GetTableRequest) *AppPublicServiceServerMockGetTableExpectation {
+	if mmGetTable.mock.funcGetTable != nil {
+		mmGetTable.mock.t.Fatalf("AppPublicServiceServerMock.GetTable mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockGetTableExpectation{
+		mock:               mmGetTable.mock,
+		params:             &AppPublicServiceServerMockGetTableParams{ctx, gp1},
+		expectationOrigins: AppPublicServiceServerMockGetTableExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetTable.expectations = append(mmGetTable.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.GetTable return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockGetTableExpectation) Then(gp2 *mm_appv1alpha.GetTableResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockGetTableResults{gp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.GetTable should be invoked
+func (mmGetTable *mAppPublicServiceServerMockGetTable) Times(n uint64) *mAppPublicServiceServerMockGetTable {
+	if n == 0 {
+		mmGetTable.mock.t.Fatalf("Times of AppPublicServiceServerMock.GetTable mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetTable.expectedInvocations, n)
+	mmGetTable.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetTable
+}
+
+func (mmGetTable *mAppPublicServiceServerMockGetTable) invocationsDone() bool {
+	if len(mmGetTable.expectations) == 0 && mmGetTable.defaultExpectation == nil && mmGetTable.mock.funcGetTable == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetTable.mock.afterGetTableCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetTable.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetTable implements mm_appv1alpha.AppPublicServiceServer
+func (mmGetTable *AppPublicServiceServerMock) GetTable(ctx context.Context, gp1 *mm_appv1alpha.GetTableRequest) (gp2 *mm_appv1alpha.GetTableResponse, err error) {
+	mm_atomic.AddUint64(&mmGetTable.beforeGetTableCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetTable.afterGetTableCounter, 1)
+
+	mmGetTable.t.Helper()
+
+	if mmGetTable.inspectFuncGetTable != nil {
+		mmGetTable.inspectFuncGetTable(ctx, gp1)
+	}
+
+	mm_params := AppPublicServiceServerMockGetTableParams{ctx, gp1}
+
+	// Record call args
+	mmGetTable.GetTableMock.mutex.Lock()
+	mmGetTable.GetTableMock.callArgs = append(mmGetTable.GetTableMock.callArgs, &mm_params)
+	mmGetTable.GetTableMock.mutex.Unlock()
+
+	for _, e := range mmGetTable.GetTableMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.gp2, e.results.err
+		}
+	}
+
+	if mmGetTable.GetTableMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetTable.GetTableMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetTable.GetTableMock.defaultExpectation.params
+		mm_want_ptrs := mmGetTable.GetTableMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockGetTableParams{ctx, gp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetTable.t.Errorf("AppPublicServiceServerMock.GetTable got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetTable.GetTableMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.gp1 != nil && !minimock.Equal(*mm_want_ptrs.gp1, mm_got.gp1) {
+				mmGetTable.t.Errorf("AppPublicServiceServerMock.GetTable got unexpected parameter gp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetTable.GetTableMock.defaultExpectation.expectationOrigins.originGp1, *mm_want_ptrs.gp1, mm_got.gp1, minimock.Diff(*mm_want_ptrs.gp1, mm_got.gp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetTable.t.Errorf("AppPublicServiceServerMock.GetTable got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetTable.GetTableMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetTable.GetTableMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetTable.t.Fatal("No results are set for the AppPublicServiceServerMock.GetTable")
+		}
+		return (*mm_results).gp2, (*mm_results).err
+	}
+	if mmGetTable.funcGetTable != nil {
+		return mmGetTable.funcGetTable(ctx, gp1)
+	}
+	mmGetTable.t.Fatalf("Unexpected call to AppPublicServiceServerMock.GetTable. %v %v", ctx, gp1)
+	return
+}
+
+// GetTableAfterCounter returns a count of finished AppPublicServiceServerMock.GetTable invocations
+func (mmGetTable *AppPublicServiceServerMock) GetTableAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetTable.afterGetTableCounter)
+}
+
+// GetTableBeforeCounter returns a count of AppPublicServiceServerMock.GetTable invocations
+func (mmGetTable *AppPublicServiceServerMock) GetTableBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetTable.beforeGetTableCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.GetTable.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetTable *mAppPublicServiceServerMockGetTable) Calls() []*AppPublicServiceServerMockGetTableParams {
+	mmGetTable.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockGetTableParams, len(mmGetTable.callArgs))
+	copy(argCopy, mmGetTable.callArgs)
+
+	mmGetTable.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetTableDone returns true if the count of the GetTable invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockGetTableDone() bool {
+	if m.GetTableMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetTableMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetTableMock.invocationsDone()
+}
+
+// MinimockGetTableInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockGetTableInspect() {
+	for _, e := range m.GetTableMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.GetTable at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetTableCounter := mm_atomic.LoadUint64(&m.afterGetTableCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetTableMock.defaultExpectation != nil && afterGetTableCounter < 1 {
+		if m.GetTableMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.GetTable at\n%s", m.GetTableMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.GetTable at\n%s with params: %#v", m.GetTableMock.defaultExpectation.expectationOrigins.origin, *m.GetTableMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetTable != nil && afterGetTableCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.GetTable at\n%s", m.funcGetTableOrigin)
+	}
+
+	if !m.GetTableMock.invocationsDone() && afterGetTableCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.GetTable at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetTableMock.expectedInvocations), m.GetTableMock.expectedInvocationsOrigin, afterGetTableCounter)
+	}
+}
+
+type mAppPublicServiceServerMockGetTableEvents struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockGetTableEventsExpectation
+	expectations       []*AppPublicServiceServerMockGetTableEventsExpectation
+
+	callArgs []*AppPublicServiceServerMockGetTableEventsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockGetTableEventsExpectation specifies expectation struct of the AppPublicServiceServer.GetTableEvents
+type AppPublicServiceServerMockGetTableEventsExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockGetTableEventsParams
+	paramPtrs          *AppPublicServiceServerMockGetTableEventsParamPtrs
+	expectationOrigins AppPublicServiceServerMockGetTableEventsExpectationOrigins
+	results            *AppPublicServiceServerMockGetTableEventsResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockGetTableEventsParams contains parameters of the AppPublicServiceServer.GetTableEvents
+type AppPublicServiceServerMockGetTableEventsParams struct {
+	gp1 *mm_appv1alpha.GetTableEventsRequest
+	a1  mm_appv1alpha.AppPublicService_GetTableEventsServer
+}
+
+// AppPublicServiceServerMockGetTableEventsParamPtrs contains pointers to parameters of the AppPublicServiceServer.GetTableEvents
+type AppPublicServiceServerMockGetTableEventsParamPtrs struct {
+	gp1 **mm_appv1alpha.GetTableEventsRequest
+	a1  *mm_appv1alpha.AppPublicService_GetTableEventsServer
+}
+
+// AppPublicServiceServerMockGetTableEventsResults contains results of the AppPublicServiceServer.GetTableEvents
+type AppPublicServiceServerMockGetTableEventsResults struct {
+	err error
+}
+
+// AppPublicServiceServerMockGetTableEventsOrigins contains origins of expectations of the AppPublicServiceServer.GetTableEvents
+type AppPublicServiceServerMockGetTableEventsExpectationOrigins struct {
+	origin    string
+	originGp1 string
+	originA1  string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetTableEvents *mAppPublicServiceServerMockGetTableEvents) Optional() *mAppPublicServiceServerMockGetTableEvents {
+	mmGetTableEvents.optional = true
+	return mmGetTableEvents
+}
+
+// Expect sets up expected params for AppPublicServiceServer.GetTableEvents
+func (mmGetTableEvents *mAppPublicServiceServerMockGetTableEvents) Expect(gp1 *mm_appv1alpha.GetTableEventsRequest, a1 mm_appv1alpha.AppPublicService_GetTableEventsServer) *mAppPublicServiceServerMockGetTableEvents {
+	if mmGetTableEvents.mock.funcGetTableEvents != nil {
+		mmGetTableEvents.mock.t.Fatalf("AppPublicServiceServerMock.GetTableEvents mock is already set by Set")
+	}
+
+	if mmGetTableEvents.defaultExpectation == nil {
+		mmGetTableEvents.defaultExpectation = &AppPublicServiceServerMockGetTableEventsExpectation{}
+	}
+
+	if mmGetTableEvents.defaultExpectation.paramPtrs != nil {
+		mmGetTableEvents.mock.t.Fatalf("AppPublicServiceServerMock.GetTableEvents mock is already set by ExpectParams functions")
+	}
+
+	mmGetTableEvents.defaultExpectation.params = &AppPublicServiceServerMockGetTableEventsParams{gp1, a1}
+	mmGetTableEvents.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetTableEvents.expectations {
+		if minimock.Equal(e.params, mmGetTableEvents.defaultExpectation.params) {
+			mmGetTableEvents.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetTableEvents.defaultExpectation.params)
+		}
+	}
+
+	return mmGetTableEvents
+}
+
+// ExpectGp1Param1 sets up expected param gp1 for AppPublicServiceServer.GetTableEvents
+func (mmGetTableEvents *mAppPublicServiceServerMockGetTableEvents) ExpectGp1Param1(gp1 *mm_appv1alpha.GetTableEventsRequest) *mAppPublicServiceServerMockGetTableEvents {
+	if mmGetTableEvents.mock.funcGetTableEvents != nil {
+		mmGetTableEvents.mock.t.Fatalf("AppPublicServiceServerMock.GetTableEvents mock is already set by Set")
+	}
+
+	if mmGetTableEvents.defaultExpectation == nil {
+		mmGetTableEvents.defaultExpectation = &AppPublicServiceServerMockGetTableEventsExpectation{}
+	}
+
+	if mmGetTableEvents.defaultExpectation.params != nil {
+		mmGetTableEvents.mock.t.Fatalf("AppPublicServiceServerMock.GetTableEvents mock is already set by Expect")
+	}
+
+	if mmGetTableEvents.defaultExpectation.paramPtrs == nil {
+		mmGetTableEvents.defaultExpectation.paramPtrs = &AppPublicServiceServerMockGetTableEventsParamPtrs{}
+	}
+	mmGetTableEvents.defaultExpectation.paramPtrs.gp1 = &gp1
+	mmGetTableEvents.defaultExpectation.expectationOrigins.originGp1 = minimock.CallerInfo(1)
+
+	return mmGetTableEvents
+}
+
+// ExpectA1Param2 sets up expected param a1 for AppPublicServiceServer.GetTableEvents
+func (mmGetTableEvents *mAppPublicServiceServerMockGetTableEvents) ExpectA1Param2(a1 mm_appv1alpha.AppPublicService_GetTableEventsServer) *mAppPublicServiceServerMockGetTableEvents {
+	if mmGetTableEvents.mock.funcGetTableEvents != nil {
+		mmGetTableEvents.mock.t.Fatalf("AppPublicServiceServerMock.GetTableEvents mock is already set by Set")
+	}
+
+	if mmGetTableEvents.defaultExpectation == nil {
+		mmGetTableEvents.defaultExpectation = &AppPublicServiceServerMockGetTableEventsExpectation{}
+	}
+
+	if mmGetTableEvents.defaultExpectation.params != nil {
+		mmGetTableEvents.mock.t.Fatalf("AppPublicServiceServerMock.GetTableEvents mock is already set by Expect")
+	}
+
+	if mmGetTableEvents.defaultExpectation.paramPtrs == nil {
+		mmGetTableEvents.defaultExpectation.paramPtrs = &AppPublicServiceServerMockGetTableEventsParamPtrs{}
+	}
+	mmGetTableEvents.defaultExpectation.paramPtrs.a1 = &a1
+	mmGetTableEvents.defaultExpectation.expectationOrigins.originA1 = minimock.CallerInfo(1)
+
+	return mmGetTableEvents
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.GetTableEvents
+func (mmGetTableEvents *mAppPublicServiceServerMockGetTableEvents) Inspect(f func(gp1 *mm_appv1alpha.GetTableEventsRequest, a1 mm_appv1alpha.AppPublicService_GetTableEventsServer)) *mAppPublicServiceServerMockGetTableEvents {
+	if mmGetTableEvents.mock.inspectFuncGetTableEvents != nil {
+		mmGetTableEvents.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.GetTableEvents")
+	}
+
+	mmGetTableEvents.mock.inspectFuncGetTableEvents = f
+
+	return mmGetTableEvents
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.GetTableEvents
+func (mmGetTableEvents *mAppPublicServiceServerMockGetTableEvents) Return(err error) *AppPublicServiceServerMock {
+	if mmGetTableEvents.mock.funcGetTableEvents != nil {
+		mmGetTableEvents.mock.t.Fatalf("AppPublicServiceServerMock.GetTableEvents mock is already set by Set")
+	}
+
+	if mmGetTableEvents.defaultExpectation == nil {
+		mmGetTableEvents.defaultExpectation = &AppPublicServiceServerMockGetTableEventsExpectation{mock: mmGetTableEvents.mock}
+	}
+	mmGetTableEvents.defaultExpectation.results = &AppPublicServiceServerMockGetTableEventsResults{err}
+	mmGetTableEvents.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetTableEvents.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.GetTableEvents method
+func (mmGetTableEvents *mAppPublicServiceServerMockGetTableEvents) Set(f func(gp1 *mm_appv1alpha.GetTableEventsRequest, a1 mm_appv1alpha.AppPublicService_GetTableEventsServer) (err error)) *AppPublicServiceServerMock {
+	if mmGetTableEvents.defaultExpectation != nil {
+		mmGetTableEvents.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.GetTableEvents method")
+	}
+
+	if len(mmGetTableEvents.expectations) > 0 {
+		mmGetTableEvents.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.GetTableEvents method")
+	}
+
+	mmGetTableEvents.mock.funcGetTableEvents = f
+	mmGetTableEvents.mock.funcGetTableEventsOrigin = minimock.CallerInfo(1)
+	return mmGetTableEvents.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.GetTableEvents which will trigger the result defined by the following
+// Then helper
+func (mmGetTableEvents *mAppPublicServiceServerMockGetTableEvents) When(gp1 *mm_appv1alpha.GetTableEventsRequest, a1 mm_appv1alpha.AppPublicService_GetTableEventsServer) *AppPublicServiceServerMockGetTableEventsExpectation {
+	if mmGetTableEvents.mock.funcGetTableEvents != nil {
+		mmGetTableEvents.mock.t.Fatalf("AppPublicServiceServerMock.GetTableEvents mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockGetTableEventsExpectation{
+		mock:               mmGetTableEvents.mock,
+		params:             &AppPublicServiceServerMockGetTableEventsParams{gp1, a1},
+		expectationOrigins: AppPublicServiceServerMockGetTableEventsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetTableEvents.expectations = append(mmGetTableEvents.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.GetTableEvents return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockGetTableEventsExpectation) Then(err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockGetTableEventsResults{err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.GetTableEvents should be invoked
+func (mmGetTableEvents *mAppPublicServiceServerMockGetTableEvents) Times(n uint64) *mAppPublicServiceServerMockGetTableEvents {
+	if n == 0 {
+		mmGetTableEvents.mock.t.Fatalf("Times of AppPublicServiceServerMock.GetTableEvents mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetTableEvents.expectedInvocations, n)
+	mmGetTableEvents.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetTableEvents
+}
+
+func (mmGetTableEvents *mAppPublicServiceServerMockGetTableEvents) invocationsDone() bool {
+	if len(mmGetTableEvents.expectations) == 0 && mmGetTableEvents.defaultExpectation == nil && mmGetTableEvents.mock.funcGetTableEvents == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetTableEvents.mock.afterGetTableEventsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetTableEvents.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetTableEvents implements mm_appv1alpha.AppPublicServiceServer
+func (mmGetTableEvents *AppPublicServiceServerMock) GetTableEvents(gp1 *mm_appv1alpha.GetTableEventsRequest, a1 mm_appv1alpha.AppPublicService_GetTableEventsServer) (err error) {
+	mm_atomic.AddUint64(&mmGetTableEvents.beforeGetTableEventsCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetTableEvents.afterGetTableEventsCounter, 1)
+
+	mmGetTableEvents.t.Helper()
+
+	if mmGetTableEvents.inspectFuncGetTableEvents != nil {
+		mmGetTableEvents.inspectFuncGetTableEvents(gp1, a1)
+	}
+
+	mm_params := AppPublicServiceServerMockGetTableEventsParams{gp1, a1}
+
+	// Record call args
+	mmGetTableEvents.GetTableEventsMock.mutex.Lock()
+	mmGetTableEvents.GetTableEventsMock.callArgs = append(mmGetTableEvents.GetTableEventsMock.callArgs, &mm_params)
+	mmGetTableEvents.GetTableEventsMock.mutex.Unlock()
+
+	for _, e := range mmGetTableEvents.GetTableEventsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmGetTableEvents.GetTableEventsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetTableEvents.GetTableEventsMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetTableEvents.GetTableEventsMock.defaultExpectation.params
+		mm_want_ptrs := mmGetTableEvents.GetTableEventsMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockGetTableEventsParams{gp1, a1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.gp1 != nil && !minimock.Equal(*mm_want_ptrs.gp1, mm_got.gp1) {
+				mmGetTableEvents.t.Errorf("AppPublicServiceServerMock.GetTableEvents got unexpected parameter gp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetTableEvents.GetTableEventsMock.defaultExpectation.expectationOrigins.originGp1, *mm_want_ptrs.gp1, mm_got.gp1, minimock.Diff(*mm_want_ptrs.gp1, mm_got.gp1))
+			}
+
+			if mm_want_ptrs.a1 != nil && !minimock.Equal(*mm_want_ptrs.a1, mm_got.a1) {
+				mmGetTableEvents.t.Errorf("AppPublicServiceServerMock.GetTableEvents got unexpected parameter a1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetTableEvents.GetTableEventsMock.defaultExpectation.expectationOrigins.originA1, *mm_want_ptrs.a1, mm_got.a1, minimock.Diff(*mm_want_ptrs.a1, mm_got.a1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetTableEvents.t.Errorf("AppPublicServiceServerMock.GetTableEvents got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetTableEvents.GetTableEventsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetTableEvents.GetTableEventsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetTableEvents.t.Fatal("No results are set for the AppPublicServiceServerMock.GetTableEvents")
+		}
+		return (*mm_results).err
+	}
+	if mmGetTableEvents.funcGetTableEvents != nil {
+		return mmGetTableEvents.funcGetTableEvents(gp1, a1)
+	}
+	mmGetTableEvents.t.Fatalf("Unexpected call to AppPublicServiceServerMock.GetTableEvents. %v %v", gp1, a1)
+	return
+}
+
+// GetTableEventsAfterCounter returns a count of finished AppPublicServiceServerMock.GetTableEvents invocations
+func (mmGetTableEvents *AppPublicServiceServerMock) GetTableEventsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetTableEvents.afterGetTableEventsCounter)
+}
+
+// GetTableEventsBeforeCounter returns a count of AppPublicServiceServerMock.GetTableEvents invocations
+func (mmGetTableEvents *AppPublicServiceServerMock) GetTableEventsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetTableEvents.beforeGetTableEventsCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.GetTableEvents.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetTableEvents *mAppPublicServiceServerMockGetTableEvents) Calls() []*AppPublicServiceServerMockGetTableEventsParams {
+	mmGetTableEvents.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockGetTableEventsParams, len(mmGetTableEvents.callArgs))
+	copy(argCopy, mmGetTableEvents.callArgs)
+
+	mmGetTableEvents.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetTableEventsDone returns true if the count of the GetTableEvents invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockGetTableEventsDone() bool {
+	if m.GetTableEventsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetTableEventsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetTableEventsMock.invocationsDone()
+}
+
+// MinimockGetTableEventsInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockGetTableEventsInspect() {
+	for _, e := range m.GetTableEventsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.GetTableEvents at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetTableEventsCounter := mm_atomic.LoadUint64(&m.afterGetTableEventsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetTableEventsMock.defaultExpectation != nil && afterGetTableEventsCounter < 1 {
+		if m.GetTableEventsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.GetTableEvents at\n%s", m.GetTableEventsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.GetTableEvents at\n%s with params: %#v", m.GetTableEventsMock.defaultExpectation.expectationOrigins.origin, *m.GetTableEventsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetTableEvents != nil && afterGetTableEventsCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.GetTableEvents at\n%s", m.funcGetTableEventsOrigin)
+	}
+
+	if !m.GetTableEventsMock.invocationsDone() && afterGetTableEventsCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.GetTableEvents at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetTableEventsMock.expectedInvocations), m.GetTableEventsMock.expectedInvocationsOrigin, afterGetTableEventsCounter)
+	}
+}
+
+type mAppPublicServiceServerMockInsertRow struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockInsertRowExpectation
+	expectations       []*AppPublicServiceServerMockInsertRowExpectation
+
+	callArgs []*AppPublicServiceServerMockInsertRowParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockInsertRowExpectation specifies expectation struct of the AppPublicServiceServer.InsertRow
+type AppPublicServiceServerMockInsertRowExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockInsertRowParams
+	paramPtrs          *AppPublicServiceServerMockInsertRowParamPtrs
+	expectationOrigins AppPublicServiceServerMockInsertRowExpectationOrigins
+	results            *AppPublicServiceServerMockInsertRowResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockInsertRowParams contains parameters of the AppPublicServiceServer.InsertRow
+type AppPublicServiceServerMockInsertRowParams struct {
+	ctx context.Context
+	ip1 *mm_appv1alpha.InsertRowRequest
+}
+
+// AppPublicServiceServerMockInsertRowParamPtrs contains pointers to parameters of the AppPublicServiceServer.InsertRow
+type AppPublicServiceServerMockInsertRowParamPtrs struct {
+	ctx *context.Context
+	ip1 **mm_appv1alpha.InsertRowRequest
+}
+
+// AppPublicServiceServerMockInsertRowResults contains results of the AppPublicServiceServer.InsertRow
+type AppPublicServiceServerMockInsertRowResults struct {
+	ip2 *mm_appv1alpha.InsertRowResponse
+	err error
+}
+
+// AppPublicServiceServerMockInsertRowOrigins contains origins of expectations of the AppPublicServiceServer.InsertRow
+type AppPublicServiceServerMockInsertRowExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originIp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmInsertRow *mAppPublicServiceServerMockInsertRow) Optional() *mAppPublicServiceServerMockInsertRow {
+	mmInsertRow.optional = true
+	return mmInsertRow
+}
+
+// Expect sets up expected params for AppPublicServiceServer.InsertRow
+func (mmInsertRow *mAppPublicServiceServerMockInsertRow) Expect(ctx context.Context, ip1 *mm_appv1alpha.InsertRowRequest) *mAppPublicServiceServerMockInsertRow {
+	if mmInsertRow.mock.funcInsertRow != nil {
+		mmInsertRow.mock.t.Fatalf("AppPublicServiceServerMock.InsertRow mock is already set by Set")
+	}
+
+	if mmInsertRow.defaultExpectation == nil {
+		mmInsertRow.defaultExpectation = &AppPublicServiceServerMockInsertRowExpectation{}
+	}
+
+	if mmInsertRow.defaultExpectation.paramPtrs != nil {
+		mmInsertRow.mock.t.Fatalf("AppPublicServiceServerMock.InsertRow mock is already set by ExpectParams functions")
+	}
+
+	mmInsertRow.defaultExpectation.params = &AppPublicServiceServerMockInsertRowParams{ctx, ip1}
+	mmInsertRow.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmInsertRow.expectations {
+		if minimock.Equal(e.params, mmInsertRow.defaultExpectation.params) {
+			mmInsertRow.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmInsertRow.defaultExpectation.params)
+		}
+	}
+
+	return mmInsertRow
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.InsertRow
+func (mmInsertRow *mAppPublicServiceServerMockInsertRow) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockInsertRow {
+	if mmInsertRow.mock.funcInsertRow != nil {
+		mmInsertRow.mock.t.Fatalf("AppPublicServiceServerMock.InsertRow mock is already set by Set")
+	}
+
+	if mmInsertRow.defaultExpectation == nil {
+		mmInsertRow.defaultExpectation = &AppPublicServiceServerMockInsertRowExpectation{}
+	}
+
+	if mmInsertRow.defaultExpectation.params != nil {
+		mmInsertRow.mock.t.Fatalf("AppPublicServiceServerMock.InsertRow mock is already set by Expect")
+	}
+
+	if mmInsertRow.defaultExpectation.paramPtrs == nil {
+		mmInsertRow.defaultExpectation.paramPtrs = &AppPublicServiceServerMockInsertRowParamPtrs{}
+	}
+	mmInsertRow.defaultExpectation.paramPtrs.ctx = &ctx
+	mmInsertRow.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmInsertRow
+}
+
+// ExpectIp1Param2 sets up expected param ip1 for AppPublicServiceServer.InsertRow
+func (mmInsertRow *mAppPublicServiceServerMockInsertRow) ExpectIp1Param2(ip1 *mm_appv1alpha.InsertRowRequest) *mAppPublicServiceServerMockInsertRow {
+	if mmInsertRow.mock.funcInsertRow != nil {
+		mmInsertRow.mock.t.Fatalf("AppPublicServiceServerMock.InsertRow mock is already set by Set")
+	}
+
+	if mmInsertRow.defaultExpectation == nil {
+		mmInsertRow.defaultExpectation = &AppPublicServiceServerMockInsertRowExpectation{}
+	}
+
+	if mmInsertRow.defaultExpectation.params != nil {
+		mmInsertRow.mock.t.Fatalf("AppPublicServiceServerMock.InsertRow mock is already set by Expect")
+	}
+
+	if mmInsertRow.defaultExpectation.paramPtrs == nil {
+		mmInsertRow.defaultExpectation.paramPtrs = &AppPublicServiceServerMockInsertRowParamPtrs{}
+	}
+	mmInsertRow.defaultExpectation.paramPtrs.ip1 = &ip1
+	mmInsertRow.defaultExpectation.expectationOrigins.originIp1 = minimock.CallerInfo(1)
+
+	return mmInsertRow
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.InsertRow
+func (mmInsertRow *mAppPublicServiceServerMockInsertRow) Inspect(f func(ctx context.Context, ip1 *mm_appv1alpha.InsertRowRequest)) *mAppPublicServiceServerMockInsertRow {
+	if mmInsertRow.mock.inspectFuncInsertRow != nil {
+		mmInsertRow.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.InsertRow")
+	}
+
+	mmInsertRow.mock.inspectFuncInsertRow = f
+
+	return mmInsertRow
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.InsertRow
+func (mmInsertRow *mAppPublicServiceServerMockInsertRow) Return(ip2 *mm_appv1alpha.InsertRowResponse, err error) *AppPublicServiceServerMock {
+	if mmInsertRow.mock.funcInsertRow != nil {
+		mmInsertRow.mock.t.Fatalf("AppPublicServiceServerMock.InsertRow mock is already set by Set")
+	}
+
+	if mmInsertRow.defaultExpectation == nil {
+		mmInsertRow.defaultExpectation = &AppPublicServiceServerMockInsertRowExpectation{mock: mmInsertRow.mock}
+	}
+	mmInsertRow.defaultExpectation.results = &AppPublicServiceServerMockInsertRowResults{ip2, err}
+	mmInsertRow.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmInsertRow.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.InsertRow method
+func (mmInsertRow *mAppPublicServiceServerMockInsertRow) Set(f func(ctx context.Context, ip1 *mm_appv1alpha.InsertRowRequest) (ip2 *mm_appv1alpha.InsertRowResponse, err error)) *AppPublicServiceServerMock {
+	if mmInsertRow.defaultExpectation != nil {
+		mmInsertRow.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.InsertRow method")
+	}
+
+	if len(mmInsertRow.expectations) > 0 {
+		mmInsertRow.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.InsertRow method")
+	}
+
+	mmInsertRow.mock.funcInsertRow = f
+	mmInsertRow.mock.funcInsertRowOrigin = minimock.CallerInfo(1)
+	return mmInsertRow.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.InsertRow which will trigger the result defined by the following
+// Then helper
+func (mmInsertRow *mAppPublicServiceServerMockInsertRow) When(ctx context.Context, ip1 *mm_appv1alpha.InsertRowRequest) *AppPublicServiceServerMockInsertRowExpectation {
+	if mmInsertRow.mock.funcInsertRow != nil {
+		mmInsertRow.mock.t.Fatalf("AppPublicServiceServerMock.InsertRow mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockInsertRowExpectation{
+		mock:               mmInsertRow.mock,
+		params:             &AppPublicServiceServerMockInsertRowParams{ctx, ip1},
+		expectationOrigins: AppPublicServiceServerMockInsertRowExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmInsertRow.expectations = append(mmInsertRow.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.InsertRow return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockInsertRowExpectation) Then(ip2 *mm_appv1alpha.InsertRowResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockInsertRowResults{ip2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.InsertRow should be invoked
+func (mmInsertRow *mAppPublicServiceServerMockInsertRow) Times(n uint64) *mAppPublicServiceServerMockInsertRow {
+	if n == 0 {
+		mmInsertRow.mock.t.Fatalf("Times of AppPublicServiceServerMock.InsertRow mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmInsertRow.expectedInvocations, n)
+	mmInsertRow.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmInsertRow
+}
+
+func (mmInsertRow *mAppPublicServiceServerMockInsertRow) invocationsDone() bool {
+	if len(mmInsertRow.expectations) == 0 && mmInsertRow.defaultExpectation == nil && mmInsertRow.mock.funcInsertRow == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmInsertRow.mock.afterInsertRowCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmInsertRow.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// InsertRow implements mm_appv1alpha.AppPublicServiceServer
+func (mmInsertRow *AppPublicServiceServerMock) InsertRow(ctx context.Context, ip1 *mm_appv1alpha.InsertRowRequest) (ip2 *mm_appv1alpha.InsertRowResponse, err error) {
+	mm_atomic.AddUint64(&mmInsertRow.beforeInsertRowCounter, 1)
+	defer mm_atomic.AddUint64(&mmInsertRow.afterInsertRowCounter, 1)
+
+	mmInsertRow.t.Helper()
+
+	if mmInsertRow.inspectFuncInsertRow != nil {
+		mmInsertRow.inspectFuncInsertRow(ctx, ip1)
+	}
+
+	mm_params := AppPublicServiceServerMockInsertRowParams{ctx, ip1}
+
+	// Record call args
+	mmInsertRow.InsertRowMock.mutex.Lock()
+	mmInsertRow.InsertRowMock.callArgs = append(mmInsertRow.InsertRowMock.callArgs, &mm_params)
+	mmInsertRow.InsertRowMock.mutex.Unlock()
+
+	for _, e := range mmInsertRow.InsertRowMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.ip2, e.results.err
+		}
+	}
+
+	if mmInsertRow.InsertRowMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmInsertRow.InsertRowMock.defaultExpectation.Counter, 1)
+		mm_want := mmInsertRow.InsertRowMock.defaultExpectation.params
+		mm_want_ptrs := mmInsertRow.InsertRowMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockInsertRowParams{ctx, ip1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmInsertRow.t.Errorf("AppPublicServiceServerMock.InsertRow got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmInsertRow.InsertRowMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.ip1 != nil && !minimock.Equal(*mm_want_ptrs.ip1, mm_got.ip1) {
+				mmInsertRow.t.Errorf("AppPublicServiceServerMock.InsertRow got unexpected parameter ip1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmInsertRow.InsertRowMock.defaultExpectation.expectationOrigins.originIp1, *mm_want_ptrs.ip1, mm_got.ip1, minimock.Diff(*mm_want_ptrs.ip1, mm_got.ip1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmInsertRow.t.Errorf("AppPublicServiceServerMock.InsertRow got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmInsertRow.InsertRowMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmInsertRow.InsertRowMock.defaultExpectation.results
+		if mm_results == nil {
+			mmInsertRow.t.Fatal("No results are set for the AppPublicServiceServerMock.InsertRow")
+		}
+		return (*mm_results).ip2, (*mm_results).err
+	}
+	if mmInsertRow.funcInsertRow != nil {
+		return mmInsertRow.funcInsertRow(ctx, ip1)
+	}
+	mmInsertRow.t.Fatalf("Unexpected call to AppPublicServiceServerMock.InsertRow. %v %v", ctx, ip1)
+	return
+}
+
+// InsertRowAfterCounter returns a count of finished AppPublicServiceServerMock.InsertRow invocations
+func (mmInsertRow *AppPublicServiceServerMock) InsertRowAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmInsertRow.afterInsertRowCounter)
+}
+
+// InsertRowBeforeCounter returns a count of AppPublicServiceServerMock.InsertRow invocations
+func (mmInsertRow *AppPublicServiceServerMock) InsertRowBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmInsertRow.beforeInsertRowCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.InsertRow.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmInsertRow *mAppPublicServiceServerMockInsertRow) Calls() []*AppPublicServiceServerMockInsertRowParams {
+	mmInsertRow.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockInsertRowParams, len(mmInsertRow.callArgs))
+	copy(argCopy, mmInsertRow.callArgs)
+
+	mmInsertRow.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockInsertRowDone returns true if the count of the InsertRow invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockInsertRowDone() bool {
+	if m.InsertRowMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.InsertRowMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.InsertRowMock.invocationsDone()
+}
+
+// MinimockInsertRowInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockInsertRowInspect() {
+	for _, e := range m.InsertRowMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.InsertRow at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterInsertRowCounter := mm_atomic.LoadUint64(&m.afterInsertRowCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.InsertRowMock.defaultExpectation != nil && afterInsertRowCounter < 1 {
+		if m.InsertRowMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.InsertRow at\n%s", m.InsertRowMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.InsertRow at\n%s with params: %#v", m.InsertRowMock.defaultExpectation.expectationOrigins.origin, *m.InsertRowMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcInsertRow != nil && afterInsertRowCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.InsertRow at\n%s", m.funcInsertRowOrigin)
+	}
+
+	if !m.InsertRowMock.invocationsDone() && afterInsertRowCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.InsertRow at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.InsertRowMock.expectedInvocations), m.InsertRowMock.expectedInvocationsOrigin, afterInsertRowCounter)
 	}
 }
 
@@ -6475,6 +9721,692 @@ func (m *AppPublicServiceServerMock) MinimockListMessagesInspect() {
 	}
 }
 
+type mAppPublicServiceServerMockListRows struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockListRowsExpectation
+	expectations       []*AppPublicServiceServerMockListRowsExpectation
+
+	callArgs []*AppPublicServiceServerMockListRowsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockListRowsExpectation specifies expectation struct of the AppPublicServiceServer.ListRows
+type AppPublicServiceServerMockListRowsExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockListRowsParams
+	paramPtrs          *AppPublicServiceServerMockListRowsParamPtrs
+	expectationOrigins AppPublicServiceServerMockListRowsExpectationOrigins
+	results            *AppPublicServiceServerMockListRowsResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockListRowsParams contains parameters of the AppPublicServiceServer.ListRows
+type AppPublicServiceServerMockListRowsParams struct {
+	ctx context.Context
+	lp1 *mm_appv1alpha.ListRowsRequest
+}
+
+// AppPublicServiceServerMockListRowsParamPtrs contains pointers to parameters of the AppPublicServiceServer.ListRows
+type AppPublicServiceServerMockListRowsParamPtrs struct {
+	ctx *context.Context
+	lp1 **mm_appv1alpha.ListRowsRequest
+}
+
+// AppPublicServiceServerMockListRowsResults contains results of the AppPublicServiceServer.ListRows
+type AppPublicServiceServerMockListRowsResults struct {
+	lp2 *mm_appv1alpha.ListRowsResponse
+	err error
+}
+
+// AppPublicServiceServerMockListRowsOrigins contains origins of expectations of the AppPublicServiceServer.ListRows
+type AppPublicServiceServerMockListRowsExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originLp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListRows *mAppPublicServiceServerMockListRows) Optional() *mAppPublicServiceServerMockListRows {
+	mmListRows.optional = true
+	return mmListRows
+}
+
+// Expect sets up expected params for AppPublicServiceServer.ListRows
+func (mmListRows *mAppPublicServiceServerMockListRows) Expect(ctx context.Context, lp1 *mm_appv1alpha.ListRowsRequest) *mAppPublicServiceServerMockListRows {
+	if mmListRows.mock.funcListRows != nil {
+		mmListRows.mock.t.Fatalf("AppPublicServiceServerMock.ListRows mock is already set by Set")
+	}
+
+	if mmListRows.defaultExpectation == nil {
+		mmListRows.defaultExpectation = &AppPublicServiceServerMockListRowsExpectation{}
+	}
+
+	if mmListRows.defaultExpectation.paramPtrs != nil {
+		mmListRows.mock.t.Fatalf("AppPublicServiceServerMock.ListRows mock is already set by ExpectParams functions")
+	}
+
+	mmListRows.defaultExpectation.params = &AppPublicServiceServerMockListRowsParams{ctx, lp1}
+	mmListRows.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmListRows.expectations {
+		if minimock.Equal(e.params, mmListRows.defaultExpectation.params) {
+			mmListRows.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListRows.defaultExpectation.params)
+		}
+	}
+
+	return mmListRows
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.ListRows
+func (mmListRows *mAppPublicServiceServerMockListRows) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockListRows {
+	if mmListRows.mock.funcListRows != nil {
+		mmListRows.mock.t.Fatalf("AppPublicServiceServerMock.ListRows mock is already set by Set")
+	}
+
+	if mmListRows.defaultExpectation == nil {
+		mmListRows.defaultExpectation = &AppPublicServiceServerMockListRowsExpectation{}
+	}
+
+	if mmListRows.defaultExpectation.params != nil {
+		mmListRows.mock.t.Fatalf("AppPublicServiceServerMock.ListRows mock is already set by Expect")
+	}
+
+	if mmListRows.defaultExpectation.paramPtrs == nil {
+		mmListRows.defaultExpectation.paramPtrs = &AppPublicServiceServerMockListRowsParamPtrs{}
+	}
+	mmListRows.defaultExpectation.paramPtrs.ctx = &ctx
+	mmListRows.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmListRows
+}
+
+// ExpectLp1Param2 sets up expected param lp1 for AppPublicServiceServer.ListRows
+func (mmListRows *mAppPublicServiceServerMockListRows) ExpectLp1Param2(lp1 *mm_appv1alpha.ListRowsRequest) *mAppPublicServiceServerMockListRows {
+	if mmListRows.mock.funcListRows != nil {
+		mmListRows.mock.t.Fatalf("AppPublicServiceServerMock.ListRows mock is already set by Set")
+	}
+
+	if mmListRows.defaultExpectation == nil {
+		mmListRows.defaultExpectation = &AppPublicServiceServerMockListRowsExpectation{}
+	}
+
+	if mmListRows.defaultExpectation.params != nil {
+		mmListRows.mock.t.Fatalf("AppPublicServiceServerMock.ListRows mock is already set by Expect")
+	}
+
+	if mmListRows.defaultExpectation.paramPtrs == nil {
+		mmListRows.defaultExpectation.paramPtrs = &AppPublicServiceServerMockListRowsParamPtrs{}
+	}
+	mmListRows.defaultExpectation.paramPtrs.lp1 = &lp1
+	mmListRows.defaultExpectation.expectationOrigins.originLp1 = minimock.CallerInfo(1)
+
+	return mmListRows
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.ListRows
+func (mmListRows *mAppPublicServiceServerMockListRows) Inspect(f func(ctx context.Context, lp1 *mm_appv1alpha.ListRowsRequest)) *mAppPublicServiceServerMockListRows {
+	if mmListRows.mock.inspectFuncListRows != nil {
+		mmListRows.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.ListRows")
+	}
+
+	mmListRows.mock.inspectFuncListRows = f
+
+	return mmListRows
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.ListRows
+func (mmListRows *mAppPublicServiceServerMockListRows) Return(lp2 *mm_appv1alpha.ListRowsResponse, err error) *AppPublicServiceServerMock {
+	if mmListRows.mock.funcListRows != nil {
+		mmListRows.mock.t.Fatalf("AppPublicServiceServerMock.ListRows mock is already set by Set")
+	}
+
+	if mmListRows.defaultExpectation == nil {
+		mmListRows.defaultExpectation = &AppPublicServiceServerMockListRowsExpectation{mock: mmListRows.mock}
+	}
+	mmListRows.defaultExpectation.results = &AppPublicServiceServerMockListRowsResults{lp2, err}
+	mmListRows.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmListRows.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.ListRows method
+func (mmListRows *mAppPublicServiceServerMockListRows) Set(f func(ctx context.Context, lp1 *mm_appv1alpha.ListRowsRequest) (lp2 *mm_appv1alpha.ListRowsResponse, err error)) *AppPublicServiceServerMock {
+	if mmListRows.defaultExpectation != nil {
+		mmListRows.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.ListRows method")
+	}
+
+	if len(mmListRows.expectations) > 0 {
+		mmListRows.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.ListRows method")
+	}
+
+	mmListRows.mock.funcListRows = f
+	mmListRows.mock.funcListRowsOrigin = minimock.CallerInfo(1)
+	return mmListRows.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.ListRows which will trigger the result defined by the following
+// Then helper
+func (mmListRows *mAppPublicServiceServerMockListRows) When(ctx context.Context, lp1 *mm_appv1alpha.ListRowsRequest) *AppPublicServiceServerMockListRowsExpectation {
+	if mmListRows.mock.funcListRows != nil {
+		mmListRows.mock.t.Fatalf("AppPublicServiceServerMock.ListRows mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockListRowsExpectation{
+		mock:               mmListRows.mock,
+		params:             &AppPublicServiceServerMockListRowsParams{ctx, lp1},
+		expectationOrigins: AppPublicServiceServerMockListRowsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmListRows.expectations = append(mmListRows.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.ListRows return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockListRowsExpectation) Then(lp2 *mm_appv1alpha.ListRowsResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockListRowsResults{lp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.ListRows should be invoked
+func (mmListRows *mAppPublicServiceServerMockListRows) Times(n uint64) *mAppPublicServiceServerMockListRows {
+	if n == 0 {
+		mmListRows.mock.t.Fatalf("Times of AppPublicServiceServerMock.ListRows mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListRows.expectedInvocations, n)
+	mmListRows.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmListRows
+}
+
+func (mmListRows *mAppPublicServiceServerMockListRows) invocationsDone() bool {
+	if len(mmListRows.expectations) == 0 && mmListRows.defaultExpectation == nil && mmListRows.mock.funcListRows == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListRows.mock.afterListRowsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListRows.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListRows implements mm_appv1alpha.AppPublicServiceServer
+func (mmListRows *AppPublicServiceServerMock) ListRows(ctx context.Context, lp1 *mm_appv1alpha.ListRowsRequest) (lp2 *mm_appv1alpha.ListRowsResponse, err error) {
+	mm_atomic.AddUint64(&mmListRows.beforeListRowsCounter, 1)
+	defer mm_atomic.AddUint64(&mmListRows.afterListRowsCounter, 1)
+
+	mmListRows.t.Helper()
+
+	if mmListRows.inspectFuncListRows != nil {
+		mmListRows.inspectFuncListRows(ctx, lp1)
+	}
+
+	mm_params := AppPublicServiceServerMockListRowsParams{ctx, lp1}
+
+	// Record call args
+	mmListRows.ListRowsMock.mutex.Lock()
+	mmListRows.ListRowsMock.callArgs = append(mmListRows.ListRowsMock.callArgs, &mm_params)
+	mmListRows.ListRowsMock.mutex.Unlock()
+
+	for _, e := range mmListRows.ListRowsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.lp2, e.results.err
+		}
+	}
+
+	if mmListRows.ListRowsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListRows.ListRowsMock.defaultExpectation.Counter, 1)
+		mm_want := mmListRows.ListRowsMock.defaultExpectation.params
+		mm_want_ptrs := mmListRows.ListRowsMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockListRowsParams{ctx, lp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListRows.t.Errorf("AppPublicServiceServerMock.ListRows got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListRows.ListRowsMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.lp1 != nil && !minimock.Equal(*mm_want_ptrs.lp1, mm_got.lp1) {
+				mmListRows.t.Errorf("AppPublicServiceServerMock.ListRows got unexpected parameter lp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListRows.ListRowsMock.defaultExpectation.expectationOrigins.originLp1, *mm_want_ptrs.lp1, mm_got.lp1, minimock.Diff(*mm_want_ptrs.lp1, mm_got.lp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListRows.t.Errorf("AppPublicServiceServerMock.ListRows got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmListRows.ListRowsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListRows.ListRowsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListRows.t.Fatal("No results are set for the AppPublicServiceServerMock.ListRows")
+		}
+		return (*mm_results).lp2, (*mm_results).err
+	}
+	if mmListRows.funcListRows != nil {
+		return mmListRows.funcListRows(ctx, lp1)
+	}
+	mmListRows.t.Fatalf("Unexpected call to AppPublicServiceServerMock.ListRows. %v %v", ctx, lp1)
+	return
+}
+
+// ListRowsAfterCounter returns a count of finished AppPublicServiceServerMock.ListRows invocations
+func (mmListRows *AppPublicServiceServerMock) ListRowsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListRows.afterListRowsCounter)
+}
+
+// ListRowsBeforeCounter returns a count of AppPublicServiceServerMock.ListRows invocations
+func (mmListRows *AppPublicServiceServerMock) ListRowsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListRows.beforeListRowsCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.ListRows.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListRows *mAppPublicServiceServerMockListRows) Calls() []*AppPublicServiceServerMockListRowsParams {
+	mmListRows.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockListRowsParams, len(mmListRows.callArgs))
+	copy(argCopy, mmListRows.callArgs)
+
+	mmListRows.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListRowsDone returns true if the count of the ListRows invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockListRowsDone() bool {
+	if m.ListRowsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListRowsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListRowsMock.invocationsDone()
+}
+
+// MinimockListRowsInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockListRowsInspect() {
+	for _, e := range m.ListRowsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListRows at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterListRowsCounter := mm_atomic.LoadUint64(&m.afterListRowsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListRowsMock.defaultExpectation != nil && afterListRowsCounter < 1 {
+		if m.ListRowsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListRows at\n%s", m.ListRowsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListRows at\n%s with params: %#v", m.ListRowsMock.defaultExpectation.expectationOrigins.origin, *m.ListRowsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListRows != nil && afterListRowsCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.ListRows at\n%s", m.funcListRowsOrigin)
+	}
+
+	if !m.ListRowsMock.invocationsDone() && afterListRowsCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.ListRows at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.ListRowsMock.expectedInvocations), m.ListRowsMock.expectedInvocationsOrigin, afterListRowsCounter)
+	}
+}
+
+type mAppPublicServiceServerMockListTables struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockListTablesExpectation
+	expectations       []*AppPublicServiceServerMockListTablesExpectation
+
+	callArgs []*AppPublicServiceServerMockListTablesParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockListTablesExpectation specifies expectation struct of the AppPublicServiceServer.ListTables
+type AppPublicServiceServerMockListTablesExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockListTablesParams
+	paramPtrs          *AppPublicServiceServerMockListTablesParamPtrs
+	expectationOrigins AppPublicServiceServerMockListTablesExpectationOrigins
+	results            *AppPublicServiceServerMockListTablesResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockListTablesParams contains parameters of the AppPublicServiceServer.ListTables
+type AppPublicServiceServerMockListTablesParams struct {
+	ctx context.Context
+	lp1 *mm_appv1alpha.ListTablesRequest
+}
+
+// AppPublicServiceServerMockListTablesParamPtrs contains pointers to parameters of the AppPublicServiceServer.ListTables
+type AppPublicServiceServerMockListTablesParamPtrs struct {
+	ctx *context.Context
+	lp1 **mm_appv1alpha.ListTablesRequest
+}
+
+// AppPublicServiceServerMockListTablesResults contains results of the AppPublicServiceServer.ListTables
+type AppPublicServiceServerMockListTablesResults struct {
+	lp2 *mm_appv1alpha.ListTablesResponse
+	err error
+}
+
+// AppPublicServiceServerMockListTablesOrigins contains origins of expectations of the AppPublicServiceServer.ListTables
+type AppPublicServiceServerMockListTablesExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originLp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListTables *mAppPublicServiceServerMockListTables) Optional() *mAppPublicServiceServerMockListTables {
+	mmListTables.optional = true
+	return mmListTables
+}
+
+// Expect sets up expected params for AppPublicServiceServer.ListTables
+func (mmListTables *mAppPublicServiceServerMockListTables) Expect(ctx context.Context, lp1 *mm_appv1alpha.ListTablesRequest) *mAppPublicServiceServerMockListTables {
+	if mmListTables.mock.funcListTables != nil {
+		mmListTables.mock.t.Fatalf("AppPublicServiceServerMock.ListTables mock is already set by Set")
+	}
+
+	if mmListTables.defaultExpectation == nil {
+		mmListTables.defaultExpectation = &AppPublicServiceServerMockListTablesExpectation{}
+	}
+
+	if mmListTables.defaultExpectation.paramPtrs != nil {
+		mmListTables.mock.t.Fatalf("AppPublicServiceServerMock.ListTables mock is already set by ExpectParams functions")
+	}
+
+	mmListTables.defaultExpectation.params = &AppPublicServiceServerMockListTablesParams{ctx, lp1}
+	mmListTables.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmListTables.expectations {
+		if minimock.Equal(e.params, mmListTables.defaultExpectation.params) {
+			mmListTables.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListTables.defaultExpectation.params)
+		}
+	}
+
+	return mmListTables
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.ListTables
+func (mmListTables *mAppPublicServiceServerMockListTables) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockListTables {
+	if mmListTables.mock.funcListTables != nil {
+		mmListTables.mock.t.Fatalf("AppPublicServiceServerMock.ListTables mock is already set by Set")
+	}
+
+	if mmListTables.defaultExpectation == nil {
+		mmListTables.defaultExpectation = &AppPublicServiceServerMockListTablesExpectation{}
+	}
+
+	if mmListTables.defaultExpectation.params != nil {
+		mmListTables.mock.t.Fatalf("AppPublicServiceServerMock.ListTables mock is already set by Expect")
+	}
+
+	if mmListTables.defaultExpectation.paramPtrs == nil {
+		mmListTables.defaultExpectation.paramPtrs = &AppPublicServiceServerMockListTablesParamPtrs{}
+	}
+	mmListTables.defaultExpectation.paramPtrs.ctx = &ctx
+	mmListTables.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmListTables
+}
+
+// ExpectLp1Param2 sets up expected param lp1 for AppPublicServiceServer.ListTables
+func (mmListTables *mAppPublicServiceServerMockListTables) ExpectLp1Param2(lp1 *mm_appv1alpha.ListTablesRequest) *mAppPublicServiceServerMockListTables {
+	if mmListTables.mock.funcListTables != nil {
+		mmListTables.mock.t.Fatalf("AppPublicServiceServerMock.ListTables mock is already set by Set")
+	}
+
+	if mmListTables.defaultExpectation == nil {
+		mmListTables.defaultExpectation = &AppPublicServiceServerMockListTablesExpectation{}
+	}
+
+	if mmListTables.defaultExpectation.params != nil {
+		mmListTables.mock.t.Fatalf("AppPublicServiceServerMock.ListTables mock is already set by Expect")
+	}
+
+	if mmListTables.defaultExpectation.paramPtrs == nil {
+		mmListTables.defaultExpectation.paramPtrs = &AppPublicServiceServerMockListTablesParamPtrs{}
+	}
+	mmListTables.defaultExpectation.paramPtrs.lp1 = &lp1
+	mmListTables.defaultExpectation.expectationOrigins.originLp1 = minimock.CallerInfo(1)
+
+	return mmListTables
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.ListTables
+func (mmListTables *mAppPublicServiceServerMockListTables) Inspect(f func(ctx context.Context, lp1 *mm_appv1alpha.ListTablesRequest)) *mAppPublicServiceServerMockListTables {
+	if mmListTables.mock.inspectFuncListTables != nil {
+		mmListTables.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.ListTables")
+	}
+
+	mmListTables.mock.inspectFuncListTables = f
+
+	return mmListTables
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.ListTables
+func (mmListTables *mAppPublicServiceServerMockListTables) Return(lp2 *mm_appv1alpha.ListTablesResponse, err error) *AppPublicServiceServerMock {
+	if mmListTables.mock.funcListTables != nil {
+		mmListTables.mock.t.Fatalf("AppPublicServiceServerMock.ListTables mock is already set by Set")
+	}
+
+	if mmListTables.defaultExpectation == nil {
+		mmListTables.defaultExpectation = &AppPublicServiceServerMockListTablesExpectation{mock: mmListTables.mock}
+	}
+	mmListTables.defaultExpectation.results = &AppPublicServiceServerMockListTablesResults{lp2, err}
+	mmListTables.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmListTables.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.ListTables method
+func (mmListTables *mAppPublicServiceServerMockListTables) Set(f func(ctx context.Context, lp1 *mm_appv1alpha.ListTablesRequest) (lp2 *mm_appv1alpha.ListTablesResponse, err error)) *AppPublicServiceServerMock {
+	if mmListTables.defaultExpectation != nil {
+		mmListTables.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.ListTables method")
+	}
+
+	if len(mmListTables.expectations) > 0 {
+		mmListTables.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.ListTables method")
+	}
+
+	mmListTables.mock.funcListTables = f
+	mmListTables.mock.funcListTablesOrigin = minimock.CallerInfo(1)
+	return mmListTables.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.ListTables which will trigger the result defined by the following
+// Then helper
+func (mmListTables *mAppPublicServiceServerMockListTables) When(ctx context.Context, lp1 *mm_appv1alpha.ListTablesRequest) *AppPublicServiceServerMockListTablesExpectation {
+	if mmListTables.mock.funcListTables != nil {
+		mmListTables.mock.t.Fatalf("AppPublicServiceServerMock.ListTables mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockListTablesExpectation{
+		mock:               mmListTables.mock,
+		params:             &AppPublicServiceServerMockListTablesParams{ctx, lp1},
+		expectationOrigins: AppPublicServiceServerMockListTablesExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmListTables.expectations = append(mmListTables.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.ListTables return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockListTablesExpectation) Then(lp2 *mm_appv1alpha.ListTablesResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockListTablesResults{lp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.ListTables should be invoked
+func (mmListTables *mAppPublicServiceServerMockListTables) Times(n uint64) *mAppPublicServiceServerMockListTables {
+	if n == 0 {
+		mmListTables.mock.t.Fatalf("Times of AppPublicServiceServerMock.ListTables mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListTables.expectedInvocations, n)
+	mmListTables.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmListTables
+}
+
+func (mmListTables *mAppPublicServiceServerMockListTables) invocationsDone() bool {
+	if len(mmListTables.expectations) == 0 && mmListTables.defaultExpectation == nil && mmListTables.mock.funcListTables == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListTables.mock.afterListTablesCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListTables.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListTables implements mm_appv1alpha.AppPublicServiceServer
+func (mmListTables *AppPublicServiceServerMock) ListTables(ctx context.Context, lp1 *mm_appv1alpha.ListTablesRequest) (lp2 *mm_appv1alpha.ListTablesResponse, err error) {
+	mm_atomic.AddUint64(&mmListTables.beforeListTablesCounter, 1)
+	defer mm_atomic.AddUint64(&mmListTables.afterListTablesCounter, 1)
+
+	mmListTables.t.Helper()
+
+	if mmListTables.inspectFuncListTables != nil {
+		mmListTables.inspectFuncListTables(ctx, lp1)
+	}
+
+	mm_params := AppPublicServiceServerMockListTablesParams{ctx, lp1}
+
+	// Record call args
+	mmListTables.ListTablesMock.mutex.Lock()
+	mmListTables.ListTablesMock.callArgs = append(mmListTables.ListTablesMock.callArgs, &mm_params)
+	mmListTables.ListTablesMock.mutex.Unlock()
+
+	for _, e := range mmListTables.ListTablesMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.lp2, e.results.err
+		}
+	}
+
+	if mmListTables.ListTablesMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListTables.ListTablesMock.defaultExpectation.Counter, 1)
+		mm_want := mmListTables.ListTablesMock.defaultExpectation.params
+		mm_want_ptrs := mmListTables.ListTablesMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockListTablesParams{ctx, lp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListTables.t.Errorf("AppPublicServiceServerMock.ListTables got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListTables.ListTablesMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.lp1 != nil && !minimock.Equal(*mm_want_ptrs.lp1, mm_got.lp1) {
+				mmListTables.t.Errorf("AppPublicServiceServerMock.ListTables got unexpected parameter lp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListTables.ListTablesMock.defaultExpectation.expectationOrigins.originLp1, *mm_want_ptrs.lp1, mm_got.lp1, minimock.Diff(*mm_want_ptrs.lp1, mm_got.lp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListTables.t.Errorf("AppPublicServiceServerMock.ListTables got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmListTables.ListTablesMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListTables.ListTablesMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListTables.t.Fatal("No results are set for the AppPublicServiceServerMock.ListTables")
+		}
+		return (*mm_results).lp2, (*mm_results).err
+	}
+	if mmListTables.funcListTables != nil {
+		return mmListTables.funcListTables(ctx, lp1)
+	}
+	mmListTables.t.Fatalf("Unexpected call to AppPublicServiceServerMock.ListTables. %v %v", ctx, lp1)
+	return
+}
+
+// ListTablesAfterCounter returns a count of finished AppPublicServiceServerMock.ListTables invocations
+func (mmListTables *AppPublicServiceServerMock) ListTablesAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListTables.afterListTablesCounter)
+}
+
+// ListTablesBeforeCounter returns a count of AppPublicServiceServerMock.ListTables invocations
+func (mmListTables *AppPublicServiceServerMock) ListTablesBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListTables.beforeListTablesCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.ListTables.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListTables *mAppPublicServiceServerMockListTables) Calls() []*AppPublicServiceServerMockListTablesParams {
+	mmListTables.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockListTablesParams, len(mmListTables.callArgs))
+	copy(argCopy, mmListTables.callArgs)
+
+	mmListTables.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListTablesDone returns true if the count of the ListTables invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockListTablesDone() bool {
+	if m.ListTablesMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListTablesMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListTablesMock.invocationsDone()
+}
+
+// MinimockListTablesInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockListTablesInspect() {
+	for _, e := range m.ListTablesMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListTables at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterListTablesCounter := mm_atomic.LoadUint64(&m.afterListTablesCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListTablesMock.defaultExpectation != nil && afterListTablesCounter < 1 {
+		if m.ListTablesMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListTables at\n%s", m.ListTablesMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.ListTables at\n%s with params: %#v", m.ListTablesMock.defaultExpectation.expectationOrigins.origin, *m.ListTablesMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListTables != nil && afterListTablesCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.ListTables at\n%s", m.funcListTablesOrigin)
+	}
+
+	if !m.ListTablesMock.invocationsDone() && afterListTablesCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.ListTables at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.ListTablesMock.expectedInvocations), m.ListTablesMock.expectedInvocationsOrigin, afterListTablesCounter)
+	}
+}
+
 type mAppPublicServiceServerMockListTools struct {
 	optional           bool
 	mock               *AppPublicServiceServerMock
@@ -7158,6 +11090,349 @@ func (m *AppPublicServiceServerMock) MinimockLivenessInspect() {
 	if !m.LivenessMock.invocationsDone() && afterLivenessCounter > 0 {
 		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.Liveness at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.LivenessMock.expectedInvocations), m.LivenessMock.expectedInvocationsOrigin, afterLivenessCounter)
+	}
+}
+
+type mAppPublicServiceServerMockMoveRows struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockMoveRowsExpectation
+	expectations       []*AppPublicServiceServerMockMoveRowsExpectation
+
+	callArgs []*AppPublicServiceServerMockMoveRowsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockMoveRowsExpectation specifies expectation struct of the AppPublicServiceServer.MoveRows
+type AppPublicServiceServerMockMoveRowsExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockMoveRowsParams
+	paramPtrs          *AppPublicServiceServerMockMoveRowsParamPtrs
+	expectationOrigins AppPublicServiceServerMockMoveRowsExpectationOrigins
+	results            *AppPublicServiceServerMockMoveRowsResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockMoveRowsParams contains parameters of the AppPublicServiceServer.MoveRows
+type AppPublicServiceServerMockMoveRowsParams struct {
+	ctx context.Context
+	mp1 *mm_appv1alpha.MoveRowsRequest
+}
+
+// AppPublicServiceServerMockMoveRowsParamPtrs contains pointers to parameters of the AppPublicServiceServer.MoveRows
+type AppPublicServiceServerMockMoveRowsParamPtrs struct {
+	ctx *context.Context
+	mp1 **mm_appv1alpha.MoveRowsRequest
+}
+
+// AppPublicServiceServerMockMoveRowsResults contains results of the AppPublicServiceServer.MoveRows
+type AppPublicServiceServerMockMoveRowsResults struct {
+	mp2 *mm_appv1alpha.MoveRowsResponse
+	err error
+}
+
+// AppPublicServiceServerMockMoveRowsOrigins contains origins of expectations of the AppPublicServiceServer.MoveRows
+type AppPublicServiceServerMockMoveRowsExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originMp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmMoveRows *mAppPublicServiceServerMockMoveRows) Optional() *mAppPublicServiceServerMockMoveRows {
+	mmMoveRows.optional = true
+	return mmMoveRows
+}
+
+// Expect sets up expected params for AppPublicServiceServer.MoveRows
+func (mmMoveRows *mAppPublicServiceServerMockMoveRows) Expect(ctx context.Context, mp1 *mm_appv1alpha.MoveRowsRequest) *mAppPublicServiceServerMockMoveRows {
+	if mmMoveRows.mock.funcMoveRows != nil {
+		mmMoveRows.mock.t.Fatalf("AppPublicServiceServerMock.MoveRows mock is already set by Set")
+	}
+
+	if mmMoveRows.defaultExpectation == nil {
+		mmMoveRows.defaultExpectation = &AppPublicServiceServerMockMoveRowsExpectation{}
+	}
+
+	if mmMoveRows.defaultExpectation.paramPtrs != nil {
+		mmMoveRows.mock.t.Fatalf("AppPublicServiceServerMock.MoveRows mock is already set by ExpectParams functions")
+	}
+
+	mmMoveRows.defaultExpectation.params = &AppPublicServiceServerMockMoveRowsParams{ctx, mp1}
+	mmMoveRows.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmMoveRows.expectations {
+		if minimock.Equal(e.params, mmMoveRows.defaultExpectation.params) {
+			mmMoveRows.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmMoveRows.defaultExpectation.params)
+		}
+	}
+
+	return mmMoveRows
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.MoveRows
+func (mmMoveRows *mAppPublicServiceServerMockMoveRows) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockMoveRows {
+	if mmMoveRows.mock.funcMoveRows != nil {
+		mmMoveRows.mock.t.Fatalf("AppPublicServiceServerMock.MoveRows mock is already set by Set")
+	}
+
+	if mmMoveRows.defaultExpectation == nil {
+		mmMoveRows.defaultExpectation = &AppPublicServiceServerMockMoveRowsExpectation{}
+	}
+
+	if mmMoveRows.defaultExpectation.params != nil {
+		mmMoveRows.mock.t.Fatalf("AppPublicServiceServerMock.MoveRows mock is already set by Expect")
+	}
+
+	if mmMoveRows.defaultExpectation.paramPtrs == nil {
+		mmMoveRows.defaultExpectation.paramPtrs = &AppPublicServiceServerMockMoveRowsParamPtrs{}
+	}
+	mmMoveRows.defaultExpectation.paramPtrs.ctx = &ctx
+	mmMoveRows.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmMoveRows
+}
+
+// ExpectMp1Param2 sets up expected param mp1 for AppPublicServiceServer.MoveRows
+func (mmMoveRows *mAppPublicServiceServerMockMoveRows) ExpectMp1Param2(mp1 *mm_appv1alpha.MoveRowsRequest) *mAppPublicServiceServerMockMoveRows {
+	if mmMoveRows.mock.funcMoveRows != nil {
+		mmMoveRows.mock.t.Fatalf("AppPublicServiceServerMock.MoveRows mock is already set by Set")
+	}
+
+	if mmMoveRows.defaultExpectation == nil {
+		mmMoveRows.defaultExpectation = &AppPublicServiceServerMockMoveRowsExpectation{}
+	}
+
+	if mmMoveRows.defaultExpectation.params != nil {
+		mmMoveRows.mock.t.Fatalf("AppPublicServiceServerMock.MoveRows mock is already set by Expect")
+	}
+
+	if mmMoveRows.defaultExpectation.paramPtrs == nil {
+		mmMoveRows.defaultExpectation.paramPtrs = &AppPublicServiceServerMockMoveRowsParamPtrs{}
+	}
+	mmMoveRows.defaultExpectation.paramPtrs.mp1 = &mp1
+	mmMoveRows.defaultExpectation.expectationOrigins.originMp1 = minimock.CallerInfo(1)
+
+	return mmMoveRows
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.MoveRows
+func (mmMoveRows *mAppPublicServiceServerMockMoveRows) Inspect(f func(ctx context.Context, mp1 *mm_appv1alpha.MoveRowsRequest)) *mAppPublicServiceServerMockMoveRows {
+	if mmMoveRows.mock.inspectFuncMoveRows != nil {
+		mmMoveRows.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.MoveRows")
+	}
+
+	mmMoveRows.mock.inspectFuncMoveRows = f
+
+	return mmMoveRows
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.MoveRows
+func (mmMoveRows *mAppPublicServiceServerMockMoveRows) Return(mp2 *mm_appv1alpha.MoveRowsResponse, err error) *AppPublicServiceServerMock {
+	if mmMoveRows.mock.funcMoveRows != nil {
+		mmMoveRows.mock.t.Fatalf("AppPublicServiceServerMock.MoveRows mock is already set by Set")
+	}
+
+	if mmMoveRows.defaultExpectation == nil {
+		mmMoveRows.defaultExpectation = &AppPublicServiceServerMockMoveRowsExpectation{mock: mmMoveRows.mock}
+	}
+	mmMoveRows.defaultExpectation.results = &AppPublicServiceServerMockMoveRowsResults{mp2, err}
+	mmMoveRows.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmMoveRows.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.MoveRows method
+func (mmMoveRows *mAppPublicServiceServerMockMoveRows) Set(f func(ctx context.Context, mp1 *mm_appv1alpha.MoveRowsRequest) (mp2 *mm_appv1alpha.MoveRowsResponse, err error)) *AppPublicServiceServerMock {
+	if mmMoveRows.defaultExpectation != nil {
+		mmMoveRows.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.MoveRows method")
+	}
+
+	if len(mmMoveRows.expectations) > 0 {
+		mmMoveRows.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.MoveRows method")
+	}
+
+	mmMoveRows.mock.funcMoveRows = f
+	mmMoveRows.mock.funcMoveRowsOrigin = minimock.CallerInfo(1)
+	return mmMoveRows.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.MoveRows which will trigger the result defined by the following
+// Then helper
+func (mmMoveRows *mAppPublicServiceServerMockMoveRows) When(ctx context.Context, mp1 *mm_appv1alpha.MoveRowsRequest) *AppPublicServiceServerMockMoveRowsExpectation {
+	if mmMoveRows.mock.funcMoveRows != nil {
+		mmMoveRows.mock.t.Fatalf("AppPublicServiceServerMock.MoveRows mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockMoveRowsExpectation{
+		mock:               mmMoveRows.mock,
+		params:             &AppPublicServiceServerMockMoveRowsParams{ctx, mp1},
+		expectationOrigins: AppPublicServiceServerMockMoveRowsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmMoveRows.expectations = append(mmMoveRows.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.MoveRows return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockMoveRowsExpectation) Then(mp2 *mm_appv1alpha.MoveRowsResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockMoveRowsResults{mp2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.MoveRows should be invoked
+func (mmMoveRows *mAppPublicServiceServerMockMoveRows) Times(n uint64) *mAppPublicServiceServerMockMoveRows {
+	if n == 0 {
+		mmMoveRows.mock.t.Fatalf("Times of AppPublicServiceServerMock.MoveRows mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmMoveRows.expectedInvocations, n)
+	mmMoveRows.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmMoveRows
+}
+
+func (mmMoveRows *mAppPublicServiceServerMockMoveRows) invocationsDone() bool {
+	if len(mmMoveRows.expectations) == 0 && mmMoveRows.defaultExpectation == nil && mmMoveRows.mock.funcMoveRows == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmMoveRows.mock.afterMoveRowsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmMoveRows.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// MoveRows implements mm_appv1alpha.AppPublicServiceServer
+func (mmMoveRows *AppPublicServiceServerMock) MoveRows(ctx context.Context, mp1 *mm_appv1alpha.MoveRowsRequest) (mp2 *mm_appv1alpha.MoveRowsResponse, err error) {
+	mm_atomic.AddUint64(&mmMoveRows.beforeMoveRowsCounter, 1)
+	defer mm_atomic.AddUint64(&mmMoveRows.afterMoveRowsCounter, 1)
+
+	mmMoveRows.t.Helper()
+
+	if mmMoveRows.inspectFuncMoveRows != nil {
+		mmMoveRows.inspectFuncMoveRows(ctx, mp1)
+	}
+
+	mm_params := AppPublicServiceServerMockMoveRowsParams{ctx, mp1}
+
+	// Record call args
+	mmMoveRows.MoveRowsMock.mutex.Lock()
+	mmMoveRows.MoveRowsMock.callArgs = append(mmMoveRows.MoveRowsMock.callArgs, &mm_params)
+	mmMoveRows.MoveRowsMock.mutex.Unlock()
+
+	for _, e := range mmMoveRows.MoveRowsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.mp2, e.results.err
+		}
+	}
+
+	if mmMoveRows.MoveRowsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmMoveRows.MoveRowsMock.defaultExpectation.Counter, 1)
+		mm_want := mmMoveRows.MoveRowsMock.defaultExpectation.params
+		mm_want_ptrs := mmMoveRows.MoveRowsMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockMoveRowsParams{ctx, mp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmMoveRows.t.Errorf("AppPublicServiceServerMock.MoveRows got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmMoveRows.MoveRowsMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.mp1 != nil && !minimock.Equal(*mm_want_ptrs.mp1, mm_got.mp1) {
+				mmMoveRows.t.Errorf("AppPublicServiceServerMock.MoveRows got unexpected parameter mp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmMoveRows.MoveRowsMock.defaultExpectation.expectationOrigins.originMp1, *mm_want_ptrs.mp1, mm_got.mp1, minimock.Diff(*mm_want_ptrs.mp1, mm_got.mp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmMoveRows.t.Errorf("AppPublicServiceServerMock.MoveRows got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmMoveRows.MoveRowsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmMoveRows.MoveRowsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmMoveRows.t.Fatal("No results are set for the AppPublicServiceServerMock.MoveRows")
+		}
+		return (*mm_results).mp2, (*mm_results).err
+	}
+	if mmMoveRows.funcMoveRows != nil {
+		return mmMoveRows.funcMoveRows(ctx, mp1)
+	}
+	mmMoveRows.t.Fatalf("Unexpected call to AppPublicServiceServerMock.MoveRows. %v %v", ctx, mp1)
+	return
+}
+
+// MoveRowsAfterCounter returns a count of finished AppPublicServiceServerMock.MoveRows invocations
+func (mmMoveRows *AppPublicServiceServerMock) MoveRowsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmMoveRows.afterMoveRowsCounter)
+}
+
+// MoveRowsBeforeCounter returns a count of AppPublicServiceServerMock.MoveRows invocations
+func (mmMoveRows *AppPublicServiceServerMock) MoveRowsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmMoveRows.beforeMoveRowsCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.MoveRows.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmMoveRows *mAppPublicServiceServerMockMoveRows) Calls() []*AppPublicServiceServerMockMoveRowsParams {
+	mmMoveRows.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockMoveRowsParams, len(mmMoveRows.callArgs))
+	copy(argCopy, mmMoveRows.callArgs)
+
+	mmMoveRows.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockMoveRowsDone returns true if the count of the MoveRows invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockMoveRowsDone() bool {
+	if m.MoveRowsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.MoveRowsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.MoveRowsMock.invocationsDone()
+}
+
+// MinimockMoveRowsInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockMoveRowsInspect() {
+	for _, e := range m.MoveRowsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.MoveRows at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterMoveRowsCounter := mm_atomic.LoadUint64(&m.afterMoveRowsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.MoveRowsMock.defaultExpectation != nil && afterMoveRowsCounter < 1 {
+		if m.MoveRowsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.MoveRows at\n%s", m.MoveRowsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.MoveRows at\n%s with params: %#v", m.MoveRowsMock.defaultExpectation.expectationOrigins.origin, *m.MoveRowsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcMoveRows != nil && afterMoveRowsCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.MoveRows at\n%s", m.funcMoveRowsOrigin)
+	}
+
+	if !m.MoveRowsMock.invocationsDone() && afterMoveRowsCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.MoveRows at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.MoveRowsMock.expectedInvocations), m.MoveRowsMock.expectedInvocationsOrigin, afterMoveRowsCounter)
 	}
 }
 
@@ -8876,6 +13151,349 @@ func (m *AppPublicServiceServerMock) MinimockUpdateChatInspect() {
 	}
 }
 
+type mAppPublicServiceServerMockUpdateColumnDefinitions struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockUpdateColumnDefinitionsExpectation
+	expectations       []*AppPublicServiceServerMockUpdateColumnDefinitionsExpectation
+
+	callArgs []*AppPublicServiceServerMockUpdateColumnDefinitionsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockUpdateColumnDefinitionsExpectation specifies expectation struct of the AppPublicServiceServer.UpdateColumnDefinitions
+type AppPublicServiceServerMockUpdateColumnDefinitionsExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockUpdateColumnDefinitionsParams
+	paramPtrs          *AppPublicServiceServerMockUpdateColumnDefinitionsParamPtrs
+	expectationOrigins AppPublicServiceServerMockUpdateColumnDefinitionsExpectationOrigins
+	results            *AppPublicServiceServerMockUpdateColumnDefinitionsResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockUpdateColumnDefinitionsParams contains parameters of the AppPublicServiceServer.UpdateColumnDefinitions
+type AppPublicServiceServerMockUpdateColumnDefinitionsParams struct {
+	ctx context.Context
+	up1 *mm_appv1alpha.UpdateColumnDefinitionsRequest
+}
+
+// AppPublicServiceServerMockUpdateColumnDefinitionsParamPtrs contains pointers to parameters of the AppPublicServiceServer.UpdateColumnDefinitions
+type AppPublicServiceServerMockUpdateColumnDefinitionsParamPtrs struct {
+	ctx *context.Context
+	up1 **mm_appv1alpha.UpdateColumnDefinitionsRequest
+}
+
+// AppPublicServiceServerMockUpdateColumnDefinitionsResults contains results of the AppPublicServiceServer.UpdateColumnDefinitions
+type AppPublicServiceServerMockUpdateColumnDefinitionsResults struct {
+	up2 *mm_appv1alpha.UpdateColumnDefinitionsResponse
+	err error
+}
+
+// AppPublicServiceServerMockUpdateColumnDefinitionsOrigins contains origins of expectations of the AppPublicServiceServer.UpdateColumnDefinitions
+type AppPublicServiceServerMockUpdateColumnDefinitionsExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originUp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdateColumnDefinitions *mAppPublicServiceServerMockUpdateColumnDefinitions) Optional() *mAppPublicServiceServerMockUpdateColumnDefinitions {
+	mmUpdateColumnDefinitions.optional = true
+	return mmUpdateColumnDefinitions
+}
+
+// Expect sets up expected params for AppPublicServiceServer.UpdateColumnDefinitions
+func (mmUpdateColumnDefinitions *mAppPublicServiceServerMockUpdateColumnDefinitions) Expect(ctx context.Context, up1 *mm_appv1alpha.UpdateColumnDefinitionsRequest) *mAppPublicServiceServerMockUpdateColumnDefinitions {
+	if mmUpdateColumnDefinitions.mock.funcUpdateColumnDefinitions != nil {
+		mmUpdateColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.UpdateColumnDefinitions mock is already set by Set")
+	}
+
+	if mmUpdateColumnDefinitions.defaultExpectation == nil {
+		mmUpdateColumnDefinitions.defaultExpectation = &AppPublicServiceServerMockUpdateColumnDefinitionsExpectation{}
+	}
+
+	if mmUpdateColumnDefinitions.defaultExpectation.paramPtrs != nil {
+		mmUpdateColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.UpdateColumnDefinitions mock is already set by ExpectParams functions")
+	}
+
+	mmUpdateColumnDefinitions.defaultExpectation.params = &AppPublicServiceServerMockUpdateColumnDefinitionsParams{ctx, up1}
+	mmUpdateColumnDefinitions.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUpdateColumnDefinitions.expectations {
+		if minimock.Equal(e.params, mmUpdateColumnDefinitions.defaultExpectation.params) {
+			mmUpdateColumnDefinitions.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdateColumnDefinitions.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdateColumnDefinitions
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.UpdateColumnDefinitions
+func (mmUpdateColumnDefinitions *mAppPublicServiceServerMockUpdateColumnDefinitions) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockUpdateColumnDefinitions {
+	if mmUpdateColumnDefinitions.mock.funcUpdateColumnDefinitions != nil {
+		mmUpdateColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.UpdateColumnDefinitions mock is already set by Set")
+	}
+
+	if mmUpdateColumnDefinitions.defaultExpectation == nil {
+		mmUpdateColumnDefinitions.defaultExpectation = &AppPublicServiceServerMockUpdateColumnDefinitionsExpectation{}
+	}
+
+	if mmUpdateColumnDefinitions.defaultExpectation.params != nil {
+		mmUpdateColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.UpdateColumnDefinitions mock is already set by Expect")
+	}
+
+	if mmUpdateColumnDefinitions.defaultExpectation.paramPtrs == nil {
+		mmUpdateColumnDefinitions.defaultExpectation.paramPtrs = &AppPublicServiceServerMockUpdateColumnDefinitionsParamPtrs{}
+	}
+	mmUpdateColumnDefinitions.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUpdateColumnDefinitions.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUpdateColumnDefinitions
+}
+
+// ExpectUp1Param2 sets up expected param up1 for AppPublicServiceServer.UpdateColumnDefinitions
+func (mmUpdateColumnDefinitions *mAppPublicServiceServerMockUpdateColumnDefinitions) ExpectUp1Param2(up1 *mm_appv1alpha.UpdateColumnDefinitionsRequest) *mAppPublicServiceServerMockUpdateColumnDefinitions {
+	if mmUpdateColumnDefinitions.mock.funcUpdateColumnDefinitions != nil {
+		mmUpdateColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.UpdateColumnDefinitions mock is already set by Set")
+	}
+
+	if mmUpdateColumnDefinitions.defaultExpectation == nil {
+		mmUpdateColumnDefinitions.defaultExpectation = &AppPublicServiceServerMockUpdateColumnDefinitionsExpectation{}
+	}
+
+	if mmUpdateColumnDefinitions.defaultExpectation.params != nil {
+		mmUpdateColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.UpdateColumnDefinitions mock is already set by Expect")
+	}
+
+	if mmUpdateColumnDefinitions.defaultExpectation.paramPtrs == nil {
+		mmUpdateColumnDefinitions.defaultExpectation.paramPtrs = &AppPublicServiceServerMockUpdateColumnDefinitionsParamPtrs{}
+	}
+	mmUpdateColumnDefinitions.defaultExpectation.paramPtrs.up1 = &up1
+	mmUpdateColumnDefinitions.defaultExpectation.expectationOrigins.originUp1 = minimock.CallerInfo(1)
+
+	return mmUpdateColumnDefinitions
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.UpdateColumnDefinitions
+func (mmUpdateColumnDefinitions *mAppPublicServiceServerMockUpdateColumnDefinitions) Inspect(f func(ctx context.Context, up1 *mm_appv1alpha.UpdateColumnDefinitionsRequest)) *mAppPublicServiceServerMockUpdateColumnDefinitions {
+	if mmUpdateColumnDefinitions.mock.inspectFuncUpdateColumnDefinitions != nil {
+		mmUpdateColumnDefinitions.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.UpdateColumnDefinitions")
+	}
+
+	mmUpdateColumnDefinitions.mock.inspectFuncUpdateColumnDefinitions = f
+
+	return mmUpdateColumnDefinitions
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.UpdateColumnDefinitions
+func (mmUpdateColumnDefinitions *mAppPublicServiceServerMockUpdateColumnDefinitions) Return(up2 *mm_appv1alpha.UpdateColumnDefinitionsResponse, err error) *AppPublicServiceServerMock {
+	if mmUpdateColumnDefinitions.mock.funcUpdateColumnDefinitions != nil {
+		mmUpdateColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.UpdateColumnDefinitions mock is already set by Set")
+	}
+
+	if mmUpdateColumnDefinitions.defaultExpectation == nil {
+		mmUpdateColumnDefinitions.defaultExpectation = &AppPublicServiceServerMockUpdateColumnDefinitionsExpectation{mock: mmUpdateColumnDefinitions.mock}
+	}
+	mmUpdateColumnDefinitions.defaultExpectation.results = &AppPublicServiceServerMockUpdateColumnDefinitionsResults{up2, err}
+	mmUpdateColumnDefinitions.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUpdateColumnDefinitions.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.UpdateColumnDefinitions method
+func (mmUpdateColumnDefinitions *mAppPublicServiceServerMockUpdateColumnDefinitions) Set(f func(ctx context.Context, up1 *mm_appv1alpha.UpdateColumnDefinitionsRequest) (up2 *mm_appv1alpha.UpdateColumnDefinitionsResponse, err error)) *AppPublicServiceServerMock {
+	if mmUpdateColumnDefinitions.defaultExpectation != nil {
+		mmUpdateColumnDefinitions.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.UpdateColumnDefinitions method")
+	}
+
+	if len(mmUpdateColumnDefinitions.expectations) > 0 {
+		mmUpdateColumnDefinitions.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.UpdateColumnDefinitions method")
+	}
+
+	mmUpdateColumnDefinitions.mock.funcUpdateColumnDefinitions = f
+	mmUpdateColumnDefinitions.mock.funcUpdateColumnDefinitionsOrigin = minimock.CallerInfo(1)
+	return mmUpdateColumnDefinitions.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.UpdateColumnDefinitions which will trigger the result defined by the following
+// Then helper
+func (mmUpdateColumnDefinitions *mAppPublicServiceServerMockUpdateColumnDefinitions) When(ctx context.Context, up1 *mm_appv1alpha.UpdateColumnDefinitionsRequest) *AppPublicServiceServerMockUpdateColumnDefinitionsExpectation {
+	if mmUpdateColumnDefinitions.mock.funcUpdateColumnDefinitions != nil {
+		mmUpdateColumnDefinitions.mock.t.Fatalf("AppPublicServiceServerMock.UpdateColumnDefinitions mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockUpdateColumnDefinitionsExpectation{
+		mock:               mmUpdateColumnDefinitions.mock,
+		params:             &AppPublicServiceServerMockUpdateColumnDefinitionsParams{ctx, up1},
+		expectationOrigins: AppPublicServiceServerMockUpdateColumnDefinitionsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUpdateColumnDefinitions.expectations = append(mmUpdateColumnDefinitions.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.UpdateColumnDefinitions return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockUpdateColumnDefinitionsExpectation) Then(up2 *mm_appv1alpha.UpdateColumnDefinitionsResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockUpdateColumnDefinitionsResults{up2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.UpdateColumnDefinitions should be invoked
+func (mmUpdateColumnDefinitions *mAppPublicServiceServerMockUpdateColumnDefinitions) Times(n uint64) *mAppPublicServiceServerMockUpdateColumnDefinitions {
+	if n == 0 {
+		mmUpdateColumnDefinitions.mock.t.Fatalf("Times of AppPublicServiceServerMock.UpdateColumnDefinitions mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdateColumnDefinitions.expectedInvocations, n)
+	mmUpdateColumnDefinitions.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUpdateColumnDefinitions
+}
+
+func (mmUpdateColumnDefinitions *mAppPublicServiceServerMockUpdateColumnDefinitions) invocationsDone() bool {
+	if len(mmUpdateColumnDefinitions.expectations) == 0 && mmUpdateColumnDefinitions.defaultExpectation == nil && mmUpdateColumnDefinitions.mock.funcUpdateColumnDefinitions == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdateColumnDefinitions.mock.afterUpdateColumnDefinitionsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdateColumnDefinitions.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdateColumnDefinitions implements mm_appv1alpha.AppPublicServiceServer
+func (mmUpdateColumnDefinitions *AppPublicServiceServerMock) UpdateColumnDefinitions(ctx context.Context, up1 *mm_appv1alpha.UpdateColumnDefinitionsRequest) (up2 *mm_appv1alpha.UpdateColumnDefinitionsResponse, err error) {
+	mm_atomic.AddUint64(&mmUpdateColumnDefinitions.beforeUpdateColumnDefinitionsCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdateColumnDefinitions.afterUpdateColumnDefinitionsCounter, 1)
+
+	mmUpdateColumnDefinitions.t.Helper()
+
+	if mmUpdateColumnDefinitions.inspectFuncUpdateColumnDefinitions != nil {
+		mmUpdateColumnDefinitions.inspectFuncUpdateColumnDefinitions(ctx, up1)
+	}
+
+	mm_params := AppPublicServiceServerMockUpdateColumnDefinitionsParams{ctx, up1}
+
+	// Record call args
+	mmUpdateColumnDefinitions.UpdateColumnDefinitionsMock.mutex.Lock()
+	mmUpdateColumnDefinitions.UpdateColumnDefinitionsMock.callArgs = append(mmUpdateColumnDefinitions.UpdateColumnDefinitionsMock.callArgs, &mm_params)
+	mmUpdateColumnDefinitions.UpdateColumnDefinitionsMock.mutex.Unlock()
+
+	for _, e := range mmUpdateColumnDefinitions.UpdateColumnDefinitionsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.up2, e.results.err
+		}
+	}
+
+	if mmUpdateColumnDefinitions.UpdateColumnDefinitionsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdateColumnDefinitions.UpdateColumnDefinitionsMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdateColumnDefinitions.UpdateColumnDefinitionsMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdateColumnDefinitions.UpdateColumnDefinitionsMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockUpdateColumnDefinitionsParams{ctx, up1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpdateColumnDefinitions.t.Errorf("AppPublicServiceServerMock.UpdateColumnDefinitions got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateColumnDefinitions.UpdateColumnDefinitionsMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.up1 != nil && !minimock.Equal(*mm_want_ptrs.up1, mm_got.up1) {
+				mmUpdateColumnDefinitions.t.Errorf("AppPublicServiceServerMock.UpdateColumnDefinitions got unexpected parameter up1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateColumnDefinitions.UpdateColumnDefinitionsMock.defaultExpectation.expectationOrigins.originUp1, *mm_want_ptrs.up1, mm_got.up1, minimock.Diff(*mm_want_ptrs.up1, mm_got.up1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdateColumnDefinitions.t.Errorf("AppPublicServiceServerMock.UpdateColumnDefinitions got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUpdateColumnDefinitions.UpdateColumnDefinitionsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdateColumnDefinitions.UpdateColumnDefinitionsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdateColumnDefinitions.t.Fatal("No results are set for the AppPublicServiceServerMock.UpdateColumnDefinitions")
+		}
+		return (*mm_results).up2, (*mm_results).err
+	}
+	if mmUpdateColumnDefinitions.funcUpdateColumnDefinitions != nil {
+		return mmUpdateColumnDefinitions.funcUpdateColumnDefinitions(ctx, up1)
+	}
+	mmUpdateColumnDefinitions.t.Fatalf("Unexpected call to AppPublicServiceServerMock.UpdateColumnDefinitions. %v %v", ctx, up1)
+	return
+}
+
+// UpdateColumnDefinitionsAfterCounter returns a count of finished AppPublicServiceServerMock.UpdateColumnDefinitions invocations
+func (mmUpdateColumnDefinitions *AppPublicServiceServerMock) UpdateColumnDefinitionsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateColumnDefinitions.afterUpdateColumnDefinitionsCounter)
+}
+
+// UpdateColumnDefinitionsBeforeCounter returns a count of AppPublicServiceServerMock.UpdateColumnDefinitions invocations
+func (mmUpdateColumnDefinitions *AppPublicServiceServerMock) UpdateColumnDefinitionsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateColumnDefinitions.beforeUpdateColumnDefinitionsCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.UpdateColumnDefinitions.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdateColumnDefinitions *mAppPublicServiceServerMockUpdateColumnDefinitions) Calls() []*AppPublicServiceServerMockUpdateColumnDefinitionsParams {
+	mmUpdateColumnDefinitions.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockUpdateColumnDefinitionsParams, len(mmUpdateColumnDefinitions.callArgs))
+	copy(argCopy, mmUpdateColumnDefinitions.callArgs)
+
+	mmUpdateColumnDefinitions.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdateColumnDefinitionsDone returns true if the count of the UpdateColumnDefinitions invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockUpdateColumnDefinitionsDone() bool {
+	if m.UpdateColumnDefinitionsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdateColumnDefinitionsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdateColumnDefinitionsMock.invocationsDone()
+}
+
+// MinimockUpdateColumnDefinitionsInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockUpdateColumnDefinitionsInspect() {
+	for _, e := range m.UpdateColumnDefinitionsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateColumnDefinitions at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUpdateColumnDefinitionsCounter := mm_atomic.LoadUint64(&m.afterUpdateColumnDefinitionsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdateColumnDefinitionsMock.defaultExpectation != nil && afterUpdateColumnDefinitionsCounter < 1 {
+		if m.UpdateColumnDefinitionsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateColumnDefinitions at\n%s", m.UpdateColumnDefinitionsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateColumnDefinitions at\n%s with params: %#v", m.UpdateColumnDefinitionsMock.defaultExpectation.expectationOrigins.origin, *m.UpdateColumnDefinitionsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdateColumnDefinitions != nil && afterUpdateColumnDefinitionsCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateColumnDefinitions at\n%s", m.funcUpdateColumnDefinitionsOrigin)
+	}
+
+	if !m.UpdateColumnDefinitionsMock.invocationsDone() && afterUpdateColumnDefinitionsCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.UpdateColumnDefinitions at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdateColumnDefinitionsMock.expectedInvocations), m.UpdateColumnDefinitionsMock.expectedInvocationsOrigin, afterUpdateColumnDefinitionsCounter)
+	}
+}
+
 type mAppPublicServiceServerMockUpdateConversation struct {
 	optional           bool
 	mock               *AppPublicServiceServerMock
@@ -9562,6 +14180,1035 @@ func (m *AppPublicServiceServerMock) MinimockUpdateMessageInspect() {
 	}
 }
 
+type mAppPublicServiceServerMockUpdateRow struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockUpdateRowExpectation
+	expectations       []*AppPublicServiceServerMockUpdateRowExpectation
+
+	callArgs []*AppPublicServiceServerMockUpdateRowParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockUpdateRowExpectation specifies expectation struct of the AppPublicServiceServer.UpdateRow
+type AppPublicServiceServerMockUpdateRowExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockUpdateRowParams
+	paramPtrs          *AppPublicServiceServerMockUpdateRowParamPtrs
+	expectationOrigins AppPublicServiceServerMockUpdateRowExpectationOrigins
+	results            *AppPublicServiceServerMockUpdateRowResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockUpdateRowParams contains parameters of the AppPublicServiceServer.UpdateRow
+type AppPublicServiceServerMockUpdateRowParams struct {
+	ctx context.Context
+	up1 *mm_appv1alpha.UpdateRowRequest
+}
+
+// AppPublicServiceServerMockUpdateRowParamPtrs contains pointers to parameters of the AppPublicServiceServer.UpdateRow
+type AppPublicServiceServerMockUpdateRowParamPtrs struct {
+	ctx *context.Context
+	up1 **mm_appv1alpha.UpdateRowRequest
+}
+
+// AppPublicServiceServerMockUpdateRowResults contains results of the AppPublicServiceServer.UpdateRow
+type AppPublicServiceServerMockUpdateRowResults struct {
+	up2 *mm_appv1alpha.UpdateRowResponse
+	err error
+}
+
+// AppPublicServiceServerMockUpdateRowOrigins contains origins of expectations of the AppPublicServiceServer.UpdateRow
+type AppPublicServiceServerMockUpdateRowExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originUp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdateRow *mAppPublicServiceServerMockUpdateRow) Optional() *mAppPublicServiceServerMockUpdateRow {
+	mmUpdateRow.optional = true
+	return mmUpdateRow
+}
+
+// Expect sets up expected params for AppPublicServiceServer.UpdateRow
+func (mmUpdateRow *mAppPublicServiceServerMockUpdateRow) Expect(ctx context.Context, up1 *mm_appv1alpha.UpdateRowRequest) *mAppPublicServiceServerMockUpdateRow {
+	if mmUpdateRow.mock.funcUpdateRow != nil {
+		mmUpdateRow.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRow mock is already set by Set")
+	}
+
+	if mmUpdateRow.defaultExpectation == nil {
+		mmUpdateRow.defaultExpectation = &AppPublicServiceServerMockUpdateRowExpectation{}
+	}
+
+	if mmUpdateRow.defaultExpectation.paramPtrs != nil {
+		mmUpdateRow.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRow mock is already set by ExpectParams functions")
+	}
+
+	mmUpdateRow.defaultExpectation.params = &AppPublicServiceServerMockUpdateRowParams{ctx, up1}
+	mmUpdateRow.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUpdateRow.expectations {
+		if minimock.Equal(e.params, mmUpdateRow.defaultExpectation.params) {
+			mmUpdateRow.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdateRow.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdateRow
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.UpdateRow
+func (mmUpdateRow *mAppPublicServiceServerMockUpdateRow) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockUpdateRow {
+	if mmUpdateRow.mock.funcUpdateRow != nil {
+		mmUpdateRow.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRow mock is already set by Set")
+	}
+
+	if mmUpdateRow.defaultExpectation == nil {
+		mmUpdateRow.defaultExpectation = &AppPublicServiceServerMockUpdateRowExpectation{}
+	}
+
+	if mmUpdateRow.defaultExpectation.params != nil {
+		mmUpdateRow.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRow mock is already set by Expect")
+	}
+
+	if mmUpdateRow.defaultExpectation.paramPtrs == nil {
+		mmUpdateRow.defaultExpectation.paramPtrs = &AppPublicServiceServerMockUpdateRowParamPtrs{}
+	}
+	mmUpdateRow.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUpdateRow.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUpdateRow
+}
+
+// ExpectUp1Param2 sets up expected param up1 for AppPublicServiceServer.UpdateRow
+func (mmUpdateRow *mAppPublicServiceServerMockUpdateRow) ExpectUp1Param2(up1 *mm_appv1alpha.UpdateRowRequest) *mAppPublicServiceServerMockUpdateRow {
+	if mmUpdateRow.mock.funcUpdateRow != nil {
+		mmUpdateRow.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRow mock is already set by Set")
+	}
+
+	if mmUpdateRow.defaultExpectation == nil {
+		mmUpdateRow.defaultExpectation = &AppPublicServiceServerMockUpdateRowExpectation{}
+	}
+
+	if mmUpdateRow.defaultExpectation.params != nil {
+		mmUpdateRow.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRow mock is already set by Expect")
+	}
+
+	if mmUpdateRow.defaultExpectation.paramPtrs == nil {
+		mmUpdateRow.defaultExpectation.paramPtrs = &AppPublicServiceServerMockUpdateRowParamPtrs{}
+	}
+	mmUpdateRow.defaultExpectation.paramPtrs.up1 = &up1
+	mmUpdateRow.defaultExpectation.expectationOrigins.originUp1 = minimock.CallerInfo(1)
+
+	return mmUpdateRow
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.UpdateRow
+func (mmUpdateRow *mAppPublicServiceServerMockUpdateRow) Inspect(f func(ctx context.Context, up1 *mm_appv1alpha.UpdateRowRequest)) *mAppPublicServiceServerMockUpdateRow {
+	if mmUpdateRow.mock.inspectFuncUpdateRow != nil {
+		mmUpdateRow.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.UpdateRow")
+	}
+
+	mmUpdateRow.mock.inspectFuncUpdateRow = f
+
+	return mmUpdateRow
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.UpdateRow
+func (mmUpdateRow *mAppPublicServiceServerMockUpdateRow) Return(up2 *mm_appv1alpha.UpdateRowResponse, err error) *AppPublicServiceServerMock {
+	if mmUpdateRow.mock.funcUpdateRow != nil {
+		mmUpdateRow.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRow mock is already set by Set")
+	}
+
+	if mmUpdateRow.defaultExpectation == nil {
+		mmUpdateRow.defaultExpectation = &AppPublicServiceServerMockUpdateRowExpectation{mock: mmUpdateRow.mock}
+	}
+	mmUpdateRow.defaultExpectation.results = &AppPublicServiceServerMockUpdateRowResults{up2, err}
+	mmUpdateRow.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUpdateRow.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.UpdateRow method
+func (mmUpdateRow *mAppPublicServiceServerMockUpdateRow) Set(f func(ctx context.Context, up1 *mm_appv1alpha.UpdateRowRequest) (up2 *mm_appv1alpha.UpdateRowResponse, err error)) *AppPublicServiceServerMock {
+	if mmUpdateRow.defaultExpectation != nil {
+		mmUpdateRow.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.UpdateRow method")
+	}
+
+	if len(mmUpdateRow.expectations) > 0 {
+		mmUpdateRow.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.UpdateRow method")
+	}
+
+	mmUpdateRow.mock.funcUpdateRow = f
+	mmUpdateRow.mock.funcUpdateRowOrigin = minimock.CallerInfo(1)
+	return mmUpdateRow.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.UpdateRow which will trigger the result defined by the following
+// Then helper
+func (mmUpdateRow *mAppPublicServiceServerMockUpdateRow) When(ctx context.Context, up1 *mm_appv1alpha.UpdateRowRequest) *AppPublicServiceServerMockUpdateRowExpectation {
+	if mmUpdateRow.mock.funcUpdateRow != nil {
+		mmUpdateRow.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRow mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockUpdateRowExpectation{
+		mock:               mmUpdateRow.mock,
+		params:             &AppPublicServiceServerMockUpdateRowParams{ctx, up1},
+		expectationOrigins: AppPublicServiceServerMockUpdateRowExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUpdateRow.expectations = append(mmUpdateRow.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.UpdateRow return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockUpdateRowExpectation) Then(up2 *mm_appv1alpha.UpdateRowResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockUpdateRowResults{up2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.UpdateRow should be invoked
+func (mmUpdateRow *mAppPublicServiceServerMockUpdateRow) Times(n uint64) *mAppPublicServiceServerMockUpdateRow {
+	if n == 0 {
+		mmUpdateRow.mock.t.Fatalf("Times of AppPublicServiceServerMock.UpdateRow mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdateRow.expectedInvocations, n)
+	mmUpdateRow.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUpdateRow
+}
+
+func (mmUpdateRow *mAppPublicServiceServerMockUpdateRow) invocationsDone() bool {
+	if len(mmUpdateRow.expectations) == 0 && mmUpdateRow.defaultExpectation == nil && mmUpdateRow.mock.funcUpdateRow == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdateRow.mock.afterUpdateRowCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdateRow.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdateRow implements mm_appv1alpha.AppPublicServiceServer
+func (mmUpdateRow *AppPublicServiceServerMock) UpdateRow(ctx context.Context, up1 *mm_appv1alpha.UpdateRowRequest) (up2 *mm_appv1alpha.UpdateRowResponse, err error) {
+	mm_atomic.AddUint64(&mmUpdateRow.beforeUpdateRowCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdateRow.afterUpdateRowCounter, 1)
+
+	mmUpdateRow.t.Helper()
+
+	if mmUpdateRow.inspectFuncUpdateRow != nil {
+		mmUpdateRow.inspectFuncUpdateRow(ctx, up1)
+	}
+
+	mm_params := AppPublicServiceServerMockUpdateRowParams{ctx, up1}
+
+	// Record call args
+	mmUpdateRow.UpdateRowMock.mutex.Lock()
+	mmUpdateRow.UpdateRowMock.callArgs = append(mmUpdateRow.UpdateRowMock.callArgs, &mm_params)
+	mmUpdateRow.UpdateRowMock.mutex.Unlock()
+
+	for _, e := range mmUpdateRow.UpdateRowMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.up2, e.results.err
+		}
+	}
+
+	if mmUpdateRow.UpdateRowMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdateRow.UpdateRowMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdateRow.UpdateRowMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdateRow.UpdateRowMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockUpdateRowParams{ctx, up1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpdateRow.t.Errorf("AppPublicServiceServerMock.UpdateRow got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateRow.UpdateRowMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.up1 != nil && !minimock.Equal(*mm_want_ptrs.up1, mm_got.up1) {
+				mmUpdateRow.t.Errorf("AppPublicServiceServerMock.UpdateRow got unexpected parameter up1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateRow.UpdateRowMock.defaultExpectation.expectationOrigins.originUp1, *mm_want_ptrs.up1, mm_got.up1, minimock.Diff(*mm_want_ptrs.up1, mm_got.up1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdateRow.t.Errorf("AppPublicServiceServerMock.UpdateRow got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUpdateRow.UpdateRowMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdateRow.UpdateRowMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdateRow.t.Fatal("No results are set for the AppPublicServiceServerMock.UpdateRow")
+		}
+		return (*mm_results).up2, (*mm_results).err
+	}
+	if mmUpdateRow.funcUpdateRow != nil {
+		return mmUpdateRow.funcUpdateRow(ctx, up1)
+	}
+	mmUpdateRow.t.Fatalf("Unexpected call to AppPublicServiceServerMock.UpdateRow. %v %v", ctx, up1)
+	return
+}
+
+// UpdateRowAfterCounter returns a count of finished AppPublicServiceServerMock.UpdateRow invocations
+func (mmUpdateRow *AppPublicServiceServerMock) UpdateRowAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateRow.afterUpdateRowCounter)
+}
+
+// UpdateRowBeforeCounter returns a count of AppPublicServiceServerMock.UpdateRow invocations
+func (mmUpdateRow *AppPublicServiceServerMock) UpdateRowBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateRow.beforeUpdateRowCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.UpdateRow.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdateRow *mAppPublicServiceServerMockUpdateRow) Calls() []*AppPublicServiceServerMockUpdateRowParams {
+	mmUpdateRow.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockUpdateRowParams, len(mmUpdateRow.callArgs))
+	copy(argCopy, mmUpdateRow.callArgs)
+
+	mmUpdateRow.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdateRowDone returns true if the count of the UpdateRow invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockUpdateRowDone() bool {
+	if m.UpdateRowMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdateRowMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdateRowMock.invocationsDone()
+}
+
+// MinimockUpdateRowInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockUpdateRowInspect() {
+	for _, e := range m.UpdateRowMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateRow at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUpdateRowCounter := mm_atomic.LoadUint64(&m.afterUpdateRowCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdateRowMock.defaultExpectation != nil && afterUpdateRowCounter < 1 {
+		if m.UpdateRowMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateRow at\n%s", m.UpdateRowMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateRow at\n%s with params: %#v", m.UpdateRowMock.defaultExpectation.expectationOrigins.origin, *m.UpdateRowMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdateRow != nil && afterUpdateRowCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateRow at\n%s", m.funcUpdateRowOrigin)
+	}
+
+	if !m.UpdateRowMock.invocationsDone() && afterUpdateRowCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.UpdateRow at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdateRowMock.expectedInvocations), m.UpdateRowMock.expectedInvocationsOrigin, afterUpdateRowCounter)
+	}
+}
+
+type mAppPublicServiceServerMockUpdateRows struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockUpdateRowsExpectation
+	expectations       []*AppPublicServiceServerMockUpdateRowsExpectation
+
+	callArgs []*AppPublicServiceServerMockUpdateRowsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockUpdateRowsExpectation specifies expectation struct of the AppPublicServiceServer.UpdateRows
+type AppPublicServiceServerMockUpdateRowsExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockUpdateRowsParams
+	paramPtrs          *AppPublicServiceServerMockUpdateRowsParamPtrs
+	expectationOrigins AppPublicServiceServerMockUpdateRowsExpectationOrigins
+	results            *AppPublicServiceServerMockUpdateRowsResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockUpdateRowsParams contains parameters of the AppPublicServiceServer.UpdateRows
+type AppPublicServiceServerMockUpdateRowsParams struct {
+	ctx context.Context
+	up1 *mm_appv1alpha.UpdateRowsRequest
+}
+
+// AppPublicServiceServerMockUpdateRowsParamPtrs contains pointers to parameters of the AppPublicServiceServer.UpdateRows
+type AppPublicServiceServerMockUpdateRowsParamPtrs struct {
+	ctx *context.Context
+	up1 **mm_appv1alpha.UpdateRowsRequest
+}
+
+// AppPublicServiceServerMockUpdateRowsResults contains results of the AppPublicServiceServer.UpdateRows
+type AppPublicServiceServerMockUpdateRowsResults struct {
+	up2 *mm_appv1alpha.UpdateRowsResponse
+	err error
+}
+
+// AppPublicServiceServerMockUpdateRowsOrigins contains origins of expectations of the AppPublicServiceServer.UpdateRows
+type AppPublicServiceServerMockUpdateRowsExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originUp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdateRows *mAppPublicServiceServerMockUpdateRows) Optional() *mAppPublicServiceServerMockUpdateRows {
+	mmUpdateRows.optional = true
+	return mmUpdateRows
+}
+
+// Expect sets up expected params for AppPublicServiceServer.UpdateRows
+func (mmUpdateRows *mAppPublicServiceServerMockUpdateRows) Expect(ctx context.Context, up1 *mm_appv1alpha.UpdateRowsRequest) *mAppPublicServiceServerMockUpdateRows {
+	if mmUpdateRows.mock.funcUpdateRows != nil {
+		mmUpdateRows.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRows mock is already set by Set")
+	}
+
+	if mmUpdateRows.defaultExpectation == nil {
+		mmUpdateRows.defaultExpectation = &AppPublicServiceServerMockUpdateRowsExpectation{}
+	}
+
+	if mmUpdateRows.defaultExpectation.paramPtrs != nil {
+		mmUpdateRows.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRows mock is already set by ExpectParams functions")
+	}
+
+	mmUpdateRows.defaultExpectation.params = &AppPublicServiceServerMockUpdateRowsParams{ctx, up1}
+	mmUpdateRows.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUpdateRows.expectations {
+		if minimock.Equal(e.params, mmUpdateRows.defaultExpectation.params) {
+			mmUpdateRows.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdateRows.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdateRows
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.UpdateRows
+func (mmUpdateRows *mAppPublicServiceServerMockUpdateRows) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockUpdateRows {
+	if mmUpdateRows.mock.funcUpdateRows != nil {
+		mmUpdateRows.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRows mock is already set by Set")
+	}
+
+	if mmUpdateRows.defaultExpectation == nil {
+		mmUpdateRows.defaultExpectation = &AppPublicServiceServerMockUpdateRowsExpectation{}
+	}
+
+	if mmUpdateRows.defaultExpectation.params != nil {
+		mmUpdateRows.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRows mock is already set by Expect")
+	}
+
+	if mmUpdateRows.defaultExpectation.paramPtrs == nil {
+		mmUpdateRows.defaultExpectation.paramPtrs = &AppPublicServiceServerMockUpdateRowsParamPtrs{}
+	}
+	mmUpdateRows.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUpdateRows.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUpdateRows
+}
+
+// ExpectUp1Param2 sets up expected param up1 for AppPublicServiceServer.UpdateRows
+func (mmUpdateRows *mAppPublicServiceServerMockUpdateRows) ExpectUp1Param2(up1 *mm_appv1alpha.UpdateRowsRequest) *mAppPublicServiceServerMockUpdateRows {
+	if mmUpdateRows.mock.funcUpdateRows != nil {
+		mmUpdateRows.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRows mock is already set by Set")
+	}
+
+	if mmUpdateRows.defaultExpectation == nil {
+		mmUpdateRows.defaultExpectation = &AppPublicServiceServerMockUpdateRowsExpectation{}
+	}
+
+	if mmUpdateRows.defaultExpectation.params != nil {
+		mmUpdateRows.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRows mock is already set by Expect")
+	}
+
+	if mmUpdateRows.defaultExpectation.paramPtrs == nil {
+		mmUpdateRows.defaultExpectation.paramPtrs = &AppPublicServiceServerMockUpdateRowsParamPtrs{}
+	}
+	mmUpdateRows.defaultExpectation.paramPtrs.up1 = &up1
+	mmUpdateRows.defaultExpectation.expectationOrigins.originUp1 = minimock.CallerInfo(1)
+
+	return mmUpdateRows
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.UpdateRows
+func (mmUpdateRows *mAppPublicServiceServerMockUpdateRows) Inspect(f func(ctx context.Context, up1 *mm_appv1alpha.UpdateRowsRequest)) *mAppPublicServiceServerMockUpdateRows {
+	if mmUpdateRows.mock.inspectFuncUpdateRows != nil {
+		mmUpdateRows.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.UpdateRows")
+	}
+
+	mmUpdateRows.mock.inspectFuncUpdateRows = f
+
+	return mmUpdateRows
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.UpdateRows
+func (mmUpdateRows *mAppPublicServiceServerMockUpdateRows) Return(up2 *mm_appv1alpha.UpdateRowsResponse, err error) *AppPublicServiceServerMock {
+	if mmUpdateRows.mock.funcUpdateRows != nil {
+		mmUpdateRows.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRows mock is already set by Set")
+	}
+
+	if mmUpdateRows.defaultExpectation == nil {
+		mmUpdateRows.defaultExpectation = &AppPublicServiceServerMockUpdateRowsExpectation{mock: mmUpdateRows.mock}
+	}
+	mmUpdateRows.defaultExpectation.results = &AppPublicServiceServerMockUpdateRowsResults{up2, err}
+	mmUpdateRows.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUpdateRows.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.UpdateRows method
+func (mmUpdateRows *mAppPublicServiceServerMockUpdateRows) Set(f func(ctx context.Context, up1 *mm_appv1alpha.UpdateRowsRequest) (up2 *mm_appv1alpha.UpdateRowsResponse, err error)) *AppPublicServiceServerMock {
+	if mmUpdateRows.defaultExpectation != nil {
+		mmUpdateRows.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.UpdateRows method")
+	}
+
+	if len(mmUpdateRows.expectations) > 0 {
+		mmUpdateRows.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.UpdateRows method")
+	}
+
+	mmUpdateRows.mock.funcUpdateRows = f
+	mmUpdateRows.mock.funcUpdateRowsOrigin = minimock.CallerInfo(1)
+	return mmUpdateRows.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.UpdateRows which will trigger the result defined by the following
+// Then helper
+func (mmUpdateRows *mAppPublicServiceServerMockUpdateRows) When(ctx context.Context, up1 *mm_appv1alpha.UpdateRowsRequest) *AppPublicServiceServerMockUpdateRowsExpectation {
+	if mmUpdateRows.mock.funcUpdateRows != nil {
+		mmUpdateRows.mock.t.Fatalf("AppPublicServiceServerMock.UpdateRows mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockUpdateRowsExpectation{
+		mock:               mmUpdateRows.mock,
+		params:             &AppPublicServiceServerMockUpdateRowsParams{ctx, up1},
+		expectationOrigins: AppPublicServiceServerMockUpdateRowsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUpdateRows.expectations = append(mmUpdateRows.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.UpdateRows return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockUpdateRowsExpectation) Then(up2 *mm_appv1alpha.UpdateRowsResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockUpdateRowsResults{up2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.UpdateRows should be invoked
+func (mmUpdateRows *mAppPublicServiceServerMockUpdateRows) Times(n uint64) *mAppPublicServiceServerMockUpdateRows {
+	if n == 0 {
+		mmUpdateRows.mock.t.Fatalf("Times of AppPublicServiceServerMock.UpdateRows mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdateRows.expectedInvocations, n)
+	mmUpdateRows.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUpdateRows
+}
+
+func (mmUpdateRows *mAppPublicServiceServerMockUpdateRows) invocationsDone() bool {
+	if len(mmUpdateRows.expectations) == 0 && mmUpdateRows.defaultExpectation == nil && mmUpdateRows.mock.funcUpdateRows == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdateRows.mock.afterUpdateRowsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdateRows.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdateRows implements mm_appv1alpha.AppPublicServiceServer
+func (mmUpdateRows *AppPublicServiceServerMock) UpdateRows(ctx context.Context, up1 *mm_appv1alpha.UpdateRowsRequest) (up2 *mm_appv1alpha.UpdateRowsResponse, err error) {
+	mm_atomic.AddUint64(&mmUpdateRows.beforeUpdateRowsCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdateRows.afterUpdateRowsCounter, 1)
+
+	mmUpdateRows.t.Helper()
+
+	if mmUpdateRows.inspectFuncUpdateRows != nil {
+		mmUpdateRows.inspectFuncUpdateRows(ctx, up1)
+	}
+
+	mm_params := AppPublicServiceServerMockUpdateRowsParams{ctx, up1}
+
+	// Record call args
+	mmUpdateRows.UpdateRowsMock.mutex.Lock()
+	mmUpdateRows.UpdateRowsMock.callArgs = append(mmUpdateRows.UpdateRowsMock.callArgs, &mm_params)
+	mmUpdateRows.UpdateRowsMock.mutex.Unlock()
+
+	for _, e := range mmUpdateRows.UpdateRowsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.up2, e.results.err
+		}
+	}
+
+	if mmUpdateRows.UpdateRowsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdateRows.UpdateRowsMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdateRows.UpdateRowsMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdateRows.UpdateRowsMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockUpdateRowsParams{ctx, up1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpdateRows.t.Errorf("AppPublicServiceServerMock.UpdateRows got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateRows.UpdateRowsMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.up1 != nil && !minimock.Equal(*mm_want_ptrs.up1, mm_got.up1) {
+				mmUpdateRows.t.Errorf("AppPublicServiceServerMock.UpdateRows got unexpected parameter up1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateRows.UpdateRowsMock.defaultExpectation.expectationOrigins.originUp1, *mm_want_ptrs.up1, mm_got.up1, minimock.Diff(*mm_want_ptrs.up1, mm_got.up1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdateRows.t.Errorf("AppPublicServiceServerMock.UpdateRows got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUpdateRows.UpdateRowsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdateRows.UpdateRowsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdateRows.t.Fatal("No results are set for the AppPublicServiceServerMock.UpdateRows")
+		}
+		return (*mm_results).up2, (*mm_results).err
+	}
+	if mmUpdateRows.funcUpdateRows != nil {
+		return mmUpdateRows.funcUpdateRows(ctx, up1)
+	}
+	mmUpdateRows.t.Fatalf("Unexpected call to AppPublicServiceServerMock.UpdateRows. %v %v", ctx, up1)
+	return
+}
+
+// UpdateRowsAfterCounter returns a count of finished AppPublicServiceServerMock.UpdateRows invocations
+func (mmUpdateRows *AppPublicServiceServerMock) UpdateRowsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateRows.afterUpdateRowsCounter)
+}
+
+// UpdateRowsBeforeCounter returns a count of AppPublicServiceServerMock.UpdateRows invocations
+func (mmUpdateRows *AppPublicServiceServerMock) UpdateRowsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateRows.beforeUpdateRowsCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.UpdateRows.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdateRows *mAppPublicServiceServerMockUpdateRows) Calls() []*AppPublicServiceServerMockUpdateRowsParams {
+	mmUpdateRows.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockUpdateRowsParams, len(mmUpdateRows.callArgs))
+	copy(argCopy, mmUpdateRows.callArgs)
+
+	mmUpdateRows.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdateRowsDone returns true if the count of the UpdateRows invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockUpdateRowsDone() bool {
+	if m.UpdateRowsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdateRowsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdateRowsMock.invocationsDone()
+}
+
+// MinimockUpdateRowsInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockUpdateRowsInspect() {
+	for _, e := range m.UpdateRowsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateRows at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUpdateRowsCounter := mm_atomic.LoadUint64(&m.afterUpdateRowsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdateRowsMock.defaultExpectation != nil && afterUpdateRowsCounter < 1 {
+		if m.UpdateRowsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateRows at\n%s", m.UpdateRowsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateRows at\n%s with params: %#v", m.UpdateRowsMock.defaultExpectation.expectationOrigins.origin, *m.UpdateRowsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdateRows != nil && afterUpdateRowsCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateRows at\n%s", m.funcUpdateRowsOrigin)
+	}
+
+	if !m.UpdateRowsMock.invocationsDone() && afterUpdateRowsCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.UpdateRows at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdateRowsMock.expectedInvocations), m.UpdateRowsMock.expectedInvocationsOrigin, afterUpdateRowsCounter)
+	}
+}
+
+type mAppPublicServiceServerMockUpdateTable struct {
+	optional           bool
+	mock               *AppPublicServiceServerMock
+	defaultExpectation *AppPublicServiceServerMockUpdateTableExpectation
+	expectations       []*AppPublicServiceServerMockUpdateTableExpectation
+
+	callArgs []*AppPublicServiceServerMockUpdateTableParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AppPublicServiceServerMockUpdateTableExpectation specifies expectation struct of the AppPublicServiceServer.UpdateTable
+type AppPublicServiceServerMockUpdateTableExpectation struct {
+	mock               *AppPublicServiceServerMock
+	params             *AppPublicServiceServerMockUpdateTableParams
+	paramPtrs          *AppPublicServiceServerMockUpdateTableParamPtrs
+	expectationOrigins AppPublicServiceServerMockUpdateTableExpectationOrigins
+	results            *AppPublicServiceServerMockUpdateTableResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AppPublicServiceServerMockUpdateTableParams contains parameters of the AppPublicServiceServer.UpdateTable
+type AppPublicServiceServerMockUpdateTableParams struct {
+	ctx context.Context
+	up1 *mm_appv1alpha.UpdateTableRequest
+}
+
+// AppPublicServiceServerMockUpdateTableParamPtrs contains pointers to parameters of the AppPublicServiceServer.UpdateTable
+type AppPublicServiceServerMockUpdateTableParamPtrs struct {
+	ctx *context.Context
+	up1 **mm_appv1alpha.UpdateTableRequest
+}
+
+// AppPublicServiceServerMockUpdateTableResults contains results of the AppPublicServiceServer.UpdateTable
+type AppPublicServiceServerMockUpdateTableResults struct {
+	up2 *mm_appv1alpha.UpdateTableResponse
+	err error
+}
+
+// AppPublicServiceServerMockUpdateTableOrigins contains origins of expectations of the AppPublicServiceServer.UpdateTable
+type AppPublicServiceServerMockUpdateTableExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originUp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdateTable *mAppPublicServiceServerMockUpdateTable) Optional() *mAppPublicServiceServerMockUpdateTable {
+	mmUpdateTable.optional = true
+	return mmUpdateTable
+}
+
+// Expect sets up expected params for AppPublicServiceServer.UpdateTable
+func (mmUpdateTable *mAppPublicServiceServerMockUpdateTable) Expect(ctx context.Context, up1 *mm_appv1alpha.UpdateTableRequest) *mAppPublicServiceServerMockUpdateTable {
+	if mmUpdateTable.mock.funcUpdateTable != nil {
+		mmUpdateTable.mock.t.Fatalf("AppPublicServiceServerMock.UpdateTable mock is already set by Set")
+	}
+
+	if mmUpdateTable.defaultExpectation == nil {
+		mmUpdateTable.defaultExpectation = &AppPublicServiceServerMockUpdateTableExpectation{}
+	}
+
+	if mmUpdateTable.defaultExpectation.paramPtrs != nil {
+		mmUpdateTable.mock.t.Fatalf("AppPublicServiceServerMock.UpdateTable mock is already set by ExpectParams functions")
+	}
+
+	mmUpdateTable.defaultExpectation.params = &AppPublicServiceServerMockUpdateTableParams{ctx, up1}
+	mmUpdateTable.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUpdateTable.expectations {
+		if minimock.Equal(e.params, mmUpdateTable.defaultExpectation.params) {
+			mmUpdateTable.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdateTable.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdateTable
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AppPublicServiceServer.UpdateTable
+func (mmUpdateTable *mAppPublicServiceServerMockUpdateTable) ExpectCtxParam1(ctx context.Context) *mAppPublicServiceServerMockUpdateTable {
+	if mmUpdateTable.mock.funcUpdateTable != nil {
+		mmUpdateTable.mock.t.Fatalf("AppPublicServiceServerMock.UpdateTable mock is already set by Set")
+	}
+
+	if mmUpdateTable.defaultExpectation == nil {
+		mmUpdateTable.defaultExpectation = &AppPublicServiceServerMockUpdateTableExpectation{}
+	}
+
+	if mmUpdateTable.defaultExpectation.params != nil {
+		mmUpdateTable.mock.t.Fatalf("AppPublicServiceServerMock.UpdateTable mock is already set by Expect")
+	}
+
+	if mmUpdateTable.defaultExpectation.paramPtrs == nil {
+		mmUpdateTable.defaultExpectation.paramPtrs = &AppPublicServiceServerMockUpdateTableParamPtrs{}
+	}
+	mmUpdateTable.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUpdateTable.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUpdateTable
+}
+
+// ExpectUp1Param2 sets up expected param up1 for AppPublicServiceServer.UpdateTable
+func (mmUpdateTable *mAppPublicServiceServerMockUpdateTable) ExpectUp1Param2(up1 *mm_appv1alpha.UpdateTableRequest) *mAppPublicServiceServerMockUpdateTable {
+	if mmUpdateTable.mock.funcUpdateTable != nil {
+		mmUpdateTable.mock.t.Fatalf("AppPublicServiceServerMock.UpdateTable mock is already set by Set")
+	}
+
+	if mmUpdateTable.defaultExpectation == nil {
+		mmUpdateTable.defaultExpectation = &AppPublicServiceServerMockUpdateTableExpectation{}
+	}
+
+	if mmUpdateTable.defaultExpectation.params != nil {
+		mmUpdateTable.mock.t.Fatalf("AppPublicServiceServerMock.UpdateTable mock is already set by Expect")
+	}
+
+	if mmUpdateTable.defaultExpectation.paramPtrs == nil {
+		mmUpdateTable.defaultExpectation.paramPtrs = &AppPublicServiceServerMockUpdateTableParamPtrs{}
+	}
+	mmUpdateTable.defaultExpectation.paramPtrs.up1 = &up1
+	mmUpdateTable.defaultExpectation.expectationOrigins.originUp1 = minimock.CallerInfo(1)
+
+	return mmUpdateTable
+}
+
+// Inspect accepts an inspector function that has same arguments as the AppPublicServiceServer.UpdateTable
+func (mmUpdateTable *mAppPublicServiceServerMockUpdateTable) Inspect(f func(ctx context.Context, up1 *mm_appv1alpha.UpdateTableRequest)) *mAppPublicServiceServerMockUpdateTable {
+	if mmUpdateTable.mock.inspectFuncUpdateTable != nil {
+		mmUpdateTable.mock.t.Fatalf("Inspect function is already set for AppPublicServiceServerMock.UpdateTable")
+	}
+
+	mmUpdateTable.mock.inspectFuncUpdateTable = f
+
+	return mmUpdateTable
+}
+
+// Return sets up results that will be returned by AppPublicServiceServer.UpdateTable
+func (mmUpdateTable *mAppPublicServiceServerMockUpdateTable) Return(up2 *mm_appv1alpha.UpdateTableResponse, err error) *AppPublicServiceServerMock {
+	if mmUpdateTable.mock.funcUpdateTable != nil {
+		mmUpdateTable.mock.t.Fatalf("AppPublicServiceServerMock.UpdateTable mock is already set by Set")
+	}
+
+	if mmUpdateTable.defaultExpectation == nil {
+		mmUpdateTable.defaultExpectation = &AppPublicServiceServerMockUpdateTableExpectation{mock: mmUpdateTable.mock}
+	}
+	mmUpdateTable.defaultExpectation.results = &AppPublicServiceServerMockUpdateTableResults{up2, err}
+	mmUpdateTable.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUpdateTable.mock
+}
+
+// Set uses given function f to mock the AppPublicServiceServer.UpdateTable method
+func (mmUpdateTable *mAppPublicServiceServerMockUpdateTable) Set(f func(ctx context.Context, up1 *mm_appv1alpha.UpdateTableRequest) (up2 *mm_appv1alpha.UpdateTableResponse, err error)) *AppPublicServiceServerMock {
+	if mmUpdateTable.defaultExpectation != nil {
+		mmUpdateTable.mock.t.Fatalf("Default expectation is already set for the AppPublicServiceServer.UpdateTable method")
+	}
+
+	if len(mmUpdateTable.expectations) > 0 {
+		mmUpdateTable.mock.t.Fatalf("Some expectations are already set for the AppPublicServiceServer.UpdateTable method")
+	}
+
+	mmUpdateTable.mock.funcUpdateTable = f
+	mmUpdateTable.mock.funcUpdateTableOrigin = minimock.CallerInfo(1)
+	return mmUpdateTable.mock
+}
+
+// When sets expectation for the AppPublicServiceServer.UpdateTable which will trigger the result defined by the following
+// Then helper
+func (mmUpdateTable *mAppPublicServiceServerMockUpdateTable) When(ctx context.Context, up1 *mm_appv1alpha.UpdateTableRequest) *AppPublicServiceServerMockUpdateTableExpectation {
+	if mmUpdateTable.mock.funcUpdateTable != nil {
+		mmUpdateTable.mock.t.Fatalf("AppPublicServiceServerMock.UpdateTable mock is already set by Set")
+	}
+
+	expectation := &AppPublicServiceServerMockUpdateTableExpectation{
+		mock:               mmUpdateTable.mock,
+		params:             &AppPublicServiceServerMockUpdateTableParams{ctx, up1},
+		expectationOrigins: AppPublicServiceServerMockUpdateTableExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUpdateTable.expectations = append(mmUpdateTable.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AppPublicServiceServer.UpdateTable return parameters for the expectation previously defined by the When method
+func (e *AppPublicServiceServerMockUpdateTableExpectation) Then(up2 *mm_appv1alpha.UpdateTableResponse, err error) *AppPublicServiceServerMock {
+	e.results = &AppPublicServiceServerMockUpdateTableResults{up2, err}
+	return e.mock
+}
+
+// Times sets number of times AppPublicServiceServer.UpdateTable should be invoked
+func (mmUpdateTable *mAppPublicServiceServerMockUpdateTable) Times(n uint64) *mAppPublicServiceServerMockUpdateTable {
+	if n == 0 {
+		mmUpdateTable.mock.t.Fatalf("Times of AppPublicServiceServerMock.UpdateTable mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdateTable.expectedInvocations, n)
+	mmUpdateTable.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUpdateTable
+}
+
+func (mmUpdateTable *mAppPublicServiceServerMockUpdateTable) invocationsDone() bool {
+	if len(mmUpdateTable.expectations) == 0 && mmUpdateTable.defaultExpectation == nil && mmUpdateTable.mock.funcUpdateTable == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdateTable.mock.afterUpdateTableCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdateTable.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdateTable implements mm_appv1alpha.AppPublicServiceServer
+func (mmUpdateTable *AppPublicServiceServerMock) UpdateTable(ctx context.Context, up1 *mm_appv1alpha.UpdateTableRequest) (up2 *mm_appv1alpha.UpdateTableResponse, err error) {
+	mm_atomic.AddUint64(&mmUpdateTable.beforeUpdateTableCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdateTable.afterUpdateTableCounter, 1)
+
+	mmUpdateTable.t.Helper()
+
+	if mmUpdateTable.inspectFuncUpdateTable != nil {
+		mmUpdateTable.inspectFuncUpdateTable(ctx, up1)
+	}
+
+	mm_params := AppPublicServiceServerMockUpdateTableParams{ctx, up1}
+
+	// Record call args
+	mmUpdateTable.UpdateTableMock.mutex.Lock()
+	mmUpdateTable.UpdateTableMock.callArgs = append(mmUpdateTable.UpdateTableMock.callArgs, &mm_params)
+	mmUpdateTable.UpdateTableMock.mutex.Unlock()
+
+	for _, e := range mmUpdateTable.UpdateTableMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.up2, e.results.err
+		}
+	}
+
+	if mmUpdateTable.UpdateTableMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdateTable.UpdateTableMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdateTable.UpdateTableMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdateTable.UpdateTableMock.defaultExpectation.paramPtrs
+
+		mm_got := AppPublicServiceServerMockUpdateTableParams{ctx, up1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpdateTable.t.Errorf("AppPublicServiceServerMock.UpdateTable got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateTable.UpdateTableMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.up1 != nil && !minimock.Equal(*mm_want_ptrs.up1, mm_got.up1) {
+				mmUpdateTable.t.Errorf("AppPublicServiceServerMock.UpdateTable got unexpected parameter up1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateTable.UpdateTableMock.defaultExpectation.expectationOrigins.originUp1, *mm_want_ptrs.up1, mm_got.up1, minimock.Diff(*mm_want_ptrs.up1, mm_got.up1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdateTable.t.Errorf("AppPublicServiceServerMock.UpdateTable got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUpdateTable.UpdateTableMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdateTable.UpdateTableMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdateTable.t.Fatal("No results are set for the AppPublicServiceServerMock.UpdateTable")
+		}
+		return (*mm_results).up2, (*mm_results).err
+	}
+	if mmUpdateTable.funcUpdateTable != nil {
+		return mmUpdateTable.funcUpdateTable(ctx, up1)
+	}
+	mmUpdateTable.t.Fatalf("Unexpected call to AppPublicServiceServerMock.UpdateTable. %v %v", ctx, up1)
+	return
+}
+
+// UpdateTableAfterCounter returns a count of finished AppPublicServiceServerMock.UpdateTable invocations
+func (mmUpdateTable *AppPublicServiceServerMock) UpdateTableAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateTable.afterUpdateTableCounter)
+}
+
+// UpdateTableBeforeCounter returns a count of AppPublicServiceServerMock.UpdateTable invocations
+func (mmUpdateTable *AppPublicServiceServerMock) UpdateTableBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateTable.beforeUpdateTableCounter)
+}
+
+// Calls returns a list of arguments used in each call to AppPublicServiceServerMock.UpdateTable.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdateTable *mAppPublicServiceServerMockUpdateTable) Calls() []*AppPublicServiceServerMockUpdateTableParams {
+	mmUpdateTable.mutex.RLock()
+
+	argCopy := make([]*AppPublicServiceServerMockUpdateTableParams, len(mmUpdateTable.callArgs))
+	copy(argCopy, mmUpdateTable.callArgs)
+
+	mmUpdateTable.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdateTableDone returns true if the count of the UpdateTable invocations corresponds
+// the number of defined expectations
+func (m *AppPublicServiceServerMock) MinimockUpdateTableDone() bool {
+	if m.UpdateTableMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdateTableMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdateTableMock.invocationsDone()
+}
+
+// MinimockUpdateTableInspect logs each unmet expectation
+func (m *AppPublicServiceServerMock) MinimockUpdateTableInspect() {
+	for _, e := range m.UpdateTableMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateTable at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUpdateTableCounter := mm_atomic.LoadUint64(&m.afterUpdateTableCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdateTableMock.defaultExpectation != nil && afterUpdateTableCounter < 1 {
+		if m.UpdateTableMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateTable at\n%s", m.UpdateTableMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateTable at\n%s with params: %#v", m.UpdateTableMock.defaultExpectation.expectationOrigins.origin, *m.UpdateTableMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdateTable != nil && afterUpdateTableCounter < 1 {
+		m.t.Errorf("Expected call to AppPublicServiceServerMock.UpdateTable at\n%s", m.funcUpdateTableOrigin)
+	}
+
+	if !m.UpdateTableMock.invocationsDone() && afterUpdateTableCounter > 0 {
+		m.t.Errorf("Expected %d calls to AppPublicServiceServerMock.UpdateTable at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdateTableMock.expectedInvocations), m.UpdateTableMock.expectedInvocationsOrigin, afterUpdateTableCounter)
+	}
+}
+
 // MinimockFinish checks that all mocked methods have been called the expected number of times
 func (m *AppPublicServiceServerMock) MinimockFinish() {
 	m.finishOnce.Do(func() {
@@ -9578,6 +15225,8 @@ func (m *AppPublicServiceServerMock) MinimockFinish() {
 
 			m.MinimockCreateMessageInspect()
 
+			m.MinimockCreateTableInspect()
+
 			m.MinimockDeleteAgentInspect()
 
 			m.MinimockDeleteAppInspect()
@@ -9588,7 +15237,23 @@ func (m *AppPublicServiceServerMock) MinimockFinish() {
 
 			m.MinimockDeleteMessageInspect()
 
+			m.MinimockDeleteRowInspect()
+
+			m.MinimockDeleteRowsInspect()
+
+			m.MinimockDeleteTableInspect()
+
+			m.MinimockExportInspect()
+
+			m.MinimockGetColumnDefinitionsInspect()
+
 			m.MinimockGetPlaygroundConversationInspect()
+
+			m.MinimockGetTableInspect()
+
+			m.MinimockGetTableEventsInspect()
+
+			m.MinimockInsertRowInspect()
 
 			m.MinimockListAgentsInspect()
 
@@ -9602,9 +15267,15 @@ func (m *AppPublicServiceServerMock) MinimockFinish() {
 
 			m.MinimockListMessagesInspect()
 
+			m.MinimockListRowsInspect()
+
+			m.MinimockListTablesInspect()
+
 			m.MinimockListToolsInspect()
 
 			m.MinimockLivenessInspect()
+
+			m.MinimockMoveRowsInspect()
 
 			m.MinimockReadinessInspect()
 
@@ -9616,9 +15287,17 @@ func (m *AppPublicServiceServerMock) MinimockFinish() {
 
 			m.MinimockUpdateChatInspect()
 
+			m.MinimockUpdateColumnDefinitionsInspect()
+
 			m.MinimockUpdateConversationInspect()
 
 			m.MinimockUpdateMessageInspect()
+
+			m.MinimockUpdateRowInspect()
+
+			m.MinimockUpdateRowsInspect()
+
+			m.MinimockUpdateTableInspect()
 		}
 	})
 }
@@ -9648,25 +15327,41 @@ func (m *AppPublicServiceServerMock) minimockDone() bool {
 		m.MinimockCreateChatDone() &&
 		m.MinimockCreateConversationDone() &&
 		m.MinimockCreateMessageDone() &&
+		m.MinimockCreateTableDone() &&
 		m.MinimockDeleteAgentDone() &&
 		m.MinimockDeleteAppDone() &&
 		m.MinimockDeleteChatDone() &&
 		m.MinimockDeleteConversationDone() &&
 		m.MinimockDeleteMessageDone() &&
+		m.MinimockDeleteRowDone() &&
+		m.MinimockDeleteRowsDone() &&
+		m.MinimockDeleteTableDone() &&
+		m.MinimockExportDone() &&
+		m.MinimockGetColumnDefinitionsDone() &&
 		m.MinimockGetPlaygroundConversationDone() &&
+		m.MinimockGetTableDone() &&
+		m.MinimockGetTableEventsDone() &&
+		m.MinimockInsertRowDone() &&
 		m.MinimockListAgentsDone() &&
 		m.MinimockListAppsDone() &&
 		m.MinimockListChatMessagesDone() &&
 		m.MinimockListChatsDone() &&
 		m.MinimockListConversationsDone() &&
 		m.MinimockListMessagesDone() &&
+		m.MinimockListRowsDone() &&
+		m.MinimockListTablesDone() &&
 		m.MinimockListToolsDone() &&
 		m.MinimockLivenessDone() &&
+		m.MinimockMoveRowsDone() &&
 		m.MinimockReadinessDone() &&
 		m.MinimockRestartPlaygroundConversationDone() &&
 		m.MinimockUpdateAgentDone() &&
 		m.MinimockUpdateAppDone() &&
 		m.MinimockUpdateChatDone() &&
+		m.MinimockUpdateColumnDefinitionsDone() &&
 		m.MinimockUpdateConversationDone() &&
-		m.MinimockUpdateMessageDone()
+		m.MinimockUpdateMessageDone() &&
+		m.MinimockUpdateRowDone() &&
+		m.MinimockUpdateRowsDone() &&
+		m.MinimockUpdateTableDone()
 }

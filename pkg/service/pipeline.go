@@ -21,6 +21,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/structpb"
+	"gorm.io/datatypes"
 
 	workflowpb "go.temporal.io/api/workflow/v1"
 	rpcstatus "google.golang.org/genproto/googleapis/rpc/status"
@@ -126,6 +127,121 @@ func (s *service) GetPipelineByUID(ctx context.Context, uid uuid.UUID, view pipe
 	}
 
 	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, view, true, true)
+}
+
+func (s *service) CreateNamespacePipelineWithTemplate(ctx context.Context, ns resource.Namespace, pipelineID string, templatePipelineUID uuid.UUID, templatePipelineReleaseUID uuid.UUID, templateOverrides *pipelinepb.TemplateOverrides) (*pipelinepb.Pipeline, error) {
+	fmt.Println("3")
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
+		return nil, err
+	}
+
+	ownerPermalink := ns.Permalink()
+
+	// TODO: optimize ACL model
+	if ns.NsType == "organizations" {
+		granted, err := s.aclClient.CheckPermission(ctx, "organization", ns.NsUID, "member")
+		if err != nil {
+			return nil, err
+		}
+		if !granted {
+			return nil, errdomain.ErrUnauthorized
+		}
+	} else if ns.NsUID != uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)) {
+		return nil, errdomain.ErrUnauthorized
+	}
+	fmt.Println("4", templatePipelineUID)
+
+	pbPipeline, err := s.GetPipelineByUID(ctx, templatePipelineUID, pipelinepb.Pipeline_VIEW_BASIC)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("5")
+
+	dbPipeline, err := s.converter.ConvertPipelineToDB(ctx, ns, pbPipeline)
+	if err != nil {
+		return nil, err
+	}
+	dbPipeline.UID, err = uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+	dbPipeline.ID = pipelineID
+	dbPipeline.Owner = ns.Permalink()
+	dbPipeline.Recipe = nil
+	dbPipeline.UseTemplate = true
+	dbPipeline.TemplatePipelineUID = templatePipelineUID
+	dbPipeline.TemplatePipelineReleaseUID = templatePipelineReleaseUID
+	templateOverridesBytes, err := json.Marshal(templateOverrides)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("6")
+	dbPipeline.TemplateOverrides = datatypes.JSON(templateOverridesBytes)
+	dbPipeline.ShareCode = generateShareCode()
+	fmt.Println("7")
+
+	if err := s.repository.CreateNamespacePipeline(ctx, dbPipeline); err != nil {
+		return nil, err
+	}
+
+	fmt.Println("8", ownerPermalink, dbPipeline.ID)
+	dbCreatedPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, dbPipeline.ID, false, true)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("8")
+
+	if err := s.configureRunOn(ctx, configureRunOnParams{
+		Namespace:   ns,
+		pipelineUID: dbPipeline.UID,
+		releaseUID:  uuid.Nil,
+		recipe:      dbCreatedPipeline.Recipe,
+	}); err != nil {
+		return nil, err
+	}
+	fmt.Println("9")
+	ownerType := string(ns.NsType)[0 : len(string(ns.NsType))-1]
+	ownerUID := ns.NsUID
+	err = s.aclClient.SetOwner(ctx, "pipeline", dbCreatedPipeline.UID, ownerType, ownerUID)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: use OpenFGA as single source of truth
+	err = s.aclClient.SetPipelinePermissionMap(ctx, dbCreatedPipeline)
+	if err != nil {
+		return nil, err
+	}
+	toCreatedTags := pbPipeline.GetTags()
+	toBeCreatedTagNames := make([]string, 0, len(toCreatedTags))
+	for _, tag := range toCreatedTags {
+		tag = strings.ToLower(tag)
+		if !slices.Contains(preserveTags, tag) {
+			toBeCreatedTagNames = append(toBeCreatedTagNames, tag)
+		}
+	}
+
+	fmt.Println("10")
+	if len(toBeCreatedTagNames) > 0 {
+		err = s.repository.CreatePipelineTags(ctx, dbCreatedPipeline.UID, toBeCreatedTagNames)
+		if err != nil {
+			return nil, err
+		}
+		dbCreatedPipeline, err = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, dbPipeline.ID, false, true)
+		if err != nil {
+			return nil, err
+		}
+	}
+	fmt.Println("11")
+
+	pipeline, err := s.converter.ConvertPipelineToPB(ctx, dbCreatedPipeline, pipelinepb.Pipeline_VIEW_FULL, false, true)
+	if err != nil {
+		return nil, err
+	}
+	pipeline.Permission = &pipelinepb.Permission{
+		CanEdit:    true,
+		CanTrigger: true,
+	}
+	return pipeline, nil
 }
 
 func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Namespace, pbPipeline *pipelinepb.Pipeline) (*pipelinepb.Pipeline, error) {
@@ -547,6 +663,9 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	if existingPipeline, _ = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, false); existingPipeline == nil {
 		return nil, err
 	}
+	if existingPipeline.UseTemplate {
+		return nil, errdomain.ErrCanNotUpdatePipelineWithTemplate
+	}
 
 	if existingPipeline.ShareCode == "" {
 		dbPipeline.ShareCode = generateShareCode()
@@ -711,7 +830,7 @@ func (s *service) generateCloneTargetNamespace(ctx context.Context, targetNamesp
 	return targetNS, nil
 }
 
-func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namespace, id, targetNamespaceID, targetPipelineID, description string, sharing *pipelinepb.Sharing) (*pipelinepb.Pipeline, error) {
+func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namespace, id, targetNamespaceID, targetPipelineID, description string, sharing *pipelinepb.Sharing, asTemplate bool, templateOverrides *pipelinepb.TemplateOverrides) (*pipelinepb.Pipeline, error) {
 	sourcePipeline, err := s.GetNamespacePipelineByID(ctx, ns, id, pipelinepb.Pipeline_VIEW_RECIPE)
 	if err != nil {
 		return nil, err
@@ -721,26 +840,36 @@ func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namesp
 		return nil, err
 	}
 
-	newPipeline := &pipelinepb.Pipeline{
-		Id:          targetPipelineID,
-		Description: &description,
-		Sharing:     sharing,
-		RawRecipe:   sourcePipeline.RawRecipe,
-		Metadata:    sourcePipeline.Metadata,
-	}
+	var pipeline *pipelinepb.Pipeline
+	if asTemplate {
+		fmt.Println("2")
+		pipeline, err = s.CreateNamespacePipelineWithTemplate(ctx, targetNS, targetPipelineID, uuid.FromStringOrNil(sourcePipeline.Uid), uuid.Nil, templateOverrides)
+		if err != nil {
+			return nil, err
+		}
+	} else {
 
-	pipeline, err := s.CreateNamespacePipeline(ctx, targetNS, newPipeline)
-	if err != nil {
-		return nil, err
+		newPipeline := &pipelinepb.Pipeline{
+			Id:          targetPipelineID,
+			Description: &description,
+			Sharing:     sharing,
+			RawRecipe:   sourcePipeline.RawRecipe,
+			Metadata:    sourcePipeline.Metadata,
+		}
+
+		pipeline, err = s.CreateNamespacePipeline(ctx, targetNS, newPipeline)
+		if err != nil {
+			return nil, err
+		}
 	}
-	err = s.repository.AddPipelineClones(ctx, uuid.FromStringOrNil(sourcePipeline.Uid))
+	err = s.repository.IncreasePipelineClones(ctx, uuid.FromStringOrNil(sourcePipeline.Uid))
 	if err != nil {
 		return nil, err
 	}
 	return pipeline, nil
 }
 
-func (s *service) CloneNamespacePipelineRelease(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id, targetNamespaceID, targetPipelineID, description string, sharing *pipelinepb.Sharing) (*pipelinepb.Pipeline, error) {
+func (s *service) CloneNamespacePipelineRelease(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id, targetNamespaceID, targetPipelineID, description string, sharing *pipelinepb.Sharing, asTemplate bool, templateOverrides *pipelinepb.TemplateOverrides) (*pipelinepb.Pipeline, error) {
 	sourcePipelineRelease, err := s.GetNamespacePipelineReleaseByID(ctx, ns, pipelineUID, id, pipelinepb.Pipeline_VIEW_RECIPE)
 	if err != nil {
 		return nil, err
@@ -750,19 +879,28 @@ func (s *service) CloneNamespacePipelineRelease(ctx context.Context, ns resource
 		return nil, err
 	}
 
-	newPipeline := &pipelinepb.Pipeline{
-		Id:          targetPipelineID,
-		Description: &description,
-		Sharing:     sharing,
-		RawRecipe:   sourcePipelineRelease.RawRecipe,
-		Metadata:    sourcePipelineRelease.Metadata,
-	}
+	var pipeline *pipelinepb.Pipeline
+	if asTemplate {
+		pipeline, err = s.CreateNamespacePipelineWithTemplate(ctx, targetNS, targetPipelineID, pipelineUID, uuid.FromStringOrNil(sourcePipelineRelease.Uid), templateOverrides)
+		if err != nil {
+			return nil, err
+		}
+	} else {
 
-	pipeline, err := s.CreateNamespacePipeline(ctx, targetNS, newPipeline)
-	if err != nil {
-		return nil, err
+		newPipeline := &pipelinepb.Pipeline{
+			Id:          targetPipelineID,
+			Description: &description,
+			Sharing:     sharing,
+			RawRecipe:   sourcePipelineRelease.RawRecipe,
+			Metadata:    sourcePipelineRelease.Metadata,
+		}
+
+		pipeline, err = s.CreateNamespacePipeline(ctx, targetNS, newPipeline)
+		if err != nil {
+			return nil, err
+		}
 	}
-	err = s.repository.AddPipelineClones(ctx, pipelineUID)
+	err = s.repository.IncreasePipelineClones(ctx, pipelineUID)
 	if err != nil {
 		return nil, err
 	}
@@ -832,6 +970,10 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, pipelinepb.Pipeline_VIEW_FULL, true, true)
 }
 
+type templateOverrides struct {
+	ConnectionReferences map[string]string `json:"connectionReferences"`
+}
+
 // preTriggerPipeline does the following:
 //  1. Upload pipeline input data to minio if the data is blob data.
 //  2. New workflow memory.
@@ -853,6 +995,7 @@ func (s *service) preTriggerPipeline(
 	r *datamodel.Recipe,
 	pipelineTriggerID string,
 	pipelineData []*pipelinepb.TriggerData,
+	templateOverridesJSON datatypes.JSON,
 	expiryRule miniox.ExpiryRule,
 ) error {
 	batchSize := len(pipelineData)
@@ -935,6 +1078,14 @@ func (s *service) preTriggerPipeline(
 	uploadingPipelineData := make([]map[string]any, len(pipelineData))
 	for idx := range uploadingPipelineData {
 		uploadingPipelineData[idx] = make(map[string]any)
+	}
+
+	var overrides *templateOverrides
+	if templateOverridesJSON != nil {
+		err = json.Unmarshal(templateOverridesJSON, overrides)
+		if err != nil {
+			return fmt.Errorf("unmarshalling template overrides: %w", err)
+		}
 	}
 
 	// TODO(huitang): implement a structpb to format.Value converter
@@ -1442,6 +1593,13 @@ func (s *service) preTriggerPipeline(
 		}
 
 		connRefs := data.Map{}
+
+		if overrides != nil {
+			for k, v := range overrides.ConnectionReferences {
+				connRefs[k] = data.NewString(v)
+			}
+		}
+
 		for k, v := range d.ConnectionReferences {
 			connRefs[k] = data.NewString(v)
 		}
@@ -2022,7 +2180,7 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 		return nil, nil, fmt.Errorf("accessing expiry rule: %w", err)
 	}
 
-	err = s.preTriggerPipeline(ctx, requester, dbPipeline.Recipe, pipelineTriggerID, data, expiryRule)
+	err = s.preTriggerPipeline(ctx, requester, dbPipeline.Recipe, pipelineTriggerID, data, dbPipeline.TemplateOverrides, expiryRule)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -2079,7 +2237,7 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 		return nil, fmt.Errorf("accessing expiry rule: %w", err)
 	}
 
-	err = s.preTriggerPipeline(ctx, requester, dbPipeline.Recipe, pipelineTriggerID, data, expiryRule)
+	err = s.preTriggerPipeline(ctx, requester, dbPipeline.Recipe, pipelineTriggerID, data, dbPipeline.TemplateOverrides, expiryRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2140,7 +2298,8 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, fmt.Errorf("accessing expiry rule: %w", err)
 	}
 
-	err = s.preTriggerPipeline(ctx, requester, dbPipelineRelease.Recipe, pipelineTriggerID, data, expiryRule)
+	// TODO: add template overrides for pipeline release
+	err = s.preTriggerPipeline(ctx, requester, dbPipelineRelease.Recipe, pipelineTriggerID, data, nil, expiryRule)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -2204,7 +2363,8 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		return nil, fmt.Errorf("accessing expiry rule: %w", err)
 	}
 
-	err = s.preTriggerPipeline(ctx, requester, dbPipelineRelease.Recipe, pipelineTriggerID, data, expiryRule)
+	// TODO: add template overrides for pipeline release
+	err = s.preTriggerPipeline(ctx, requester, dbPipelineRelease.Recipe, pipelineTriggerID, data, nil, expiryRule)
 	if err != nil {
 		return nil, err
 	}
