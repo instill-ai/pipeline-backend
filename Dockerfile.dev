@@ -13,7 +13,7 @@ ARG TARGETOS TARGETARCH K6_VERSION XK6_VERSION XK6_SQL_VERSION XK6_SQL_POSTGRES_
 RUN apt update && \
     apt install -y xz-utils python3 python3-venv poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice libsoxr-dev chromium qpdf && \
     python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers && \
+    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers docling docling-core && \
     rm -rf /var/lib/apt/lists/*
 
 # Install FFmpeg Static Build
@@ -42,6 +42,18 @@ RUN apt update && \
 ENV C_INCLUDE_PATH=${ONNXRUNTIME_ROOT_PATH}/include
 ENV LD_RUN_PATH=${ONNXRUNTIME_ROOT_PATH}/lib
 ENV LIBRARY_PATH=${ONNXRUNTIME_ROOT_PATH}/lib
+
+# Prefetch Docling models and set environment variable with the path to the
+# artifacts.
+RUN <<EOR
+/opt/venv/bin/python -c "
+from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline
+
+StandardPdfPipeline.download_models_hf(local_dir='/docling')
+"
+EOR
+
+ENV DOCLING_ARTIFACTS_PATH=/docling
 
 # tparse
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/mfridman/tparse@latest

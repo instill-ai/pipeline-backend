@@ -19,7 +19,6 @@ type converterOutput struct {
 }
 
 func convertPDFToMarkdownWithPDFPlumber(input pdfToMarkdownInputStruct) (converterOutput, error) {
-
 	var pdfBase64 string
 	var err error
 	base64Text := input.Base64Text
@@ -45,8 +44,75 @@ func convertPDFToMarkdownWithPDFPlumber(input pdfToMarkdownInputStruct) (convert
 		return output, fmt.Errorf("failed to marshal params: %w", err)
 	}
 
-	pythonCode := imageProcessor + pdfTransformer + taskConvertToMarkdownExecution
+	pythonCode := pageImageProcessor + pdfTransformer + pdfPlumberPDFToMDConverter
 
+	cmdRunner := exec.Command(pythonInterpreter, "-c", pythonCode)
+	stdin, err := cmdRunner.StdinPipe()
+
+	if err != nil {
+		return output, fmt.Errorf("failed to create stdin pipe: %w", err)
+	}
+	errChan := make(chan error, 1)
+	go func() {
+		defer stdin.Close()
+		_, err := stdin.Write(paramsJSON)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		errChan <- nil
+	}()
+
+	outputBytes, err := cmdRunner.CombinedOutput()
+	if err != nil {
+		errorStr := string(outputBytes)
+		return output, fmt.Errorf("failed to run python script: %w, %s", err, errorStr)
+	}
+
+	writeErr := <-errChan
+	if writeErr != nil {
+		return output, fmt.Errorf("failed to write to stdin: %w", writeErr)
+	}
+
+	err = json.Unmarshal(outputBytes, &output)
+	if err != nil {
+		return output, fmt.Errorf("failed to unmarshal output: %w", err)
+	}
+
+	if output.SystemError != "" {
+		return output, fmt.Errorf("failed to convert pdf to markdown: %s", output.SystemError)
+	}
+
+	return output, nil
+}
+
+// TODO jvallesm: refactor converter functions, most of the code is shared.
+func convertPDFToMarkdownWithDocling(input pdfToMarkdownInputStruct) (converterOutput, error) {
+	var pdfBase64 string
+	var err error
+	base64Text := input.Base64Text
+	pdfBase64WithoutMime := util.TrimBase64Mime(base64Text)
+	pdfBase64 = pdfBase64WithoutMime
+	if RequiredToRepair(base64Text) {
+		pdfBase64, err = RepairPDF(pdfBase64WithoutMime) // :question: needed?
+		if err != nil {
+			return converterOutput{}, fmt.Errorf("failed to repair PDF: %w", err)
+		}
+	}
+
+	paramsJSON, err := json.Marshal(map[string]interface{}{
+		"PDF":                    pdfBase64,
+		"display-image-tag":      input.DisplayImageTag,
+		"display-all-page-image": input.DisplayAllPageImage,
+		"resolution":             input.Resolution,
+	})
+	var output converterOutput
+
+	if err != nil {
+		return output, fmt.Errorf("failed to marshal params: %w", err)
+	}
+
+	pythonCode := doclingPDFToMDConverter
 	cmdRunner := exec.Command(pythonInterpreter, "-c", pythonCode)
 	stdin, err := cmdRunner.StdinPipe()
 

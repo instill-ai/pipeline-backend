@@ -55,7 +55,7 @@ FROM debian:bullseye-slim
 RUN apt update && \
     apt install -y curl wget xz-utils python3 python3-venv poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice libsoxr-dev chromium qpdf && \
     python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers && \
+    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers docling docling-core && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy FFmpeg from build stage
@@ -90,3 +90,15 @@ COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME} ./
 # Set up ONNX model and environment variable
 COPY --chown=nobody:nogroup ./pkg/component/resources/onnx/silero_vad.onnx /${SERVICE_NAME}/pkg/component/resources/onnx/silero_vad.onnx
 ENV ONNX_MODEL_FOLDER_PATH=/${SERVICE_NAME}/pkg/component/resources/onnx
+
+# Prefetch Docling models and set environment variable with the path to the
+# artifacts.
+RUN <<EOR
+/opt/venv/bin/python -c "
+from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline
+
+StandardPdfPipeline.download_models_hf(local_dir='/docling')
+"
+EOR
+
+ENV DOCLING_ARTIFACTS_PATH=/docling

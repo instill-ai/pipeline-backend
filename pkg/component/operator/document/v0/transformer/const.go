@@ -9,16 +9,19 @@ const (
 )
 
 var (
-
-	//go:embed execution/task_convert_to_markdown.py
-	taskConvertToMarkdownExecution string
 	//go:embed pdf_to_markdown/pdf_transformer.py
 	pdfTransformer string
 	//go:embed pdf_to_markdown/page_image_processor.py
-	imageProcessor string
+	pageImageProcessor string
 
-	//go:embed execution/task_convert_to_images.py
-	taskConvertToImagesExecution string
+	//go:embed execution/docling_pdf_to_md_converter.py
+	doclingPDFToMDConverter string
+
+	//go:embed execution/pdfplumber_pdf_to_md_converter.py
+	pdfPlumberPDFToMDConverter string
+
+	//go:embed execution/image_converter.py
+	imageConverter string
 
 	//go:embed execution/pdf_checker.py
 	pdfChecker string

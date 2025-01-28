@@ -2,12 +2,15 @@ package document
 
 import "github.com/instill-ai/pipeline-backend/pkg/data/format"
 
+// ConvertDocumentToMarkdownInput contains the public input parameters for
+// `TASK_CONVERT_TO_MARKDOWN`.
 type ConvertDocumentToMarkdownInput struct {
 	Document            format.Document `instill:"document"`
 	DisplayImageTag     bool            `instill:"display-image-tag,default=false"`
 	Filename            string          `instill:"filename"`
 	DisplayAllPageImage bool            `instill:"display-all-page-image,default=false"`
 	Resolution          int             `instill:"resolution,default=300"`
+	UseDoclingConverter bool            `instill:"use-docling-converter,default=false"`
 }
 
 type ConvertDocumentToMarkdownOutput struct {

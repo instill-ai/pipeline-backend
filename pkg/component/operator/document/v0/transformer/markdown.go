@@ -13,6 +13,7 @@ type ConvertDocumentToMarkdownTransformerInput struct {
 	Filename            string `json:"filename"`
 	DisplayAllPageImage bool   `json:"display-all-page-image"`
 	Resolution          int    `json:"resolution"`
+	UseDoclingConverter bool   `json:"use-docling-converter"`
 }
 
 type ConvertDocumentToMarkdownTransformerOutput struct {
@@ -71,10 +72,16 @@ func GetMarkdownTransformer(fileExtension string, inputStruct *ConvertDocumentTo
 			DisplayAllPageImage: inputStruct.DisplayAllPageImage,
 			Resolution:          inputStruct.Resolution,
 		}
+
+		converter := "pdfplumber"
+		if inputStruct.UseDoclingConverter {
+			converter = "docling"
+		}
+
 		return PDFToMarkdownTransformer{
 			FileExtension:       fileExtension,
 			PDFToMarkdownStruct: pdfToMarkdownStruct,
-			PDFConvertFunc:      getPDFConvertFunc("pdfplumber"),
+			PDFConvertFunc:      getPDFConvertFunc(converter),
 		}, nil
 	case "doc", "docx":
 		pdfToMarkdownStruct := pdfToMarkdownInputStruct{
@@ -131,6 +138,8 @@ type pdfToMarkdownInputStruct struct {
 // We could provide more converters in the future. For now, we only have one.
 func getPDFConvertFunc(converter string) func(pdfToMarkdownInputStruct) (converterOutput, error) {
 	switch converter {
+	case "docling":
+		return convertPDFToMarkdownWithDocling
 	default:
 		return convertPDFToMarkdownWithPDFPlumber
 	}

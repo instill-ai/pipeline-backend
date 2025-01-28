@@ -86,7 +86,7 @@ func ConvertDocumentToImage(inputStruct *ConvertDocumentToImagesTransformerInput
 		}, nil
 	}
 
-	pythonCode := imageProcessor + pdfTransformer + taskConvertToImagesExecution
+	pythonCode := pageImageProcessor + pdfTransformer + imageConverter
 
 	// We will make this number tunable & configurable in the future.
 	maxWorkers := 5
