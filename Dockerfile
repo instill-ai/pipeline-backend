@@ -55,8 +55,10 @@ FROM debian:bullseye-slim
 RUN apt update && \
     apt install -y curl wget xz-utils python3 python3-venv poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice libsoxr-dev chromium qpdf && \
     python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers docling docling-core && \
+    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers && \
     rm -rf /var/lib/apt/lists/*
+
+RUN /opt/venv/bin/pip install docling docling-core
 
 # Copy FFmpeg from build stage
 COPY --from=build --chown=nobody:nogroup /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
