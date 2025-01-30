@@ -51,7 +51,7 @@ RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=typ
 
 FROM debian:bullseye-slim
 
-# Install Python, create virtual environment, and install pdfplumber
+# Install Python, create virtual environment, install pdfplumber and Docling
 RUN apt update && \
     apt install -y curl wget xz-utils python3 python3-venv poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice libsoxr-dev chromium qpdf && \
     python3 -m venv /opt/venv && \
@@ -93,12 +93,10 @@ ENV ONNX_MODEL_FOLDER_PATH=/${SERVICE_NAME}/pkg/component/resources/onnx
 
 # Prefetch Docling models and set environment variable with the path to the
 # artifacts.
-RUN <<EOR
-/opt/venv/bin/python -c "
-from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline
-
-StandardPdfPipeline.download_models_hf(local_dir='/docling')
-"
-EOR
-
 ENV DOCLING_ARTIFACTS_PATH=/docling
+RUN mkdir -p $DOCLING_ARTIFACTS_PATH
+
+RUN echo "from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline\n" > import_artifacts.py
+RUN echo "StandardPdfPipeline.download_models_hf(local_dir='$DOCLING_ARTIFACTS_PATH')" >> import_artifacts.py
+RUN /opt/venv/bin/python import_artifacts.py
+RUN rm import_artifacts.py
