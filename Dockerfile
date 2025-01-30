@@ -93,10 +93,9 @@ ENV ONNX_MODEL_FOLDER_PATH=/${SERVICE_NAME}/pkg/component/resources/onnx
 
 # Prefetch Docling models and set environment variable with the path to the
 # artifacts.
-ENV DOCLING_ARTIFACTS_PATH=/docling
-RUN mkdir -p $DOCLING_ARTIFACTS_PATH
+ENV DOCLING_ARTIFACTS_PATH=/${SERVICE_NAME}/pkg/component/resources/docling
 
 RUN echo "from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline\n" > import_artifacts.py
-RUN echo "StandardPdfPipeline.download_models_hf(local_dir='$DOCLING_ARTIFACTS_PATH')" >> import_artifacts.py
+RUN echo "StandardPdfPipeline.download_models_hf(local_dir='${DOCLING_ARTIFACTS_PATH}')" >> import_artifacts.py
 RUN /opt/venv/bin/python import_artifacts.py
 RUN rm import_artifacts.py

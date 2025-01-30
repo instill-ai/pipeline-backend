@@ -43,16 +43,6 @@ ENV C_INCLUDE_PATH=${ONNXRUNTIME_ROOT_PATH}/include
 ENV LD_RUN_PATH=${ONNXRUNTIME_ROOT_PATH}/lib
 ENV LIBRARY_PATH=${ONNXRUNTIME_ROOT_PATH}/lib
 
-# Prefetch Docling models and set environment variable with the path to the
-# artifacts.
-ENV DOCLING_ARTIFACTS_PATH=/docling
-RUN mkdir -p $DOCLING_ARTIFACTS_PATH
-
-RUN echo "from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline\n" > import_artifacts.py
-RUN echo "StandardPdfPipeline.download_models_hf(local_dir='$DOCLING_ARTIFACTS_PATH')" >> import_artifacts.py
-RUN /opt/venv/bin/python import_artifacts.py
-RUN rm import_artifacts.py
-
 # tparse
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/mfridman/tparse@latest
 
@@ -83,6 +73,15 @@ ENV GODEBUG=tlsrsakex=1
 # Set up ONNX model and environment variable
 COPY ./pkg/component/resources/onnx/silero_vad.onnx /${SERVICE_NAME}/pkg/component/resources/onnx/silero_vad.onnx
 ENV ONNX_MODEL_FOLDER_PATH=/${SERVICE_NAME}/pkg/component/resources/onnx
+
+# Prefetch Docling models and set environment variable with the path to the
+# artifacts.
+ENV DOCLING_ARTIFACTS_PATH=/${SERVICE_NAME}/pkg/component/resources/docling
+
+RUN echo "from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline\n" > import_artifacts.py
+RUN echo "StandardPdfPipeline.download_models_hf(local_dir='${DOCLING_ARTIFACTS_PATH}')" >> import_artifacts.py
+RUN /opt/venv/bin/python import_artifacts.py
+RUN rm import_artifacts.py
 
 USER nobody:nogroup
 
