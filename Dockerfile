@@ -58,7 +58,7 @@ RUN apt update && \
     /opt/venv/bin/pip install pdfplumber mistral-common tokenizers && \
     rm -rf /var/lib/apt/lists/*
 
-RUN /opt/venv/bin/pip install docling docling-core
+RUN /opt/venv/bin/pip install docling
 
 # Copy FFmpeg from build stage
 COPY --from=build --chown=nobody:nogroup /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
