@@ -55,8 +55,10 @@ FROM debian:bullseye-slim
 RUN apt update && \
     apt install -y curl wget xz-utils python3 python3-venv poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice libsoxr-dev chromium qpdf && \
     python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers docling docling-core && \
+    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers && \
     rm -rf /var/lib/apt/lists/*
+
+RUN /opt/venv/bin/pip install docling
 
 # Copy FFmpeg from build stage
 COPY --from=build --chown=nobody:nogroup /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
@@ -95,7 +97,7 @@ ENV ONNX_MODEL_FOLDER_PATH=/${SERVICE_NAME}/pkg/component/resources/onnx
 # artifacts.
 ENV DOCLING_ARTIFACTS_PATH=/${SERVICE_NAME}/pkg/component/resources/docling
 
-RUN echo "from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline\n" > import_artifacts.py
+RUN echo "from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline" > import_artifacts.py
 RUN echo "StandardPdfPipeline.download_models_hf(local_dir='${DOCLING_ARTIFACTS_PATH}')" >> import_artifacts.py
 RUN /opt/venv/bin/python import_artifacts.py
 RUN rm import_artifacts.py
