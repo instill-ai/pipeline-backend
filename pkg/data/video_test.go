@@ -37,10 +37,10 @@ func TestNewVideoFromBytes(t *testing.T) {
 			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.filename)
 
 			if tc.expectError {
-				c.Assert(err, qt.Not(qt.IsNil))
+				c.Assert(err, qt.IsNotNil)
 			} else {
 				c.Assert(err, qt.IsNil)
-				c.Assert(video, qt.Not(qt.IsNil))
+				c.Assert(video, qt.IsNotNil)
 				c.Assert(video.ContentType().String(), qt.Equals, tc.contentType)
 				c.Assert(video.Filename().String(), qt.Equals, tc.filename)
 			}
@@ -53,7 +53,7 @@ func TestNewVideoFromBytes(t *testing.T) {
 		filename := "invalid.txt"
 
 		_, err := NewVideoFromBytes(invalidBytes, contentType, filename)
-		c.Assert(err, qt.Not(qt.IsNil))
+		c.Assert(err, qt.IsNotNil)
 	})
 
 	c.Run("Empty video bytes", func(c *qt.C) {
@@ -62,38 +62,41 @@ func TestNewVideoFromBytes(t *testing.T) {
 		filename := "empty.mp4"
 
 		_, err := NewVideoFromBytes(emptyBytes, contentType, filename)
-		c.Assert(err, qt.Not(qt.IsNil))
+		c.Assert(err, qt.IsNotNil)
 	})
 }
 
 func TestNewVideoFromURL(t *testing.T) {
-	t.Parallel()
 	c := qt.New(t)
+	c.Parallel()
 
 	ctx := context.Background()
 	binaryFetcher := external.NewBinaryFetcher()
 	c.Run("Valid video URL", func(c *qt.C) {
-		url := "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample_640_360.mp4"
+		c.Parallel()
 
+		url := "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample_640_360.mp4"
 		video, err := NewVideoFromURL(ctx, binaryFetcher, url)
 
 		c.Assert(err, qt.IsNil)
-		c.Assert(video, qt.Not(qt.IsNil))
+		c.Assert(video, qt.IsNotNil)
 		c.Assert(video.ContentType().String(), qt.Equals, "video/mp4")
 	})
 
 	c.Run("Invalid URL", func(c *qt.C) {
-		invalidURL := "not-a-url"
+		c.Parallel()
 
+		invalidURL := "not-a-url"
 		_, err := NewVideoFromURL(ctx, binaryFetcher, invalidURL)
-		c.Assert(err, qt.Not(qt.IsNil))
+		c.Assert(err, qt.IsNotNil)
 	})
 
 	c.Run("Non-existent URL", func(c *qt.C) {
-		nonExistentURL := "https://filesamples.com/non-existent-video.mp4"
+		c.Parallel()
 
+		nonExistentURL := "https://filesamples.com/non-existent-video.mp4"
 		_, err := NewVideoFromURL(ctx, binaryFetcher, nonExistentURL)
-		c.Assert(err, qt.Not(qt.IsNil))
+		c.Assert(err, qt.IsNotNil)
 	})
 }
 
@@ -159,7 +162,7 @@ func TestVideoConvert(t *testing.T) {
 
 			convertedVideo, err := video.Convert(tc.expectedFormat)
 			c.Assert(err, qt.IsNil)
-			c.Assert(convertedVideo, qt.Not(qt.IsNil))
+			c.Assert(convertedVideo, qt.IsNotNil)
 			c.Assert(convertedVideo.ContentType().String(), qt.Equals, tc.expectedFormat)
 
 			// Check that the converted video has the same properties as the original
@@ -181,6 +184,6 @@ func TestVideoConvert(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		_, err = video.Convert("invalid_format")
-		c.Assert(err, qt.Not(qt.IsNil))
+		c.Assert(err, qt.IsNotNil)
 	})
 }

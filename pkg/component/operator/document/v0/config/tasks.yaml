@@ -37,6 +37,17 @@ TASK_CONVERT_TO_MARKDOWN:
       resolution:
         $ref: '#/$defs/resolution'
         uiOrder: 4
+      use-docling-converter:
+        # TODO jvallesm: rather than using a boolean to switch between
+        # converters, use a converter selector.
+        default: false
+        description: |
+          When converting PDF to Markdown, use `docling` instead of
+          `pdfplumber`. This converter is more resource-intensive but usually
+          yields more accurate results.
+        uiOrder: 5
+        title: Use Docling to convert PDF to Markdown
+        type: boolean
     required:
       - document
     title: Input

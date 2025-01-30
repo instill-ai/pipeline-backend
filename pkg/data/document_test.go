@@ -49,32 +49,31 @@ func TestNewDocumentFromBytes(t *testing.T) {
 }
 
 func TestNewDocumentFromURL(t *testing.T) {
-	t.Parallel()
 	c := qt.New(t)
+	c.Parallel()
+
 	ctx := context.Background()
 	binaryFetcher := external.NewBinaryFetcher()
-	testCases := []struct {
-		name string
-		url  string
-	}{
-		{"Valid PDF URL", "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample2.pdf"},
-		{"Valid TXT URL", "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample2.txt"},
-		{"Valid DOCX URL", "https://filesamples.com/samples/document/docx/sample1.docx"},
-		{"Invalid URL", "https://invalid-url.com/document.pdf"},
-	}
 
-	for _, tc := range testCases {
-		c.Run(tc.name, func(c *qt.C) {
-			document, err := NewDocumentFromURL(ctx, binaryFetcher, tc.url)
+	test := func(name, url string, hasErr bool) {
+		c.Run(name, func(c *qt.C) {
+			c.Parallel()
 
-			if tc.name == "Valid PDF URL" || tc.name == "Valid TXT URL" || tc.name == "Valid DOCX URL" {
-				c.Assert(err, qt.IsNil)
-				c.Assert(document.ContentType().String(), qt.Not(qt.Equals), "")
-			} else {
-				c.Assert(err, qt.Not(qt.IsNil))
+			document, err := NewDocumentFromURL(ctx, binaryFetcher, url)
+			if hasErr {
+				c.Assert(err, qt.IsNotNil)
+				return
 			}
+
+			c.Assert(err, qt.IsNil)
+			c.Assert(document.ContentType().String(), qt.Not(qt.Equals), "")
 		})
 	}
+
+	test("ok - Valid PDF URL", "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample2.pdf", false)
+	test("ok - Valid TXT URL", "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample2.txt", false)
+	test("ok - Valid DOCX URL", "https://filesamples.com/samples/document/docx/sample1.docx", false)
+	test("nok - Invalid URL", "https://invaliiiddd-url.com/document.pdf", true)
 }
 
 func TestDocumentProperties(t *testing.T) {
