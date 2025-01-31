@@ -73,10 +73,8 @@ RUN apt update && \
     chromium \
     qpdf && \
     python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers && \
+    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers docling && \
     rm -rf /var/lib/apt/lists/*
-
-RUN /opt/venv/bin/pip install docling
 
 # Copy FFmpeg from build stage
 COPY --from=build --chown=nobody:nogroup /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
