@@ -45,7 +45,6 @@ rm: ## Remove all running containers
 build-dev: ## Build dev docker image
 	@docker build \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
-		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
 		--build-arg K6_VERSION=${K6_VERSION} \
 		--build-arg XK6_VERSION=${XK6_VERSION} \
 		--build-arg XK6_SQL_VERSION=${XK6_SQL_VERSION} \
@@ -55,7 +54,6 @@ build-dev: ## Build dev docker image
 .PHONY: build-latest
 build-latest: ## Build latest docker image
 	@docker build \
-		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
 		-t instill/pipeline-backend:latest .
 
