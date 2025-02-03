@@ -140,8 +140,8 @@ type pdfToMarkdownInputStruct struct {
 func getPDFConvertFunc(converter string) func(pdfToMarkdownInputStruct) (converterOutput, error) {
 	switch converter {
 	case "docling":
-		return convertPDFToMarkdownWithDocling
+		return convertPDFToMarkdown(doclingPDFToMDConverter)
 	default:
-		return convertPDFToMarkdownWithPDFPlumber
+		return convertPDFToMarkdown(pageImageProcessor + pdfTransformer + pdfPlumberPDFToMDConverter)
 	}
 }
