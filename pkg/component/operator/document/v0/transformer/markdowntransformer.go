@@ -19,7 +19,7 @@ import (
 )
 
 // MarkdownTransformerGetterFunc is a function that returns a MarkdownTransformer.
-type MarkdownTransformerGetterFunc func(fileExtension string, inputStruct *ConvertDocumentToMarkdownTransformerInput) (MarkdownTransformer, error)
+type MarkdownTransformerGetterFunc func(fileExtension string, inputStruct *ConvertDocumentToMarkdownInput) (MarkdownTransformer, error)
 
 // MarkdownTransformer is an interface for all transformers that convert a document to markdown.
 type MarkdownTransformer interface {
