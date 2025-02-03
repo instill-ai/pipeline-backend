@@ -15,20 +15,33 @@ import (
 
 func TestConvertDocumentToMarkdown(t *testing.T) {
 	c := qt.New(t)
+	c.Parallel()
 
 	tests := []struct {
-		name     string
-		filepath string
-		expected ConvertDocumentToMarkdownOutput
+		name        string
+		filepath    string
+		withDocling bool
+		expected    ConvertDocumentToMarkdownOutput
 	}{
 		{
-			name:     "Convert PDF file",
+			name:     "Convert PDF file - pdfplumber",
 			filepath: "testdata/test.pdf",
 			expected: ConvertDocumentToMarkdownOutput{
 				Body:          "# This is test file for markdown\n",
 				Images:        []format.Image{},
 				AllPageImages: []format.Image{},
 				Markdowns:     []string{"# This is test file for markdown\n"},
+			},
+		},
+		{
+			name:        "Convert PDF file - Docling",
+			filepath:    "testdata/test.pdf",
+			withDocling: true,
+			expected: ConvertDocumentToMarkdownOutput{
+				Body:          "This is test file for markdown",
+				Images:        []format.Image{},
+				AllPageImages: []format.Image{},
+				Markdowns:     []string{"This is test file for markdown"},
 			},
 		},
 		{
@@ -89,12 +102,12 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 		},
 	}
 
-	bc := base.Component{}
-	ctx := context.Background()
-
 	for _, test := range tests {
 		c.Run(test.name, func(c *qt.C) {
-			component := Init(bc)
+			c.Parallel()
+
+			ctx := context.Background()
+			component := Init(base.Component{})
 			c.Assert(component, qt.IsNotNil)
 
 			execution, err := component.CreateExecution(base.ComponentExecution{
@@ -119,7 +132,8 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 							}
 							return doc
 						}(),
-						DisplayImageTag: false,
+						DisplayImageTag:     false,
+						UseDoclingConverter: test.withDocling,
 					}
 				}
 				return nil

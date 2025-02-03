@@ -9,7 +9,6 @@ from docling.datamodel.base_models import DocumentStream, InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling_core.types.doc import ImageRefMode, PictureItem
 
-
 if __name__ == "__main__":
     json_str = sys.stdin.buffer.read().decode('utf-8')
     params = json.loads(json_str)

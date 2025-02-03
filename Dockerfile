@@ -88,10 +88,33 @@ COPY --from=build --chown=nobody:nogroup /usr/local/onnxruntime ${ONNXRUNTIME_RO
 ENV C_INCLUDE_PATH=${ONNXRUNTIME_ROOT_PATH}/include
 RUN ln -s ${ONNXRUNTIME_ROOT_PATH}/lib/libonnxruntime.so* /usr/lib/
 
+# Docling will need a $HOME-prefixed path to write cache files. We'll also put
+# the prefetched model artifacts there.
+ENV BASE_DOCLING_PATH=/home/nobody
+RUN mkdir -p ${BASE_DOCLING_PATH}/.EasyOCR/model && chown -R nobody:nogroup ${BASE_DOCLING_PATH}
+
+RUN apt update && \
+    apt install -y wget unzip && \
+    wget https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/latin_g2.zip && \
+    unzip latin_g2.zip -d ${BASE_DOCLING_PATH}/.EasyOCR/model/ && \
+    rm latin_g2.zip && \
+    wget https://github.com/JaidedAI/EasyOCR/releases/download/pre-v1.1.6/craft_mlt_25k.zip && \
+    unzip craft_mlt_25k.zip -d ${BASE_DOCLING_PATH}/.EasyOCR/model/ && \
+    rm craft_mlt_25k.zip && \
+    apt remove -y wget unzip && \
+    apt autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV DOCLING_ARTIFACTS_PATH=${BASE_DOCLING_PATH}/docling-artifacts
+RUN echo "from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline" > import_artifacts.py
+RUN echo "StandardPdfPipeline.download_models_hf(local_dir='${DOCLING_ARTIFACTS_PATH}')" >> import_artifacts.py
+RUN /opt/venv/bin/python import_artifacts.py && rm import_artifacts.py
+
 USER nobody:nogroup
 
 ARG SERVICE_NAME
 
+ENV HOME=${BASE_DOCLING_PATH}
 WORKDIR /${SERVICE_NAME}
 
 ENV GODEBUG=tlsrsakex=1
@@ -108,12 +131,3 @@ COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME} ./
 # Set up ONNX model and environment variable
 COPY --chown=nobody:nogroup ./pkg/component/resources/onnx/silero_vad.onnx /${SERVICE_NAME}/pkg/component/resources/onnx/silero_vad.onnx
 ENV ONNX_MODEL_FOLDER_PATH=/${SERVICE_NAME}/pkg/component/resources/onnx
-
-# Prefetch Docling models and set environment variable with the path to the
-# artifacts.
-ENV DOCLING_ARTIFACTS_PATH=/${SERVICE_NAME}/pkg/component/resources/docling
-
-RUN echo "from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline" > import_artifacts.py
-RUN echo "StandardPdfPipeline.download_models_hf(local_dir='${DOCLING_ARTIFACTS_PATH}')" >> import_artifacts.py
-RUN /opt/venv/bin/python import_artifacts.py
-RUN rm import_artifacts.py
