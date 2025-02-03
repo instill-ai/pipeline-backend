@@ -37,24 +37,6 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      - uses: FedericoCarboni/setup-ffmpeg@v3
-        id: setup-ffmpeg
-        with:
-          ffmpeg-version: 7.0.2
-
-      - name: Install onnxruntime library and headers
-        run: |
-          export ONNXRUNTIME_ROOT_PATH=$GITHUB_WORKSPACE/onnxruntime
-          LATEST_VERSION=$(wget -qO- https://api.github.com/repos/microsoft/onnxruntime/releases/latest | jq -r .tag_name)
-          ONNX_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "aarch64" || echo "x64")
-          wget https://github.com/microsoft/onnxruntime/releases/download/${LATEST_VERSION}/onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz
-          tar -xzf onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz
-          mv onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v} ${ONNXRUNTIME_ROOT_PATH}
-          rm onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz
-          echo "LD_RUN_PATH=${ONNXRUNTIME_ROOT_PATH}/lib" >> $GITHUB_ENV
-          echo "LIBRARY_PATH=${ONNXRUNTIME_ROOT_PATH}/lib" >> $GITHUB_ENV
-          echo "C_INCLUDE_PATH=${ONNXRUNTIME_ROOT_PATH}/include" >> $GITHUB_ENV
-
       - name: Generate coverage report
         run: |
           make build-dev
