@@ -1,11 +1,14 @@
 syntax = "proto3";
 
-package vdp.pipeline.v1beta;
+package pipeline.pipeline.v1beta;
 
 import "../../../common/healthcheck/v1beta/healthcheck.proto";
 import "../../../common/run/v1alpha/run.proto";
 // Core definitions
 import "../../../core/mgmt/v1beta/mgmt.proto";
+// Pipeline definitions
+import "../../../pipeline/pipeline/v1beta/common.proto";
+import "../../../pipeline/pipeline/v1beta/component_definition.proto";
 // Google API
 import "google/api/field_behavior.proto";
 import "google/api/resource.proto";
@@ -16,9 +19,6 @@ import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 // OpenAPI definition
 import "protoc-gen-openapiv2/options/annotations.proto";
-// VDP definitions
-import "../../../vdp/pipeline/v1beta/common.proto";
-import "../../../vdp/pipeline/v1beta/component_definition.proto";
 
 // LivenessRequest represents a request to check a service liveness status
 message LivenessRequest {
@@ -73,7 +73,7 @@ message Endpoints {
 // A Pipeline is an end-to-end workflow that automates a sequence of components
 // to process data.
 //
-// For more information, see [Pipeline](https://www.instill.tech/docs/vdp/introduction) in
+// For more information, see [Pipeline](https://www.instill.tech/docs/pipeline/introduction) in
 // the official documentation.
 message Pipeline {
   // View defines how a Pipeline is presented.
@@ -2034,8 +2034,9 @@ message FileReference {
 
 // PipelineRun represents a single execution of a pipeline.
 message PipelineRun {
-  // Unique identifier for the pipeline.
-  string pipeline_uid = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // 1 is reserved for the pipeline UUID. Public resources should be identified by
+  // their ID and parent resource.
+  reserved 1;
 
   // Unique identifier for each run.
   string pipeline_run_uid = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -2055,7 +2056,8 @@ message PipelineRun {
     (google.api.field_behavior) = OPTIONAL
   ];
 
-  // Runner ID. If current viewing requester does not have enough permission, it will return null.
+  // Runner ID. The authenticated user that triggered the run. If current
+  // viewing requester does not have enough permission, it will return null.
   optional string runner_id = 7 [
     (google.api.field_behavior) = OUTPUT_ONLY,
     (google.api.field_behavior) = OPTIONAL
@@ -2110,12 +2112,21 @@ message PipelineRun {
     (google.api.field_behavior) = OPTIONAL
   ];
 
-  // Requester ID. This field might be empty if the pipeline run belongs to a
-  // deleted namespace.
+  // Requester ID. The namespace used to trigger the run. This field might be
+  // empty if the pipeline run belongs to a deleted namespace.
   string requester_id = 20 [(google.api.field_behavior) = OUTPUT_ONLY];
 
-  // Namespace ID
-  string namespace_id = 21 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // ID of the namespace that owns the pipeline.
+  string pipeline_namespace_id = 21 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Expiration time for the blob data associated with the pipeline run (e.g.
+  // input data, recipe). When the run is accessed after the expiration, that
+  // information will be empty, but this field will allow the user identify
+  // that the data isn't there because it has expired.
+  optional google.protobuf.Timestamp blob_data_expiration_time = 22 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (google.api.field_behavior) = OPTIONAL
+  ];
 }
 
 // ComponentRun represents the execution details of a single component within a pipeline run.
@@ -2167,6 +2178,15 @@ message ComponentRun {
 
   // Credits used of internal accounting metric.
   optional float credit_amount = 12 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (google.api.field_behavior) = OPTIONAL
+  ];
+
+  // Expiration time for the blob data associated with the component run (e.g.
+  // input / output data). When the run is accessed after the expiration, that
+  // information will be empty, but this field will allow the user identify
+  // that the data isn't there because it has expired.
+  optional google.protobuf.Timestamp blob_data_expiration_time = 22 [
     (google.api.field_behavior) = OUTPUT_ONLY,
     (google.api.field_behavior) = OPTIONAL
   ];

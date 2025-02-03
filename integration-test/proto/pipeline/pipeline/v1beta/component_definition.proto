@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package vdp.pipeline.v1beta;
+package pipeline.pipeline.v1beta;
 
+// Pipeline definitions
+import "../../../pipeline/pipeline/v1beta/common.proto";
 // Google API
 import "google/api/field_behavior.proto";
 // Protocol Buffers Well-Known Types
 import "google/protobuf/struct.proto";
-// VDP definitions
-import "../../../vdp/pipeline/v1beta/common.proto";
 
 ///////////////////////////////////////////////////////////////////////
 // Domain types

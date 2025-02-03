@@ -12,7 +12,7 @@ import (
 	"github.com/gojuno/minimock/v3"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 // ConverterMock implements mm_service.Converter

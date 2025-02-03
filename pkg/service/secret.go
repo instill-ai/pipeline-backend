@@ -14,7 +14,7 @@ import (
 	"github.com/instill-ai/x/errmsg"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 func (s *service) CreateNamespaceSecret(ctx context.Context, ns resource.Namespace, pbSecret *pb.Secret) (*pb.Secret, error) {

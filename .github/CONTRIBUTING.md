@@ -15,7 +15,7 @@ familiarize yourself with the project structure of 🔮 [**Instill
 Core**](https://github.com/instill-ai/instill-core).
 
 You can also have an overview of the main [concepts](../README.md#concepts) in
-the VDP domain.
+the Instill Core domain.
 
 If you want to extend a [component](../pkg/component) or contribute with a new
 one, you might want to check the [component contribution
@@ -25,10 +25,10 @@ guide](../pkg/component/CONTRIBUTING.md).
 
 ### Environment setup
 
-If you want to see your changes in action you'll need to build VDP locally.
+If you want to see your changes in action you'll need to build Instill Core locally.
 First, launch the latest version of 🔮 [**Instill
 Core**](https://github.com/instill-ai/instill-core) suite. Then, build and
-launch the 💧 [**Instill VDP**](https://github.com/instill-ai/pipeline-backend)
+launch the 💧 [**Instill Pipeline**](https://github.com/instill-ai/pipeline-backend)
 backend with your local changes.
 
 #### Building 🔮 Instill Core suite
@@ -39,7 +39,7 @@ $ git clone https://github.com/instill-ai/instill-core && cd instill-core
 $ make latest PROFILE=exclude-pipeline # launch all the dependent services except pipeline-backend
 ```
 
-#### Building 💧 Instill VDP backend
+#### Building 💧 Instill Pipeline backend
 
 ```sh
 $ cd $MY_WORKSPACE

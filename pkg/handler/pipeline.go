@@ -29,7 +29,7 @@ import (
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pb.ListPipelinesAdminRequest) (*pb.ListPipelinesAdminResponse, error) {

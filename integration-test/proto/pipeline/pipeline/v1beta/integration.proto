@@ -1,15 +1,15 @@
 syntax = "proto3";
 
-package vdp.pipeline.v1beta;
+package pipeline.pipeline.v1beta;
 
+// Pipeline definitions
+import "../../../pipeline/pipeline/v1beta/common.proto";
 // Google API
 import "google/api/field_behavior.proto";
 // Protocol Buffers Well-Known types
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
-// VDP definitions
-import "../../../vdp/pipeline/v1beta/common.proto";
 
 // Connection contains the parameters to communicate with a 3rd party app. A
 // component may reference a connection in their setup. One connection may be

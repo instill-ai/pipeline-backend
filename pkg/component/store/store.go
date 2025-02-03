@@ -66,7 +66,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/web/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 var (

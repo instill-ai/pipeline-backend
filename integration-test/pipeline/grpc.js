@@ -12,7 +12,7 @@ import * as triggerAsync from "./grpc-trigger-async.js";
 const client = new grpc.Client();
 const mgmtClient = new grpc.Client();
 
-client.load(["../proto/vdp/pipeline/v1beta"], "pipeline_public_service.proto");
+client.load(["../proto/pipeline/pipeline/v1beta"], "pipeline_public_service.proto");
 client.load(["../proto/core/mgmt/v1beta"], "mgmt_public_service.proto");
 
 import * as constant from "./const.js";
@@ -76,7 +76,7 @@ export default function (data) {
       });
       check(
         client.invoke(
-          "vdp.pipeline.v1beta.PipelinePublicService/Liveness",
+          "pipeline.pipeline.v1beta.PipelinePublicService/Liveness",
           {}
         ),
         {
@@ -118,7 +118,7 @@ export function teardown(data) {
     });
 
     for (const pipeline of client.invoke(
-      "vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines",
+      "pipeline.pipeline.v1beta.PipelinePublicService/ListUserPipelines",
       {
         parent: `${constant.namespace}`,
         pageSize: 1000,
@@ -127,14 +127,14 @@ export function teardown(data) {
     ).message.pipelines) {
       check(
         client.invoke(
-          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
+          `pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
           {
             name: `${constant.namespace}/pipelines/${pipeline.id}`,
           },
           data.metadata
         ),
         {
-          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
+          [`pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );

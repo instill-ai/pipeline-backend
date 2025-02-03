@@ -28,7 +28,7 @@ import (
 	"github.com/instill-ai/x/paginate"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 // TODO: in the repository, we'd better use uid as our function params

@@ -9,11 +9,11 @@ import * as helper from "./helper.js";
 const clientPrivate = new grpc.Client();
 const clientPublic = new grpc.Client();
 clientPrivate.load(
-  ["../proto/vdp/pipeline/v1beta"],
+  ["../proto/pipeline/pipeline/v1beta"],
   "pipeline_private_service.proto"
 );
 clientPublic.load(
-  ["../proto/vdp/pipeline/v1beta"],
+  ["../proto/pipeline/pipeline/v1beta"],
   "pipeline_public_service.proto"
 );
 
@@ -29,16 +29,16 @@ export function CheckList(data) {
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
+        "pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {},
         {}
       ),
       {
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response StatusOK`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response nextPageToken is empty`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response nextPageToken is empty`]:
           (r) => r.message.nextPageToken === "",
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response totalSize is 0`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response totalSize is 0`]:
           (r) => r.message.totalSize == 0,
       }
     );
@@ -59,7 +59,7 @@ export function CheckList(data) {
     for (const reqBody of reqBodies) {
       check(
         clientPublic.invoke(
-          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
+          "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
           {
             parent: `${constant.namespace}`,
             pipeline: reqBody,
@@ -67,7 +67,7 @@ export function CheckList(data) {
           data.metadata
         ),
         {
-          [`vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline x${reqBodies.length} response StatusOK`]:
+          [`pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline x${reqBodies.length} response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -75,91 +75,91 @@ export function CheckList(data) {
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
+        "pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {},
         {}
       ),
       {
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response StatusOK`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response pipelines.length == 10`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response pipelines.length == 10`]:
           (r) => r.message.pipelines.length === 10,
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response pipelines[0].recipe is null`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response pipelines[0].recipe is null`]:
           (r) => r.message.pipelines[0].recipe === null,
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response totalSize == 200`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response totalSize == 200`]:
           (r) => r.message.totalSize == 200,
       }
     );
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
+        "pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {
           view: "VIEW_FULL",
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response StatusOK`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response pipelines[0].recipe is valid`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response pipelines[0].recipe is valid`]:
           (r) => helper.validateRecipeGRPC(r.message.pipelines[0].recipe, true),
       }
     );
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
+        "pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {
           view: "VIEW_BASIC",
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin view=VIEW_BASIC response StatusOK`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin view=VIEW_BASIC response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin view=VIEW_BASIC response pipelines[0].recipe is null`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin view=VIEW_BASIC response pipelines[0].recipe is null`]:
           (r) => r.message.pipelines[0].recipe === null,
       }
     );
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
+        "pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {
           pageSize: 3,
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response pipelines.length == 3`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response pipelines.length == 3`]:
           (r) => r.message.pipelines.length === 3,
       }
     );
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
+        "pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {
           pageSize: 101,
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response pipelines.length == 100`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response pipelines.length == 100`]:
           (r) => r.message.pipelines.length === 100,
       }
     );
 
     var resFirst100 = clientPrivate.invoke(
-      "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
+      "pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
       {
         pageSize: 100,
       },
       {}
     );
     var resSecond100 = clientPrivate.invoke(
-      "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
+      "pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
       {
         pageSize: 100,
         pageToken: resFirst100.message.nextPageToken,
@@ -167,11 +167,11 @@ export function CheckList(data) {
       {}
     );
     check(resSecond100, {
-      [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin pageSize=100 pageToken=${resFirst100.message.nextPageToken} response StatusOK`]:
+      [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin pageSize=100 pageToken=${resFirst100.message.nextPageToken} response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin pageSize=100 pageToken=${resFirst100.message.nextPageToken} response 100 results`]:
+      [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin pageSize=100 pageToken=${resFirst100.message.nextPageToken} response 100 results`]:
         (r) => r.message.pipelines.length === 100,
-      [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin pageSize=100 pageToken=${resFirst100.message.nextPageToken} nextPageToken is empty`]:
+      [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin pageSize=100 pageToken=${resFirst100.message.nextPageToken} nextPageToken is empty`]:
         (r) => r.message.nextPageToken === "",
     });
 
@@ -179,7 +179,7 @@ export function CheckList(data) {
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
+        "pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {
           filter:
             'createTime>timestamp("2000-06-19T23:31:08.657Z")',
@@ -187,9 +187,9 @@ export function CheckList(data) {
         {}
       ),
       {
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin filter: createTime>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin filter: createTime>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin filter: createTime>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin filter: createTime>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
           (r) => r.message.pipelines.length > 0,
       }
     );
@@ -199,14 +199,14 @@ export function CheckList(data) {
     for (const reqBody of reqBodies) {
       check(
         clientPublic.invoke(
-          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
+          `pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
           {
             name: `${constant.namespace}/pipelines/${reqBody.id}`,
           },
           data.metadata
         ),
         {
-          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
+          [`pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -236,7 +236,7 @@ export function CheckLookUp(data) {
 
     // Create a pipeline
     var res = clientPublic.invoke(
-      "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
+      "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
       {
         parent: `${constant.namespace}`,
         pipeline: reqBody,
@@ -245,21 +245,21 @@ export function CheckLookUp(data) {
     );
 
     check(res, {
-      [`vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response StatusOK`]:
+      [`pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
     });
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1beta.PipelinePrivateService/LookUpPipelineAdmin",
+        "pipeline.pipeline.v1beta.PipelinePrivateService/LookUpPipelineAdmin",
         {
           permalink: `pipelines/${res.message.pipeline.uid}`,
         }
       ),
       {
-        [`vdp.pipeline.v1beta.PipelinePrivateService/LookUpPipelineAdmin response StatusOK`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/LookUpPipelineAdmin response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1beta.PipelinePrivateService/LookUpPipelineAdmin response pipeline new name`]:
+        [`pipeline.pipeline.v1beta.PipelinePrivateService/LookUpPipelineAdmin response pipeline new name`]:
           (r) => r.message.pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
       }
     );
@@ -267,14 +267,14 @@ export function CheckLookUp(data) {
     // Delete the pipeline
     check(
       clientPublic.invoke(
-        `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
+        `pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
         {
           name: `${constant.namespace}/pipelines/${reqBody.id}`,
         },
         data.metadata
       ),
       {
-        [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
+        [`pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );

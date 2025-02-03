@@ -228,7 +228,7 @@ This is some crucial information about setup: do it before execution.
 title: "Dummy"
 lang: "en-US"
 draft: false
-description: "Learn about how to set up a VDP Dummy component https://github.com/instill-ai/instill-core"
+description: "Learn about how to set up a Dummy component https://github.com/instill-ai/instill-core"
 ---
 
 The Dummy component is a data component that allows users to perform an action.
@@ -257,7 +257,7 @@ The component definition and tasks are defined in the [definition.yaml](https://
 In order to communicate with Dummy Inc., the following connection details need to be
 provided. You may specify them directly in a pipeline recipe as key-value pairs
 within the component's `setup` block, or you can create a **Connection** from
-the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+the [**Integration Settings**](https://www.instill.tech/docs/pipeline/integration)
 page and reference the whole `setup` as `setup:
 ${connection.<my-connection-id>}`.
 

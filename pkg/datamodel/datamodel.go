@@ -17,7 +17,7 @@ import (
 	"gorm.io/gorm"
 
 	taskPB "github.com/instill-ai/protogen-go/common/task/v1alpha"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 const Iterator = "iterator"

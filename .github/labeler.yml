@@ -1,4 +1,4 @@
-instill vdp:
+instill pipeline:
   - "**"
 instill component:
   - "pkg/component/**"

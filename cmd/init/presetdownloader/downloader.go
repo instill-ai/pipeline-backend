@@ -30,7 +30,7 @@ import (
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) error {
