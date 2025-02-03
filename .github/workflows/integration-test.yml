@@ -88,6 +88,7 @@ jobs:
           EDITION=local-ce:test \
           RAY_LATEST_TAG=latest \
           RAY_RELEASE_TAG=${RAY_SERVER_VERSION} \
+          COMPONENT_ENV=.env.component-test \
           docker compose -f docker-compose.yml -f docker-compose-latest.yml up -d --quiet-pull
           COMPOSE_PROFILES=all \
           EDITION=local-ce:test \
