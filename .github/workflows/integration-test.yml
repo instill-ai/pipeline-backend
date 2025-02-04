@@ -12,7 +12,7 @@ jobs:
   build-push-image:
     # if: github.ref == 'refs/heads/main'
     name: Build and push image
-    uses: instill-ai/pipeline-backend/.github/workflows/images.yml@main
+    uses: instill-ai/pipeline-backend/.github/workflows/images.yml@huitang/fix-docling-version
     secrets: inherit
   backends:
     needs: build-push-image
