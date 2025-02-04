@@ -4,14 +4,15 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"io"
+	"net/http"
 
 	"github.com/gofrs/uuid"
 	"github.com/redis/go-redis/v9"
 	"go.temporal.io/sdk/client"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	openfga "github.com/openfga/api/proto/openfga/v1"
 
@@ -132,29 +133,58 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 	}
 	defer clientConn.Close()
 
-	cloudPipelineClient := pipelinepb.NewPipelinePublicServiceClient(clientConn)
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12},
+		},
+	}
 
 	ns := resource.Namespace{
 		NsType: resource.Organization,
 		NsID:   constant.PresetNamespaceID,
 		NsUID:  uuid.FromStringOrNil(presetOrgResp.Organization.Uid),
 	}
+
 	pageToken := ""
 	for {
-		//nolint:staticcheck
-		resp, err := cloudPipelineClient.ListOrganizationPipelines(ctx, &pipelinepb.ListOrganizationPipelinesRequest{
-			Parent:    fmt.Sprintf("organizations/%s", constant.PresetNamespaceID),
-			View:      pipelinepb.Pipeline_VIEW_RECIPE.Enum(),
-			PageToken: &pageToken,
-		})
+		url := fmt.Sprintf("https://%s/v1beta/namespaces/%s/pipelines?view=VIEW_RECIPE",
+			config.Config.InstillCloud.Host,
+			constant.PresetNamespaceID,
+		)
+		if pageToken != "" {
+			url += "&pageToken=" + pageToken
+		}
+
+		req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 		if err != nil {
-			if status.Code(err) == codes.NotFound {
-				// If the preset organization does not exist, we skip the download process.
-				return nil
-			}
 			return err
 		}
-		for _, pipeline := range resp.Pipelines {
+
+		resp, err := httpClient.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusNotFound {
+			// If the preset organization does not exist, we skip the download process.
+			return nil
+		}
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		}
+
+		var listResp pipelinepb.ListNamespacePipelinesResponse
+		b, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+
+		if err := protojson.Unmarshal(b, &listResp); err != nil {
+			return err
+		}
+
+		for _, pipeline := range listResp.Pipelines {
 			dbPipeline, err := converter.ConvertPipelineToDB(ctx, ns, pipeline)
 			if err != nil {
 				return err
@@ -167,6 +197,7 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 					},
 				},
 			}
+
 			p, err := repo.GetNamespacePipelineByID(ctx, ns.Permalink(), dbPipeline.ID, true, false)
 			if err == nil {
 				if err := repo.UpdateNamespacePipelineByUID(ctx, p.UID, dbPipeline); err != nil {
@@ -198,16 +229,40 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 
 			releasePageToken := ""
 			for {
-				//nolint:staticcheck
-				releaseResp, err := cloudPipelineClient.ListOrganizationPipelineReleases(ctx, &pipelinepb.ListOrganizationPipelineReleasesRequest{
-					Parent:    fmt.Sprintf("organizations/%s/pipelines/%s", constant.PresetNamespaceID, dbPipeline.ID),
-					View:      pipelinepb.Pipeline_VIEW_RECIPE.Enum(),
-					PageToken: &releasePageToken,
-				})
+				releaseURL := fmt.Sprintf("https://%s/v1beta/organizations/%s/pipelines/%s/releases?view=VIEW_RECIPE",
+					config.Config.InstillCloud.Host,
+					constant.PresetNamespaceID,
+					dbPipeline.ID,
+				)
+				if releasePageToken != "" {
+					releaseURL += "&pageToken=" + releasePageToken
+				}
+
+				releaseReq, err := http.NewRequestWithContext(ctx, "GET", releaseURL, nil)
 				if err != nil {
 					return err
 				}
-				for _, release := range releaseResp.Releases {
+
+				releaseResp, err := httpClient.Do(releaseReq)
+				if err != nil {
+					return err
+				}
+				defer releaseResp.Body.Close()
+
+				if releaseResp.StatusCode != http.StatusOK {
+					return fmt.Errorf("unexpected status code: %d", releaseResp.StatusCode)
+				}
+
+				var listReleaseResp pipelinepb.ListNamespacePipelineReleasesResponse
+				b, err = io.ReadAll(releaseResp.Body)
+				if err != nil {
+					return err
+				}
+				if err := protojson.Unmarshal(b, &listReleaseResp); err != nil {
+					return err
+				}
+
+				for _, release := range listReleaseResp.Releases {
 					dbRelease, err := converter.ConvertPipelineReleaseToDB(ctx, dbPipeline.UID, release)
 					if err != nil {
 						return err
@@ -218,21 +273,19 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 							return err
 						}
 					}
-
 				}
-				if releasePageToken == "" {
+
+				if listReleaseResp.NextPageToken == "" {
 					break
 				}
-
-				releasePageToken = releaseResp.NextPageToken
+				releasePageToken = listReleaseResp.NextPageToken
 			}
-
 		}
-		if pageToken == "" {
+
+		if listResp.NextPageToken == "" {
 			break
 		}
-		pageToken = resp.NextPageToken
-
+		pageToken = listResp.NextPageToken
 	}
 
 	return nil
