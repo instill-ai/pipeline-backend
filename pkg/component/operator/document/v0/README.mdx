@@ -2,7 +2,7 @@
 title: "Document"
 lang: "en-US"
 draft: false
-description: "Learn about how to set up a Document component https://github.com/instill-ai/instill-core"
+description: "Learn about how to set up a VDP Document component https://github.com/instill-ai/instill-core"
 ---
 
 The Document component is an operator component that allows users to manipulate Document files.
@@ -45,7 +45,7 @@ Convert document to text in Markdown format.
 | Display Image Tag | `display-image-tag` | boolean | Whether to display image tag in the markdown text. Default is 'false'. It is only applicable for convert-2024-08-28 converter. And, it is only applicable for the type of PPTX/PPT/DOCX/DOC/PDF. |
 | Display All Page Image | `display-all-page-image` | boolean | Whether to respond the whole page as the images if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF. |
 | Resolution | `resolution` | number | Desired number pixels per inch. Defaults to 300. Minimum is 72. |
-| Use Docling to Convert PDF to Markdown | `use-docling-converter` | boolean | When converting PDF to Markdown, use `docling` instead of `pdfplumber`. This converter is more resource-intensive but usually yields more accurate results.  |
+| Converter | `converter` | string | The conversion engine used in the transformation. For now, it only applies to PDF to Markdown conversions. `pdfplumber` is quicker than Docling, but it typically produces less accurate results.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`pdfplumber`</li><li>`docling`</li></ul></details>  |
 </div>
 
 
