@@ -18,137 +18,67 @@ type converterOutput struct {
 	Markdowns     []string `json:"markdowns"`
 }
 
-func convertPDFToMarkdownWithPDFPlumber(input pdfToMarkdownInputStruct) (converterOutput, error) {
-	var pdfBase64 string
-	var err error
-	base64Text := input.Base64Text
-	pdfBase64WithoutMime := util.TrimBase64Mime(base64Text)
-	if RequiredToRepair(base64Text) {
-		pdfBase64, err = RepairPDF(pdfBase64WithoutMime)
-		if err != nil {
-			return converterOutput{}, fmt.Errorf("failed to repair PDF: %w", err)
+func convertPDFToMarkdown(pythonCode string) func(input pdfToMarkdownInputStruct) (converterOutput, error) {
+	return func(input pdfToMarkdownInputStruct) (converterOutput, error) {
+		var output converterOutput
+
+		pdfBase64 := util.TrimBase64Mime(input.Base64Text)
+		if RequiredToRepair(input.Base64Text) {
+			repairedPDF, err := RepairPDF(pdfBase64)
+			if err != nil {
+				return output, fmt.Errorf("repairing PDF: %w", err)
+			}
+
+			pdfBase64 = repairedPDF
 		}
-	} else {
-		pdfBase64 = pdfBase64WithoutMime
-	}
 
-	paramsJSON, err := json.Marshal(map[string]interface{}{
-		"PDF":                    pdfBase64,
-		"display-image-tag":      input.DisplayImageTag,
-		"display-all-page-image": input.DisplayAllPageImage,
-		"resolution":             input.Resolution,
-	})
-	var output converterOutput
-
-	if err != nil {
-		return output, fmt.Errorf("failed to marshal params: %w", err)
-	}
-
-	pythonCode := pageImageProcessor + pdfTransformer + pdfPlumberPDFToMDConverter
-
-	cmdRunner := exec.Command(pythonInterpreter, "-c", pythonCode)
-	stdin, err := cmdRunner.StdinPipe()
-
-	if err != nil {
-		return output, fmt.Errorf("failed to create stdin pipe: %w", err)
-	}
-	errChan := make(chan error, 1)
-	go func() {
-		defer stdin.Close()
-		_, err := stdin.Write(paramsJSON)
+		paramsJSON, err := json.Marshal(map[string]interface{}{
+			"PDF":                    pdfBase64,
+			"display-image-tag":      input.DisplayImageTag,
+			"display-all-page-image": input.DisplayAllPageImage,
+			"resolution":             input.Resolution,
+		})
 		if err != nil {
-			errChan <- err
-			return
+			return output, fmt.Errorf("marshalling conversion params: %w", err)
 		}
-		errChan <- nil
-	}()
 
-	outputBytes, err := cmdRunner.CombinedOutput()
-	if err != nil {
-		errorStr := string(outputBytes)
-		return output, fmt.Errorf("failed to run python script: %w, %s", err, errorStr)
-	}
-
-	writeErr := <-errChan
-	if writeErr != nil {
-		return output, fmt.Errorf("failed to write to stdin: %w", writeErr)
-	}
-
-	err = json.Unmarshal(outputBytes, &output)
-	if err != nil {
-		return output, fmt.Errorf("failed to unmarshal output: %w", err)
-	}
-
-	if output.SystemError != "" {
-		return output, fmt.Errorf("failed to convert pdf to markdown: %s", output.SystemError)
-	}
-
-	return output, nil
-}
-
-// TODO jvallesm: refactor converter functions, most of the code is shared.
-func convertPDFToMarkdownWithDocling(input pdfToMarkdownInputStruct) (converterOutput, error) {
-	var pdfBase64 string
-	var err error
-	base64Text := input.Base64Text
-	pdfBase64WithoutMime := util.TrimBase64Mime(base64Text)
-	pdfBase64 = pdfBase64WithoutMime
-	if RequiredToRepair(base64Text) {
-		pdfBase64, err = RepairPDF(pdfBase64WithoutMime) // :question: needed?
+		cmdRunner := exec.Command(pythonInterpreter, "-c", pythonCode)
+		stdin, err := cmdRunner.StdinPipe()
 		if err != nil {
-			return converterOutput{}, fmt.Errorf("failed to repair PDF: %w", err)
+			return output, fmt.Errorf("creating stdin pipe: %w", err)
 		}
-	}
 
-	paramsJSON, err := json.Marshal(map[string]interface{}{
-		"PDF":                    pdfBase64,
-		"display-image-tag":      input.DisplayImageTag,
-		"display-all-page-image": input.DisplayAllPageImage,
-		"resolution":             input.Resolution,
-	})
-	var output converterOutput
+		errChan := make(chan error, 1)
+		go func() {
+			defer stdin.Close()
+			_, err := stdin.Write(paramsJSON)
+			if err != nil {
+				errChan <- fmt.Errorf("writing to stdin: %w", err)
+				return
+			}
+			errChan <- nil
+		}()
 
-	if err != nil {
-		return output, fmt.Errorf("failed to marshal params: %w", err)
-	}
-
-	pythonCode := doclingPDFToMDConverter
-	cmdRunner := exec.Command(pythonInterpreter, "-c", pythonCode)
-	stdin, err := cmdRunner.StdinPipe()
-
-	if err != nil {
-		return output, fmt.Errorf("failed to create stdin pipe: %w", err)
-	}
-	errChan := make(chan error, 1)
-	go func() {
-		defer stdin.Close()
-		_, err := stdin.Write(paramsJSON)
+		outputBytes, err := cmdRunner.CombinedOutput()
 		if err != nil {
-			errChan <- err
-			return
+			errorStr := string(outputBytes)
+			return output, fmt.Errorf("running Python script: %w, %s", err, errorStr)
 		}
-		errChan <- nil
-	}()
 
-	outputBytes, err := cmdRunner.CombinedOutput()
-	if err != nil {
-		errorStr := string(outputBytes)
-		return output, fmt.Errorf("failed to run python script: %w, %s", err, errorStr)
+		err = <-errChan
+		if err != nil {
+			return output, err
+		}
+
+		err = json.Unmarshal(outputBytes, &output)
+		if err != nil {
+			return output, fmt.Errorf("unmarshalling output: %w", err)
+		}
+
+		if output.SystemError != "" {
+			return output, fmt.Errorf("converting PDF to Markdown: %s", output.SystemError)
+		}
+
+		return output, nil
 	}
-
-	writeErr := <-errChan
-	if writeErr != nil {
-		return output, fmt.Errorf("failed to write to stdin: %w", writeErr)
-	}
-
-	err = json.Unmarshal(outputBytes, &output)
-	if err != nil {
-		return output, fmt.Errorf("failed to unmarshal output: %w", err)
-	}
-
-	if output.SystemError != "" {
-		return output, fmt.Errorf("failed to convert pdf to markdown: %s", output.SystemError)
-	}
-
-	return output, nil
 }

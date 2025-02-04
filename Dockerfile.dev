@@ -12,6 +12,8 @@ ARG TARGETOS TARGETARCH K6_VERSION XK6_VERSION XK6_SQL_VERSION XK6_SQL_POSTGRES_
 # Install Python, create virtual environment, install pdfplumber and Docling
 RUN apt update && \
     apt install -y \
+    wget \
+    unzip \
     build-essential \
     xz-utils \
     python3 \
@@ -43,16 +45,14 @@ RUN FFMPEG_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "arm64" || echo "amd64") &
 # Install ONNX Runtime (latest release)
 ENV ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime
 RUN apt update && \
-    apt install -y wget jq && \
+    apt install -y jq && \
     LATEST_VERSION=$(wget -qO- https://api.github.com/repos/microsoft/onnxruntime/releases/latest | jq -r .tag_name) && \
     ONNX_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "aarch64" || echo "x64") && \
     wget https://github.com/microsoft/onnxruntime/releases/download/${LATEST_VERSION}/onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz && \
     tar -xzf onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz && \
     mv onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v} ${ONNXRUNTIME_ROOT_PATH} && \
     rm onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz && \
-    apt remove -y wget jq && \
-    apt autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
+    apt remove -y jq
 
 # Set environment variables and create symlinks for ONNX Runtime
 ENV C_INCLUDE_PATH=${ONNXRUNTIME_ROOT_PATH}/include
@@ -90,15 +90,31 @@ ENV GODEBUG=tlsrsakex=1
 COPY ./pkg/component/resources/onnx/silero_vad.onnx /${SERVICE_NAME}/pkg/component/resources/onnx/silero_vad.onnx
 ENV ONNX_MODEL_FOLDER_PATH=/${SERVICE_NAME}/pkg/component/resources/onnx
 
-# Prefetch Docling models and set environment variable with the path to the
-# artifacts.
-ENV DOCLING_ARTIFACTS_PATH=/${SERVICE_NAME}/pkg/component/resources/docling
+# Docling will need a $HOME-prefixed path to write cache files. We'll also put
+# the prefetched model artifacts there.
+ENV BASE_DOCLING_PATH=/home/nobody
+RUN mkdir -p ${BASE_DOCLING_PATH}/.EasyOCR/model && chown -R nobody:nogroup ${BASE_DOCLING_PATH}
+RUN wget https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/latin_g2.zip && \
+    unzip latin_g2.zip -d ${BASE_DOCLING_PATH}/.EasyOCR/model/ && \
+    rm latin_g2.zip
+RUN wget https://github.com/JaidedAI/EasyOCR/releases/download/pre-v1.1.6/craft_mlt_25k.zip && \
+    unzip craft_mlt_25k.zip -d ${BASE_DOCLING_PATH}/.EasyOCR/model/ && \
+    rm craft_mlt_25k.zip
 
+ENV DOCLING_ARTIFACTS_PATH=${BASE_DOCLING_PATH}/docling-artifacts
 RUN echo "from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline" > import_artifacts.py
 RUN echo "StandardPdfPipeline.download_models_hf(local_dir='${DOCLING_ARTIFACTS_PATH}')" >> import_artifacts.py
-RUN /opt/venv/bin/python import_artifacts.py
-RUN rm import_artifacts.py
+RUN /opt/venv/bin/python import_artifacts.py && rm import_artifacts.py
+
+# Clean up apt
+RUN apt remove -y wget unzip && \
+    apt autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# USER needs write permissions on the workspace to run the coverage report.
+RUN chown -R nobody:nogroup /${SERVICE_NAME}
 
 USER nobody:nogroup
+ENV HOME=${BASE_DOCLING_PATH}
 
 ENTRYPOINT ["tail", "-f", "/dev/null"]
