@@ -83,8 +83,8 @@ jobs:
         # CFG_COMPONENT_SECRETS_GITHUB* variables are injected to test OAuth connection
         # creation
         run: |
-          sed -i 's/\(\w\+GITHUB\w\+\)=/\1=foo/' .env.component
           COMPOSE_PROFILES=all \
+          COMPONENT_ENV=.env.component-test \
           EDITION=local-ce:test \
           RAY_LATEST_TAG=latest \
           RAY_RELEASE_TAG=${RAY_SERVER_VERSION} \

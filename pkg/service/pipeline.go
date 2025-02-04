@@ -41,7 +41,7 @@ import (
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	resourcex "github.com/instill-ai/x/resource"
 )
 
@@ -2259,7 +2259,7 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 		if err != nil {
 			return nil, err
 		}
-		resp.TypeUrl = "buf.build/instill-ai/protobufs/vdp.pipeline.v1beta.TriggerNamespacePipelineResponse"
+		resp.TypeUrl = "buf.build/instill-ai/protobufs/pipeline.pipeline.v1beta.TriggerNamespacePipelineResponse"
 		operation = longrunningpb.Operation{
 			Done: true,
 			Result: &longrunningpb.Operation_Response{

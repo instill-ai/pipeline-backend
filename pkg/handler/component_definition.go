@@ -7,7 +7,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 // ListComponentDefinitions returns a paginated list of component definitions.

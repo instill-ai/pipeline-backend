@@ -11,7 +11,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 func checkTask(compID, targetTask string, compSpec *structpb.Struct, compProperties map[string]any, validationErrors *[]*pb.ErrPipelineValidation) {

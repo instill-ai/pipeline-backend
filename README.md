@@ -2,8 +2,7 @@
 
 [![Integration Test](https://github.com/instill-ai/pipeline-backend/actions/workflows/integration-test.yml/badge.svg)](https://github.com/instill-ai/pipeline-backend/actions/workflows/integration-test.yml)
 
-`pipeline-backend` manages all pipeline resources within [Versatile Data
-Pipeline (VDP)](https://github.com/instill-ai/vdp) to streamline data from the
+`pipeline-backend` manages all pipeline resources within [Instill Core](https://github.com/instill-ai/instill-core) to streamline data from the
 start component, through AI/Data/Application components and to the end
 component.
 
@@ -11,7 +10,7 @@ component.
 
 ### Pipeline
 
-In **💧 Instill VDP**, a pipeline is a DAG (Directed Acyclic Graph) consisting
+In **Instill Core**, a pipeline is a DAG (Directed Acyclic Graph) consisting
 of multiple **components**.
 
 ```mermaid

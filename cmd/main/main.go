@@ -55,7 +55,7 @@ import (
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pipelineworker "github.com/instill-ai/pipeline-backend/pkg/worker"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	miniox "github.com/instill-ai/x/minio"
 )
 
@@ -175,11 +175,11 @@ func main() {
 		grpczap.WithDecider(func(fullMethodName string, err error) bool {
 			// will not log gRPC calls if it was a call to liveness or readiness and no error was raised
 			if err == nil {
-				if match, _ := regexp.MatchString("vdp.pipeline.v1beta.PipelinePublicService/.*ness$", fullMethodName); match {
+				if match, _ := regexp.MatchString("pipeline.pipeline.v1beta.PipelinePublicService/.*ness$", fullMethodName); match {
 					return false
 				}
 				// stop logging successful private function calls
-				if match, _ := regexp.MatchString("vdp.pipeline.v1beta.PipelinePrivateService/.*Admin$", fullMethodName); match {
+				if match, _ := regexp.MatchString("pipeline.pipeline.v1beta.PipelinePrivateService/.*Admin$", fullMethodName); match {
 					return false
 				}
 			}

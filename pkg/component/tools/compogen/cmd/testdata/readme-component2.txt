@@ -151,7 +151,7 @@ Definitions field has an invalid length
 title: "Dummy"
 lang: "en-US"
 draft: false
-description: "Learn about how to set up a VDP Dummy component https://github.com/instill-ai/instill-core"
+description: "Learn about how to set up a Dummy component https://github.com/instill-ai/instill-core"
 ---
 
 The Dummy component is an operator component that allows users to perform an action.

@@ -6,7 +6,7 @@ import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 import * as constant from "./const.js";
 
 const client = new grpc.Client();
-client.load(["../proto/vdp/pipeline/v1beta"], "pipeline_public_service.proto");
+client.load(["../proto/pipeline/pipeline/v1beta"], "pipeline_public_service.proto");
 
 export function CheckTrigger(data) {
   group(
@@ -26,7 +26,7 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
+          "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
           {
             parent: `${constant.namespace}`,
             pipeline: reqGRPC,
@@ -34,14 +34,14 @@ export function CheckTrigger(data) {
           data.metadata
         ),
         {
-          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline GRPC pipeline response StatusOK":
+          "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline GRPC pipeline response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
 
       check(
         client.invoke(
-          "vdp.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline",
+          "pipeline.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline",
           {
             name: `${constant.namespace}/pipelines/${reqGRPC.id}`,
             data: constant.simplePayload.data,
@@ -49,7 +49,7 @@ export function CheckTrigger(data) {
           data.metadata
         ),
         {
-          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline response StatusOK`]:
+          [`pipeline.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -57,14 +57,14 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
+          `pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
           {
             name: `${constant.namespace}/pipelines/${reqGRPC.id}`,
           },
           data.metadata
         ),
         {
-          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline ${reqGRPC.id} response StatusOK`]:
+          [`pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline ${reqGRPC.id} response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -92,7 +92,7 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
+          "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
           {
             parent: `${constant.namespace}`,
             pipeline: reqGRPC,
@@ -100,14 +100,14 @@ export function CheckTrigger(data) {
           data.metadata
         ),
         {
-          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline GRPC pipeline response StatusOK":
+          "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline GRPC pipeline response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
 
       check(
         client.invoke(
-          "vdp.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline",
+          "pipeline.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline",
           {
             name: `${constant.namespace}/pipelines/${reqGRPC.id}`,
             data: constant.simplePayload.data,
@@ -115,7 +115,7 @@ export function CheckTrigger(data) {
           data.metadata
         ),
         {
-          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline response StatusOK`]:
+          [`pipeline.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -123,14 +123,14 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
+          `pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
           {
             name: `${constant.namespace}/pipelines/${reqGRPC.id}`,
           },
           data.metadata
         ),
         {
-          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline ${reqGRPC.id} response StatusOK`]:
+          [`pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline ${reqGRPC.id} response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );

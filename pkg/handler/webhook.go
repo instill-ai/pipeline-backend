@@ -10,7 +10,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 func (h *PublicHandler) DispatchPipelineWebhookEvent(ctx context.Context, req *pb.DispatchPipelineWebhookEventRequest) (resp *pb.DispatchPipelineWebhookEventResponse, err error) {

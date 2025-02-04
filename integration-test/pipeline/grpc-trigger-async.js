@@ -7,7 +7,7 @@ import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 import * as constant from "./const.js";
 
 const client = new grpc.Client();
-client.load(["../proto/vdp/pipeline/v1beta"], "pipeline_public_service.proto");
+client.load(["../proto/pipeline/pipeline/v1beta"], "pipeline_public_service.proto");
 
 export function CheckTrigger(data) {
   group(
@@ -27,7 +27,7 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
+          "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
           {
             parent: `${constant.namespace}`,
             pipeline: reqBody,
@@ -35,14 +35,14 @@ export function CheckTrigger(data) {
           data.metadata
         ),
         {
-          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline Async GRPC pipeline response StatusOK":
+          "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline Async GRPC pipeline response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
 
 
       check(client.invoke(
-        "vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline",
+        "pipeline.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline",
         {
           name: `${constant.namespace}/pipelines/${reqBody.id}`,
           data: constant.simplePayload.data,
@@ -50,9 +50,9 @@ export function CheckTrigger(data) {
         data.metadata
       ),
         {
-          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response StatusOK`]:
+          [`pipeline.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response has operation id`]:
+          [`pipeline.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response has operation id`]:
             (r) => r.message.operation.name.startsWith("operations/"),
         }
       );
@@ -60,14 +60,14 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
+          `pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
           {
             name: `${constant.namespace}/pipelines/${reqBody.id}`,
           },
           data.metadata
         ),
         {
-          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
+          [`pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -93,7 +93,7 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
+          "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
           {
             parent: `${constant.namespace}`,
             pipeline: reqBody,
@@ -101,14 +101,14 @@ export function CheckTrigger(data) {
           data.metadata
         ),
         {
-          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline Async GRPC pipeline response StatusOK":
+          "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline Async GRPC pipeline response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
 
 
       check(client.invoke(
-        "vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline",
+        "pipeline.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline",
         {
           name: `${constant.namespace}/pipelines/${reqBody.id}`,
           data: constant.simplePayload.data,
@@ -116,9 +116,9 @@ export function CheckTrigger(data) {
         data.metadata
       ),
         {
-          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response StatusOK`]:
+          [`pipeline.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response has operation id`]:
+          [`pipeline.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response has operation id`]:
             (r) => r.message.operation.name.startsWith("operations/"),
         }
       );
@@ -126,14 +126,14 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
+          `pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
           {
             name: `${constant.namespace}/pipelines/${reqBody.id}`,
           },
           data.metadata
         ),
         {
-          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
+          [`pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );

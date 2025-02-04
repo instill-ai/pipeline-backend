@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package vdp.pipeline.v1beta;
+package pipeline.pipeline.v1beta;
 
+import "../../../pipeline/pipeline/v1beta/integration.proto";
+import "../../../pipeline/pipeline/v1beta/pipeline.proto";
 // OpenAPI definition
 import "protoc-gen-openapiv2/options/annotations.proto";
-import "../../../vdp/pipeline/v1beta/integration.proto";
-import "../../../vdp/pipeline/v1beta/pipeline.proto";
 
 // PipelinePrivateService defines private methods to interact with Pipeline
 // resources.

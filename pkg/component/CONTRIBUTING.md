@@ -21,14 +21,14 @@ In order to add a new component, you need to:
 This guide builds on top of other documents:
 
 - `pipeline-backend`'s [README](../../README.md) explains the basic concepts in
-  the VDP domain.
+  the Instill Core domain.
 - `component`'s [README](./README.md) digs deeper into the **Component** entity,
   its structure and functionalities.
 - The repository's [contribution guidelines](../../.github/CONTRIBUTING.md)
   document the conventions you'll need to follow when contributing to this
   repository. They also contain a guide on how to set your development
   environment, in case you want to [see your component in
-  action](#use-the-component-in-vdp).
+  action](#use-the-component-in-💧-instill-pipeline).
 - If you find yourself wanting to know more, visit the [Instill
   Docs](https://www.instill.tech/docs).
 
@@ -192,7 +192,7 @@ This file defines the input and output schema of each task:
 - **`type`** indicates the data type of the output field, which should be one
   of `string`, `number`, `boolean`, `file`, `document`, `image`, `video`,
   `audio`, `array`, or `object`. Please refer to [**Instill
-  Format**](https://www.instill.tech/docs/vdp/instill-format) for more details.
+  Format**](https://www.instill.tech/docs/pipeline/instill-format) for more details.
 
 - **`instillSecret`** indicates the data must reference the secrets and cannot
   be used in plaintext.
@@ -202,7 +202,7 @@ This file defines the input and output schema of each task:
 - **`type`** indicates the data type of the output field, which should be one
   of `string`, `number`, `boolean`, `file`, `document`, `image`, `video`,
   `audio`, `array`, or `object`. Please refer to [**Instill
-  Format**](https://www.instill.tech/docs/vdp/instill-format) for more details.
+  Format**](https://www.instill.tech/docs/pipeline/instill-format) for more details.
 
 See the [example recipe](#example-recipe) to understand how these fields map to
 the recipe of a pipeline when configured to use this operator.
@@ -216,7 +216,7 @@ configurations. The format is the same as the `input` objects in `tasks.yaml`.
 
 The setup of a component can be defined within the recipe as key-value fields,
 or as a reference to a **Connection** (see the
-[**Integrations**](https://www.instill.tech/docs/vdp/integration) doc for more
+[**Integrations**](https://www.instill.tech/docs/pipeline/integration) doc for more
 information). Certain components support OAuth 2.0 integrations. If you want
 your component to support this sort of connection:
 
@@ -412,7 +412,7 @@ to return a human-friendly errors to the API clients and console users.
 
 #### Unit tests
 
-Before initializing testing your component in **💧 Instill VDP**, we can unit
+Before initializing testing your component in **Instill Core**, we can unit
 test its behaviour. The following code covers the newly added logic by
 replicating how the `pipeline-backend` workers execute the component logic.
 Create a `main_test.go` file containing the following code:
@@ -522,7 +522,7 @@ Moving forward, we plan to standardize on the second approach, integrating all c
 
 ### Initialize the component
 
-The last step before being able to use the component in **💧 Instill VDP** is
+The last step before being able to use the component in **Instill Core** is
 loading the `hello` operator. This is done in the `Init` function in
 [`store.go`](./store/store.go):
 
@@ -552,7 +552,7 @@ func Init(logger *zap.Logger) *Store {
 }
 ```
 
-### Use the component in 💧 Instill VDP
+### Use the component in 💧 Instill Pipeline
 
 Re-run your local `pipeline-backend` build:
 
@@ -650,7 +650,7 @@ Semantic Versioning guidelines.
   - At this point, since there might be pipelines using the previous version, a
     new package MUST be created. E.g., `operator/json/v0` -> `operator/json/v1`.
 - Build and pre-release labels are discouraged, as components are shipped as
-  part of **💧 Instill VDP** and they aren't likely to need such fine-grained
+  part of **💧 Instill Pipeline** and they aren't likely to need such fine-grained
   version control.
 
 It is recommended to start a component at `v0.1.0`. A major version 0 is
