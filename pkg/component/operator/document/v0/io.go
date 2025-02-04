@@ -10,7 +10,7 @@ type ConvertDocumentToMarkdownInput struct {
 	Filename            string          `instill:"filename"`
 	DisplayAllPageImage bool            `instill:"display-all-page-image,default=false"`
 	Resolution          int             `instill:"resolution,default=300"`
-	UseDoclingConverter bool            `instill:"use-docling-converter,default=false"`
+	Converter           string          `instill:"converter,default=pdfplumber"`
 }
 
 type ConvertDocumentToMarkdownOutput struct {

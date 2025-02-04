@@ -29,7 +29,7 @@ func (e *execution) convertDocumentToMarkdown(ctx context.Context, job *base.Job
 		Filename:            inputStruct.Filename,
 		DisplayAllPageImage: inputStruct.DisplayAllPageImage,
 		Resolution:          inputStruct.Resolution,
-		UseDoclingConverter: inputStruct.UseDoclingConverter,
+		Converter:           inputStruct.Converter,
 	}
 
 	transformerOutputStruct, err := transformer.ConvertDocumentToMarkdown(&transformerInputStruct, e.getMarkdownTransformer)

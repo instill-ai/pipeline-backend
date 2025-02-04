@@ -14,7 +14,14 @@ type ConvertDocumentToMarkdownInput struct {
 	Filename            string
 	DisplayAllPageImage bool
 	Resolution          int
-	UseDoclingConverter bool
+	// Converter selects the conversion engine for the transformation. For the
+	// moment, it only applies to PDF-to-Markdown conversion. The allowed
+	// values are:
+	// - "pdfplumber"
+	// - "docling"
+	// Any other value will default to "pdfplumber" for backwards
+	// compatibility.
+	Converter string
 }
 
 // ConvertDocumentToMarkdownOutput ...
@@ -65,6 +72,10 @@ func ConvertDocumentToMarkdown(inputStruct *ConvertDocumentToMarkdownInput, tran
 	return outputStruct, nil
 }
 
+// GetMarkdownTransformer returns a transformer function given a file extension
+// (e.g., pdf, docx, html) and other conversion parameters. In PDF-to-Markdown
+// conversion, the converter can be selected (between Docling and pdfplumber).
+// The rest of extensions use a deterministic converter.
 func GetMarkdownTransformer(fileExtension string, inputStruct *ConvertDocumentToMarkdownInput) (MarkdownTransformer, error) {
 	switch fileExtension {
 	case "pdf":
@@ -75,15 +86,10 @@ func GetMarkdownTransformer(fileExtension string, inputStruct *ConvertDocumentTo
 			Resolution:          inputStruct.Resolution,
 		}
 
-		converter := "pdfplumber"
-		if inputStruct.UseDoclingConverter {
-			converter = "docling"
-		}
-
 		return PDFToMarkdownTransformer{
 			FileExtension:       fileExtension,
 			PDFToMarkdownStruct: pdfToMarkdownStruct,
-			PDFConvertFunc:      getPDFConvertFunc(converter),
+			PDFConvertFunc:      getPDFConvertFunc(inputStruct.Converter),
 		}, nil
 	case "doc", "docx":
 		pdfToMarkdownStruct := pdfToMarkdownInputStruct{

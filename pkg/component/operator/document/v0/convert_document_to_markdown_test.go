@@ -18,14 +18,15 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 	c.Parallel()
 
 	tests := []struct {
-		name        string
-		filepath    string
-		withDocling bool
-		expected    ConvertDocumentToMarkdownOutput
+		name      string
+		filepath  string
+		converter string
+		expected  ConvertDocumentToMarkdownOutput
 	}{
 		{
-			name:     "Convert PDF file - pdfplumber",
-			filepath: "testdata/test.pdf",
+			name:      "Convert PDF file - pdfplumber",
+			filepath:  "testdata/test.pdf",
+			converter: "pdfplumber",
 			expected: ConvertDocumentToMarkdownOutput{
 				Body:          "# This is test file for markdown\n",
 				Images:        []format.Image{},
@@ -34,9 +35,9 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 			},
 		},
 		{
-			name:        "Convert PDF file - Docling",
-			filepath:    "testdata/test.pdf",
-			withDocling: true,
+			name:      "Convert PDF file - Docling",
+			filepath:  "testdata/test.pdf",
+			converter: "docling",
 			expected: ConvertDocumentToMarkdownOutput{
 				Body:          "This is test file for markdown",
 				Images:        []format.Image{},
@@ -132,8 +133,8 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 							}
 							return doc
 						}(),
-						DisplayImageTag:     false,
-						UseDoclingConverter: test.withDocling,
+						DisplayImageTag: false,
+						Converter:       test.converter,
 					}
 				}
 				return nil
