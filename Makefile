@@ -69,12 +69,16 @@ dbtest-pre:
 coverage: ## Generate coverage report
 	@if [ "${DBTEST}" = "true" ]; then  make dbtest-pre; fi
 	@docker run --rm \
+		-v $(PWD):/${SERVICE_NAME} \
+		--user $(id -u):$(id -g) \
 		-e GOTEST_FLAGS="${GOTEST_FLAGS}" \
 		--entrypoint= \
 		instill/${SERVICE_NAME}:dev \
 			go test -v -race ${GOTEST_TAGS} -coverpkg=./... -coverprofile=coverage.out -covermode=atomic -timeout 30m ./...
 	@if [ "${HTML}" = "true" ]; then  \
 		docker run --rm \
+			-v $(PWD):/${SERVICE_NAME} \
+			--user $(id -u):$(id -g) \
 			--entrypoint= \
 			instill/${SERVICE_NAME}:dev \
 				go tool cover -func=coverage.out && \
