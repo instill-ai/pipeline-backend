@@ -37,8 +37,13 @@ func convertPDFToMarkdown(pythonCode string, logger *zap.Logger) func(input pdfT
 		}()
 
 		pdfBase64 := util.TrimBase64Mime(input.base64Text)
-		if requiresRepair(input.base64Text) {
-			repairedPDF, err := repairPDF(pdfBase64)
+		shouldRepair, err := requiresRepair(input.base64Text)
+		if err != nil { // Non-blocking error
+			logger.Error("Failed to check PDF state", zap.Error(err))
+		}
+
+		if shouldRepair {
+			repairedPDF, err := repairPDF(pdfBase64, logger)
 			if err != nil {
 				return output, fmt.Errorf("repairing PDF: %w", err)
 			}

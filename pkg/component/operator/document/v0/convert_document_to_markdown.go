@@ -6,7 +6,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0/transformer"
@@ -27,15 +26,9 @@ func (e *execution) convertDocumentToMarkdown(ctx context.Context, job *base.Job
 		return err
 	}
 
-	triggerID := e.GetSystemVariables()["__PIPELINE_TRIGGER_ID"]
-	executionID, _ := uuid.NewV4()
-	l := e.GetLogger().With(
-		zap.Any("pipelineTriggerID", triggerID),
-		zap.String("executionID", executionID.String()),
-	)
-	converter := transformer.NewDocumentToMarkdownConverter(l)
+	converter := transformer.NewDocumentToMarkdownConverter(e.logger)
 
-	conversionParams := transformer.ConvertDocumentToMarkdownInput{
+	conversionParams := &transformer.ConvertDocumentToMarkdownInput{
 		Document:            dataURI.String(),
 		DisplayImageTag:     inputStruct.DisplayImageTag,
 		Filename:            inputStruct.Filename,
@@ -43,34 +36,18 @@ func (e *execution) convertDocumentToMarkdown(ctx context.Context, job *base.Job
 		Resolution:          inputStruct.Resolution,
 		Converter:           inputStruct.Converter,
 	}
-	transformerOutputStruct, err := converter.Convert(&conversionParams)
+	transformerOutputStruct, err := converter.Convert(conversionParams)
 	if err != nil {
 		return err
 	}
 
 	outputStruct := ConvertDocumentToMarkdownOutput{
-		Body:     transformerOutputStruct.Body,
-		Filename: transformerOutputStruct.Filename,
-		Images: func() []format.Image {
-			images := make([]format.Image, len(transformerOutputStruct.Images))
-			for i, image := range transformerOutputStruct.Images {
-				b, _ := base64.StdEncoding.DecodeString(util.TrimBase64Mime(image))
-				images[i], _ = data.NewImageFromBytes(b, data.PNG, "")
-				// TODO: handle error
-			}
-			return images
-		}(),
-		Error: transformerOutputStruct.Error,
-		AllPageImages: func() []format.Image {
-			images := make([]format.Image, len(transformerOutputStruct.AllPageImages))
-			for i, image := range transformerOutputStruct.AllPageImages {
-				b, _ := base64.StdEncoding.DecodeString(util.TrimBase64Mime(image))
-				images[i], _ = data.NewImageFromBytes(b, data.PNG, "")
-				// TODO: handle error
-			}
-			return images
-		}(),
-		Markdowns: transformerOutputStruct.Markdowns,
+		Body:          transformerOutputStruct.Body,
+		Filename:      transformerOutputStruct.Filename,
+		Images:        e.parseImages(transformerOutputStruct.Images),
+		Error:         transformerOutputStruct.Error,
+		AllPageImages: e.parseImages(transformerOutputStruct.AllPageImages),
+		Markdowns:     transformerOutputStruct.Markdowns,
 	}
 
 	err = job.Output.WriteData(ctx, outputStruct)
@@ -79,4 +56,20 @@ func (e *execution) convertDocumentToMarkdown(ctx context.Context, job *base.Job
 	}
 
 	return nil
+}
+
+func (e *execution) parseImages(strImages []string) []format.Image {
+	images := make([]format.Image, len(strImages))
+	for i, image := range strImages {
+		b, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(image))
+		if err != nil {
+			e.logger.Error("Failed to decode image from document", zap.Error(err))
+		}
+		images[i], err = data.NewImageFromBytes(b, data.PNG, "")
+		if err != nil {
+			e.logger.Error("Failed to create image data from document", zap.Error(err))
+		}
+	}
+
+	return images
 }

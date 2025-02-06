@@ -7,15 +7,18 @@ import (
 	"sync"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
+	"go.uber.org/zap"
 )
 
-type ConvertDocumentToImagesTransformerInput struct {
+// ConvertDocumentToImagesInput ...
+type ConvertDocumentToImagesInput struct {
 	Document   string `json:"document"`
 	Filename   string `json:"filename"`
 	Resolution int    `json:"resolution"`
 }
 
-type ConvertDocumentToImagesTransformerOutput struct {
+// ConvertDocumentToImagesOutput ...
+type ConvertDocumentToImagesOutput struct {
 	Images    []string `json:"images"`
 	Filenames []string `json:"filenames"`
 }
@@ -30,8 +33,22 @@ type pageImage struct {
 	Filename string `json:"filename"`
 }
 
-func ConvertDocumentToImage(inputStruct *ConvertDocumentToImagesTransformerInput) (*ConvertDocumentToImagesTransformerOutput, error) {
+// DocumentToImageConverter transforms documents to images.
+type DocumentToImageConverter struct {
+	logger *zap.Logger
+}
 
+// NewDocumentToImageConverter initializes a DocumentToImageConverter.
+func NewDocumentToImageConverter(l *zap.Logger) *DocumentToImageConverter {
+	if l == nil {
+		l = zap.NewNop()
+	}
+
+	return &DocumentToImageConverter{logger: l}
+}
+
+// Convert transforms a document to images.
+func (c *DocumentToImageConverter) Convert(inputStruct *ConvertDocumentToImagesInput) (*ConvertDocumentToImagesOutput, error) {
 	contentType, err := util.GetContentTypeFromBase64(inputStruct.Document)
 	if err != nil {
 		return nil, err
@@ -55,8 +72,12 @@ func ConvertDocumentToImage(inputStruct *ConvertDocumentToImagesTransformerInput
 	}
 
 	var base64PDFWithoutMime string
-	if requiresRepair(base64PDF) {
-		base64PDFWithoutMime, err = repairPDF(base64PDF)
+	shouldRepair, err := requiresRepair(base64PDF)
+	if err != nil { // Non-blocking error
+		c.logger.Error("Failed to check PDF state", zap.Error(err))
+	}
+	if shouldRepair {
+		base64PDFWithoutMime, err = repairPDF(base64PDF, c.logger)
 		if err != nil {
 			return nil, fmt.Errorf("failed to repair PDF: %w", err)
 		}
@@ -80,7 +101,7 @@ func ConvertDocumentToImage(inputStruct *ConvertDocumentToImagesTransformerInput
 	}
 
 	if pageNumbers.PageNumbers == 0 {
-		return &ConvertDocumentToImagesTransformerOutput{
+		return &ConvertDocumentToImagesOutput{
 			Images:    []string{},
 			Filenames: []string{},
 		}, nil
@@ -92,7 +113,7 @@ func ConvertDocumentToImage(inputStruct *ConvertDocumentToImagesTransformerInput
 	maxWorkers := 5
 
 	jobs := make(chan int, pageNumbers.PageNumbers)
-	output := ConvertDocumentToImagesTransformerOutput{
+	output := ConvertDocumentToImagesOutput{
 		Images:    make([]string, pageNumbers.PageNumbers),
 		Filenames: make([]string, pageNumbers.PageNumbers),
 	}

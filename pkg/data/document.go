@@ -163,7 +163,7 @@ func (d *documentData) Images() (mp Array, err error) {
 	if err != nil {
 		return nil, err
 	}
-	res, err := transformer.ConvertDocumentToImage(&transformer.ConvertDocumentToImagesTransformerInput{
+	res, err := transformer.NewDocumentToImageConverter(nil).Convert(&transformer.ConvertDocumentToImagesInput{
 		Document: dataURI.String(),
 		Filename: d.filename,
 	})

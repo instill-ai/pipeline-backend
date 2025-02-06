@@ -8,6 +8,9 @@ import (
 
 	_ "embed"
 
+	"github.com/gofrs/uuid"
+	"go.uber.org/zap"
+
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0/transformer"
 )
@@ -35,6 +38,7 @@ type component struct {
 
 type execution struct {
 	base.ComponentExecution
+	logger  *zap.Logger
 	execute func(ctx context.Context, job *base.Job) error
 }
 
@@ -85,8 +89,13 @@ func (e *execution) convertToText(ctx context.Context, job *base.Job) error {
 // CreateExecution initializes a component executor that can be used in a
 // pipeline trigger.
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
+	executionID, _ := uuid.NewV4()
 	e := &execution{
 		ComponentExecution: x,
+		logger: x.GetLogger().With(
+			zap.Any("pipelineTriggerID", x.GetSystemVariables()["__PIPELINE_TRIGGER_ID"]),
+			zap.String("executionID", executionID.String()),
+		),
 	}
 
 	switch x.Task {
