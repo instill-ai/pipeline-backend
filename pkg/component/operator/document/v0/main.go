@@ -35,8 +35,7 @@ type component struct {
 
 type execution struct {
 	base.ComponentExecution
-	execute                func(ctx context.Context, job *base.Job) error
-	getMarkdownTransformer transformer.MarkdownTransformerGetterFunc
+	execute func(ctx context.Context, job *base.Job) error
 }
 
 func Init(bc base.Component) *component {
@@ -87,8 +86,7 @@ func (e *execution) convertToText(ctx context.Context, job *base.Job) error {
 // pipeline trigger.
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	e := &execution{
-		ComponentExecution:     x,
-		getMarkdownTransformer: transformer.GetMarkdownTransformer,
+		ComponentExecution: x,
 	}
 
 	switch x.Task {

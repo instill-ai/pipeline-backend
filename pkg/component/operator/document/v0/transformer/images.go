@@ -55,8 +55,8 @@ func ConvertDocumentToImage(inputStruct *ConvertDocumentToImagesTransformerInput
 	}
 
 	var base64PDFWithoutMime string
-	if RequiredToRepair(base64PDF) {
-		base64PDFWithoutMime, err = RepairPDF(base64PDF)
+	if requiresRepair(base64PDF) {
+		base64PDFWithoutMime, err = repairPDF(base64PDF)
 		if err != nil {
 			return nil, fmt.Errorf("failed to repair PDF: %w", err)
 		}

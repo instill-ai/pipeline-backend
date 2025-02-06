@@ -45,20 +45,19 @@ var (
 
 // ConvertToTextInput defines the input for convert to text task
 type ConvertToTextTransformerInput struct {
-	// Document: Document to convert
 	Document string `json:"document"`
 	Filename string `json:"filename"`
 }
 
 // ConvertToTextOutput defines the output for convert to text task
 type ConvertToTextTransformerOutput struct {
-	// Body: Plain text converted from the document
+	// Plain text converted from the document
 	Body string `json:"body"`
-	// Meta: Metadata extracted from the document
+	// Metadata extracted from the document
 	Meta map[string]string `json:"meta"`
-	// MSecs: Time taken to convert the document
+	// Time taken to convert the document
 	MSecs uint32 `json:"msecs"`
-	// Error: Error message if any during the conversion process
+	// Error message if any during the conversion process
 	Error    string `json:"error"`
 	Filename string `json:"filename"`
 }
@@ -70,7 +69,6 @@ type converter interface {
 type docconvConverter struct{}
 
 func (d docconvConverter) convert(contentType string, b []byte) (ConvertToTextTransformerOutput, error) {
-
 	if contentType == "image/jpeg" {
 		pngData, err := convertJpegToPng(b)
 		if err != nil {
@@ -117,7 +115,6 @@ func convertJpegToPng(jpegData []byte) ([]byte, error) {
 type uft8EncodedFileConverter struct{}
 
 func (m uft8EncodedFileConverter) convert(contentType string, b []byte) (ConvertToTextTransformerOutput, error) {
-
 	before := time.Now()
 	content := string(b)
 
@@ -139,7 +136,6 @@ func isSupportedByDocconvConvert(contentType string) bool {
 }
 
 func ConvertToText(input ConvertToTextTransformerInput) (ConvertToTextTransformerOutput, error) {
-
 	contentType, err := util.GetContentTypeFromBase64(input.Document)
 	if err != nil {
 		return ConvertToTextTransformerOutput{}, err

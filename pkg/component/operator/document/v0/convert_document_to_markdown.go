@@ -23,7 +23,8 @@ func (e *execution) convertDocumentToMarkdown(ctx context.Context, job *base.Job
 	if err != nil {
 		return err
 	}
-	transformerInputStruct := transformer.ConvertDocumentToMarkdownInput{
+
+	conversionParams := transformer.ConvertDocumentToMarkdownInput{
 		Document:            dataURI.String(),
 		DisplayImageTag:     inputStruct.DisplayImageTag,
 		Filename:            inputStruct.Filename,
@@ -31,8 +32,7 @@ func (e *execution) convertDocumentToMarkdown(ctx context.Context, job *base.Job
 		Resolution:          inputStruct.Resolution,
 		Converter:           inputStruct.Converter,
 	}
-
-	transformerOutputStruct, err := transformer.ConvertDocumentToMarkdown(&transformerInputStruct, e.getMarkdownTransformer)
+	transformerOutputStruct, err := transformer.ConvertDocumentToMarkdown(&conversionParams)
 	if err != nil {
 		return err
 	}

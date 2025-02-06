@@ -91,11 +91,10 @@ func (d *documentData) Text() (val format.String, err error) {
 		return nil, err
 	}
 
-	res, err := transformer.ConvertDocumentToMarkdown(
-		&transformer.ConvertDocumentToMarkdownInput{
-			Document: dataURI.String(),
-			Filename: d.filename,
-		}, transformer.GetMarkdownTransformer)
+	res, err := transformer.ConvertDocumentToMarkdown(&transformer.ConvertDocumentToMarkdownInput{
+		Document: dataURI.String(),
+		Filename: d.filename,
+	})
 	if err != nil {
 		return nil, err
 	}

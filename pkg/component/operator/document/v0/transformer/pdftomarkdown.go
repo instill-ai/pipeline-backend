@@ -22,9 +22,9 @@ func convertPDFToMarkdown(pythonCode string) func(input pdfToMarkdownInputStruct
 	return func(input pdfToMarkdownInputStruct) (converterOutput, error) {
 		var output converterOutput
 
-		pdfBase64 := util.TrimBase64Mime(input.Base64Text)
-		if RequiredToRepair(input.Base64Text) {
-			repairedPDF, err := RepairPDF(pdfBase64)
+		pdfBase64 := util.TrimBase64Mime(input.base64Text)
+		if requiresRepair(input.base64Text) {
+			repairedPDF, err := repairPDF(pdfBase64)
 			if err != nil {
 				return output, fmt.Errorf("repairing PDF: %w", err)
 			}
@@ -34,9 +34,9 @@ func convertPDFToMarkdown(pythonCode string) func(input pdfToMarkdownInputStruct
 
 		paramsJSON, err := json.Marshal(map[string]interface{}{
 			"PDF":                    pdfBase64,
-			"display-image-tag":      input.DisplayImageTag,
-			"display-all-page-image": input.DisplayAllPageImage,
-			"resolution":             input.Resolution,
+			"display-image-tag":      input.displayImageTag,
+			"display-all-page-image": input.displayAllPageImage,
+			"resolution":             input.resolution,
 		})
 		if err != nil {
 			return output, fmt.Errorf("marshalling conversion params: %w", err)

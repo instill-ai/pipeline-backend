@@ -18,114 +18,88 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
-// MarkdownTransformerGetterFunc is a function that returns a MarkdownTransformer.
-type MarkdownTransformerGetterFunc func(fileExtension string, inputStruct *ConvertDocumentToMarkdownInput) (MarkdownTransformer, error)
-
-// MarkdownTransformer is an interface for all transformers that convert a document to markdown.
-type MarkdownTransformer interface {
-	// Transform converts a document to markdown.
-	Transform() (converterOutput, error)
+type markdownTransformer interface {
+	transform() (converterOutput, error)
 }
 
-// PDFToMarkdownTransformer is a transformer for PDF files. It converts the file to markdown.
-type PDFToMarkdownTransformer struct {
-	// FileExtension is the file extension of the document.
-	FileExtension string
-	// PDFToMarkdownStruct is the input struct for the PDF to markdown converter.
-	PDFToMarkdownStruct pdfToMarkdownInputStruct
-	// PDFConvertFunc is the function that converts the PDF to markdown.
-	PDFConvertFunc func(pdfToMarkdownInputStruct) (converterOutput, error)
+type pdfToMarkdownTransformer struct {
+	fileExtension       string
+	pdfToMarkdownStruct pdfToMarkdownInputStruct
+	pdfConvertFunc      func(pdfToMarkdownInputStruct) (converterOutput, error)
 }
 
-// Transform converts a PDF file to markdown.
-func (t PDFToMarkdownTransformer) Transform() (converterOutput, error) {
-	return t.PDFConvertFunc(t.PDFToMarkdownStruct)
+func (t pdfToMarkdownTransformer) transform() (converterOutput, error) {
+	return t.pdfConvertFunc(t.pdfToMarkdownStruct)
 }
 
-// DocxDocToMarkdownTransformer is a transformer for DOC and DOCX files. It converts the file to PDF and then to markdown.
-type DocxDocToMarkdownTransformer struct {
-	// FileExtension is the file extension of the document.
-	FileExtension string
-	// Base64EncodedText is the base64 encoded DOC or DOCX file.
-	Base64EncodedText string
-	// PDFToMarkdownStruct is the input struct for the PDF to markdown converter.
-	PDFToMarkdownStruct pdfToMarkdownInputStruct
-	// PDFConvertFunc is the function that converts the PDF to markdown.
-	PDFConvertFunc func(pdfToMarkdownInputStruct) (converterOutput, error)
+// docToMarkdownTransformer is a transformer for DOC and DOCX files. It converts
+// the file to PDF and then to Markdown.
+type docToMarkdownTransformer struct {
+	pdfToMarkdownTransformer
+	base64EncodedText string
 }
 
-// Transform converts a DOC or DOCX file to markdown.
-func (t DocxDocToMarkdownTransformer) Transform() (converterOutput, error) {
-
+func (t docToMarkdownTransformer) transform() (converterOutput, error) {
 	if err := t.validate(); err != nil {
 		return converterOutput{}, fmt.Errorf("validate input: %w", err)
 	}
 
-	base64PDF, err := ConvertToPDF(t.Base64EncodedText, t.FileExtension)
+	base64PDF, err := ConvertToPDF(t.base64EncodedText, t.fileExtension)
 
 	if err != nil {
 		return converterOutput{}, fmt.Errorf("convert file to PDF: %w", err)
 	}
 
-	t.PDFToMarkdownStruct.Base64Text = base64PDF
+	t.pdfToMarkdownStruct.base64Text = base64PDF
 
-	return t.PDFConvertFunc(t.PDFToMarkdownStruct)
+	return t.pdfConvertFunc(t.pdfToMarkdownStruct)
 }
 
-func (t DocxDocToMarkdownTransformer) validate() error {
-	if t.PDFToMarkdownStruct.Base64Text != "" {
+func (t docToMarkdownTransformer) validate() error {
+	if t.pdfToMarkdownStruct.base64Text != "" {
 		return fmt.Errorf("PDF struct base64 text should be empty before transformation")
 	}
 	return nil
 }
 
-// PptPptxToMarkdownTransformer is a transformer for PPT and PPTX files. It converts the file to PDF and then to markdown.
-type PptPptxToMarkdownTransformer struct {
-	// FileExtension is the file extension of the document.
-	FileExtension string
-	// Base64EncodedText is the base64 encoded PPT or PPTX file.
-	Base64EncodedText string
-	// PDFToMarkdownStruct is the input struct for the PDF to markdown converter.
-	PDFToMarkdownStruct pdfToMarkdownInputStruct
-	// PDFConvertFunc is the function that converts the PDF to markdown.
-	PDFConvertFunc func(pdfToMarkdownInputStruct) (converterOutput, error)
+// pptToMarkdownTransformer is a transformer for PPT and PPTX files. It converts
+// the file to PDF and then to markdown.
+type pptToMarkdownTransformer struct {
+	pdfToMarkdownTransformer
+	base64EncodedText string
 }
 
-// Transform converts a PPT or PPTX file to markdown.
-func (t PptPptxToMarkdownTransformer) Transform() (converterOutput, error) {
+func (t pptToMarkdownTransformer) transform() (converterOutput, error) {
 
 	if err := t.validate(); err != nil {
 		return converterOutput{}, fmt.Errorf("validate input: %w", err)
 	}
 
-	base64PDF, err := ConvertToPDF(t.Base64EncodedText, t.FileExtension)
+	base64PDF, err := ConvertToPDF(t.base64EncodedText, t.fileExtension)
 
 	if err != nil {
 		return converterOutput{}, fmt.Errorf("convert file to PDF: %w", err)
 	}
 
-	t.PDFToMarkdownStruct.Base64Text = base64PDF
+	t.pdfToMarkdownStruct.base64Text = base64PDF
 
-	return t.PDFConvertFunc(t.PDFToMarkdownStruct)
+	return t.pdfConvertFunc(t.pdfToMarkdownStruct)
 }
 
-func (t PptPptxToMarkdownTransformer) validate() error {
-	if t.PDFToMarkdownStruct.Base64Text != "" {
+func (t pptToMarkdownTransformer) validate() error {
+	if t.pdfToMarkdownStruct.base64Text != "" {
 		return fmt.Errorf("PDF struct base64 text should be empty before transformation")
 	}
 	return nil
 }
 
-// HTMLToMarkdownTransformer is a transformer for HTML files. It converts the file to markdown.
-type HTMLToMarkdownTransformer struct {
-	// Base64EncodedText is the base64 encoded HTML file.
-	Base64EncodedText string
+type htmlToMarkdownTransformer struct {
+	base64EncodedText string
 }
 
-// Transform converts an HTML file to markdown.
-func (t HTMLToMarkdownTransformer) Transform() (converterOutput, error) {
+func (t htmlToMarkdownTransformer) transform() (converterOutput, error) {
 
-	data, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(t.Base64EncodedText))
+	data, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(t.base64EncodedText))
 	if err != nil {
 		return converterOutput{}, fmt.Errorf("failed to decode base64 to file: %w", err)
 	}
@@ -141,16 +115,12 @@ func (t HTMLToMarkdownTransformer) Transform() (converterOutput, error) {
 	return converterOutput{Body: markdown}, nil
 }
 
-// XlsxToMarkdownTransformer is a transformer for XLSX files. It converts the file to markdown.
-type XlsxToMarkdownTransformer struct {
-	// Base64EncodedText is the base64 encoded XLSX file.
-	Base64EncodedText string
+type xlsxToMarkdownTransformer struct {
+	base64EncodedText string
 }
 
-// Transform converts an XLSX file to markdown.
-func (t XlsxToMarkdownTransformer) Transform() (converterOutput, error) {
-
-	base64String := strings.Split(t.Base64EncodedText, ",")[1]
+func (t xlsxToMarkdownTransformer) transform() (converterOutput, error) {
+	base64String := strings.Split(t.base64EncodedText, ",")[1]
 	fileContent, err := base64.StdEncoding.DecodeString(base64String)
 
 	if err != nil {
@@ -189,15 +159,12 @@ func (t XlsxToMarkdownTransformer) Transform() (converterOutput, error) {
 	return converterOutput{Body: result}, nil
 }
 
-// XlsToMarkdownTransformer is a transformer for XLS files. It converts the file to markdown.
-type XlsToMarkdownTransformer struct {
-	Base64EncodedText string
+type xlsToMarkdownTransformer struct {
+	base64EncodedText string
 }
 
-// Transform converts an XLS file to markdown.
-func (t XlsToMarkdownTransformer) Transform() (converterOutput, error) {
-
-	base64String := strings.Split(t.Base64EncodedText, ",")[1]
+func (t xlsToMarkdownTransformer) transform() (converterOutput, error) {
+	base64String := strings.Split(t.base64EncodedText, ",")[1]
 	fileContent, err := base64.StdEncoding.DecodeString(base64String)
 
 	output := converterOutput{}
@@ -245,15 +212,12 @@ func (t XlsToMarkdownTransformer) Transform() (converterOutput, error) {
 
 }
 
-// CSVToMarkdownTransformer is a transformer for CSV files. It converts the file to markdown.
-type CSVToMarkdownTransformer struct {
-	Base64EncodedText string
+type csvToMarkdownTransformer struct {
+	base64EncodedText string
 }
 
-// Transform converts a CSV file to markdown.
-func (t CSVToMarkdownTransformer) Transform() (converterOutput, error) {
-
-	base64String := strings.Split(t.Base64EncodedText, ",")[1]
+func (t csvToMarkdownTransformer) transform() (converterOutput, error) {
+	base64String := strings.Split(t.base64EncodedText, ",")[1]
 	fileContent, err := base64.StdEncoding.DecodeString(base64String)
 
 	if err != nil {

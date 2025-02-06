@@ -12,18 +12,16 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
-func RequiredToRepair(pdfBase64 string) bool {
-
+func requiresRepair(pdfBase64 string) bool {
 	paramsJSON := map[string]interface{}{
 		"PDF": util.TrimBase64Mime(pdfBase64),
 	}
 
 	pythonCode := pdfTransformer + pdfChecker
-
 	outputBytes, err := util.ExecutePythonCode(pythonCode, paramsJSON)
-
 	if err != nil {
 		// It shouldn't block the original process.
+		// TODO use zap.Logger
 		log.Println("failed to run python script: %w", err)
 		return false
 	}
@@ -31,20 +29,19 @@ func RequiredToRepair(pdfBase64 string) bool {
 	var output struct {
 		Repair bool `json:"required"`
 	}
-
 	err = json.Unmarshal(outputBytes, &output)
-
 	if err != nil {
 		// It shouldn't block the original process.
+		// TODO use zap.Logger
 		log.Println("failed to unmarshal output: %w", err)
 	}
 
 	return output.Repair
 }
 
-// RepairPDF repairs the PDF file if it is required. It will respond the base64 encoded PDF file.
-func RepairPDF(pdfBase64 string) (string, error) {
-
+// repairPDF repairs the PDF file if it is required. It will respond the base64
+// encoded PDF file.
+func repairPDF(pdfBase64 string) (string, error) {
 	pdfData, err := base64.StdEncoding.DecodeString(pdfBase64)
 	if err != nil {
 		return "", fmt.Errorf("failed to decode base64 PDF: %w", err)
