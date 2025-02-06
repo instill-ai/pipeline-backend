@@ -1,9 +1,10 @@
-from io import BytesIO
+from io import BytesIO, StringIO
 import os
 import json
 import base64
 import sys
 import re
+from contextlib import redirect_stdout
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.datamodel.base_models import DocumentStream, InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
@@ -54,16 +55,18 @@ if __name__ == "__main__":
         )
 
         # Process the PDF document
-        doc = converter.convert(source)
+        conversion_logs = StringIO()
+        with redirect_stdout(conversion_logs):
+            doc = converter.convert(source)
 
-        # Extract the markdown text per page
-        markdown_pages = [
-            doc.document.export_to_markdown(
-                page_no=i + 1,
-                image_mode=ImageRefMode.PLACEHOLDER
-            )
-            for i in range(doc.document.num_pages())
-        ]
+            # Extract the markdown text per page
+            markdown_pages = [
+                doc.document.export_to_markdown(
+                    page_no=i + 1,
+                    image_mode=ImageRefMode.PLACEHOLDER
+                )
+                for i in range(doc.document.num_pages())
+            ]
 
         # Format the image placeholder according to current convention
         image_counter = [0]
@@ -106,6 +109,7 @@ if __name__ == "__main__":
             "all_page_images": all_page_images,
             "display_all_page_image": display_all_page_image,
             "markdowns": markdown_pages,
+            "logs": conversion_logs.getvalue().splitlines(),
         }
         print(json.dumps(output))
     except Exception as e:

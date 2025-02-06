@@ -14,10 +14,12 @@ type converterOutput struct {
 	Body          string   `json:"body"`
 	Images        []string `json:"images"`
 	ParsingError  []string `json:"parsing_error"`
-	SystemError   string   `json:"system_error"`
 	AllPageImages []string `json:"all_page_images"`
 	AllPage       bool     `json:"display_all_page_image"`
 	Markdowns     []string `json:"markdowns"`
+
+	Logs        []string `json:"logs"`
+	SystemError string   `json:"system_error"`
 }
 
 func convertPDFToMarkdown(pythonCode string, logger *zap.Logger) func(input pdfToMarkdownInputStruct) (converterOutput, error) {
@@ -26,12 +28,12 @@ func convertPDFToMarkdown(pythonCode string, logger *zap.Logger) func(input pdfT
 
 		t0 := time.Now()
 		ok := false
-		logger = logger.With(zap.Time("start", t0))
+		benchmarkLog := logger.With(zap.Time("start", t0))
 		defer func() {
-			logger.With(
+			benchmarkLog.Info("PDF to Markdown conversion",
 				zap.Float64("durationInSecs", time.Since(t0).Seconds()),
 				zap.Bool("ok", ok),
-			).Info("PDF to Markdown conversion")
+			)
 		}()
 
 		pdfBase64 := util.TrimBase64Mime(input.base64Text)
@@ -43,7 +45,7 @@ func convertPDFToMarkdown(pythonCode string, logger *zap.Logger) func(input pdfT
 
 			pdfBase64 = repairedPDF
 		}
-		logger = logger.With(zap.Time("repair", time.Now()))
+		benchmarkLog = benchmarkLog.With(zap.Time("repair", time.Now()))
 
 		paramsJSON, err := json.Marshal(map[string]interface{}{
 			"PDF":                    pdfBase64,
@@ -73,7 +75,7 @@ func convertPDFToMarkdown(pythonCode string, logger *zap.Logger) func(input pdfT
 		}()
 
 		outputBytes, err := cmdRunner.CombinedOutput()
-		logger = logger.With(zap.Time("convert", time.Now()))
+		benchmarkLog = benchmarkLog.With(zap.Time("convert", time.Now()))
 		if err != nil {
 			errorStr := string(outputBytes)
 			return output, fmt.Errorf("running Python script: %w, %s", err, errorStr)
@@ -93,7 +95,13 @@ func convertPDFToMarkdown(pythonCode string, logger *zap.Logger) func(input pdfT
 			return output, fmt.Errorf("converting PDF to Markdown: %s", output.SystemError)
 		}
 
-		logger = logger.With(zap.Time("handleOutput", time.Now()))
+		if len(output.Logs) > 0 {
+			logger.Info("PDF to Markdown Python script produced conversion logs",
+				zap.Strings("conversionLogs", output.Logs),
+			)
+		}
+
+		benchmarkLog = benchmarkLog.With(zap.Time("handleOutput", time.Now()))
 		ok = true
 
 		return output, nil

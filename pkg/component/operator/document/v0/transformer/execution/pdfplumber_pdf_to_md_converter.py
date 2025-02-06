@@ -1,4 +1,5 @@
-from io import BytesIO
+from io import BytesIO, StringIO
+from contextlib import redirect_stdout
 import json
 import base64
 import sys
@@ -41,9 +42,12 @@ if __name__ == "__main__":
 			else:
 				pdf.pages = pdf.raw_pages[i*separator_number:(i+1)*separator_number]
 
-			pdf.preprocess()
-			image_index = pdf.image_index
-			result += pdf.execute()
+			conversion_logs = StringIO()
+			with redirect_stdout(conversion_logs):
+				pdf.preprocess()
+				image_index = pdf.image_index
+				result += pdf.execute()
+
 			for image in pdf.base64_images:
 				images.append(image)
 
@@ -67,6 +71,7 @@ if __name__ == "__main__":
 			"all_page_images": all_page_images,
 			"display_all_page_image": display_all_page_image,
 			"markdowns": markdowns,
+			"logs": conversion_logs.getvalue().splitlines(),
 		}
 		print(json.dumps(output))
 	except Exception as e:
