@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"time"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
+	"go.uber.org/zap"
 )
 
 type converterOutput struct {
@@ -18,9 +20,19 @@ type converterOutput struct {
 	Markdowns     []string `json:"markdowns"`
 }
 
-func convertPDFToMarkdown(pythonCode string) func(input pdfToMarkdownInputStruct) (converterOutput, error) {
+func convertPDFToMarkdown(pythonCode string, logger *zap.Logger) func(input pdfToMarkdownInputStruct) (converterOutput, error) {
 	return func(input pdfToMarkdownInputStruct) (converterOutput, error) {
 		var output converterOutput
+
+		t0 := time.Now()
+		ok := false
+		logger = logger.With(zap.Time("start", t0))
+		defer func() {
+			logger.With(
+				zap.Float64("durationInSecs", time.Since(t0).Seconds()),
+				zap.Bool("ok", ok),
+			).Info("PDF to Markdown conversion")
+		}()
 
 		pdfBase64 := util.TrimBase64Mime(input.base64Text)
 		if requiresRepair(input.base64Text) {
@@ -31,6 +43,7 @@ func convertPDFToMarkdown(pythonCode string) func(input pdfToMarkdownInputStruct
 
 			pdfBase64 = repairedPDF
 		}
+		logger = logger.With(zap.Time("repair", time.Now()))
 
 		paramsJSON, err := json.Marshal(map[string]interface{}{
 			"PDF":                    pdfBase64,
@@ -60,6 +73,7 @@ func convertPDFToMarkdown(pythonCode string) func(input pdfToMarkdownInputStruct
 		}()
 
 		outputBytes, err := cmdRunner.CombinedOutput()
+		logger = logger.With(zap.Time("convert", time.Now()))
 		if err != nil {
 			errorStr := string(outputBytes)
 			return output, fmt.Errorf("running Python script: %w, %s", err, errorStr)
@@ -78,6 +92,9 @@ func convertPDFToMarkdown(pythonCode string) func(input pdfToMarkdownInputStruct
 		if output.SystemError != "" {
 			return output, fmt.Errorf("converting PDF to Markdown: %s", output.SystemError)
 		}
+
+		logger = logger.With(zap.Time("handleOutput", time.Now()))
+		ok = true
 
 		return output, nil
 	}

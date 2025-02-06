@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 
+	"go.uber.org/zap"
+
+	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0/transformer"
@@ -24,6 +27,14 @@ func (e *execution) convertDocumentToMarkdown(ctx context.Context, job *base.Job
 		return err
 	}
 
+	triggerID := e.GetSystemVariables()["__PIPELINE_TRIGGER_ID"]
+	executionID, _ := uuid.NewV4()
+	l := e.GetLogger().With(
+		zap.Any("pipelineTriggerID", triggerID),
+		zap.String("executionID", executionID.String()),
+	)
+	converter := transformer.NewDocumentToMarkdownConverter(l)
+
 	conversionParams := transformer.ConvertDocumentToMarkdownInput{
 		Document:            dataURI.String(),
 		DisplayImageTag:     inputStruct.DisplayImageTag,
@@ -32,7 +43,7 @@ func (e *execution) convertDocumentToMarkdown(ctx context.Context, job *base.Job
 		Resolution:          inputStruct.Resolution,
 		Converter:           inputStruct.Converter,
 	}
-	transformerOutputStruct, err := transformer.ConvertDocumentToMarkdown(&conversionParams)
+	transformerOutputStruct, err := converter.Convert(&conversionParams)
 	if err != nil {
 		return err
 	}

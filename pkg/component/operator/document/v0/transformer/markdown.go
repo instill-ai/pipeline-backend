@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
+	"go.uber.org/zap"
 )
 
 // ConvertDocumentToMarkdownInput ...
@@ -34,10 +35,24 @@ type ConvertDocumentToMarkdownOutput struct {
 	Markdowns     []string
 }
 
-// ConvertDocumentToMarkdown transforms a document to Markdown format. In
-// PDF-to-Markdown conversion, the converter can be selected (between Docling
-// and pdfplumber).  The rest of extensions use a deterministic converter.
-func ConvertDocumentToMarkdown(in *ConvertDocumentToMarkdownInput) (*ConvertDocumentToMarkdownOutput, error) {
+// DocumentToMarkdownConverter transforms documents to Markdown.
+type DocumentToMarkdownConverter struct {
+	logger *zap.Logger
+}
+
+// NewDocumentToMarkdownConverter initializes a DocumentToMarkdownConverter.
+func NewDocumentToMarkdownConverter(l *zap.Logger) *DocumentToMarkdownConverter {
+	if l == nil {
+		l = zap.NewNop()
+	}
+
+	return &DocumentToMarkdownConverter{logger: l}
+}
+
+// Convert transforms a document to Markdown format. In PDF-to-Markdown
+// conversion, the converter can be selected (between Docling and pdfplumber).
+// For the moment, the rest of extensions don't allow for such selection.
+func (c *DocumentToMarkdownConverter) Convert(in *ConvertDocumentToMarkdownInput) (*ConvertDocumentToMarkdownOutput, error) {
 	contentType, err := util.GetContentTypeFromBase64(in.Document)
 	if err != nil {
 		return nil, err
@@ -48,7 +63,7 @@ func ConvertDocumentToMarkdown(in *ConvertDocumentToMarkdownInput) (*ConvertDocu
 		return nil, fmt.Errorf("unsupported file type")
 	}
 
-	transformer, err := getMarkdownTransformer(fileExtension, in)
+	transformer, err := c.getMarkdownTransformer(fileExtension, in)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +88,7 @@ func ConvertDocumentToMarkdown(in *ConvertDocumentToMarkdownInput) (*ConvertDocu
 	return out, nil
 }
 
-func getMarkdownTransformer(fileExtension string, inputStruct *ConvertDocumentToMarkdownInput) (markdownTransformer, error) {
+func (c *DocumentToMarkdownConverter) getMarkdownTransformer(fileExtension string, inputStruct *ConvertDocumentToMarkdownInput) (markdownTransformer, error) {
 	switch fileExtension {
 	case "pdf":
 		pdfToMarkdownStruct := pdfToMarkdownInputStruct{
@@ -86,10 +101,9 @@ func getMarkdownTransformer(fileExtension string, inputStruct *ConvertDocumentTo
 		return pdfToMarkdownTransformer{
 			fileExtension:       fileExtension,
 			pdfToMarkdownStruct: pdfToMarkdownStruct,
-			pdfConvertFunc:      getPDFConvertFunc(inputStruct.Converter),
+			pdfConvertFunc:      c.getPDFConvertFunc(inputStruct.Converter),
 		}, nil
 	case "doc", "docx":
-
 		t := docToMarkdownTransformer{base64EncodedText: inputStruct.Document}
 		t.fileExtension = fileExtension
 		t.pdfToMarkdownStruct = pdfToMarkdownInputStruct{
@@ -97,7 +111,7 @@ func getMarkdownTransformer(fileExtension string, inputStruct *ConvertDocumentTo
 			displayAllPageImage: inputStruct.DisplayAllPageImage,
 			resolution:          inputStruct.Resolution,
 		}
-		t.pdfConvertFunc = getPDFConvertFunc("pdfplumber")
+		t.pdfConvertFunc = c.getPDFConvertFunc("pdfplumber")
 
 		return t, nil
 	case "ppt", "pptx":
@@ -108,7 +122,7 @@ func getMarkdownTransformer(fileExtension string, inputStruct *ConvertDocumentTo
 			displayAllPageImage: inputStruct.DisplayAllPageImage,
 			resolution:          inputStruct.Resolution,
 		}
-		t.pdfConvertFunc = getPDFConvertFunc("pdfplumber")
+		t.pdfConvertFunc = c.getPDFConvertFunc("pdfplumber")
 
 		return t, nil
 	case "html":
@@ -131,11 +145,14 @@ type pdfToMarkdownInputStruct struct {
 	resolution          int
 }
 
-func getPDFConvertFunc(converter string) func(pdfToMarkdownInputStruct) (converterOutput, error) {
+func (c *DocumentToMarkdownConverter) getPDFConvertFunc(converter string) func(pdfToMarkdownInputStruct) (converterOutput, error) {
+	var pythonCode string
 	switch converter {
 	case "docling":
-		return convertPDFToMarkdown(doclingPDFToMDConverter)
+		pythonCode = doclingPDFToMDConverter
 	default:
-		return convertPDFToMarkdown(pageImageProcessor + pdfTransformer + pdfPlumberPDFToMDConverter)
+		pythonCode = pageImageProcessor + pdfTransformer + pdfPlumberPDFToMDConverter
 	}
+
+	return convertPDFToMarkdown(pythonCode, c.logger)
 }
