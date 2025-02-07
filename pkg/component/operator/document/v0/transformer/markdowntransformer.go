@@ -4,42 +4,157 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/extrame/xls"
 	"github.com/xuri/excelize/v2"
+	"go.uber.org/zap"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
+type converterOutput struct {
+	Body          string   `json:"body"`
+	Images        []string `json:"images"`
+	AllPageImages []string `json:"all_page_images"`
+	AllPage       bool     `json:"display_all_page_image"`
+	Markdowns     []string `json:"markdowns"`
+
+	Logs         []string `json:"logs"`
+	ParsingError []string `json:"parsing_error"`
+	SystemError  string   `json:"system_error"`
+}
+
 type markdownTransformer interface {
 	transform() (converterOutput, error)
 }
 
-type pdfToMarkdownTransformer struct {
-	fileExtension       string
-	pdfToMarkdownStruct pdfToMarkdownInputStruct
-	pdfConvertFunc      func(pdfToMarkdownInputStruct) (converterOutput, error)
+type pdfToMarkdownInputStruct struct {
+	base64Text          string
+	displayImageTag     bool
+	displayAllPageImage bool
+	resolution          int
 }
 
-func (t pdfToMarkdownTransformer) transform() (converterOutput, error) {
-	return t.pdfConvertFunc(t.pdfToMarkdownStruct)
+type pdfToMarkdownTransformer struct {
+	fileExtension       string
+	engine              string
+	pdfToMarkdownStruct pdfToMarkdownInputStruct
+	logger              *zap.Logger
+}
+
+func (t *pdfToMarkdownTransformer) transform() (converterOutput, error) {
+	var output converterOutput
+
+	t0 := time.Now()
+	ok := false
+	benchmarkLog := t.logger.With(zap.Time("start", t0))
+	defer func() {
+		benchmarkLog.Info("PDF to Markdown conversion",
+			zap.Float64("durationInSecs", time.Since(t0).Seconds()),
+			zap.Bool("ok", ok),
+		)
+	}()
+
+	pdfBase64 := util.TrimBase64Mime(t.pdfToMarkdownStruct.base64Text)
+	shouldRepair, err := requiresRepair(t.pdfToMarkdownStruct.base64Text)
+	if err != nil { // Non-blocking error
+		t.logger.Error("Failed to check PDF state", zap.Error(err))
+	}
+
+	if shouldRepair {
+		repairedPDF, err := repairPDF(pdfBase64, t.logger)
+		if err != nil {
+			return output, fmt.Errorf("repairing PDF: %w", err)
+		}
+
+		pdfBase64 = repairedPDF
+	}
+	benchmarkLog = benchmarkLog.With(zap.Time("repair", time.Now()))
+
+	paramsJSON, err := json.Marshal(map[string]interface{}{
+		"PDF":                    pdfBase64,
+		"display-image-tag":      t.pdfToMarkdownStruct.displayImageTag,
+		"display-all-page-image": t.pdfToMarkdownStruct.displayAllPageImage,
+		"resolution":             t.pdfToMarkdownStruct.resolution,
+	})
+	if err != nil {
+		return output, fmt.Errorf("marshalling conversion params: %w", err)
+	}
+
+	var pythonCode string
+	switch t.engine {
+	case "docling":
+		pythonCode = doclingPDFToMDConverter
+	default:
+		pythonCode = pageImageProcessor + pdfTransformer + pdfPlumberPDFToMDConverter
+	}
+	cmdRunner := exec.Command(pythonInterpreter, "-c", pythonCode)
+	stdin, err := cmdRunner.StdinPipe()
+	if err != nil {
+		return output, fmt.Errorf("creating stdin pipe: %w", err)
+	}
+
+	errChan := make(chan error, 1)
+	go func() {
+		defer stdin.Close()
+		_, err := stdin.Write(paramsJSON)
+		if err != nil {
+			errChan <- fmt.Errorf("writing to stdin: %w", err)
+			return
+		}
+		errChan <- nil
+	}()
+
+	outputBytes, err := cmdRunner.CombinedOutput()
+	benchmarkLog = benchmarkLog.With(zap.Time("convert", time.Now()))
+	if err != nil {
+		errorStr := string(outputBytes)
+		return output, fmt.Errorf("running Python script: %w, %s", err, errorStr)
+	}
+
+	err = <-errChan
+	if err != nil {
+		return output, err
+	}
+
+	err = json.Unmarshal(outputBytes, &output)
+	if err != nil {
+		return output, fmt.Errorf("unmarshalling output: %w", err)
+	}
+
+	if output.SystemError != "" {
+		return output, fmt.Errorf("converting PDF to Markdown: %s", output.SystemError)
+	}
+
+	if len(output.Logs) > 0 {
+		t.logger.Info("PDF to Markdown Python script produced conversion logs",
+			zap.Strings("conversionLogs", output.Logs),
+		)
+	}
+
+	benchmarkLog = benchmarkLog.With(zap.Time("handleOutput", time.Now()))
+	ok = true
+
+	return output, nil
 }
 
 // docToMarkdownTransformer is a transformer for DOC and DOCX files. It converts
 // the file to PDF and then to Markdown.
 type docToMarkdownTransformer struct {
-	pdfToMarkdownTransformer
+	*pdfToMarkdownTransformer
 	base64EncodedText string
 }
 
-func (t docToMarkdownTransformer) transform() (converterOutput, error) {
+func (t *docToMarkdownTransformer) transform() (converterOutput, error) {
 	if err := t.validate(); err != nil {
 		return converterOutput{}, fmt.Errorf("validate input: %w", err)
 	}
@@ -52,7 +167,7 @@ func (t docToMarkdownTransformer) transform() (converterOutput, error) {
 
 	t.pdfToMarkdownStruct.base64Text = base64PDF
 
-	return t.pdfConvertFunc(t.pdfToMarkdownStruct)
+	return t.pdfToMarkdownTransformer.transform()
 }
 
 func (t docToMarkdownTransformer) validate() error {
@@ -65,11 +180,11 @@ func (t docToMarkdownTransformer) validate() error {
 // pptToMarkdownTransformer is a transformer for PPT and PPTX files. It converts
 // the file to PDF and then to markdown.
 type pptToMarkdownTransformer struct {
-	pdfToMarkdownTransformer
+	*pdfToMarkdownTransformer
 	base64EncodedText string
 }
 
-func (t pptToMarkdownTransformer) transform() (converterOutput, error) {
+func (t *pptToMarkdownTransformer) transform() (converterOutput, error) {
 
 	if err := t.validate(); err != nil {
 		return converterOutput{}, fmt.Errorf("validate input: %w", err)
@@ -83,7 +198,7 @@ func (t pptToMarkdownTransformer) transform() (converterOutput, error) {
 
 	t.pdfToMarkdownStruct.base64Text = base64PDF
 
-	return t.pdfConvertFunc(t.pdfToMarkdownStruct)
+	return t.pdfToMarkdownTransformer.transform()
 }
 
 func (t pptToMarkdownTransformer) validate() error {
@@ -97,7 +212,7 @@ type htmlToMarkdownTransformer struct {
 	base64EncodedText string
 }
 
-func (t htmlToMarkdownTransformer) transform() (converterOutput, error) {
+func (t *htmlToMarkdownTransformer) transform() (converterOutput, error) {
 
 	data, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(t.base64EncodedText))
 	if err != nil {
@@ -119,7 +234,7 @@ type xlsxToMarkdownTransformer struct {
 	base64EncodedText string
 }
 
-func (t xlsxToMarkdownTransformer) transform() (converterOutput, error) {
+func (t *xlsxToMarkdownTransformer) transform() (converterOutput, error) {
 	base64String := strings.Split(t.base64EncodedText, ",")[1]
 	fileContent, err := base64.StdEncoding.DecodeString(base64String)
 
@@ -163,7 +278,7 @@ type xlsToMarkdownTransformer struct {
 	base64EncodedText string
 }
 
-func (t xlsToMarkdownTransformer) transform() (converterOutput, error) {
+func (t *xlsToMarkdownTransformer) transform() (converterOutput, error) {
 	base64String := strings.Split(t.base64EncodedText, ",")[1]
 	fileContent, err := base64.StdEncoding.DecodeString(base64String)
 
@@ -216,7 +331,7 @@ type csvToMarkdownTransformer struct {
 	base64EncodedText string
 }
 
-func (t csvToMarkdownTransformer) transform() (converterOutput, error) {
+func (t *csvToMarkdownTransformer) transform() (converterOutput, error) {
 	base64String := strings.Split(t.base64EncodedText, ",")[1]
 	fileContent, err := base64.StdEncoding.DecodeString(base64String)
 

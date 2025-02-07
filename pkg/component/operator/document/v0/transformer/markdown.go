@@ -90,69 +90,43 @@ func (c *DocumentToMarkdownConverter) Convert(in *ConvertDocumentToMarkdownInput
 
 func (c *DocumentToMarkdownConverter) getMarkdownTransformer(fileExtension string, inputStruct *ConvertDocumentToMarkdownInput) (markdownTransformer, error) {
 	switch fileExtension {
-	case "pdf":
-		pdfToMarkdownStruct := pdfToMarkdownInputStruct{
-			base64Text:          inputStruct.Document,
-			displayImageTag:     inputStruct.DisplayImageTag,
-			displayAllPageImage: inputStruct.DisplayAllPageImage,
-			resolution:          inputStruct.Resolution,
-		}
-
-		return pdfToMarkdownTransformer{
-			fileExtension:       fileExtension,
-			pdfToMarkdownStruct: pdfToMarkdownStruct,
-			pdfConvertFunc:      c.getPDFConvertFunc(inputStruct.Converter),
-		}, nil
-	case "doc", "docx":
-		t := docToMarkdownTransformer{base64EncodedText: inputStruct.Document}
-		t.fileExtension = fileExtension
-		t.pdfToMarkdownStruct = pdfToMarkdownInputStruct{
-			displayImageTag:     inputStruct.DisplayImageTag,
-			displayAllPageImage: inputStruct.DisplayAllPageImage,
-			resolution:          inputStruct.Resolution,
-		}
-		t.pdfConvertFunc = c.getPDFConvertFunc("pdfplumber")
-
-		return t, nil
-	case "ppt", "pptx":
-		t := pptToMarkdownTransformer{base64EncodedText: inputStruct.Document}
-		t.fileExtension = fileExtension
-		t.pdfToMarkdownStruct = pdfToMarkdownInputStruct{
-			displayImageTag:     inputStruct.DisplayImageTag,
-			displayAllPageImage: inputStruct.DisplayAllPageImage,
-			resolution:          inputStruct.Resolution,
-		}
-		t.pdfConvertFunc = c.getPDFConvertFunc("pdfplumber")
-
-		return t, nil
 	case "html":
-		return htmlToMarkdownTransformer{base64EncodedText: inputStruct.Document}, nil
+		return &htmlToMarkdownTransformer{base64EncodedText: inputStruct.Document}, nil
 	case "xlsx":
-		return xlsxToMarkdownTransformer{base64EncodedText: inputStruct.Document}, nil
+		return &xlsxToMarkdownTransformer{base64EncodedText: inputStruct.Document}, nil
 	case "xls":
-		return xlsToMarkdownTransformer{base64EncodedText: inputStruct.Document}, nil
+		return &xlsToMarkdownTransformer{base64EncodedText: inputStruct.Document}, nil
 	case "csv":
-		return csvToMarkdownTransformer{base64EncodedText: inputStruct.Document}, nil
+		return &csvToMarkdownTransformer{base64EncodedText: inputStruct.Document}, nil
+	}
+
+	pdfToMarkdownStruct := pdfToMarkdownInputStruct{
+		displayImageTag:     inputStruct.DisplayImageTag,
+		displayAllPageImage: inputStruct.DisplayAllPageImage,
+		resolution:          inputStruct.Resolution,
+	}
+	pdfTransformer := &pdfToMarkdownTransformer{
+		fileExtension:       fileExtension,
+		engine:              inputStruct.Converter,
+		pdfToMarkdownStruct: pdfToMarkdownStruct,
+		logger:              c.logger,
+	}
+
+	switch fileExtension {
+	case "pdf":
+		pdfTransformer.pdfToMarkdownStruct.base64Text = inputStruct.Document
+		return pdfTransformer, nil
+	case "doc", "docx":
+		return &docToMarkdownTransformer{
+			pdfToMarkdownTransformer: pdfTransformer,
+			base64EncodedText:        inputStruct.Document,
+		}, nil
+	case "ppt", "pptx":
+		return &pptToMarkdownTransformer{
+			pdfToMarkdownTransformer: pdfTransformer,
+			base64EncodedText:        inputStruct.Document,
+		}, nil
 	default:
 		return nil, fmt.Errorf("unsupported file type")
 	}
-}
-
-type pdfToMarkdownInputStruct struct {
-	base64Text          string
-	displayImageTag     bool
-	displayAllPageImage bool
-	resolution          int
-}
-
-func (c *DocumentToMarkdownConverter) getPDFConvertFunc(converter string) func(pdfToMarkdownInputStruct) (converterOutput, error) {
-	var pythonCode string
-	switch converter {
-	case "docling":
-		pythonCode = doclingPDFToMDConverter
-	default:
-		pythonCode = pageImageProcessor + pdfTransformer + pdfPlumberPDFToMDConverter
-	}
-
-	return convertPDFToMarkdown(pythonCode, c.logger)
 }
