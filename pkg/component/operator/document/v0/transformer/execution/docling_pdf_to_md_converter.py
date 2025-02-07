@@ -1,15 +1,30 @@
-from io import BytesIO
+from io import BytesIO, StringIO
 import os
 import json
 import base64
 import sys
 import re
+import logging
+
+# Docling imports
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.datamodel.base_models import DocumentStream, InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling_core.types.doc import ImageRefMode, PictureItem
 
 if __name__ == "__main__":
+    # Capture warnings and errors. These are printed to stderr by default, which
+    # will prevent clients from unmarshalling the response.
+    conversion_logs = StringIO()
+    log_handler = logging.StreamHandler(conversion_logs)
+    log_handler.setLevel(logging.WARNING)
+
+    # Remove any existing handlers to avoid duplicate logging
+    logging.getLogger().handlers = []
+
+    # Add the handler to capture warnings/errors
+    logging.getLogger().addHandler(log_handler)
+
     json_str = sys.stdin.buffer.read().decode('utf-8')
     params = json.loads(json_str)
     display_image_tag = params["display-image-tag"]
@@ -106,7 +121,8 @@ if __name__ == "__main__":
             "all_page_images": all_page_images,
             "display_all_page_image": display_all_page_image,
             "markdowns": markdown_pages,
+            "logs": conversion_logs.getvalue().splitlines(),
         }
         print(json.dumps(output))
     except Exception as e:
-        print(json.dumps({"system_error": str(e)}))
+        print(json.dumps({"system_error": str(e)}), file=sys.stderr)

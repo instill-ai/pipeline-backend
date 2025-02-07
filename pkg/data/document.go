@@ -91,11 +91,10 @@ func (d *documentData) Text() (val format.String, err error) {
 		return nil, err
 	}
 
-	res, err := transformer.ConvertDocumentToMarkdown(
-		&transformer.ConvertDocumentToMarkdownInput{
-			Document: dataURI.String(),
-			Filename: d.filename,
-		}, transformer.GetMarkdownTransformer)
+	res, err := transformer.NewDocumentToMarkdownConverter(nil).Convert(&transformer.ConvertDocumentToMarkdownInput{
+		Document: dataURI.String(),
+		Filename: d.filename,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +163,7 @@ func (d *documentData) Images() (mp Array, err error) {
 	if err != nil {
 		return nil, err
 	}
-	res, err := transformer.ConvertDocumentToImage(&transformer.ConvertDocumentToImagesTransformerInput{
+	res, err := transformer.NewDocumentToImageConverter(nil).Convert(&transformer.ConvertDocumentToImagesInput{
 		Document: dataURI.String(),
 		Filename: d.filename,
 	})

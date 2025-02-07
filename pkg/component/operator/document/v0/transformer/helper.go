@@ -5,46 +5,38 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
+	"go.uber.org/zap"
 )
 
-func RequiredToRepair(pdfBase64 string) bool {
-
+func requiresRepair(pdfBase64 string) (bool, error) {
 	paramsJSON := map[string]interface{}{
 		"PDF": util.TrimBase64Mime(pdfBase64),
 	}
 
 	pythonCode := pdfTransformer + pdfChecker
-
 	outputBytes, err := util.ExecutePythonCode(pythonCode, paramsJSON)
-
 	if err != nil {
-		// It shouldn't block the original process.
-		log.Println("failed to run python script: %w", err)
-		return false
+		return false, fmt.Errorf("executing Python script: %w", err)
 	}
 
 	var output struct {
 		Repair bool `json:"required"`
 	}
-
 	err = json.Unmarshal(outputBytes, &output)
-
 	if err != nil {
-		// It shouldn't block the original process.
-		log.Println("failed to unmarshal output: %w", err)
+		return false, fmt.Errorf("unmarshalling output: %w", err)
 	}
 
-	return output.Repair
+	return output.Repair, nil
 }
 
-// RepairPDF repairs the PDF file if it is required. It will respond the base64 encoded PDF file.
-func RepairPDF(pdfBase64 string) (string, error) {
-
+// repairPDF repairs the PDF file if it is required. It will respond the base64
+// encoded PDF file.
+func repairPDF(pdfBase64 string, logger *zap.Logger) (string, error) {
 	pdfData, err := base64.StdEncoding.DecodeString(pdfBase64)
 	if err != nil {
 		return "", fmt.Errorf("failed to decode base64 PDF: %w", err)
@@ -74,10 +66,10 @@ func RepairPDF(pdfBase64 string) (string, error) {
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
-	// qpdf can still repair the PDF when there are warnings.
-	// So, we do not raise error here.
+	// qpdf might raise warnings during the repair and still succeed.
+	// Therefore, we log and continue.
 	if err := cmd.Run(); err != nil {
-		log.Printf("qpdf failed to repair the PDF: %s", stderr.String())
+		logger.Error("PDF repair caused standard error output", zap.String("error", stderr.String()))
 	}
 
 	repairedPDF, err := os.ReadFile(tempOutputFile.Name())
