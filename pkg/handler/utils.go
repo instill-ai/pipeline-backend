@@ -9,6 +9,10 @@ import (
 )
 
 func authenticateUser(ctx context.Context, allowVisitor bool) error {
+	if resource.GetRequestSingleHeader(ctx, constant.HeaderServiceKey) == "instill" {
+		return nil
+	}
+
 	if resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey) == "user" {
 		if resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey) == "" {
 			return service.ErrUnauthenticated

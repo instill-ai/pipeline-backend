@@ -311,6 +311,12 @@ func (c *ACLClient) CheckLinkPermission(ctx context.Context, objectType string, 
 
 // CheckPermission returns the access of the context user over a resource.
 func (c *ACLClient) CheckPermission(ctx context.Context, objectType string, objectUID uuid.UUID, role string) (bool, error) {
+
+	serviceType := resource.GetRequestSingleHeader(ctx, constant.HeaderServiceKey)
+	if serviceType == "instill" {
+		return true, nil
+	}
+
 	userType := resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey)
 
 	var userUID string

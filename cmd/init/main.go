@@ -8,7 +8,7 @@ import (
 	"go.opentelemetry.io/otel"
 
 	"github.com/instill-ai/pipeline-backend/cmd/init/definitionupdater"
-	"github.com/instill-ai/pipeline-backend/cmd/init/presetdownloader"
+
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
@@ -37,9 +37,6 @@ func main() {
 
 	repo := repository.NewRepository(db, redisClient)
 	if err := definitionupdater.UpdateComponentDefinitionIndex(ctx, repo); err != nil {
-		log.Fatal(err)
-	}
-	if err := presetdownloader.DownloadPresetPipelines(ctx, repo); err != nil {
 		log.Fatal(err)
 	}
 

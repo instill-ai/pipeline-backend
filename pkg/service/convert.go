@@ -411,18 +411,6 @@ func (c *converter) IncludeDetailInRecipe(ctx context.Context, ownerPermalink st
 func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
-	var recipe *datamodel.Recipe
-	if pbPipeline.Recipe != nil {
-		recipe = &datamodel.Recipe{}
-		b, err := protojson.Marshal(pbPipeline.Recipe)
-		if err != nil {
-			return nil, err
-		}
-		if err := json.Unmarshal(b, &recipe); err != nil {
-			return nil, err
-		}
-	}
-
 	profileImage, err := c.compressProfileImage(pbPipeline.GetProfileImage())
 	if err != nil {
 		return nil, err
@@ -477,7 +465,6 @@ func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespa
 			Valid:  true,
 		},
 		Readme:     pbPipeline.Readme,
-		Recipe:     recipe,
 		RecipeYAML: pbPipeline.RawRecipe,
 		Sharing:    dbSharing,
 		Metadata: func() []byte {
@@ -711,18 +698,6 @@ func (c *converter) ConvertPipelinesToPB(ctx context.Context, dbPipelines []*dat
 func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pb.PipelineRelease) (*datamodel.PipelineRelease, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
-	var recipe *datamodel.Recipe
-	if pbPipelineRelease.Recipe != nil {
-		recipe = &datamodel.Recipe{}
-		b, err := protojson.Marshal(pbPipelineRelease.Recipe)
-		if err != nil {
-			return nil, err
-		}
-		if err := json.Unmarshal(b, &recipe); err != nil {
-			return nil, err
-		}
-	}
-
 	return &datamodel.PipelineRelease{
 		ID: pbPipelineRelease.GetId(),
 
@@ -758,7 +733,6 @@ func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID 
 			Valid:  true,
 		},
 		Readme:      pbPipelineRelease.Readme,
-		Recipe:      recipe,
 		RecipeYAML:  pbPipelineRelease.RawRecipe,
 		PipelineUID: pipelineUID,
 

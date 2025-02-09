@@ -26,10 +26,17 @@ const (
 	HeaderVisitorUIDKey = "Instill-Visitor-Uid"
 	// HeaderAuthTypeKey is the context key the authentication type (user or
 	// visitor).
-	HeaderAuthTypeKey = "Instill-Auth-Type"
-
+	HeaderAuthTypeKey     = "Instill-Auth-Type"
 	HeaderInstillCodeKey  = "Instill-Share-Code"
 	HeaderReturnTracesKey = "Instill-Return-Traces"
+
+	// HeaderServiceKey is the context key for service-to-service communication.
+	// When present, it indicates the request originates from an internal
+	// service rather than an end user. Valid values are restricted to "instill"
+	// and can only be set by internal services. Requests with this header
+	// bypass standard authorization checks since they represent trusted
+	// internal traffic.
+	HeaderServiceKey = "Instill-Service"
 
 	HeaderUserAgentKey = "Instill-User-Agent"
 
