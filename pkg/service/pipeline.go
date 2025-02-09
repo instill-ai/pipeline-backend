@@ -1485,8 +1485,12 @@ func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resourc
 		return nil, err
 	}
 
-	dbPipelineReleaseToCreate.RecipeYAML = dbPipeline.RecipeYAML
-	dbPipelineReleaseToCreate.Metadata = dbPipeline.Metadata
+	if dbPipelineReleaseToCreate.RecipeYAML == "" {
+		dbPipelineReleaseToCreate.RecipeYAML = dbPipeline.RecipeYAML
+	}
+	if dbPipelineReleaseToCreate.Metadata == nil {
+		dbPipelineReleaseToCreate.Metadata = dbPipeline.Metadata
+	}
 
 	if err := s.repository.CreateNamespacePipelineRelease(ctx, ownerPermalink, pipelineUID, dbPipelineReleaseToCreate); err != nil {
 		return nil, err
