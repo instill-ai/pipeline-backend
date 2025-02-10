@@ -88,7 +88,7 @@ version: v1beta
 variable:
   input:
     title: Input
-    format: string
+    type: string
 
 output:
   answer:
