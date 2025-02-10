@@ -272,9 +272,12 @@ func (p *PipelineRelease) AfterFind(tx *gorm.DB) (err error) {
 }
 
 type Variable struct {
-	Title          string   `json:"title,omitempty" yaml:"title,omitempty"`
-	Description    string   `json:"description,omitempty" yaml:"description,omitempty"`
-	Format         string   `json:"instillFormat,omitempty" yaml:"format,omitempty"`
+	Title       string `json:"title,omitempty" yaml:"title,omitempty"`
+	Description string `json:"description,omitempty" yaml:"description,omitempty"`
+
+	// The `instillFormat` field has been renamed to `type`. The old field name is kept
+	// in the JSON tag to preserve backward compatibility for Console.
+	Type           string   `json:"instillFormat,omitempty" yaml:"type,omitempty"`
 	Listen         []string `json:"listen,omitempty" yaml:"listen,omitempty"`
 	Default        any      `json:"default,omitempty" yaml:"default,omitempty"`
 	InstillUIOrder int32    `json:"instillUiOrder,omitempty" yaml:"instill-ui-order,omitempty"`

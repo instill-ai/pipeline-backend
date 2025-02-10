@@ -20,6 +20,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000034"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000036"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000039"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000040"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
@@ -91,6 +92,8 @@ func (cm *CodeMigrator) Migrate(version uint) error {
 			Basic:            bc,
 			RetentionHandler: cm.RetentionHandler,
 		}
+	case 40:
+		m = &convert000040.RenameFormatToType{Basic: bc}
 	default:
 		return nil
 	}
