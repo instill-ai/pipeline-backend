@@ -584,7 +584,7 @@ variable:
   who:
     title: Who
     description: Who should be greeted?
-    format: string
+    type: string
 component:
   hello-0:
     type: hello

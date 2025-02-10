@@ -11,7 +11,7 @@ const recipeWithoutSetup = `
 version: v1beta
 variable:
   recipients:
-    format: array:string
+    type: array:string
 output:
   resp:
     title: Response

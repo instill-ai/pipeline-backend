@@ -235,7 +235,7 @@ func parseRecipeMetadata(ctx context.Context, metadataMap map[string][]byte, con
 	return pbStruct, dataSpec, nil
 }
 
-func isUnstructuredFormat(format string) bool {
+func isUnstructuredType(format string) bool {
 	if strings.HasPrefix(format, "array:") {
 		return format != "array:string" &&
 			format != "array:number" &&

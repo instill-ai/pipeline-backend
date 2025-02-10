@@ -860,11 +860,11 @@ func (s *service) preTriggerPipeline(
 		return ErrExceedMaxBatchSize
 	}
 
-	formatMap := map[string]string{}
+	typeMap := map[string]string{}
 	defaultValueMap := map[string]any{}
 
 	for k, v := range r.Variable {
-		formatMap[k] = v.Format
+		typeMap[k] = v.Type
 		defaultValueMap[k] = v.Default
 	}
 
@@ -887,7 +887,7 @@ func (s *service) preTriggerPipeline(
 		for k := range m {
 			switch str := m[k].(type) {
 			case string:
-				if isUnstructuredFormat(formatMap[k]) {
+				if isUnstructuredType(typeMap[k]) {
 					// Skip the base64 decoding if the string is a URL.
 					if strings.HasPrefix(str, "http://") || strings.HasPrefix(str, "https://") {
 						continue
@@ -899,7 +899,7 @@ func (s *service) preTriggerPipeline(
 					vars.Fields[k] = structpb.NewStringValue(downloadURL)
 				}
 			case []string:
-				if isUnstructuredFormat(formatMap[k]) {
+				if isUnstructuredType(typeMap[k]) {
 					for idx := range str {
 						// Skip the base64 decoding if the string is a URL
 						if strings.HasPrefix(str[idx], "http://") || strings.HasPrefix(str[idx], "https://") {
@@ -927,9 +927,9 @@ func (s *service) preTriggerPipeline(
 		return err
 	}
 
-	formats := map[string][]string{}
-	for k, v := range formatMap {
-		formats[k] = []string{v}
+	types := map[string][]string{}
+	for k, v := range typeMap {
+		types[k] = []string{v}
 	}
 
 	uploadingPipelineData := make([]map[string]any, len(pipelineData))
@@ -941,9 +941,9 @@ func (s *service) preTriggerPipeline(
 	for idx, d := range pipelineData {
 
 		variable := data.Map{}
-		for k := range formatMap {
+		for k := range typeMap {
 			v := d.Variable.Fields[k]
-			if _, ok := formatMap[k]; !ok {
+			if _, ok := typeMap[k]; !ok {
 				continue
 			}
 
@@ -963,7 +963,7 @@ func (s *service) preTriggerPipeline(
 				}
 			}
 
-			switch formatMap[k] {
+			switch typeMap[k] {
 			case "boolean":
 				if v == nil {
 					variable[k] = data.NewBoolean(defaultValueMap[k].(bool))
@@ -1097,7 +1097,7 @@ func (s *service) preTriggerPipeline(
 
 					// TODO: this is a temporary solution to handle the default
 					// value of integer type, we will implement a better
-					// solution for conversion JSON betweeen instill format
+					// solution for conversion JSON betweeen instill type
 					for i, val := range defaultValueMap[k].([]any) {
 						switch num := val.(type) {
 						case int:
