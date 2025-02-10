@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.51.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.50.0-beta...v0.51.0-beta) (2025-02-10)
+
+
+### Features
+
+* **all:** rename VDP to pipeline ([#963](https://github.com/instill-ai/pipeline-backend/issues/963)) ([8ba570a](https://github.com/instill-ai/pipeline-backend/commit/8ba570ae4013d78e1454be4725211c9539b53b3f))
+* **Docling:** prefetch model artifacts ([#964](https://github.com/instill-ai/pipeline-backend/issues/964)) ([c9ff323](https://github.com/instill-ai/pipeline-backend/commit/c9ff323851381de7bc4179cab129b4cb7241b434))
+* **document:** convert PDF to Markdown with Docling ([#959](https://github.com/instill-ai/pipeline-backend/issues/959)) ([a9dbf55](https://github.com/instill-ai/pipeline-backend/commit/a9dbf5576e68617ca40693f7839636c80a48487e))
+* **document:** log execution times for benchmarking ([#969](https://github.com/instill-ai/pipeline-backend/issues/969)) ([ac3e2c3](https://github.com/instill-ai/pipeline-backend/commit/ac3e2c3425a1c351ddda5ea0dd1e9d71ddf99ba0))
+* **init:** remove preset pipeline downloader ([#970](https://github.com/instill-ai/pipeline-backend/issues/970)) ([11f8f5c](https://github.com/instill-ai/pipeline-backend/commit/11f8f5cbab1b8993248b3f48b3651a1b46ca857a))
+* **perplexity:** add new Sonar models ([#957](https://github.com/instill-ai/pipeline-backend/issues/957)) ([2699679](https://github.com/instill-ai/pipeline-backend/commit/2699679c34cb5f2d7dd76b568bd778762423cc99))
+* **recipe:** rename `format` to `type` in variable section ([#971](https://github.com/instill-ai/pipeline-backend/issues/971)) ([88ead91](https://github.com/instill-ai/pipeline-backend/commit/88ead914d6477a9697e81537e77e3f58600ed80d))
+
+
+### Bug Fixes
+
+* **ci:** registry image build ([#960](https://github.com/instill-ai/pipeline-backend/issues/960)) ([3a56698](https://github.com/instill-ai/pipeline-backend/commit/3a56698fe5f4d4109cbc1d8e713727bd8500c640))
+
 ## [0.50.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.49.1-beta...v0.50.0-beta) (2025-01-16)
 
 
