@@ -62,8 +62,8 @@ Classify images into predefined categories.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Category | `category` | string | The predicted category of the input. |
-| Score | `score` | number | The confidence score of the predicted category of the input. |
+| Category | `category` | any | The predicted category of the input. |
+| Score | `score` | any | The confidence score of the predicted category of the input. |
 </div>
 
 
@@ -89,36 +89,8 @@ Detect, localize and delineate multiple objects in images.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Objects](#instance-segmentation-objects) | `objects` | array[object] | A list of detected instance bounding boxes. |
+| Objects | `objects` | any | A list of detected instance bounding boxes. |
 </div>
-
-<details>
-<summary> Output Objects in Instance Segmentation</summary>
-
-<h4 id="instance-segmentation-objects">Objects</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Bounding Box](#instance-segmentation-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format. |
-| Category | `category` | string | The predicted category of the bounding box. |
-| RLE | `rle` | string | Run Length Encoding (RLE) of instance mask within the bounding box. |
-| Score | `score` | number | The confidence score of the predicted instance object. |
-</div>
-
-<h4 id="instance-segmentation-bounding-box">Bounding Box</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Height | `height` | number | Bounding box height value |
-| Left | `left` | number | Bounding box left x-axis value |
-| Top | `top` | number | Bounding box top y-axis value |
-| Width | `width` | number | Bounding box width value |
-</div>
-</details>
 
 
 ### Keypoint
@@ -143,46 +115,8 @@ Detect and localize multiple keypoints of objects in images.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Objects](#keypoint-objects) | `objects` | array[object] | A list of keypoint objects, a keypoint object includes all the pre-defined keypoints of a detected object. |
+| Objects | `objects` | any | A list of keypoint objects, a keypoint object includes all the pre-defined keypoints of a detected object. |
 </div>
-
-<details>
-<summary> Output Objects in Keypoint</summary>
-
-<h4 id="keypoint-objects">Objects</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Bounding Box](#keypoint-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format. |
-| [Keypoints](#keypoint-keypoints) | `keypoints` | array | A keypoint group is composed of a list of pre-defined keypoints of a detected object. |
-| Score | `score` | number | The confidence score of the predicted object. |
-</div>
-
-<h4 id="keypoint-keypoints">Keypoints</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Visibility Score | `v` | number | visibility score of the keypoint. |
-| X Coordinate | `x` | number | x coordinate of the keypoint. |
-| Y Coordinate | `y` | number | y coordinate of the keypoint. |
-</div>
-
-<h4 id="keypoint-bounding-box">Bounding Box</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Height | `height` | number | Bounding box height value |
-| Left | `left` | number | Bounding box left x-axis value |
-| Top | `top` | number | Bounding box top y-axis value |
-| Width | `width` | number | Bounding box width value |
-</div>
-</details>
 
 
 ### Detection
@@ -207,35 +141,8 @@ Detect and localize multiple objects in images.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Objects](#detection-objects) | `objects` | array[object] | A list of detected objects. |
+| Objects | `objects` | any | A list of detected objects. |
 </div>
-
-<details>
-<summary> Output Objects in Detection</summary>
-
-<h4 id="detection-objects">Objects</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Bounding box](#detection-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format. |
-| Category | `category` | string | The predicted category of the bounding box. |
-| Score | `score` | number | The confidence score of the predicted category of the bounding box. |
-</div>
-
-<h4 id="detection-bounding-box">Bounding Box</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Height | `height` | number | Bounding box height value |
-| Left | `left` | number | Bounding box left x-axis value |
-| Top | `top` | number | Bounding box top y-axis value |
-| Width | `width` | number | Bounding box width value |
-</div>
-</details>
 
 
 ### OCR
@@ -260,35 +167,8 @@ Detect and recognize text in images.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Objects](#ocr-objects) | `objects` | array[object] | A list of detected bounding boxes. |
+| Objects | `objects` | any | A list of detected bounding boxes. |
 </div>
-
-<details>
-<summary> Output Objects in OCR</summary>
-
-<h4 id="ocr-objects">Objects</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Bounding Box](#ocr-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format. |
-| Score | `score` | number | The confidence score of the predicted object. |
-| Text | `text` | string | Text string recognised per bounding box. |
-</div>
-
-<h4 id="ocr-bounding-box">Bounding Box</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Height | `height` | number | Bounding box height value |
-| Left | `left` | number | Bounding box left x-axis value |
-| Top | `top` | number | Bounding box top y-axis value |
-| Width | `width` | number | Bounding box width value |
-</div>
-</details>
 
 
 ### Semantic Segmentation
@@ -313,22 +193,8 @@ Classify image pixels into predefined categories.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Stuffs](#semantic-segmentation-stuffs) | `stuffs` | array[object] | A list of RLE binary masks. |
+| Stuffs | `stuffs` | any | A list of RLE binary masks. |
 </div>
-
-<details>
-<summary> Output Objects in Semantic Segmentation</summary>
-
-<h4 id="semantic-segmentation-stuffs">Stuffs</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Category | `category` | string | Category text string corresponding to each stuff mask. |
-| RLE | `rle` | string | Run Length Encoding (RLE) of each stuff mask within the image. |
-</div>
-</details>
 
 
 ### Text Generation
@@ -392,30 +258,8 @@ Incorporate external chat history, specifically previous messages within the con
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#text-generation-chat-content) | `content` | array | The message content.  |
+| Content | `content` |  | The message content.  |
 | Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
-</div>
-<h4 id="text-generation-chat-content">Content</h4>
-
-The message content.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image-url`</li></ul></details>  |
-</div>
-<h4 id="text-generation-chat-image-url">Image URL</h4>
-
-The image URL
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
 </div>
 </details>
 
@@ -490,30 +334,8 @@ Incorporate external chat history, specifically previous messages within the con
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#visual-question-answering-content) | `content` | array | The message content.  |
+| Content | `content` |  | The message content.  |
 | Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
-</div>
-<h4 id="visual-question-answering-content">Content</h4>
-
-The message content.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Image URL](#visual-question-answering-image-url) | `image-url` | object | The image URL  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image-url`</li></ul></details>  |
-</div>
-<h4 id="visual-question-answering-image-url">Image URL</h4>
-
-The image URL
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
 </div>
 </details>
 
@@ -558,30 +380,8 @@ Incorporate external chat history, specifically previous messages within the con
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#chat-content) | `content` | array | The message content.  |
+| Content | `content` |  | The message content.  |
 | Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
-</div>
-<h4 id="chat-content">Content</h4>
-
-The message content.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Image URL](#chat-image-url) | `image-url` | object | The image URL  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image-url`</li></ul></details>  |
-</div>
-<h4 id="chat-image-url">Image URL</h4>
-
-The image URL
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
 </div>
 </details>
 

@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"gopkg.in/guregu/null.v4"
 
+	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
@@ -19,9 +20,9 @@ import (
 	miniox "github.com/instill-ai/x/minio"
 )
 
-func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadRecipeToMinioActivityParam) error {
+func (w *worker) UploadRecipeToMinIOActivity(ctx context.Context, param *MinIOUploadMetadata) error {
 	log := w.log.With(zap.String("PipelineTriggerUID", param.PipelineTriggerID))
-	log.Info("UploadRecipeToMinioActivity started")
+	log.Info("UploadRecipeToMinIOActivity started")
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.PipelineTriggerID)
 	if err != nil {
@@ -45,12 +46,16 @@ func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadR
 		return err
 	}
 
-	url, minioObjectInfo, err := w.minioClient.UploadFileBytes(ctx, log, &miniox.UploadFileBytesParam{
-		FilePath:      fmt.Sprintf("pipeline-runs/recipe/%s.json", param.PipelineTriggerID),
-		FileBytes:     b,
-		FileMimeType:  constant.ContentTypeJSON,
-		ExpiryRuleTag: param.ExpiryRuleTag,
-	})
+	url, minioObjectInfo, err := w.minioClient.WithLogger(log).UploadFileBytes(
+		ctx,
+		&miniox.UploadFileBytesParam{
+			UserUID:       param.UserUID,
+			FilePath:      fmt.Sprintf("pipeline-runs/recipe/%s.json", param.PipelineTriggerID),
+			FileBytes:     b,
+			FileMimeType:  constant.ContentTypeJSON,
+			ExpiryRuleTag: param.ExpiryRuleTag,
+		},
+	)
 	if err != nil {
 		log.Error("failed to upload pipeline run inputs to minio", zap.Error(err))
 		return err
@@ -67,12 +72,20 @@ func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadR
 		return err
 	}
 
-	log.Info("UploadRecipeToMinioActivity finished")
+	log.Info("UploadRecipeToMinIOActivity finished")
 	return nil
 }
 
-func (w *worker) UploadOutputsToMinioActivity(ctx context.Context, param *UploadOutputsToMinioActivityParam) error {
-	eventName := "UploadOutputsToMinioActivity"
+// MinIOUploadMetadata contains information needed to upload an object to
+// MinIO.
+type MinIOUploadMetadata struct {
+	UserUID           uuid.UUID
+	PipelineTriggerID string
+	ExpiryRuleTag     string
+}
+
+func (w *worker) UploadOutputsToMinIOActivity(ctx context.Context, param *MinIOUploadMetadata) error {
+	eventName := "UploadOutputsToMinIOActivity"
 	log := w.log.With(zap.String("PipelineTriggerUID", param.PipelineTriggerID))
 	log.Info(fmt.Sprintf("%s started", eventName))
 
@@ -99,12 +112,16 @@ func (w *worker) UploadOutputsToMinioActivity(ctx context.Context, param *Upload
 		outputStructs[idx] = outputValStr.GetStructValue()
 	}
 
-	url, objectInfo, err := w.minioClient.UploadFile(ctx, log, &miniox.UploadFileParam{
-		FilePath:      objectName,
-		FileContent:   outputStructs,
-		FileMimeType:  constant.ContentTypeJSON,
-		ExpiryRuleTag: param.ExpiryRuleTag,
-	})
+	url, objectInfo, err := w.minioClient.WithLogger(log).UploadFile(
+		ctx,
+		&miniox.UploadFileParam{
+			UserUID:       param.UserUID,
+			FilePath:      objectName,
+			FileContent:   outputStructs,
+			FileMimeType:  constant.ContentTypeJSON,
+			ExpiryRuleTag: param.ExpiryRuleTag,
+		},
+	)
 	if err != nil {
 		log.Error("failed to upload pipeline run inputs to minio", zap.Error(err))
 		return err
@@ -171,12 +188,16 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 
 	objectName := fmt.Sprintf("component-runs/%s/input/%s.json", param.ID, pipelineTriggerID)
 
-	url, objectInfo, err := w.minioClient.UploadFile(ctx, log, &miniox.UploadFileParam{
-		FilePath:      objectName,
-		FileContent:   compInputs,
-		FileMimeType:  constant.ContentTypeJSON,
-		ExpiryRuleTag: param.SystemVariables.ExpiryRule.Tag,
-	})
+	url, objectInfo, err := w.minioClient.WithLogger(log).UploadFile(
+		ctx,
+		&miniox.UploadFileParam{
+			UserUID:       param.SystemVariables.PipelineUserUID,
+			FilePath:      objectName,
+			FileContent:   compInputs,
+			FileMimeType:  constant.ContentTypeJSON,
+			ExpiryRuleTag: param.SystemVariables.ExpiryRule.Tag,
+		},
+	)
 	if err != nil {
 		log.Error("failed to upload component run inputs to minio", zap.Error(err))
 		return err
@@ -248,12 +269,16 @@ func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *Comp
 		return err
 	}
 
-	url, objectInfo, err := w.minioClient.UploadFile(ctx, log, &miniox.UploadFileParam{
-		FilePath:      objectName,
-		FileContent:   compOutputs,
-		FileMimeType:  constant.ContentTypeJSON,
-		ExpiryRuleTag: param.SystemVariables.ExpiryRule.Tag,
-	})
+	url, objectInfo, err := w.minioClient.WithLogger(log).UploadFile(
+		ctx,
+		&miniox.UploadFileParam{
+			UserUID:       param.SystemVariables.PipelineUserUID,
+			FilePath:      objectName,
+			FileContent:   compOutputs,
+			FileMimeType:  constant.ContentTypeJSON,
+			ExpiryRuleTag: param.SystemVariables.ExpiryRule.Tag,
+		},
+	)
 	if err != nil {
 		log.Error("failed to upload component run outputs to minio", zap.Error(err))
 		return err

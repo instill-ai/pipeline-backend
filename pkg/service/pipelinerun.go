@@ -14,7 +14,6 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
@@ -84,7 +83,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 		return nil, err
 	}
 
-	requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
+	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 
@@ -117,7 +116,8 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 	}
 
 	s.log.Info("start to get files from minio", zap.String("referenceIDs", strings.Join(referenceIDs, ",")))
-	fileContents, err := s.minioClient.GetFilesByPaths(ctx, s.log, referenceIDs)
+	fileContents, err := s.minioClient.WithLogger(s.log).
+		GetFilesByPaths(ctx, userUID, referenceIDs)
 	if err != nil {
 		s.log.Error("failed to get files from minio", zap.Error(err))
 	}
@@ -197,7 +197,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRunsRequest, filter filtering.Filter) (*pb.ListComponentRunsResponse, error) {
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
-	requesterUID, _ := resourcex.GetRequesterUIDAndUserUID(ctx)
+	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
 
 	orderBy, err := ordering.ParseOrderBy(req)
 	if err != nil {
@@ -237,7 +237,8 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 	}
 
 	s.log.Info("start to get files from minio", zap.String("referenceIDs", strings.Join(referenceIDs, ",")))
-	fileContents, err := s.minioClient.GetFilesByPaths(ctx, s.log, referenceIDs)
+	fileContents, err := s.minioClient.WithLogger(s.log).
+		GetFilesByPaths(ctx, userUID, referenceIDs)
 	if err != nil {
 		s.log.Error("failed to get files from minio", zap.Error(err))
 	}
@@ -390,21 +391,23 @@ type uploadPipelineRunInputsToMinioParam struct {
 }
 
 func (s *service) uploadPipelineRunInputsToMinio(ctx context.Context, param uploadPipelineRunInputsToMinioParam) error {
-	logger, _ := logger.GetZapLogger(ctx)
 	minioClient := s.minioClient
 	objectName := fmt.Sprintf("pipeline-runs/input/%s.json", param.pipelineTriggerID)
 
-	logger.Info("uploadPipelineRunInputsToMinio started",
+	s.log.Info("uploadPipelineRunInputsToMinio started",
 		zap.String("objectName", objectName),
 		zap.Any("pipelineData", param.pipelineData),
 	)
 
-	url, objectInfo, err := minioClient.UploadFile(ctx, logger, &miniox.UploadFileParam{
-		FilePath:      objectName,
-		FileContent:   param.pipelineData,
-		FileMimeType:  constant.ContentTypeJSON,
-		ExpiryRuleTag: param.expiryRule.Tag,
-	})
+	_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+	url, objectInfo, err := minioClient.WithLogger(s.log).
+		UploadFile(ctx, &miniox.UploadFileParam{
+			UserUID:       userUID,
+			FilePath:      objectName,
+			FileContent:   param.pipelineData,
+			FileMimeType:  constant.ContentTypeJSON,
+			ExpiryRuleTag: param.expiryRule.Tag,
+		})
 	if err != nil {
 		return fmt.Errorf("upload pipeline run inputs to minio: %w", err)
 	}
@@ -427,11 +430,11 @@ func (s *service) uploadPipelineRunInputsToMinio(ctx context.Context, param uplo
 
 	err = s.repository.UpdatePipelineRun(ctx, param.pipelineTriggerID, pipelineRunUpdate)
 	if err != nil {
-		logger.Error("save pipeline run input data", zap.Error(err))
+		s.log.Error("save pipeline run input data", zap.Error(err))
 		return err
 	}
 
-	logger.Info("uploadPipelineRunInputsToMinio finished")
+	s.log.Info("uploadPipelineRunInputsToMinio finished")
 
 	return nil
 }

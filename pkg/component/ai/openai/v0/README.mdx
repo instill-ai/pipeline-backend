@@ -91,30 +91,8 @@ Incorporate external chat history, specifically previous messages within the con
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#text-generation-content) | `content` | array | The message content.  |
+| Content | `content` |  | The message content.  |
 | Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
-</div>
-<h4 id="text-generation-content">Content</h4>
-
-The message content.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Image URL](#text-generation-image-url) | `image-url` | object | The image URL  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image-url`</li></ul></details>  |
-</div>
-<h4 id="text-generation-image-url">Image URL</h4>
-
-The image URL
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
 </div>
 <h4 id="text-generation-prediction">Prediction</h4>
 
@@ -279,7 +257,7 @@ Turn text into numbers, unlocking use cases like search.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Embedding | `embedding` | array[number] | Embedding of the input text. |
+| Embedding | `embedding` | any | Embedding of the input text. |
 </div>
 
 
