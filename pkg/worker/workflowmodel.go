@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"github.com/gofrs/uuid"
 	"github.com/minio/minio-go/v7"
 )
 
@@ -16,11 +17,13 @@ type UploadToMinioActivityResponse struct {
 }
 
 type UploadOutputsToMinioActivityParam struct {
+	UserUID           uuid.UUID
 	PipelineTriggerID string
 	ExpiryRuleTag     string
 }
 
 type UploadRecipeToMinioActivityParam struct {
+	UserUID           uuid.UUID
 	PipelineTriggerID string
 	ExpiryRuleTag     string
 	UploadToMinioActivityParam
