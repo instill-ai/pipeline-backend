@@ -77,43 +77,8 @@ Retrieve chat history from Redis.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Chat Message](#retrieve-chat-history-chat-message) | `messages` | array[object] | Messages. |
+| Chat Message | `messages` | any | Messages. |
 </div>
-
-<details>
-<summary> Output Objects in Retrieve Chat History</summary>
-
-<h4 id="retrieve-chat-history-chat-message">Chat Message</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Content](#retrieve-chat-history-content) | `content` | array | The message content |
-| Metadata | `metadata` | json | The message metadata |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant' |
-</div>
-
-<h4 id="retrieve-chat-history-content">Content</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Image URL](#retrieve-chat-history-image-url) | `image-url` | object | The image URL |
-| Text | `text` | string | The text content. |
-| Type | `type` | string | The type of the content part. |
-</div>
-
-<h4 id="retrieve-chat-history-image-url">Image URL</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data. |
-</div>
-</details>
 
 
 ### Write Chat Message
