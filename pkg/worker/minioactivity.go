@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"gopkg.in/guregu/null.v4"
 
+	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
@@ -19,9 +20,9 @@ import (
 	miniox "github.com/instill-ai/x/minio"
 )
 
-func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadRecipeToMinioActivityParam) error {
+func (w *worker) UploadRecipeToMinIOActivity(ctx context.Context, param *MinIOUploadMetadata) error {
 	log := w.log.With(zap.String("PipelineTriggerUID", param.PipelineTriggerID))
-	log.Info("UploadRecipeToMinioActivity started")
+	log.Info("UploadRecipeToMinIOActivity started")
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.PipelineTriggerID)
 	if err != nil {
@@ -71,12 +72,20 @@ func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadR
 		return err
 	}
 
-	log.Info("UploadRecipeToMinioActivity finished")
+	log.Info("UploadRecipeToMinIOActivity finished")
 	return nil
 }
 
-func (w *worker) UploadOutputsToMinioActivity(ctx context.Context, param *UploadOutputsToMinioActivityParam) error {
-	eventName := "UploadOutputsToMinioActivity"
+// MinIOUploadMetadata contains information needed to upload an object to
+// MinIO.
+type MinIOUploadMetadata struct {
+	UserUID           uuid.UUID
+	PipelineTriggerID string
+	ExpiryRuleTag     string
+}
+
+func (w *worker) UploadOutputsToMinIOActivity(ctx context.Context, param *MinIOUploadMetadata) error {
+	eventName := "UploadOutputsToMinIOActivity"
 	log := w.log.With(zap.String("PipelineTriggerUID", param.PipelineTriggerID))
 	log.Info(fmt.Sprintf("%s started", eventName))
 

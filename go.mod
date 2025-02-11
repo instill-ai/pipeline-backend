@@ -62,7 +62,6 @@ require (
 	github.com/lestrrat-go/structinfo v0.0.0-20210312050401-7f8bd69d6acb
 	github.com/lib/pq v1.10.9
 	github.com/mennanov/fieldmask-utils v1.0.0
-	github.com/minio/minio-go/v7 v7.0.76
 	github.com/nakagami/firebirdsql v0.9.10
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/openfga/api/proto v0.0.0-20240318145204-66b9e5cb403c
@@ -112,6 +111,8 @@ require (
 	gorm.io/gorm v1.25.12
 	gorm.io/plugin/dbresolver v1.5.3
 )
+
+require github.com/minio/minio-go/v7 v7.0.76 // indirect
 
 require (
 	cloud.google.com/go v0.115.0 // indirect

@@ -44,8 +44,8 @@ type Worker interface {
 
 	UpdatePipelineRunActivity(context.Context, *UpdatePipelineRunActivityParam) error
 	UpsertComponentRunActivity(context.Context, *UpsertComponentRunActivityParam) error
-	UploadOutputsToMinioActivity(context.Context, *UploadOutputsToMinioActivityParam) error
-	UploadRecipeToMinioActivity(context.Context, *UploadRecipeToMinioActivityParam) error
+	UploadOutputsToMinIOActivity(context.Context, *MinIOUploadMetadata) error
+	UploadRecipeToMinIOActivity(context.Context, *MinIOUploadMetadata) error
 	UploadComponentInputsActivity(context.Context, *ComponentActivityParam) error
 	UploadComponentOutputsActivity(context.Context, *ComponentActivityParam) error
 }
