@@ -23,7 +23,6 @@ import (
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/checkfield"
 
@@ -108,8 +107,6 @@ func (h *PublicHandler) GetHubStats(ctx context.Context, req *pb.GetHubStatsRequ
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	if err := authenticateUser(ctx, true); err != nil {
 		span.SetStatus(1, err.Error())
 		return &pb.GetHubStatsResponse{}, err
@@ -122,7 +119,7 @@ func (h *PublicHandler) GetHubStats(ctx context.Context, req *pb.GetHubStatsRequ
 		return &pb.GetHubStatsResponse{}, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -141,8 +138,6 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pb.ListPipelines
 	defer span.End()
 
 	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
 
 	if err := authenticateUser(ctx, true); err != nil {
 		span.SetStatus(1, err.Error())
@@ -190,7 +185,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pb.ListPipelines
 		return &pb.ListPipelinesResponse{}, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -235,8 +230,6 @@ func (h *PublicHandler) CreateNamespacePipeline(ctx context.Context, req *pb.Cre
 	defer span.End()
 
 	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req.GetPipeline(), append(createPipelineRequiredFields, immutablePipelineFields...)); err != nil {
@@ -283,7 +276,7 @@ func (h *PublicHandler) CreateNamespacePipeline(ctx context.Context, req *pb.Cre
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -346,8 +339,6 @@ func (h *PublicHandler) ListNamespacePipelines(ctx context.Context, req *pb.List
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -400,7 +391,7 @@ func (h *PublicHandler) ListNamespacePipelines(ctx context.Context, req *pb.List
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -452,8 +443,6 @@ func (h *PublicHandler) GetNamespacePipeline(ctx context.Context, req *pb.GetNam
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -471,7 +460,7 @@ func (h *PublicHandler) GetNamespacePipeline(ctx context.Context, req *pb.GetNam
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -636,8 +625,6 @@ func (h *PublicHandler) DeleteNamespacePipeline(ctx context.Context, req *pb.Del
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -664,7 +651,7 @@ func (h *PublicHandler) DeleteNamespacePipeline(ctx context.Context, req *pb.Del
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -684,8 +671,6 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pb.LookUpPipeli
 	defer span.End()
 
 	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, lookUpPipelineRequiredFields); err != nil {
@@ -713,7 +698,7 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pb.LookUpPipeli
 		Pipeline: pbPipeline,
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -807,8 +792,6 @@ func (h *PublicHandler) RenameNamespacePipeline(ctx context.Context, req *pb.Ren
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, renamePipelineRequiredFields); err != nil {
 		span.SetStatus(1, err.Error())
@@ -837,7 +820,7 @@ func (h *PublicHandler) RenameNamespacePipeline(ctx context.Context, req *pb.Ren
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -857,8 +840,6 @@ func (h *PublicHandler) CloneNamespacePipeline(ctx context.Context, req *pb.Clon
 	defer span.End()
 
 	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
 
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
@@ -884,7 +865,7 @@ func (h *PublicHandler) CloneNamespacePipeline(ctx context.Context, req *pb.Clon
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -903,8 +884,6 @@ func (h *PublicHandler) CloneNamespacePipelineRelease(ctx context.Context, req *
 	defer span.End()
 
 	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
 
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
@@ -934,7 +913,7 @@ func (h *PublicHandler) CloneNamespacePipelineRelease(ctx context.Context, req *
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -1063,8 +1042,6 @@ func (h *PublicHandler) TriggerAsyncNamespacePipeline(ctx context.Context, req *
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	ns, id, dbPipeline, returnTraces, err := h.preTriggerNamespacePipeline(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -1077,7 +1054,7 @@ func (h *PublicHandler) TriggerAsyncNamespacePipeline(ctx context.Context, req *
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -1120,8 +1097,6 @@ func (h *PublicHandler) CreateNamespacePipelineRelease(ctx context.Context, req 
 	defer span.End()
 
 	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req.GetRelease(), append(releaseCreateRequiredFields, immutablePipelineFields...)); err != nil {
@@ -1178,7 +1153,7 @@ func (h *PublicHandler) CreateNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -1232,8 +1207,6 @@ func (h *PublicHandler) ListNamespacePipelineReleases(ctx context.Context, req *
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		return nil, err
@@ -1277,7 +1250,7 @@ func (h *PublicHandler) ListNamespacePipelineReleases(ctx context.Context, req *
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -1328,8 +1301,6 @@ func (h *PublicHandler) GetNamespacePipelineRelease(ctx context.Context, req *pb
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		return nil, err
@@ -1349,7 +1320,7 @@ func (h *PublicHandler) GetNamespacePipelineRelease(ctx context.Context, req *pb
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -1398,8 +1369,6 @@ func (h *PublicHandler) UpdateNamespacePipelineRelease(ctx context.Context, req 
 	defer span.End()
 
 	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
 
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
@@ -1468,7 +1437,7 @@ func (h *PublicHandler) UpdateNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -1505,8 +1474,6 @@ func (h *PublicHandler) renameNamespacePipelineRelease(ctx context.Context, req 
 	defer span.End()
 
 	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, releaseRenameRequiredFields); err != nil {
@@ -1545,7 +1512,7 @@ func (h *PublicHandler) renameNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -1589,8 +1556,6 @@ func (h *PublicHandler) DeleteNamespacePipelineRelease(ctx context.Context, req 
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		return nil, err
@@ -1625,7 +1590,7 @@ func (h *PublicHandler) DeleteNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -1661,8 +1626,6 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 	defer span.End()
 
 	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
 
 	splits := strings.Split(req.GetName(), "/")
 	namespaceID := splits[1]
@@ -1702,7 +1665,7 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -1784,8 +1747,6 @@ func (h *PublicHandler) TriggerNamespacePipelineRelease(ctx context.Context, req
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	ns, releaseID, pbPipeline, _, returnTraces, err := h.preTriggerNamespacePipelineRelease(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -1798,7 +1759,7 @@ func (h *PublicHandler) TriggerNamespacePipelineRelease(ctx context.Context, req
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -1846,8 +1807,6 @@ func (h *PublicHandler) TriggerAsyncNamespacePipelineRelease(ctx context.Context
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	ns, releaseID, pbPipeline, pbPipelineRelease, returnTraces, err := h.preTriggerNamespacePipelineRelease(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -1860,7 +1819,7 @@ func (h *PublicHandler) TriggerAsyncNamespacePipelineRelease(ctx context.Context
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -1900,9 +1859,8 @@ func mergeInputsIntoData(inputs []*structpb.Struct, data []*pb.TriggerData) []*p
 }
 
 func (h *PublicHandler) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRunsRequest) (*pb.ListPipelineRunsResponse, error) {
-	logger, _ := logger.GetZapLogger(ctx)
 	logUUID, _ := uuid.NewV4()
-	logger.Info("ListPipelineRuns starts", zap.String("logUUID", logUUID.String()), zap.String("pipelineID", req.GetPipelineId()))
+	h.log.Info("ListPipelineRuns starts", zap.String("logUUID", logUUID.String()), zap.String("pipelineID", req.GetPipelineId()))
 
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
 		filtering.DeclareStandardFunctions(),
@@ -1923,11 +1881,11 @@ func (h *PublicHandler) ListPipelineRuns(ctx context.Context, req *pb.ListPipeli
 
 	resp, err := h.service.ListPipelineRuns(ctx, req, filter)
 	if err != nil {
-		logger.Error("failed in ListPipelineRuns", zap.String("logUUID", logUUID.String()), zap.String("pipelineID", req.GetPipelineId()), zap.Error(err))
+		h.log.Error("failed in ListPipelineRuns", zap.String("logUUID", logUUID.String()), zap.String("pipelineID", req.GetPipelineId()), zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to list pipeline runs")
 	}
 
-	logger.Info("ListPipelineRuns finished", zap.String("logUUID", logUUID.String()), zap.String("pipelineID", req.GetPipelineId()))
+	h.log.Info("ListPipelineRuns finished", zap.String("logUUID", logUUID.String()), zap.String("pipelineID", req.GetPipelineId()))
 
 	return resp, nil
 }
@@ -1959,17 +1917,16 @@ func (h *PublicHandler) ListComponentRuns(ctx context.Context, req *pb.ListCompo
 }
 
 func (h *PublicHandler) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListPipelineRunsByRequesterRequest) (*pb.ListPipelineRunsByRequesterResponse, error) {
-	logger, _ := logger.GetZapLogger(ctx)
 	logUUID, _ := uuid.NewV4()
-	logger.Info("ListPipelineRunsByRequester starts", zap.String("logUUID", logUUID.String()))
+	h.log.Info("ListPipelineRunsByRequester starts", zap.String("logUUID", logUUID.String()))
 
 	resp, err := h.service.ListPipelineRunsByRequester(ctx, req)
 	if err != nil {
-		logger.Error("failed in ListPipelineRunsByRequester", zap.String("logUUID", logUUID.String()), zap.Error(err))
+		h.log.Error("failed in ListPipelineRunsByRequester", zap.String("logUUID", logUUID.String()), zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to list pipeline runs")
 	}
 
-	logger.Info("ListPipelineRunsByRequester finished", zap.String("logUUID", logUUID.String()))
+	h.log.Info("ListPipelineRunsByRequester finished", zap.String("logUUID", logUUID.String()))
 
 	return resp, nil
 }

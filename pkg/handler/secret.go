@@ -16,7 +16,6 @@ import (
 
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/x/checkfield"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
@@ -55,8 +54,6 @@ func (h *PublicHandler) CreateNamespaceSecret(ctx context.Context, req *pb.Creat
 	defer span.End()
 
 	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload secret resource
 	if err := checkfield.CheckRequiredFields(req.GetSecret(), append(createSecretRequiredFields, immutableSecretFields...)); err != nil {
@@ -102,7 +99,7 @@ func (h *PublicHandler) CreateNamespaceSecret(ctx context.Context, req *pb.Creat
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -146,8 +143,6 @@ func (h *PublicHandler) ListNamespaceSecrets(ctx context.Context, req *pb.ListNa
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -165,7 +160,7 @@ func (h *PublicHandler) ListNamespaceSecrets(ctx context.Context, req *pb.ListNa
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -207,8 +202,6 @@ func (h *PublicHandler) GetNamespaceSecret(ctx context.Context, req *pb.GetNames
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -226,7 +219,7 @@ func (h *PublicHandler) GetNamespaceSecret(ctx context.Context, req *pb.GetNames
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -376,8 +369,6 @@ func (h *PublicHandler) DeleteNamespaceSecret(ctx context.Context, req *pb.Delet
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -404,7 +395,7 @@ func (h *PublicHandler) DeleteNamespaceSecret(ctx context.Context, req *pb.Delet
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),

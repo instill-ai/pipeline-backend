@@ -317,16 +317,11 @@ func main() {
 	publicGrpcS := grpc.NewServer(grpcServerOpts...)
 	reflection.Register(publicGrpcS)
 
-	pb.RegisterPipelinePrivateServiceServer(
-		privateGrpcS,
-		handler.NewPrivateHandler(ctx, service),
-	)
+	privateHandler := handler.NewPrivateHandler(service, logger)
+	pb.RegisterPipelinePrivateServiceServer(privateGrpcS, privateHandler)
 
-	ph := handler.NewPublicHandler(ctx, service)
-	pb.RegisterPipelinePublicServiceServer(
-		publicGrpcS,
-		ph,
-	)
+	publicHandler := handler.NewPublicHandler(service, logger)
+	pb.RegisterPipelinePublicServiceServer(publicGrpcS, publicHandler)
 
 	privateServeMux := runtime.NewServeMux(
 		runtime.WithForwardResponseOption(middleware.HTTPResponseModifier),
@@ -536,7 +531,7 @@ func main() {
 	// kill -2 is syscall.SIGINT
 	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
 	signal.Notify(quitSig, syscall.SIGINT, syscall.SIGTERM)
-	ph.(*handler.PublicHandler).SetReadiness(true)
+	publicHandler.SetReadiness(true)
 	select {
 	case err := <-errSig:
 		logger.Error(fmt.Sprintf("Fatal error: %v\n", err))

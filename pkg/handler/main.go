@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"go.opentelemetry.io/otel"
+	"go.uber.org/zap"
 
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
@@ -23,6 +24,7 @@ var tracer = otel.Tracer("pipeline-backend.public-handler.tracer")
 type PublicHandler struct {
 	pipelinepb.UnimplementedPipelinePublicServiceServer
 	service service.Service
+	log     *zap.Logger
 
 	ready bool
 }
@@ -38,9 +40,10 @@ type TriggerPipelineReleaseRequestInterface interface {
 }
 
 // NewPublicHandler initiates a handler instance
-func NewPublicHandler(ctx context.Context, s service.Service) pipelinepb.PipelinePublicServiceServer {
+func NewPublicHandler(s service.Service, log *zap.Logger) *PublicHandler {
 	return &PublicHandler{
 		service: s,
+		log:     log,
 	}
 }
 
@@ -82,12 +85,14 @@ func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinepb.Readiness
 type PrivateHandler struct {
 	pipelinepb.UnimplementedPipelinePrivateServiceServer
 	service service.Service
+	log     *zap.Logger
 }
 
 // NewPrivateHandler initiates a handler instance
-func NewPrivateHandler(ctx context.Context, s service.Service) pipelinepb.PipelinePrivateServiceServer {
+func NewPrivateHandler(s service.Service, log *zap.Logger) *PrivateHandler {
 	return &PrivateHandler{
 		service: s,
+		log:     log,
 	}
 }
 
