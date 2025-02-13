@@ -31,6 +31,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/durationpb"
 
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpczap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
@@ -593,7 +594,7 @@ func initTemporalNamespace(ctx context.Context, client client.Client) {
 		if _, err := client.WorkflowService().RegisterNamespace(ctx,
 			&workflowservice.RegisterNamespaceRequest{
 				Namespace: config.Config.Temporal.Namespace,
-				WorkflowExecutionRetentionPeriod: func() *time.Duration {
+				WorkflowExecutionRetentionPeriod: func() *durationpb.Duration {
 					// Check if the string ends with "d" for day.
 					s := config.Config.Temporal.Retention
 					if strings.HasSuffix(s, "d") {
@@ -604,7 +605,7 @@ func initTemporalNamespace(ctx context.Context, client client.Client) {
 						}
 						// Convert days to hours and then to a duration.
 						t := time.Hour * 24 * time.Duration(days)
-						return &t
+						return durationpb.New(t)
 					}
 					logger.Fatal(fmt.Sprintf("Unable to parse retention period in day: %s", err))
 					return nil

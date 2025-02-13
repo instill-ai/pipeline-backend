@@ -39,8 +39,8 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-github/v62 v62.0.0
 	github.com/google/uuid v1.6.0
-	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
+	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
 	github.com/h2non/filetype v1.1.3
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
@@ -69,7 +69,7 @@ require (
 	github.com/redis/go-redis/v9 v9.5.1
 	github.com/sijms/go-ora v1.3.2
 	github.com/slack-go/slack v0.12.5
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/tmc/langchaingo v0.1.10
 	github.com/u2takey/ffmpeg-go v0.5.0
 	github.com/warmans/ffmpeg-go v1.0.0
@@ -89,20 +89,20 @@ require (
 	go.opentelemetry.io/otel/sdk v1.24.0
 	go.opentelemetry.io/otel/sdk/metric v1.24.0
 	go.opentelemetry.io/otel/trace v1.24.0
-	go.temporal.io/api v1.16.0
-	go.temporal.io/sdk v1.21.0
+	go.temporal.io/api v1.44.1
+	go.temporal.io/sdk v1.32.1
 	go.uber.org/zap v1.26.0
 	golang.org/x/crypto v0.31.0
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
 	golang.org/x/image v0.18.0
 	golang.org/x/mod v0.17.0
 	golang.org/x/net v0.33.0
-	golang.org/x/oauth2 v0.21.0
+	golang.org/x/oauth2 v0.22.0
 	golang.org/x/text v0.21.0
 	google.golang.org/api v0.189.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20240701130421-f6361c86f094
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240722135656-d784300faade
-	google.golang.org/grpc v1.65.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20240827150818-7e3bb234dfed
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240827150818-7e3bb234dfed
+	google.golang.org/grpc v1.66.0
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/guregu/null.v4 v4.0.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -112,7 +112,10 @@ require (
 	gorm.io/plugin/dbresolver v1.5.3
 )
 
-require github.com/minio/minio-go/v7 v7.0.76 // indirect
+require (
+	github.com/minio/minio-go/v7 v7.0.76 // indirect
+	github.com/nexus-rpc/sdk-go v0.1.0 // indirect
+)
 
 require (
 	cloud.google.com/go v0.115.0 // indirect

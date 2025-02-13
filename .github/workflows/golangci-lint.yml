@@ -28,17 +28,17 @@ jobs:
       - name: Install onnxruntime library and headers
         run: |
           export ONNXRUNTIME_ROOT_PATH=$GITHUB_WORKSPACE/onnxruntime
-          LATEST_VERSION=$(wget -qO- https://api.github.com/repos/microsoft/onnxruntime/releases/latest | jq -r .tag_name)
+          VERSION=v1.20.1
           ONNX_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "aarch64" || echo "x64")
-          wget https://github.com/microsoft/onnxruntime/releases/download/${LATEST_VERSION}/onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz
-          tar -xzf onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz
-          mv onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v} ${ONNXRUNTIME_ROOT_PATH}
-          rm onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz
+          wget https://github.com/microsoft/onnxruntime/releases/download/${VERSION}/onnxruntime-linux-${ONNX_ARCH}-${VERSION#v}.tgz
+          tar -xzf onnxruntime-linux-${ONNX_ARCH}-${VERSION#v}.tgz
+          mv onnxruntime-linux-${ONNX_ARCH}-${VERSION#v} ${ONNXRUNTIME_ROOT_PATH}
+          rm onnxruntime-linux-${ONNX_ARCH}-${VERSION#v}.tgz
           echo "C_INCLUDE_PATH=${ONNXRUNTIME_ROOT_PATH}/include" >> $GITHUB_ENV
           echo "LD_RUN_PATH=${ONNXRUNTIME_ROOT_PATH}/lib" >> $GITHUB_ENV
           echo "LIBRARY_PATH=${ONNXRUNTIME_ROOT_PATH}/lib" >> $GITHUB_ENV
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.63.4
+          version: v1.64.4
           args: --timeout=10m --build-tags onnx
