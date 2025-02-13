@@ -5,8 +5,6 @@ import (
 
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
-
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
@@ -14,7 +12,6 @@ import (
 func (h *PublicHandler) ListComponentDefinitions(ctx context.Context, req *pb.ListComponentDefinitionsRequest) (*pb.ListComponentDefinitionsResponse, error) {
 	ctx, span := tracer.Start(ctx, "ListComponentDefinitions", trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
-	logger, _ := logger.GetZapLogger(ctx)
 
 	resp, err := h.service.ListComponentDefinitions(ctx, req)
 	if err != nil {
@@ -22,6 +19,6 @@ func (h *PublicHandler) ListComponentDefinitions(ctx context.Context, req *pb.Li
 		return nil, err
 	}
 
-	logger.Info("ListComponentDefinitions")
+	h.log.Info("ListComponentDefinitions")
 	return resp, nil
 }

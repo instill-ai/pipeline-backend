@@ -10,8 +10,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
-
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
@@ -22,7 +20,6 @@ func (h *PublicHandler) GetIntegration(ctx context.Context, req *pb.GetIntegrati
 	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	logger, _ := logger.GetZapLogger(ctx)
 	logUUID, _ := uuid.NewV4()
 
 	view := req.GetView()
@@ -36,7 +33,7 @@ func (h *PublicHandler) GetIntegration(ctx context.Context, req *pb.GetIntegrati
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -51,7 +48,6 @@ func (h *PublicHandler) ListIntegrations(ctx context.Context, req *pb.ListIntegr
 	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	logger, _ := logger.GetZapLogger(ctx)
 	logUUID, _ := uuid.NewV4()
 
 	resp, err := h.service.ListIntegrations(ctx, req)
@@ -60,7 +56,7 @@ func (h *PublicHandler) ListIntegrations(ctx context.Context, req *pb.ListIntegr
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -76,7 +72,6 @@ func (h *PublicHandler) CreateNamespaceConnection(ctx context.Context, req *pb.C
 	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	logger, _ := logger.GetZapLogger(ctx)
 	logUUID, _ := uuid.NewV4()
 
 	if err := authenticateUser(ctx, false); err != nil {
@@ -98,7 +93,7 @@ func (h *PublicHandler) CreateNamespaceConnection(ctx context.Context, req *pb.C
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -114,7 +109,6 @@ func (h *PublicHandler) UpdateNamespaceConnection(ctx context.Context, req *pb.U
 	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	logger, _ := logger.GetZapLogger(ctx)
 	logUUID, _ := uuid.NewV4()
 
 	if err := authenticateUser(ctx, false); err != nil {
@@ -128,7 +122,7 @@ func (h *PublicHandler) UpdateNamespaceConnection(ctx context.Context, req *pb.U
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -143,7 +137,6 @@ func (h *PublicHandler) DeleteNamespaceConnection(ctx context.Context, req *pb.D
 	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	logger, _ := logger.GetZapLogger(ctx)
 	logUUID, _ := uuid.NewV4()
 
 	if err := authenticateUser(ctx, false); err != nil {
@@ -165,7 +158,7 @@ func (h *PublicHandler) DeleteNamespaceConnection(ctx context.Context, req *pb.D
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -182,7 +175,6 @@ func (h *PublicHandler) ListPipelineIDsByConnectionID(ctx context.Context, req *
 	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	logger, _ := logger.GetZapLogger(ctx)
 	logUUID, _ := uuid.NewV4()
 
 	if err := authenticateUser(ctx, false); err != nil {
@@ -196,7 +188,7 @@ func (h *PublicHandler) ListPipelineIDsByConnectionID(ctx context.Context, req *
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -218,7 +210,6 @@ func (h *PublicHandler) GetNamespaceConnection(ctx context.Context, req *pb.GetN
 	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	logger, _ := logger.GetZapLogger(ctx)
 	logUUID, _ := uuid.NewV4()
 
 	if err := authenticateUser(ctx, false); err != nil {
@@ -232,7 +223,7 @@ func (h *PublicHandler) GetNamespaceConnection(ctx context.Context, req *pb.GetN
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -248,7 +239,6 @@ func (h *PublicHandler) ListNamespaceConnections(ctx context.Context, req *pb.Li
 	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	logger, _ := logger.GetZapLogger(ctx)
 	logUUID, _ := uuid.NewV4()
 
 	if err := authenticateUser(ctx, false); err != nil {
@@ -262,7 +252,7 @@ func (h *PublicHandler) ListNamespaceConnections(ctx context.Context, req *pb.Li
 		return nil, err
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
+	h.log.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
