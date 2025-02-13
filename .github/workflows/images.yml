@@ -46,6 +46,7 @@ jobs:
           push: true
           build-args: |
             SERVICE_NAME=pipeline-backend
+            SERVICE_VERSION=${{ github.sha }}
           tags: instill/pipeline-backend:latest-amd64
           cache-from: type=registry,ref=instill/pipeline-backend:buildcache
           cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
@@ -70,6 +71,7 @@ jobs:
           push: true
           build-args: |
             SERVICE_NAME=pipeline-backend
+            SERVICE_VERSION=${{steps.set_version.outputs.no_v_tag}}
           tags: instill/pipeline-backend:${{steps.set_version.outputs.no_v_tag}}-amd64
           cache-from: type=registry,ref=instill/pipeline-backend:buildcache
           cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
@@ -114,6 +116,7 @@ jobs:
           push: true
           build-args: |
             SERVICE_NAME=pipeline-backend
+            SERVICE_VERSION=${{ github.sha }}
           tags: instill/pipeline-backend:latest-arm64
           cache-from: type=registry,ref=instill/pipeline-backend:buildcache
           cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
@@ -138,6 +141,7 @@ jobs:
           push: true
           build-args: |
             SERVICE_NAME=pipeline-backend
+            SERVICE_VERSION=${{steps.set_version.outputs.no_v_tag}}
           tags: instill/pipeline-backend:${{steps.set_version.outputs.no_v_tag}}-arm64
           cache-from: type=registry,ref=instill/pipeline-backend:buildcache
           cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max

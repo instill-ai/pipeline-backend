@@ -67,6 +67,7 @@ jobs:
           load: true
           build-args: |
             SERVICE_NAME=pipeline-backend
+            SERVICE_VERSION=${{ github.sha }}
           tags: instill/pipeline-backend:latest
 
       - name: Checkout repo (instill-core)
