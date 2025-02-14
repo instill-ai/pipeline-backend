@@ -65,6 +65,10 @@ const gracefulShutdownTimeout = 60 * time.Minute
 
 var propagator propagation.TextMapPropagator
 
+// These variables might be overridden at buildtime.
+var version = "dev"
+var serviceName = "pipeline-backend"
+
 func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler) http.Handler {
 	return h2c.NewHandler(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -255,9 +259,17 @@ func main() {
 	repo := repository.NewRepository(db, redisClient)
 	ms := memory.NewMemoryStore()
 
-	// Initialize Minio client
+	// Initialize MinIO client
 	retentionHandler := service.NewRetentionHandler()
-	minioClient, err := miniox.NewMinioClientAndInitBucket(ctx, &config.Config.Minio, logger, retentionHandler.ListExpiryRules()...)
+	minioClient, err := miniox.NewMinioClientAndInitBucket(ctx, miniox.ClientParams{
+		Config:      config.Config.Minio,
+		Logger:      logger,
+		ExpiryRules: retentionHandler.ListExpiryRules(),
+		AppInfo: miniox.AppInfo{
+			Name:    serviceName,
+			Version: version,
+		},
+	})
 	if err != nil {
 		logger.Fatal("failed to create minio client", zap.Error(err))
 	}

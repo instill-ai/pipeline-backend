@@ -946,8 +946,8 @@ github.com/instill-ai/protogen-go v0.3.3-alpha.0.20250203091356-2b4937e1c3a2 h1:
 github.com/instill-ai/protogen-go v0.3.3-alpha.0.20250203091356-2b4937e1c3a2/go.mod h1:fusT92ceR5+GVn1LT5mT4XcOq1DlemBjpb6JpodLLdc=
 github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a h1:gmy8BcCFDZQan40c/D3f62DwTYtlCwi0VrSax+pKffw=
 github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a/go.mod h1:EpX3Yr661uWULtZf5UnJHfr5rw2PDyX8ku4Kx0UtYFw=
-github.com/instill-ai/x v0.6.0-alpha.0.20250212192855-6af31ff7cc27 h1:5MwjakOj/G1iP7NwUBS7WCKvnAeI72mhgqq/abfuV+0=
-github.com/instill-ai/x v0.6.0-alpha.0.20250212192855-6af31ff7cc27/go.mod h1:4oSOcDRtho+uLswiPvty5sF5OxiiprUh8KCOiFdKyPw=
+github.com/instill-ai/x v0.6.0-alpha.0.20250213104218-8000506aa455 h1:hMkl7Csrasx0c8tMG/2cRF6CtA2W32DM9NGtmo051L4=
+github.com/instill-ai/x v0.6.0-alpha.0.20250213104218-8000506aa455/go.mod h1:4oSOcDRtho+uLswiPvty5sF5OxiiprUh8KCOiFdKyPw=
 github.com/intel/goresctrl v0.2.0/go.mod h1:+CZdzouYFn5EsxgqAQTEzMfwKwuc0fVdMrT9FCCAVRQ=
 github.com/itchyny/gojq v0.12.14 h1:6k8vVtsrhQSYgSGg827AD+PVVaB1NLXEdX+dda2oZCc=
 github.com/itchyny/gojq v0.12.14/go.mod h1:y1G7oO7XkcR1LPZO59KyoCRy08T3j9vDYRV0GgYSS+s=
