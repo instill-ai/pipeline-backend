@@ -46,7 +46,7 @@ require (
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20250203091356-2b4937e1c3a2
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
-	github.com/instill-ai/x v0.6.0-alpha.0.20250213104218-8000506aa455
+	github.com/instill-ai/x v0.6.0-alpha.0.20250217111826-ae24d382e703
 	github.com/itchyny/gojq v0.12.14
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgx/v5 v5.5.5
