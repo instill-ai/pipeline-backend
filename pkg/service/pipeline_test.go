@@ -19,7 +19,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	miniox "github.com/instill-ai/x/minio"
+	"github.com/instill-ai/x/minio"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
@@ -131,7 +131,7 @@ type serviceConfig struct {
 	converter                    Converter
 	mgmtPublicServiceClient      mgmtpb.MgmtPublicServiceClient
 	mgmtPrivateServiceClient     mgmtpb.MgmtPrivateServiceClient
-	minioClient                  miniox.MinioI
+	minioClient                  minio.Client
 	componentStore               *componentstore.Store
 	memory                       memory.MemoryStore
 	workerUID                    uuid.UUID

@@ -18,12 +18,12 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
+	"github.com/instill-ai/x/minio"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
-	miniox "github.com/instill-ai/x/minio"
 )
 
 // Service interface
@@ -107,7 +107,7 @@ type service struct {
 	mgmtPrivateServiceClient     mgmtpb.MgmtPrivateServiceClient
 	aclClient                    acl.ACLClientInterface
 	converter                    Converter
-	minioClient                  miniox.MinioI
+	minioClient                  minio.Client
 	memory                       memory.MemoryStore
 	log                          *zap.Logger
 	workerUID                    uuid.UUID
@@ -126,7 +126,7 @@ func NewService(
 	converter Converter,
 	mgmtPublicServiceClient mgmtpb.MgmtPublicServiceClient,
 	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient,
-	minioClient miniox.MinioI,
+	minioClient minio.Client,
 	componentStore *componentstore.Store,
 	memory memory.MemoryStore,
 	workerUID uuid.UUID,

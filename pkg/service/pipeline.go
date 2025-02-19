@@ -37,7 +37,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
 	"github.com/instill-ai/x/errmsg"
-	miniox "github.com/instill-ai/x/minio"
+	"github.com/instill-ai/x/minio"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
@@ -853,7 +853,7 @@ func (s *service) preTriggerPipeline(
 	r *datamodel.Recipe,
 	pipelineTriggerID string,
 	pipelineData []*pipelinepb.TriggerData,
-	expiryRule miniox.ExpiryRule,
+	expiryRule minio.ExpiryRule,
 ) error {
 	batchSize := len(pipelineData)
 	if batchSize > constant.MaxBatchSize {
@@ -1782,7 +1782,7 @@ type triggerParams struct {
 	pipelineTriggerID  string
 	requesterUID       uuid.UUID
 	userUID            uuid.UUID
-	expiryRule         miniox.ExpiryRule
+	expiryRule         minio.ExpiryRule
 }
 
 func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams) (*longrunningpb.Operation, error) {

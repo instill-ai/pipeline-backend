@@ -14,12 +14,12 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	"github.com/instill-ai/x/minio"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/generic/scheduler/v0"
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
-	miniox "github.com/instill-ai/x/minio"
 )
 
 // TaskQueue is the Temporal task queue name for pipeline-backend
@@ -56,7 +56,7 @@ type WorkerConfig struct {
 	RedisClient                  *redis.Client
 	InfluxDBWriteClient          api.WriteAPI
 	Component                    *componentstore.Store
-	MinioClient                  miniox.MinioI
+	MinioClient                  minio.Client
 	MemoryStore                  memory.MemoryStore
 	WorkerUID                    uuid.UUID
 	ArtifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
@@ -71,7 +71,7 @@ type worker struct {
 	redisClient                  *redis.Client
 	influxDBWriteClient          api.WriteAPI
 	component                    *componentstore.Store
-	minioClient                  miniox.MinioI
+	minioClient                  minio.Client
 	log                          *zap.Logger
 	memoryStore                  memory.MemoryStore
 	workerUID                    uuid.UUID

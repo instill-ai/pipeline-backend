@@ -19,10 +19,12 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/x/minio"
 
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	usagepb "github.com/instill-ai/protogen-go/core/usage/v1beta"
+	resourcex "github.com/instill-ai/x/resource"
 )
 
 // InitMgmtPublicServiceClient initialises a MgmtPublicServiceClient instance
@@ -218,16 +220,16 @@ var minioURLPattern = regexp.MustCompile(`https?://[^/]+/v1alpha/namespaces/[^/]
 type artifactBinaryFetcher struct {
 	binaryFetcher  *binaryFetcher
 	artifactClient artifactpb.ArtifactPrivateServiceClient // By having this injected, main.go is responsible of closing the connection.
-	minIOClient    BlobStorage
+	fileGetter     *minio.FileGetter
 }
 
-func NewArtifactBinaryFetcher(ac artifactpb.ArtifactPrivateServiceClient, mc BlobStorage) BinaryFetcher {
+func NewArtifactBinaryFetcher(ac artifactpb.ArtifactPrivateServiceClient, fg *minio.FileGetter) BinaryFetcher {
 	return &artifactBinaryFetcher{
 		binaryFetcher: &binaryFetcher{
 			httpClient: resty.New().SetRetryCount(3),
 		},
 		artifactClient: ac,
-		minIOClient:    mc,
+		fileGetter:     fg,
 	}
 }
 
@@ -247,7 +249,6 @@ func (f *artifactBinaryFetcher) FetchFromURL(ctx context.Context, url string) (b
 }
 
 func (f *artifactBinaryFetcher) fetchFromBlobStorage(ctx context.Context, urlUID uuid.UUID) (b []byte, contentType string, filename string, err error) {
-
 	objectURLRes, err := f.artifactClient.GetObjectURL(ctx, &artifactpb.GetObjectURLRequest{
 		Uid: urlUID.String(),
 	})
@@ -270,17 +271,20 @@ func (f *artifactBinaryFetcher) fetchFromBlobStorage(ctx context.Context, urlUID
 	bucketName := "instill-ai-blob"
 	objectPath := *objectRes.Object.Path
 
-	b, _, err = f.minIOClient.GetFile(ctx, bucketName, objectPath)
+	// TODO this won't always produce a valid user UID (e.g. the jobs in the
+	// worker don't have this in the context).
+	// If we want a full audit of the MinIO actions (or if we want to check
+	// object permissions), we need to update the signature to pass the user
+	// UID explicitly.
+	_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+	b, _, err = f.fileGetter.GetFile(ctx, minio.GetFileParams{
+		BucketName: bucketName,
+		Path:       objectPath,
+		UserUID:    userUID,
+	})
 	if err != nil {
 		return nil, "", "", err
 	}
 	contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
 	return b, contentType, objectRes.Object.Name, nil
-}
-
-// BlobStorage is an interface for fetching files from blob storage
-// TODO: we should put this interface in x package
-type BlobStorage interface {
-	// GetFile fetches a file from blob storage
-	GetFile(ctx context.Context, bucketName, objectPath string) (data []byte, contentType string, err error)
 }
