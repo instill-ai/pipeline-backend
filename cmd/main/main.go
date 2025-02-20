@@ -49,6 +49,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/usage"
+	"github.com/instill-ai/x/minio"
 	"github.com/instill-ai/x/temporal"
 	"github.com/instill-ai/x/zapadapter"
 
@@ -57,7 +58,6 @@ import (
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pipelineworker "github.com/instill-ai/pipeline-backend/pkg/worker"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
-	miniox "github.com/instill-ai/x/minio"
 )
 
 const gracefulShutdownWaitPeriod = 15 * time.Second
@@ -260,22 +260,24 @@ func main() {
 	ms := memory.NewMemoryStore()
 
 	// Initialize MinIO client
-	retentionHandler := service.NewRetentionHandler()
-	minioClient, err := miniox.NewMinioClientAndInitBucket(ctx, miniox.ClientParams{
-		Config:      config.Config.Minio,
-		Logger:      logger,
-		ExpiryRules: retentionHandler.ListExpiryRules(),
-		AppInfo: miniox.AppInfo{
+	minIOParams := minio.ClientParams{
+		Config: config.Config.Minio,
+		Logger: logger,
+		AppInfo: minio.AppInfo{
 			Name:    serviceName,
 			Version: version,
 		},
-	})
-	if err != nil {
-		logger.Fatal("failed to create minio client", zap.Error(err))
 	}
-	minioxClientWrapper, err := miniox.NewMinioClient(ctx, &config.Config.Minio, logger)
+	minIOFileGetter, err := minio.NewFileGetter(minIOParams)
 	if err != nil {
-		logger.Fatal("failed to create miniox client wrapper", zap.Error(err))
+		logger.Fatal("Failed to create MinIO file getter", zap.Error(err))
+	}
+
+	retentionHandler := service.NewRetentionHandler()
+	minIOParams.ExpiryRules = retentionHandler.ListExpiryRules()
+	minIOClient, err := minio.NewMinIOClientAndInitBucket(ctx, minIOParams)
+	if err != nil {
+		logger.Fatal("failed to create MinIO client", zap.Error(err))
 	}
 
 	artifactPublicServiceClient, artifactPublicServiceClientConn := external.InitArtifactPublicServiceClient(ctx)
@@ -288,7 +290,7 @@ func main() {
 		defer artifactPrivateServiceClientConn.Close()
 	}
 
-	binaryFetcher := external.NewArtifactBinaryFetcher(artifactPrivateServiceClient, minioxClientWrapper)
+	binaryFetcher := external.NewArtifactBinaryFetcher(artifactPrivateServiceClient, minIOFileGetter)
 
 	compStore := componentstore.Init(componentstore.InitParams{
 		Logger:         logger,
@@ -313,7 +315,7 @@ func main() {
 		}),
 		mgmtPublicServiceClient,
 		mgmtPrivateServiceClient,
-		minioClient,
+		minIOClient,
 		compStore,
 		ms,
 		workerUID,
@@ -477,7 +479,7 @@ func main() {
 			RedisClient:                  redisClient,
 			InfluxDBWriteClient:          timeseries.WriteAPI(),
 			Component:                    compStore,
-			MinioClient:                  minioClient,
+			MinioClient:                  minIOClient,
 			MemoryStore:                  ms,
 			WorkerUID:                    workerUID,
 			ArtifactPublicServiceClient:  artifactPublicServiceClient,
