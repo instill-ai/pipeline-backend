@@ -188,6 +188,8 @@ type SimilarityChunk struct {
 	TextContent string `json:"text-content"`
 	// Source file name
 	SourceFileName string `json:"source-file-name"`
+	// Content type
+	ContentType string `json:"content-type"`
 }
 
 // QueryInput is the input for querying

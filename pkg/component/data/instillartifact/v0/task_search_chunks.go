@@ -29,14 +29,41 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 	defer cancel()
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
+	var fileMediaType artifactPB.FileMediaType
+	var contentType artifactPB.ContentType
+
+	switch inputStruct.FileMediaType {
+	case "document":
+		fileMediaType = artifactPB.FileMediaType_FILE_MEDIA_TYPE_DOCUMENT
+	case "image":
+		fileMediaType = artifactPB.FileMediaType_FILE_MEDIA_TYPE_IMAGE
+	case "audio":
+		fileMediaType = artifactPB.FileMediaType_FILE_MEDIA_TYPE_AUDIO
+	case "video":
+		fileMediaType = artifactPB.FileMediaType_FILE_MEDIA_TYPE_VIDEO
+	default:
+		fileMediaType = artifactPB.FileMediaType_FILE_MEDIA_TYPE_UNSPECIFIED
+	}
+
+	switch inputStruct.ContetType {
+	case "chunk":
+		contentType = artifactPB.ContentType_CONTENT_TYPE_CHUNK
+	case "summary":
+		contentType = artifactPB.ContentType_CONTENT_TYPE_SUMMARY
+	case "augmented":
+		contentType = artifactPB.ContentType_CONTENT_TYPE_AUGMENTED
+	default:
+		contentType = artifactPB.ContentType_CONTENT_TYPE_UNSPECIFIED
+	}
+
 	searchRes, err := artifactClient.SimilarityChunksSearch(ctx, &artifactPB.SimilarityChunksSearchRequest{
 		NamespaceId:   inputStruct.Namespace,
 		CatalogId:     inputStruct.CatalogID,
 		TextPrompt:    inputStruct.TextPrompt,
 		TopK:          inputStruct.TopK,
 		FileName:      inputStruct.Filename,
-		FileMediaType: artifactPB.FileMediaType(artifactPB.FileMediaType_value[inputStruct.FileMediaType]),
-		ContentType:   artifactPB.ContentType(artifactPB.ContentType_value[inputStruct.ContetType]),
+		FileMediaType: fileMediaType,
+		ContentType:   contentType,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to search chunks: %w", err)
@@ -52,6 +79,7 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 			SimilarityScore: chunkPB.SimilarityScore,
 			TextContent:     chunkPB.TextContent,
 			SourceFileName:  chunkPB.SourceFile,
+			ContentType:     chunkPB.GetChunkMetadata().GetContentType().String(),
 		})
 	}
 
