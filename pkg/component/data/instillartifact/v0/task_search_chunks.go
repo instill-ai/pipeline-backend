@@ -30,10 +30,13 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
 	searchRes, err := artifactClient.SimilarityChunksSearch(ctx, &artifactPB.SimilarityChunksSearchRequest{
-		NamespaceId: inputStruct.Namespace,
-		CatalogId:   inputStruct.CatalogID,
-		TextPrompt:  inputStruct.TextPrompt,
-		TopK:        inputStruct.TopK,
+		NamespaceId:   inputStruct.Namespace,
+		CatalogId:     inputStruct.CatalogID,
+		TextPrompt:    inputStruct.TextPrompt,
+		TopK:          inputStruct.TopK,
+		FileName:      inputStruct.Filename,
+		FileMediaType: artifactPB.FileMediaType(artifactPB.FileMediaType_value[inputStruct.FileMediaType]),
+		ContentType:   artifactPB.ContentType(artifactPB.ContentType_value[inputStruct.ContetType]),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to search chunks: %w", err)

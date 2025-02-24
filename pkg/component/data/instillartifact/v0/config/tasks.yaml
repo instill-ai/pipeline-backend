@@ -582,6 +582,34 @@ TASK_RETRIEVE:
         uiOrder: 2
         type: integer
         title: Top K
+      filename:
+        description: File name to filter.
+        uiOrder: 3
+        type: string
+        title: Filename
+      file-media-type:
+        description: The media type to filter.
+        uiOrder: 4
+        type: string
+        default: FILE_MEDIA_TYPE_DOCUMENT
+        enum:
+          - FILE_MEDIA_TYPE_UNSPECIFIED
+          - FILE_MEDIA_TYPE_DOCUMENT
+          - FILE_MEDIA_TYPE_IMAGE
+          - FILE_MEDIA_TYPE_AUDIO
+          - FILE_MEDIA_TYPE_VIDEO
+        title: File media type
+      content-type:
+        description: The content type to filter.
+        uiOrder: 5
+        type: string
+        default: CONTENT_TYPE_CHUNK
+        enum:
+          - CONTENT_TYPE_UNSPECIFIED
+          - CONTENT_TYPE_CHUNK
+          - CONTENT_TYPE_SUMMARY
+          - CONTENT_TYPE_AUGMENTED
+        title: Content type
     required:
       - namespace
       - catalog-id

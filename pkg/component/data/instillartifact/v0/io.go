@@ -164,6 +164,12 @@ type SearchChunksInput struct {
 	TextPrompt string `json:"text-prompt"`
 	// TopK for searching chunks
 	TopK uint32 `json:"top-k"`
+	// File name to filter
+	Filename string `json:"filename"`
+	// The media type to filter
+	FileMediaType string `json:"file-media-type"`
+	// The content type to filter
+	ContetType string `json:"content-type"`
 }
 
 // SearchChunksOutput is the output for searching chunks
