@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.51.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.50.0-beta...v0.51.0-beta) (2025-02-25)
+
+
+### Features
+
+* **all:** rename VDP to pipeline ([#963](https://github.com/instill-ai/pipeline-backend/issues/963)) ([8ba570a](https://github.com/instill-ai/pipeline-backend/commit/8ba570ae4013d78e1454be4725211c9539b53b3f))
+* **component:** support metadata filter in artifact component ([#979](https://github.com/instill-ai/pipeline-backend/issues/979)) ([624029a](https://github.com/instill-ai/pipeline-backend/commit/624029a8db9f2070ed54d429936eae54f5a33b31))
+* **Docling:** prefetch model artifacts ([#964](https://github.com/instill-ai/pipeline-backend/issues/964)) ([c9ff323](https://github.com/instill-ai/pipeline-backend/commit/c9ff323851381de7bc4179cab129b4cb7241b434))
+* **document:** convert PDF to Markdown with Docling ([#959](https://github.com/instill-ai/pipeline-backend/issues/959)) ([a9dbf55](https://github.com/instill-ai/pipeline-backend/commit/a9dbf5576e68617ca40693f7839636c80a48487e))
+* **document:** log execution times for benchmarking ([#969](https://github.com/instill-ai/pipeline-backend/issues/969)) ([ac3e2c3](https://github.com/instill-ai/pipeline-backend/commit/ac3e2c3425a1c351ddda5ea0dd1e9d71ddf99ba0))
+* **init:** remove preset pipeline downloader ([#970](https://github.com/instill-ai/pipeline-backend/issues/970)) ([11f8f5c](https://github.com/instill-ai/pipeline-backend/commit/11f8f5cbab1b8993248b3f48b3651a1b46ca857a))
+* **minio:** add client info and user header to artifact binary fetcher ([#978](https://github.com/instill-ai/pipeline-backend/issues/978)) ([78c9c1f](https://github.com/instill-ai/pipeline-backend/commit/78c9c1f511faa4872d4c42161123ee6a6956669a))
+* **minio:** add service name and version to MinIO requests ([#976](https://github.com/instill-ai/pipeline-backend/issues/976)) ([39c66cd](https://github.com/instill-ai/pipeline-backend/commit/39c66cdaef2e3ce73bd1f35cb46ac90306657262))
+* **minio:** log MinIO actions with requester ([#972](https://github.com/instill-ai/pipeline-backend/issues/972)) ([8ba353e](https://github.com/instill-ai/pipeline-backend/commit/8ba353ef3e19a9071a06f6ecfa7f1e3fa4ef5931))
+* **perplexity:** add new Sonar models ([#957](https://github.com/instill-ai/pipeline-backend/issues/957)) ([2699679](https://github.com/instill-ai/pipeline-backend/commit/2699679c34cb5f2d7dd76b568bd778762423cc99))
+* **recipe:** rename `format` to `type` in variable section ([#971](https://github.com/instill-ai/pipeline-backend/issues/971)) ([88ead91](https://github.com/instill-ai/pipeline-backend/commit/88ead914d6477a9697e81537e77e3f58600ed80d))
+* **x:** update MinIO package to delegate audit logs ([#973](https://github.com/instill-ai/pipeline-backend/issues/973)) ([f81287b](https://github.com/instill-ai/pipeline-backend/commit/f81287bfe1ee4b8e240796f1aa49e1cf78f6866e))
+
+
+### Bug Fixes
+
+* **ci:** registry image build ([#960](https://github.com/instill-ai/pipeline-backend/issues/960)) ([3a56698](https://github.com/instill-ai/pipeline-backend/commit/3a56698fe5f4d4109cbc1d8e713727bd8500c640))
+
 ## [0.50.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.49.1-beta...v0.50.0-beta) (2025-01-16)
 
 
