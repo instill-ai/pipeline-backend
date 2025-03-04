@@ -1796,6 +1796,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 	}()
 
 	logger, _ := logger.GetZapLogger(ctx)
+	logger = logger.With(zap.String("triggerID", params.pipelineTriggerID))
 
 	workflowOptions := client.StartWorkflowOptions{
 		ID:                       params.pipelineTriggerID,
@@ -1846,8 +1847,13 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 
 	// wait for trigger ends in goroutine and upload outputs
 	utils.GoSafe(func() {
-		subCtx := context.Background()
+		defer func() {
+			if err := s.memory.PurgeWorkflowMemory(ctx, params.pipelineTriggerID); err != nil {
+				logger.Error("Couldn't purge workflow memory", zap.Error(err))
+			}
+		}()
 
+		subCtx := context.Background()
 		err = we.Get(subCtx, nil)
 		if err != nil {
 			err = fmt.Errorf("%w:%w", ErrTriggerFail, err)
