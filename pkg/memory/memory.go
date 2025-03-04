@@ -14,6 +14,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/pubsub"
 )
 
 type PipelineStatusType string
@@ -64,7 +65,7 @@ type MemoryStore interface {
 	GetWorkflowMemory(ctx context.Context, workflowID string) (workflow WorkflowMemory, err error)
 	PurgeWorkflowMemory(ctx context.Context, workflowID string) (err error)
 
-	SendWorkflowStatusEvent(ctx context.Context, workflowID string, event Event) (err error)
+	SendWorkflowStatusEvent(ctx context.Context, workflowID string, event pubsub.Event) (err error)
 }
 
 type WorkflowMemory interface {
@@ -97,7 +98,7 @@ type ComponentStatus struct {
 
 type memoryStore struct {
 	workflows sync.Map
-	publisher EventPublisher
+	publisher pubsub.EventPublisher
 }
 
 type workflowMemory struct {
@@ -107,7 +108,7 @@ type workflowMemory struct {
 	recipe    *datamodel.Recipe
 	streaming bool
 
-	publishWFStatus func(_ context.Context, topic string, _ Event) error
+	publishWFStatus func(_ context.Context, topic string, _ pubsub.Event) error
 }
 
 type ComponentEventType string
@@ -186,7 +187,7 @@ func init() {
 	gob.Register(PipelineErrorUpdatedEventData{})
 }
 
-func NewMemoryStore(pub EventPublisher) MemoryStore {
+func NewMemoryStore(pub pubsub.EventPublisher) MemoryStore {
 	return &memoryStore{
 		workflows: sync.Map{},
 		publisher: pub,
@@ -236,8 +237,8 @@ func (ms *memoryStore) PurgeWorkflowMemory(ctx context.Context, workflowID strin
 	return nil
 }
 
-func (ms *memoryStore) SendWorkflowStatusEvent(ctx context.Context, workflowID string, event Event) (err error) {
-	channel := WorkflowStatusTopic(workflowID)
+func (ms *memoryStore) SendWorkflowStatusEvent(ctx context.Context, workflowID string, event pubsub.Event) (err error) {
+	channel := pubsub.WorkflowStatusTopic(workflowID)
 	if err := ms.publisher.PublishEvent(ctx, channel, event); err != nil {
 		return fmt.Errorf("publishing event: %w", err)
 	}
@@ -392,7 +393,7 @@ func (wfm *workflowMemory) SetPipelineData(ctx context.Context, batchIdx int, t 
 		return nil
 	}
 
-	event := Event{
+	event := pubsub.Event{
 		Name: string(PipelineOutputUpdated),
 		Data: PipelineOutputUpdatedEventData{
 			PipelineEventData: PipelineEventData{
@@ -480,7 +481,7 @@ func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int,
 		return nil
 	}
 
-	var event Event
+	var event pubsub.Event
 	switch t {
 	case ComponentInputUpdated:
 		value := wfm.data[batchIdx].(data.Map)[componentID].(data.Map)[string(ComponentDataInput)]
@@ -500,7 +501,7 @@ func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int,
 			return err
 		}
 
-		event = Event{
+		event = pubsub.Event{
 			Name: string(ComponentInputUpdated),
 			Data: ComponentInputUpdatedEventData{
 				ComponentEventData: wfm.getComponentEventData(ctx, batchIdx, componentID),
@@ -527,7 +528,7 @@ func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int,
 			return err
 		}
 
-		event = Event{
+		event = pubsub.Event{
 			Name: string(ComponentOutputUpdated),
 			Data: ComponentOutputUpdatedEventData{
 				ComponentEventData: wfm.getComponentEventData(ctx, batchIdx, componentID),
@@ -537,7 +538,7 @@ func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int,
 
 	case ComponentErrorUpdated:
 		message := wfm.data[batchIdx].(data.Map)[componentID].(data.Map)["error"].(data.Map)["message"].(format.String)
-		event = Event{
+		event = pubsub.Event{
 			Name: string(ComponentErrorUpdated),
 			Data: ComponentErrorUpdatedEventData{
 				ComponentEventData: wfm.getComponentEventData(ctx, batchIdx, componentID),
@@ -548,7 +549,7 @@ func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int,
 		}
 
 	case ComponentStatusUpdated:
-		event = Event{
+		event = pubsub.Event{
 			Name: string(ComponentStatusUpdated),
 			Data: ComponentStatusUpdatedEventData{
 				ComponentEventData: wfm.getComponentEventData(ctx, batchIdx, componentID),
@@ -559,12 +560,4 @@ func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int,
 	}
 
 	return wfm.publishWFStatus(ctx, wfm.id, event)
-}
-
-const workflowTopicPrefix = "workflow-"
-
-// WorkflowStatusTopic returns the channel name for the status updates of a
-// workflow.
-func WorkflowStatusTopic(workflowID string) string {
-	return workflowTopicPrefix + workflowID
 }

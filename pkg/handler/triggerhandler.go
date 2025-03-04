@@ -25,6 +25,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
+	"github.com/instill-ai/pipeline-backend/pkg/pubsub"
 
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
@@ -209,7 +210,7 @@ func HandleTrigger(mux *runtime.ServeMux,
 	w http.ResponseWriter,
 	req *http.Request,
 	pathParams map[string]string,
-	sub memory.EventSubscriber,
+	sub pubsub.EventSubscriber,
 ) {
 
 	ctx := req.Context()
@@ -264,7 +265,7 @@ func HandleTriggerAsync(mux *runtime.ServeMux,
 	w http.ResponseWriter,
 	req *http.Request,
 	pathParams map[string]string,
-	_ memory.EventSubscriber,
+	_ pubsub.EventSubscriber,
 ) {
 
 	ctx := req.Context()
@@ -496,7 +497,7 @@ func HandleTriggerRelease(mux *runtime.ServeMux,
 	w http.ResponseWriter,
 	req *http.Request,
 	pathParams map[string]string,
-	sub memory.EventSubscriber,
+	sub pubsub.EventSubscriber,
 ) {
 
 	ctx := req.Context()
@@ -550,7 +551,7 @@ func HandleTriggerAsyncRelease(mux *runtime.ServeMux,
 	w http.ResponseWriter,
 	req *http.Request,
 	pathParams map[string]string,
-	_ memory.EventSubscriber,
+	_ pubsub.EventSubscriber,
 ) {
 
 	ctx := req.Context()
@@ -814,10 +815,10 @@ func request_PipelinePublicService_TriggerAsyncNamespacePipelineRelease_0_form(c
 
 type streamingHandler struct {
 	writer     http.ResponseWriter
-	subscriber memory.EventSubscriber
+	subscriber pubsub.EventSubscriber
 }
 
-func newStreamingHandler(writer http.ResponseWriter, sub memory.EventSubscriber) *streamingHandler {
+func newStreamingHandler(writer http.ResponseWriter, sub pubsub.EventSubscriber) *streamingHandler {
 	return &streamingHandler{
 		writer:     writer,
 		subscriber: sub,
@@ -832,7 +833,7 @@ func (sh *streamingHandler) Handle(ctx context.Context, triggerID string) {
 	sh.writer.Header().Set("Cache-Control", "no-cache")
 	sh.writer.Header().Set("Connection", "keep-alive")
 
-	topic := memory.WorkflowStatusTopic(triggerID)
+	topic := pubsub.WorkflowStatusTopic(triggerID)
 	sub := sh.subscriber.Subscribe(ctx, topic)
 	defer func() {
 		if ctx.Err() != nil {
@@ -846,7 +847,7 @@ func (sh *streamingHandler) Handle(ctx context.Context, triggerID string) {
 
 	ch := sub.Channel()
 	for {
-		var event memory.Event
+		var event pubsub.Event
 		select {
 		case <-ctx.Done():
 			logger.Error("Context cancelled while waiting for event", zap.Error(ctx.Err()))
@@ -880,7 +881,7 @@ func sendPipelineError(_ context.Context, sh *streamingHandler, err error) {
 	sh.writer.Header().Set("Cache-Control", "no-cache")
 	sh.writer.Header().Set("Connection", "keep-alive")
 
-	startEvent := memory.Event{
+	startEvent := pubsub.Event{
 		Name: string(memory.PipelineStatusUpdated),
 		Data: memory.PipelineStatusUpdatedEventData{
 			PipelineEventData: memory.PipelineEventData{
@@ -894,7 +895,7 @@ func sendPipelineError(_ context.Context, sh *streamingHandler, err error) {
 			},
 		},
 	}
-	errEvent := memory.Event{
+	errEvent := pubsub.Event{
 		Name: string(memory.PipelineErrorUpdated),
 		Data: memory.PipelineErrorUpdatedEventData{
 			PipelineEventData: memory.PipelineEventData{

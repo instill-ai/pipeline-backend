@@ -46,6 +46,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/middleware"
+	"github.com/instill-ai/pipeline-backend/pkg/pubsub"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/usage"
@@ -297,7 +298,7 @@ func main() {
 	})
 	workerUID, _ := uuid.NewV4()
 
-	pubsub := memory.NewRedisPubSub(redisClient)
+	pubsub := pubsub.NewRedisPubSub(redisClient)
 	ms := memory.NewMemoryStore(pubsub)
 
 	repo := repository.NewRepository(db, redisClient)

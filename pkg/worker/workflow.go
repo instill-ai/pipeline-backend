@@ -21,19 +21,20 @@ import (
 	"gopkg.in/guregu/null.v4"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/component/generic/scheduler/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
+	"github.com/instill-ai/pipeline-backend/pkg/pubsub"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/errmsg"
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/pipeline-backend/pkg/component/generic/scheduler/v0"
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
@@ -993,7 +994,7 @@ func (w *worker) preTriggerErr(ctx context.Context, workflowID string, wfm memor
 			if err := w.memoryStore.SendWorkflowStatusEvent(
 				ctx,
 				workflowID,
-				memory.Event{
+				pubsub.Event{
 					Name: string(memory.PipelineStatusUpdated),
 					Data: memory.PipelineStatusUpdatedEventData{
 						PipelineEventData: memory.PipelineEventData{
@@ -1307,7 +1308,7 @@ func (w *worker) SendStartedEventActivity(ctx context.Context, workflowID string
 		err = w.memoryStore.SendWorkflowStatusEvent(
 			ctx,
 			workflowID,
-			memory.Event{
+			pubsub.Event{
 				Name: string(memory.PipelineStatusUpdated),
 				Data: memory.PipelineStatusUpdatedEventData{
 					PipelineEventData: memory.PipelineEventData{
@@ -1366,7 +1367,7 @@ func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActi
 			err = w.memoryStore.SendWorkflowStatusEvent(
 				ctx,
 				param.WorkflowID,
-				memory.Event{
+				pubsub.Event{
 					Name: string(memory.PipelineStatusUpdated),
 					Data: memory.PipelineStatusUpdatedEventData{
 						PipelineEventData: memory.PipelineEventData{
@@ -1568,7 +1569,7 @@ func (w *worker) ClosePipelineActivity(ctx context.Context, workflowID string) e
 	}
 
 	if wfm.IsStreaming() {
-		evt := memory.Event{
+		evt := pubsub.Event{
 			Name: string(memory.PipelineClosed),
 		}
 

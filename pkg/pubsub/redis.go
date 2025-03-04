@@ -1,4 +1,4 @@
-package memory
+package pubsub
 
 import (
 	"context"
@@ -11,30 +11,6 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 )
-
-// Event contains the information published on a topic, reflecting an event
-// that happened in the system.
-type Event struct {
-	Name string `json:"name"`
-	Data any    `json:"data"`
-}
-
-// EventPublisher is used to publish a message in a topic.
-type EventPublisher interface {
-	PublishEvent(_ context.Context, topic string, _ Event) error
-}
-
-// EventSubscriber is used to receive messages in a topic.
-type EventSubscriber interface {
-	Subscribe(_ context.Context, topic string) Subscription
-}
-
-// Subscription is used to read messages from a topic.
-type Subscription interface {
-	Channel() <-chan Event
-	// Cleanup will clean up the subscription data, including the channel.
-	Cleanup(context.Context) error
-}
 
 // RedisPubSub is a Redis-based event publisher and subscriber.
 type RedisPubSub struct {
