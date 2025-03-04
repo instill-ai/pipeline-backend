@@ -845,10 +845,30 @@ func (sh *streamingHandler) Handle(ctx context.Context, triggerID string) {
 	}()
 
 	for {
-		event, err := sub.Receive(ctx)
-		if err != nil {
+		// Create a channel to receive the event asynchronously
+		eventCh := make(chan *memory.Event)
+		errCh := make(chan error)
+
+		// Start a goroutine to call sub.Receive
+		go func() {
+			event, err := sub.Receive(ctx)
+			if err != nil {
+				errCh <- err
+				return
+			}
+			eventCh <- event
+		}()
+
+		// Wait for either context cancellation or event received
+		var event *memory.Event
+		select {
+		case <-ctx.Done():
+			logger.Error("Context cancelled while waiting for event", zap.Error(ctx.Err()))
+			return
+		case err := <-errCh:
 			logger.Error("Couldn't receive message", zap.Error(err))
 			return
+		case event = <-eventCh:
 		}
 
 		if event.Name == string(memory.PipelineClosed) {
