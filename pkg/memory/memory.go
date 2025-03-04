@@ -237,7 +237,7 @@ func (ms *memoryStore) PurgeWorkflowMemory(ctx context.Context, workflowID strin
 }
 
 func (ms *memoryStore) SendWorkflowStatusEvent(ctx context.Context, workflowID string, event Event) (err error) {
-	channel := WorkflowStatusChannel(workflowID)
+	channel := WorkflowStatusTopic(workflowID)
 	if err := ms.publisher.PublishEvent(ctx, channel, event); err != nil {
 		return fmt.Errorf("publishing event: %w", err)
 	}
@@ -561,10 +561,10 @@ func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int,
 	return wfm.publishWFStatus(ctx, wfm.ID, event)
 }
 
-const workflowChannelPrefix = "workflowEvent-"
+const workflowTopicPrefix = "workflow-"
 
-// WorkflowStatusChannel returns the channel name for the status updates of a
+// WorkflowStatusTopic returns the channel name for the status updates of a
 // workflow.
-func WorkflowStatusChannel(workflowID string) string {
-	return workflowChannelPrefix + workflowID
+func WorkflowStatusTopic(workflowID string) string {
+	return workflowTopicPrefix + workflowID
 }

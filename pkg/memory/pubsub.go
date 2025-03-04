@@ -3,32 +3,37 @@ package memory
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
+
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
 )
 
-// Event contains the information published on a channel, reflecting an event
+// Event contains the information published on a topic, reflecting an event
 // that happened in the system.
 type Event struct {
 	Name string `json:"name"`
 	Data any    `json:"data"`
 }
 
-// EventPublisher is used to publish a message in a channel.
+// EventPublisher is used to publish a message in a topic.
 type EventPublisher interface {
-	PublishEvent(_ context.Context, channel string, _ Event) error
+	PublishEvent(_ context.Context, topic string, _ Event) error
 }
 
-// EventSubscriber is used to receive messages in a channel.
+// EventSubscriber is used to receive messages in a topic.
 type EventSubscriber interface {
-	Subscribe(_ context.Context, channel string) Subscription
+	Subscribe(_ context.Context, topic string) Subscription
 }
 
-// Subscription is used to read messages from a channel.
+// Subscription is used to read messages from a topic.
 type Subscription interface {
-	Receive(context.Context) (*Event, error)
-	Unsubscribe(_ context.Context, channels ...string) error
+	Channel() <-chan Event
+	// Cleanup will clean up the subscription data, including the channel.
+	Cleanup(context.Context) error
 }
 
 // RedisPubSub is a Redis-based event publisher and subscriber.
@@ -43,41 +48,56 @@ func NewRedisPubSub(client *redis.Client) *RedisPubSub {
 	}
 }
 
-// PublishEvent publishes an event on a Redis channel.
-func (r *RedisPubSub) PublishEvent(ctx context.Context, channel string, ev Event) error {
+// PublishEvent publishes an event on a Redis topic.
+func (r *RedisPubSub) PublishEvent(ctx context.Context, topic string, ev Event) error {
 	b, err := json.Marshal(ev)
 	if err != nil {
 		return fmt.Errorf("marshalling event: %w", err)
 	}
 
-	return r.client.Publish(ctx, channel, b).Err()
+	return r.client.Publish(ctx, topic, b).Err()
 }
 
 // Subscribe creates a subscription on a Redis channel.
-func (r *RedisPubSub) Subscribe(ctx context.Context, channel string) Subscription {
+func (r *RedisPubSub) Subscribe(ctx context.Context, topic string) Subscription {
+	log, _ := logger.GetZapLogger(ctx)
+	log = log.With(zap.String("topic", topic))
+
 	return &redisSubscription{
-		pubsub: r.client.Subscribe(ctx, channel),
+		topic:  topic,
+		pubsub: r.client.Subscribe(ctx, topic),
+		logger: log,
 	}
 }
 
 type redisSubscription struct {
+	topic  string
 	pubsub *redis.PubSub
+	logger *zap.Logger
 }
 
-func (rs *redisSubscription) Receive(ctx context.Context) (*Event, error) {
-	msg, err := rs.pubsub.ReceiveMessage(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("receiving message: %w", err)
-	}
-
-	event := new(Event)
-	if err := json.Unmarshal([]byte(msg.Payload), event); err != nil {
-		return nil, fmt.Errorf("unmarshalling message: %w", err)
-	}
-
-	return event, nil
+func (rs *redisSubscription) Cleanup(ctx context.Context) error {
+	return errors.Join(
+		rs.pubsub.Unsubscribe(ctx, rs.topic),
+		rs.pubsub.Close(),
+	)
 }
 
-func (rs *redisSubscription) Unsubscribe(ctx context.Context, channels ...string) error {
-	return rs.pubsub.Unsubscribe(ctx, channels...)
+func (rs *redisSubscription) Channel() <-chan Event {
+	redisChannel := rs.pubsub.Channel()
+	eventChannel := make(chan Event)
+
+	go func() {
+		defer close(eventChannel)
+		for msg := range redisChannel {
+			var event Event
+			if err := json.Unmarshal([]byte(msg.Payload), &event); err != nil {
+				rs.logger.Error("Couldn't unmarshal Event message", zap.Error(err))
+				continue
+			}
+			eventChannel <- event
+		}
+	}()
+
+	return eventChannel
 }

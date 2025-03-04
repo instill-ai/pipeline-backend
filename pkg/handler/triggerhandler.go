@@ -832,43 +832,26 @@ func (sh *streamingHandler) Handle(ctx context.Context, triggerID string) {
 	sh.writer.Header().Set("Cache-Control", "no-cache")
 	sh.writer.Header().Set("Connection", "keep-alive")
 
-	channelName := memory.WorkflowStatusChannel(triggerID)
-	sub := sh.subscriber.Subscribe(ctx, channelName)
+	topic := memory.WorkflowStatusTopic(triggerID)
+	sub := sh.subscriber.Subscribe(ctx, topic)
 	defer func() {
 		if ctx.Err() != nil {
 			ctx = context.Background()
 		}
 
-		if err := sub.Unsubscribe(ctx, channelName); err != nil {
-			logger.Error("Couldn't unsubscribe from channel", zap.Error(err))
+		if err := sub.Cleanup(ctx); err != nil {
+			logger.Error("Couldn't unsubscribe from topic", zap.Error(err))
 		}
 	}()
 
+	ch := sub.Channel()
 	for {
-		// Create a channel to receive the event asynchronously
-		eventCh := make(chan *memory.Event)
-		errCh := make(chan error)
-
-		// Start a goroutine to call sub.Receive
-		go func() {
-			event, err := sub.Receive(ctx)
-			if err != nil {
-				errCh <- err
-				return
-			}
-			eventCh <- event
-		}()
-
-		// Wait for either context cancellation or event received
-		var event *memory.Event
+		var event memory.Event
 		select {
 		case <-ctx.Done():
 			logger.Error("Context cancelled while waiting for event", zap.Error(ctx.Err()))
 			return
-		case err := <-errCh:
-			logger.Error("Couldn't receive message", zap.Error(err))
-			return
-		case event = <-eventCh:
+		case event = <-ch:
 		}
 
 		if event.Name == string(memory.PipelineClosed) {
