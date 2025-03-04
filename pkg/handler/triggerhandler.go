@@ -30,11 +30,195 @@ import (
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
+// StreamingHandler intercepts pipeline trigger requests to stream the
+// response.
+type StreamingHandler struct {
+	mux    *runtime.ServeMux
+	client pb.PipelinePublicServiceClient
+	sub    pubsub.EventSubscriber
+}
+
+// NewStreamingHandler returns an initialized StreamingHandler.
+func NewStreamingHandler(mux *runtime.ServeMux, cli pb.PipelinePublicServiceClient, sub pubsub.EventSubscriber) *StreamingHandler {
+	return &StreamingHandler{
+		mux:    mux,
+		client: cli,
+		sub:    sub,
+	}
+}
+
+// HandleTrigger intercepts TriggerNamespacePipeline endpoints.
+func (h *StreamingHandler) HandleTrigger(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	ctx := req.Context()
+
+	var sh *streamingHandler
+	if req.Header.Get(constant.HeaderAccept) == "text/event-stream" {
+		sh = newStreamingHandler(w, h.sub)
+	}
+
+	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(h.mux, req)
+	var err error
+	var annotatedContext context.Context
+	var resp protoreflect.ProtoMessage
+	var md runtime.ServerMetadata
+
+	annotatedContext, err = runtime.AnnotateContext(ctx, h.mux, req, "/pipeline.pipeline.v1beta.PipelinePublicService/TriggerNamespacePipeline", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*}/trigger"))
+	if err != nil {
+		runtime.HTTPError(ctx, h.mux, outboundMarshaler, w, req, err)
+		return
+	}
+
+	contentType := req.Header.Get("Content-Type")
+	if strings.Contains(contentType, "multipart/form-data") {
+		resp, md, err = request_PipelinePublicService_TriggerNamespacePipeline_0_form(annotatedContext, inboundMarshaler, h.client, req, pathParams, sh)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
+			return
+		}
+	} else {
+		resp, md, err = request_PipelinePublicService_TriggerNamespacePipeline_0(annotatedContext, inboundMarshaler, h.client, req, pathParams, sh)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
+			return
+		}
+	}
+	// When using `streamHandler`, we should directly close the response once
+	// the event stream is completed to prevent redundant events.
+	if sh != nil {
+		return
+	}
+
+	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+
+	forward_PipelinePublicService_TriggerNamespacePipeline_0(annotatedContext, h.mux, outboundMarshaler, w, req, resp, h.mux.GetForwardResponseOptions()...)
+}
+
+// HandleTriggerAsync intercepts TriggerAsyncNamespacePipeline endpoints.
+func (h *StreamingHandler) HandleTriggerAsync(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	ctx := req.Context()
+
+	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(h.mux, req)
+	var err error
+	var annotatedContext context.Context
+	var resp protoreflect.ProtoMessage
+	var md runtime.ServerMetadata
+
+	annotatedContext, err = runtime.AnnotateContext(ctx, h.mux, req, "/pipeline.pipeline.v1beta.PipelinePublicService/TriggerAsyncNamespacePipeline", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*}/triggerAsync"))
+	if err != nil {
+		runtime.HTTPError(ctx, h.mux, outboundMarshaler, w, req, err)
+		return
+	}
+
+	contentType := req.Header.Get("Content-Type")
+	if strings.Contains(contentType, "multipart/form-data") {
+
+		resp, md, err = request_PipelinePublicService_TriggerAsyncNamespacePipeline_0_form(annotatedContext, inboundMarshaler, h.client, req, pathParams)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+	} else {
+		resp, md, err = request_PipelinePublicService_TriggerAsyncNamespacePipeline_0(annotatedContext, inboundMarshaler, h.client, req, pathParams)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
+			return
+		}
+	}
+
+	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+
+	forward_PipelinePublicService_TriggerNamespacePipeline_0(annotatedContext, h.mux, outboundMarshaler, w, req, resp, h.mux.GetForwardResponseOptions()...)
+}
+
+// HandleTriggerRelease intercepts TriggerNamespacePipelineRelease endpoints.
+func (h *StreamingHandler) HandleTriggerRelease(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	ctx := req.Context()
+	var sh *streamingHandler
+	if req.Header.Get(constant.HeaderAccept) == "text/event-stream" {
+		sh = newStreamingHandler(w, h.sub)
+	}
+
+	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(h.mux, req)
+	var err error
+	var annotatedContext context.Context
+	var resp protoreflect.ProtoMessage
+	var md runtime.ServerMetadata
+
+	annotatedContext, err = runtime.AnnotateContext(ctx, h.mux, req, "/pipeline.pipeline.v1beta.PipelinePublicService/TriggerNamespacePipelineRelease", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*/releases/*}/trigger"))
+	if err != nil {
+		runtime.HTTPError(ctx, h.mux, outboundMarshaler, w, req, err)
+		return
+	}
+
+	contentType := req.Header.Get("Content-Type")
+	if strings.Contains(contentType, "multipart/form-data") {
+		resp, md, err = request_PipelinePublicService_TriggerNamespacePipelineRelease_0_form(annotatedContext, inboundMarshaler, h.client, req, pathParams, sh)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+	} else {
+		resp, md, err = request_PipelinePublicService_TriggerNamespacePipelineRelease_0(annotatedContext, inboundMarshaler, h.client, req, pathParams, sh)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
+			return
+		}
+	}
+	// When using `streamHandler`, we should directly close the response once
+	// the event stream is completed to prevent redundant events.
+	if sh != nil {
+		return
+	}
+
+	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+
+	forward_PipelinePublicService_TriggerNamespacePipelineRelease_0(annotatedContext, h.mux, outboundMarshaler, w, req, resp, h.mux.GetForwardResponseOptions()...)
+}
+
+// HandleTriggerAsyncRelease intercepts TriggerAsyncNamespacePipelineRelease
+// endpoints.
+func (h *StreamingHandler) HandleTriggerAsyncRelease(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	ctx := req.Context()
+
+	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(h.mux, req)
+	var err error
+	var annotatedContext context.Context
+	var resp protoreflect.ProtoMessage
+	var md runtime.ServerMetadata
+
+	annotatedContext, err = runtime.AnnotateContext(ctx, h.mux, req, "/pipeline.pipeline.v1beta.PipelinePublicService/TriggerAsyncNamespacePipelineRelease", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*/releases/*}/triggerAsync"))
+	if err != nil {
+		runtime.HTTPError(ctx, h.mux, outboundMarshaler, w, req, err)
+		return
+	}
+
+	contentType := req.Header.Get("Content-Type")
+	if strings.Contains(contentType, "multipart/form-data") {
+		resp, md, err = request_PipelinePublicService_TriggerAsyncNamespacePipelineRelease_0_form(annotatedContext, inboundMarshaler, h.client, req, pathParams)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+	} else {
+		resp, md, err = request_PipelinePublicService_TriggerAsyncNamespacePipelineRelease_0(annotatedContext, inboundMarshaler, h.client, req, pathParams)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
+			return
+		}
+	}
+
+	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+
+	forward_PipelinePublicService_TriggerNamespacePipelineRelease_0(annotatedContext, h.mux, outboundMarshaler, w, req, resp, h.mux.GetForwardResponseOptions()...)
+}
+
 var forward_PipelinePublicService_TriggerNamespacePipeline_0 = runtime.ForwardResponseMessage
 var forward_PipelinePublicService_TriggerNamespacePipelineRelease_0 = runtime.ForwardResponseMessage
 
 func convertFormData(ctx context.Context, req *http.Request) ([]*pb.TriggerData, error) {
-
 	err := req.ParseMultipartForm(4 << 20)
 	if err != nil {
 		return nil, err
@@ -204,107 +388,6 @@ func convertFormData(ctx context.Context, req *http.Request) ([]*pb.TriggerData,
 	return data, nil
 }
 
-// HandleTrigger
-func HandleTrigger(mux *runtime.ServeMux,
-	client pb.PipelinePublicServiceClient,
-	w http.ResponseWriter,
-	req *http.Request,
-	pathParams map[string]string,
-	sub pubsub.EventSubscriber,
-) {
-
-	ctx := req.Context()
-
-	var sh *streamingHandler
-	if req.Header.Get(constant.HeaderAccept) == "text/event-stream" {
-		sh = newStreamingHandler(w, sub)
-	}
-
-	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-	var err error
-	var annotatedContext context.Context
-	var resp protoreflect.ProtoMessage
-	var md runtime.ServerMetadata
-
-	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pipeline.pipeline.v1beta.PipelinePublicService/TriggerNamespacePipeline", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*}/trigger"))
-	if err != nil {
-		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-		return
-	}
-
-	contentType := req.Header.Get("Content-Type")
-	if strings.Contains(contentType, "multipart/form-data") {
-		resp, md, err = request_PipelinePublicService_TriggerNamespacePipeline_0_form(annotatedContext, inboundMarshaler, client, req, pathParams, sh)
-		if err != nil {
-			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-	} else {
-		resp, md, err = request_PipelinePublicService_TriggerNamespacePipeline_0(annotatedContext, inboundMarshaler, client, req, pathParams, sh)
-		if err != nil {
-			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
-			return
-		}
-	}
-	// When using `streamHandler`, we should directly close the response once
-	// the event stream is completed to prevent redundant events.
-	if sh != nil {
-		return
-	}
-
-	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
-
-	forward_PipelinePublicService_TriggerNamespacePipeline_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-}
-
-// HandleTriggerAsync
-func HandleTriggerAsync(mux *runtime.ServeMux,
-	client pb.PipelinePublicServiceClient,
-	w http.ResponseWriter,
-	req *http.Request,
-	pathParams map[string]string,
-	_ pubsub.EventSubscriber,
-) {
-
-	ctx := req.Context()
-
-	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-	var err error
-	var annotatedContext context.Context
-	var resp protoreflect.ProtoMessage
-	var md runtime.ServerMetadata
-
-	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pipeline.pipeline.v1beta.PipelinePublicService/TriggerAsyncNamespacePipeline", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*}/triggerAsync"))
-	if err != nil {
-		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-		return
-	}
-
-	contentType := req.Header.Get("Content-Type")
-	if strings.Contains(contentType, "multipart/form-data") {
-
-		resp, md, err = request_PipelinePublicService_TriggerAsyncNamespacePipeline_0_form(annotatedContext, inboundMarshaler, client, req, pathParams)
-		if err != nil {
-			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-	} else {
-		resp, md, err = request_PipelinePublicService_TriggerAsyncNamespacePipeline_0(annotatedContext, inboundMarshaler, client, req, pathParams)
-		if err != nil {
-			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
-			return
-		}
-	}
-
-	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
-
-	forward_PipelinePublicService_TriggerNamespacePipeline_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-}
-
 // ref: the generated protogen-go files
 func request_PipelinePublicService_TriggerNamespacePipeline_0(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq pb.TriggerNamespacePipelineRequest
@@ -356,7 +439,7 @@ func request_PipelinePublicService_TriggerNamespacePipeline_0(ctx context.Contex
 			return nil, metadata, err
 		}
 		triggerID := strings.Split(resp.Operation.Name, "/")[1]
-		sh.Handle(ctx, triggerID)
+		sh.handle(ctx, triggerID)
 		return nil, metadata, nil
 	}
 	msg, err := client.TriggerNamespacePipeline(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -491,105 +574,6 @@ func request_PipelinePublicService_TriggerAsyncNamespacePipeline_0_form(ctx cont
 
 }
 
-// HandleTrigger
-func HandleTriggerRelease(mux *runtime.ServeMux,
-	client pb.PipelinePublicServiceClient,
-	w http.ResponseWriter,
-	req *http.Request,
-	pathParams map[string]string,
-	sub pubsub.EventSubscriber,
-) {
-
-	ctx := req.Context()
-	var sh *streamingHandler
-	if req.Header.Get(constant.HeaderAccept) == "text/event-stream" {
-		sh = newStreamingHandler(w, sub)
-	}
-
-	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-	var err error
-	var annotatedContext context.Context
-	var resp protoreflect.ProtoMessage
-	var md runtime.ServerMetadata
-
-	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pipeline.pipeline.v1beta.PipelinePublicService/TriggerNamespacePipelineRelease", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*/releases/*}/trigger"))
-	if err != nil {
-		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-		return
-	}
-
-	contentType := req.Header.Get("Content-Type")
-	if strings.Contains(contentType, "multipart/form-data") {
-		resp, md, err = request_PipelinePublicService_TriggerNamespacePipelineRelease_0_form(annotatedContext, inboundMarshaler, client, req, pathParams, sh)
-		if err != nil {
-			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-	} else {
-		resp, md, err = request_PipelinePublicService_TriggerNamespacePipelineRelease_0(annotatedContext, inboundMarshaler, client, req, pathParams, sh)
-		if err != nil {
-			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
-			return
-		}
-	}
-	// When using `streamHandler`, we should directly close the response once
-	// the event stream is completed to prevent redundant events.
-	if sh != nil {
-		return
-	}
-
-	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
-
-	forward_PipelinePublicService_TriggerNamespacePipelineRelease_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-}
-
-// HandleTriggerAsync
-func HandleTriggerAsyncRelease(mux *runtime.ServeMux,
-	client pb.PipelinePublicServiceClient,
-	w http.ResponseWriter,
-	req *http.Request,
-	pathParams map[string]string,
-	_ pubsub.EventSubscriber,
-) {
-
-	ctx := req.Context()
-
-	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-	var err error
-	var annotatedContext context.Context
-	var resp protoreflect.ProtoMessage
-	var md runtime.ServerMetadata
-
-	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pipeline.pipeline.v1beta.PipelinePublicService/TriggerAsyncNamespacePipelineRelease", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*/releases/*}/triggerAsync"))
-	if err != nil {
-		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-		return
-	}
-
-	contentType := req.Header.Get("Content-Type")
-	if strings.Contains(contentType, "multipart/form-data") {
-		resp, md, err = request_PipelinePublicService_TriggerAsyncNamespacePipelineRelease_0_form(annotatedContext, inboundMarshaler, client, req, pathParams)
-		if err != nil {
-			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-	} else {
-		resp, md, err = request_PipelinePublicService_TriggerAsyncNamespacePipelineRelease_0(annotatedContext, inboundMarshaler, client, req, pathParams)
-		if err != nil {
-			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
-			return
-		}
-	}
-
-	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
-
-	forward_PipelinePublicService_TriggerNamespacePipelineRelease_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-}
-
 // ref: the generated protogen-go files
 func request_PipelinePublicService_TriggerNamespacePipelineRelease_0(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq pb.TriggerNamespacePipelineReleaseRequest
@@ -651,7 +635,7 @@ func request_PipelinePublicService_TriggerNamespacePipelineRelease_0(ctx context
 			return nil, metadata, err
 		}
 		triggerID := strings.Split(resp.Operation.Name, "/")[1]
-		sh.Handle(ctx, triggerID)
+		sh.handle(ctx, triggerID)
 		return nil, metadata, nil
 	}
 
@@ -825,7 +809,9 @@ func newStreamingHandler(writer http.ResponseWriter, sub pubsub.EventSubscriber)
 	}
 }
 
-func (sh *streamingHandler) Handle(ctx context.Context, triggerID string) {
+// TODO streamingHandler's methods should be merged into StreamingHandler as
+// unexported methods.
+func (sh *streamingHandler) handle(ctx context.Context, triggerID string) {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger = logger.With(zap.String("triggerID", triggerID))
 
