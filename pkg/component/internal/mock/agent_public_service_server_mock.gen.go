@@ -17,6 +17,13 @@ type AgentPublicServiceServerMock struct {
 	t          minimock.Tester
 	finishOnce sync.Once
 
+	funcBindChatTable          func(ctx context.Context, bp1 *mm_agentv1alpha.BindChatTableRequest) (bp2 *mm_agentv1alpha.BindChatTableResponse, err error)
+	funcBindChatTableOrigin    string
+	inspectFuncBindChatTable   func(ctx context.Context, bp1 *mm_agentv1alpha.BindChatTableRequest)
+	afterBindChatTableCounter  uint64
+	beforeBindChatTableCounter uint64
+	BindChatTableMock          mAgentPublicServiceServerMockBindChatTable
+
 	funcChat          func(ctx context.Context, cp1 *mm_agentv1alpha.ChatRequest) (cp2 *mm_agentv1alpha.ChatResponse, err error)
 	funcChatOrigin    string
 	inspectFuncChat   func(ctx context.Context, cp1 *mm_agentv1alpha.ChatRequest)
@@ -122,6 +129,13 @@ type AgentPublicServiceServerMock struct {
 	beforeInsertRowCounter uint64
 	InsertRowMock          mAgentPublicServiceServerMockInsertRow
 
+	funcListChatTables          func(ctx context.Context, lp1 *mm_agentv1alpha.ListChatTablesRequest) (lp2 *mm_agentv1alpha.ListChatTablesResponse, err error)
+	funcListChatTablesOrigin    string
+	inspectFuncListChatTables   func(ctx context.Context, lp1 *mm_agentv1alpha.ListChatTablesRequest)
+	afterListChatTablesCounter  uint64
+	beforeListChatTablesCounter uint64
+	ListChatTablesMock          mAgentPublicServiceServerMockListChatTables
+
 	funcListChats          func(ctx context.Context, lp1 *mm_agentv1alpha.ListChatsRequest) (lp2 *mm_agentv1alpha.ListChatsResponse, err error)
 	funcListChatsOrigin    string
 	inspectFuncListChats   func(ctx context.Context, lp1 *mm_agentv1alpha.ListChatsRequest)
@@ -170,6 +184,13 @@ type AgentPublicServiceServerMock struct {
 	afterReadinessCounter  uint64
 	beforeReadinessCounter uint64
 	ReadinessMock          mAgentPublicServiceServerMockReadiness
+
+	funcUnbindChatTable          func(ctx context.Context, up1 *mm_agentv1alpha.UnbindChatTableRequest) (up2 *mm_agentv1alpha.UnbindChatTableResponse, err error)
+	funcUnbindChatTableOrigin    string
+	inspectFuncUnbindChatTable   func(ctx context.Context, up1 *mm_agentv1alpha.UnbindChatTableRequest)
+	afterUnbindChatTableCounter  uint64
+	beforeUnbindChatTableCounter uint64
+	UnbindChatTableMock          mAgentPublicServiceServerMockUnbindChatTable
 
 	funcUpdateChat          func(ctx context.Context, up1 *mm_agentv1alpha.UpdateChatRequest) (up2 *mm_agentv1alpha.UpdateChatResponse, err error)
 	funcUpdateChatOrigin    string
@@ -222,6 +243,9 @@ func NewAgentPublicServiceServerMock(t minimock.Tester) *AgentPublicServiceServe
 		controller.RegisterMocker(m)
 	}
 
+	m.BindChatTableMock = mAgentPublicServiceServerMockBindChatTable{mock: m}
+	m.BindChatTableMock.callArgs = []*AgentPublicServiceServerMockBindChatTableParams{}
+
 	m.ChatMock = mAgentPublicServiceServerMockChat{mock: m}
 	m.ChatMock.callArgs = []*AgentPublicServiceServerMockChatParams{}
 
@@ -267,6 +291,9 @@ func NewAgentPublicServiceServerMock(t minimock.Tester) *AgentPublicServiceServe
 	m.InsertRowMock = mAgentPublicServiceServerMockInsertRow{mock: m}
 	m.InsertRowMock.callArgs = []*AgentPublicServiceServerMockInsertRowParams{}
 
+	m.ListChatTablesMock = mAgentPublicServiceServerMockListChatTables{mock: m}
+	m.ListChatTablesMock.callArgs = []*AgentPublicServiceServerMockListChatTablesParams{}
+
 	m.ListChatsMock = mAgentPublicServiceServerMockListChats{mock: m}
 	m.ListChatsMock.callArgs = []*AgentPublicServiceServerMockListChatsParams{}
 
@@ -287,6 +314,9 @@ func NewAgentPublicServiceServerMock(t minimock.Tester) *AgentPublicServiceServe
 
 	m.ReadinessMock = mAgentPublicServiceServerMockReadiness{mock: m}
 	m.ReadinessMock.callArgs = []*AgentPublicServiceServerMockReadinessParams{}
+
+	m.UnbindChatTableMock = mAgentPublicServiceServerMockUnbindChatTable{mock: m}
+	m.UnbindChatTableMock.callArgs = []*AgentPublicServiceServerMockUnbindChatTableParams{}
 
 	m.UpdateChatMock = mAgentPublicServiceServerMockUpdateChat{mock: m}
 	m.UpdateChatMock.callArgs = []*AgentPublicServiceServerMockUpdateChatParams{}
@@ -309,6 +339,349 @@ func NewAgentPublicServiceServerMock(t minimock.Tester) *AgentPublicServiceServe
 	t.Cleanup(m.MinimockFinish)
 
 	return m
+}
+
+type mAgentPublicServiceServerMockBindChatTable struct {
+	optional           bool
+	mock               *AgentPublicServiceServerMock
+	defaultExpectation *AgentPublicServiceServerMockBindChatTableExpectation
+	expectations       []*AgentPublicServiceServerMockBindChatTableExpectation
+
+	callArgs []*AgentPublicServiceServerMockBindChatTableParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AgentPublicServiceServerMockBindChatTableExpectation specifies expectation struct of the AgentPublicServiceServer.BindChatTable
+type AgentPublicServiceServerMockBindChatTableExpectation struct {
+	mock               *AgentPublicServiceServerMock
+	params             *AgentPublicServiceServerMockBindChatTableParams
+	paramPtrs          *AgentPublicServiceServerMockBindChatTableParamPtrs
+	expectationOrigins AgentPublicServiceServerMockBindChatTableExpectationOrigins
+	results            *AgentPublicServiceServerMockBindChatTableResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AgentPublicServiceServerMockBindChatTableParams contains parameters of the AgentPublicServiceServer.BindChatTable
+type AgentPublicServiceServerMockBindChatTableParams struct {
+	ctx context.Context
+	bp1 *mm_agentv1alpha.BindChatTableRequest
+}
+
+// AgentPublicServiceServerMockBindChatTableParamPtrs contains pointers to parameters of the AgentPublicServiceServer.BindChatTable
+type AgentPublicServiceServerMockBindChatTableParamPtrs struct {
+	ctx *context.Context
+	bp1 **mm_agentv1alpha.BindChatTableRequest
+}
+
+// AgentPublicServiceServerMockBindChatTableResults contains results of the AgentPublicServiceServer.BindChatTable
+type AgentPublicServiceServerMockBindChatTableResults struct {
+	bp2 *mm_agentv1alpha.BindChatTableResponse
+	err error
+}
+
+// AgentPublicServiceServerMockBindChatTableOrigins contains origins of expectations of the AgentPublicServiceServer.BindChatTable
+type AgentPublicServiceServerMockBindChatTableExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originBp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmBindChatTable *mAgentPublicServiceServerMockBindChatTable) Optional() *mAgentPublicServiceServerMockBindChatTable {
+	mmBindChatTable.optional = true
+	return mmBindChatTable
+}
+
+// Expect sets up expected params for AgentPublicServiceServer.BindChatTable
+func (mmBindChatTable *mAgentPublicServiceServerMockBindChatTable) Expect(ctx context.Context, bp1 *mm_agentv1alpha.BindChatTableRequest) *mAgentPublicServiceServerMockBindChatTable {
+	if mmBindChatTable.mock.funcBindChatTable != nil {
+		mmBindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.BindChatTable mock is already set by Set")
+	}
+
+	if mmBindChatTable.defaultExpectation == nil {
+		mmBindChatTable.defaultExpectation = &AgentPublicServiceServerMockBindChatTableExpectation{}
+	}
+
+	if mmBindChatTable.defaultExpectation.paramPtrs != nil {
+		mmBindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.BindChatTable mock is already set by ExpectParams functions")
+	}
+
+	mmBindChatTable.defaultExpectation.params = &AgentPublicServiceServerMockBindChatTableParams{ctx, bp1}
+	mmBindChatTable.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmBindChatTable.expectations {
+		if minimock.Equal(e.params, mmBindChatTable.defaultExpectation.params) {
+			mmBindChatTable.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmBindChatTable.defaultExpectation.params)
+		}
+	}
+
+	return mmBindChatTable
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AgentPublicServiceServer.BindChatTable
+func (mmBindChatTable *mAgentPublicServiceServerMockBindChatTable) ExpectCtxParam1(ctx context.Context) *mAgentPublicServiceServerMockBindChatTable {
+	if mmBindChatTable.mock.funcBindChatTable != nil {
+		mmBindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.BindChatTable mock is already set by Set")
+	}
+
+	if mmBindChatTable.defaultExpectation == nil {
+		mmBindChatTable.defaultExpectation = &AgentPublicServiceServerMockBindChatTableExpectation{}
+	}
+
+	if mmBindChatTable.defaultExpectation.params != nil {
+		mmBindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.BindChatTable mock is already set by Expect")
+	}
+
+	if mmBindChatTable.defaultExpectation.paramPtrs == nil {
+		mmBindChatTable.defaultExpectation.paramPtrs = &AgentPublicServiceServerMockBindChatTableParamPtrs{}
+	}
+	mmBindChatTable.defaultExpectation.paramPtrs.ctx = &ctx
+	mmBindChatTable.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmBindChatTable
+}
+
+// ExpectBp1Param2 sets up expected param bp1 for AgentPublicServiceServer.BindChatTable
+func (mmBindChatTable *mAgentPublicServiceServerMockBindChatTable) ExpectBp1Param2(bp1 *mm_agentv1alpha.BindChatTableRequest) *mAgentPublicServiceServerMockBindChatTable {
+	if mmBindChatTable.mock.funcBindChatTable != nil {
+		mmBindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.BindChatTable mock is already set by Set")
+	}
+
+	if mmBindChatTable.defaultExpectation == nil {
+		mmBindChatTable.defaultExpectation = &AgentPublicServiceServerMockBindChatTableExpectation{}
+	}
+
+	if mmBindChatTable.defaultExpectation.params != nil {
+		mmBindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.BindChatTable mock is already set by Expect")
+	}
+
+	if mmBindChatTable.defaultExpectation.paramPtrs == nil {
+		mmBindChatTable.defaultExpectation.paramPtrs = &AgentPublicServiceServerMockBindChatTableParamPtrs{}
+	}
+	mmBindChatTable.defaultExpectation.paramPtrs.bp1 = &bp1
+	mmBindChatTable.defaultExpectation.expectationOrigins.originBp1 = minimock.CallerInfo(1)
+
+	return mmBindChatTable
+}
+
+// Inspect accepts an inspector function that has same arguments as the AgentPublicServiceServer.BindChatTable
+func (mmBindChatTable *mAgentPublicServiceServerMockBindChatTable) Inspect(f func(ctx context.Context, bp1 *mm_agentv1alpha.BindChatTableRequest)) *mAgentPublicServiceServerMockBindChatTable {
+	if mmBindChatTable.mock.inspectFuncBindChatTable != nil {
+		mmBindChatTable.mock.t.Fatalf("Inspect function is already set for AgentPublicServiceServerMock.BindChatTable")
+	}
+
+	mmBindChatTable.mock.inspectFuncBindChatTable = f
+
+	return mmBindChatTable
+}
+
+// Return sets up results that will be returned by AgentPublicServiceServer.BindChatTable
+func (mmBindChatTable *mAgentPublicServiceServerMockBindChatTable) Return(bp2 *mm_agentv1alpha.BindChatTableResponse, err error) *AgentPublicServiceServerMock {
+	if mmBindChatTable.mock.funcBindChatTable != nil {
+		mmBindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.BindChatTable mock is already set by Set")
+	}
+
+	if mmBindChatTable.defaultExpectation == nil {
+		mmBindChatTable.defaultExpectation = &AgentPublicServiceServerMockBindChatTableExpectation{mock: mmBindChatTable.mock}
+	}
+	mmBindChatTable.defaultExpectation.results = &AgentPublicServiceServerMockBindChatTableResults{bp2, err}
+	mmBindChatTable.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmBindChatTable.mock
+}
+
+// Set uses given function f to mock the AgentPublicServiceServer.BindChatTable method
+func (mmBindChatTable *mAgentPublicServiceServerMockBindChatTable) Set(f func(ctx context.Context, bp1 *mm_agentv1alpha.BindChatTableRequest) (bp2 *mm_agentv1alpha.BindChatTableResponse, err error)) *AgentPublicServiceServerMock {
+	if mmBindChatTable.defaultExpectation != nil {
+		mmBindChatTable.mock.t.Fatalf("Default expectation is already set for the AgentPublicServiceServer.BindChatTable method")
+	}
+
+	if len(mmBindChatTable.expectations) > 0 {
+		mmBindChatTable.mock.t.Fatalf("Some expectations are already set for the AgentPublicServiceServer.BindChatTable method")
+	}
+
+	mmBindChatTable.mock.funcBindChatTable = f
+	mmBindChatTable.mock.funcBindChatTableOrigin = minimock.CallerInfo(1)
+	return mmBindChatTable.mock
+}
+
+// When sets expectation for the AgentPublicServiceServer.BindChatTable which will trigger the result defined by the following
+// Then helper
+func (mmBindChatTable *mAgentPublicServiceServerMockBindChatTable) When(ctx context.Context, bp1 *mm_agentv1alpha.BindChatTableRequest) *AgentPublicServiceServerMockBindChatTableExpectation {
+	if mmBindChatTable.mock.funcBindChatTable != nil {
+		mmBindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.BindChatTable mock is already set by Set")
+	}
+
+	expectation := &AgentPublicServiceServerMockBindChatTableExpectation{
+		mock:               mmBindChatTable.mock,
+		params:             &AgentPublicServiceServerMockBindChatTableParams{ctx, bp1},
+		expectationOrigins: AgentPublicServiceServerMockBindChatTableExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmBindChatTable.expectations = append(mmBindChatTable.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AgentPublicServiceServer.BindChatTable return parameters for the expectation previously defined by the When method
+func (e *AgentPublicServiceServerMockBindChatTableExpectation) Then(bp2 *mm_agentv1alpha.BindChatTableResponse, err error) *AgentPublicServiceServerMock {
+	e.results = &AgentPublicServiceServerMockBindChatTableResults{bp2, err}
+	return e.mock
+}
+
+// Times sets number of times AgentPublicServiceServer.BindChatTable should be invoked
+func (mmBindChatTable *mAgentPublicServiceServerMockBindChatTable) Times(n uint64) *mAgentPublicServiceServerMockBindChatTable {
+	if n == 0 {
+		mmBindChatTable.mock.t.Fatalf("Times of AgentPublicServiceServerMock.BindChatTable mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmBindChatTable.expectedInvocations, n)
+	mmBindChatTable.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmBindChatTable
+}
+
+func (mmBindChatTable *mAgentPublicServiceServerMockBindChatTable) invocationsDone() bool {
+	if len(mmBindChatTable.expectations) == 0 && mmBindChatTable.defaultExpectation == nil && mmBindChatTable.mock.funcBindChatTable == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmBindChatTable.mock.afterBindChatTableCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmBindChatTable.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// BindChatTable implements mm_agentv1alpha.AgentPublicServiceServer
+func (mmBindChatTable *AgentPublicServiceServerMock) BindChatTable(ctx context.Context, bp1 *mm_agentv1alpha.BindChatTableRequest) (bp2 *mm_agentv1alpha.BindChatTableResponse, err error) {
+	mm_atomic.AddUint64(&mmBindChatTable.beforeBindChatTableCounter, 1)
+	defer mm_atomic.AddUint64(&mmBindChatTable.afterBindChatTableCounter, 1)
+
+	mmBindChatTable.t.Helper()
+
+	if mmBindChatTable.inspectFuncBindChatTable != nil {
+		mmBindChatTable.inspectFuncBindChatTable(ctx, bp1)
+	}
+
+	mm_params := AgentPublicServiceServerMockBindChatTableParams{ctx, bp1}
+
+	// Record call args
+	mmBindChatTable.BindChatTableMock.mutex.Lock()
+	mmBindChatTable.BindChatTableMock.callArgs = append(mmBindChatTable.BindChatTableMock.callArgs, &mm_params)
+	mmBindChatTable.BindChatTableMock.mutex.Unlock()
+
+	for _, e := range mmBindChatTable.BindChatTableMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.bp2, e.results.err
+		}
+	}
+
+	if mmBindChatTable.BindChatTableMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmBindChatTable.BindChatTableMock.defaultExpectation.Counter, 1)
+		mm_want := mmBindChatTable.BindChatTableMock.defaultExpectation.params
+		mm_want_ptrs := mmBindChatTable.BindChatTableMock.defaultExpectation.paramPtrs
+
+		mm_got := AgentPublicServiceServerMockBindChatTableParams{ctx, bp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmBindChatTable.t.Errorf("AgentPublicServiceServerMock.BindChatTable got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmBindChatTable.BindChatTableMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.bp1 != nil && !minimock.Equal(*mm_want_ptrs.bp1, mm_got.bp1) {
+				mmBindChatTable.t.Errorf("AgentPublicServiceServerMock.BindChatTable got unexpected parameter bp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmBindChatTable.BindChatTableMock.defaultExpectation.expectationOrigins.originBp1, *mm_want_ptrs.bp1, mm_got.bp1, minimock.Diff(*mm_want_ptrs.bp1, mm_got.bp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmBindChatTable.t.Errorf("AgentPublicServiceServerMock.BindChatTable got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmBindChatTable.BindChatTableMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmBindChatTable.BindChatTableMock.defaultExpectation.results
+		if mm_results == nil {
+			mmBindChatTable.t.Fatal("No results are set for the AgentPublicServiceServerMock.BindChatTable")
+		}
+		return (*mm_results).bp2, (*mm_results).err
+	}
+	if mmBindChatTable.funcBindChatTable != nil {
+		return mmBindChatTable.funcBindChatTable(ctx, bp1)
+	}
+	mmBindChatTable.t.Fatalf("Unexpected call to AgentPublicServiceServerMock.BindChatTable. %v %v", ctx, bp1)
+	return
+}
+
+// BindChatTableAfterCounter returns a count of finished AgentPublicServiceServerMock.BindChatTable invocations
+func (mmBindChatTable *AgentPublicServiceServerMock) BindChatTableAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmBindChatTable.afterBindChatTableCounter)
+}
+
+// BindChatTableBeforeCounter returns a count of AgentPublicServiceServerMock.BindChatTable invocations
+func (mmBindChatTable *AgentPublicServiceServerMock) BindChatTableBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmBindChatTable.beforeBindChatTableCounter)
+}
+
+// Calls returns a list of arguments used in each call to AgentPublicServiceServerMock.BindChatTable.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmBindChatTable *mAgentPublicServiceServerMockBindChatTable) Calls() []*AgentPublicServiceServerMockBindChatTableParams {
+	mmBindChatTable.mutex.RLock()
+
+	argCopy := make([]*AgentPublicServiceServerMockBindChatTableParams, len(mmBindChatTable.callArgs))
+	copy(argCopy, mmBindChatTable.callArgs)
+
+	mmBindChatTable.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockBindChatTableDone returns true if the count of the BindChatTable invocations corresponds
+// the number of defined expectations
+func (m *AgentPublicServiceServerMock) MinimockBindChatTableDone() bool {
+	if m.BindChatTableMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.BindChatTableMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.BindChatTableMock.invocationsDone()
+}
+
+// MinimockBindChatTableInspect logs each unmet expectation
+func (m *AgentPublicServiceServerMock) MinimockBindChatTableInspect() {
+	for _, e := range m.BindChatTableMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AgentPublicServiceServerMock.BindChatTable at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterBindChatTableCounter := mm_atomic.LoadUint64(&m.afterBindChatTableCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.BindChatTableMock.defaultExpectation != nil && afterBindChatTableCounter < 1 {
+		if m.BindChatTableMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AgentPublicServiceServerMock.BindChatTable at\n%s", m.BindChatTableMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AgentPublicServiceServerMock.BindChatTable at\n%s with params: %#v", m.BindChatTableMock.defaultExpectation.expectationOrigins.origin, *m.BindChatTableMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcBindChatTable != nil && afterBindChatTableCounter < 1 {
+		m.t.Errorf("Expected call to AgentPublicServiceServerMock.BindChatTable at\n%s", m.funcBindChatTableOrigin)
+	}
+
+	if !m.BindChatTableMock.invocationsDone() && afterBindChatTableCounter > 0 {
+		m.t.Errorf("Expected %d calls to AgentPublicServiceServerMock.BindChatTable at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.BindChatTableMock.expectedInvocations), m.BindChatTableMock.expectedInvocationsOrigin, afterBindChatTableCounter)
+	}
 }
 
 type mAgentPublicServiceServerMockChat struct {
@@ -5455,6 +5828,349 @@ func (m *AgentPublicServiceServerMock) MinimockInsertRowInspect() {
 	}
 }
 
+type mAgentPublicServiceServerMockListChatTables struct {
+	optional           bool
+	mock               *AgentPublicServiceServerMock
+	defaultExpectation *AgentPublicServiceServerMockListChatTablesExpectation
+	expectations       []*AgentPublicServiceServerMockListChatTablesExpectation
+
+	callArgs []*AgentPublicServiceServerMockListChatTablesParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AgentPublicServiceServerMockListChatTablesExpectation specifies expectation struct of the AgentPublicServiceServer.ListChatTables
+type AgentPublicServiceServerMockListChatTablesExpectation struct {
+	mock               *AgentPublicServiceServerMock
+	params             *AgentPublicServiceServerMockListChatTablesParams
+	paramPtrs          *AgentPublicServiceServerMockListChatTablesParamPtrs
+	expectationOrigins AgentPublicServiceServerMockListChatTablesExpectationOrigins
+	results            *AgentPublicServiceServerMockListChatTablesResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AgentPublicServiceServerMockListChatTablesParams contains parameters of the AgentPublicServiceServer.ListChatTables
+type AgentPublicServiceServerMockListChatTablesParams struct {
+	ctx context.Context
+	lp1 *mm_agentv1alpha.ListChatTablesRequest
+}
+
+// AgentPublicServiceServerMockListChatTablesParamPtrs contains pointers to parameters of the AgentPublicServiceServer.ListChatTables
+type AgentPublicServiceServerMockListChatTablesParamPtrs struct {
+	ctx *context.Context
+	lp1 **mm_agentv1alpha.ListChatTablesRequest
+}
+
+// AgentPublicServiceServerMockListChatTablesResults contains results of the AgentPublicServiceServer.ListChatTables
+type AgentPublicServiceServerMockListChatTablesResults struct {
+	lp2 *mm_agentv1alpha.ListChatTablesResponse
+	err error
+}
+
+// AgentPublicServiceServerMockListChatTablesOrigins contains origins of expectations of the AgentPublicServiceServer.ListChatTables
+type AgentPublicServiceServerMockListChatTablesExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originLp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListChatTables *mAgentPublicServiceServerMockListChatTables) Optional() *mAgentPublicServiceServerMockListChatTables {
+	mmListChatTables.optional = true
+	return mmListChatTables
+}
+
+// Expect sets up expected params for AgentPublicServiceServer.ListChatTables
+func (mmListChatTables *mAgentPublicServiceServerMockListChatTables) Expect(ctx context.Context, lp1 *mm_agentv1alpha.ListChatTablesRequest) *mAgentPublicServiceServerMockListChatTables {
+	if mmListChatTables.mock.funcListChatTables != nil {
+		mmListChatTables.mock.t.Fatalf("AgentPublicServiceServerMock.ListChatTables mock is already set by Set")
+	}
+
+	if mmListChatTables.defaultExpectation == nil {
+		mmListChatTables.defaultExpectation = &AgentPublicServiceServerMockListChatTablesExpectation{}
+	}
+
+	if mmListChatTables.defaultExpectation.paramPtrs != nil {
+		mmListChatTables.mock.t.Fatalf("AgentPublicServiceServerMock.ListChatTables mock is already set by ExpectParams functions")
+	}
+
+	mmListChatTables.defaultExpectation.params = &AgentPublicServiceServerMockListChatTablesParams{ctx, lp1}
+	mmListChatTables.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmListChatTables.expectations {
+		if minimock.Equal(e.params, mmListChatTables.defaultExpectation.params) {
+			mmListChatTables.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListChatTables.defaultExpectation.params)
+		}
+	}
+
+	return mmListChatTables
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AgentPublicServiceServer.ListChatTables
+func (mmListChatTables *mAgentPublicServiceServerMockListChatTables) ExpectCtxParam1(ctx context.Context) *mAgentPublicServiceServerMockListChatTables {
+	if mmListChatTables.mock.funcListChatTables != nil {
+		mmListChatTables.mock.t.Fatalf("AgentPublicServiceServerMock.ListChatTables mock is already set by Set")
+	}
+
+	if mmListChatTables.defaultExpectation == nil {
+		mmListChatTables.defaultExpectation = &AgentPublicServiceServerMockListChatTablesExpectation{}
+	}
+
+	if mmListChatTables.defaultExpectation.params != nil {
+		mmListChatTables.mock.t.Fatalf("AgentPublicServiceServerMock.ListChatTables mock is already set by Expect")
+	}
+
+	if mmListChatTables.defaultExpectation.paramPtrs == nil {
+		mmListChatTables.defaultExpectation.paramPtrs = &AgentPublicServiceServerMockListChatTablesParamPtrs{}
+	}
+	mmListChatTables.defaultExpectation.paramPtrs.ctx = &ctx
+	mmListChatTables.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmListChatTables
+}
+
+// ExpectLp1Param2 sets up expected param lp1 for AgentPublicServiceServer.ListChatTables
+func (mmListChatTables *mAgentPublicServiceServerMockListChatTables) ExpectLp1Param2(lp1 *mm_agentv1alpha.ListChatTablesRequest) *mAgentPublicServiceServerMockListChatTables {
+	if mmListChatTables.mock.funcListChatTables != nil {
+		mmListChatTables.mock.t.Fatalf("AgentPublicServiceServerMock.ListChatTables mock is already set by Set")
+	}
+
+	if mmListChatTables.defaultExpectation == nil {
+		mmListChatTables.defaultExpectation = &AgentPublicServiceServerMockListChatTablesExpectation{}
+	}
+
+	if mmListChatTables.defaultExpectation.params != nil {
+		mmListChatTables.mock.t.Fatalf("AgentPublicServiceServerMock.ListChatTables mock is already set by Expect")
+	}
+
+	if mmListChatTables.defaultExpectation.paramPtrs == nil {
+		mmListChatTables.defaultExpectation.paramPtrs = &AgentPublicServiceServerMockListChatTablesParamPtrs{}
+	}
+	mmListChatTables.defaultExpectation.paramPtrs.lp1 = &lp1
+	mmListChatTables.defaultExpectation.expectationOrigins.originLp1 = minimock.CallerInfo(1)
+
+	return mmListChatTables
+}
+
+// Inspect accepts an inspector function that has same arguments as the AgentPublicServiceServer.ListChatTables
+func (mmListChatTables *mAgentPublicServiceServerMockListChatTables) Inspect(f func(ctx context.Context, lp1 *mm_agentv1alpha.ListChatTablesRequest)) *mAgentPublicServiceServerMockListChatTables {
+	if mmListChatTables.mock.inspectFuncListChatTables != nil {
+		mmListChatTables.mock.t.Fatalf("Inspect function is already set for AgentPublicServiceServerMock.ListChatTables")
+	}
+
+	mmListChatTables.mock.inspectFuncListChatTables = f
+
+	return mmListChatTables
+}
+
+// Return sets up results that will be returned by AgentPublicServiceServer.ListChatTables
+func (mmListChatTables *mAgentPublicServiceServerMockListChatTables) Return(lp2 *mm_agentv1alpha.ListChatTablesResponse, err error) *AgentPublicServiceServerMock {
+	if mmListChatTables.mock.funcListChatTables != nil {
+		mmListChatTables.mock.t.Fatalf("AgentPublicServiceServerMock.ListChatTables mock is already set by Set")
+	}
+
+	if mmListChatTables.defaultExpectation == nil {
+		mmListChatTables.defaultExpectation = &AgentPublicServiceServerMockListChatTablesExpectation{mock: mmListChatTables.mock}
+	}
+	mmListChatTables.defaultExpectation.results = &AgentPublicServiceServerMockListChatTablesResults{lp2, err}
+	mmListChatTables.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmListChatTables.mock
+}
+
+// Set uses given function f to mock the AgentPublicServiceServer.ListChatTables method
+func (mmListChatTables *mAgentPublicServiceServerMockListChatTables) Set(f func(ctx context.Context, lp1 *mm_agentv1alpha.ListChatTablesRequest) (lp2 *mm_agentv1alpha.ListChatTablesResponse, err error)) *AgentPublicServiceServerMock {
+	if mmListChatTables.defaultExpectation != nil {
+		mmListChatTables.mock.t.Fatalf("Default expectation is already set for the AgentPublicServiceServer.ListChatTables method")
+	}
+
+	if len(mmListChatTables.expectations) > 0 {
+		mmListChatTables.mock.t.Fatalf("Some expectations are already set for the AgentPublicServiceServer.ListChatTables method")
+	}
+
+	mmListChatTables.mock.funcListChatTables = f
+	mmListChatTables.mock.funcListChatTablesOrigin = minimock.CallerInfo(1)
+	return mmListChatTables.mock
+}
+
+// When sets expectation for the AgentPublicServiceServer.ListChatTables which will trigger the result defined by the following
+// Then helper
+func (mmListChatTables *mAgentPublicServiceServerMockListChatTables) When(ctx context.Context, lp1 *mm_agentv1alpha.ListChatTablesRequest) *AgentPublicServiceServerMockListChatTablesExpectation {
+	if mmListChatTables.mock.funcListChatTables != nil {
+		mmListChatTables.mock.t.Fatalf("AgentPublicServiceServerMock.ListChatTables mock is already set by Set")
+	}
+
+	expectation := &AgentPublicServiceServerMockListChatTablesExpectation{
+		mock:               mmListChatTables.mock,
+		params:             &AgentPublicServiceServerMockListChatTablesParams{ctx, lp1},
+		expectationOrigins: AgentPublicServiceServerMockListChatTablesExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmListChatTables.expectations = append(mmListChatTables.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AgentPublicServiceServer.ListChatTables return parameters for the expectation previously defined by the When method
+func (e *AgentPublicServiceServerMockListChatTablesExpectation) Then(lp2 *mm_agentv1alpha.ListChatTablesResponse, err error) *AgentPublicServiceServerMock {
+	e.results = &AgentPublicServiceServerMockListChatTablesResults{lp2, err}
+	return e.mock
+}
+
+// Times sets number of times AgentPublicServiceServer.ListChatTables should be invoked
+func (mmListChatTables *mAgentPublicServiceServerMockListChatTables) Times(n uint64) *mAgentPublicServiceServerMockListChatTables {
+	if n == 0 {
+		mmListChatTables.mock.t.Fatalf("Times of AgentPublicServiceServerMock.ListChatTables mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListChatTables.expectedInvocations, n)
+	mmListChatTables.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmListChatTables
+}
+
+func (mmListChatTables *mAgentPublicServiceServerMockListChatTables) invocationsDone() bool {
+	if len(mmListChatTables.expectations) == 0 && mmListChatTables.defaultExpectation == nil && mmListChatTables.mock.funcListChatTables == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListChatTables.mock.afterListChatTablesCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListChatTables.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListChatTables implements mm_agentv1alpha.AgentPublicServiceServer
+func (mmListChatTables *AgentPublicServiceServerMock) ListChatTables(ctx context.Context, lp1 *mm_agentv1alpha.ListChatTablesRequest) (lp2 *mm_agentv1alpha.ListChatTablesResponse, err error) {
+	mm_atomic.AddUint64(&mmListChatTables.beforeListChatTablesCounter, 1)
+	defer mm_atomic.AddUint64(&mmListChatTables.afterListChatTablesCounter, 1)
+
+	mmListChatTables.t.Helper()
+
+	if mmListChatTables.inspectFuncListChatTables != nil {
+		mmListChatTables.inspectFuncListChatTables(ctx, lp1)
+	}
+
+	mm_params := AgentPublicServiceServerMockListChatTablesParams{ctx, lp1}
+
+	// Record call args
+	mmListChatTables.ListChatTablesMock.mutex.Lock()
+	mmListChatTables.ListChatTablesMock.callArgs = append(mmListChatTables.ListChatTablesMock.callArgs, &mm_params)
+	mmListChatTables.ListChatTablesMock.mutex.Unlock()
+
+	for _, e := range mmListChatTables.ListChatTablesMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.lp2, e.results.err
+		}
+	}
+
+	if mmListChatTables.ListChatTablesMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListChatTables.ListChatTablesMock.defaultExpectation.Counter, 1)
+		mm_want := mmListChatTables.ListChatTablesMock.defaultExpectation.params
+		mm_want_ptrs := mmListChatTables.ListChatTablesMock.defaultExpectation.paramPtrs
+
+		mm_got := AgentPublicServiceServerMockListChatTablesParams{ctx, lp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListChatTables.t.Errorf("AgentPublicServiceServerMock.ListChatTables got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListChatTables.ListChatTablesMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.lp1 != nil && !minimock.Equal(*mm_want_ptrs.lp1, mm_got.lp1) {
+				mmListChatTables.t.Errorf("AgentPublicServiceServerMock.ListChatTables got unexpected parameter lp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListChatTables.ListChatTablesMock.defaultExpectation.expectationOrigins.originLp1, *mm_want_ptrs.lp1, mm_got.lp1, minimock.Diff(*mm_want_ptrs.lp1, mm_got.lp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListChatTables.t.Errorf("AgentPublicServiceServerMock.ListChatTables got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmListChatTables.ListChatTablesMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListChatTables.ListChatTablesMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListChatTables.t.Fatal("No results are set for the AgentPublicServiceServerMock.ListChatTables")
+		}
+		return (*mm_results).lp2, (*mm_results).err
+	}
+	if mmListChatTables.funcListChatTables != nil {
+		return mmListChatTables.funcListChatTables(ctx, lp1)
+	}
+	mmListChatTables.t.Fatalf("Unexpected call to AgentPublicServiceServerMock.ListChatTables. %v %v", ctx, lp1)
+	return
+}
+
+// ListChatTablesAfterCounter returns a count of finished AgentPublicServiceServerMock.ListChatTables invocations
+func (mmListChatTables *AgentPublicServiceServerMock) ListChatTablesAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListChatTables.afterListChatTablesCounter)
+}
+
+// ListChatTablesBeforeCounter returns a count of AgentPublicServiceServerMock.ListChatTables invocations
+func (mmListChatTables *AgentPublicServiceServerMock) ListChatTablesBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListChatTables.beforeListChatTablesCounter)
+}
+
+// Calls returns a list of arguments used in each call to AgentPublicServiceServerMock.ListChatTables.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListChatTables *mAgentPublicServiceServerMockListChatTables) Calls() []*AgentPublicServiceServerMockListChatTablesParams {
+	mmListChatTables.mutex.RLock()
+
+	argCopy := make([]*AgentPublicServiceServerMockListChatTablesParams, len(mmListChatTables.callArgs))
+	copy(argCopy, mmListChatTables.callArgs)
+
+	mmListChatTables.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListChatTablesDone returns true if the count of the ListChatTables invocations corresponds
+// the number of defined expectations
+func (m *AgentPublicServiceServerMock) MinimockListChatTablesDone() bool {
+	if m.ListChatTablesMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListChatTablesMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListChatTablesMock.invocationsDone()
+}
+
+// MinimockListChatTablesInspect logs each unmet expectation
+func (m *AgentPublicServiceServerMock) MinimockListChatTablesInspect() {
+	for _, e := range m.ListChatTablesMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AgentPublicServiceServerMock.ListChatTables at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterListChatTablesCounter := mm_atomic.LoadUint64(&m.afterListChatTablesCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListChatTablesMock.defaultExpectation != nil && afterListChatTablesCounter < 1 {
+		if m.ListChatTablesMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AgentPublicServiceServerMock.ListChatTables at\n%s", m.ListChatTablesMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AgentPublicServiceServerMock.ListChatTables at\n%s with params: %#v", m.ListChatTablesMock.defaultExpectation.expectationOrigins.origin, *m.ListChatTablesMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListChatTables != nil && afterListChatTablesCounter < 1 {
+		m.t.Errorf("Expected call to AgentPublicServiceServerMock.ListChatTables at\n%s", m.funcListChatTablesOrigin)
+	}
+
+	if !m.ListChatTablesMock.invocationsDone() && afterListChatTablesCounter > 0 {
+		m.t.Errorf("Expected %d calls to AgentPublicServiceServerMock.ListChatTables at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.ListChatTablesMock.expectedInvocations), m.ListChatTablesMock.expectedInvocationsOrigin, afterListChatTablesCounter)
+	}
+}
+
 type mAgentPublicServiceServerMockListChats struct {
 	optional           bool
 	mock               *AgentPublicServiceServerMock
@@ -7856,6 +8572,349 @@ func (m *AgentPublicServiceServerMock) MinimockReadinessInspect() {
 	}
 }
 
+type mAgentPublicServiceServerMockUnbindChatTable struct {
+	optional           bool
+	mock               *AgentPublicServiceServerMock
+	defaultExpectation *AgentPublicServiceServerMockUnbindChatTableExpectation
+	expectations       []*AgentPublicServiceServerMockUnbindChatTableExpectation
+
+	callArgs []*AgentPublicServiceServerMockUnbindChatTableParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AgentPublicServiceServerMockUnbindChatTableExpectation specifies expectation struct of the AgentPublicServiceServer.UnbindChatTable
+type AgentPublicServiceServerMockUnbindChatTableExpectation struct {
+	mock               *AgentPublicServiceServerMock
+	params             *AgentPublicServiceServerMockUnbindChatTableParams
+	paramPtrs          *AgentPublicServiceServerMockUnbindChatTableParamPtrs
+	expectationOrigins AgentPublicServiceServerMockUnbindChatTableExpectationOrigins
+	results            *AgentPublicServiceServerMockUnbindChatTableResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AgentPublicServiceServerMockUnbindChatTableParams contains parameters of the AgentPublicServiceServer.UnbindChatTable
+type AgentPublicServiceServerMockUnbindChatTableParams struct {
+	ctx context.Context
+	up1 *mm_agentv1alpha.UnbindChatTableRequest
+}
+
+// AgentPublicServiceServerMockUnbindChatTableParamPtrs contains pointers to parameters of the AgentPublicServiceServer.UnbindChatTable
+type AgentPublicServiceServerMockUnbindChatTableParamPtrs struct {
+	ctx *context.Context
+	up1 **mm_agentv1alpha.UnbindChatTableRequest
+}
+
+// AgentPublicServiceServerMockUnbindChatTableResults contains results of the AgentPublicServiceServer.UnbindChatTable
+type AgentPublicServiceServerMockUnbindChatTableResults struct {
+	up2 *mm_agentv1alpha.UnbindChatTableResponse
+	err error
+}
+
+// AgentPublicServiceServerMockUnbindChatTableOrigins contains origins of expectations of the AgentPublicServiceServer.UnbindChatTable
+type AgentPublicServiceServerMockUnbindChatTableExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originUp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUnbindChatTable *mAgentPublicServiceServerMockUnbindChatTable) Optional() *mAgentPublicServiceServerMockUnbindChatTable {
+	mmUnbindChatTable.optional = true
+	return mmUnbindChatTable
+}
+
+// Expect sets up expected params for AgentPublicServiceServer.UnbindChatTable
+func (mmUnbindChatTable *mAgentPublicServiceServerMockUnbindChatTable) Expect(ctx context.Context, up1 *mm_agentv1alpha.UnbindChatTableRequest) *mAgentPublicServiceServerMockUnbindChatTable {
+	if mmUnbindChatTable.mock.funcUnbindChatTable != nil {
+		mmUnbindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.UnbindChatTable mock is already set by Set")
+	}
+
+	if mmUnbindChatTable.defaultExpectation == nil {
+		mmUnbindChatTable.defaultExpectation = &AgentPublicServiceServerMockUnbindChatTableExpectation{}
+	}
+
+	if mmUnbindChatTable.defaultExpectation.paramPtrs != nil {
+		mmUnbindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.UnbindChatTable mock is already set by ExpectParams functions")
+	}
+
+	mmUnbindChatTable.defaultExpectation.params = &AgentPublicServiceServerMockUnbindChatTableParams{ctx, up1}
+	mmUnbindChatTable.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUnbindChatTable.expectations {
+		if minimock.Equal(e.params, mmUnbindChatTable.defaultExpectation.params) {
+			mmUnbindChatTable.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUnbindChatTable.defaultExpectation.params)
+		}
+	}
+
+	return mmUnbindChatTable
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AgentPublicServiceServer.UnbindChatTable
+func (mmUnbindChatTable *mAgentPublicServiceServerMockUnbindChatTable) ExpectCtxParam1(ctx context.Context) *mAgentPublicServiceServerMockUnbindChatTable {
+	if mmUnbindChatTable.mock.funcUnbindChatTable != nil {
+		mmUnbindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.UnbindChatTable mock is already set by Set")
+	}
+
+	if mmUnbindChatTable.defaultExpectation == nil {
+		mmUnbindChatTable.defaultExpectation = &AgentPublicServiceServerMockUnbindChatTableExpectation{}
+	}
+
+	if mmUnbindChatTable.defaultExpectation.params != nil {
+		mmUnbindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.UnbindChatTable mock is already set by Expect")
+	}
+
+	if mmUnbindChatTable.defaultExpectation.paramPtrs == nil {
+		mmUnbindChatTable.defaultExpectation.paramPtrs = &AgentPublicServiceServerMockUnbindChatTableParamPtrs{}
+	}
+	mmUnbindChatTable.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUnbindChatTable.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUnbindChatTable
+}
+
+// ExpectUp1Param2 sets up expected param up1 for AgentPublicServiceServer.UnbindChatTable
+func (mmUnbindChatTable *mAgentPublicServiceServerMockUnbindChatTable) ExpectUp1Param2(up1 *mm_agentv1alpha.UnbindChatTableRequest) *mAgentPublicServiceServerMockUnbindChatTable {
+	if mmUnbindChatTable.mock.funcUnbindChatTable != nil {
+		mmUnbindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.UnbindChatTable mock is already set by Set")
+	}
+
+	if mmUnbindChatTable.defaultExpectation == nil {
+		mmUnbindChatTable.defaultExpectation = &AgentPublicServiceServerMockUnbindChatTableExpectation{}
+	}
+
+	if mmUnbindChatTable.defaultExpectation.params != nil {
+		mmUnbindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.UnbindChatTable mock is already set by Expect")
+	}
+
+	if mmUnbindChatTable.defaultExpectation.paramPtrs == nil {
+		mmUnbindChatTable.defaultExpectation.paramPtrs = &AgentPublicServiceServerMockUnbindChatTableParamPtrs{}
+	}
+	mmUnbindChatTable.defaultExpectation.paramPtrs.up1 = &up1
+	mmUnbindChatTable.defaultExpectation.expectationOrigins.originUp1 = minimock.CallerInfo(1)
+
+	return mmUnbindChatTable
+}
+
+// Inspect accepts an inspector function that has same arguments as the AgentPublicServiceServer.UnbindChatTable
+func (mmUnbindChatTable *mAgentPublicServiceServerMockUnbindChatTable) Inspect(f func(ctx context.Context, up1 *mm_agentv1alpha.UnbindChatTableRequest)) *mAgentPublicServiceServerMockUnbindChatTable {
+	if mmUnbindChatTable.mock.inspectFuncUnbindChatTable != nil {
+		mmUnbindChatTable.mock.t.Fatalf("Inspect function is already set for AgentPublicServiceServerMock.UnbindChatTable")
+	}
+
+	mmUnbindChatTable.mock.inspectFuncUnbindChatTable = f
+
+	return mmUnbindChatTable
+}
+
+// Return sets up results that will be returned by AgentPublicServiceServer.UnbindChatTable
+func (mmUnbindChatTable *mAgentPublicServiceServerMockUnbindChatTable) Return(up2 *mm_agentv1alpha.UnbindChatTableResponse, err error) *AgentPublicServiceServerMock {
+	if mmUnbindChatTable.mock.funcUnbindChatTable != nil {
+		mmUnbindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.UnbindChatTable mock is already set by Set")
+	}
+
+	if mmUnbindChatTable.defaultExpectation == nil {
+		mmUnbindChatTable.defaultExpectation = &AgentPublicServiceServerMockUnbindChatTableExpectation{mock: mmUnbindChatTable.mock}
+	}
+	mmUnbindChatTable.defaultExpectation.results = &AgentPublicServiceServerMockUnbindChatTableResults{up2, err}
+	mmUnbindChatTable.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUnbindChatTable.mock
+}
+
+// Set uses given function f to mock the AgentPublicServiceServer.UnbindChatTable method
+func (mmUnbindChatTable *mAgentPublicServiceServerMockUnbindChatTable) Set(f func(ctx context.Context, up1 *mm_agentv1alpha.UnbindChatTableRequest) (up2 *mm_agentv1alpha.UnbindChatTableResponse, err error)) *AgentPublicServiceServerMock {
+	if mmUnbindChatTable.defaultExpectation != nil {
+		mmUnbindChatTable.mock.t.Fatalf("Default expectation is already set for the AgentPublicServiceServer.UnbindChatTable method")
+	}
+
+	if len(mmUnbindChatTable.expectations) > 0 {
+		mmUnbindChatTable.mock.t.Fatalf("Some expectations are already set for the AgentPublicServiceServer.UnbindChatTable method")
+	}
+
+	mmUnbindChatTable.mock.funcUnbindChatTable = f
+	mmUnbindChatTable.mock.funcUnbindChatTableOrigin = minimock.CallerInfo(1)
+	return mmUnbindChatTable.mock
+}
+
+// When sets expectation for the AgentPublicServiceServer.UnbindChatTable which will trigger the result defined by the following
+// Then helper
+func (mmUnbindChatTable *mAgentPublicServiceServerMockUnbindChatTable) When(ctx context.Context, up1 *mm_agentv1alpha.UnbindChatTableRequest) *AgentPublicServiceServerMockUnbindChatTableExpectation {
+	if mmUnbindChatTable.mock.funcUnbindChatTable != nil {
+		mmUnbindChatTable.mock.t.Fatalf("AgentPublicServiceServerMock.UnbindChatTable mock is already set by Set")
+	}
+
+	expectation := &AgentPublicServiceServerMockUnbindChatTableExpectation{
+		mock:               mmUnbindChatTable.mock,
+		params:             &AgentPublicServiceServerMockUnbindChatTableParams{ctx, up1},
+		expectationOrigins: AgentPublicServiceServerMockUnbindChatTableExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUnbindChatTable.expectations = append(mmUnbindChatTable.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AgentPublicServiceServer.UnbindChatTable return parameters for the expectation previously defined by the When method
+func (e *AgentPublicServiceServerMockUnbindChatTableExpectation) Then(up2 *mm_agentv1alpha.UnbindChatTableResponse, err error) *AgentPublicServiceServerMock {
+	e.results = &AgentPublicServiceServerMockUnbindChatTableResults{up2, err}
+	return e.mock
+}
+
+// Times sets number of times AgentPublicServiceServer.UnbindChatTable should be invoked
+func (mmUnbindChatTable *mAgentPublicServiceServerMockUnbindChatTable) Times(n uint64) *mAgentPublicServiceServerMockUnbindChatTable {
+	if n == 0 {
+		mmUnbindChatTable.mock.t.Fatalf("Times of AgentPublicServiceServerMock.UnbindChatTable mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUnbindChatTable.expectedInvocations, n)
+	mmUnbindChatTable.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUnbindChatTable
+}
+
+func (mmUnbindChatTable *mAgentPublicServiceServerMockUnbindChatTable) invocationsDone() bool {
+	if len(mmUnbindChatTable.expectations) == 0 && mmUnbindChatTable.defaultExpectation == nil && mmUnbindChatTable.mock.funcUnbindChatTable == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUnbindChatTable.mock.afterUnbindChatTableCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUnbindChatTable.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UnbindChatTable implements mm_agentv1alpha.AgentPublicServiceServer
+func (mmUnbindChatTable *AgentPublicServiceServerMock) UnbindChatTable(ctx context.Context, up1 *mm_agentv1alpha.UnbindChatTableRequest) (up2 *mm_agentv1alpha.UnbindChatTableResponse, err error) {
+	mm_atomic.AddUint64(&mmUnbindChatTable.beforeUnbindChatTableCounter, 1)
+	defer mm_atomic.AddUint64(&mmUnbindChatTable.afterUnbindChatTableCounter, 1)
+
+	mmUnbindChatTable.t.Helper()
+
+	if mmUnbindChatTable.inspectFuncUnbindChatTable != nil {
+		mmUnbindChatTable.inspectFuncUnbindChatTable(ctx, up1)
+	}
+
+	mm_params := AgentPublicServiceServerMockUnbindChatTableParams{ctx, up1}
+
+	// Record call args
+	mmUnbindChatTable.UnbindChatTableMock.mutex.Lock()
+	mmUnbindChatTable.UnbindChatTableMock.callArgs = append(mmUnbindChatTable.UnbindChatTableMock.callArgs, &mm_params)
+	mmUnbindChatTable.UnbindChatTableMock.mutex.Unlock()
+
+	for _, e := range mmUnbindChatTable.UnbindChatTableMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.up2, e.results.err
+		}
+	}
+
+	if mmUnbindChatTable.UnbindChatTableMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUnbindChatTable.UnbindChatTableMock.defaultExpectation.Counter, 1)
+		mm_want := mmUnbindChatTable.UnbindChatTableMock.defaultExpectation.params
+		mm_want_ptrs := mmUnbindChatTable.UnbindChatTableMock.defaultExpectation.paramPtrs
+
+		mm_got := AgentPublicServiceServerMockUnbindChatTableParams{ctx, up1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUnbindChatTable.t.Errorf("AgentPublicServiceServerMock.UnbindChatTable got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUnbindChatTable.UnbindChatTableMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.up1 != nil && !minimock.Equal(*mm_want_ptrs.up1, mm_got.up1) {
+				mmUnbindChatTable.t.Errorf("AgentPublicServiceServerMock.UnbindChatTable got unexpected parameter up1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUnbindChatTable.UnbindChatTableMock.defaultExpectation.expectationOrigins.originUp1, *mm_want_ptrs.up1, mm_got.up1, minimock.Diff(*mm_want_ptrs.up1, mm_got.up1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUnbindChatTable.t.Errorf("AgentPublicServiceServerMock.UnbindChatTable got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUnbindChatTable.UnbindChatTableMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUnbindChatTable.UnbindChatTableMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUnbindChatTable.t.Fatal("No results are set for the AgentPublicServiceServerMock.UnbindChatTable")
+		}
+		return (*mm_results).up2, (*mm_results).err
+	}
+	if mmUnbindChatTable.funcUnbindChatTable != nil {
+		return mmUnbindChatTable.funcUnbindChatTable(ctx, up1)
+	}
+	mmUnbindChatTable.t.Fatalf("Unexpected call to AgentPublicServiceServerMock.UnbindChatTable. %v %v", ctx, up1)
+	return
+}
+
+// UnbindChatTableAfterCounter returns a count of finished AgentPublicServiceServerMock.UnbindChatTable invocations
+func (mmUnbindChatTable *AgentPublicServiceServerMock) UnbindChatTableAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUnbindChatTable.afterUnbindChatTableCounter)
+}
+
+// UnbindChatTableBeforeCounter returns a count of AgentPublicServiceServerMock.UnbindChatTable invocations
+func (mmUnbindChatTable *AgentPublicServiceServerMock) UnbindChatTableBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUnbindChatTable.beforeUnbindChatTableCounter)
+}
+
+// Calls returns a list of arguments used in each call to AgentPublicServiceServerMock.UnbindChatTable.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUnbindChatTable *mAgentPublicServiceServerMockUnbindChatTable) Calls() []*AgentPublicServiceServerMockUnbindChatTableParams {
+	mmUnbindChatTable.mutex.RLock()
+
+	argCopy := make([]*AgentPublicServiceServerMockUnbindChatTableParams, len(mmUnbindChatTable.callArgs))
+	copy(argCopy, mmUnbindChatTable.callArgs)
+
+	mmUnbindChatTable.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUnbindChatTableDone returns true if the count of the UnbindChatTable invocations corresponds
+// the number of defined expectations
+func (m *AgentPublicServiceServerMock) MinimockUnbindChatTableDone() bool {
+	if m.UnbindChatTableMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UnbindChatTableMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UnbindChatTableMock.invocationsDone()
+}
+
+// MinimockUnbindChatTableInspect logs each unmet expectation
+func (m *AgentPublicServiceServerMock) MinimockUnbindChatTableInspect() {
+	for _, e := range m.UnbindChatTableMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AgentPublicServiceServerMock.UnbindChatTable at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUnbindChatTableCounter := mm_atomic.LoadUint64(&m.afterUnbindChatTableCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UnbindChatTableMock.defaultExpectation != nil && afterUnbindChatTableCounter < 1 {
+		if m.UnbindChatTableMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AgentPublicServiceServerMock.UnbindChatTable at\n%s", m.UnbindChatTableMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AgentPublicServiceServerMock.UnbindChatTable at\n%s with params: %#v", m.UnbindChatTableMock.defaultExpectation.expectationOrigins.origin, *m.UnbindChatTableMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUnbindChatTable != nil && afterUnbindChatTableCounter < 1 {
+		m.t.Errorf("Expected call to AgentPublicServiceServerMock.UnbindChatTable at\n%s", m.funcUnbindChatTableOrigin)
+	}
+
+	if !m.UnbindChatTableMock.invocationsDone() && afterUnbindChatTableCounter > 0 {
+		m.t.Errorf("Expected %d calls to AgentPublicServiceServerMock.UnbindChatTable at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UnbindChatTableMock.expectedInvocations), m.UnbindChatTableMock.expectedInvocationsOrigin, afterUnbindChatTableCounter)
+	}
+}
+
 type mAgentPublicServiceServerMockUpdateChat struct {
 	optional           bool
 	mock               *AgentPublicServiceServerMock
@@ -9918,6 +10977,8 @@ func (m *AgentPublicServiceServerMock) MinimockUpdateTableInspect() {
 func (m *AgentPublicServiceServerMock) MinimockFinish() {
 	m.finishOnce.Do(func() {
 		if !m.minimockDone() {
+			m.MinimockBindChatTableInspect()
+
 			m.MinimockChatInspect()
 
 			m.MinimockCreateChatInspect()
@@ -9948,6 +11009,8 @@ func (m *AgentPublicServiceServerMock) MinimockFinish() {
 
 			m.MinimockInsertRowInspect()
 
+			m.MinimockListChatTablesInspect()
+
 			m.MinimockListChatsInspect()
 
 			m.MinimockListMessagesInspect()
@@ -9961,6 +11024,8 @@ func (m *AgentPublicServiceServerMock) MinimockFinish() {
 			m.MinimockMoveRowsInspect()
 
 			m.MinimockReadinessInspect()
+
+			m.MinimockUnbindChatTableInspect()
 
 			m.MinimockUpdateChatInspect()
 
@@ -9996,6 +11061,7 @@ func (m *AgentPublicServiceServerMock) MinimockWait(timeout mm_time.Duration) {
 func (m *AgentPublicServiceServerMock) minimockDone() bool {
 	done := true
 	return done &&
+		m.MinimockBindChatTableDone() &&
 		m.MinimockChatDone() &&
 		m.MinimockCreateChatDone() &&
 		m.MinimockCreateMessageDone() &&
@@ -10011,6 +11077,7 @@ func (m *AgentPublicServiceServerMock) minimockDone() bool {
 		m.MinimockGetTableDone() &&
 		m.MinimockGetTableEventsDone() &&
 		m.MinimockInsertRowDone() &&
+		m.MinimockListChatTablesDone() &&
 		m.MinimockListChatsDone() &&
 		m.MinimockListMessagesDone() &&
 		m.MinimockListRowsDone() &&
@@ -10018,6 +11085,7 @@ func (m *AgentPublicServiceServerMock) minimockDone() bool {
 		m.MinimockLivenessDone() &&
 		m.MinimockMoveRowsDone() &&
 		m.MinimockReadinessDone() &&
+		m.MinimockUnbindChatTableDone() &&
 		m.MinimockUpdateChatDone() &&
 		m.MinimockUpdateColumnDefinitionsDone() &&
 		m.MinimockUpdateMessageDone() &&
