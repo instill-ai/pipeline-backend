@@ -14,6 +14,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,7 +23,9 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
+
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
@@ -201,13 +204,19 @@ func convertFormData(ctx context.Context, req *http.Request) ([]*pb.TriggerData,
 }
 
 // HandleTrigger
-func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, ms memory.MemoryStore) {
+func HandleTrigger(mux *runtime.ServeMux,
+	client pb.PipelinePublicServiceClient,
+	w http.ResponseWriter,
+	req *http.Request,
+	pathParams map[string]string,
+	sub memory.EventSubscriber,
+) {
 
 	ctx := req.Context()
 
 	var sh *streamingHandler
 	if req.Header.Get(constant.HeaderAccept) == "text/event-stream" {
-		sh = NewStreamingHandler(w, ms)
+		sh = newStreamingHandler(w, sub)
 	}
 
 	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -250,7 +259,13 @@ func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient,
 }
 
 // HandleTriggerAsync
-func HandleTriggerAsync(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, _ memory.MemoryStore) {
+func HandleTriggerAsync(mux *runtime.ServeMux,
+	client pb.PipelinePublicServiceClient,
+	w http.ResponseWriter,
+	req *http.Request,
+	pathParams map[string]string,
+	_ memory.EventSubscriber,
+) {
 
 	ctx := req.Context()
 
@@ -476,12 +491,18 @@ func request_PipelinePublicService_TriggerAsyncNamespacePipeline_0_form(ctx cont
 }
 
 // HandleTrigger
-func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, ms memory.MemoryStore) {
+func HandleTriggerRelease(mux *runtime.ServeMux,
+	client pb.PipelinePublicServiceClient,
+	w http.ResponseWriter,
+	req *http.Request,
+	pathParams map[string]string,
+	sub memory.EventSubscriber,
+) {
 
 	ctx := req.Context()
 	var sh *streamingHandler
 	if req.Header.Get(constant.HeaderAccept) == "text/event-stream" {
-		sh = NewStreamingHandler(w, ms)
+		sh = newStreamingHandler(w, sub)
 	}
 
 	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -524,7 +545,13 @@ func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicService
 }
 
 // HandleTriggerAsync
-func HandleTriggerAsyncRelease(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, _ memory.MemoryStore) {
+func HandleTriggerAsyncRelease(mux *runtime.ServeMux,
+	client pb.PipelinePublicServiceClient,
+	w http.ResponseWriter,
+	req *http.Request,
+	pathParams map[string]string,
+	_ memory.EventSubscriber,
+) {
 
 	ctx := req.Context()
 
@@ -786,55 +813,59 @@ func request_PipelinePublicService_TriggerAsyncNamespacePipelineRelease_0_form(c
 }
 
 type streamingHandler struct {
-	writer http.ResponseWriter
-	ms     memory.MemoryStore
+	writer     http.ResponseWriter
+	subscriber memory.EventSubscriber
 }
 
-func NewStreamingHandler(writer http.ResponseWriter, ms memory.MemoryStore) *streamingHandler {
+func newStreamingHandler(writer http.ResponseWriter, sub memory.EventSubscriber) *streamingHandler {
 	return &streamingHandler{
-		writer: writer,
-		ms:     ms,
+		writer:     writer,
+		subscriber: sub,
 	}
 }
 
 func (sh *streamingHandler) Handle(ctx context.Context, triggerID string) {
-	wfm, err := sh.ms.GetWorkflowMemory(ctx, triggerID)
-	if err != nil {
-		return
-	}
-	defer func() {
-		_ = sh.ms.PurgeWorkflowMemory(ctx, triggerID)
-	}()
-	ch := wfm.ListenEvent(ctx)
+	logger, _ := logger.GetZapLogger(ctx)
+	logger = logger.With(zap.String("triggerID", triggerID))
 
 	sh.writer.Header().Set("Content-Type", "text/event-stream")
 	sh.writer.Header().Set("Cache-Control", "no-cache")
 	sh.writer.Header().Set("Connection", "keep-alive")
 
-	// defer cancel()
-	closed := false
-	for !closed {
-		select {
-		// Check if the main context is canceled to stop the goroutine
-		case <-ctx.Done():
+	channelName := memory.WorkflowStatusChannel(triggerID)
+	sub := sh.subscriber.Subscribe(ctx, channelName)
+	defer func() {
+		if ctx.Err() != nil {
+			ctx = context.Background()
+		}
+
+		if err := sub.Unsubscribe(ctx, channelName); err != nil {
+			logger.Error("Couldn't unsubscribe from channel", zap.Error(err))
+		}
+	}()
+
+	for {
+		event, err := sub.Receive(ctx)
+		if err != nil {
+			logger.Error("Couldn't receive message", zap.Error(err))
 			return
-		case event := <-ch:
-			if event.Event == string(memory.PipelineClosed) {
-				closed = true
-				break
-			}
+		}
 
-			b, err := json.Marshal(event.Data)
-			if err != nil {
-				return
-			}
-			fmt.Fprintf(sh.writer, "event: %s\n", event.Event)
-			fmt.Fprintf(sh.writer, "data: %s\n", string(b))
-			fmt.Fprintf(sh.writer, "\n")
-			if flusher, ok := sh.writer.(http.Flusher); ok {
-				flusher.Flush()
-			}
+		if event.Name == string(memory.PipelineClosed) {
+			break
+		}
 
+		b, err := json.Marshal(event.Data)
+		if err != nil {
+			logger.Error("Couldn't marshal data", zap.Error(err))
+			return
+		}
+
+		fmt.Fprintf(sh.writer, "event: %s\n", event.Name)
+		fmt.Fprintf(sh.writer, "data: %s\n", string(b))
+		fmt.Fprintf(sh.writer, "\n")
+		if flusher, ok := sh.writer.(http.Flusher); ok {
+			flusher.Flush()
 		}
 	}
 }
@@ -847,7 +878,7 @@ func sendPipelineError(_ context.Context, sh *streamingHandler, err error) {
 	sh.writer.Header().Set("Connection", "keep-alive")
 
 	startEvent := memory.Event{
-		Event: string(memory.PipelineStatusUpdated),
+		Name: string(memory.PipelineStatusUpdated),
 		Data: memory.PipelineStatusUpdatedEventData{
 			PipelineEventData: memory.PipelineEventData{
 				UpdateTime: time.Now(),
@@ -861,7 +892,7 @@ func sendPipelineError(_ context.Context, sh *streamingHandler, err error) {
 		},
 	}
 	errEvent := memory.Event{
-		Event: string(memory.PipelineErrorUpdated),
+		Name: string(memory.PipelineErrorUpdated),
 		Data: memory.PipelineErrorUpdatedEventData{
 			PipelineEventData: memory.PipelineEventData{
 				UpdateTime: time.Now(),
@@ -885,10 +916,10 @@ func sendPipelineError(_ context.Context, sh *streamingHandler, err error) {
 	if err != nil {
 		return
 	}
-	fmt.Fprintf(sh.writer, "event: %s\n", startEvent.Event)
+	fmt.Fprintf(sh.writer, "event: %s\n", startEvent.Name)
 	fmt.Fprintf(sh.writer, "data: %s\n", startData)
 	fmt.Fprintf(sh.writer, "\n")
-	fmt.Fprintf(sh.writer, "event: %s\n", errEvent.Event)
+	fmt.Fprintf(sh.writer, "event: %s\n", errEvent.Name)
 	fmt.Fprintf(sh.writer, "data: %s\n", errData)
 	fmt.Fprintf(sh.writer, "\n")
 	if flusher, ok := sh.writer.(http.Flusher); ok {

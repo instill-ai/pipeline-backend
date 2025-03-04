@@ -16,13 +16,17 @@ import (
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
-type fn func(*runtime.ServeMux, pb.PipelinePublicServiceClient, http.ResponseWriter, *http.Request, map[string]string, memory.MemoryStore)
+type fn func(*runtime.ServeMux, pb.PipelinePublicServiceClient, http.ResponseWriter, *http.Request, map[string]string, memory.EventSubscriber)
 
 // AppendCustomHeaderMiddleware appends custom headers
-func AppendCustomHeaderMiddleware(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, next fn, m memory.MemoryStore) runtime.HandlerFunc {
-
+func AppendCustomHeaderMiddleware(
+	mux *runtime.ServeMux,
+	client pb.PipelinePublicServiceClient,
+	next fn,
+	sub memory.EventSubscriber,
+) runtime.HandlerFunc {
 	return runtime.HandlerFunc(func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-		next(mux, client, w, r, pathParams, m)
+		next(mux, client, w, r, pathParams, sub)
 	})
 }
 

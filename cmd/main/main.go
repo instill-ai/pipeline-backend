@@ -256,9 +256,6 @@ func main() {
 		defer mgmtPrivateServiceClientConn.Close()
 	}
 
-	repo := repository.NewRepository(db, redisClient)
-	ms := memory.NewMemoryStore()
-
 	// Initialize MinIO client
 	minIOParams := minio.ClientParams{
 		Config: config.Config.Minio,
@@ -300,6 +297,10 @@ func main() {
 	})
 	workerUID, _ := uuid.NewV4()
 
+	pubsub := memory.NewRedisPubSub(redisClient)
+	ms := memory.NewMemoryStore(pubsub)
+
+	repo := repository.NewRepository(db, redisClient)
 	service := service.NewService(
 		repo,
 		redisClient,
@@ -405,16 +406,16 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 
-	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTrigger, ms)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTrigger, pubsub)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsync, ms)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsync, pubsub)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/releases/{releaseID=*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerRelease, ms)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/releases/{releaseID=*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerRelease, pubsub)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/releases/{releaseID=*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsyncRelease, ms)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/releases/{releaseID=*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsyncRelease, pubsub)); err != nil {
 		logger.Fatal(err.Error())
 	}
 	if err := publicServeMux.HandlePath("GET", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/image", middleware.HandleProfileImage(service, repo)); err != nil {

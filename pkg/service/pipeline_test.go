@@ -85,7 +85,7 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 			converter:                converter,
 			mgmtPrivateServiceClient: mgmtPrivateClient,
 			componentStore:           compStore,
-			memory:                   memory.NewMemoryStore(),
+			memory:                   memory.NewMemoryStore(nil),
 			workerUID:                workerUID,
 		},
 	)

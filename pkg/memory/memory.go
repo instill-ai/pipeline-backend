@@ -83,8 +83,6 @@ type WorkflowMemory interface {
 
 	EnableStreaming()
 	IsStreaming() bool
-	SendEvent(_ context.Context, event *Event)
-	ListenEvent(_ context.Context) chan *Event
 
 	GetBatchSize() int
 	SetRecipe(*datamodel.Recipe)
@@ -99,24 +97,21 @@ type ComponentStatus struct {
 
 type memoryStore struct {
 	workflows sync.Map
+	publisher EventPublisher
 }
 
 type workflowMemory struct {
-	mu        sync.Mutex
+	mu sync.Mutex
 	ID        string
 	Data      []format.Value
 	Recipe    *datamodel.Recipe
 	Streaming bool
-	channel   chan *Event
+
+	publishWFStatus func(_ context.Context, topic string, _ Event) error
 }
 
 type ComponentEventType string
 type PipelineEventType string
-
-type Event struct {
-	Event string `json:"event"`
-	Data  any    `json:"data"`
-}
 
 type PipelineEventData struct {
 	UpdateTime time.Time `json:"updateTime"`
@@ -191,9 +186,10 @@ func init() {
 	gob.Register(PipelineErrorUpdatedEventData{})
 }
 
-func NewMemoryStore() MemoryStore {
+func NewMemoryStore(pub EventPublisher) MemoryStore {
 	return &memoryStore{
 		workflows: sync.Map{},
+		publisher: pub,
 	}
 }
 
@@ -211,11 +207,11 @@ func (ms *memoryStore) NewWorkflowMemory(ctx context.Context, workflowID string,
 	}
 
 	ms.workflows.Store(workflowID, &workflowMemory{
-		mu:      sync.Mutex{},
-		ID:      workflowID,
-		Data:    wfmData,
-		Recipe:  r,
-		channel: make(chan *Event),
+		mu:              sync.Mutex{},
+		ID:              workflowID,
+		Data:            wfmData,
+		Recipe:          r,
+		publishWFStatus: ms.SendWorkflowStatusEvent,
 	})
 
 	wfm, ok := ms.workflows.Load(workflowID)
@@ -241,11 +237,11 @@ func (ms *memoryStore) PurgeWorkflowMemory(ctx context.Context, workflowID strin
 }
 
 func (ms *memoryStore) SendWorkflowStatusEvent(ctx context.Context, workflowID string, event Event) (err error) {
-	wfm, err := ms.GetWorkflowMemory(ctx, workflowID)
-	if err != nil {
-		return err
+	channel := WorkflowStatusChannel(workflowID)
+	if err := ms.publisher.PublishEvent(ctx, channel, event); err != nil {
+		return fmt.Errorf("publishing event: %w", err)
 	}
-	wfm.SendEvent(ctx, &event)
+
 	return nil
 }
 
@@ -374,42 +370,45 @@ func (wfm *workflowMemory) SetPipelineData(ctx context.Context, batchIdx int, t 
 
 	wfm.Data[batchIdx].(data.Map)[string(t)] = value
 
-	if wfm.Streaming {
-		// TODO: simplify struct conversion
-		s, err := value.ToStructValue()
-		if err != nil {
-			return err
-		}
-		b, err := protojson.Marshal(s)
-		if err != nil {
-			return err
-		}
-		var data map[string]any
-		err = json.Unmarshal(b, &data)
-		if err != nil {
-			return err
-		}
-		event := Event{}
-		if t == PipelineOutput {
-			event.Event = string(PipelineOutputUpdated)
-			event.Data = PipelineOutputUpdatedEventData{
-				PipelineEventData: PipelineEventData{
-					UpdateTime: time.Now(),
-					BatchIndex: batchIdx,
-					Status: map[PipelineStatusType]bool{
-						PipelineStatusStarted:   true,
-						PipelineStatusErrored:   false,
-						PipelineStatusCompleted: false,
-					},
-				},
-				Output: data,
-			}
-			wfm.SendEvent(ctx, &event)
-		}
-
+	if !wfm.Streaming {
+		return nil
+	}
+	// TODO: simplify struct conversion
+	s, err := value.ToStructValue()
+	if err != nil {
+		return err
+	}
+	b, err := protojson.Marshal(s)
+	if err != nil {
+		return err
+	}
+	var data map[string]any
+	err = json.Unmarshal(b, &data)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	if t != PipelineOutput {
+		return nil
+	}
+
+	event := Event{
+		Name: string(PipelineOutputUpdated),
+		Data: PipelineOutputUpdatedEventData{
+			PipelineEventData: PipelineEventData{
+				UpdateTime: time.Now(),
+				BatchIndex: batchIdx,
+				Status: map[PipelineStatusType]bool{
+					PipelineStatusStarted:   true,
+					PipelineStatusErrored:   false,
+					PipelineStatusCompleted: false,
+				},
+			},
+			Output: data,
+		},
+	}
+
+	return wfm.publishWFStatus(ctx, wfm.ID, event)
 }
 
 func (wfm *workflowMemory) GetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType) (value format.Value, err error) {
@@ -441,13 +440,6 @@ func (wfm *workflowMemory) Get(ctx context.Context, batchIdx int, p string) (mem
 	}
 	return wfm.Data[batchIdx].Get(pt)
 
-}
-
-func (wfm *workflowMemory) SendEvent(ctx context.Context, event *Event) {
-	wfm.channel <- event
-}
-func (wfm *workflowMemory) ListenEvent(ctx context.Context) chan *Event {
-	return wfm.channel
 }
 
 func (wfm *workflowMemory) GetBatchSize() int {
@@ -484,88 +476,95 @@ func (wfm *workflowMemory) getComponentEventData(_ context.Context, batchIdx int
 }
 
 func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int, componentID string, t ComponentEventType) (err error) {
-
-	if wfm.Streaming {
-		var event *Event
-		switch t {
-		case ComponentInputUpdated:
-			value := wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)[string(ComponentDataInput)]
-
-			// TODO: simplify struct conversion
-			s, err := value.ToStructValue()
-			if err != nil {
-				return err
-			}
-			b, err := protojson.Marshal(s)
-			if err != nil {
-				return err
-			}
-			var data any
-			err = json.Unmarshal(b, &data)
-			if err != nil {
-				return err
-			}
-
-			event = &Event{
-				Event: string(ComponentInputUpdated),
-				Data: ComponentInputUpdatedEventData{
-					ComponentEventData: wfm.getComponentEventData(ctx, batchIdx, componentID),
-					Input:              data,
-				},
-			}
-
-		case ComponentOutputUpdated:
-
-			value := wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)[string(ComponentDataOutput)]
-
-			// TODO: simplify struct conversion
-			s, err := value.ToStructValue()
-			if err != nil {
-				return err
-			}
-			b, err := protojson.Marshal(s)
-			if err != nil {
-				return err
-			}
-			var data map[string]any
-			err = json.Unmarshal(b, &data)
-			if err != nil {
-				return err
-			}
-
-			event = &Event{
-				Event: string(ComponentOutputUpdated),
-				Data: ComponentOutputUpdatedEventData{
-					ComponentEventData: wfm.getComponentEventData(ctx, batchIdx, componentID),
-					Output:             data,
-				},
-			}
-
-		case ComponentErrorUpdated:
-			message := wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)["error"].(data.Map)["message"].(format.String)
-			event = &Event{
-				Event: string(ComponentErrorUpdated),
-				Data: ComponentErrorUpdatedEventData{
-					ComponentEventData: wfm.getComponentEventData(ctx, batchIdx, componentID),
-					Error: MessageError{
-						Message: message.String(),
-					},
-				},
-			}
-
-		case ComponentStatusUpdated:
-			event = &Event{
-				Event: string(ComponentStatusUpdated),
-				Data: ComponentStatusUpdatedEventData{
-					ComponentEventData: wfm.getComponentEventData(ctx, batchIdx, componentID),
-				},
-			}
-		}
-
-		if event != nil {
-			wfm.SendEvent(ctx, event)
-		}
-
+	if !wfm.Streaming {
+		return nil
 	}
-	return nil
+
+	var event Event
+	switch t {
+	case ComponentInputUpdated:
+		value := wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)[string(ComponentDataInput)]
+
+		// TODO: simplify struct conversion
+		s, err := value.ToStructValue()
+		if err != nil {
+			return err
+		}
+		b, err := protojson.Marshal(s)
+		if err != nil {
+			return err
+		}
+		var data any
+		err = json.Unmarshal(b, &data)
+		if err != nil {
+			return err
+		}
+
+		event = Event{
+			Name: string(ComponentInputUpdated),
+			Data: ComponentInputUpdatedEventData{
+				ComponentEventData: wfm.getComponentEventData(ctx, batchIdx, componentID),
+				Input:              data,
+			},
+		}
+
+	case ComponentOutputUpdated:
+
+		value := wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)[string(ComponentDataOutput)]
+
+		// TODO: simplify struct conversion
+		s, err := value.ToStructValue()
+		if err != nil {
+			return err
+		}
+		b, err := protojson.Marshal(s)
+		if err != nil {
+			return err
+		}
+		var data map[string]any
+		err = json.Unmarshal(b, &data)
+		if err != nil {
+			return err
+		}
+
+		event = Event{
+			Name: string(ComponentOutputUpdated),
+			Data: ComponentOutputUpdatedEventData{
+				ComponentEventData: wfm.getComponentEventData(ctx, batchIdx, componentID),
+				Output:             data,
+			},
+		}
+
+	case ComponentErrorUpdated:
+		message := wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)["error"].(data.Map)["message"].(format.String)
+		event = Event{
+			Name: string(ComponentErrorUpdated),
+			Data: ComponentErrorUpdatedEventData{
+				ComponentEventData: wfm.getComponentEventData(ctx, batchIdx, componentID),
+				Error: MessageError{
+					Message: message.String(),
+				},
+			},
+		}
+
+	case ComponentStatusUpdated:
+		event = Event{
+			Name: string(ComponentStatusUpdated),
+			Data: ComponentStatusUpdatedEventData{
+				ComponentEventData: wfm.getComponentEventData(ctx, batchIdx, componentID),
+			},
+		}
+	default:
+		return nil
+	}
+
+	return wfm.publishWFStatus(ctx, wfm.ID, event)
+}
+
+const workflowChannelPrefix = "workflowEvent-"
+
+// WorkflowStatusChannel returns the channel name for the status updates of a
+// workflow.
+func WorkflowStatusChannel(workflowID string) string {
+	return workflowChannelPrefix + workflowID
 }

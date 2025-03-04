@@ -994,7 +994,7 @@ func (w *worker) preTriggerErr(ctx context.Context, workflowID string, wfm memor
 				ctx,
 				workflowID,
 				memory.Event{
-					Event: string(memory.PipelineStatusUpdated),
+					Name: string(memory.PipelineStatusUpdated),
 					Data: memory.PipelineStatusUpdatedEventData{
 						PipelineEventData: memory.PipelineEventData{
 							UpdateTime: updateTime,
@@ -1308,7 +1308,7 @@ func (w *worker) SendStartedEventActivity(ctx context.Context, workflowID string
 			ctx,
 			workflowID,
 			memory.Event{
-				Event: string(memory.PipelineStatusUpdated),
+				Name: string(memory.PipelineStatusUpdated),
 				Data: memory.PipelineStatusUpdatedEventData{
 					PipelineEventData: memory.PipelineEventData{
 						UpdateTime: time.Now(),
@@ -1367,7 +1367,7 @@ func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActi
 				ctx,
 				param.WorkflowID,
 				memory.Event{
-					Event: string(memory.PipelineStatusUpdated),
+					Name: string(memory.PipelineStatusUpdated),
 					Data: memory.PipelineStatusUpdatedEventData{
 						PipelineEventData: memory.PipelineEventData{
 							UpdateTime: time.Now(),
@@ -1569,7 +1569,7 @@ func (w *worker) ClosePipelineActivity(ctx context.Context, workflowID string) e
 
 	if wfm.IsStreaming() {
 		evt := memory.Event{
-			Event: string(memory.PipelineClosed),
+			Name: string(memory.PipelineClosed),
 		}
 
 		if err := w.memoryStore.SendWorkflowStatusEvent(ctx, workflowID, evt); err != nil {
