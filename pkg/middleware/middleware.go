@@ -9,22 +9,9 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 
-	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
-
-type fn func(*runtime.ServeMux, pb.PipelinePublicServiceClient, http.ResponseWriter, *http.Request, map[string]string, memory.MemoryStore)
-
-// AppendCustomHeaderMiddleware appends custom headers
-func AppendCustomHeaderMiddleware(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, next fn, m memory.MemoryStore) runtime.HandlerFunc {
-
-	return runtime.HandlerFunc(func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-		next(mux, client, w, r, pathParams, m)
-	})
-}
 
 func HandleProfileImage(srv service.Service, repo repository.Repository) runtime.HandlerFunc {
 
