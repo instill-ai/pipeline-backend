@@ -45,6 +45,12 @@ jobs:
         with:
           envFile: .env
 
+      # Go is used for the test database migration
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+          cache: false
+
       - name: Generate coverage report
         run: |
           make build-dev
