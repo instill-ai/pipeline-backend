@@ -9,6 +9,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 	"go.uber.org/zap"
 
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
@@ -35,7 +36,7 @@ type Worker interface {
 	PreIteratorActivity(context.Context, *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
 	LoadDAGDataActivity(_ context.Context, workflowID string) (*LoadDAGDataActivityResult, error)
 	PostIteratorActivity(context.Context, *PostIteratorActivityParam) error
-	LoadRecipeActivity(context.Context, *LoadRecipeActivityParam) error
+	LoadRecipeActivity(context.Context, *LoadRecipeActivityParam) (*datamodel.Recipe, error)
 	InitComponentsActivity(context.Context, *InitComponentsActivityParam) error
 	SendStartedEventActivity(_ context.Context, workflowID string) error
 	PostTriggerActivity(context.Context, *PostTriggerActivityParam) error
@@ -45,7 +46,7 @@ type Worker interface {
 	UpdatePipelineRunActivity(context.Context, *UpdatePipelineRunActivityParam) error
 	UpsertComponentRunActivity(context.Context, *UpsertComponentRunActivityParam) error
 	UploadOutputsToMinIOActivity(context.Context, *MinIOUploadMetadata) error
-	UploadRecipeToMinIOActivity(context.Context, *MinIOUploadMetadata) error
+	UploadRecipeToMinIOActivity(context.Context, UploadRecipeToMinIOParam) error
 	UploadComponentInputsActivity(context.Context, *ComponentActivityParam) error
 	UploadComponentOutputsActivity(context.Context, *ComponentActivityParam) error
 }

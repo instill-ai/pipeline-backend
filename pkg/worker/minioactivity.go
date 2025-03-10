@@ -20,26 +20,23 @@ import (
 	miniox "github.com/instill-ai/x/minio"
 )
 
-func (w *worker) UploadRecipeToMinIOActivity(ctx context.Context, param *MinIOUploadMetadata) error {
-	log := w.log.With(zap.String("PipelineTriggerUID", param.PipelineTriggerID))
+// UploadRecipeToMinIOParam contains the information to upload a pipeline
+// recipe to MinIO.
+type UploadRecipeToMinIOParam struct {
+	Recipe   *datamodel.Recipe
+	Metadata MinIOUploadMetadata
+}
+
+func (w *worker) UploadRecipeToMinIOActivity(ctx context.Context, param UploadRecipeToMinIOParam) error {
+	log := w.log.With(zap.String("PipelineTriggerUID", param.Metadata.PipelineTriggerID))
 	log.Info("UploadRecipeToMinIOActivity started")
 
-	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.PipelineTriggerID)
-	if err != nil {
-		return err
-	}
-
-	recipe := wfm.GetRecipe()
-	if recipe == nil {
-		return fmt.Errorf("recipe not loaded in memory")
-	}
-
 	recipeForUpload := &datamodel.Recipe{
-		Version:   wfm.GetRecipe().Version,
-		On:        wfm.GetRecipe().On,
-		Component: wfm.GetRecipe().Component,
-		Variable:  wfm.GetRecipe().Variable,
-		Output:    wfm.GetRecipe().Output,
+		Version:   param.Recipe.Version,
+		On:        param.Recipe.On,
+		Component: param.Recipe.Component,
+		Variable:  param.Recipe.Variable,
+		Output:    param.Recipe.Output,
 	}
 	b, err := json.Marshal(recipeForUpload)
 	if err != nil {
@@ -49,11 +46,11 @@ func (w *worker) UploadRecipeToMinIOActivity(ctx context.Context, param *MinIOUp
 	url, minioObjectInfo, err := w.minioClient.WithLogger(log).UploadFileBytes(
 		ctx,
 		&miniox.UploadFileBytesParam{
-			UserUID:       param.UserUID,
-			FilePath:      fmt.Sprintf("pipeline-runs/recipe/%s.json", param.PipelineTriggerID),
+			UserUID:       param.Metadata.UserUID,
+			FilePath:      fmt.Sprintf("pipeline-runs/recipe/%s.json", param.Metadata.PipelineTriggerID),
 			FileBytes:     b,
 			FileMimeType:  constant.ContentTypeJSON,
-			ExpiryRuleTag: param.ExpiryRuleTag,
+			ExpiryRuleTag: param.Metadata.ExpiryRuleTag,
 		},
 	)
 	if err != nil {
@@ -61,7 +58,7 @@ func (w *worker) UploadRecipeToMinIOActivity(ctx context.Context, param *MinIOUp
 		return err
 	}
 
-	err = w.repository.UpdatePipelineRun(ctx, param.PipelineTriggerID, &datamodel.PipelineRun{RecipeSnapshot: datamodel.JSONB{{
+	err = w.repository.UpdatePipelineRun(ctx, param.Metadata.PipelineTriggerID, &datamodel.PipelineRun{RecipeSnapshot: datamodel.JSONB{{
 		Name: minioObjectInfo.Key,
 		Type: minioObjectInfo.ContentType,
 		Size: minioObjectInfo.Size,
