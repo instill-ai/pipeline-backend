@@ -175,12 +175,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		},
 	}
 	// Options for MinIO activity worker
-	mo := workflow.ActivityOptions{
-		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-		RetryPolicy: &temporal.RetryPolicy{
-			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
-		},
-	}
+	mo := ao
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	if param.WorkerUID == uuid.Nil {
@@ -243,18 +238,24 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	if param.TriggerFromAPI {
+		triggerRecipe := new(datamodel.Recipe)
 		if err := workflow.ExecuteActivity(ctx, w.LoadRecipeActivity, &LoadRecipeActivityParam{
 			WorkflowID:         workflowID,
 			PipelineUID:        param.SystemVariables.PipelineUID,
 			PipelineReleaseUID: param.SystemVariables.PipelineReleaseUID,
-		}).Get(ctx, nil); err != nil {
+		}).Get(ctx, &triggerRecipe); err != nil {
 			return err
 		}
-		err := workflow.ExecuteActivity(minioCtx, w.UploadRecipeToMinIOActivity, &MinIOUploadMetadata{
-			UserUID:           param.SystemVariables.PipelineUserUID,
-			PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
-			ExpiryRuleTag:     param.SystemVariables.ExpiryRule.Tag,
-		}).Get(ctx, nil)
+
+		uploadParam := UploadRecipeToMinIOParam{
+			Recipe: triggerRecipe,
+			Metadata: MinIOUploadMetadata{
+				UserUID:           param.SystemVariables.PipelineUserUID,
+				PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
+				ExpiryRuleTag:     param.SystemVariables.ExpiryRule.Tag,
+			},
+		}
+		err := workflow.ExecuteActivity(minioCtx, w.UploadRecipeToMinIOActivity, uploadParam).Get(ctx, nil)
 		if err != nil {
 			logger.Error("Failed to upload pipeline run recipe", zap.Error(err))
 		}
@@ -271,7 +272,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}
 
-	dagData := &LoadDAGDataActivityResult{}
+	dagData := new(LoadDAGDataActivityResult)
 	err := workflow.ExecuteActivity(ctx, w.LoadDAGDataActivity, workflowID).Get(ctx, dagData)
 	if err != nil {
 		logger.Error("Failed to load DAG", zap.Error(err))
@@ -1017,14 +1018,16 @@ func (w *worker) preTriggerErr(ctx context.Context, workflowID string, wfm memor
 	}
 }
 
-// LoadRecipeActivity loads the pipeline recipy into the memory store.
-func (w *worker) LoadRecipeActivity(ctx context.Context, param *LoadRecipeActivityParam) error {
+// LoadRecipeActivity fetches the pipeline recipe from the repository.
+// TODO perhaps we don't need the full datamodel.Recipe and we can use a
+// thinner model.
+func (w *worker) LoadRecipeActivity(ctx context.Context, param *LoadRecipeActivityParam) (*datamodel.Recipe, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("LoadRecipeActivity started")
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
 	if err != nil {
-		return fmt.Errorf("loading pipeline memory: %w", err)
+		return nil, fmt.Errorf("loading pipeline memory: %w", err)
 	}
 
 	handleErr := w.preTriggerErr(ctx, param.WorkflowID, wfm)
@@ -1034,13 +1037,13 @@ func (w *worker) LoadRecipeActivity(ctx context.Context, param *LoadRecipeActivi
 	case !param.PipelineReleaseUID.IsNil():
 		release, err := w.repository.GetPipelineReleaseByUIDAdmin(ctx, param.PipelineReleaseUID, false)
 		if err != nil {
-			return handleErr(fmt.Errorf("loading pipeline recipe: %w", err))
+			return nil, handleErr(fmt.Errorf("loading pipeline recipe: %w", err))
 		}
 		triggerRecipe = release.Recipe
 	default:
 		pipeline, err := w.repository.GetPipelineByUID(ctx, param.PipelineUID, false, false)
 		if err != nil {
-			return handleErr(fmt.Errorf("loading pipeline recipe: %w", err))
+			return nil, handleErr(fmt.Errorf("loading pipeline recipe: %w", err))
 		}
 		triggerRecipe = pipeline.Recipe
 	}
@@ -1048,7 +1051,7 @@ func (w *worker) LoadRecipeActivity(ctx context.Context, param *LoadRecipeActivi
 	wfm.SetRecipe(triggerRecipe)
 
 	logger.Info("LoadRecipeActivity completed")
-	return nil
+	return triggerRecipe, nil
 }
 
 func (w *worker) fetchConnectionAsValue(ctx context.Context, requesterUID uuid.UUID, connectionID string) (format.Value, error) {
