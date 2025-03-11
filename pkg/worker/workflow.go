@@ -1548,26 +1548,23 @@ func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *schedul
 	return nil
 }
 
-// ClosePipelineActivity is the last step when triggering a workflow. The activity:
-//   - Sends a PipelineClosed event if the trigger is streamed. If this fails,
-//     the error is saved in order not to block the execution of the next step.
-//   - Purges the workflow memory.
+// ClosePipelineActivity is the last step when triggering a workflow. The
+// activity sends a PipelineClosed event if the trigger is streamed
 func (w *worker) ClosePipelineActivity(ctx context.Context, workflowID string) error {
-	var errEvent, errPurge error
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, workflowID)
 	if err != nil {
 		return err
 	}
 
-	if wfm.IsStreaming() {
-		evt := pubsub.Event{
-			Name: string(memory.PipelineClosed),
-		}
-
-		if err := w.memoryStore.SendWorkflowStatusEvent(ctx, workflowID, evt); err != nil {
-			errEvent = fmt.Errorf("sending PipelineClosed event: %w", err)
-		}
+	if !wfm.IsStreaming() {
+		return nil
 	}
 
-	return errors.Join(errEvent, errPurge)
+	if err := w.memoryStore.SendWorkflowStatusEvent(ctx, workflowID, pubsub.Event{
+		Name: string(memory.PipelineClosed),
+	}); err != nil {
+		return fmt.Errorf("sending PipelineClosed event: %w", err)
+	}
+
+	return nil
 }
