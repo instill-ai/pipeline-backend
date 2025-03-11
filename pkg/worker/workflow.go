@@ -44,6 +44,7 @@ import (
 
 type TriggerPipelineWorkflowParam struct {
 	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
+	Recipe          *datamodel.Recipe
 	Mode            mgmtpb.Mode
 	WorkerUID       uuid.UUID
 
@@ -108,9 +109,8 @@ type PostIteratorActivityParam struct {
 // LoadRecipeActivityParam contains the information to fetch the recipe of a
 // pipeline and load it to memory.
 type LoadRecipeActivityParam struct {
-	WorkflowID         string
-	PipelineUID        uuid.UUID
-	PipelineReleaseUID uuid.UUID
+	WorkflowID string
+	Recipe     *datamodel.Recipe
 }
 
 type InitComponentsActivityParam struct {
@@ -206,17 +206,15 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			}
 		}()
 
-		triggerRecipe := new(datamodel.Recipe)
 		if err := workflow.ExecuteActivity(ctx, w.LoadRecipeActivity, &LoadRecipeActivityParam{
-			WorkflowID:         workflowID,
-			PipelineUID:        param.SystemVariables.PipelineUID,
-			PipelineReleaseUID: param.SystemVariables.PipelineReleaseUID,
-		}).Get(ctx, &triggerRecipe); err != nil {
-			return err
+			WorkflowID: workflowID,
+			Recipe:     param.Recipe,
+		}).Get(ctx, nil); err != nil {
+			return fmt.Errorf("loading trigger recipe: %w", err)
 		}
 
 		uploadParam := UploadRecipeToMinIOParam{
-			Recipe: triggerRecipe,
+			Recipe: param.Recipe,
 			Metadata: MinIOUploadMetadata{
 				UserUID:           param.SystemVariables.PipelineUserUID,
 				PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
@@ -300,7 +298,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			case datamodel.Iterator:
 				// TODO: support intermediate result streaming for Iterator
 
-				preIteratorResult := &PreIteratorActivityResult{}
+				preIteratorResult := new(PreIteratorActivityResult)
 				if err = workflow.ExecuteActivity(ctx, w.PreIteratorActivity, &PreIteratorActivityParam{
 					WorkflowID:  workflowID,
 					ID:          compID,
@@ -320,6 +318,8 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					continue
 				}
 
+				iteratorRecipe := &datamodel.Recipe{Component: param.Recipe.Component[compID].Component}
+
 				itFutures := []workflow.Future{}
 				for iter := range preIteratorResult.ConditionMap {
 					childWorkflowOptions := workflow.ChildWorkflowOptions{
@@ -338,6 +338,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 							SystemVariables:   param.SystemVariables,
 							Mode:              mgmtpb.Mode_MODE_SYNC,
 							WorkerUID:         param.WorkerUID,
+							Recipe:            iteratorRecipe,
 							ParentWorkflowID:  &workflowID,
 							ParentCompID:      &compID,
 							ParentOriginalIdx: &iter,
@@ -633,7 +634,6 @@ func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityPar
 // TODO: complete iterator
 // PreIteratorActivity generate the trigger memory for each iteration.
 func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (*PreIteratorActivityResult, error) {
-
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("PreIteratorActivity started")
 
@@ -644,6 +644,10 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 	conditionMap, err := w.processCondition(ctx, wfm, param.ID, param.UpstreamIDs, param.Condition)
 	if err != nil {
 		return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+	}
+
+	iteratorRecipe := &datamodel.Recipe{
+		Component: wfm.GetRecipe().Component[param.ID].Component,
 	}
 
 	result := &PreIteratorActivityResult{}
@@ -778,10 +782,6 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 			}
 		}
 
-		iteratorRecipe := &datamodel.Recipe{
-			Component: wfm.GetRecipe().Component[param.ID].Component,
-		}
-
 		childWFM, err := w.memoryStore.NewWorkflowMemory(ctx, childWorkflowIDs[idx], iteratorRecipe, len(indexes))
 		if err != nil {
 			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
@@ -868,11 +868,12 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 				}
 			}
 		}
-
 	}
+
 	result.ChildWorkflowIDs = childWorkflowIDs
 	result.ConditionMap = conditionMap
 	logger.Info("PreIteratorActivity completed")
+
 	return result, nil
 }
 
@@ -987,40 +988,21 @@ func (w *worker) preTriggerErr(ctx context.Context, workflowID string, wfm memor
 	}
 }
 
-// LoadRecipeActivity fetches the pipeline recipe from the repository.
-// TODO perhaps we don't need the full datamodel.Recipe and we can use a
-// thinner model.
-func (w *worker) LoadRecipeActivity(ctx context.Context, param *LoadRecipeActivityParam) (*datamodel.Recipe, error) {
+// LoadRecipeActivity loads the pipeline trigger recipe into the workflow
+// memory.
+func (w *worker) LoadRecipeActivity(ctx context.Context, param *LoadRecipeActivityParam) error {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("LoadRecipeActivity started")
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
 	if err != nil {
-		return nil, fmt.Errorf("loading pipeline memory: %w", err)
+		return fmt.Errorf("loading pipeline memory: %w", err)
 	}
 
-	handleErr := w.preTriggerErr(ctx, param.WorkflowID, wfm)
-
-	var triggerRecipe *datamodel.Recipe
-	switch {
-	case !param.PipelineReleaseUID.IsNil():
-		release, err := w.repository.GetPipelineReleaseByUIDAdmin(ctx, param.PipelineReleaseUID, false)
-		if err != nil {
-			return nil, handleErr(fmt.Errorf("loading pipeline recipe: %w", err))
-		}
-		triggerRecipe = release.Recipe
-	default:
-		pipeline, err := w.repository.GetPipelineByUID(ctx, param.PipelineUID, false, false)
-		if err != nil {
-			return nil, handleErr(fmt.Errorf("loading pipeline recipe: %w", err))
-		}
-		triggerRecipe = pipeline.Recipe
-	}
-
-	wfm.SetRecipe(triggerRecipe)
+	wfm.SetRecipe(param.Recipe)
 
 	logger.Info("LoadRecipeActivity completed")
-	return triggerRecipe, nil
+	return nil
 }
 
 func (w *worker) fetchConnectionAsValue(ctx context.Context, requesterUID uuid.UUID, connectionID string) (format.Value, error) {

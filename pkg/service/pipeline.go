@@ -1748,6 +1748,7 @@ func (s *service) triggerPipeline(
 			},
 			Mode:      mgmtpb.Mode_MODE_SYNC,
 			WorkerUID: s.workerUID,
+			Recipe:    triggerParams.recipe,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1782,6 +1783,7 @@ type triggerParams struct {
 	requesterUID       uuid.UUID
 	userUID            uuid.UUID
 	expiryRule         minio.ExpiryRule
+	recipe             *datamodel.Recipe
 }
 
 func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams) (*longrunningpb.Operation, error) {
@@ -1835,6 +1837,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 			},
 			Mode:      mgmtpb.Mode_MODE_ASYNC,
 			WorkerUID: s.workerUID,
+			Recipe:    params.recipe,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -2043,6 +2046,7 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 		requesterUID:      requesterUID,
 		userUID:           userUID,
 		expiryRule:        expiryRule,
+		recipe:            dbPipeline.Recipe,
 	}, returnTraces)
 	if err != nil {
 		return nil, nil, err
@@ -2099,6 +2103,7 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 		requesterUID:      requesterUID,
 		userUID:           userUID,
 		expiryRule:        expiryRule,
+		recipe:            dbPipeline.Recipe,
 	})
 	if err != nil {
 		return nil, err
@@ -2163,6 +2168,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		requesterUID:       requesterUID,
 		userUID:            userUID,
 		expiryRule:         expiryRule,
+		recipe:             dbPipelineRelease.Recipe,
 	}, returnTraces)
 	if err != nil {
 		return nil, nil, err
@@ -2226,6 +2232,7 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		requesterUID:       requesterUID,
 		userUID:            userUID,
 		expiryRule:         expiryRule,
+		recipe:             dbPipelineRelease.Recipe,
 	})
 	if err != nil {
 		return nil, err
