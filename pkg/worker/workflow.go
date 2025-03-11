@@ -91,6 +91,7 @@ type PreIteratorActivityParam struct {
 	Range           any
 	Index           string
 	SystemVariables recipe.SystemVariables
+	IteratorRecipe  *datamodel.Recipe
 }
 
 type PreIteratorActivityResult struct {
@@ -298,6 +299,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			case datamodel.Iterator:
 				// TODO: support intermediate result streaming for Iterator
 
+				iteratorRecipe := &datamodel.Recipe{
+					Component: param.Recipe.Component[compID].Component,
+				}
 				preIteratorResult := new(PreIteratorActivityResult)
 				if err = workflow.ExecuteActivity(ctx, w.PreIteratorActivity, &PreIteratorActivityParam{
 					WorkflowID:  workflowID,
@@ -313,12 +317,11 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					Condition:       comp.Condition,
 					Index:           comp.Index,
 					SystemVariables: param.SystemVariables,
+					IteratorRecipe:  iteratorRecipe,
 				}).Get(ctx, &preIteratorResult); err != nil {
 					errs = append(errs, err)
 					continue
 				}
-
-				iteratorRecipe := &datamodel.Recipe{Component: param.Recipe.Component[compID].Component}
 
 				itFutures := []workflow.Future{}
 				for iter := range preIteratorResult.ConditionMap {
@@ -632,7 +635,7 @@ func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityPar
 }
 
 // TODO: complete iterator
-// PreIteratorActivity generate the trigger memory for each iteration.
+// PreIteratorActivity generates the trigger memory for each iteration.
 func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (*PreIteratorActivityResult, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("PreIteratorActivity started")
@@ -646,12 +649,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 		return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 	}
 
-	iteratorRecipe := &datamodel.Recipe{
-		Component: wfm.GetRecipe().Component[param.ID].Component,
-	}
-
-	result := &PreIteratorActivityResult{}
-
+	result := new(PreIteratorActivityResult)
 	childWorkflowIDs := make([]string, len(conditionMap))
 
 	for idx, originalIdx := range conditionMap {
@@ -782,7 +780,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 			}
 		}
 
-		childWFM, err := w.memoryStore.NewWorkflowMemory(ctx, childWorkflowIDs[idx], iteratorRecipe, len(indexes))
+		childWFM, err := w.memoryStore.NewWorkflowMemory(ctx, childWorkflowIDs[idx], param.IteratorRecipe, len(indexes))
 		if err != nil {
 			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 		}
@@ -848,7 +846,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 					return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 				}
 			}
-			for compID, comp := range iteratorRecipe.Component {
+			for compID, comp := range param.IteratorRecipe.Component {
 				inputVal, err := data.NewValue(comp.Input)
 				if err != nil {
 					return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
