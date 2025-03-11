@@ -336,21 +336,17 @@ func FindReferenceParent(input string) []string {
 	return upstreams
 }
 
-func GenerateTraces(ctx context.Context, wfm memory.WorkflowMemory, full bool) (map[string]*pb.Trace, error) {
-
+func GenerateTraces(ctx context.Context, compIDs []string, wfm memory.WorkflowMemory, full bool) (map[string]*pb.Trace, error) {
 	trace := map[string]*pb.Trace{}
 
 	batchSize := wfm.GetBatchSize()
-
-	for compID := range wfm.GetRecipe().Component {
-
+	for _, compID := range compIDs {
 		inputs := make([]*structpb.Struct, batchSize)
 		outputs := make([]*structpb.Struct, batchSize)
 		errors := make([]*structpb.Struct, batchSize)
 		traceStatuses := make([]pb.Trace_Status, batchSize)
 
 		for dataIdx := range batchSize {
-
 			completed, err := wfm.GetComponentStatus(ctx, dataIdx, compID, memory.ComponentStatusCompleted)
 			if err != nil {
 				continue
