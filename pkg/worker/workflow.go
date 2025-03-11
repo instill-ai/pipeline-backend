@@ -122,9 +122,11 @@ type LoadRecipeActivityParam struct {
 	Recipe     *datamodel.Recipe
 }
 
+// InitComponentsActivityParam ...
 type InitComponentsActivityParam struct {
 	WorkflowID      string
 	SystemVariables recipe.SystemVariables
+	Recipe          *datamodel.Recipe
 }
 
 type LoadDAGDataActivityResult struct {
@@ -238,6 +240,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		if err := workflow.ExecuteActivity(ctx, w.InitComponentsActivity, &InitComponentsActivityParam{
 			WorkflowID:      workflowID,
 			SystemVariables: param.SystemVariables,
+			Recipe:          param.Recipe,
 		}).Get(ctx, nil); err != nil {
 			return err
 		}
@@ -1149,13 +1152,12 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 	}
 
 	requesterUID := param.SystemVariables.PipelineRequesterUID
-	triggerRecipe := wfm.GetRecipe()
 
 	// inputConns will contain the connections referenced in the trigger data,
 	// as several batches might reference the same connection.
 	inputConns := data.Map{}
 	connections := data.Map{}
-	for _, comp := range triggerRecipe.Component {
+	for _, comp := range param.Recipe.Component {
 		if err := w.loadConnectionFromComponent(ctx, requesterUID, comp, connections); err != nil {
 			return handleErr(fmt.Errorf("loading connections: %w", err))
 		}
@@ -1193,7 +1195,7 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 		}
 
 		// Init component template.
-		for compID, comp := range triggerRecipe.Component {
+		for compID, comp := range param.Recipe.Component {
 			wfm.InitComponent(ctx, idx, compID)
 
 			inputVal, err := data.NewValue(comp.Input)
@@ -1215,7 +1217,7 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 		output := data.Map{}
 
 		// Init pipeline output template.
-		for key, o := range triggerRecipe.Output {
+		for key, o := range param.Recipe.Output {
 			output[key] = data.NewString(o.Value)
 		}
 		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutputTemplate, output)
