@@ -247,13 +247,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}
 
-	dagData := new(LoadDAGDataActivityResult)
-	err := workflow.ExecuteActivity(ctx, w.LoadDAGDataActivity, workflowID).Get(ctx, dagData)
-	if err != nil {
-		logger.Error("Failed to load DAG", zap.Error(err))
-	}
-
-	dag, err := recipe.GenerateDAG(dagData.Recipe.Component)
+	dag, err := recipe.GenerateDAG(param.Recipe.Component)
 	if err != nil {
 		return err
 	}
@@ -938,23 +932,6 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 	return nil
 }
 
-func (w *worker) LoadDAGDataActivity(ctx context.Context, workflowID string) (*LoadDAGDataActivityResult, error) {
-
-	logger, _ := logger.GetZapLogger(ctx)
-	logger.Info("LoadDAGDataActivity started")
-
-	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, workflowID)
-	if err != nil {
-		return nil, err
-	}
-
-	logger.Info("LoadDAGDataActivity completed")
-	return &LoadDAGDataActivityResult{
-		Recipe:    wfm.GetRecipe(),
-		BatchSize: wfm.GetBatchSize(),
-	}, nil
-}
-
 // preTriggerErr returns a function that handles errors that happen during the
 // trigger workflow setup, i.e., before the components start to be executed.
 // If the trigger is streamed, it will send an event to halt the execution.
@@ -1489,7 +1466,6 @@ const (
 	outputActivityErrorType       = "OutputActivityError"
 	preIteratorActivityErrorType  = "PreIteratorActivityError"
 	postIteratorActivityErrorType = "PostIteratorActivityError"
-	loadDAGDataActivityErrorType  = "LoadDAGDataActivityError"
 	postTriggerActivityErrorType  = "PostTriggerActivityError"
 )
 
