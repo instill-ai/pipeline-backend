@@ -32,7 +32,7 @@ type Worker interface {
 
 	ComponentActivity(context.Context, *ComponentActivityParam) error
 	OutputActivity(context.Context, *ComponentActivityParam) error
-	PreIteratorActivity(context.Context, *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
+	PreIteratorActivity(context.Context, *PreIteratorActivityParam) ([]ChildPipelineTriggerParams, error)
 	LoadDAGDataActivity(_ context.Context, workflowID string) (*LoadDAGDataActivityResult, error)
 	PostIteratorActivity(context.Context, *PostIteratorActivityParam) error
 	LoadRecipeActivity(context.Context, *LoadRecipeActivityParam) error
