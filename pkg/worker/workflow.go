@@ -45,10 +45,9 @@ import (
 type TriggerPipelineWorkflowParam struct {
 	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 	Mode            mgmtpb.Mode
-	TriggerFromAPI  bool
 	WorkerUID       uuid.UUID
 
-	// If the pipeline trigger is from an iterator, these fields will be set
+	// If the pipeline trigger is from an iterator, these fields will be set.
 	ParentWorkflowID  *string
 	ParentCompID      *string
 	ParentOriginalIdx *int
@@ -190,7 +189,12 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	minioCtx := workflow.WithActivityOptions(ctx, mo)
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
-	if param.TriggerFromAPI {
+
+	// Iterator components are implemented as pipeline-in-pipeline triggers. In
+	// such cases there are tasks we WON'T need to perform, such as sending the
+	// workflow streaming events or the pipeline run data (e.g. recipe).
+	isParentPipeline := param.ParentWorkflowID == nil
+	if isParentPipeline {
 		cleanupCtx, _ := workflow.NewDisconnectedContext(ctx)
 		defer func() {
 			if err := workflow.ExecuteActivity(
@@ -201,43 +205,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				logger.Error("Failed to clean up trigger workflow", zap.Error(err))
 			}
 		}()
-	}
 
-	var ownerType mgmtpb.OwnerType
-	switch param.SystemVariables.PipelineOwner.NsType {
-	case resource.Organization:
-		ownerType = mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION
-	case resource.User:
-		ownerType = mgmtpb.OwnerType_OWNER_TYPE_USER
-	default:
-		ownerType = mgmtpb.OwnerType_OWNER_TYPE_UNSPECIFIED
-	}
-
-	dataPoint := utils.PipelineUsageMetricData{
-		OwnerUID:           param.SystemVariables.PipelineOwner.NsUID.String(),
-		OwnerType:          ownerType,
-		UserUID:            param.SystemVariables.PipelineUserUID.String(),
-		UserType:           mgmtpb.OwnerType_OWNER_TYPE_USER,
-		RequesterUID:       param.SystemVariables.PipelineRequesterUID.String(),
-		RequesterType:      mgmtpb.OwnerType_OWNER_TYPE_USER,
-		TriggerMode:        param.Mode,
-		PipelineID:         param.SystemVariables.PipelineID,
-		PipelineUID:        param.SystemVariables.PipelineUID.String(),
-		PipelineReleaseID:  param.SystemVariables.PipelineReleaseID,
-		PipelineReleaseUID: param.SystemVariables.PipelineReleaseUID.String(),
-		PipelineTriggerUID: workflow.GetInfo(ctx).WorkflowExecution.ID,
-		TriggerTime:        startTime.Format(time.RFC3339Nano),
-	}
-
-	// This is a simplistic check that relies on the only supported
-	// namespace switch (user->organization). If other types of impersonation
-	// are supported, the requester type should be provided in the system
-	// variables.
-	if dataPoint.UserUID != dataPoint.RequesterUID {
-		dataPoint.RequesterType = mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION
-	}
-
-	if param.TriggerFromAPI {
 		triggerRecipe := new(datamodel.Recipe)
 		if err := workflow.ExecuteActivity(ctx, w.LoadRecipeActivity, &LoadRecipeActivityParam{
 			WorkflowID:         workflowID,
@@ -367,7 +335,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						workflow.WithChildOptions(ctx, childWorkflowOptions),
 						"TriggerPipelineWorkflow",
 						&TriggerPipelineWorkflowParam{
-							TriggerFromAPI:    false,
 							SystemVariables:   param.SystemVariables,
 							Mode:              mgmtpb.Mode_MODE_SYNC,
 							WorkerUID:         param.WorkerUID,
@@ -418,10 +385,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	duration := time.Since(startTime)
-	dataPoint.ComputeTimeDuration = duration.Seconds()
-	dataPoint.Status = mgmtpb.Status_STATUS_COMPLETED
-
-	if param.TriggerFromAPI {
+	if isParentPipeline {
 		if err := workflow.ExecuteActivity(ctx, w.OutputActivity, &ComponentActivityParam{
 			WorkflowID:      workflowID,
 			SystemVariables: param.SystemVariables,
@@ -449,14 +413,19 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			return fmt.Errorf("updating pipeline trigger count: %w", err)
 		}
 
+		dataPoint := w.pipelineTriggerDataPoint(workflowID, param.SystemVariables, param.Mode)
+		dataPoint.TriggerTime = startTime.Format(time.RFC3339Nano)
+		dataPoint.ComputeTimeDuration = duration.Seconds()
+		dataPoint.Status = mgmtpb.Status_STATUS_COMPLETED
+
 		if len(errs) > 0 {
-			w.writeErrorDataPoint(sCtx, errs, span, startTime, &dataPoint)
-		} else {
-			if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
-				logger.Warn(err.Error())
-			}
+			span.SetStatus(1, "workflow error")
+			dataPoint.Status = mgmtpb.Status_STATUS_ERRORED
 		}
 
+		if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
+			logger.Warn(err.Error())
+		}
 	}
 
 	for _, f := range componentRunFutures {
@@ -1453,23 +1422,42 @@ func (w *worker) processCondition(ctx context.Context, wfm memory.WorkflowMemory
 				return nil, err
 			}
 			conditionMap[ptr] = idx
-			ptr += 1
+			ptr++
 		}
 	}
 	return conditionMap, nil
 }
 
-// writeErrorDataPoint is a helper function that writes the error data point to
-// the usage metrics table.
-func (w *worker) writeErrorDataPoint(ctx context.Context, errs []error, span trace.Span, startTime time.Time, dataPoint *utils.PipelineUsageMetricData) {
-	errStrs := make([]string, len(errs))
-	for i, e := range errs {
-		errStrs[i] = e.Error()
+var nsTypeToOwnerType = map[resource.NamespaceType]mgmtpb.OwnerType{
+	resource.Organization: mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION,
+	resource.User:         mgmtpb.OwnerType_OWNER_TYPE_USER,
+}
+
+func (w *worker) pipelineTriggerDataPoint(workflowID string, sysVars recipe.SystemVariables, triggerMode mgmtpb.Mode) utils.PipelineUsageMetricData {
+	dataPoint := utils.PipelineUsageMetricData{
+		OwnerUID:           sysVars.PipelineOwner.NsUID.String(),
+		OwnerType:          nsTypeToOwnerType[sysVars.PipelineOwner.NsType],
+		UserUID:            sysVars.PipelineUserUID.String(),
+		UserType:           mgmtpb.OwnerType_OWNER_TYPE_USER,
+		RequesterUID:       sysVars.PipelineRequesterUID.String(),
+		RequesterType:      mgmtpb.OwnerType_OWNER_TYPE_USER,
+		TriggerMode:        triggerMode,
+		PipelineID:         sysVars.PipelineID,
+		PipelineUID:        sysVars.PipelineUID.String(),
+		PipelineReleaseID:  sysVars.PipelineReleaseID,
+		PipelineReleaseUID: sysVars.PipelineReleaseUID.String(),
+		PipelineTriggerUID: workflowID,
 	}
-	span.SetStatus(1, "workflow error")
-	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-	dataPoint.Status = mgmtpb.Status_STATUS_ERRORED
-	_ = w.writeNewDataPoint(ctx, *dataPoint)
+
+	// This is a simplistic check that relies on the only supported
+	// namespace switch (user->organization). If other types of impersonation
+	// are supported, the requester type should be provided in the system
+	// variables.
+	if dataPoint.UserUID != dataPoint.RequesterUID {
+		dataPoint.RequesterType = mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION
+	}
+
+	return dataPoint
 }
 
 // componentActivityError transforms an error with (potentially) an end-user

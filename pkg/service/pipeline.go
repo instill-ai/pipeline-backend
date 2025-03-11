@@ -1733,7 +1733,6 @@ func (s *service) triggerPipeline(
 		workflowOptions,
 		"TriggerPipelineWorkflow",
 		&worker.TriggerPipelineWorkflowParam{
-			TriggerFromAPI: true,
 			SystemVariables: recipe.SystemVariables{
 				PipelineTriggerID:    triggerParams.pipelineTriggerID,
 				PipelineID:           triggerParams.pipelineID,
@@ -1834,9 +1833,8 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 				ExpiryRule:           params.expiryRule,
 			},
-			Mode:           mgmtpb.Mode_MODE_ASYNC,
-			TriggerFromAPI: true,
-			WorkerUID:      s.workerUID,
+			Mode:      mgmtpb.Mode_MODE_ASYNC,
+			WorkerUID: s.workerUID,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
