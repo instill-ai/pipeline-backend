@@ -115,13 +115,6 @@ type PostIteratorActivityParam struct {
 	SystemVariables       recipe.SystemVariables
 }
 
-// LoadRecipeActivityParam contains the information to fetch the recipe of a
-// pipeline and load it to memory.
-type LoadRecipeActivityParam struct {
-	WorkflowID string
-	Recipe     *datamodel.Recipe
-}
-
 // InitComponentsActivityParam ...
 type InitComponentsActivityParam struct {
 	WorkflowID      string
@@ -216,13 +209,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				logger.Error("Failed to clean up trigger workflow", zap.Error(err))
 			}
 		}()
-
-		if err := workflow.ExecuteActivity(ctx, w.LoadRecipeActivity, &LoadRecipeActivityParam{
-			WorkflowID: workflowID,
-			Recipe:     param.Recipe,
-		}).Get(ctx, nil); err != nil {
-			return fmt.Errorf("loading trigger recipe: %w", err)
-		}
 
 		uploadParam := UploadRecipeToMinIOParam{
 			Recipe: param.Recipe,
@@ -974,23 +960,6 @@ func (w *worker) preTriggerErr(ctx context.Context, workflowID string, wfm memor
 
 		return err
 	}
-}
-
-// LoadRecipeActivity loads the pipeline trigger recipe into the workflow
-// memory.
-func (w *worker) LoadRecipeActivity(ctx context.Context, param *LoadRecipeActivityParam) error {
-	logger, _ := logger.GetZapLogger(ctx)
-	logger.Info("LoadRecipeActivity started")
-
-	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
-	if err != nil {
-		return fmt.Errorf("loading pipeline memory: %w", err)
-	}
-
-	wfm.SetRecipe(param.Recipe)
-
-	logger.Info("LoadRecipeActivity completed")
-	return nil
 }
 
 func (w *worker) fetchConnectionAsValue(ctx context.Context, requesterUID uuid.UUID, connectionID string) (format.Value, error) {

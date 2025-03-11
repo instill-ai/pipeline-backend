@@ -86,8 +86,6 @@ type WorkflowMemory interface {
 	IsStreaming() bool
 
 	GetBatchSize() int
-	SetRecipe(*datamodel.Recipe)
-	GetRecipe() *datamodel.Recipe
 }
 
 type ComponentStatus struct {
@@ -105,7 +103,6 @@ type workflowMemory struct {
 	mu        sync.Mutex
 	id        string
 	data      []format.Value
-	recipe    *datamodel.Recipe
 	streaming bool
 
 	publishWFStatus func(_ context.Context, topic string, _ pubsub.Event) error
@@ -211,7 +208,6 @@ func (ms *memoryStore) NewWorkflowMemory(ctx context.Context, workflowID string,
 		mu:              sync.Mutex{},
 		id:              workflowID,
 		data:            wfmData,
-		recipe:          r,
 		publishWFStatus: ms.SendWorkflowStatusEvent,
 	})
 
@@ -445,14 +441,6 @@ func (wfm *workflowMemory) Get(ctx context.Context, batchIdx int, p string) (mem
 
 func (wfm *workflowMemory) GetBatchSize() int {
 	return len(wfm.data)
-}
-
-func (wfm *workflowMemory) SetRecipe(r *datamodel.Recipe) {
-	wfm.recipe = r
-}
-
-func (wfm *workflowMemory) GetRecipe() *datamodel.Recipe {
-	return wfm.recipe
 }
 
 func (wfm *workflowMemory) getComponentEventData(_ context.Context, batchIdx int, componentID string) ComponentEventData {
