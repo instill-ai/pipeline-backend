@@ -188,6 +188,7 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 					requesterUID:      loadPipelineResult.ns.NsUID,
 					pipelineTriggerID: pipelineTriggerID.String(),
 					expiryRule:        expiryRule,
+					recipe:            loadPipelineResult.recipe,
 				})
 				if err != nil {
 					return DispatchPipelineWebhookEventResult{}, err
@@ -215,6 +216,7 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 					requesterUID:       loadPipelineResult.ns.NsUID,
 					pipelineTriggerID:  pipelineTriggerID.String(),
 					expiryRule:         expiryRule,
+					recipe:             loadPipelineResult.recipe,
 				})
 			}
 		}

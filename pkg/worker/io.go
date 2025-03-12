@@ -14,32 +14,24 @@ import (
 )
 
 type setupReader struct {
-	memoryStore  memory.MemoryStore
-	workflowID   string
-	compID       string
-	conditionMap map[int]int
+	memoryStore       memory.MemoryStore
+	workflowID        string
+	compID            string
+	processedBatchIDs []int
 }
 
-func NewSetupReader(memoryStore memory.MemoryStore, workflowID string, compID string, conditionMap map[int]int) *setupReader {
-	return &setupReader{
-		memoryStore:  memoryStore,
-		workflowID:   workflowID,
-		compID:       compID,
-		conditionMap: conditionMap,
-	}
-}
-
-func (i *setupReader) Read(ctx context.Context) (setups []*structpb.Struct, err error) {
-	wfm, err := i.memoryStore.GetWorkflowMemory(ctx, i.workflowID)
+func (s *setupReader) Read(ctx context.Context) (setups []*structpb.Struct, err error) {
+	wfm, err := s.memoryStore.GetWorkflowMemory(ctx, s.workflowID)
 	if err != nil {
 		return nil, err
 	}
-	for idx := range len(i.conditionMap) {
-		setupTemplate, err := wfm.GetComponentData(ctx, i.conditionMap[idx], i.compID, memory.ComponentDataSetupTemplate)
+
+	for _, batchIdx := range s.processedBatchIDs {
+		setupTemplate, err := wfm.GetComponentData(ctx, batchIdx, s.compID, memory.ComponentDataSetupTemplate)
 		if err != nil {
 			return nil, err
 		}
-		setupVal, err := recipe.Render(ctx, setupTemplate, i.conditionMap[idx], wfm, false)
+		setupVal, err := recipe.Render(ctx, setupTemplate, batchIdx, wfm, false)
 		if err != nil {
 			return nil, err
 		}
@@ -61,7 +53,7 @@ type inputReader struct {
 	binaryFetcher external.BinaryFetcher
 }
 
-func NewInputReader(memoryStore memory.MemoryStore, workflowID string, compID string, originalIdx int, binaryFetcher external.BinaryFetcher) *inputReader {
+func newInputReader(memoryStore memory.MemoryStore, workflowID string, compID string, originalIdx int, binaryFetcher external.BinaryFetcher) *inputReader {
 	return &inputReader{
 		memoryStore:   memoryStore,
 		workflowID:    workflowID,
@@ -135,7 +127,7 @@ type outputWriter struct {
 	streaming   bool
 }
 
-func NewOutputWriter(memoryStore memory.MemoryStore, workflowID string, compID string, originalIdx int, streaming bool) *outputWriter {
+func newOutputWriter(memoryStore memory.MemoryStore, workflowID string, compID string, originalIdx int, streaming bool) *outputWriter {
 	return &outputWriter{
 		memoryStore: memoryStore,
 		workflowID:  workflowID,
@@ -210,7 +202,7 @@ type errorHandler struct {
 	parentOriginalIdx *int
 }
 
-func NewErrorHandler(memoryStore memory.MemoryStore, workflowID string, compID string, originalIdx int, parentWorkflowID *string, parentCompID *string, parentOriginalIdx *int) *errorHandler {
+func newErrorHandler(memoryStore memory.MemoryStore, workflowID string, compID string, originalIdx int, parentWorkflowID *string, parentCompID *string, parentOriginalIdx *int) *errorHandler {
 	return &errorHandler{
 		memoryStore:       memoryStore,
 		workflowID:        workflowID,

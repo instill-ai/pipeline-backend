@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"slices"
 	"strings"
 	"sync"
@@ -1733,7 +1734,6 @@ func (s *service) triggerPipeline(
 		workflowOptions,
 		"TriggerPipelineWorkflow",
 		&worker.TriggerPipelineWorkflowParam{
-			TriggerFromAPI: true,
 			SystemVariables: recipe.SystemVariables{
 				PipelineTriggerID:    triggerParams.pipelineTriggerID,
 				PipelineID:           triggerParams.pipelineID,
@@ -1749,6 +1749,7 @@ func (s *service) triggerPipeline(
 			},
 			Mode:      mgmtpb.Mode_MODE_SYNC,
 			WorkerUID: s.workerUID,
+			Recipe:    triggerParams.recipe,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1770,7 +1771,8 @@ func (s *service) triggerPipeline(
 		return nil, nil, err
 	}
 
-	return s.getOutputsAndMetadata(ctx, triggerParams.pipelineTriggerID, returnTraces)
+	compIDs := slices.Collect(maps.Keys(triggerParams.recipe.Component))
+	return s.getOutputsAndMetadata(ctx, triggerParams.pipelineTriggerID, compIDs, returnTraces)
 }
 
 type triggerParams struct {
@@ -1783,6 +1785,7 @@ type triggerParams struct {
 	requesterUID       uuid.UUID
 	userUID            uuid.UUID
 	expiryRule         minio.ExpiryRule
+	recipe             *datamodel.Recipe
 }
 
 func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams) (*longrunningpb.Operation, error) {
@@ -1834,9 +1837,9 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 				ExpiryRule:           params.expiryRule,
 			},
-			Mode:           mgmtpb.Mode_MODE_ASYNC,
-			TriggerFromAPI: true,
-			WorkerUID:      s.workerUID,
+			Mode:      mgmtpb.Mode_MODE_ASYNC,
+			WorkerUID: s.workerUID,
+			Recipe:    params.recipe,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1882,15 +1885,13 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 
 }
 
-func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {
-
+func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID string, compIDs []string, returnTraces bool) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {
 	wfm, err := s.memory.GetWorkflowMemory(ctx, pipelineTriggerID)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	pipelineOutputs := make([]*structpb.Struct, wfm.GetBatchSize())
-
 	for idx := range wfm.GetBatchSize() {
 		output, err := wfm.Get(ctx, idx, constant.SegOutput)
 		if err != nil {
@@ -1905,7 +1906,7 @@ func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID s
 
 	var metadata *pipelinepb.TriggerMetadata
 
-	traces, err := recipe.GenerateTraces(ctx, wfm, returnTraces)
+	traces, err := recipe.GenerateTraces(ctx, compIDs, wfm, returnTraces)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -2045,6 +2046,7 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 		requesterUID:      requesterUID,
 		userUID:           userUID,
 		expiryRule:        expiryRule,
+		recipe:            dbPipeline.Recipe,
 	}, returnTraces)
 	if err != nil {
 		return nil, nil, err
@@ -2101,6 +2103,7 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 		requesterUID:      requesterUID,
 		userUID:           userUID,
 		expiryRule:        expiryRule,
+		recipe:            dbPipeline.Recipe,
 	})
 	if err != nil {
 		return nil, err
@@ -2165,6 +2168,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		requesterUID:       requesterUID,
 		userUID:            userUID,
 		expiryRule:         expiryRule,
+		recipe:             dbPipelineRelease.Recipe,
 	}, returnTraces)
 	if err != nil {
 		return nil, nil, err
@@ -2228,6 +2232,7 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		requesterUID:       requesterUID,
 		userUID:            userUID,
 		expiryRule:         expiryRule,
+		recipe:             dbPipelineRelease.Recipe,
 	})
 	if err != nil {
 		return nil, err
@@ -2249,13 +2254,18 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 
 	switch workflowExecutionInfo.Status {
 	case enums.WORKFLOW_EXECUTION_STATUS_COMPLETED:
-
 		pipelineTriggerID := workflowExecutionInfo.Execution.WorkflowId
 		defer func() {
 			_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
 		}()
 
-		outputs, metadata, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, true)
+		recipe, err := s.fetchRecipeSnapshot(ctx, pipelineTriggerID)
+		if err != nil {
+			return nil, fmt.Errorf("fetching recipe snapshot: %w", err)
+		}
+
+		compIDs := slices.Collect(maps.Keys(recipe.Component))
+		outputs, metadata, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, compIDs, true)
 		if err != nil {
 			return nil, err
 		}
@@ -2300,4 +2310,37 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 
 	operation.Name = fmt.Sprintf("operations/%s", workflowExecutionInfo.Execution.WorkflowId)
 	return &operation, nil
+}
+
+func (s *service) fetchRecipeSnapshot(ctx context.Context, pipelineTriggerID string) (*datamodel.Recipe, error) {
+	// TODO [INS-7438] fetching the component IDs should be achievable through
+	// the component runs in the repository. However, the iterator execution
+	// isn't being stored as a component run and its child components are
+	// storing component runs instead.
+	pipelineRun, err := s.repository.GetPipelineRunByUID(ctx, uuid.FromStringOrNil(pipelineTriggerID))
+	if err != nil {
+		return nil, fmt.Errorf("fetching pipeline run: %w", err)
+	}
+
+	if len(pipelineRun.RecipeSnapshot) < 1 {
+		return nil, fmt.Errorf("pipeline run contains no recipe")
+	}
+	refID := pipelineRun.RecipeSnapshot[0].Name
+
+	_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+	fileContents, err := s.minioClient.WithLogger(s.log).GetFilesByPaths(ctx, userUID, []string{refID})
+	if err != nil {
+		return nil, fmt.Errorf("downloading recipe: %w", err)
+	}
+
+	if len(fileContents) < 1 {
+		return nil, fmt.Errorf("recipe snapshot is empty")
+	}
+
+	recipe := new(datamodel.Recipe)
+	if err = json.Unmarshal(fileContents[0].Content, recipe); err != nil {
+		return nil, fmt.Errorf("unmarshalling recipe: %w", err)
+	}
+
+	return recipe, nil
 }

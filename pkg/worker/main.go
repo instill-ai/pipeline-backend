@@ -32,10 +32,8 @@ type Worker interface {
 
 	ComponentActivity(context.Context, *ComponentActivityParam) error
 	OutputActivity(context.Context, *ComponentActivityParam) error
-	PreIteratorActivity(context.Context, *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
-	LoadDAGDataActivity(_ context.Context, workflowID string) (*LoadDAGDataActivityResult, error)
+	PreIteratorActivity(context.Context, *PreIteratorActivityParam) ([]ChildPipelineTriggerParams, error)
 	PostIteratorActivity(context.Context, *PostIteratorActivityParam) error
-	LoadRecipeActivity(context.Context, *LoadRecipeActivityParam) error
 	InitComponentsActivity(context.Context, *InitComponentsActivityParam) error
 	SendStartedEventActivity(_ context.Context, workflowID string) error
 	PostTriggerActivity(context.Context, *PostTriggerActivityParam) error
@@ -45,7 +43,7 @@ type Worker interface {
 	UpdatePipelineRunActivity(context.Context, *UpdatePipelineRunActivityParam) error
 	UpsertComponentRunActivity(context.Context, *UpsertComponentRunActivityParam) error
 	UploadOutputsToMinIOActivity(context.Context, *MinIOUploadMetadata) error
-	UploadRecipeToMinIOActivity(context.Context, *MinIOUploadMetadata) error
+	UploadRecipeToMinIOActivity(context.Context, UploadRecipeToMinIOParam) error
 	UploadComponentInputsActivity(context.Context, *ComponentActivityParam) error
 	UploadComponentOutputsActivity(context.Context, *ComponentActivityParam) error
 }

@@ -517,8 +517,6 @@ func main() {
 	lw.RegisterActivity(cw.PostIteratorActivity)
 	lw.RegisterActivity(cw.InitComponentsActivity)
 	lw.RegisterActivity(cw.SendStartedEventActivity)
-	lw.RegisterActivity(cw.LoadRecipeActivity)
-	lw.RegisterActivity(cw.LoadDAGDataActivity)
 	lw.RegisterActivity(cw.PostTriggerActivity)
 	lw.RegisterActivity(cw.ClosePipelineActivity)
 	lw.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
