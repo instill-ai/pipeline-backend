@@ -122,11 +122,6 @@ type InitComponentsActivityParam struct {
 	Recipe          *datamodel.Recipe
 }
 
-type LoadDAGDataActivityResult struct {
-	Recipe    *datamodel.Recipe
-	BatchSize int
-}
-
 type PostTriggerActivityParam struct {
 	WorkflowID      string
 	SystemVariables recipe.SystemVariables
