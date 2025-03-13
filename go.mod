@@ -45,8 +45,8 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20250218192547-887cb37e3b6e
-	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
-	github.com/instill-ai/x v0.7.0-alpha
+	github.com/instill-ai/usage-client v0.3.0-alpha.0.20250313022849-49504d982f18
+	github.com/instill-ai/x v0.7.0-alpha.0.20250313022430-5aa78d8d09e0
 	github.com/itchyny/gojq v0.12.14
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgx/v5 v5.5.5
@@ -92,11 +92,11 @@ require (
 	go.temporal.io/api v1.44.1
 	go.temporal.io/sdk v1.32.1
 	go.uber.org/zap v1.26.0
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.35.0
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
 	golang.org/x/image v0.18.0
 	golang.org/x/mod v0.17.0
-	golang.org/x/net v0.35.0
+	golang.org/x/net v0.36.0
 	golang.org/x/oauth2 v0.22.0
 	golang.org/x/text v0.22.0
 	google.golang.org/api v0.189.0
