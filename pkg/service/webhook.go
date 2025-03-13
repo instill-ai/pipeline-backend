@@ -276,7 +276,7 @@ type initEventWorkflowParams struct {
 
 func (s *service) initEventWorkflow(ctx context.Context, params initEventWorkflowParams) error {
 
-	wfm, err := s.memory.NewWorkflowMemory(ctx, params.pipelineTriggerUID.String(), nil, 1)
+	wfm, err := s.memory.NewWorkflowMemory(ctx, params.pipelineTriggerUID.String(), 1)
 	if err != nil {
 		return err
 	}

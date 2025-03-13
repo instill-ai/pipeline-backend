@@ -923,7 +923,7 @@ func (s *service) preTriggerPipeline(
 		return fmt.Errorf("[Pipeline Trigger Data Error] %s", strings.Join(errors, "; "))
 	}
 
-	wfm, err := s.memory.NewWorkflowMemory(ctx, pipelineTriggerID, nil, len(pipelineData))
+	wfm, err := s.memory.NewWorkflowMemory(ctx, pipelineTriggerID, len(pipelineData))
 	if err != nil {
 		return err
 	}

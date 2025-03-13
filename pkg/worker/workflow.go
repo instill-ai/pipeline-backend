@@ -776,7 +776,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 			}
 		}
 
-		childWFM, err := w.memoryStore.NewWorkflowMemory(ctx, childWorkflowID, param.IteratorRecipe, len(indexes))
+		childWFM, err := w.memoryStore.NewWorkflowMemory(ctx, childWorkflowID, len(indexes))
 		if err != nil {
 			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 		}

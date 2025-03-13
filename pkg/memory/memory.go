@@ -13,7 +13,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
-	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/pubsub"
 )
 
@@ -61,7 +60,7 @@ const (
 )
 
 type MemoryStore interface {
-	NewWorkflowMemory(ctx context.Context, workflowID string, recipe *datamodel.Recipe, batchSize int) (workflow WorkflowMemory, err error)
+	NewWorkflowMemory(ctx context.Context, workflowID string, batchSize int) (workflow WorkflowMemory, err error)
 	GetWorkflowMemory(ctx context.Context, workflowID string) (workflow WorkflowMemory, err error)
 	PurgeWorkflowMemory(ctx context.Context, workflowID string) (err error)
 
@@ -191,7 +190,7 @@ func NewMemoryStore(pub pubsub.EventPublisher) MemoryStore {
 	}
 }
 
-func (ms *memoryStore) NewWorkflowMemory(ctx context.Context, workflowID string, r *datamodel.Recipe, batchSize int) (workflow WorkflowMemory, err error) {
+func (ms *memoryStore) NewWorkflowMemory(ctx context.Context, workflowID string, batchSize int) (workflow WorkflowMemory, err error) {
 	wfmData := make([]format.Value, batchSize)
 	for idx := range batchSize {
 		m := data.Map{
