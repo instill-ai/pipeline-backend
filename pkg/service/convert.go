@@ -865,6 +865,7 @@ var supportedFormats = []string{
 	"video", "array:video",
 	"document", "array:document",
 	"file", "array:file",
+	"json",
 }
 
 // For fields without valid "format", we will fall back to using JSON format.
