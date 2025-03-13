@@ -19,7 +19,6 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -834,7 +833,7 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 }
 
 // preTriggerPipeline does the following:
-//  1. Upload pipeline input data to minio if the data is blob data.
+//  1. Upload pipeline input data to MinIO if the data is blob data.
 //  2. New workflow memory.
 //     a. Set the default values for the variables for memory data and
 //     uploading pipeline data.
@@ -871,20 +870,9 @@ func (s *service) preTriggerPipeline(
 
 	errors := []string{}
 
-	for idx, data := range pipelineData {
+	for _, data := range pipelineData {
 		vars := data.Variable
-		b, err := protojson.Marshal(vars)
-		if err != nil {
-			errors = append(errors, fmt.Sprintf("inputs[%d]: data error", idx))
-			continue
-		}
-		var i any
-		if err := json.Unmarshal(b, &i); err != nil {
-			errors = append(errors, fmt.Sprintf("inputs[%d]: data error", idx))
-			continue
-		}
-
-		m := i.(map[string]any)
+		m := vars.AsMap()
 		for k := range m {
 			switch str := m[k].(type) {
 			case string:
@@ -916,7 +904,6 @@ func (s *service) preTriggerPipeline(
 				}
 			}
 		}
-
 	}
 
 	if len(errors) > 0 {
@@ -1358,7 +1345,6 @@ func (s *service) preTriggerPipeline(
 					uploadingPipelineData[idx][k] = arrayWithURL
 				}
 			case "semi-structured/*", "semi-structured/json", "json":
-
 				if v == nil {
 					jv, err := data.NewJSONValue(defaultValueMap[k])
 					if err != nil {
@@ -1367,43 +1353,16 @@ func (s *service) preTriggerPipeline(
 					variable[k] = jv
 					uploadingPipelineData[idx][k] = jv
 				} else {
-					switch v.Kind.(type) {
-					case *structpb.Value_StructValue:
-						j := map[string]any{}
-						b, err := protojson.Marshal(v)
-						if err != nil {
-							return err
-						}
-						err = json.Unmarshal(b, &j)
-						if err != nil {
-							return err
-						}
-						jv, err := data.NewJSONValue(j)
-						if err != nil {
-							return err
-						}
-						variable[k] = jv
-						uploadingPipelineData[idx][k] = jv
-					case *structpb.Value_ListValue:
-						j := []any{}
-						b, err := protojson.Marshal(v)
-						if err != nil {
-							return err
-						}
-						err = json.Unmarshal(b, &j)
-						if err != nil {
-							return err
-						}
-						jv, err := data.NewJSONValue(j)
-						if err != nil {
-							return err
-						}
-						variable[k] = jv
-						uploadingPipelineData[idx][k] = jv
+					jv, err := data.NewJSONValue(v.AsInterface())
+					if err != nil {
+						return err
 					}
+					variable[k] = jv
+					uploadingPipelineData[idx][k] = jv
 				}
 
 			}
+
 			if err != nil {
 				return err
 			}
