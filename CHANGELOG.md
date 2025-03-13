@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.52.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.51.0-beta...v0.52.0-beta) (2025-03-13)
+
+
+### Features
+
+* **memory:** remove recipe from in-process memory ([#984](https://github.com/instill-ai/pipeline-backend/issues/984)) ([ca57ca8](https://github.com/instill-ai/pipeline-backend/commit/ca57ca82ea4550f2d0fc0d0c997184bdb376d3f9))
+* **streaming:** use Redis pub/sub to stream pipeline triggers ([#981](https://github.com/instill-ai/pipeline-backend/issues/981)) ([80b7f17](https://github.com/instill-ai/pipeline-backend/commit/80b7f17eab2cb22fba7353101bb8313ec10b6294))
+
+
+### Bug Fixes
+
+* **ci:** optimize disk usage in coverage worklfow ([#982](https://github.com/instill-ai/pipeline-backend/issues/982)) ([f8f2707](https://github.com/instill-ai/pipeline-backend/commit/f8f2707e96abcd9587fbc99e992ac057a368f753))
+
 ## [0.51.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.50.0-beta...v0.51.0-beta) (2025-02-25)
 
 
