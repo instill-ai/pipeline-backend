@@ -921,12 +921,10 @@ func (s *service) preTriggerPipeline(
 	}
 
 	uploadingPipelineData := make([]map[string]any, len(pipelineData))
-	for idx := range uploadingPipelineData {
-		uploadingPipelineData[idx] = make(map[string]any)
-	}
 
 	// TODO(huitang): implement a structpb to format.Value converter
 	for idx, d := range pipelineData {
+		uploadingPipelineData[idx] = make(map[string]any)
 
 		variable := data.Map{}
 		for k := range typeMap {
@@ -1368,15 +1366,6 @@ func (s *service) preTriggerPipeline(
 			}
 		}
 
-		err = s.uploadPipelineRunInputsToMinio(ctx, uploadPipelineRunInputsToMinioParam{
-			pipelineTriggerID: pipelineTriggerID,
-			expiryRule:        expiryRule,
-			pipelineData:      uploadingPipelineData,
-		})
-		if err != nil {
-			return fmt.Errorf("pipeline run inputs to minio: %w", err)
-		}
-
 		err = wfm.Set(ctx, idx, constant.SegVariable, variable)
 		if err != nil {
 			return err
@@ -1410,8 +1399,17 @@ func (s *service) preTriggerPipeline(
 		if err != nil {
 			return err
 		}
-
 	}
+
+	err = s.uploadPipelineRunInputsToMinio(ctx, uploadPipelineRunInputsToMinioParam{
+		pipelineTriggerID: pipelineTriggerID,
+		expiryRule:        expiryRule,
+		pipelineData:      uploadingPipelineData,
+	})
+	if err != nil {
+		return fmt.Errorf("pipeline run inputs to minio: %w", err)
+	}
+
 	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
 	if isStreaming {
 		wfm.EnableStreaming()
