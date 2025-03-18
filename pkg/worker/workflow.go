@@ -1247,9 +1247,8 @@ func (w *worker) SendStartedEventActivity(ctx context.Context, workflowID string
 	return nil
 }
 
-// PostTriggerActivity copies the trigger memory to Redis.
+// PostTriggerActivity commits the workflow memory and copies it to Redis.
 func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActivityParam) error {
-
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("PostTriggerActivity started")
 
@@ -1301,6 +1300,10 @@ func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActi
 				return temporal.NewApplicationErrorWithCause("sending event", postTriggerActivityErrorType, err)
 			}
 		}
+	}
+
+	if err := w.memoryStore.CommitWorkflowData(ctx, param.SystemVariables.PipelineUserUID, wfm); err != nil {
+		return temporal.NewApplicationErrorWithCause("committing workflow memory", postTriggerActivityErrorType, err)
 	}
 
 	logger.Info("PostTriggerActivity completed")

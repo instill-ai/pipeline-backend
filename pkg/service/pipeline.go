@@ -1734,7 +1734,7 @@ func (s *service) triggerPipeline(
 	}
 
 	compIDs := slices.Collect(maps.Keys(triggerParams.recipe.Component))
-	return s.getOutputsAndMetadata(ctx, triggerParams.pipelineTriggerID, compIDs, returnTraces)
+	return s.getOutputsAndMetadata(ctx, triggerParams.userUID, triggerParams.pipelineTriggerID, compIDs, returnTraces)
 }
 
 type triggerParams struct {
@@ -1847,10 +1847,10 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 
 }
 
-func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID string, compIDs []string, returnTraces bool) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {
-	wfm, err := s.memory.GetWorkflowMemory(ctx, pipelineTriggerID)
+func (s *service) getOutputsAndMetadata(ctx context.Context, userUID uuid.UUID, pipelineTriggerID string, compIDs []string, returnTraces bool) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {
+	wfm, err := s.memory.FetchWorkflowMemory(ctx, userUID, pipelineTriggerID)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("fetching workflow memory: %w", err)
 	}
 
 	pipelineOutputs := make([]*structpb.Struct, wfm.GetBatchSize())
@@ -2226,8 +2226,9 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 			return nil, fmt.Errorf("fetching recipe snapshot: %w", err)
 		}
 
+		_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
 		compIDs := slices.Collect(maps.Keys(recipe.Component))
-		outputs, metadata, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, compIDs, true)
+		outputs, metadata, err := s.getOutputsAndMetadata(ctx, userUID, pipelineTriggerID, compIDs, true)
 		if err != nil {
 			return nil, err
 		}
