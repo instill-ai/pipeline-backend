@@ -210,3 +210,36 @@ func (a *audioData) Get(p *path.Path) (v format.Value, err error) {
 
 	return result.Get(remainingPath)
 }
+
+// audioData has unexported fields, which cannot be accessed by the regular
+// encoder / decoder. A custom encode/decode method pair is defined to send and
+// receive the type with the gob package.
+
+// encAudioData is redundant with audioData but allows us not to modify the
+// format.Image interface signature.
+type encAudioData struct {
+	encFileData
+	Duration   time.Duration
+	SampleRate int
+}
+
+func (a *audioData) GobEncode() ([]byte, error) {
+	return json.Marshal(encAudioData{
+		encFileData: a.fileData.asEncodedStruct(),
+		Duration:    a.duration,
+		SampleRate:  a.sampleRate,
+	})
+}
+
+func (a *audioData) GobDecode(b []byte) error {
+	var ea encAudioData
+	if err := json.Unmarshal(b, &ea); err != nil {
+		return err
+	}
+
+	a.fileData = ea.asFileData()
+	a.duration = ea.Duration
+	a.sampleRate = ea.SampleRate
+
+	return nil
+}

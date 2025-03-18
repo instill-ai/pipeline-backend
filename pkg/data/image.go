@@ -3,6 +3,7 @@ package data
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"image/gif"
 	"image/jpeg"
@@ -203,4 +204,37 @@ func (i *imageData) Resize(width, height int) (format.Image, error) {
 
 	// Create new image data from encoded bytes
 	return NewImageFromBytes(buf.Bytes(), PNG, "")
+}
+
+// imageData has unexported fields, which cannot be accessed by the regular
+// encoder / decoder. A custom encode/decode method pair is defined to send and
+// receive the type with the gob package.
+
+// encImageData is redundant with imageData but allows us not to modify the
+// format.Image interface signature.
+type encImageData struct {
+	encFileData
+	Width  int
+	Height int
+}
+
+func (i *imageData) GobEncode() ([]byte, error) {
+	return json.Marshal(encImageData{
+		encFileData: i.fileData.asEncodedStruct(),
+		Width:       i.width,
+		Height:      i.height,
+	})
+}
+
+func (i *imageData) GobDecode(b []byte) error {
+	var ei encImageData
+	if err := json.Unmarshal(b, &ei); err != nil {
+		return err
+	}
+
+	i.fileData = ei.asFileData()
+	i.width = ei.Width
+	i.height = ei.Height
+
+	return nil
 }

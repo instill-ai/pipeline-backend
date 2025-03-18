@@ -3,6 +3,7 @@ package data
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"unicode/utf8"
@@ -187,4 +188,52 @@ func (f *fileData) ToJSONValue() (v any, err error) {
 		return nil, err
 	}
 	return base64str.String(), nil
+}
+
+// fileData has unexported fields, which cannot be accessed by the regular
+// encoder / decoder. A custom encode/decode method pair is defined to send and
+// receive the type with the gob package.
+
+// encFileData is redundant with fileData but allows us not to modify the
+// format.File interface signature.
+type encFileData struct {
+	Raw         []byte
+	ContentType string
+	Filename    string
+	SourceURL   string
+}
+
+func (f fileData) asEncodedStruct() encFileData {
+	return encFileData{
+		Raw:         f.raw,
+		ContentType: f.contentType,
+		Filename:    f.filename,
+		SourceURL:   f.sourceURL,
+	}
+}
+
+func (ef encFileData) asFileData() fileData {
+	return fileData{
+		raw:         ef.Raw,
+		contentType: ef.ContentType,
+		filename:    ef.Filename,
+		sourceURL:   ef.SourceURL,
+	}
+}
+func (f *fileData) GobEncode() ([]byte, error) {
+	return json.Marshal(f.asEncodedStruct())
+}
+
+func (f *fileData) GobDecode(b []byte) error {
+	var ef encFileData
+	if err := json.Unmarshal(b, &ef); err != nil {
+		return err
+	}
+
+	f.raw = ef.Raw
+	f.contentType = ef.ContentType
+	f.filename = ef.Filename
+	f.sourceURL = ef.SourceURL
+
+	return nil
 }
