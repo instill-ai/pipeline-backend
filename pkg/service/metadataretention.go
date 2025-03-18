@@ -5,6 +5,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"github.com/instill-ai/pipeline-backend/pkg/memory"
+
 	miniox "github.com/instill-ai/x/minio"
 )
 
@@ -29,6 +31,16 @@ func NewRetentionHandler() MetadataRetentionHandler {
 }
 
 var (
+	// WorkflowMemoryExpiryRule defines the expiration time for workflow memory
+	// blobs. This is the minimum expiration delay (1 day). Since processes
+	// creating a workflow memory blob are responsible of purging it after
+	// they're done with it, this is only a safeguard. By the time this
+	// expiration rule is applied, the blob should not exist.
+	WorkflowMemoryExpiryRule = miniox.ExpiryRule{
+		Tag:            memory.WorkflowMemoryExpiryRuleTag,
+		ExpirationDays: 1,
+	}
+
 	defaultExpiryRule = miniox.ExpiryRule{
 		Tag:            "default-expiry",
 		ExpirationDays: 3,
@@ -36,7 +48,7 @@ var (
 )
 
 func (h *metadataRetentionHandler) ListExpiryRules() []miniox.ExpiryRule {
-	return []miniox.ExpiryRule{defaultExpiryRule}
+	return []miniox.ExpiryRule{defaultExpiryRule, WorkflowMemoryExpiryRule}
 }
 
 func (h *metadataRetentionHandler) GetExpiryRuleByNamespace(_ context.Context, _ uuid.UUID) (miniox.ExpiryRule, error) {

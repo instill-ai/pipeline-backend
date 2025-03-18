@@ -1401,19 +1401,24 @@ func (s *service) preTriggerPipeline(
 		}
 	}
 
-	err = s.uploadPipelineRunInputsToMinio(ctx, uploadPipelineRunInputsToMinioParam{
+	_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+	if err := s.memory.CommitWorkflowData(ctx, userUID, wfm); err != nil {
+		return fmt.Errorf("storing workflow data: %w", err)
+	}
+
+	if err := s.uploadPipelineRunInputsToMinio(ctx, uploadPipelineRunInputsToMinioParam{
 		pipelineTriggerID: pipelineTriggerID,
 		expiryRule:        expiryRule,
 		pipelineData:      uploadingPipelineData,
-	})
-	if err != nil {
-		return fmt.Errorf("pipeline run inputs to minio: %w", err)
+	}); err != nil {
+		return fmt.Errorf("uploading pipeline run inputs to minio: %w", err)
 	}
 
 	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
 	if isStreaming {
 		wfm.EnableStreaming()
 	}
+
 	return nil
 }
 

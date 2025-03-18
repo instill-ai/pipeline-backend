@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	qt "github.com/frankban/quicktest"
+
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 

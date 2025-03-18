@@ -189,6 +189,11 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
 
+	err := workflow.ExecuteActivity(ctx, w.LoadWorkflowMemory, param.SystemVariables.PipelineUserUID, workflowID).Get(ctx, nil)
+	if err != nil {
+		return err
+	}
+
 	// Iterator components are implemented as pipeline-in-pipeline triggers. In
 	// such cases there are tasks we WON'T need to perform, such as sending the
 	// workflow streaming events or the pipeline run data (e.g. recipe).
@@ -585,7 +590,7 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 			return componentActivityError(ctx, wfm, errors.New(msg), componentActivityErrorType, param.ID)
 		}
 
-		if err = wfm.SetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusCompleted, true); err != nil {
+		if err := wfm.SetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusCompleted, true); err != nil {
 			return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
 		}
 	}
@@ -856,6 +861,11 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 					return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 				}
 			}
+		}
+
+		if err := w.memoryStore.CommitWorkflowData(ctx, param.SystemVariables.PipelineUserUID, childWFM); err != nil {
+			err := fmt.Errorf("committing workflow memory: %w", err)
+			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 		}
 	}
 
@@ -1498,5 +1508,15 @@ func (w *worker) ClosePipelineActivity(ctx context.Context, workflowID string) e
 		return fmt.Errorf("sending PipelineClosed event: %w", err)
 	}
 
+	return nil
+}
+
+// LoadWorkflowMemory fetches the workflow memory from an external datastore
+// and loads it into the memory store.
+func (w *worker) LoadWorkflowMemory(ctx context.Context, userUID uuid.UUID, workflowID string) error {
+	_, err := w.memoryStore.FetchWorkflowMemory(ctx, userUID, workflowID)
+	if err != nil {
+		return fmt.Errorf("fetching workflow memory: %w", err)
+	}
 	return nil
 }

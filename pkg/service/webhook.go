@@ -157,6 +157,7 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 				eventID:            runOn.EventID,
 				parsedMessage:      parsedEvent.ParsedMessage,
 				pipelineTriggerUID: pipelineTriggerID,
+				userUID:            loadPipelineResult.ns.NsUID,
 			})
 			if err != nil {
 				return DispatchPipelineWebhookEventResult{}, err
@@ -272,10 +273,10 @@ type initEventWorkflowParams struct {
 	eventID            string
 	parsedMessage      format.Value
 	pipelineTriggerUID uuid.UUID
+	userUID            uuid.UUID
 }
 
 func (s *service) initEventWorkflow(ctx context.Context, params initEventWorkflowParams) error {
-
 	wfm, err := s.memory.NewWorkflowMemory(ctx, params.pipelineTriggerUID.String(), 1)
 	if err != nil {
 		return err
@@ -308,9 +309,12 @@ func (s *service) initEventWorkflow(ctx context.Context, params initEventWorkflo
 		}
 	}
 
-	err = wfm.Set(ctx, 0, constant.SegVariable, variable)
-	if err != nil {
-		return err
+	if err := wfm.Set(ctx, 0, constant.SegVariable, variable); err != nil {
+		return fmt.Errorf("setting variable to workflow memory: %w", err)
+	}
+
+	if err := s.memory.CommitWorkflowData(ctx, params.userUID, wfm); err != nil {
+		return fmt.Errorf("storing workflow data: %w", err)
 	}
 
 	return nil

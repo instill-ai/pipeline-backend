@@ -299,7 +299,7 @@ func main() {
 	workerUID, _ := uuid.NewV4()
 
 	pubsub := pubsub.NewRedisPubSub(redisClient)
-	ms := memory.NewStore(pubsub)
+	ms := memory.NewStore(pubsub, minIOClient.WithLogger(logger))
 
 	repo := repository.NewRepository(db, redisClient)
 	service := service.NewService(
@@ -511,6 +511,7 @@ func main() {
 	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
 	w.RegisterWorkflow(cw.SchedulePipelineWorkflow)
 
+	lw.RegisterActivity(cw.LoadWorkflowMemory)
 	lw.RegisterActivity(cw.ComponentActivity)
 	lw.RegisterActivity(cw.OutputActivity)
 	lw.RegisterActivity(cw.PreIteratorActivity)
