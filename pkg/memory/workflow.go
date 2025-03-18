@@ -81,12 +81,6 @@ type WorkflowMemory interface {
 	GetBatchSize() int
 }
 
-type ComponentStatus struct {
-	Started   bool `json:"started"`
-	Completed bool `json:"completed"`
-	Skipped   bool `json:"skipped"`
-}
-
 type workflowMemory struct {
 	mu        sync.Mutex
 	id        string
