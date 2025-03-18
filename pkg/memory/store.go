@@ -13,28 +13,20 @@ import (
 // Store is used to communicate the pipeline trigger information (inputs,
 // outputs, status) between processes (server, worker) during or after workflow
 // execution.
-type Store interface {
-	NewWorkflowMemory(_ context.Context, workflowID string, batchSize int) (WorkflowMemory, error)
-	GetWorkflowMemory(_ context.Context, workflowID string) (WorkflowMemory, error)
-	PurgeWorkflowMemory(_ context.Context, workflowID string) error
-
-	SendWorkflowStatusEvent(_ context.Context, workflowID string, event pubsub.Event) error
-}
-
-type store struct {
+type Store struct {
 	workflows sync.Map
 	publisher pubsub.EventPublisher
 }
 
-// NewStore returns an initialized memory stored.
-func NewStore(pub pubsub.EventPublisher) Store {
-	return &store{
+// NewStore returns an initialized memory store.
+func NewStore(pub pubsub.EventPublisher) *Store {
+	return &Store{
 		workflows: sync.Map{},
 		publisher: pub,
 	}
 }
 
-func (s *store) NewWorkflowMemory(_ context.Context, workflowID string, batchSize int) (WorkflowMemory, error) {
+func (s *Store) NewWorkflowMemory(_ context.Context, workflowID string, batchSize int) (*WorkflowMemory, error) {
 	wfmData := make([]format.Value, batchSize)
 	for idx := range batchSize {
 		m := data.Map{
@@ -47,7 +39,7 @@ func (s *store) NewWorkflowMemory(_ context.Context, workflowID string, batchSiz
 		wfmData[idx] = m
 	}
 
-	s.workflows.Store(workflowID, &workflowMemory{
+	s.workflows.Store(workflowID, &WorkflowMemory{
 		mu:              sync.Mutex{},
 		id:              workflowID,
 		data:            wfmData,
@@ -59,24 +51,24 @@ func (s *store) NewWorkflowMemory(_ context.Context, workflowID string, batchSiz
 		return nil, fmt.Errorf("workflow memory not found")
 	}
 
-	return wfm.(WorkflowMemory), nil
+	return wfm.(*WorkflowMemory), nil
 }
 
-func (s *store) GetWorkflowMemory(_ context.Context, workflowID string) (WorkflowMemory, error) {
+func (s *Store) GetWorkflowMemory(_ context.Context, workflowID string) (*WorkflowMemory, error) {
 	wfm, ok := s.workflows.Load(workflowID)
 	if !ok {
 		return nil, fmt.Errorf("workflow memory not found")
 	}
 
-	return wfm.(WorkflowMemory), nil
+	return wfm.(*WorkflowMemory), nil
 }
 
-func (s *store) PurgeWorkflowMemory(_ context.Context, workflowID string) error {
+func (s *Store) PurgeWorkflowMemory(_ context.Context, workflowID string) error {
 	s.workflows.Delete(workflowID)
 	return nil
 }
 
-func (s *store) SendWorkflowStatusEvent(ctx context.Context, workflowID string, event pubsub.Event) error {
+func (s *Store) SendWorkflowStatusEvent(ctx context.Context, workflowID string, event pubsub.Event) error {
 	channel := pubsub.WorkflowStatusTopic(workflowID)
 	if err := s.publisher.PublishEvent(ctx, channel, event); err != nil {
 		return fmt.Errorf("publishing event: %w", err)

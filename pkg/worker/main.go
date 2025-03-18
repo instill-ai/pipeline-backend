@@ -55,7 +55,7 @@ type WorkerConfig struct {
 	InfluxDBWriteClient          api.WriteAPI
 	Component                    *componentstore.Store
 	MinioClient                  minio.Client
-	MemoryStore                  memory.Store
+	MemoryStore                  *memory.Store
 	WorkerUID                    uuid.UUID
 	ArtifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	ArtifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
@@ -71,7 +71,7 @@ type worker struct {
 	component                    *componentstore.Store
 	minioClient                  minio.Client
 	log                          *zap.Logger
-	memoryStore                  memory.Store
+	memoryStore                  *memory.Store
 	workerUID                    uuid.UUID
 	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient

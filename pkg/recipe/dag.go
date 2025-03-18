@@ -155,7 +155,7 @@ func (d *dag) TopologicalSort() ([]datamodel.ComponentMap, error) {
 	return ans, nil
 }
 
-func Render(ctx context.Context, template format.Value, batchIdx int, wfm memory.WorkflowMemory, allowUnresolved bool) (format.Value, error) {
+func Render(ctx context.Context, template format.Value, batchIdx int, wfm *memory.WorkflowMemory, allowUnresolved bool) (format.Value, error) {
 	if input, ok := template.(format.ReferenceString); ok {
 		s := input.String()
 		if strings.HasPrefix(s, "${") && strings.HasSuffix(s, "}") && strings.Count(s, "${") == 1 {
@@ -336,7 +336,7 @@ func FindReferenceParent(input string) []string {
 	return upstreams
 }
 
-func GenerateTraces(ctx context.Context, compIDs []string, wfm memory.WorkflowMemory, full bool) (map[string]*pb.Trace, error) {
+func GenerateTraces(ctx context.Context, compIDs []string, wfm *memory.WorkflowMemory, full bool) (map[string]*pb.Trace, error) {
 	trace := map[string]*pb.Trace{}
 
 	batchSize := wfm.GetBatchSize()

@@ -133,7 +133,7 @@ type serviceConfig struct {
 	mgmtPrivateServiceClient     mgmtpb.MgmtPrivateServiceClient
 	minioClient                  minio.Client
 	componentStore               *componentstore.Store
-	memory                       memory.Store
+	memory                       *memory.Store
 	workerUID                    uuid.UUID
 	retentionHandler             MetadataRetentionHandler
 	binaryFetcher                external.BinaryFetcher

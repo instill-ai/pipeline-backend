@@ -919,7 +919,7 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 // preTriggerErr returns a function that handles errors that happen during the
 // trigger workflow setup, i.e., before the components start to be executed.
 // If the trigger is streamed, it will send an event to halt the execution.
-func (w *worker) preTriggerErr(ctx context.Context, workflowID string, wfm memory.WorkflowMemory) func(error) error {
+func (w *worker) preTriggerErr(ctx context.Context, workflowID string, wfm *memory.WorkflowMemory) func(error) error {
 	return func(err error) error {
 		if msg := errmsg.Message(err); msg != "" {
 			err = temporal.NewApplicationErrorWithCause(msg, preTriggerErrorType, err)
@@ -1025,7 +1025,7 @@ func (w *worker) loadConnectionFromComponent(
 // the connection value is overwritten.
 func (w *worker) mergeInputConnections(
 	ctx context.Context,
-	wfm memory.WorkflowMemory,
+	wfm *memory.WorkflowMemory,
 	idx int,
 	requesterUID uuid.UUID,
 	pipelineConnections data.Map,
@@ -1312,7 +1312,7 @@ func (w *worker) IncreasePipelineTriggerCountActivity(ctx context.Context, sv re
 
 // processCondition processes the conditions of a batch, returning the batch
 // IDs that should be processed.
-func (w *worker) processCondition(ctx context.Context, wfm memory.WorkflowMemory, id string, upstreamIDs []string, condition string) ([]int, error) {
+func (w *worker) processCondition(ctx context.Context, wfm *memory.WorkflowMemory, id string, upstreamIDs []string, condition string) ([]int, error) {
 	processedIDs := make([]int, 0, wfm.GetBatchSize())
 
 	for idx := range wfm.GetBatchSize() {
@@ -1396,7 +1396,7 @@ func (w *worker) pipelineTriggerDataPoint(workflowID string, sysVars recipe.Syst
 // componentActivityError transforms an error with (potentially) an end-user
 // message into a Temporal application error. Temporal clients can extract the
 // message and propagate it to the end user.
-func componentActivityError(ctx context.Context, wfm memory.WorkflowMemory, err error, errType, componentID string) error {
+func componentActivityError(ctx context.Context, wfm *memory.WorkflowMemory, err error, errType, componentID string) error {
 	if wfm == nil {
 		return fmt.Errorf("workflow memory is empty")
 	}
