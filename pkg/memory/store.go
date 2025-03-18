@@ -74,8 +74,18 @@ func (s *Store) GetWorkflowMemory(_ context.Context, workflowID string) (*Workfl
 	return wfm.(*WorkflowMemory), nil
 }
 
-func (s *Store) PurgeWorkflowMemory(_ context.Context, workflowID string) error {
+func wfmFilePath(workflowID string) string {
+	return fmt.Sprintf("pipeline-runs/wfm/%s.json", workflowID)
+}
+
+// PurgeWorkflowMemory removes the worfklow memory data from the in-memory map
+// and from the remote datastore.
+func (s *Store) PurgeWorkflowMemory(ctx context.Context, userUID uuid.UUID, workflowID string) error {
 	s.workflows.Delete(workflowID)
+	if err := s.minioClient.DeleteFile(ctx, userUID, wfmFilePath(workflowID)); err != nil {
+		return fmt.Errorf("deleting workflow memory data from minIO: %w", err)
+	}
+
 	return nil
 }
 
@@ -101,7 +111,7 @@ func (s *Store) CommitWorkflowData(ctx context.Context, userUID uuid.UUID, wfm *
 
 	_, _, err = s.minioClient.UploadFileBytes(ctx, &minio.UploadFileBytesParam{
 		UserUID:       userUID,
-		FilePath:      fmt.Sprintf("pipeline-runs/wfm/%s.json", wfm.id),
+		FilePath:      wfmFilePath(wfm.id),
 		FileBytes:     b,
 		ExpiryRuleTag: WorkflowMemoryExpiryRuleTag,
 	})
@@ -116,8 +126,7 @@ func (s *Store) CommitWorkflowData(ctx context.Context, userUID uuid.UUID, wfm *
 // the workflow memory being stored via the CommitWorkflowData method,
 // and is used when separate processes want to share the workflow data.
 func (s *Store) FetchWorkflowMemory(ctx context.Context, userUID uuid.UUID, workflowID string) (*WorkflowMemory, error) {
-	objectName := fmt.Sprintf("pipeline-runs/wfm/%s.json", workflowID)
-	b, err := s.minioClient.GetFile(ctx, userUID, objectName)
+	b, err := s.minioClient.GetFile(ctx, userUID, wfmFilePath(workflowID))
 	if err != nil {
 		return nil, fmt.Errorf("downloading workflow memory from MinIO: %w", err)
 	}

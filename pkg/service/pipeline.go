@@ -1670,7 +1670,7 @@ func (s *service) triggerPipeline(
 	logger, _ := logger.GetZapLogger(ctx)
 
 	defer func() {
-		_ = s.memory.PurgeWorkflowMemory(ctx, triggerParams.pipelineTriggerID)
+		_ = s.memory.PurgeWorkflowMemory(context.Background(), triggerParams.userUID, triggerParams.pipelineTriggerID)
 	}()
 
 	workflowOptions := client.StartWorkflowOptions{
@@ -1751,12 +1751,11 @@ type triggerParams struct {
 }
 
 func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams) (*longrunningpb.Operation, error) {
-
 	defer func() {
 		go func() {
 			// We only retain the memory for a maximum of 60 minutes.
 			time.Sleep(60 * time.Minute)
-			_ = s.memory.PurgeWorkflowMemory(ctx, params.pipelineTriggerID)
+			_ = s.memory.PurgeWorkflowMemory(context.Background(), params.userUID, params.pipelineTriggerID)
 		}()
 	}()
 
@@ -1812,13 +1811,14 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 
 	// wait for trigger ends in goroutine and upload outputs
 	utils.GoSafe(func() {
+		subCtx := context.Background()
+
 		defer func() {
-			if err := s.memory.PurgeWorkflowMemory(ctx, params.pipelineTriggerID); err != nil {
+			if err := s.memory.PurgeWorkflowMemory(subCtx, params.userUID, params.pipelineTriggerID); err != nil {
 				logger.Error("Couldn't purge workflow memory", zap.Error(err))
 			}
 		}()
 
-		subCtx := context.Background()
 		err = we.Get(subCtx, nil)
 		if err != nil {
 			err = fmt.Errorf("%w:%w", ErrTriggerFail, err)
@@ -2217,8 +2217,9 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 	switch workflowExecutionInfo.Status {
 	case enums.WORKFLOW_EXECUTION_STATUS_COMPLETED:
 		pipelineTriggerID := workflowExecutionInfo.Execution.WorkflowId
+		_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
 		defer func() {
-			_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
+			_ = s.memory.PurgeWorkflowMemory(context.Background(), userUID, pipelineTriggerID)
 		}()
 
 		recipe, err := s.fetchRecipeSnapshot(ctx, pipelineTriggerID)
@@ -2226,7 +2227,6 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 			return nil, fmt.Errorf("fetching recipe snapshot: %w", err)
 		}
 
-		_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
 		compIDs := slices.Collect(maps.Keys(recipe.Component))
 		outputs, metadata, err := s.getOutputsAndMetadata(ctx, userUID, pipelineTriggerID, compIDs, true)
 		if err != nil {
