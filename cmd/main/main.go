@@ -299,7 +299,7 @@ func main() {
 	workerUID, _ := uuid.NewV4()
 
 	pubsub := pubsub.NewRedisPubSub(redisClient)
-	ms := memory.NewMemoryStore(pubsub)
+	ms := memory.NewStore(pubsub)
 
 	repo := repository.NewRepository(db, redisClient)
 	service := service.NewService(

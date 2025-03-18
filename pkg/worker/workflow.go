@@ -1237,7 +1237,7 @@ func (w *worker) SendStartedEventActivity(ctx context.Context, workflowID string
 	return nil
 }
 
-// PostTriggerActivity copy the trigger memory from MemoryStore to Redis.
+// PostTriggerActivity copies the trigger memory to Redis.
 func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActivityParam) error {
 
 	logger, _ := logger.GetZapLogger(ctx)

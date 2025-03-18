@@ -59,14 +59,8 @@ const (
 	ComponentDataStatus  ComponentDataType = "status"
 )
 
-type MemoryStore interface {
-	NewWorkflowMemory(ctx context.Context, workflowID string, batchSize int) (workflow WorkflowMemory, err error)
-	GetWorkflowMemory(ctx context.Context, workflowID string) (workflow WorkflowMemory, err error)
-	PurgeWorkflowMemory(ctx context.Context, workflowID string) (err error)
-
-	SendWorkflowStatusEvent(ctx context.Context, workflowID string, event pubsub.Event) (err error)
-}
-
+// WorkflowMemory holds the information of a pipeline trigger during or after
+// the workflow execution.
 type WorkflowMemory interface {
 	Set(_ context.Context, batchIdx int, key string, value format.Value) error
 	Get(_ context.Context, batchIdx int, path string) (format.Value, error)
@@ -91,11 +85,6 @@ type ComponentStatus struct {
 	Started   bool `json:"started"`
 	Completed bool `json:"completed"`
 	Skipped   bool `json:"skipped"`
-}
-
-type memoryStore struct {
-	workflows sync.Map
-	publisher pubsub.EventPublisher
 }
 
 type workflowMemory struct {
@@ -181,64 +170,6 @@ func init() {
 	gob.Register(PipelineStatusUpdatedEventData{})
 	gob.Register(PipelineOutputUpdatedEventData{})
 	gob.Register(PipelineErrorUpdatedEventData{})
-}
-
-func NewMemoryStore(pub pubsub.EventPublisher) MemoryStore {
-	return &memoryStore{
-		workflows: sync.Map{},
-		publisher: pub,
-	}
-}
-
-func (ms *memoryStore) NewWorkflowMemory(ctx context.Context, workflowID string, batchSize int) (workflow WorkflowMemory, err error) {
-	wfmData := make([]format.Value, batchSize)
-	for idx := range batchSize {
-		m := data.Map{
-			string(PipelineVariable):   data.Map{},
-			string(PipelineSecret):     data.Map{},
-			string(PipelineConnection): data.Map{},
-			string(PipelineOutput):     data.Map{},
-		}
-
-		wfmData[idx] = m
-	}
-
-	ms.workflows.Store(workflowID, &workflowMemory{
-		mu:              sync.Mutex{},
-		id:              workflowID,
-		data:            wfmData,
-		publishWFStatus: ms.SendWorkflowStatusEvent,
-	})
-
-	wfm, ok := ms.workflows.Load(workflowID)
-	if !ok {
-		return nil, fmt.Errorf("workflow memory not found")
-	}
-
-	return wfm.(WorkflowMemory), nil
-}
-
-func (ms *memoryStore) GetWorkflowMemory(ctx context.Context, workflowID string) (workflow WorkflowMemory, err error) {
-	wfm, ok := ms.workflows.Load(workflowID)
-	if !ok {
-		return nil, fmt.Errorf("workflow memory not found")
-	}
-
-	return wfm.(WorkflowMemory), nil
-}
-
-func (ms *memoryStore) PurgeWorkflowMemory(ctx context.Context, workflowID string) (err error) {
-	ms.workflows.Delete(workflowID)
-	return nil
-}
-
-func (ms *memoryStore) SendWorkflowStatusEvent(ctx context.Context, workflowID string, event pubsub.Event) (err error) {
-	channel := pubsub.WorkflowStatusTopic(workflowID)
-	if err := ms.publisher.PublishEvent(ctx, channel, event); err != nil {
-		return fmt.Errorf("publishing event: %w", err)
-	}
-
-	return nil
 }
 
 func (wfm *workflowMemory) EnableStreaming() {

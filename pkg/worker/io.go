@@ -14,7 +14,7 @@ import (
 )
 
 type setupReader struct {
-	memoryStore       memory.MemoryStore
+	memoryStore       memory.Store
 	workflowID        string
 	compID            string
 	processedBatchIDs []int
@@ -46,14 +46,14 @@ func (s *setupReader) Read(ctx context.Context) (setups []*structpb.Struct, err 
 }
 
 type inputReader struct {
-	memoryStore   memory.MemoryStore
+	memoryStore   memory.Store
 	workflowID    string
 	compID        string
 	originalIdx   int
 	binaryFetcher external.BinaryFetcher
 }
 
-func newInputReader(memoryStore memory.MemoryStore, workflowID string, compID string, originalIdx int, binaryFetcher external.BinaryFetcher) *inputReader {
+func newInputReader(memoryStore memory.Store, workflowID string, compID string, originalIdx int, binaryFetcher external.BinaryFetcher) *inputReader {
 	return &inputReader{
 		memoryStore:   memoryStore,
 		workflowID:    workflowID,
@@ -120,14 +120,14 @@ func (i *inputReader) ReadData(ctx context.Context, input any) (err error) {
 }
 
 type outputWriter struct {
-	memoryStore memory.MemoryStore
+	memoryStore memory.Store
 	workflowID  string
 	compID      string
 	originalIdx int
 	streaming   bool
 }
 
-func newOutputWriter(memoryStore memory.MemoryStore, workflowID string, compID string, originalIdx int, streaming bool) *outputWriter {
+func newOutputWriter(memoryStore memory.Store, workflowID string, compID string, originalIdx int, streaming bool) *outputWriter {
 	return &outputWriter{
 		memoryStore: memoryStore,
 		workflowID:  workflowID,
@@ -192,7 +192,7 @@ func (o *outputWriter) write(ctx context.Context, val format.Value) (err error) 
 }
 
 type errorHandler struct {
-	memoryStore memory.MemoryStore
+	memoryStore memory.Store
 	workflowID  string
 	compID      string
 	originalIdx int
@@ -202,7 +202,7 @@ type errorHandler struct {
 	parentOriginalIdx *int
 }
 
-func newErrorHandler(memoryStore memory.MemoryStore, workflowID string, compID string, originalIdx int, parentWorkflowID *string, parentCompID *string, parentOriginalIdx *int) *errorHandler {
+func newErrorHandler(memoryStore memory.Store, workflowID string, compID string, originalIdx int, parentWorkflowID *string, parentCompID *string, parentOriginalIdx *int) *errorHandler {
 	return &errorHandler{
 		memoryStore:       memoryStore,
 		workflowID:        workflowID,
