@@ -45,8 +45,10 @@ import (
 type TriggerPipelineWorkflowParam struct {
 	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 	Recipe          *datamodel.Recipe
-	Mode            mgmtpb.Mode
-	WorkerUID       uuid.UUID
+
+	Streaming bool
+	Mode      mgmtpb.Mode
+	WorkerUID uuid.UUID
 
 	// If the pipeline trigger is from an iterator, these fields will be set.
 	ParentWorkflowID  *string
@@ -73,8 +75,7 @@ type ComponentActivityParam struct {
 	Condition       string
 	Type            string
 	Task            string
-	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
-	Streaming       bool
+	SystemVariables recipe.SystemVariables
 
 	// If the component belongs to an iterator, these fields will be set
 	ParentWorkflowID  *string
@@ -189,7 +190,12 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
 
-	err := workflow.ExecuteActivity(ctx, w.LoadWorkflowMemory, param.SystemVariables.PipelineUserUID, workflowID).Get(ctx, nil)
+	loadWFMParam := LoadWorkflowMemoryActivityParam{
+		WorkflowID: workflowID,
+		UserUID:    param.SystemVariables.PipelineUserUID,
+		Streaming:  param.Streaming,
+	}
+	err := workflow.ExecuteActivity(ctx, w.LoadWorkflowMemory, loadWFMParam).Get(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -336,6 +342,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 							ParentWorkflowID:  &workflowID,
 							ParentCompID:      &compID,
 							ParentOriginalIdx: &childTrigger.BatchIdx,
+							Streaming:         param.Streaming,
 						}))
 				}
 				for _, itFuture := range itFutures {
@@ -1514,12 +1521,24 @@ func (w *worker) ClosePipelineActivity(ctx context.Context, workflowID string) e
 	return nil
 }
 
+// LoadWorkflowMemoryActivityParam ...
+type LoadWorkflowMemoryActivityParam struct {
+	WorkflowID string
+	UserUID    uuid.UUID
+	Streaming  bool
+}
+
 // LoadWorkflowMemory fetches the workflow memory from an external datastore
 // and loads it into the memory store.
-func (w *worker) LoadWorkflowMemory(ctx context.Context, userUID uuid.UUID, workflowID string) error {
-	_, err := w.memoryStore.FetchWorkflowMemory(ctx, userUID, workflowID)
+func (w *worker) LoadWorkflowMemory(ctx context.Context, param LoadWorkflowMemoryActivityParam) error {
+	wfm, err := w.memoryStore.FetchWorkflowMemory(ctx, param.UserUID, param.WorkflowID)
 	if err != nil {
 		return fmt.Errorf("fetching workflow memory: %w", err)
 	}
+
+	if param.Streaming {
+		wfm.EnableStreaming()
+	}
+
 	return nil
 }

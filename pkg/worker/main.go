@@ -30,7 +30,7 @@ type Worker interface {
 	TriggerPipelineWorkflow(workflow.Context, *TriggerPipelineWorkflowParam) error
 	SchedulePipelineWorkflow(workflow.Context, *scheduler.SchedulePipelineWorkflowParam) error
 
-	LoadWorkflowMemory(_ context.Context, userUID uuid.UUID, workflowID string) error
+	LoadWorkflowMemory(context.Context, LoadWorkflowMemoryActivityParam) error
 	ComponentActivity(context.Context, *ComponentActivityParam) error
 	OutputActivity(context.Context, *ComponentActivityParam) error
 	PreIteratorActivity(context.Context, *PreIteratorActivityParam) ([]ChildPipelineTriggerParams, error)

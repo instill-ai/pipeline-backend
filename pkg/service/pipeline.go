@@ -1414,11 +1414,6 @@ func (s *service) preTriggerPipeline(
 		return fmt.Errorf("uploading pipeline run inputs to minio: %w", err)
 	}
 
-	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
-	if isStreaming {
-		wfm.EnableStreaming()
-	}
-
 	return nil
 }
 
@@ -1691,6 +1686,7 @@ func (s *service) triggerPipeline(
 		return nil, nil, err
 	}
 
+	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1709,6 +1705,7 @@ func (s *service) triggerPipeline(
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 				ExpiryRule:           triggerParams.expiryRule,
 			},
+			Streaming: isStreaming,
 			Mode:      mgmtpb.Mode_MODE_SYNC,
 			WorkerUID: s.workerUID,
 			Recipe:    triggerParams.recipe,
@@ -1780,6 +1777,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 		return nil, err
 	}
 
+	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1798,6 +1796,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 				ExpiryRule:           params.expiryRule,
 			},
+			Streaming: isStreaming,
 			Mode:      mgmtpb.Mode_MODE_ASYNC,
 			WorkerUID: s.workerUID,
 			Recipe:    params.recipe,
