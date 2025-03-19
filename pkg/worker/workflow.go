@@ -214,12 +214,14 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	if isParentPipeline {
 		cleanupCtx, _ := workflow.NewDisconnectedContext(ctx)
 		defer func() {
-			if err := workflow.ExecuteActivity(
-				cleanupCtx,
-				w.ClosePipelineActivity,
-				workflowID,
-			).Get(cleanupCtx, nil); err != nil {
+			err := workflow.ExecuteActivity(cleanupCtx, w.ClosePipelineActivity, workflowID).Get(cleanupCtx, nil)
+			if err != nil {
 				logger.Error("Failed to clean up trigger workflow", zap.Error(err))
+			}
+
+			err = workflow.ExecuteActivity(cleanupCtx, w.PurgeWorkflowMemoryActivity, workflowID).Get(cleanupCtx, nil)
+			if err != nil {
+				logger.Error("Failed to purge workflow memory", zap.Error(err))
 			}
 		}()
 
@@ -1506,8 +1508,8 @@ func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *schedul
 	return nil
 }
 
-// ClosePipelineActivity is the last step when triggering a workflow. The
-// activity sends a PipelineClosed event if the trigger is streamed
+// ClosePipelineActivity sends a PipelineClosed event if the trigger is
+// streamed.
 func (w *worker) ClosePipelineActivity(ctx context.Context, workflowID string) error {
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, workflowID)
 	if err != nil {
@@ -1546,5 +1548,11 @@ func (w *worker) LoadWorkflowMemory(ctx context.Context, param LoadWorkflowMemor
 		wfm.EnableStreaming()
 	}
 
+	return nil
+}
+
+// PurgeWorkflowMemoryActivity purges the workflow data from memory.
+func (w *worker) PurgeWorkflowMemoryActivity(_ context.Context, workflowID string) error {
+	w.memoryStore.PurgeWorkflowMemory(workflowID)
 	return nil
 }

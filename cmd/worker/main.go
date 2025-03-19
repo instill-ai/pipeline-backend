@@ -197,6 +197,7 @@ func main() {
 	w.RegisterActivity(cw.SendStartedEventActivity)
 	w.RegisterActivity(cw.PostTriggerActivity)
 	w.RegisterActivity(cw.ClosePipelineActivity)
+	w.RegisterActivity(cw.PurgeWorkflowMemoryActivity)
 	w.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
 	w.RegisterActivity(cw.UpdatePipelineRunActivity)
 	w.RegisterActivity(cw.UpsertComponentRunActivity)

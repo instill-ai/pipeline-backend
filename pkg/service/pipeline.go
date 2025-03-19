@@ -1665,7 +1665,7 @@ func (s *service) triggerPipeline(
 	logger, _ := logger.GetZapLogger(ctx)
 
 	defer func() {
-		_ = s.memory.PurgeWorkflowMemory(context.Background(), triggerParams.userUID, triggerParams.pipelineTriggerID)
+		_ = s.memory.CleanupWorkflowMemory(context.Background(), triggerParams.userUID, triggerParams.pipelineTriggerID)
 	}()
 
 	workflowOptions := client.StartWorkflowOptions{
@@ -1751,7 +1751,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 		go func() {
 			// We only retain the memory for a maximum of 60 minutes.
 			time.Sleep(60 * time.Minute)
-			_ = s.memory.PurgeWorkflowMemory(context.Background(), params.userUID, params.pipelineTriggerID)
+			_ = s.memory.CleanupWorkflowMemory(context.Background(), params.userUID, params.pipelineTriggerID)
 		}()
 	}()
 
@@ -1811,7 +1811,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 		subCtx := context.Background()
 
 		defer func() {
-			if err := s.memory.PurgeWorkflowMemory(subCtx, params.userUID, params.pipelineTriggerID); err != nil {
+			if err := s.memory.CleanupWorkflowMemory(subCtx, params.userUID, params.pipelineTriggerID); err != nil {
 				logger.Error("Couldn't purge workflow memory", zap.Error(err))
 			}
 		}()
@@ -2216,7 +2216,7 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 		pipelineTriggerID := workflowExecutionInfo.Execution.WorkflowId
 		_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
 		defer func() {
-			_ = s.memory.PurgeWorkflowMemory(context.Background(), userUID, pipelineTriggerID)
+			_ = s.memory.CleanupWorkflowMemory(context.Background(), userUID, pipelineTriggerID)
 		}()
 
 		recipe, err := s.fetchRecipeSnapshot(ctx, pipelineTriggerID)

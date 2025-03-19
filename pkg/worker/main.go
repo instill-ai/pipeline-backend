@@ -38,6 +38,7 @@ type Worker interface {
 	SendStartedEventActivity(_ context.Context, workflowID string) error
 	PostTriggerActivity(context.Context, *PostTriggerActivityParam) error
 	ClosePipelineActivity(_ context.Context, workflowID string) error
+	PurgeWorkflowMemoryActivity(_ context.Context, workflowID string) error
 	IncreasePipelineTriggerCountActivity(context.Context, recipe.SystemVariables) error
 
 	UpdatePipelineRunActivity(context.Context, *UpdatePipelineRunActivityParam) error

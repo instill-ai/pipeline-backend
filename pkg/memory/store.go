@@ -80,15 +80,20 @@ func wfmFilePath(workflowID string) string {
 	return fmt.Sprintf("pipeline-runs/wfm/%s.json", workflowID)
 }
 
-// PurgeWorkflowMemory removes the worfklow memory data from the in-memory map
-// and from the remote datastore.
-func (s *Store) PurgeWorkflowMemory(ctx context.Context, userUID uuid.UUID, workflowID string) error {
-	s.workflows.Delete(workflowID)
+// CleanupWorkflowMemory removes the worfklow memory data from the in-memory
+// map and from the remote datastore.
+func (s *Store) CleanupWorkflowMemory(ctx context.Context, userUID uuid.UUID, workflowID string) error {
+	s.PurgeWorkflowMemory(workflowID)
 	if err := s.minioClient.DeleteFile(ctx, userUID, wfmFilePath(workflowID)); err != nil {
 		return fmt.Errorf("deleting workflow memory data from minIO: %w", err)
 	}
 
 	return nil
+}
+
+// PurgeWorkflowMemory removes the worfklow memory data from the in-memory map.
+func (s *Store) PurgeWorkflowMemory(workflowID string) {
+	s.workflows.Delete(workflowID)
 }
 
 func (s *Store) SendWorkflowStatusEvent(ctx context.Context, workflowID string, event pubsub.Event) error {
