@@ -85,7 +85,7 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 			converter:                converter,
 			mgmtPrivateServiceClient: mgmtPrivateClient,
 			componentStore:           compStore,
-			memory:                   memory.NewMemoryStore(nil),
+			memory:                   memory.NewStore(nil, nil),
 			workerUID:                workerUID,
 		},
 	)
@@ -133,7 +133,7 @@ type serviceConfig struct {
 	mgmtPrivateServiceClient     mgmtpb.MgmtPrivateServiceClient
 	minioClient                  minio.Client
 	componentStore               *componentstore.Store
-	memory                       memory.MemoryStore
+	memory                       *memory.Store
 	workerUID                    uuid.UUID
 	retentionHandler             MetadataRetentionHandler
 	binaryFetcher                external.BinaryFetcher

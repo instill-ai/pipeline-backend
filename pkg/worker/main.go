@@ -30,6 +30,7 @@ type Worker interface {
 	TriggerPipelineWorkflow(workflow.Context, *TriggerPipelineWorkflowParam) error
 	SchedulePipelineWorkflow(workflow.Context, *scheduler.SchedulePipelineWorkflowParam) error
 
+	LoadWorkflowMemory(context.Context, LoadWorkflowMemoryActivityParam) error
 	ComponentActivity(context.Context, *ComponentActivityParam) error
 	OutputActivity(context.Context, *ComponentActivityParam) error
 	PreIteratorActivity(context.Context, *PreIteratorActivityParam) ([]ChildPipelineTriggerParams, error)
@@ -55,7 +56,7 @@ type WorkerConfig struct {
 	InfluxDBWriteClient          api.WriteAPI
 	Component                    *componentstore.Store
 	MinioClient                  minio.Client
-	MemoryStore                  memory.MemoryStore
+	MemoryStore                  *memory.Store
 	WorkerUID                    uuid.UUID
 	ArtifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	ArtifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
@@ -71,7 +72,7 @@ type worker struct {
 	component                    *componentstore.Store
 	minioClient                  minio.Client
 	log                          *zap.Logger
-	memoryStore                  memory.MemoryStore
+	memoryStore                  *memory.Store
 	workerUID                    uuid.UUID
 	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient

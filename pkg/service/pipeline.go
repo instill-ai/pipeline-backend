@@ -19,7 +19,6 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -834,7 +833,7 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 }
 
 // preTriggerPipeline does the following:
-//  1. Upload pipeline input data to minio if the data is blob data.
+//  1. Upload pipeline input data to MinIO if the data is blob data.
 //  2. New workflow memory.
 //     a. Set the default values for the variables for memory data and
 //     uploading pipeline data.
@@ -871,20 +870,9 @@ func (s *service) preTriggerPipeline(
 
 	errors := []string{}
 
-	for idx, data := range pipelineData {
+	for _, data := range pipelineData {
 		vars := data.Variable
-		b, err := protojson.Marshal(vars)
-		if err != nil {
-			errors = append(errors, fmt.Sprintf("inputs[%d]: data error", idx))
-			continue
-		}
-		var i any
-		if err := json.Unmarshal(b, &i); err != nil {
-			errors = append(errors, fmt.Sprintf("inputs[%d]: data error", idx))
-			continue
-		}
-
-		m := i.(map[string]any)
+		m := vars.AsMap()
 		for k := range m {
 			switch str := m[k].(type) {
 			case string:
@@ -916,14 +904,13 @@ func (s *service) preTriggerPipeline(
 				}
 			}
 		}
-
 	}
 
 	if len(errors) > 0 {
 		return fmt.Errorf("[Pipeline Trigger Data Error] %s", strings.Join(errors, "; "))
 	}
 
-	wfm, err := s.memory.NewWorkflowMemory(ctx, pipelineTriggerID, nil, len(pipelineData))
+	wfm, err := s.memory.NewWorkflowMemory(ctx, pipelineTriggerID, len(pipelineData))
 	if err != nil {
 		return err
 	}
@@ -934,12 +921,10 @@ func (s *service) preTriggerPipeline(
 	}
 
 	uploadingPipelineData := make([]map[string]any, len(pipelineData))
-	for idx := range uploadingPipelineData {
-		uploadingPipelineData[idx] = make(map[string]any)
-	}
 
 	// TODO(huitang): implement a structpb to format.Value converter
 	for idx, d := range pipelineData {
+		uploadingPipelineData[idx] = make(map[string]any)
 
 		variable := data.Map{}
 		for k := range typeMap {
@@ -1358,7 +1343,6 @@ func (s *service) preTriggerPipeline(
 					uploadingPipelineData[idx][k] = arrayWithURL
 				}
 			case "semi-structured/*", "semi-structured/json", "json":
-
 				if v == nil {
 					jv, err := data.NewJSONValue(defaultValueMap[k])
 					if err != nil {
@@ -1367,55 +1351,19 @@ func (s *service) preTriggerPipeline(
 					variable[k] = jv
 					uploadingPipelineData[idx][k] = jv
 				} else {
-					switch v.Kind.(type) {
-					case *structpb.Value_StructValue:
-						j := map[string]any{}
-						b, err := protojson.Marshal(v)
-						if err != nil {
-							return err
-						}
-						err = json.Unmarshal(b, &j)
-						if err != nil {
-							return err
-						}
-						jv, err := data.NewJSONValue(j)
-						if err != nil {
-							return err
-						}
-						variable[k] = jv
-						uploadingPipelineData[idx][k] = jv
-					case *structpb.Value_ListValue:
-						j := []any{}
-						b, err := protojson.Marshal(v)
-						if err != nil {
-							return err
-						}
-						err = json.Unmarshal(b, &j)
-						if err != nil {
-							return err
-						}
-						jv, err := data.NewJSONValue(j)
-						if err != nil {
-							return err
-						}
-						variable[k] = jv
-						uploadingPipelineData[idx][k] = jv
+					jv, err := data.NewJSONValue(v.AsInterface())
+					if err != nil {
+						return err
 					}
+					variable[k] = jv
+					uploadingPipelineData[idx][k] = jv
 				}
 
 			}
+
 			if err != nil {
 				return err
 			}
-		}
-
-		err = s.uploadPipelineRunInputsToMinio(ctx, uploadPipelineRunInputsToMinioParam{
-			pipelineTriggerID: pipelineTriggerID,
-			expiryRule:        expiryRule,
-			pipelineData:      uploadingPipelineData,
-		})
-		if err != nil {
-			return fmt.Errorf("pipeline run inputs to minio: %w", err)
 		}
 
 		err = wfm.Set(ctx, idx, constant.SegVariable, variable)
@@ -1451,12 +1399,21 @@ func (s *service) preTriggerPipeline(
 		if err != nil {
 			return err
 		}
+	}
 
+	_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+	if err := s.memory.CommitWorkflowData(ctx, userUID, wfm); err != nil {
+		return fmt.Errorf("storing workflow data: %w", err)
 	}
-	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
-	if isStreaming {
-		wfm.EnableStreaming()
+
+	if err := s.uploadPipelineRunInputsToMinio(ctx, uploadPipelineRunInputsToMinioParam{
+		pipelineTriggerID: pipelineTriggerID,
+		expiryRule:        expiryRule,
+		pipelineData:      uploadingPipelineData,
+	}); err != nil {
+		return fmt.Errorf("uploading pipeline run inputs to minio: %w", err)
 	}
+
 	return nil
 }
 
@@ -1708,7 +1665,7 @@ func (s *service) triggerPipeline(
 	logger, _ := logger.GetZapLogger(ctx)
 
 	defer func() {
-		_ = s.memory.PurgeWorkflowMemory(ctx, triggerParams.pipelineTriggerID)
+		_ = s.memory.PurgeWorkflowMemory(context.Background(), triggerParams.userUID, triggerParams.pipelineTriggerID)
 	}()
 
 	workflowOptions := client.StartWorkflowOptions{
@@ -1729,6 +1686,7 @@ func (s *service) triggerPipeline(
 		return nil, nil, err
 	}
 
+	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1747,6 +1705,7 @@ func (s *service) triggerPipeline(
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 				ExpiryRule:           triggerParams.expiryRule,
 			},
+			Streaming: isStreaming,
 			Mode:      mgmtpb.Mode_MODE_SYNC,
 			WorkerUID: s.workerUID,
 			Recipe:    triggerParams.recipe,
@@ -1772,7 +1731,7 @@ func (s *service) triggerPipeline(
 	}
 
 	compIDs := slices.Collect(maps.Keys(triggerParams.recipe.Component))
-	return s.getOutputsAndMetadata(ctx, triggerParams.pipelineTriggerID, compIDs, returnTraces)
+	return s.getOutputsAndMetadata(ctx, triggerParams.userUID, triggerParams.pipelineTriggerID, compIDs, returnTraces)
 }
 
 type triggerParams struct {
@@ -1789,12 +1748,11 @@ type triggerParams struct {
 }
 
 func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams) (*longrunningpb.Operation, error) {
-
 	defer func() {
 		go func() {
 			// We only retain the memory for a maximum of 60 minutes.
 			time.Sleep(60 * time.Minute)
-			_ = s.memory.PurgeWorkflowMemory(ctx, params.pipelineTriggerID)
+			_ = s.memory.PurgeWorkflowMemory(context.Background(), params.userUID, params.pipelineTriggerID)
 		}()
 	}()
 
@@ -1819,6 +1777,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 		return nil, err
 	}
 
+	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1837,6 +1796,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 				ExpiryRule:           params.expiryRule,
 			},
+			Streaming: isStreaming,
 			Mode:      mgmtpb.Mode_MODE_ASYNC,
 			WorkerUID: s.workerUID,
 			Recipe:    params.recipe,
@@ -1850,13 +1810,14 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 
 	// wait for trigger ends in goroutine and upload outputs
 	utils.GoSafe(func() {
+		subCtx := context.Background()
+
 		defer func() {
-			if err := s.memory.PurgeWorkflowMemory(ctx, params.pipelineTriggerID); err != nil {
+			if err := s.memory.PurgeWorkflowMemory(subCtx, params.userUID, params.pipelineTriggerID); err != nil {
 				logger.Error("Couldn't purge workflow memory", zap.Error(err))
 			}
 		}()
 
-		subCtx := context.Background()
 		err = we.Get(subCtx, nil)
 		if err != nil {
 			err = fmt.Errorf("%w:%w", ErrTriggerFail, err)
@@ -1885,10 +1846,10 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 
 }
 
-func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID string, compIDs []string, returnTraces bool) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {
-	wfm, err := s.memory.GetWorkflowMemory(ctx, pipelineTriggerID)
+func (s *service) getOutputsAndMetadata(ctx context.Context, userUID uuid.UUID, pipelineTriggerID string, compIDs []string, returnTraces bool) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {
+	wfm, err := s.memory.FetchWorkflowMemory(ctx, userUID, pipelineTriggerID)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("fetching workflow memory: %w", err)
 	}
 
 	pipelineOutputs := make([]*structpb.Struct, wfm.GetBatchSize())
@@ -2255,8 +2216,9 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 	switch workflowExecutionInfo.Status {
 	case enums.WORKFLOW_EXECUTION_STATUS_COMPLETED:
 		pipelineTriggerID := workflowExecutionInfo.Execution.WorkflowId
+		_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
 		defer func() {
-			_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
+			_ = s.memory.PurgeWorkflowMemory(context.Background(), userUID, pipelineTriggerID)
 		}()
 
 		recipe, err := s.fetchRecipeSnapshot(ctx, pipelineTriggerID)
@@ -2265,7 +2227,7 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 		}
 
 		compIDs := slices.Collect(maps.Keys(recipe.Component))
-		outputs, metadata, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, compIDs, true)
+		outputs, metadata, err := s.getOutputsAndMetadata(ctx, userUID, pipelineTriggerID, compIDs, true)
 		if err != nil {
 			return nil, err
 		}

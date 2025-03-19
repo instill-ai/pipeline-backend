@@ -108,7 +108,7 @@ type service struct {
 	aclClient                    acl.ACLClientInterface
 	converter                    Converter
 	minioClient                  minio.Client
-	memory                       memory.MemoryStore
+	memory                       *memory.Store
 	log                          *zap.Logger
 	workerUID                    uuid.UUID
 	retentionHandler             MetadataRetentionHandler
@@ -128,7 +128,7 @@ func NewService(
 	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient,
 	minioClient minio.Client,
 	componentStore *componentstore.Store,
-	memory memory.MemoryStore,
+	memory *memory.Store,
 	workerUID uuid.UUID,
 	retentionHandler MetadataRetentionHandler,
 	binaryFetcher external.BinaryFetcher,

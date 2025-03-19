@@ -13,7 +13,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
-	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/pubsub"
 )
 
@@ -60,46 +59,9 @@ const (
 	ComponentDataStatus  ComponentDataType = "status"
 )
 
-type MemoryStore interface {
-	NewWorkflowMemory(ctx context.Context, workflowID string, recipe *datamodel.Recipe, batchSize int) (workflow WorkflowMemory, err error)
-	GetWorkflowMemory(ctx context.Context, workflowID string) (workflow WorkflowMemory, err error)
-	PurgeWorkflowMemory(ctx context.Context, workflowID string) (err error)
-
-	SendWorkflowStatusEvent(ctx context.Context, workflowID string, event pubsub.Event) (err error)
-}
-
-type WorkflowMemory interface {
-	Set(_ context.Context, batchIdx int, key string, value format.Value) error
-	Get(_ context.Context, batchIdx int, path string) (format.Value, error)
-
-	InitComponent(_ context.Context, batchIdx int, componentID string)
-	SetComponentData(_ context.Context, batchIdx int, componentID string, t ComponentDataType, value format.Value) error
-	GetComponentData(_ context.Context, batchIdx int, componentID string, t ComponentDataType) (format.Value, error)
-	SetComponentStatus(_ context.Context, batchIdx int, componentID string, t ComponentStatusType, value bool) error
-	GetComponentStatus(_ context.Context, batchIdx int, componentID string, t ComponentStatusType) (bool, error)
-	SetPipelineData(_ context.Context, batchIdx int, t PipelineDataType, value format.Value) error
-	GetPipelineData(_ context.Context, batchIdx int, t PipelineDataType) (format.Value, error)
-	SetComponentErrorMessage(_ context.Context, batchIdx int, componentID string, msg string) error
-	GetComponentErrorMessage(_ context.Context, batchIdx int, componentID string) (string, error)
-
-	EnableStreaming()
-	IsStreaming() bool
-
-	GetBatchSize() int
-}
-
-type ComponentStatus struct {
-	Started   bool `json:"started"`
-	Completed bool `json:"completed"`
-	Skipped   bool `json:"skipped"`
-}
-
-type memoryStore struct {
-	workflows sync.Map
-	publisher pubsub.EventPublisher
-}
-
-type workflowMemory struct {
+// WorkflowMemory holds the information of a pipeline trigger during or after
+// the workflow execution.
+type WorkflowMemory struct {
 	mu        sync.Mutex
 	id        string
 	data      []format.Value
@@ -184,73 +146,15 @@ func init() {
 	gob.Register(PipelineErrorUpdatedEventData{})
 }
 
-func NewMemoryStore(pub pubsub.EventPublisher) MemoryStore {
-	return &memoryStore{
-		workflows: sync.Map{},
-		publisher: pub,
-	}
-}
-
-func (ms *memoryStore) NewWorkflowMemory(ctx context.Context, workflowID string, r *datamodel.Recipe, batchSize int) (workflow WorkflowMemory, err error) {
-	wfmData := make([]format.Value, batchSize)
-	for idx := range batchSize {
-		m := data.Map{
-			string(PipelineVariable):   data.Map{},
-			string(PipelineSecret):     data.Map{},
-			string(PipelineConnection): data.Map{},
-			string(PipelineOutput):     data.Map{},
-		}
-
-		wfmData[idx] = m
-	}
-
-	ms.workflows.Store(workflowID, &workflowMemory{
-		mu:              sync.Mutex{},
-		id:              workflowID,
-		data:            wfmData,
-		publishWFStatus: ms.SendWorkflowStatusEvent,
-	})
-
-	wfm, ok := ms.workflows.Load(workflowID)
-	if !ok {
-		return nil, fmt.Errorf("workflow memory not found")
-	}
-
-	return wfm.(WorkflowMemory), nil
-}
-
-func (ms *memoryStore) GetWorkflowMemory(ctx context.Context, workflowID string) (workflow WorkflowMemory, err error) {
-	wfm, ok := ms.workflows.Load(workflowID)
-	if !ok {
-		return nil, fmt.Errorf("workflow memory not found")
-	}
-
-	return wfm.(WorkflowMemory), nil
-}
-
-func (ms *memoryStore) PurgeWorkflowMemory(ctx context.Context, workflowID string) (err error) {
-	ms.workflows.Delete(workflowID)
-	return nil
-}
-
-func (ms *memoryStore) SendWorkflowStatusEvent(ctx context.Context, workflowID string, event pubsub.Event) (err error) {
-	channel := pubsub.WorkflowStatusTopic(workflowID)
-	if err := ms.publisher.PublishEvent(ctx, channel, event); err != nil {
-		return fmt.Errorf("publishing event: %w", err)
-	}
-
-	return nil
-}
-
-func (wfm *workflowMemory) EnableStreaming() {
+func (wfm *WorkflowMemory) EnableStreaming() {
 	wfm.streaming = true
 }
 
-func (wfm *workflowMemory) IsStreaming() bool {
+func (wfm *WorkflowMemory) IsStreaming() bool {
 	return wfm.streaming
 }
 
-func (wfm *workflowMemory) InitComponent(ctx context.Context, batchIdx int, componentID string) {
+func (wfm *WorkflowMemory) InitComponent(ctx context.Context, batchIdx int, componentID string) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
@@ -274,7 +178,7 @@ func (wfm *workflowMemory) InitComponent(ctx context.Context, batchIdx int, comp
 	wfm.data[batchIdx].(data.Map)[componentID] = compMemory
 }
 
-func (wfm *workflowMemory) SetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType, value format.Value) (err error) {
+func (wfm *WorkflowMemory) SetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType, value format.Value) (err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
@@ -296,7 +200,7 @@ func (wfm *workflowMemory) SetComponentData(ctx context.Context, batchIdx int, c
 
 	return nil
 }
-func (wfm *workflowMemory) GetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType) (value format.Value, err error) {
+func (wfm *WorkflowMemory) GetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType) (value format.Value, err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
@@ -306,7 +210,7 @@ func (wfm *workflowMemory) GetComponentData(ctx context.Context, batchIdx int, c
 	return wfm.data[batchIdx].(data.Map)[componentID].(data.Map)[string(t)], nil
 }
 
-func (wfm *workflowMemory) SetComponentStatus(ctx context.Context, batchIdx int, componentID string, t ComponentStatusType, value bool) (err error) {
+func (wfm *WorkflowMemory) SetComponentStatus(ctx context.Context, batchIdx int, componentID string, t ComponentStatusType, value bool) (err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
@@ -321,7 +225,7 @@ func (wfm *workflowMemory) SetComponentStatus(ctx context.Context, batchIdx int,
 
 	return nil
 }
-func (wfm *workflowMemory) SetComponentErrorMessage(ctx context.Context, batchIdx int, componentID string, msg string) (err error) {
+func (wfm *WorkflowMemory) SetComponentErrorMessage(ctx context.Context, batchIdx int, componentID string, msg string) (err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
@@ -337,7 +241,7 @@ func (wfm *workflowMemory) SetComponentErrorMessage(ctx context.Context, batchId
 	return nil
 }
 
-func (wfm *workflowMemory) GetComponentErrorMessage(ctx context.Context, batchIdx int, componentID string) (string, error) {
+func (wfm *WorkflowMemory) GetComponentErrorMessage(ctx context.Context, batchIdx int, componentID string) (string, error) {
 	v, err := wfm.GetComponentData(ctx, batchIdx, componentID, ComponentDataError)
 	if err != nil {
 		return "", fmt.Errorf("fetching component data: %w", err)
@@ -351,7 +255,7 @@ func (wfm *workflowMemory) GetComponentErrorMessage(ctx context.Context, batchId
 	return asStruct.GetStructValue().AsMap()["message"].(string), nil
 }
 
-func (wfm *workflowMemory) GetComponentStatus(ctx context.Context, batchIdx int, componentID string, t ComponentStatusType) (v bool, err error) {
+func (wfm *WorkflowMemory) GetComponentStatus(ctx context.Context, batchIdx int, componentID string, t ComponentStatusType) (v bool, err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
@@ -361,7 +265,7 @@ func (wfm *workflowMemory) GetComponentStatus(ctx context.Context, batchIdx int,
 	return wfm.data[batchIdx].(data.Map)[componentID].(data.Map)["status"].(data.Map)[string(t)].(format.Boolean).Boolean(), nil
 }
 
-func (wfm *workflowMemory) SetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType, value format.Value) (err error) {
+func (wfm *WorkflowMemory) SetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType, value format.Value) (err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
@@ -408,7 +312,7 @@ func (wfm *workflowMemory) SetPipelineData(ctx context.Context, batchIdx int, t 
 	return wfm.publishWFStatus(ctx, wfm.id, event)
 }
 
-func (wfm *workflowMemory) GetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType) (value format.Value, err error) {
+func (wfm *WorkflowMemory) GetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType) (value format.Value, err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
@@ -419,7 +323,7 @@ func (wfm *workflowMemory) GetPipelineData(ctx context.Context, batchIdx int, t 
 	}
 }
 
-func (wfm *workflowMemory) Set(ctx context.Context, batchIdx int, key string, value format.Value) (err error) {
+func (wfm *WorkflowMemory) Set(ctx context.Context, batchIdx int, key string, value format.Value) (err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
@@ -427,7 +331,7 @@ func (wfm *workflowMemory) Set(ctx context.Context, batchIdx int, key string, va
 	return nil
 }
 
-func (wfm *workflowMemory) Get(ctx context.Context, batchIdx int, p string) (memory format.Value, err error) {
+func (wfm *WorkflowMemory) Get(ctx context.Context, batchIdx int, p string) (memory format.Value, err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
@@ -439,11 +343,11 @@ func (wfm *workflowMemory) Get(ctx context.Context, batchIdx int, p string) (mem
 
 }
 
-func (wfm *workflowMemory) GetBatchSize() int {
+func (wfm *WorkflowMemory) GetBatchSize() int {
 	return len(wfm.data)
 }
 
-func (wfm *workflowMemory) getComponentEventData(_ context.Context, batchIdx int, componentID string) ComponentEventData {
+func (wfm *WorkflowMemory) getComponentEventData(_ context.Context, batchIdx int, componentID string) ComponentEventData {
 	// TODO: simplify struct conversion
 	st := wfm.data[batchIdx].(data.Map)[componentID].(data.Map)["status"].(data.Map)
 	started := st[string(ComponentStatusStarted)].(format.Boolean).Boolean()
@@ -464,7 +368,7 @@ func (wfm *workflowMemory) getComponentEventData(_ context.Context, batchIdx int
 	}
 }
 
-func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int, componentID string, t ComponentEventType) (err error) {
+func (wfm *WorkflowMemory) sendComponentEvent(ctx context.Context, batchIdx int, componentID string, t ComponentEventType) (err error) {
 	if !wfm.streaming {
 		return nil
 	}

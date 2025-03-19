@@ -237,3 +237,42 @@ func (vid *videoData) Get(p *path.Path) (v format.Value, err error) {
 
 	return result.Get(remainingPath)
 }
+
+// videoData has unexported fields, which cannot be accessed by the regular
+// encoder / decoder. A custom encode/decode method pair is defined to send and
+// receive the type with the gob package.
+
+// encVideoData is redundant with videoData but allows us not to modify the
+// format.Image interface signature.
+type encVideoData struct {
+	encFileData
+	Width     int
+	Height    int
+	Duration  time.Duration
+	FrameRate float64
+}
+
+func (vid *videoData) GobEncode() ([]byte, error) {
+	return json.Marshal(encVideoData{
+		encFileData: vid.fileData.asEncodedStruct(),
+		Width:       vid.width,
+		Height:      vid.height,
+		Duration:    vid.duration,
+		FrameRate:   vid.frameRate,
+	})
+}
+
+func (vid *videoData) GobDecode(b []byte) error {
+	var ev encVideoData
+	if err := json.Unmarshal(b, &ev); err != nil {
+		return err
+	}
+
+	vid.fileData = ev.asFileData()
+	vid.width = ev.Width
+	vid.height = ev.Height
+	vid.duration = ev.Duration
+	vid.frameRate = ev.FrameRate
+
+	return nil
+}

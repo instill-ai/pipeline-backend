@@ -45,8 +45,10 @@ import (
 type TriggerPipelineWorkflowParam struct {
 	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 	Recipe          *datamodel.Recipe
-	Mode            mgmtpb.Mode
-	WorkerUID       uuid.UUID
+
+	Streaming bool
+	Mode      mgmtpb.Mode
+	WorkerUID uuid.UUID
 
 	// If the pipeline trigger is from an iterator, these fields will be set.
 	ParentWorkflowID  *string
@@ -73,8 +75,7 @@ type ComponentActivityParam struct {
 	Condition       string
 	Type            string
 	Task            string
-	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
-	Streaming       bool
+	SystemVariables recipe.SystemVariables
 
 	// If the component belongs to an iterator, these fields will be set
 	ParentWorkflowID  *string
@@ -120,11 +121,6 @@ type InitComponentsActivityParam struct {
 	WorkflowID      string
 	SystemVariables recipe.SystemVariables
 	Recipe          *datamodel.Recipe
-}
-
-type LoadDAGDataActivityResult struct {
-	Recipe    *datamodel.Recipe
-	BatchSize int
 }
 
 type PostTriggerActivityParam struct {
@@ -193,6 +189,28 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	minioCtx := workflow.WithActivityOptions(ctx, mo)
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
+
+	// Due to binary data types, the workflow memory data might be too large to
+	// be communicated as a workflow param. For client-worker communication,
+	// the data is stored in an external datastore. Then, the workflow loads
+	// this in-memory. This means that the workflow history can't be replayed
+	// (activities modify these in-memory structures without returning them to
+	// the workflow), which implies that all the activities must be executed in
+	// the same worker process.
+	// TODO [INS-7456]: Remove the in-memory dependency so activities can be
+	// executed by different processes. This can be achieved by loading and
+	// committing the memory in every activity, or by removing the data blobs
+	// from the memory and hodling only a reference that can be used to pull
+	// the data.
+	loadWFMParam := LoadWorkflowMemoryActivityParam{
+		WorkflowID: workflowID,
+		UserUID:    param.SystemVariables.PipelineUserUID,
+		Streaming:  param.Streaming,
+	}
+	err := workflow.ExecuteActivity(ctx, w.LoadWorkflowMemory, loadWFMParam).Get(ctx, nil)
+	if err != nil {
+		return err
+	}
 
 	// Iterator components are implemented as pipeline-in-pipeline triggers. In
 	// such cases there are tasks we WON'T need to perform, such as sending the
@@ -336,6 +354,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 							ParentWorkflowID:  &workflowID,
 							ParentCompID:      &compID,
 							ParentOriginalIdx: &childTrigger.BatchIdx,
+							Streaming:         param.Streaming,
 						}))
 				}
 				for _, itFuture := range itFutures {
@@ -590,7 +609,7 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 			return componentActivityError(ctx, wfm, errors.New(msg), componentActivityErrorType, param.ID)
 		}
 
-		if err = wfm.SetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusCompleted, true); err != nil {
+		if err := wfm.SetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusCompleted, true); err != nil {
 			return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
 		}
 	}
@@ -776,7 +795,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 			}
 		}
 
-		childWFM, err := w.memoryStore.NewWorkflowMemory(ctx, childWorkflowID, param.IteratorRecipe, len(indexes))
+		childWFM, err := w.memoryStore.NewWorkflowMemory(ctx, childWorkflowID, len(indexes))
 		if err != nil {
 			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 		}
@@ -862,6 +881,11 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 				}
 			}
 		}
+
+		if err := w.memoryStore.CommitWorkflowData(ctx, param.SystemVariables.PipelineUserUID, childWFM); err != nil {
+			err := fmt.Errorf("committing workflow memory: %w", err)
+			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+		}
 	}
 
 	logger.Info("PreIteratorActivity completed")
@@ -924,7 +948,7 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 // preTriggerErr returns a function that handles errors that happen during the
 // trigger workflow setup, i.e., before the components start to be executed.
 // If the trigger is streamed, it will send an event to halt the execution.
-func (w *worker) preTriggerErr(ctx context.Context, workflowID string, wfm memory.WorkflowMemory) func(error) error {
+func (w *worker) preTriggerErr(ctx context.Context, workflowID string, wfm *memory.WorkflowMemory) func(error) error {
 	return func(err error) error {
 		if msg := errmsg.Message(err); msg != "" {
 			err = temporal.NewApplicationErrorWithCause(msg, preTriggerErrorType, err)
@@ -1030,7 +1054,7 @@ func (w *worker) loadConnectionFromComponent(
 // the connection value is overwritten.
 func (w *worker) mergeInputConnections(
 	ctx context.Context,
-	wfm memory.WorkflowMemory,
+	wfm *memory.WorkflowMemory,
 	idx int,
 	requesterUID uuid.UUID,
 	pipelineConnections data.Map,
@@ -1242,9 +1266,8 @@ func (w *worker) SendStartedEventActivity(ctx context.Context, workflowID string
 	return nil
 }
 
-// PostTriggerActivity copy the trigger memory from MemoryStore to Redis.
+// PostTriggerActivity commits the workflow memory and copies it to Redis.
 func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActivityParam) error {
-
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("PostTriggerActivity started")
 
@@ -1298,6 +1321,10 @@ func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActi
 		}
 	}
 
+	if err := w.memoryStore.CommitWorkflowData(ctx, param.SystemVariables.PipelineUserUID, wfm); err != nil {
+		return temporal.NewApplicationErrorWithCause("committing workflow memory", postTriggerActivityErrorType, err)
+	}
+
 	logger.Info("PostTriggerActivity completed")
 	return nil
 }
@@ -1317,7 +1344,7 @@ func (w *worker) IncreasePipelineTriggerCountActivity(ctx context.Context, sv re
 
 // processCondition processes the conditions of a batch, returning the batch
 // IDs that should be processed.
-func (w *worker) processCondition(ctx context.Context, wfm memory.WorkflowMemory, id string, upstreamIDs []string, condition string) ([]int, error) {
+func (w *worker) processCondition(ctx context.Context, wfm *memory.WorkflowMemory, id string, upstreamIDs []string, condition string) ([]int, error) {
 	processedIDs := make([]int, 0, wfm.GetBatchSize())
 
 	for idx := range wfm.GetBatchSize() {
@@ -1401,7 +1428,7 @@ func (w *worker) pipelineTriggerDataPoint(workflowID string, sysVars recipe.Syst
 // componentActivityError transforms an error with (potentially) an end-user
 // message into a Temporal application error. Temporal clients can extract the
 // message and propagate it to the end user.
-func componentActivityError(ctx context.Context, wfm memory.WorkflowMemory, err error, errType, componentID string) error {
+func componentActivityError(ctx context.Context, wfm *memory.WorkflowMemory, err error, errType, componentID string) error {
 	if wfm == nil {
 		return fmt.Errorf("workflow memory is empty")
 	}
@@ -1501,6 +1528,28 @@ func (w *worker) ClosePipelineActivity(ctx context.Context, workflowID string) e
 		Name: string(memory.PipelineClosed),
 	}); err != nil {
 		return fmt.Errorf("sending PipelineClosed event: %w", err)
+	}
+
+	return nil
+}
+
+// LoadWorkflowMemoryActivityParam ...
+type LoadWorkflowMemoryActivityParam struct {
+	WorkflowID string
+	UserUID    uuid.UUID
+	Streaming  bool
+}
+
+// LoadWorkflowMemory fetches the workflow memory from an external datastore
+// and loads it into the memory store.
+func (w *worker) LoadWorkflowMemory(ctx context.Context, param LoadWorkflowMemoryActivityParam) error {
+	wfm, err := w.memoryStore.FetchWorkflowMemory(ctx, param.UserUID, param.WorkflowID)
+	if err != nil {
+		return fmt.Errorf("fetching workflow memory: %w", err)
+	}
+
+	if param.Streaming {
+		wfm.EnableStreaming()
 	}
 
 	return nil
