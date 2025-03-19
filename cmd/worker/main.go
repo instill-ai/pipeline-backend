@@ -163,8 +163,6 @@ func main() {
 	pubsub := pubsub.NewRedisPubSub(redisClient)
 	ms := memory.NewStore(pubsub, minIOClient.WithLogger(logger))
 
-	workerUID := pipelineworker.WorkerUID
-
 	cw := pipelineworker.NewWorker(
 		pipelineworker.WorkerConfig{
 			Repository:                   repo,
@@ -173,7 +171,6 @@ func main() {
 			Component:                    compStore,
 			MinioClient:                  minIOClient,
 			MemoryStore:                  ms,
-			WorkerUID:                    workerUID,
 			ArtifactPublicServiceClient:  artifactPublicServiceClient,
 			ArtifactPrivateServiceClient: artifactPrivateServiceClient,
 			BinaryFetcher:                binaryFetcher,
@@ -182,52 +179,37 @@ func main() {
 	)
 
 	w := worker.New(temporalClient, pipelineworker.TaskQueue, worker.Options{
+		EnableSessionWorker:                    true,
 		WorkflowPanicPolicy:                    worker.BlockWorkflow,
 		WorkerStopTimeout:                      gracefulShutdownTimeout,
 		MaxConcurrentWorkflowTaskExecutionSize: 100,
-	})
-	lw := worker.New(temporalClient, workerUID.String(), worker.Options{
-		WorkflowPanicPolicy:                worker.BlockWorkflow,
-		WorkerStopTimeout:                  gracefulShutdownTimeout,
-		MaxConcurrentActivityExecutionSize: 100,
-	})
-	mw := worker.New(temporalClient, fmt.Sprintf("%s-minio", workerUID.String()), worker.Options{
-		WorkflowPanicPolicy:                worker.BlockWorkflow,
-		WorkerStopTimeout:                  gracefulShutdownTimeout,
-		MaxConcurrentActivityExecutionSize: 50,
 	})
 
 	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
 	w.RegisterWorkflow(cw.SchedulePipelineWorkflow)
 
-	lw.RegisterActivity(cw.LoadWorkflowMemory)
-	lw.RegisterActivity(cw.ComponentActivity)
-	lw.RegisterActivity(cw.OutputActivity)
-	lw.RegisterActivity(cw.PreIteratorActivity)
-	lw.RegisterActivity(cw.PostIteratorActivity)
-	lw.RegisterActivity(cw.InitComponentsActivity)
-	lw.RegisterActivity(cw.SendStartedEventActivity)
-	lw.RegisterActivity(cw.PostTriggerActivity)
-	lw.RegisterActivity(cw.ClosePipelineActivity)
-	lw.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
-	lw.RegisterActivity(cw.UpdatePipelineRunActivity)
-	lw.RegisterActivity(cw.UpsertComponentRunActivity)
+	w.RegisterActivity(cw.LoadWorkflowMemory)
+	w.RegisterActivity(cw.ComponentActivity)
+	w.RegisterActivity(cw.OutputActivity)
+	w.RegisterActivity(cw.PreIteratorActivity)
+	w.RegisterActivity(cw.PostIteratorActivity)
+	w.RegisterActivity(cw.InitComponentsActivity)
+	w.RegisterActivity(cw.SendStartedEventActivity)
+	w.RegisterActivity(cw.PostTriggerActivity)
+	w.RegisterActivity(cw.ClosePipelineActivity)
+	w.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
+	w.RegisterActivity(cw.UpdatePipelineRunActivity)
+	w.RegisterActivity(cw.UpsertComponentRunActivity)
 
-	mw.RegisterActivity(cw.UploadOutputsToMinIOActivity)
-	mw.RegisterActivity(cw.UploadRecipeToMinIOActivity)
-	mw.RegisterActivity(cw.UploadComponentInputsActivity)
-	mw.RegisterActivity(cw.UploadComponentOutputsActivity)
+	w.RegisterActivity(cw.UploadOutputsToMinIOActivity)
+	w.RegisterActivity(cw.UploadRecipeToMinIOActivity)
+	w.RegisterActivity(cw.UploadComponentInputsActivity)
+	w.RegisterActivity(cw.UploadComponentOutputsActivity)
 
 	span.End()
 
 	if err := w.Start(); err != nil {
 		logger.Fatal(fmt.Sprintf("Unable to start worker: %s", err))
-	}
-	if err := lw.Start(); err != nil {
-		logger.Fatal(fmt.Sprintf("Unable to start local worker: %s", err))
-	}
-	if err := mw.Start(); err != nil {
-		logger.Fatal(fmt.Sprintf("Unable to start minio worker: %s", err))
 	}
 
 	logger.Info("worker is running.")
@@ -250,8 +232,6 @@ func main() {
 
 	logger.Info("Shutting down worker...")
 	w.Stop()
-	lw.Stop()
-	mw.Stop()
 }
 
 func initTemporalNamespace(ctx context.Context, client client.Client) {

@@ -3,7 +3,6 @@ package worker
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/redis/go-redis/v9"
 	"go.temporal.io/sdk/workflow"
@@ -24,11 +23,6 @@ import (
 
 // TaskQueue is the Temporal task queue name for pipeline-backend
 const TaskQueue = "pipeline-backend"
-
-// WorkerUID is used to route activities to different queues.
-// TODO it doesn't make sense to expose this as a workflow param, and a
-// constant string is more descriptive than a UUID.
-var WorkerUID = uuid.FromStringOrNil("acf8f3bf-80c4-48b8-9421-2b541fdfe90d")
 
 // Worker interface
 type Worker interface {
@@ -62,7 +56,6 @@ type WorkerConfig struct {
 	Component                    *componentstore.Store
 	MinioClient                  minio.Client
 	MemoryStore                  *memory.Store
-	WorkerUID                    uuid.UUID
 	ArtifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	ArtifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
 	BinaryFetcher                external.BinaryFetcher
@@ -78,7 +71,6 @@ type worker struct {
 	minioClient                  minio.Client
 	log                          *zap.Logger
 	memoryStore                  *memory.Store
-	workerUID                    uuid.UUID
 	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
 	pipelinePublicServiceClient  pb.PipelinePublicServiceClient
@@ -98,7 +90,6 @@ func NewWorker(
 		component:                    workerConfig.Component,
 		minioClient:                  workerConfig.MinioClient,
 		log:                          logger,
-		workerUID:                    workerConfig.WorkerUID,
 		artifactPublicServiceClient:  workerConfig.ArtifactPublicServiceClient,
 		artifactPrivateServiceClient: workerConfig.ArtifactPrivateServiceClient,
 		binaryFetcher:                workerConfig.BinaryFetcher,

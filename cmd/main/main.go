@@ -52,7 +52,6 @@ import (
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	pipelineworker "github.com/instill-ai/pipeline-backend/pkg/worker"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
@@ -266,8 +265,6 @@ func main() {
 		TemporalClient: temporalClient,
 	})
 
-	workerUID := pipelineworker.WorkerUID
-
 	pubsub := pubsub.NewRedisPubSub(redisClient)
 	ms := memory.NewStore(pubsub, minIOClient.WithLogger(logger))
 
@@ -290,7 +287,6 @@ func main() {
 		minIOClient,
 		compStore,
 		ms,
-		workerUID,
 		retentionHandler,
 		binaryFetcher,
 		artifactPublicServiceClient,

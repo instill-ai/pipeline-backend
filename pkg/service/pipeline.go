@@ -1707,7 +1707,6 @@ func (s *service) triggerPipeline(
 			},
 			Streaming: isStreaming,
 			Mode:      mgmtpb.Mode_MODE_SYNC,
-			WorkerUID: s.workerUID,
 			Recipe:    triggerParams.recipe,
 		})
 	if err != nil {
@@ -1798,7 +1797,6 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 			},
 			Streaming: isStreaming,
 			Mode:      mgmtpb.Mode_MODE_ASYNC,
-			WorkerUID: s.workerUID,
 			Recipe:    params.recipe,
 		})
 	if err != nil {

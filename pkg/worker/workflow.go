@@ -48,7 +48,6 @@ type TriggerPipelineWorkflowParam struct {
 
 	Streaming bool
 	Mode      mgmtpb.Mode
-	WorkerUID uuid.UUID
 
 	// If the pipeline trigger is from an iterator, these fields will be set.
 	ParentWorkflowID  *string
@@ -173,20 +172,16 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
 		},
 	}
-	// Options for MinIO activity worker
-	mo := ao
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	if param.WorkerUID == uuid.Nil {
-		ao.TaskQueue = w.workerUID.String()
-		mo.TaskQueue = w.workerUID.String()
-	} else {
-		ao.TaskQueue = param.WorkerUID.String()
-		mo.TaskQueue = fmt.Sprintf("%s-minio", param.WorkerUID.String())
+	sessionOptions := &workflow.SessionOptions{
+		CreationTimeout:  time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		ExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		HeartbeatTimeout: 2 * time.Minute,
 	}
 
-	ctx = workflow.WithActivityOptions(ctx, ao)
-	minioCtx := workflow.WithActivityOptions(ctx, mo)
+	ctx, _ = workflow.CreateSession(ctx, sessionOptions)
+	defer workflow.CompleteSession(ctx)
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
 
@@ -236,7 +231,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				ExpiryRuleTag:     param.SystemVariables.ExpiryRule.Tag,
 			},
 		}
-		err := workflow.ExecuteActivity(minioCtx, w.UploadRecipeToMinIOActivity, uploadParam).Get(ctx, nil)
+		err := workflow.ExecuteActivity(ctx, w.UploadRecipeToMinIOActivity, uploadParam).Get(ctx, nil)
 		if err != nil {
 			logger.Error("Failed to upload pipeline run recipe", zap.Error(err))
 		}
@@ -349,7 +344,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						&TriggerPipelineWorkflowParam{
 							SystemVariables:   param.SystemVariables,
 							Mode:              mgmtpb.Mode_MODE_SYNC,
-							WorkerUID:         param.WorkerUID,
 							Recipe:            iteratorRecipe,
 							ParentWorkflowID:  &workflowID,
 							ParentCompID:      &compID,
@@ -387,14 +381,14 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 				continue
 			}
-			componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(minioCtx, w.UploadComponentOutputsActivity, futureArgs[idx]))
+			componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(ctx, w.UploadComponentOutputsActivity, futureArgs[idx]))
 		}
 
 		for idx := range futures {
 			// There is time difference between the workflow memory update and upload component inputs activity.
 			// If we upload the inputs before the component activity, some of the input will not be set in the workflow memory.
 			// So, we have to execute this worker activity after the component activity.
-			componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(minioCtx, w.UploadComponentInputsActivity, futureArgs[idx]))
+			componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(ctx, w.UploadComponentInputsActivity, futureArgs[idx]))
 		}
 	}
 
@@ -407,7 +401,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			return err
 		}
 
-		if err := workflow.ExecuteActivity(minioCtx, w.UploadOutputsToMinIOActivity, &MinIOUploadMetadata{
+		if err := workflow.ExecuteActivity(ctx, w.UploadOutputsToMinIOActivity, &MinIOUploadMetadata{
 			UserUID:           param.SystemVariables.PipelineUserUID,
 			PipelineTriggerID: workflowID,
 			ExpiryRuleTag:     param.SystemVariables.ExpiryRule.Tag,

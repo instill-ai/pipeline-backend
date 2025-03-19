@@ -110,7 +110,6 @@ type service struct {
 	minioClient                  minio.Client
 	memory                       *memory.Store
 	log                          *zap.Logger
-	workerUID                    uuid.UUID
 	retentionHandler             MetadataRetentionHandler
 	binaryFetcher                external.BinaryFetcher
 	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
@@ -129,7 +128,6 @@ func NewService(
 	minioClient minio.Client,
 	componentStore *componentstore.Store,
 	memory *memory.Store,
-	workerUID uuid.UUID,
 	retentionHandler MetadataRetentionHandler,
 	binaryFetcher external.BinaryFetcher,
 	artifactPublicServiceClient artifactpb.ArtifactPublicServiceClient,
@@ -149,7 +147,6 @@ func NewService(
 		minioClient:                  minioClient,
 		memory:                       memory,
 		log:                          zapLogger,
-		workerUID:                    workerUID,
 		retentionHandler:             retentionHandler,
 		binaryFetcher:                binaryFetcher,
 		artifactPublicServiceClient:  artifactPublicServiceClient,
