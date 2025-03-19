@@ -25,6 +25,11 @@ import (
 // TaskQueue is the Temporal task queue name for pipeline-backend
 const TaskQueue = "pipeline-backend"
 
+// WorkerUID is used to route activities to different queues.
+// TODO it doesn't make sense to expose this as a workflow param, and a
+// constant string is more descriptive than a UUID.
+var WorkerUID = uuid.FromStringOrNil("acf8f3bf-80c4-48b8-9421-2b541fdfe90d")
+
 // Worker interface
 type Worker interface {
 	TriggerPipelineWorkflow(workflow.Context, *TriggerPipelineWorkflowParam) error
