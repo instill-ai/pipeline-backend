@@ -51,7 +51,7 @@ func main() {
 	// setup tracing and metrics
 	ctx, cancel := context.WithCancel(context.Background())
 
-	tp, err := customotel.SetupTracing(ctx, "pipeline-backend")
+	tp, err := customotel.SetupTracing(ctx, "pipeline-backend-worker")
 	if err != nil {
 		panic(err)
 	}
@@ -60,9 +60,7 @@ func main() {
 		err = tp.Shutdown(ctx)
 	}()
 
-	ctx, span := otel.Tracer("main-tracer").Start(ctx,
-		"main",
-	)
+	ctx, span := otel.Tracer("worker-tracer").Start(ctx, "main")
 	defer cancel()
 
 	logger, _ := logger.GetZapLogger(ctx)
