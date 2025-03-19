@@ -434,9 +434,6 @@ func main() {
 	span.End()
 	logger.Info("gRPC server is running.")
 
-	timeseries := repository.MustNewInfluxDB(ctx)
-	defer timeseries.Close()
-
 	// kill (no param) default send syscall.SIGTERM
 	// kill -2 is syscall.SIGINT
 	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
