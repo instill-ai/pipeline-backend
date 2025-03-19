@@ -20,11 +20,13 @@ type Store struct {
 	workflows sync.Map
 	publisher pubsub.EventPublisher
 
-	// This memory store implementation stores the workflow memory as a blob in
-	// MinIO. This is a first step in refactoring the pipeline trigger workflow
-	// that allows us to decouple the server and worker processes. We will
-	// further refactor this code to remove the communication through MinIO
-	// blobs.
+	// Due to the size of the workflow memory data, it needs to be persisted in
+	// MinIO (or another datastore) in order to be shared between different
+	// processes.
+	// TODO [INS-7456,INS-7457]: As we further refactor the workflow code, we
+	// might consider using an alternative datastore to remove duplication or
+	// not to hold data blobs in the memory, which would remove the need to
+	// commit and fetch the worfklow memory data.
 	minioClient minio.Client
 }
 

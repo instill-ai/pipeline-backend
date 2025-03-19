@@ -190,6 +190,18 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
 
+	// Due to binary data types, the workflow memory data might be too large to
+	// be communicated as a workflow param. For client-worker communication,
+	// the data is stored in an external datastore. Then, the workflow loads
+	// this in-memory. This means that the workflow history can't be replayed
+	// (activities modify these in-memory structures without returning them to
+	// the workflow), which implies that all the activities must be executed in
+	// the same worker process.
+	// TODO [INS-7456]: Remove the in-memory dependency so activities can be
+	// executed by different processes. This can be achieved by loading and
+	// committing the memory in every activity, or by removing the data blobs
+	// from the memory and hodling only a reference that can be used to pull
+	// the data.
 	loadWFMParam := LoadWorkflowMemoryActivityParam{
 		WorkflowID: workflowID,
 		UserUID:    param.SystemVariables.PipelineUserUID,
