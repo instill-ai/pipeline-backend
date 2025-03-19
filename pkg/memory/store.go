@@ -111,7 +111,7 @@ func (s *Store) CommitWorkflowData(ctx context.Context, userUID uuid.UUID, wfm *
 		return fmt.Errorf("serializing workflow memory data: %w", err)
 	}
 
-	_, _, err = s.minioClient.UploadFileBytes(ctx, &minio.UploadFileBytesParam{
+	err = s.minioClient.UploadPrivateFileBytes(ctx, minio.UploadFileBytesParam{
 		UserUID:       userUID,
 		FilePath:      wfmFilePath(wfm.id),
 		FileBytes:     b,
