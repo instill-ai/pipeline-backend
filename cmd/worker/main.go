@@ -188,6 +188,9 @@ func main() {
 
 	w.RegisterActivity(cw.LoadWorkflowMemoryActivity)
 	w.RegisterActivity(cw.CommitWorkflowMemoryActivity)
+	w.RegisterActivity(cw.PurgeWorkflowMemoryActivity)
+	w.RegisterActivity(cw.CleanupWorkflowMemoryActivity)
+
 	w.RegisterActivity(cw.ComponentActivity)
 	w.RegisterActivity(cw.OutputActivity)
 	w.RegisterActivity(cw.PreIteratorActivity)
@@ -196,7 +199,6 @@ func main() {
 	w.RegisterActivity(cw.SendStartedEventActivity)
 	w.RegisterActivity(cw.SendCompletedEventActivity)
 	w.RegisterActivity(cw.ClosePipelineActivity)
-	w.RegisterActivity(cw.PurgeWorkflowMemoryActivity)
 	w.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
 	w.RegisterActivity(cw.UpdatePipelineRunActivity)
 	w.RegisterActivity(cw.UpsertComponentRunActivity)

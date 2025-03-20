@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 
+	"github.com/gofrs/uuid"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/redis/go-redis/v9"
 	"go.temporal.io/sdk/workflow"
@@ -30,7 +31,10 @@ type Worker interface {
 	SchedulePipelineWorkflow(workflow.Context, *scheduler.SchedulePipelineWorkflowParam) error
 
 	LoadWorkflowMemoryActivity(context.Context, LoadWorkflowMemoryActivityParam) error
-	CommitWorkflowMemoryActivity(ctx context.Context, workflowID string, sysVars recipe.SystemVariables) error
+	CommitWorkflowMemoryActivity(_ context.Context, workflowID string, sysVars recipe.SystemVariables) error
+	CleanupWorkflowMemoryActivity(_ context.Context, userUID uuid.UUID, workflowID string) error
+	PurgeWorkflowMemoryActivity(_ context.Context, workflowID string) error
+
 	ComponentActivity(context.Context, *ComponentActivityParam) error
 	OutputActivity(context.Context, *ComponentActivityParam) error
 	PreIteratorActivity(context.Context, *PreIteratorActivityParam) ([]ChildPipelineTriggerParams, error)
@@ -39,7 +43,6 @@ type Worker interface {
 	SendStartedEventActivity(_ context.Context, workflowID string) error
 	SendCompletedEventActivity(_ context.Context, workflowID string) error
 	ClosePipelineActivity(_ context.Context, workflowID string) error
-	PurgeWorkflowMemoryActivity(_ context.Context, workflowID string) error
 	IncreasePipelineTriggerCountActivity(context.Context, recipe.SystemVariables) error
 
 	UpdatePipelineRunActivity(context.Context, *UpdatePipelineRunActivityParam) error

@@ -330,6 +330,23 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 				itFutures := []workflow.Future{}
 				for _, childTrigger := range childTriggers {
+					defer func() {
+						// TODO this is still suboptimal: in
+						// PreIteratorActivity we might fail within the loop
+						// where the child workflow memory is created, and the
+						// already committed data won't be cleaned up.
+						err := workflow.ExecuteActivity(cleanupCtx, w.CleanupWorkflowMemoryActivity,
+							param.SystemVariables.PipelineUserUID,
+							childTrigger.WorkflowID,
+						).Get(cleanupCtx, nil)
+						if err != nil {
+							// This isn't considered an error as the workflow
+							// memory might not exist at this point. E.g., if a
+							// failure occurred before the data was committed.
+							logger.Info("Failed to clean up trigger workflow", zap.Error(err))
+						}
+					}()
+
 					childWorkflowOptions := workflow.ChildWorkflowOptions{
 						TaskQueue:                TaskQueue,
 						WorkflowID:               childTrigger.WorkflowID,
@@ -912,17 +929,6 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 			err := fmt.Errorf("fetching workflow memory: %w", err)
 			return componentActivityError(ctx, wfm, err, postIteratorActivityErrorType, param.ID)
 		}
-
-		// TODO this doesn't guarantee that every child workflow memory is
-		// cleaned up. E.g., if an error occurs during the loop, subsequent
-		// child workflows won't be cleaned up. We should program the child
-		// workflow memory cleanup right after it has been created.
-		defer func() {
-			err := w.memoryStore.CleanupWorkflowMemory(ctx, param.SystemVariables.PipelineUserUID, childWorkflowID)
-			if err != nil { // log error and continue
-				logger.Error("Failed to clean up trigger workflow", zap.Error(err))
-			}
-		}()
 
 		errored, err := wfm.GetComponentStatus(ctx, childTrigger.BatchIdx, param.ID, memory.ComponentStatusErrored)
 
@@ -1587,4 +1593,11 @@ func (w *worker) LoadWorkflowMemoryActivity(ctx context.Context, param LoadWorkf
 func (w *worker) PurgeWorkflowMemoryActivity(_ context.Context, workflowID string) error {
 	w.memoryStore.PurgeWorkflowMemory(workflowID)
 	return nil
+}
+
+// CleanupWorkflowMemoryActivity removes the workflow data from memory and from
+// the external datastore. This is used for workflow data that won't be needed
+// anymore (e.g. for child workflows executed within an iterator).
+func (w *worker) CleanupWorkflowMemoryActivity(ctx context.Context, userUID uuid.UUID, workflowID string) error {
+	return w.memoryStore.CleanupWorkflowMemory(ctx, userUID, workflowID)
 }
