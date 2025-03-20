@@ -842,6 +842,7 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 //     c. Upload "uploading pipeline data" to minio for pipeline run logger.
 //  3. Map the settings in recipe to the format in workflow memory.
 //  4. Enable the streaming mode when the header contains "text/event-stream"
+//  5. Commit the workflow memory so workers can access it.
 //
 // We upload User Input Data by `uploadBlobAndGetDownloadURL`, which exposes
 // the public URL because it will be used by `console` & external users.
@@ -914,6 +915,8 @@ func (s *service) preTriggerPipeline(
 	if err != nil {
 		return err
 	}
+
+	defer s.memory.PurgeWorkflowMemory(pipelineTriggerID)
 
 	types := map[string][]string{}
 	for k, v := range typeMap {
@@ -1848,6 +1851,8 @@ func (s *service) getOutputsAndMetadata(ctx context.Context, userUID uuid.UUID, 
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetching workflow memory: %w", err)
 	}
+
+	defer s.memory.PurgeWorkflowMemory(pipelineTriggerID)
 
 	pipelineOutputs := make([]*structpb.Struct, wfm.GetBatchSize())
 	for idx := range wfm.GetBatchSize() {

@@ -202,21 +202,23 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		return err
 	}
 
+	cleanupCtx, _ := workflow.NewDisconnectedContext(ctx)
+	defer func() {
+		err := workflow.ExecuteActivity(cleanupCtx, w.PurgeWorkflowMemoryActivity, workflowID).Get(cleanupCtx, nil)
+		if err != nil {
+			logger.Error("Failed to purge workflow memory", zap.Error(err))
+		}
+	}()
+
 	// Iterator components are implemented as pipeline-in-pipeline triggers. In
 	// such cases there are tasks we WON'T need to perform, such as sending the
 	// workflow streaming events or the pipeline run data (e.g. recipe).
 	isParentPipeline := param.ParentWorkflowID == nil
 	if isParentPipeline {
-		cleanupCtx, _ := workflow.NewDisconnectedContext(ctx)
 		defer func() {
 			err := workflow.ExecuteActivity(cleanupCtx, w.ClosePipelineActivity, workflowID).Get(cleanupCtx, nil)
 			if err != nil {
 				logger.Error("Failed to clean up trigger workflow", zap.Error(err))
-			}
-
-			err = workflow.ExecuteActivity(cleanupCtx, w.PurgeWorkflowMemoryActivity, workflowID).Get(cleanupCtx, nil)
-			if err != nil {
-				logger.Error("Failed to purge workflow memory", zap.Error(err))
 			}
 		}()
 
@@ -795,6 +797,8 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 		if err != nil {
 			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 		}
+
+		defer w.memoryStore.PurgeWorkflowMemory(childWorkflowID)
 
 		// When iterating over `input`, each element in the array is processed
 		// and stored in memory.
@@ -1577,7 +1581,9 @@ func (w *worker) LoadWorkflowMemoryActivity(ctx context.Context, param LoadWorkf
 	return nil
 }
 
-// PurgeWorkflowMemoryActivity purges the workflow data from memory.
+// PurgeWorkflowMemoryActivity purges the workflow data from memory. We need an
+// activity for this (instead of running it in the workflow because it is the
+// activities (through worker sessions) who rely on the shared memory.
 func (w *worker) PurgeWorkflowMemoryActivity(_ context.Context, workflowID string) error {
 	w.memoryStore.PurgeWorkflowMemory(workflowID)
 	return nil

@@ -282,6 +282,8 @@ func (s *service) initEventWorkflow(ctx context.Context, params initEventWorkflo
 		return err
 	}
 
+	defer s.memory.PurgeWorkflowMemory(params.pipelineTriggerUID.String())
+
 	variable := data.Map{}
 
 	for key, v := range params.recipe.Variable {
