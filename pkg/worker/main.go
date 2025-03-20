@@ -37,7 +37,8 @@ type Worker interface {
 
 	ComponentActivity(context.Context, *ComponentActivityParam) error
 	OutputActivity(context.Context, *ComponentActivityParam) error
-	PreIteratorActivity(context.Context, *PreIteratorActivityParam) ([]ChildPipelineTriggerParams, error)
+	ProcessBatchConditionsActivity(context.Context, ProcessBatchConditionsActivityParam) ([]int, error)
+	PreIteratorActivity(context.Context, PreIteratorActivityParam) (*ChildPipelineTriggerParams, error)
 	PostIteratorActivity(context.Context, *PostIteratorActivityParam) error
 	InitComponentsActivity(context.Context, *InitComponentsActivityParam) error
 	SendStartedEventActivity(_ context.Context, workflowID string) error

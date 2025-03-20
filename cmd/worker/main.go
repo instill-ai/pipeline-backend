@@ -191,6 +191,7 @@ func main() {
 	w.RegisterActivity(cw.PurgeWorkflowMemoryActivity)
 	w.RegisterActivity(cw.CleanupWorkflowMemoryActivity)
 
+	w.RegisterActivity(cw.ProcessBatchConditionsActivity)
 	w.RegisterActivity(cw.ComponentActivity)
 	w.RegisterActivity(cw.OutputActivity)
 	w.RegisterActivity(cw.PreIteratorActivity)
