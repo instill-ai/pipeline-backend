@@ -29,14 +29,15 @@ type Worker interface {
 	TriggerPipelineWorkflow(workflow.Context, *TriggerPipelineWorkflowParam) error
 	SchedulePipelineWorkflow(workflow.Context, *scheduler.SchedulePipelineWorkflowParam) error
 
-	LoadWorkflowMemory(context.Context, LoadWorkflowMemoryActivityParam) error
+	LoadWorkflowMemoryActivity(context.Context, LoadWorkflowMemoryActivityParam) error
+	CommitWorkflowMemoryActivity(ctx context.Context, workflowID string, sysVars recipe.SystemVariables) error
 	ComponentActivity(context.Context, *ComponentActivityParam) error
 	OutputActivity(context.Context, *ComponentActivityParam) error
 	PreIteratorActivity(context.Context, *PreIteratorActivityParam) ([]ChildPipelineTriggerParams, error)
 	PostIteratorActivity(context.Context, *PostIteratorActivityParam) error
 	InitComponentsActivity(context.Context, *InitComponentsActivityParam) error
 	SendStartedEventActivity(_ context.Context, workflowID string) error
-	PostTriggerActivity(context.Context, *PostTriggerActivityParam) error
+	SendCompletedEventActivity(_ context.Context, workflowID string) error
 	ClosePipelineActivity(_ context.Context, workflowID string) error
 	PurgeWorkflowMemoryActivity(_ context.Context, workflowID string) error
 	IncreasePipelineTriggerCountActivity(context.Context, recipe.SystemVariables) error
