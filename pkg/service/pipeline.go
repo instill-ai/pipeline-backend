@@ -1747,16 +1747,21 @@ type triggerParams struct {
 }
 
 func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams) (*longrunningpb.Operation, error) {
-	defer func() {
-		go func() {
-			// We only retain the memory for a maximum of 60 minutes.
-			time.Sleep(60 * time.Minute)
-			_ = s.memory.CleanupWorkflowMemory(context.Background(), params.userUID, params.pipelineTriggerID)
-		}()
-	}()
-
 	logger, _ := logger.GetZapLogger(ctx)
 	logger = logger.With(zap.String("triggerID", params.pipelineTriggerID))
+
+	// TODO We can use temporal to clean up the memory in MinIO.
+	utils.GoSafe(func() {
+		// We only retain the memory for a maximum of 60 minutes. This
+		// should be enough to allow clients to fetch the result via the
+		// long-running operation endpoint.
+		time.Sleep(60 * time.Minute)
+		err := s.memory.CleanupWorkflowMemory(context.Background(), params.userUID, params.pipelineTriggerID)
+		if err != nil {
+			// The memory blob might not exist anymore, and that is fine.
+			logger.Info("Couldn't clean up workflow memory", zap.Error(err), zap.String("workflowID", params.pipelineTriggerID))
+		}
+	})
 
 	workflowOptions := client.StartWorkflowOptions{
 		ID:                       params.pipelineTriggerID,
@@ -1809,12 +1814,6 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 	// wait for trigger ends in goroutine and upload outputs
 	utils.GoSafe(func() {
 		subCtx := context.Background()
-
-		defer func() {
-			if err := s.memory.CleanupWorkflowMemory(subCtx, params.userUID, params.pipelineTriggerID); err != nil {
-				logger.Error("Couldn't purge workflow memory", zap.Error(err))
-			}
-		}()
 
 		err = we.Get(subCtx, nil)
 		if err != nil {
