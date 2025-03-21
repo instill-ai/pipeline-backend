@@ -45,7 +45,16 @@ func InitPipelinePublicServiceClient(ctx context.Context) (pipelinepb.PipelinePu
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	clientConn, err := grpc.NewClient(fmt.Sprintf(":%v", config.Config.Server.PublicPort), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
+	// We need to specify the host because several parts of the code (e.g.
+	// worker) might be deployed in a separate container.
+	clientConn, err := grpc.NewClient(
+		fmt.Sprintf("%v:%v", config.Config.Server.InstanceID, config.Config.Server.PublicPort),
+		clientDialOpts,
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize),
+			grpc.MaxCallSendMsgSize(constant.MaxPayloadSize),
+		),
+	)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, nil
