@@ -185,6 +185,7 @@ func main() {
 
 	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
 	w.RegisterWorkflow(cw.SchedulePipelineWorkflow)
+	w.RegisterWorkflow(cw.CleanupMemoryWorkflow)
 
 	w.RegisterActivity(cw.LoadWorkflowMemoryActivity)
 	w.RegisterActivity(cw.CommitWorkflowMemoryActivity)

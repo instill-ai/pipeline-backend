@@ -29,6 +29,7 @@ const TaskQueue = "pipeline-backend"
 type Worker interface {
 	TriggerPipelineWorkflow(workflow.Context, *TriggerPipelineWorkflowParam) error
 	SchedulePipelineWorkflow(workflow.Context, *scheduler.SchedulePipelineWorkflowParam) error
+	CleanupMemoryWorkflow(_ workflow.Context, userUID uuid.UUID, workflowID string) error
 
 	LoadWorkflowMemoryActivity(context.Context, LoadWorkflowMemoryActivityParam) error
 	CommitWorkflowMemoryActivity(_ context.Context, workflowID string, sysVars recipe.SystemVariables) error

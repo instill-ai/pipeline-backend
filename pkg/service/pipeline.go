@@ -1753,19 +1753,6 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 	logger, _ := logger.GetZapLogger(ctx)
 	logger = logger.With(zap.String("triggerID", params.pipelineTriggerID))
 
-	// TODO We can use temporal to clean up the memory in MinIO.
-	utils.GoSafe(func() {
-		// We only retain the memory for a maximum of 60 minutes. This
-		// should be enough to allow clients to fetch the result via the
-		// long-running operation endpoint.
-		time.Sleep(60 * time.Minute)
-		err := s.memory.CleanupWorkflowMemory(context.Background(), params.userUID, params.pipelineTriggerID)
-		if err != nil {
-			// The memory blob might not exist anymore, and that is fine.
-			logger.Info("Couldn't clean up workflow memory", zap.Error(err), zap.String("workflowID", params.pipelineTriggerID))
-		}
-	})
-
 	workflowOptions := client.StartWorkflowOptions{
 		ID:                       params.pipelineTriggerID,
 		TaskQueue:                worker.TaskQueue,
@@ -1775,11 +1762,18 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 		},
 	}
 
-	requester, err := s.GetNamespaceByUID(ctx, params.requesterUID)
+	// We only retain the memory for a maximum of 60 minutes. This should be
+	// enough to allow clients to fetch the result via the long-running
+	// operation endpoint.
+	cleanupOptions := workflowOptions
+	cleanupOptions.ID = "cleanupMemory:" + params.pipelineTriggerID
+	cleanupOptions.StartDelay = 1 * time.Hour
+	_, err := s.temporalClient.ExecuteWorkflow(ctx, cleanupOptions, "CleanupMemoryWorkflow", params.userUID, params.pipelineTriggerID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("launching cleanup workflow: %w", err)
 	}
-	user, err := s.GetNamespaceByUID(ctx, params.userUID)
+
+	requester, err := s.GetNamespaceByUID(ctx, params.requesterUID)
 	if err != nil {
 		return nil, err
 	}
@@ -1797,7 +1791,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 				PipelineReleaseID:    params.pipelineReleaseID,
 				PipelineReleaseUID:   params.pipelineReleaseUID,
 				PipelineOwner:        params.ns,
-				PipelineUserUID:      user.NsUID,
+				PipelineUserUID:      params.userUID,
 				PipelineRequesterUID: requester.NsUID,
 				PipelineRequesterID:  requester.NsID,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),

@@ -121,10 +121,52 @@ type UpsertComponentRunActivityParam struct {
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
 
-// WorkFlowSignal is used by sChan to signal the status of components in the Workflow.
-type WorkFlowSignal struct {
-	ID     string
-	Status string
+func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *scheduler.SchedulePipelineWorkflowParam) error {
+	eventName := "SchedulePipelineWorkflow"
+	sCtx, span := tracer.Start(
+		context.Background(),
+		eventName,
+		trace.WithSpanKind(trace.SpanKindServer),
+	)
+	defer span.End()
+
+	msg := scheduleEventMessage{
+		UID:         param.UID.String(),
+		TriggeredAt: time.Now().Format(time.RFC3339),
+	}
+	payload, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	structPayload := &structpb.Struct{}
+	err = protojson.Unmarshal(payload, structPayload)
+	if err != nil {
+		return err
+	}
+
+	_, err = w.pipelinePublicServiceClient.DispatchPipelineWebhookEvent(sCtx, &pb.DispatchPipelineWebhookEventRequest{
+		WebhookType: "scheduler",
+		Message:     structPayload,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CleanupMemoryWorkflow removes the committed workflow memory data from the
+// external datastore. It is mainly meant for async triggers, where we need to
+// hold de data for a while so clients can request the status of the operation.
+func (w *worker) CleanupMemoryWorkflow(ctx workflow.Context, userUID uuid.UUID, workflowID string) error {
+	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
+		},
+	})
+
+	return workflow.ExecuteActivity(ctx, w.CleanupWorkflowMemoryActivity, userUID, workflowID).Get(ctx, nil)
 }
 
 // TriggerPipelineWorkflow is a pipeline trigger workflow definition.
@@ -1529,40 +1571,6 @@ type EndUserErrorDetails struct {
 type scheduleEventMessage struct {
 	UID         string `json:"uid"`
 	TriggeredAt string `json:"triggered-at"`
-}
-
-func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *scheduler.SchedulePipelineWorkflowParam) error {
-	eventName := "SchedulePipelineWorkflow"
-	sCtx, span := tracer.Start(
-		context.Background(),
-		eventName,
-		trace.WithSpanKind(trace.SpanKindServer),
-	)
-	defer span.End()
-
-	msg := scheduleEventMessage{
-		UID:         param.UID.String(),
-		TriggeredAt: time.Now().Format(time.RFC3339),
-	}
-	payload, err := json.Marshal(msg)
-	if err != nil {
-		return err
-	}
-	structPayload := &structpb.Struct{}
-	err = protojson.Unmarshal(payload, structPayload)
-	if err != nil {
-		return err
-	}
-
-	_, err = w.pipelinePublicServiceClient.DispatchPipelineWebhookEvent(sCtx, &pb.DispatchPipelineWebhookEventRequest{
-		WebhookType: "scheduler",
-		Message:     structPayload,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // ClosePipelineActivity sends a PipelineClosed event if the trigger is
