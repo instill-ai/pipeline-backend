@@ -1762,12 +1762,18 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 		},
 	}
 
+	cleanupOptions := workflowOptions
+	cleanupOptions.ID = "cleanupMemory:" + params.pipelineTriggerID
+
 	// We only retain the memory for a maximum of 60 minutes. This should be
 	// enough to allow clients to fetch the result via the long-running
 	// operation endpoint.
-	cleanupOptions := workflowOptions
-	cleanupOptions.ID = "cleanupMemory:" + params.pipelineTriggerID
 	cleanupOptions.StartDelay = 1 * time.Hour
+
+	// We're using a delayed start but the timeout will start to count from the
+	// execution is created.
+	cleanupOptions.WorkflowExecutionTimeout = cleanupOptions.StartDelay + cleanupOptions.WorkflowExecutionTimeout
+
 	_, err := s.temporalClient.ExecuteWorkflow(ctx, cleanupOptions, "CleanupMemoryWorkflow", params.userUID, params.pipelineTriggerID)
 	if err != nil {
 		return nil, fmt.Errorf("launching cleanup workflow: %w", err)
