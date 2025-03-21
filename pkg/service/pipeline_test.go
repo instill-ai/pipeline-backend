@@ -75,7 +75,6 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 		BinaryFetcher: external.NewBinaryFetcher(),
 	})
 
-	workerUID, _ := uuid.NewV4()
 	service := newService(
 		serviceConfig{
 			repository:               repo,
@@ -86,7 +85,6 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 			mgmtPrivateServiceClient: mgmtPrivateClient,
 			componentStore:           compStore,
 			memory:                   memory.NewStore(nil, nil),
-			workerUID:                workerUID,
 		},
 	)
 
@@ -134,7 +132,6 @@ type serviceConfig struct {
 	minioClient                  minio.Client
 	componentStore               *componentstore.Store
 	memory                       *memory.Store
-	workerUID                    uuid.UUID
 	retentionHandler             MetadataRetentionHandler
 	binaryFetcher                external.BinaryFetcher
 	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
@@ -158,7 +155,6 @@ func newService(cfg serviceConfig) Service {
 		cfg.minioClient,
 		cfg.componentStore,
 		cfg.memory,
-		cfg.workerUID,
 		cfg.retentionHandler,
 		cfg.binaryFetcher,
 		cfg.artifactPublicServiceClient,

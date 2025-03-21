@@ -842,6 +842,7 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 //     c. Upload "uploading pipeline data" to minio for pipeline run logger.
 //  3. Map the settings in recipe to the format in workflow memory.
 //  4. Enable the streaming mode when the header contains "text/event-stream"
+//  5. Commit the workflow memory so workers can access it.
 //
 // We upload User Input Data by `uploadBlobAndGetDownloadURL`, which exposes
 // the public URL because it will be used by `console` & external users.
@@ -914,6 +915,8 @@ func (s *service) preTriggerPipeline(
 	if err != nil {
 		return err
 	}
+
+	defer s.memory.PurgeWorkflowMemory(pipelineTriggerID)
 
 	types := map[string][]string{}
 	for k, v := range typeMap {
@@ -1665,7 +1668,7 @@ func (s *service) triggerPipeline(
 	logger, _ := logger.GetZapLogger(ctx)
 
 	defer func() {
-		_ = s.memory.PurgeWorkflowMemory(context.Background(), triggerParams.userUID, triggerParams.pipelineTriggerID)
+		_ = s.memory.CleanupWorkflowMemory(context.Background(), triggerParams.userUID, triggerParams.pipelineTriggerID)
 	}()
 
 	workflowOptions := client.StartWorkflowOptions{
@@ -1707,7 +1710,6 @@ func (s *service) triggerPipeline(
 			},
 			Streaming: isStreaming,
 			Mode:      mgmtpb.Mode_MODE_SYNC,
-			WorkerUID: s.workerUID,
 			Recipe:    triggerParams.recipe,
 		})
 	if err != nil {
@@ -1748,14 +1750,6 @@ type triggerParams struct {
 }
 
 func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams) (*longrunningpb.Operation, error) {
-	defer func() {
-		go func() {
-			// We only retain the memory for a maximum of 60 minutes.
-			time.Sleep(60 * time.Minute)
-			_ = s.memory.PurgeWorkflowMemory(context.Background(), params.userUID, params.pipelineTriggerID)
-		}()
-	}()
-
 	logger, _ := logger.GetZapLogger(ctx)
 	logger = logger.With(zap.String("triggerID", params.pipelineTriggerID))
 
@@ -1768,11 +1762,24 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 		},
 	}
 
-	requester, err := s.GetNamespaceByUID(ctx, params.requesterUID)
+	cleanupOptions := workflowOptions
+	cleanupOptions.ID = "cleanupMemory:" + params.pipelineTriggerID
+
+	// We only retain the memory for a maximum of 60 minutes. This should be
+	// enough to allow clients to fetch the result via the long-running
+	// operation endpoint.
+	cleanupOptions.StartDelay = 1 * time.Hour
+
+	// We're using a delayed start but the timeout will start to count from the
+	// execution is created.
+	cleanupOptions.WorkflowExecutionTimeout = cleanupOptions.StartDelay + cleanupOptions.WorkflowExecutionTimeout
+
+	_, err := s.temporalClient.ExecuteWorkflow(ctx, cleanupOptions, "CleanupMemoryWorkflow", params.userUID, params.pipelineTriggerID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("launching cleanup workflow: %w", err)
 	}
-	user, err := s.GetNamespaceByUID(ctx, params.userUID)
+
+	requester, err := s.GetNamespaceByUID(ctx, params.requesterUID)
 	if err != nil {
 		return nil, err
 	}
@@ -1790,7 +1797,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 				PipelineReleaseID:    params.pipelineReleaseID,
 				PipelineReleaseUID:   params.pipelineReleaseUID,
 				PipelineOwner:        params.ns,
-				PipelineUserUID:      user.NsUID,
+				PipelineUserUID:      params.userUID,
 				PipelineRequesterUID: requester.NsUID,
 				PipelineRequesterID:  requester.NsID,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
@@ -1798,7 +1805,6 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 			},
 			Streaming: isStreaming,
 			Mode:      mgmtpb.Mode_MODE_ASYNC,
-			WorkerUID: s.workerUID,
 			Recipe:    params.recipe,
 		})
 	if err != nil {
@@ -1811,12 +1817,6 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 	// wait for trigger ends in goroutine and upload outputs
 	utils.GoSafe(func() {
 		subCtx := context.Background()
-
-		defer func() {
-			if err := s.memory.PurgeWorkflowMemory(subCtx, params.userUID, params.pipelineTriggerID); err != nil {
-				logger.Error("Couldn't purge workflow memory", zap.Error(err))
-			}
-		}()
 
 		err = we.Get(subCtx, nil)
 		if err != nil {
@@ -1851,6 +1851,8 @@ func (s *service) getOutputsAndMetadata(ctx context.Context, userUID uuid.UUID, 
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetching workflow memory: %w", err)
 	}
+
+	defer s.memory.PurgeWorkflowMemory(pipelineTriggerID)
 
 	pipelineOutputs := make([]*structpb.Struct, wfm.GetBatchSize())
 	for idx := range wfm.GetBatchSize() {
@@ -2218,7 +2220,7 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 		pipelineTriggerID := workflowExecutionInfo.Execution.WorkflowId
 		_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
 		defer func() {
-			_ = s.memory.PurgeWorkflowMemory(context.Background(), userUID, pipelineTriggerID)
+			_ = s.memory.CleanupWorkflowMemory(context.Background(), userUID, pipelineTriggerID)
 		}()
 
 		recipe, err := s.fetchRecipeSnapshot(ctx, pipelineTriggerID)

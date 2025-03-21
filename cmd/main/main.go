@@ -9,20 +9,16 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
-	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
-	"go.temporal.io/sdk/worker"
 	"go.uber.org/zap"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -31,7 +27,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/durationpb"
 
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpczap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
@@ -57,7 +52,6 @@ import (
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	pipelineworker "github.com/instill-ai/pipeline-backend/pkg/worker"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
@@ -87,32 +81,6 @@ func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler) http.Handl
 	)
 }
 
-// InitPipelinePublicServiceClient initialises a PipelineServiceClient instance
-func InitPipelinePublicServiceClient(ctx context.Context) (pb.PipelinePublicServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger(ctx)
-
-	var clientDialOpts grpc.DialOption
-	var creds credentials.TransportCredentials
-	var err error
-	if config.Config.Server.HTTPS.Cert != "" && config.Config.Server.HTTPS.Key != "" {
-		creds, err = credentials.NewServerTLSFromFile(config.Config.Server.HTTPS.Cert, config.Config.Server.HTTPS.Key)
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-		clientDialOpts = grpc.WithTransportCredentials(creds)
-	} else {
-		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-
-	clientConn, err := grpc.NewClient(fmt.Sprintf(":%v", config.Config.Server.PublicPort), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, nil
-	}
-
-	return pb.NewPipelinePublicServiceClient(clientConn), clientConn
-}
-
 func main() {
 	if err := config.Init(config.ParseConfigFlag()); err != nil {
 		log.Fatal(err.Error())
@@ -121,13 +89,14 @@ func main() {
 	// setup tracing and metrics
 	ctx, cancel := context.WithCancel(context.Background())
 
-	if tp, err := customotel.SetupTracing(ctx, "pipeline-backend"); err != nil {
+	tp, err := customotel.SetupTracing(ctx, "pipeline-backend")
+	if err != nil {
 		panic(err)
-	} else {
-		defer func() {
-			err = tp.Shutdown(ctx)
-		}()
 	}
+
+	defer func() {
+		err = tp.Shutdown(ctx)
+	}()
 
 	ctx, span := otel.Tracer("main-tracer").Start(ctx,
 		"main",
@@ -147,7 +116,6 @@ func main() {
 	defer database.Close(db)
 
 	var temporalClientOptions client.Options
-	var err error
 	if config.Config.Temporal.Ca != "" && config.Config.Temporal.Cert != "" && config.Config.Temporal.Key != "" {
 		if temporalClientOptions, err = temporal.GetTLSClientOption(
 			config.Config.Temporal.HostPort,
@@ -244,7 +212,7 @@ func main() {
 	grpcServerOpts = append(grpcServerOpts, grpc.MaxRecvMsgSize(constant.MaxPayloadSize))
 	grpcServerOpts = append(grpcServerOpts, grpc.MaxSendMsgSize(constant.MaxPayloadSize))
 
-	pipelinePublicServiceClient, pipelinePublicServiceClientConn := InitPipelinePublicServiceClient(ctx)
+	pipelinePublicServiceClient, pipelinePublicServiceClientConn := external.InitPipelinePublicServiceClient(ctx)
 	if pipelinePublicServiceClientConn != nil {
 		defer pipelinePublicServiceClientConn.Close()
 	}
@@ -296,7 +264,6 @@ func main() {
 		BinaryFetcher:  binaryFetcher,
 		TemporalClient: temporalClient,
 	})
-	workerUID, _ := uuid.NewV4()
 
 	pubsub := pubsub.NewRedisPubSub(redisClient)
 	ms := memory.NewStore(pubsub, minIOClient.WithLogger(logger))
@@ -320,7 +287,6 @@ func main() {
 		minIOClient,
 		compStore,
 		ms,
-		workerUID,
 		retentionHandler,
 		binaryFetcher,
 		artifactPublicServiceClient,
@@ -468,81 +434,6 @@ func main() {
 	span.End()
 	logger.Info("gRPC server is running.")
 
-	// for only local temporal cluster
-	if config.Config.Temporal.Ca == "" && config.Config.Temporal.Cert == "" && config.Config.Temporal.Key == "" {
-		initTemporalNamespace(ctx, temporalClient)
-	}
-
-	timeseries := repository.MustNewInfluxDB(ctx)
-	defer timeseries.Close()
-
-	cw := pipelineworker.NewWorker(
-		pipelineworker.WorkerConfig{
-			Repository:                   repo,
-			RedisClient:                  redisClient,
-			InfluxDBWriteClient:          timeseries.WriteAPI(),
-			Component:                    compStore,
-			MinioClient:                  minIOClient,
-			MemoryStore:                  ms,
-			WorkerUID:                    workerUID,
-			ArtifactPublicServiceClient:  artifactPublicServiceClient,
-			ArtifactPrivateServiceClient: artifactPrivateServiceClient,
-			BinaryFetcher:                binaryFetcher,
-			PipelinePublicServiceClient:  pipelinePublicServiceClient,
-		},
-	)
-
-	w := worker.New(temporalClient, pipelineworker.TaskQueue, worker.Options{
-		WorkflowPanicPolicy:                    worker.BlockWorkflow,
-		WorkerStopTimeout:                      gracefulShutdownTimeout,
-		MaxConcurrentWorkflowTaskExecutionSize: 100,
-	})
-	lw := worker.New(temporalClient, workerUID.String(), worker.Options{
-		WorkflowPanicPolicy:                worker.BlockWorkflow,
-		WorkerStopTimeout:                  gracefulShutdownTimeout,
-		MaxConcurrentActivityExecutionSize: 100,
-	})
-	mw := worker.New(temporalClient, fmt.Sprintf("%s-minio", workerUID.String()), worker.Options{
-		WorkflowPanicPolicy:                worker.BlockWorkflow,
-		WorkerStopTimeout:                  gracefulShutdownTimeout,
-		MaxConcurrentActivityExecutionSize: 50,
-	})
-
-	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
-	w.RegisterWorkflow(cw.SchedulePipelineWorkflow)
-
-	lw.RegisterActivity(cw.LoadWorkflowMemory)
-	lw.RegisterActivity(cw.ComponentActivity)
-	lw.RegisterActivity(cw.OutputActivity)
-	lw.RegisterActivity(cw.PreIteratorActivity)
-	lw.RegisterActivity(cw.PostIteratorActivity)
-	lw.RegisterActivity(cw.InitComponentsActivity)
-	lw.RegisterActivity(cw.SendStartedEventActivity)
-	lw.RegisterActivity(cw.PostTriggerActivity)
-	lw.RegisterActivity(cw.ClosePipelineActivity)
-	lw.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
-	lw.RegisterActivity(cw.UpdatePipelineRunActivity)
-	lw.RegisterActivity(cw.UpsertComponentRunActivity)
-
-	mw.RegisterActivity(cw.UploadOutputsToMinIOActivity)
-	mw.RegisterActivity(cw.UploadRecipeToMinIOActivity)
-	mw.RegisterActivity(cw.UploadComponentInputsActivity)
-	mw.RegisterActivity(cw.UploadComponentOutputsActivity)
-
-	err = w.Start()
-	if err != nil {
-		logger.Fatal(fmt.Sprintf("Unable to start worker: %s", err))
-	}
-	err = lw.Start()
-	if err != nil {
-		logger.Fatal(fmt.Sprintf("Unable to start local worker: %s", err))
-	}
-	err = mw.Start()
-	if err != nil {
-		logger.Fatal(fmt.Sprintf("Unable to start minio worker: %s", err))
-	}
-	logger.Info("worker is running.")
-
 	// kill (no param) default send syscall.SIGTERM
 	// kill -2 is syscall.SIGINT
 	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
@@ -571,11 +462,6 @@ func main() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), gracefulShutdownTimeout)
 		defer shutdownCancel()
 
-		logger.Info("Shutting down worker...")
-		w.Stop()
-		lw.Stop()
-		mw.Stop()
-
 		logger.Info("Shutting down HTTP server...")
 		_ = privateHTTPServer.Shutdown(shutdownCtx)
 		_ = publicHTTPServer.Shutdown(shutdownCtx)
@@ -583,47 +469,5 @@ func main() {
 		privateGrpcS.GracefulStop()
 		publicGrpcS.GracefulStop()
 
-	}
-}
-
-func initTemporalNamespace(ctx context.Context, client client.Client) {
-	logger, _ := logger.GetZapLogger(ctx)
-
-	resp, err := client.WorkflowService().ListNamespaces(ctx, &workflowservice.ListNamespacesRequest{})
-	if err != nil {
-		logger.Fatal(fmt.Sprintf("Unable to list namespaces: %s", err))
-	}
-
-	found := false
-	for _, n := range resp.GetNamespaces() {
-		if n.NamespaceInfo.Name == config.Config.Temporal.Namespace {
-			found = true
-		}
-	}
-
-	if !found {
-		if _, err := client.WorkflowService().RegisterNamespace(ctx,
-			&workflowservice.RegisterNamespaceRequest{
-				Namespace: config.Config.Temporal.Namespace,
-				WorkflowExecutionRetentionPeriod: func() *durationpb.Duration {
-					// Check if the string ends with "d" for day.
-					s := config.Config.Temporal.Retention
-					if strings.HasSuffix(s, "d") {
-						// Parse the number of days.
-						days, err := strconv.Atoi(s[:len(s)-1])
-						if err != nil {
-							logger.Fatal(fmt.Sprintf("Unable to parse retention period in day: %s", err))
-						}
-						// Convert days to hours and then to a duration.
-						t := time.Hour * 24 * time.Duration(days)
-						return durationpb.New(t)
-					}
-					logger.Fatal(fmt.Sprintf("Unable to parse retention period in day: %s", err))
-					return nil
-				}(),
-			},
-		); err != nil {
-			logger.Fatal(fmt.Sprintf("Unable to register namespace: %s", err))
-		}
 	}
 }

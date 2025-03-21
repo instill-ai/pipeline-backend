@@ -29,15 +29,21 @@ const TaskQueue = "pipeline-backend"
 type Worker interface {
 	TriggerPipelineWorkflow(workflow.Context, *TriggerPipelineWorkflowParam) error
 	SchedulePipelineWorkflow(workflow.Context, *scheduler.SchedulePipelineWorkflowParam) error
+	CleanupMemoryWorkflow(_ workflow.Context, userUID uuid.UUID, workflowID string) error
 
-	LoadWorkflowMemory(context.Context, LoadWorkflowMemoryActivityParam) error
+	LoadWorkflowMemoryActivity(context.Context, LoadWorkflowMemoryActivityParam) error
+	CommitWorkflowMemoryActivity(_ context.Context, workflowID string, sysVars recipe.SystemVariables) error
+	CleanupWorkflowMemoryActivity(_ context.Context, userUID uuid.UUID, workflowID string) error
+	PurgeWorkflowMemoryActivity(_ context.Context, workflowID string) error
+
 	ComponentActivity(context.Context, *ComponentActivityParam) error
 	OutputActivity(context.Context, *ComponentActivityParam) error
-	PreIteratorActivity(context.Context, *PreIteratorActivityParam) ([]ChildPipelineTriggerParams, error)
+	ProcessBatchConditionsActivity(context.Context, ProcessBatchConditionsActivityParam) ([]int, error)
+	PreIteratorActivity(context.Context, PreIteratorActivityParam) (*ChildPipelineTriggerParams, error)
 	PostIteratorActivity(context.Context, *PostIteratorActivityParam) error
 	InitComponentsActivity(context.Context, *InitComponentsActivityParam) error
 	SendStartedEventActivity(_ context.Context, workflowID string) error
-	PostTriggerActivity(context.Context, *PostTriggerActivityParam) error
+	SendCompletedEventActivity(_ context.Context, workflowID string) error
 	ClosePipelineActivity(_ context.Context, workflowID string) error
 	IncreasePipelineTriggerCountActivity(context.Context, recipe.SystemVariables) error
 
@@ -57,7 +63,6 @@ type WorkerConfig struct {
 	Component                    *componentstore.Store
 	MinioClient                  minio.Client
 	MemoryStore                  *memory.Store
-	WorkerUID                    uuid.UUID
 	ArtifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	ArtifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
 	BinaryFetcher                external.BinaryFetcher
@@ -73,7 +78,6 @@ type worker struct {
 	minioClient                  minio.Client
 	log                          *zap.Logger
 	memoryStore                  *memory.Store
-	workerUID                    uuid.UUID
 	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
 	pipelinePublicServiceClient  pb.PipelinePublicServiceClient
@@ -93,7 +97,6 @@ func NewWorker(
 		component:                    workerConfig.Component,
 		minioClient:                  workerConfig.MinioClient,
 		log:                          logger,
-		workerUID:                    workerConfig.WorkerUID,
 		artifactPublicServiceClient:  workerConfig.ArtifactPublicServiceClient,
 		artifactPrivateServiceClient: workerConfig.ArtifactPrivateServiceClient,
 		binaryFetcher:                workerConfig.BinaryFetcher,
