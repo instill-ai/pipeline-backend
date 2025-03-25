@@ -47,7 +47,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/usage"
 	"github.com/instill-ai/x/minio"
 	"github.com/instill-ai/x/temporal"
-	"github.com/instill-ai/x/zapadapter"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
@@ -115,32 +114,14 @@ func main() {
 	db := database.GetSharedConnection()
 	defer database.Close(db)
 
-	var temporalClientOptions client.Options
-	if config.Config.Temporal.Ca != "" && config.Config.Temporal.Cert != "" && config.Config.Temporal.Key != "" {
-		if temporalClientOptions, err = temporal.GetTLSClientOption(
-			config.Config.Temporal.HostPort,
-			config.Config.Temporal.Namespace,
-			zapadapter.NewZapAdapter(logger),
-			config.Config.Temporal.Ca,
-			config.Config.Temporal.Cert,
-			config.Config.Temporal.Key,
-			config.Config.Temporal.ServerName,
-			true,
-		); err != nil {
-			logger.Fatal(fmt.Sprintf("Unable to get Temporal client options: %s", err))
-		}
-	} else {
-		if temporalClientOptions, err = temporal.GetClientOption(
-			config.Config.Temporal.HostPort,
-			config.Config.Temporal.Namespace,
-			zapadapter.NewZapAdapter(logger)); err != nil {
-			logger.Fatal(fmt.Sprintf("Unable to get Temporal client options: %s", err))
-		}
+	temporalClientOptions, err := temporal.ClientOptions(config.Config.Temporal, logger)
+	if err != nil {
+		logger.Fatal("Unable to build Temporal client options", zap.Error(err))
 	}
 
 	temporalClient, err := client.Dial(temporalClientOptions)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("Unable to create client: %s", err))
+		logger.Fatal("Unable to create Temporal client", zap.Error(err))
 	}
 	defer temporalClient.Close()
 
