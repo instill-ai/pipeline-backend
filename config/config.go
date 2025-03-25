@@ -40,7 +40,6 @@ type AppConfig struct {
 	MgmtBackend     MgmtBackendConfig     `koanf:"mgmtbackend"`
 	ModelBackend    ModelBackendConfig    `koanf:"modelbackend"`
 	OpenFGA         OpenFGAConfig         `koanf:"openfga"`
-	InstillCloud    InstillCloudConfig    `koanf:"instillcloud"`
 	ArtifactBackend ArtifactBackendConfig `koanf:"artifactbackend"`
 	Minio           minio.Config          `koanf:"minio"`
 	AgentBackend    AgentBackendConfig    `koanf:"agentbackend"`
@@ -52,12 +51,6 @@ type APIGatewayConfig struct {
 	Host       string `koanf:"host"`
 	PublicPort int    `koanf:"publicport"`
 	TLSEnabled bool   `koanf:"tlsenabled"`
-}
-
-// InstillCloud config
-type InstillCloudConfig struct {
-	Host string `koanf:"host"`
-	Port int    `koanf:"port"`
 }
 
 // OpenFGA config

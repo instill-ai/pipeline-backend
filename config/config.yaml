@@ -78,9 +78,6 @@ artifactbackend:
 openfga:
   host: openfga
   port: 8081
-instillcloud:
-  host: api.instill.tech
-  port: 443
 minio:
   host: minio
   port: 9000
