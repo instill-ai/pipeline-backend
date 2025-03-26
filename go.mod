@@ -66,7 +66,7 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/openfga/api/proto v0.0.0-20240318145204-66b9e5cb403c
 	github.com/pkoukk/tiktoken-go v0.1.7
-	github.com/redis/go-redis/v9 v9.7.1
+	github.com/redis/go-redis/v9 v9.7.3
 	github.com/sijms/go-ora v1.3.2
 	github.com/slack-go/slack v0.12.5
 	github.com/stretchr/testify v1.10.0
