@@ -14,7 +14,8 @@ import (
 	"github.com/knadh/koanf/providers/file"
 	"github.com/redis/go-redis/v9"
 
-	miniox "github.com/instill-ai/x/minio"
+	"github.com/instill-ai/x/minio"
+	"github.com/instill-ai/x/temporal"
 )
 
 const (
@@ -33,15 +34,14 @@ type AppConfig struct {
 	Component       ComponentConfig       `koanf:"component"`
 	Database        DatabaseConfig        `koanf:"database"`
 	InfluxDB        InfluxDBConfig        `koanf:"influxdb"`
-	Temporal        TemporalConfig        `koanf:"temporal"`
+	Temporal        temporal.ClientConfig `koanf:"temporal"`
 	Cache           CacheConfig           `koanf:"cache"`
 	Log             LogConfig             `koanf:"log"`
 	MgmtBackend     MgmtBackendConfig     `koanf:"mgmtbackend"`
 	ModelBackend    ModelBackendConfig    `koanf:"modelbackend"`
 	OpenFGA         OpenFGAConfig         `koanf:"openfga"`
-	InstillCloud    InstillCloudConfig    `koanf:"instillcloud"`
 	ArtifactBackend ArtifactBackendConfig `koanf:"artifactbackend"`
-	Minio           miniox.Config         `koanf:"minio"`
+	Minio           minio.Config          `koanf:"minio"`
 	AgentBackend    AgentBackendConfig    `koanf:"agentbackend"`
 	APIGateway      APIGatewayConfig      `koanf:"apigateway"`
 }
@@ -51,12 +51,6 @@ type APIGatewayConfig struct {
 	Host       string `koanf:"host"`
 	PublicPort int    `koanf:"publicport"`
 	TLSEnabled bool   `koanf:"tlsenabled"`
-}
-
-// InstillCloud config
-type InstillCloudConfig struct {
-	Host string `koanf:"host"`
-	Port int    `koanf:"port"`
 }
 
 // OpenFGA config
@@ -156,17 +150,6 @@ type LogConfig struct {
 		Host string `koanf:"host"`
 		Port string `koanf:"port"`
 	}
-}
-
-// TemporalConfig related to Temporal
-type TemporalConfig struct {
-	HostPort   string `koanf:"hostport"`
-	Namespace  string `koanf:"namespace"`
-	Retention  string `koanf:"retention"`
-	Ca         string `koanf:"ca"`
-	Cert       string `koanf:"cert"`
-	Key        string `koanf:"key"`
-	ServerName string `koanf:"servername"`
 }
 
 // CacheConfig related to Redis

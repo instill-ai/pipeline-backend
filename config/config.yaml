@@ -54,10 +54,7 @@ temporal:
   hostport: temporal:7233
   namespace: pipeline-backend
   retention: 1d
-  ca:
-  cert:
-  key:
-  servername:
+  metricsport: 8096
 mgmtbackend:
   host: mgmt-backend
   publicport: 8084
@@ -81,9 +78,6 @@ artifactbackend:
 openfga:
   host: openfga
   port: 8081
-instillcloud:
-  host: api.instill.tech
-  port: 443
 minio:
   host: minio
   port: 9000
