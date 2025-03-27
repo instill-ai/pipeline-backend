@@ -45,6 +45,13 @@ type ArtifactPublicServiceServerMock struct {
 	beforeGetFileCatalogCounter uint64
 	GetFileCatalogMock          mArtifactPublicServiceServerMockGetFileCatalog
 
+	funcGetFileSummary          func(ctx context.Context, gp1 *mm_artifactv1alpha.GetFileSummaryRequest) (gp2 *mm_artifactv1alpha.GetFileSummaryResponse, err error)
+	funcGetFileSummaryOrigin    string
+	inspectFuncGetFileSummary   func(ctx context.Context, gp1 *mm_artifactv1alpha.GetFileSummaryRequest)
+	afterGetFileSummaryCounter  uint64
+	beforeGetFileSummaryCounter uint64
+	GetFileSummaryMock          mArtifactPublicServiceServerMockGetFileSummary
+
 	funcGetObjectDownloadURL          func(ctx context.Context, gp1 *mm_artifactv1alpha.GetObjectDownloadURLRequest) (gp2 *mm_artifactv1alpha.GetObjectDownloadURLResponse, err error)
 	funcGetObjectDownloadURLOrigin    string
 	inspectFuncGetObjectDownloadURL   func(ctx context.Context, gp1 *mm_artifactv1alpha.GetObjectDownloadURLRequest)
@@ -191,6 +198,9 @@ func NewArtifactPublicServiceServerMock(t minimock.Tester) *ArtifactPublicServic
 
 	m.GetFileCatalogMock = mArtifactPublicServiceServerMockGetFileCatalog{mock: m}
 	m.GetFileCatalogMock.callArgs = []*ArtifactPublicServiceServerMockGetFileCatalogParams{}
+
+	m.GetFileSummaryMock = mArtifactPublicServiceServerMockGetFileSummary{mock: m}
+	m.GetFileSummaryMock.callArgs = []*ArtifactPublicServiceServerMockGetFileSummaryParams{}
 
 	m.GetObjectDownloadURLMock = mArtifactPublicServiceServerMockGetObjectDownloadURL{mock: m}
 	m.GetObjectDownloadURLMock.callArgs = []*ArtifactPublicServiceServerMockGetObjectDownloadURLParams{}
@@ -1620,6 +1630,349 @@ func (m *ArtifactPublicServiceServerMock) MinimockGetFileCatalogInspect() {
 	if !m.GetFileCatalogMock.invocationsDone() && afterGetFileCatalogCounter > 0 {
 		m.t.Errorf("Expected %d calls to ArtifactPublicServiceServerMock.GetFileCatalog at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.GetFileCatalogMock.expectedInvocations), m.GetFileCatalogMock.expectedInvocationsOrigin, afterGetFileCatalogCounter)
+	}
+}
+
+type mArtifactPublicServiceServerMockGetFileSummary struct {
+	optional           bool
+	mock               *ArtifactPublicServiceServerMock
+	defaultExpectation *ArtifactPublicServiceServerMockGetFileSummaryExpectation
+	expectations       []*ArtifactPublicServiceServerMockGetFileSummaryExpectation
+
+	callArgs []*ArtifactPublicServiceServerMockGetFileSummaryParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// ArtifactPublicServiceServerMockGetFileSummaryExpectation specifies expectation struct of the ArtifactPublicServiceServer.GetFileSummary
+type ArtifactPublicServiceServerMockGetFileSummaryExpectation struct {
+	mock               *ArtifactPublicServiceServerMock
+	params             *ArtifactPublicServiceServerMockGetFileSummaryParams
+	paramPtrs          *ArtifactPublicServiceServerMockGetFileSummaryParamPtrs
+	expectationOrigins ArtifactPublicServiceServerMockGetFileSummaryExpectationOrigins
+	results            *ArtifactPublicServiceServerMockGetFileSummaryResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// ArtifactPublicServiceServerMockGetFileSummaryParams contains parameters of the ArtifactPublicServiceServer.GetFileSummary
+type ArtifactPublicServiceServerMockGetFileSummaryParams struct {
+	ctx context.Context
+	gp1 *mm_artifactv1alpha.GetFileSummaryRequest
+}
+
+// ArtifactPublicServiceServerMockGetFileSummaryParamPtrs contains pointers to parameters of the ArtifactPublicServiceServer.GetFileSummary
+type ArtifactPublicServiceServerMockGetFileSummaryParamPtrs struct {
+	ctx *context.Context
+	gp1 **mm_artifactv1alpha.GetFileSummaryRequest
+}
+
+// ArtifactPublicServiceServerMockGetFileSummaryResults contains results of the ArtifactPublicServiceServer.GetFileSummary
+type ArtifactPublicServiceServerMockGetFileSummaryResults struct {
+	gp2 *mm_artifactv1alpha.GetFileSummaryResponse
+	err error
+}
+
+// ArtifactPublicServiceServerMockGetFileSummaryOrigins contains origins of expectations of the ArtifactPublicServiceServer.GetFileSummary
+type ArtifactPublicServiceServerMockGetFileSummaryExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originGp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetFileSummary *mArtifactPublicServiceServerMockGetFileSummary) Optional() *mArtifactPublicServiceServerMockGetFileSummary {
+	mmGetFileSummary.optional = true
+	return mmGetFileSummary
+}
+
+// Expect sets up expected params for ArtifactPublicServiceServer.GetFileSummary
+func (mmGetFileSummary *mArtifactPublicServiceServerMockGetFileSummary) Expect(ctx context.Context, gp1 *mm_artifactv1alpha.GetFileSummaryRequest) *mArtifactPublicServiceServerMockGetFileSummary {
+	if mmGetFileSummary.mock.funcGetFileSummary != nil {
+		mmGetFileSummary.mock.t.Fatalf("ArtifactPublicServiceServerMock.GetFileSummary mock is already set by Set")
+	}
+
+	if mmGetFileSummary.defaultExpectation == nil {
+		mmGetFileSummary.defaultExpectation = &ArtifactPublicServiceServerMockGetFileSummaryExpectation{}
+	}
+
+	if mmGetFileSummary.defaultExpectation.paramPtrs != nil {
+		mmGetFileSummary.mock.t.Fatalf("ArtifactPublicServiceServerMock.GetFileSummary mock is already set by ExpectParams functions")
+	}
+
+	mmGetFileSummary.defaultExpectation.params = &ArtifactPublicServiceServerMockGetFileSummaryParams{ctx, gp1}
+	mmGetFileSummary.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetFileSummary.expectations {
+		if minimock.Equal(e.params, mmGetFileSummary.defaultExpectation.params) {
+			mmGetFileSummary.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetFileSummary.defaultExpectation.params)
+		}
+	}
+
+	return mmGetFileSummary
+}
+
+// ExpectCtxParam1 sets up expected param ctx for ArtifactPublicServiceServer.GetFileSummary
+func (mmGetFileSummary *mArtifactPublicServiceServerMockGetFileSummary) ExpectCtxParam1(ctx context.Context) *mArtifactPublicServiceServerMockGetFileSummary {
+	if mmGetFileSummary.mock.funcGetFileSummary != nil {
+		mmGetFileSummary.mock.t.Fatalf("ArtifactPublicServiceServerMock.GetFileSummary mock is already set by Set")
+	}
+
+	if mmGetFileSummary.defaultExpectation == nil {
+		mmGetFileSummary.defaultExpectation = &ArtifactPublicServiceServerMockGetFileSummaryExpectation{}
+	}
+
+	if mmGetFileSummary.defaultExpectation.params != nil {
+		mmGetFileSummary.mock.t.Fatalf("ArtifactPublicServiceServerMock.GetFileSummary mock is already set by Expect")
+	}
+
+	if mmGetFileSummary.defaultExpectation.paramPtrs == nil {
+		mmGetFileSummary.defaultExpectation.paramPtrs = &ArtifactPublicServiceServerMockGetFileSummaryParamPtrs{}
+	}
+	mmGetFileSummary.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetFileSummary.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetFileSummary
+}
+
+// ExpectGp1Param2 sets up expected param gp1 for ArtifactPublicServiceServer.GetFileSummary
+func (mmGetFileSummary *mArtifactPublicServiceServerMockGetFileSummary) ExpectGp1Param2(gp1 *mm_artifactv1alpha.GetFileSummaryRequest) *mArtifactPublicServiceServerMockGetFileSummary {
+	if mmGetFileSummary.mock.funcGetFileSummary != nil {
+		mmGetFileSummary.mock.t.Fatalf("ArtifactPublicServiceServerMock.GetFileSummary mock is already set by Set")
+	}
+
+	if mmGetFileSummary.defaultExpectation == nil {
+		mmGetFileSummary.defaultExpectation = &ArtifactPublicServiceServerMockGetFileSummaryExpectation{}
+	}
+
+	if mmGetFileSummary.defaultExpectation.params != nil {
+		mmGetFileSummary.mock.t.Fatalf("ArtifactPublicServiceServerMock.GetFileSummary mock is already set by Expect")
+	}
+
+	if mmGetFileSummary.defaultExpectation.paramPtrs == nil {
+		mmGetFileSummary.defaultExpectation.paramPtrs = &ArtifactPublicServiceServerMockGetFileSummaryParamPtrs{}
+	}
+	mmGetFileSummary.defaultExpectation.paramPtrs.gp1 = &gp1
+	mmGetFileSummary.defaultExpectation.expectationOrigins.originGp1 = minimock.CallerInfo(1)
+
+	return mmGetFileSummary
+}
+
+// Inspect accepts an inspector function that has same arguments as the ArtifactPublicServiceServer.GetFileSummary
+func (mmGetFileSummary *mArtifactPublicServiceServerMockGetFileSummary) Inspect(f func(ctx context.Context, gp1 *mm_artifactv1alpha.GetFileSummaryRequest)) *mArtifactPublicServiceServerMockGetFileSummary {
+	if mmGetFileSummary.mock.inspectFuncGetFileSummary != nil {
+		mmGetFileSummary.mock.t.Fatalf("Inspect function is already set for ArtifactPublicServiceServerMock.GetFileSummary")
+	}
+
+	mmGetFileSummary.mock.inspectFuncGetFileSummary = f
+
+	return mmGetFileSummary
+}
+
+// Return sets up results that will be returned by ArtifactPublicServiceServer.GetFileSummary
+func (mmGetFileSummary *mArtifactPublicServiceServerMockGetFileSummary) Return(gp2 *mm_artifactv1alpha.GetFileSummaryResponse, err error) *ArtifactPublicServiceServerMock {
+	if mmGetFileSummary.mock.funcGetFileSummary != nil {
+		mmGetFileSummary.mock.t.Fatalf("ArtifactPublicServiceServerMock.GetFileSummary mock is already set by Set")
+	}
+
+	if mmGetFileSummary.defaultExpectation == nil {
+		mmGetFileSummary.defaultExpectation = &ArtifactPublicServiceServerMockGetFileSummaryExpectation{mock: mmGetFileSummary.mock}
+	}
+	mmGetFileSummary.defaultExpectation.results = &ArtifactPublicServiceServerMockGetFileSummaryResults{gp2, err}
+	mmGetFileSummary.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetFileSummary.mock
+}
+
+// Set uses given function f to mock the ArtifactPublicServiceServer.GetFileSummary method
+func (mmGetFileSummary *mArtifactPublicServiceServerMockGetFileSummary) Set(f func(ctx context.Context, gp1 *mm_artifactv1alpha.GetFileSummaryRequest) (gp2 *mm_artifactv1alpha.GetFileSummaryResponse, err error)) *ArtifactPublicServiceServerMock {
+	if mmGetFileSummary.defaultExpectation != nil {
+		mmGetFileSummary.mock.t.Fatalf("Default expectation is already set for the ArtifactPublicServiceServer.GetFileSummary method")
+	}
+
+	if len(mmGetFileSummary.expectations) > 0 {
+		mmGetFileSummary.mock.t.Fatalf("Some expectations are already set for the ArtifactPublicServiceServer.GetFileSummary method")
+	}
+
+	mmGetFileSummary.mock.funcGetFileSummary = f
+	mmGetFileSummary.mock.funcGetFileSummaryOrigin = minimock.CallerInfo(1)
+	return mmGetFileSummary.mock
+}
+
+// When sets expectation for the ArtifactPublicServiceServer.GetFileSummary which will trigger the result defined by the following
+// Then helper
+func (mmGetFileSummary *mArtifactPublicServiceServerMockGetFileSummary) When(ctx context.Context, gp1 *mm_artifactv1alpha.GetFileSummaryRequest) *ArtifactPublicServiceServerMockGetFileSummaryExpectation {
+	if mmGetFileSummary.mock.funcGetFileSummary != nil {
+		mmGetFileSummary.mock.t.Fatalf("ArtifactPublicServiceServerMock.GetFileSummary mock is already set by Set")
+	}
+
+	expectation := &ArtifactPublicServiceServerMockGetFileSummaryExpectation{
+		mock:               mmGetFileSummary.mock,
+		params:             &ArtifactPublicServiceServerMockGetFileSummaryParams{ctx, gp1},
+		expectationOrigins: ArtifactPublicServiceServerMockGetFileSummaryExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetFileSummary.expectations = append(mmGetFileSummary.expectations, expectation)
+	return expectation
+}
+
+// Then sets up ArtifactPublicServiceServer.GetFileSummary return parameters for the expectation previously defined by the When method
+func (e *ArtifactPublicServiceServerMockGetFileSummaryExpectation) Then(gp2 *mm_artifactv1alpha.GetFileSummaryResponse, err error) *ArtifactPublicServiceServerMock {
+	e.results = &ArtifactPublicServiceServerMockGetFileSummaryResults{gp2, err}
+	return e.mock
+}
+
+// Times sets number of times ArtifactPublicServiceServer.GetFileSummary should be invoked
+func (mmGetFileSummary *mArtifactPublicServiceServerMockGetFileSummary) Times(n uint64) *mArtifactPublicServiceServerMockGetFileSummary {
+	if n == 0 {
+		mmGetFileSummary.mock.t.Fatalf("Times of ArtifactPublicServiceServerMock.GetFileSummary mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetFileSummary.expectedInvocations, n)
+	mmGetFileSummary.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetFileSummary
+}
+
+func (mmGetFileSummary *mArtifactPublicServiceServerMockGetFileSummary) invocationsDone() bool {
+	if len(mmGetFileSummary.expectations) == 0 && mmGetFileSummary.defaultExpectation == nil && mmGetFileSummary.mock.funcGetFileSummary == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetFileSummary.mock.afterGetFileSummaryCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetFileSummary.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetFileSummary implements mm_artifactv1alpha.ArtifactPublicServiceServer
+func (mmGetFileSummary *ArtifactPublicServiceServerMock) GetFileSummary(ctx context.Context, gp1 *mm_artifactv1alpha.GetFileSummaryRequest) (gp2 *mm_artifactv1alpha.GetFileSummaryResponse, err error) {
+	mm_atomic.AddUint64(&mmGetFileSummary.beforeGetFileSummaryCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetFileSummary.afterGetFileSummaryCounter, 1)
+
+	mmGetFileSummary.t.Helper()
+
+	if mmGetFileSummary.inspectFuncGetFileSummary != nil {
+		mmGetFileSummary.inspectFuncGetFileSummary(ctx, gp1)
+	}
+
+	mm_params := ArtifactPublicServiceServerMockGetFileSummaryParams{ctx, gp1}
+
+	// Record call args
+	mmGetFileSummary.GetFileSummaryMock.mutex.Lock()
+	mmGetFileSummary.GetFileSummaryMock.callArgs = append(mmGetFileSummary.GetFileSummaryMock.callArgs, &mm_params)
+	mmGetFileSummary.GetFileSummaryMock.mutex.Unlock()
+
+	for _, e := range mmGetFileSummary.GetFileSummaryMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.gp2, e.results.err
+		}
+	}
+
+	if mmGetFileSummary.GetFileSummaryMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetFileSummary.GetFileSummaryMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetFileSummary.GetFileSummaryMock.defaultExpectation.params
+		mm_want_ptrs := mmGetFileSummary.GetFileSummaryMock.defaultExpectation.paramPtrs
+
+		mm_got := ArtifactPublicServiceServerMockGetFileSummaryParams{ctx, gp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetFileSummary.t.Errorf("ArtifactPublicServiceServerMock.GetFileSummary got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetFileSummary.GetFileSummaryMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.gp1 != nil && !minimock.Equal(*mm_want_ptrs.gp1, mm_got.gp1) {
+				mmGetFileSummary.t.Errorf("ArtifactPublicServiceServerMock.GetFileSummary got unexpected parameter gp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetFileSummary.GetFileSummaryMock.defaultExpectation.expectationOrigins.originGp1, *mm_want_ptrs.gp1, mm_got.gp1, minimock.Diff(*mm_want_ptrs.gp1, mm_got.gp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetFileSummary.t.Errorf("ArtifactPublicServiceServerMock.GetFileSummary got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetFileSummary.GetFileSummaryMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetFileSummary.GetFileSummaryMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetFileSummary.t.Fatal("No results are set for the ArtifactPublicServiceServerMock.GetFileSummary")
+		}
+		return (*mm_results).gp2, (*mm_results).err
+	}
+	if mmGetFileSummary.funcGetFileSummary != nil {
+		return mmGetFileSummary.funcGetFileSummary(ctx, gp1)
+	}
+	mmGetFileSummary.t.Fatalf("Unexpected call to ArtifactPublicServiceServerMock.GetFileSummary. %v %v", ctx, gp1)
+	return
+}
+
+// GetFileSummaryAfterCounter returns a count of finished ArtifactPublicServiceServerMock.GetFileSummary invocations
+func (mmGetFileSummary *ArtifactPublicServiceServerMock) GetFileSummaryAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetFileSummary.afterGetFileSummaryCounter)
+}
+
+// GetFileSummaryBeforeCounter returns a count of ArtifactPublicServiceServerMock.GetFileSummary invocations
+func (mmGetFileSummary *ArtifactPublicServiceServerMock) GetFileSummaryBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetFileSummary.beforeGetFileSummaryCounter)
+}
+
+// Calls returns a list of arguments used in each call to ArtifactPublicServiceServerMock.GetFileSummary.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetFileSummary *mArtifactPublicServiceServerMockGetFileSummary) Calls() []*ArtifactPublicServiceServerMockGetFileSummaryParams {
+	mmGetFileSummary.mutex.RLock()
+
+	argCopy := make([]*ArtifactPublicServiceServerMockGetFileSummaryParams, len(mmGetFileSummary.callArgs))
+	copy(argCopy, mmGetFileSummary.callArgs)
+
+	mmGetFileSummary.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetFileSummaryDone returns true if the count of the GetFileSummary invocations corresponds
+// the number of defined expectations
+func (m *ArtifactPublicServiceServerMock) MinimockGetFileSummaryDone() bool {
+	if m.GetFileSummaryMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetFileSummaryMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetFileSummaryMock.invocationsDone()
+}
+
+// MinimockGetFileSummaryInspect logs each unmet expectation
+func (m *ArtifactPublicServiceServerMock) MinimockGetFileSummaryInspect() {
+	for _, e := range m.GetFileSummaryMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ArtifactPublicServiceServerMock.GetFileSummary at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetFileSummaryCounter := mm_atomic.LoadUint64(&m.afterGetFileSummaryCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetFileSummaryMock.defaultExpectation != nil && afterGetFileSummaryCounter < 1 {
+		if m.GetFileSummaryMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to ArtifactPublicServiceServerMock.GetFileSummary at\n%s", m.GetFileSummaryMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to ArtifactPublicServiceServerMock.GetFileSummary at\n%s with params: %#v", m.GetFileSummaryMock.defaultExpectation.expectationOrigins.origin, *m.GetFileSummaryMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetFileSummary != nil && afterGetFileSummaryCounter < 1 {
+		m.t.Errorf("Expected call to ArtifactPublicServiceServerMock.GetFileSummary at\n%s", m.funcGetFileSummaryOrigin)
+	}
+
+	if !m.GetFileSummaryMock.invocationsDone() && afterGetFileSummaryCounter > 0 {
+		m.t.Errorf("Expected %d calls to ArtifactPublicServiceServerMock.GetFileSummary at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetFileSummaryMock.expectedInvocations), m.GetFileSummaryMock.expectedInvocationsOrigin, afterGetFileSummaryCounter)
 	}
 }
 
@@ -7809,6 +8162,8 @@ func (m *ArtifactPublicServiceServerMock) MinimockFinish() {
 
 			m.MinimockGetFileCatalogInspect()
 
+			m.MinimockGetFileSummaryInspect()
+
 			m.MinimockGetObjectDownloadURLInspect()
 
 			m.MinimockGetObjectUploadURLInspect()
@@ -7871,6 +8226,7 @@ func (m *ArtifactPublicServiceServerMock) minimockDone() bool {
 		m.MinimockDeleteCatalogDone() &&
 		m.MinimockDeleteCatalogFileDone() &&
 		m.MinimockGetFileCatalogDone() &&
+		m.MinimockGetFileSummaryDone() &&
 		m.MinimockGetObjectDownloadURLDone() &&
 		m.MinimockGetObjectUploadURLDone() &&
 		m.MinimockGetSourceFileDone() &&

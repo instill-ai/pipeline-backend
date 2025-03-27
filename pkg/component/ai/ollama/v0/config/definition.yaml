@@ -1,7 +1,7 @@
 availableTasks:
   - TASK_TEXT_GENERATION_CHAT
   - TASK_TEXT_EMBEDDINGS
-documentationUrl: https://www.instill.tech/docs/component/ai/ollama
+documentationUrl: https://instill-ai.dev/docs/component/ai/ollama
 icon: assets/ollama.svg
 id: ollama
 public: true

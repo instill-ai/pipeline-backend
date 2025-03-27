@@ -1,7 +1,7 @@
 availableTasks:
   - TASK_CHAT
 custom: false
-documentationUrl: https://www.instill.tech/docs/component/ai/perplexity
+documentationUrl: https://instill-ai.dev/docs/component/ai/perplexity
 icon: assets/perplexity.svg
 id: perplexity
 public: true

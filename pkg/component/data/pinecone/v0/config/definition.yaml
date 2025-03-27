@@ -4,7 +4,7 @@ availableTasks:
   - TASK_BATCH_UPSERT
   - TASK_RERANK
 custom: false
-documentationUrl: https://www.instill.tech/docs/component/data/pinecone
+documentationUrl: https://instill-ai.dev/docs/component/data/pinecone
 icon: assets/pinecone.svg
 iconUrl: https://www.pinecone.io/favicon.ico
 id: pinecone

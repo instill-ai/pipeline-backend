@@ -101,6 +101,13 @@ type AgentPublicServiceServerMock struct {
 	beforeGenerateMockTableCounter uint64
 	GenerateMockTableMock          mAgentPublicServiceServerMockGenerateMockTable
 
+	funcGetChat          func(ctx context.Context, gp1 *mm_agentv1alpha.GetChatRequest) (gp2 *mm_agentv1alpha.GetChatResponse, err error)
+	funcGetChatOrigin    string
+	inspectFuncGetChat   func(ctx context.Context, gp1 *mm_agentv1alpha.GetChatRequest)
+	afterGetChatCounter  uint64
+	beforeGetChatCounter uint64
+	GetChatMock          mAgentPublicServiceServerMockGetChat
+
 	funcGetColumnDefinitions          func(ctx context.Context, gp1 *mm_agentv1alpha.GetColumnDefinitionsRequest) (gp2 *mm_agentv1alpha.GetColumnDefinitionsResponse, err error)
 	funcGetColumnDefinitionsOrigin    string
 	inspectFuncGetColumnDefinitions   func(ctx context.Context, gp1 *mm_agentv1alpha.GetColumnDefinitionsRequest)
@@ -278,6 +285,9 @@ func NewAgentPublicServiceServerMock(t minimock.Tester) *AgentPublicServiceServe
 
 	m.GenerateMockTableMock = mAgentPublicServiceServerMockGenerateMockTable{mock: m}
 	m.GenerateMockTableMock.callArgs = []*AgentPublicServiceServerMockGenerateMockTableParams{}
+
+	m.GetChatMock = mAgentPublicServiceServerMockGetChat{mock: m}
+	m.GetChatMock.callArgs = []*AgentPublicServiceServerMockGetChatParams{}
 
 	m.GetColumnDefinitionsMock = mAgentPublicServiceServerMockGetColumnDefinitions{mock: m}
 	m.GetColumnDefinitionsMock.callArgs = []*AgentPublicServiceServerMockGetColumnDefinitionsParams{}
@@ -4454,6 +4464,349 @@ func (m *AgentPublicServiceServerMock) MinimockGenerateMockTableInspect() {
 	if !m.GenerateMockTableMock.invocationsDone() && afterGenerateMockTableCounter > 0 {
 		m.t.Errorf("Expected %d calls to AgentPublicServiceServerMock.GenerateMockTable at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.GenerateMockTableMock.expectedInvocations), m.GenerateMockTableMock.expectedInvocationsOrigin, afterGenerateMockTableCounter)
+	}
+}
+
+type mAgentPublicServiceServerMockGetChat struct {
+	optional           bool
+	mock               *AgentPublicServiceServerMock
+	defaultExpectation *AgentPublicServiceServerMockGetChatExpectation
+	expectations       []*AgentPublicServiceServerMockGetChatExpectation
+
+	callArgs []*AgentPublicServiceServerMockGetChatParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// AgentPublicServiceServerMockGetChatExpectation specifies expectation struct of the AgentPublicServiceServer.GetChat
+type AgentPublicServiceServerMockGetChatExpectation struct {
+	mock               *AgentPublicServiceServerMock
+	params             *AgentPublicServiceServerMockGetChatParams
+	paramPtrs          *AgentPublicServiceServerMockGetChatParamPtrs
+	expectationOrigins AgentPublicServiceServerMockGetChatExpectationOrigins
+	results            *AgentPublicServiceServerMockGetChatResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// AgentPublicServiceServerMockGetChatParams contains parameters of the AgentPublicServiceServer.GetChat
+type AgentPublicServiceServerMockGetChatParams struct {
+	ctx context.Context
+	gp1 *mm_agentv1alpha.GetChatRequest
+}
+
+// AgentPublicServiceServerMockGetChatParamPtrs contains pointers to parameters of the AgentPublicServiceServer.GetChat
+type AgentPublicServiceServerMockGetChatParamPtrs struct {
+	ctx *context.Context
+	gp1 **mm_agentv1alpha.GetChatRequest
+}
+
+// AgentPublicServiceServerMockGetChatResults contains results of the AgentPublicServiceServer.GetChat
+type AgentPublicServiceServerMockGetChatResults struct {
+	gp2 *mm_agentv1alpha.GetChatResponse
+	err error
+}
+
+// AgentPublicServiceServerMockGetChatOrigins contains origins of expectations of the AgentPublicServiceServer.GetChat
+type AgentPublicServiceServerMockGetChatExpectationOrigins struct {
+	origin    string
+	originCtx string
+	originGp1 string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetChat *mAgentPublicServiceServerMockGetChat) Optional() *mAgentPublicServiceServerMockGetChat {
+	mmGetChat.optional = true
+	return mmGetChat
+}
+
+// Expect sets up expected params for AgentPublicServiceServer.GetChat
+func (mmGetChat *mAgentPublicServiceServerMockGetChat) Expect(ctx context.Context, gp1 *mm_agentv1alpha.GetChatRequest) *mAgentPublicServiceServerMockGetChat {
+	if mmGetChat.mock.funcGetChat != nil {
+		mmGetChat.mock.t.Fatalf("AgentPublicServiceServerMock.GetChat mock is already set by Set")
+	}
+
+	if mmGetChat.defaultExpectation == nil {
+		mmGetChat.defaultExpectation = &AgentPublicServiceServerMockGetChatExpectation{}
+	}
+
+	if mmGetChat.defaultExpectation.paramPtrs != nil {
+		mmGetChat.mock.t.Fatalf("AgentPublicServiceServerMock.GetChat mock is already set by ExpectParams functions")
+	}
+
+	mmGetChat.defaultExpectation.params = &AgentPublicServiceServerMockGetChatParams{ctx, gp1}
+	mmGetChat.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetChat.expectations {
+		if minimock.Equal(e.params, mmGetChat.defaultExpectation.params) {
+			mmGetChat.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetChat.defaultExpectation.params)
+		}
+	}
+
+	return mmGetChat
+}
+
+// ExpectCtxParam1 sets up expected param ctx for AgentPublicServiceServer.GetChat
+func (mmGetChat *mAgentPublicServiceServerMockGetChat) ExpectCtxParam1(ctx context.Context) *mAgentPublicServiceServerMockGetChat {
+	if mmGetChat.mock.funcGetChat != nil {
+		mmGetChat.mock.t.Fatalf("AgentPublicServiceServerMock.GetChat mock is already set by Set")
+	}
+
+	if mmGetChat.defaultExpectation == nil {
+		mmGetChat.defaultExpectation = &AgentPublicServiceServerMockGetChatExpectation{}
+	}
+
+	if mmGetChat.defaultExpectation.params != nil {
+		mmGetChat.mock.t.Fatalf("AgentPublicServiceServerMock.GetChat mock is already set by Expect")
+	}
+
+	if mmGetChat.defaultExpectation.paramPtrs == nil {
+		mmGetChat.defaultExpectation.paramPtrs = &AgentPublicServiceServerMockGetChatParamPtrs{}
+	}
+	mmGetChat.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetChat.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetChat
+}
+
+// ExpectGp1Param2 sets up expected param gp1 for AgentPublicServiceServer.GetChat
+func (mmGetChat *mAgentPublicServiceServerMockGetChat) ExpectGp1Param2(gp1 *mm_agentv1alpha.GetChatRequest) *mAgentPublicServiceServerMockGetChat {
+	if mmGetChat.mock.funcGetChat != nil {
+		mmGetChat.mock.t.Fatalf("AgentPublicServiceServerMock.GetChat mock is already set by Set")
+	}
+
+	if mmGetChat.defaultExpectation == nil {
+		mmGetChat.defaultExpectation = &AgentPublicServiceServerMockGetChatExpectation{}
+	}
+
+	if mmGetChat.defaultExpectation.params != nil {
+		mmGetChat.mock.t.Fatalf("AgentPublicServiceServerMock.GetChat mock is already set by Expect")
+	}
+
+	if mmGetChat.defaultExpectation.paramPtrs == nil {
+		mmGetChat.defaultExpectation.paramPtrs = &AgentPublicServiceServerMockGetChatParamPtrs{}
+	}
+	mmGetChat.defaultExpectation.paramPtrs.gp1 = &gp1
+	mmGetChat.defaultExpectation.expectationOrigins.originGp1 = minimock.CallerInfo(1)
+
+	return mmGetChat
+}
+
+// Inspect accepts an inspector function that has same arguments as the AgentPublicServiceServer.GetChat
+func (mmGetChat *mAgentPublicServiceServerMockGetChat) Inspect(f func(ctx context.Context, gp1 *mm_agentv1alpha.GetChatRequest)) *mAgentPublicServiceServerMockGetChat {
+	if mmGetChat.mock.inspectFuncGetChat != nil {
+		mmGetChat.mock.t.Fatalf("Inspect function is already set for AgentPublicServiceServerMock.GetChat")
+	}
+
+	mmGetChat.mock.inspectFuncGetChat = f
+
+	return mmGetChat
+}
+
+// Return sets up results that will be returned by AgentPublicServiceServer.GetChat
+func (mmGetChat *mAgentPublicServiceServerMockGetChat) Return(gp2 *mm_agentv1alpha.GetChatResponse, err error) *AgentPublicServiceServerMock {
+	if mmGetChat.mock.funcGetChat != nil {
+		mmGetChat.mock.t.Fatalf("AgentPublicServiceServerMock.GetChat mock is already set by Set")
+	}
+
+	if mmGetChat.defaultExpectation == nil {
+		mmGetChat.defaultExpectation = &AgentPublicServiceServerMockGetChatExpectation{mock: mmGetChat.mock}
+	}
+	mmGetChat.defaultExpectation.results = &AgentPublicServiceServerMockGetChatResults{gp2, err}
+	mmGetChat.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetChat.mock
+}
+
+// Set uses given function f to mock the AgentPublicServiceServer.GetChat method
+func (mmGetChat *mAgentPublicServiceServerMockGetChat) Set(f func(ctx context.Context, gp1 *mm_agentv1alpha.GetChatRequest) (gp2 *mm_agentv1alpha.GetChatResponse, err error)) *AgentPublicServiceServerMock {
+	if mmGetChat.defaultExpectation != nil {
+		mmGetChat.mock.t.Fatalf("Default expectation is already set for the AgentPublicServiceServer.GetChat method")
+	}
+
+	if len(mmGetChat.expectations) > 0 {
+		mmGetChat.mock.t.Fatalf("Some expectations are already set for the AgentPublicServiceServer.GetChat method")
+	}
+
+	mmGetChat.mock.funcGetChat = f
+	mmGetChat.mock.funcGetChatOrigin = minimock.CallerInfo(1)
+	return mmGetChat.mock
+}
+
+// When sets expectation for the AgentPublicServiceServer.GetChat which will trigger the result defined by the following
+// Then helper
+func (mmGetChat *mAgentPublicServiceServerMockGetChat) When(ctx context.Context, gp1 *mm_agentv1alpha.GetChatRequest) *AgentPublicServiceServerMockGetChatExpectation {
+	if mmGetChat.mock.funcGetChat != nil {
+		mmGetChat.mock.t.Fatalf("AgentPublicServiceServerMock.GetChat mock is already set by Set")
+	}
+
+	expectation := &AgentPublicServiceServerMockGetChatExpectation{
+		mock:               mmGetChat.mock,
+		params:             &AgentPublicServiceServerMockGetChatParams{ctx, gp1},
+		expectationOrigins: AgentPublicServiceServerMockGetChatExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetChat.expectations = append(mmGetChat.expectations, expectation)
+	return expectation
+}
+
+// Then sets up AgentPublicServiceServer.GetChat return parameters for the expectation previously defined by the When method
+func (e *AgentPublicServiceServerMockGetChatExpectation) Then(gp2 *mm_agentv1alpha.GetChatResponse, err error) *AgentPublicServiceServerMock {
+	e.results = &AgentPublicServiceServerMockGetChatResults{gp2, err}
+	return e.mock
+}
+
+// Times sets number of times AgentPublicServiceServer.GetChat should be invoked
+func (mmGetChat *mAgentPublicServiceServerMockGetChat) Times(n uint64) *mAgentPublicServiceServerMockGetChat {
+	if n == 0 {
+		mmGetChat.mock.t.Fatalf("Times of AgentPublicServiceServerMock.GetChat mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetChat.expectedInvocations, n)
+	mmGetChat.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetChat
+}
+
+func (mmGetChat *mAgentPublicServiceServerMockGetChat) invocationsDone() bool {
+	if len(mmGetChat.expectations) == 0 && mmGetChat.defaultExpectation == nil && mmGetChat.mock.funcGetChat == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetChat.mock.afterGetChatCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetChat.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetChat implements mm_agentv1alpha.AgentPublicServiceServer
+func (mmGetChat *AgentPublicServiceServerMock) GetChat(ctx context.Context, gp1 *mm_agentv1alpha.GetChatRequest) (gp2 *mm_agentv1alpha.GetChatResponse, err error) {
+	mm_atomic.AddUint64(&mmGetChat.beforeGetChatCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetChat.afterGetChatCounter, 1)
+
+	mmGetChat.t.Helper()
+
+	if mmGetChat.inspectFuncGetChat != nil {
+		mmGetChat.inspectFuncGetChat(ctx, gp1)
+	}
+
+	mm_params := AgentPublicServiceServerMockGetChatParams{ctx, gp1}
+
+	// Record call args
+	mmGetChat.GetChatMock.mutex.Lock()
+	mmGetChat.GetChatMock.callArgs = append(mmGetChat.GetChatMock.callArgs, &mm_params)
+	mmGetChat.GetChatMock.mutex.Unlock()
+
+	for _, e := range mmGetChat.GetChatMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.gp2, e.results.err
+		}
+	}
+
+	if mmGetChat.GetChatMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetChat.GetChatMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetChat.GetChatMock.defaultExpectation.params
+		mm_want_ptrs := mmGetChat.GetChatMock.defaultExpectation.paramPtrs
+
+		mm_got := AgentPublicServiceServerMockGetChatParams{ctx, gp1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetChat.t.Errorf("AgentPublicServiceServerMock.GetChat got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetChat.GetChatMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.gp1 != nil && !minimock.Equal(*mm_want_ptrs.gp1, mm_got.gp1) {
+				mmGetChat.t.Errorf("AgentPublicServiceServerMock.GetChat got unexpected parameter gp1, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetChat.GetChatMock.defaultExpectation.expectationOrigins.originGp1, *mm_want_ptrs.gp1, mm_got.gp1, minimock.Diff(*mm_want_ptrs.gp1, mm_got.gp1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetChat.t.Errorf("AgentPublicServiceServerMock.GetChat got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetChat.GetChatMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetChat.GetChatMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetChat.t.Fatal("No results are set for the AgentPublicServiceServerMock.GetChat")
+		}
+		return (*mm_results).gp2, (*mm_results).err
+	}
+	if mmGetChat.funcGetChat != nil {
+		return mmGetChat.funcGetChat(ctx, gp1)
+	}
+	mmGetChat.t.Fatalf("Unexpected call to AgentPublicServiceServerMock.GetChat. %v %v", ctx, gp1)
+	return
+}
+
+// GetChatAfterCounter returns a count of finished AgentPublicServiceServerMock.GetChat invocations
+func (mmGetChat *AgentPublicServiceServerMock) GetChatAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetChat.afterGetChatCounter)
+}
+
+// GetChatBeforeCounter returns a count of AgentPublicServiceServerMock.GetChat invocations
+func (mmGetChat *AgentPublicServiceServerMock) GetChatBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetChat.beforeGetChatCounter)
+}
+
+// Calls returns a list of arguments used in each call to AgentPublicServiceServerMock.GetChat.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetChat *mAgentPublicServiceServerMockGetChat) Calls() []*AgentPublicServiceServerMockGetChatParams {
+	mmGetChat.mutex.RLock()
+
+	argCopy := make([]*AgentPublicServiceServerMockGetChatParams, len(mmGetChat.callArgs))
+	copy(argCopy, mmGetChat.callArgs)
+
+	mmGetChat.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetChatDone returns true if the count of the GetChat invocations corresponds
+// the number of defined expectations
+func (m *AgentPublicServiceServerMock) MinimockGetChatDone() bool {
+	if m.GetChatMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetChatMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetChatMock.invocationsDone()
+}
+
+// MinimockGetChatInspect logs each unmet expectation
+func (m *AgentPublicServiceServerMock) MinimockGetChatInspect() {
+	for _, e := range m.GetChatMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to AgentPublicServiceServerMock.GetChat at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetChatCounter := mm_atomic.LoadUint64(&m.afterGetChatCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetChatMock.defaultExpectation != nil && afterGetChatCounter < 1 {
+		if m.GetChatMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to AgentPublicServiceServerMock.GetChat at\n%s", m.GetChatMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to AgentPublicServiceServerMock.GetChat at\n%s with params: %#v", m.GetChatMock.defaultExpectation.expectationOrigins.origin, *m.GetChatMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetChat != nil && afterGetChatCounter < 1 {
+		m.t.Errorf("Expected call to AgentPublicServiceServerMock.GetChat at\n%s", m.funcGetChatOrigin)
+	}
+
+	if !m.GetChatMock.invocationsDone() && afterGetChatCounter > 0 {
+		m.t.Errorf("Expected %d calls to AgentPublicServiceServerMock.GetChat at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetChatMock.expectedInvocations), m.GetChatMock.expectedInvocationsOrigin, afterGetChatCounter)
 	}
 }
 
@@ -11001,6 +11354,8 @@ func (m *AgentPublicServiceServerMock) MinimockFinish() {
 
 			m.MinimockGenerateMockTableInspect()
 
+			m.MinimockGetChatInspect()
+
 			m.MinimockGetColumnDefinitionsInspect()
 
 			m.MinimockGetTableInspect()
@@ -11073,6 +11428,7 @@ func (m *AgentPublicServiceServerMock) minimockDone() bool {
 		m.MinimockDeleteTableDone() &&
 		m.MinimockExportTableDone() &&
 		m.MinimockGenerateMockTableDone() &&
+		m.MinimockGetChatDone() &&
 		m.MinimockGetColumnDefinitionsDone() &&
 		m.MinimockGetTableDone() &&
 		m.MinimockGetTableEventsDone() &&

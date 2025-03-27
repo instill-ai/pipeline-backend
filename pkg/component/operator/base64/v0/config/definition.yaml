@@ -2,7 +2,7 @@ availableTasks:
   - TASK_ENCODE
   - TASK_DECODE
 custom: false
-documentationUrl: https://www.instill.tech/docs/component/operator/base64
+documentationUrl: https://instill-ai.dev/docs/component/operator/base64
 icon: assets/base64.svg
 iconUrl: ''
 id: base64

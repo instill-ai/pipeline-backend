@@ -1,7 +1,7 @@
 availableTasks:
   - TASK_TEXT_GENERATION_CHAT
 custom: false
-documentationUrl: https://www.instill.tech/docs/component/ai/anthropic
+documentationUrl: https://instill-ai.dev/docs/component/ai/anthropic
 icon: assets/anthropic.svg
 id: anthropic
 public: true

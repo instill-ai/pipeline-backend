@@ -7,7 +7,7 @@ availableTasks:
   - TASK_DELETE
   - TASK_CREATE_INDEX
   - TASK_DELETE_INDEX
-documentationUrl: https://www.instill.tech/docs/component/data/elasticsearch
+documentationUrl: https://instill-ai.dev/docs/component/data/elasticsearch
 icon: assets/elasticsearch.svg
 id: elasticsearch
 public: true

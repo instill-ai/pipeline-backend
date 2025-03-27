@@ -1,7 +1,7 @@
 availableTasks:
   - TASK_SEND_EMAIL
   - TASK_READ_EMAILS
-documentationUrl: https://www.instill.tech/docs/component/application/email
+documentationUrl: https://instill-ai.dev/docs/component/application/email
 icon: assets/email.svg
 id: email
 public: true

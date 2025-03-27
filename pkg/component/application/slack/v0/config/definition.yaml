@@ -4,7 +4,7 @@ availableTasks:
 availableEvents:
   - EVENT_NEW_MESSAGE
 custom: false
-documentationUrl: https://www.instill.tech/docs/component/application/slack
+documentationUrl: https://instill-ai.dev/docs/component/application/slack
 icon: assets/slack.svg
 iconUrl: ''
 id: slack

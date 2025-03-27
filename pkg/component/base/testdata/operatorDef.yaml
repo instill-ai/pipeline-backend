@@ -3,7 +3,7 @@ sourceUrl: https://github.com/instill-ai/pipeline-backend/blob/main/pkg/componen
 availableTasks:
   - TASK_MARSHAL
 custom: false
-documentationUrl: https://www.instill.tech/docs/component/operator/json
+documentationUrl: https://instill-ai.dev/docs/component/operator/json
 icon: Instill AI/json.svg
 iconUrl: ''
 id: json

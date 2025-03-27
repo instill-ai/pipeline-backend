@@ -2,7 +2,7 @@ availableTasks:
   - TASK_TEXT_GENERATION_CHAT
   - TASK_TEXT_EMBEDDINGS
 custom: false
-documentationUrl: https://www.instill.tech/docs/component/ai/fireworks-ai
+documentationUrl: https://instill-ai.dev/docs/component/ai/fireworks-ai
 icon: assets/fireworks-ai.svg
 id: fireworks-ai
 public: true

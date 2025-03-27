@@ -3,7 +3,7 @@ availableTasks:
   - TASK_CONVERT_TO_TEXT
   - TASK_CONVERT_TO_IMAGES
 custom: false
-documentationUrl: https://www.instill.tech/docs/component/operator/document
+documentationUrl: https://instill-ai.dev/docs/component/operator/document
 icon: assets/document.svg
 id: document
 public: true
