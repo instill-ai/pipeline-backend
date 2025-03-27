@@ -252,7 +252,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 				AssetCreator:      inputStruct.AssetCreator,
 				DigitalSourceType: inputStruct.DigitalSourceType,
 				MiningPreference:  inputStruct.MiningPreference,
-				GeneratedThrough:  "https://instill.tech", //TODO: support Core Host
+				GeneratedThrough:  "https://instill-ai.com", //TODO: support Core Host
 				GeneratedBy:       inputStruct.GeneratedBy,
 				License:           commitLicense,
 				Metadata:          &meta,

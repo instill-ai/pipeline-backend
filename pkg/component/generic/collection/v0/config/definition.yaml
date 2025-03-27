@@ -8,7 +8,7 @@ availableTasks:
   - TASK_SYMMETRIC_DIFFERENCE
   - TASK_UNION
 custom: false
-documentationUrl: https://www.instill.tech/docs/component/generic/collection
+documentationUrl: https://instill-ai.dev/docs/component/generic/collection
 icon: assets/collection.svg
 iconUrl: ''
 id: collection

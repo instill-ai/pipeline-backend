@@ -9,7 +9,7 @@ availableTasks:
   - TASK_CREATE_SEARCH_INDEX
   - TASK_DROP_SEARCH_INDEX
   - TASK_VECTOR_SEARCH
-documentationUrl: https://www.instill.tech/docs/component/data/mongodb
+documentationUrl: https://instill-ai.dev/docs/component/data/mongodb
 icon: assets/mongodb.svg
 id: mongodb
 public: true

@@ -2,7 +2,7 @@ availableTasks:
   - TASK_TEXT_GENERATION_CHAT
   - TASK_TEXT_EMBEDDINGS
   - TASK_TEXT_RERANKING
-documentationUrl: https://www.instill.tech/docs/component/ai/cohere
+documentationUrl: https://instill-ai.dev/docs/component/ai/cohere
 icon: assets/cohere.svg
 id: cohere
 public: true

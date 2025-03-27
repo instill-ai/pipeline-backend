@@ -30,7 +30,7 @@ This guide builds on top of other documents:
   environment, in case you want to [see your component in
   action](#use-the-component-in-💧-instill-pipeline).
 - If you find yourself wanting to know more, visit the [Instill
-  Docs](https://www.instill.tech/docs).
+  Docs](https://instill-ai.dev/docs).
 
 ### Create the component package
 
@@ -81,7 +81,7 @@ description: "'Hello, world' operator used as a template for adding components"
 spec: {}
 availableTasks:
   - TASK_GREET
-documentationUrl: https://www.instill.tech/docs/component/operator/hello
+documentationUrl: https://instill-ai.dev/docs/component/operator/hello
 icon: assets/hello.svg
 version: 0.1.0
 sourceUrl: https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/hello/v0
@@ -112,7 +112,7 @@ This file defines the component properties:
 - **`sourceUrl`** points to the codebase that implements the component. This
   will be used by the documentation generation tool and also will be part of the
   [component definition
-  list](https://openapi.instill.tech/reference/pipelinepublicservice_listcomponentdefinitions)
+  list](https://openapi.instill-ai.dev/reference/pipelinepublicservice_listcomponentdefinitions)
   endpoint.
 - **`releaseStage`** describes the release stage of the component. Unimplemented
   stages (`RELEASE_STAGE_COMING_SOON` or `RELEASE_STAGE_OPEN_FOR_CONTRIBUTION`)
@@ -192,7 +192,7 @@ This file defines the input and output schema of each task:
 - **`type`** indicates the data type of the output field, which should be one
   of `string`, `number`, `boolean`, `file`, `document`, `image`, `video`,
   `audio`, `array`, or `object`. Please refer to [**Instill
-  Format**](https://www.instill.tech/docs/pipeline/instill-format) for more details.
+  Format**](https://instill-ai.dev/docs/pipeline/instill-format) for more details.
 
 - **`instillSecret`** indicates the data must reference the secrets and cannot
   be used in plaintext.
@@ -202,7 +202,7 @@ This file defines the input and output schema of each task:
 - **`type`** indicates the data type of the output field, which should be one
   of `string`, `number`, `boolean`, `file`, `document`, `image`, `video`,
   `audio`, `array`, or `object`. Please refer to [**Instill
-  Format**](https://www.instill.tech/docs/pipeline/instill-format) for more details.
+  Format**](https://instill-ai.dev/docs/pipeline/instill-format) for more details.
 
 See the [example recipe](#example-recipe) to understand how these fields map to
 the recipe of a pipeline when configured to use this operator.
@@ -216,7 +216,7 @@ configurations. The format is the same as the `input` objects in `tasks.yaml`.
 
 The setup of a component can be defined within the recipe as key-value fields,
 or as a reference to a **Connection** (see the
-[**Integrations**](https://www.instill.tech/docs/pipeline/integration) doc for more
+[**Integrations**](https://instill-ai.dev/docs/pipeline/integration) doc for more
 information). Certain components support OAuth 2.0 integrations. If you want
 your component to support this sort of connection:
 

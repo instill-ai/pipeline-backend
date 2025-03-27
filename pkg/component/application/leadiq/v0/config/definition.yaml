@@ -1,6 +1,6 @@
 availableTasks:
   - TASK_FIND_PROSPECTS
-documentationUrl: https://www.instill.tech/docs/component/application/leadiq
+documentationUrl: https://instill-ai.dev/docs/component/application/leadiq
 icon: assets/leadiq.svg
 id: leadiq
 public: true

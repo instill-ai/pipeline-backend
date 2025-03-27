@@ -12,7 +12,7 @@ availableTasks:
   - TASK_CHAT
   - TASK_EMBEDDING
 custom: false
-documentationUrl: https://www.instill.tech/docs/component/ai/instill-model
+documentationUrl: https://instill-ai.dev/docs/component/ai/instill-model
 icon: assets/instill-model.svg
 iconUrl: ''
 id: instill-model

@@ -38,7 +38,7 @@ The component definition and tasks are defined in the [definition.yaml](https://
 In order to communicate with Atlassian, the following connection details need to be
 provided. You may specify them directly in a pipeline recipe as key-value pairs
 within the component's `setup` block, or you can create a **Connection** from
-the [**Integration Settings**](https://www.instill.tech/docs/pipeline/integration)
+the [**Integration Settings**](https://instill-ai.dev/docs/pipeline/integration)
 page and reference the whole `setup` as `setup:
 ${connection.<my-connection-id>}`.
 
@@ -601,8 +601,6 @@ Update a sprint in Jira.
 
 
 ## Example Recipes
-
-Recipe for the [Your Project Management Assistant ](https://instill.tech/instill-ai/pipelines/pm-assistant/playground) pipeline.
 
 ```yaml
 version: v1beta

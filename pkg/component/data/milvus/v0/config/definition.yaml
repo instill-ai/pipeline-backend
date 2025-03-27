@@ -9,7 +9,7 @@ availableTasks:
   - TASK_DROP_PARTITION
   - TASK_CREATE_INDEX
   - TASK_DROP_INDEX
-documentationUrl: https://www.instill.tech/docs/component/data/milvus
+documentationUrl: https://instill-ai.dev/docs/component/data/milvus
 icon: assets/milvus.svg
 id: milvus
 public: true

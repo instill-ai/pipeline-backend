@@ -3,7 +3,7 @@ availableTasks:
   - TASK_READ_OBJECTS
   - TASK_CREATE_BUCKET
 custom: false
-documentationUrl: https://www.instill.tech/docs/component/data/gcs
+documentationUrl: https://instill-ai.dev/docs/component/data/gcs
 icon: assets/gcs.svg
 iconUrl: ''
 id: gcs

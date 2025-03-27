@@ -256,7 +256,7 @@ service PipelinePublicService {
   // The pipeline is identified by its resource name, formed by the parent namespace
   // and ID of the pipeline.
   //
-  // For more information, see [Run NamespacePipeline](https://www.instill.tech/docs/pipeline/run-pipeline).
+  // For more information, see [Run NamespacePipeline](https://instill-ai.dev/docs/pipeline/run-pipeline).
   rpc TriggerNamespacePipeline(TriggerNamespacePipelineRequest) returns (TriggerNamespacePipelineResponse) {
     option (google.api.http) = {
       post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/trigger"
@@ -317,7 +317,7 @@ service PipelinePublicService {
   // The pipeline is identified by its resource name, formed by the parent namespace
   // and ID of the pipeline.
   //
-  // For more information, see [Run NamespacePipeline](https://www.instill.tech/docs/pipeline/run-pipeline).
+  // For more information, see [Run NamespacePipeline](https://instill-ai.dev/docs/pipeline/run-pipeline).
   rpc TriggerAsyncNamespacePipeline(TriggerAsyncNamespacePipelineRequest) returns (TriggerAsyncNamespacePipelineResponse) {
     option (google.api.http) = {
       post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/trigger-async"
@@ -737,7 +737,7 @@ service PipelinePublicService {
   // The pipeline is identified by its resource name, formed by the parent user
   // and ID of the pipeline.
   //
-  // For more information, see [Run Pipeline](https://www.instill.tech/docs/pipeline/run-pipeline).
+  // For more information, see [Run Pipeline](https://instill-ai.dev/docs/pipeline/run-pipeline).
   rpc TriggerUserPipeline(TriggerUserPipelineRequest) returns (TriggerUserPipelineResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=users/*/pipelines/*}/trigger"
@@ -774,7 +774,7 @@ service PipelinePublicService {
   // The pipeline is identified by its resource name, formed by the parent user
   // and ID of the pipeline.
   //
-  // For more information, see [Run Pipeline](https://www.instill.tech/docs/pipeline/run-pipeline).
+  // For more information, see [Run Pipeline](https://instill-ai.dev/docs/pipeline/run-pipeline).
   rpc TriggerAsyncUserPipeline(TriggerAsyncUserPipelineRequest) returns (TriggerAsyncUserPipelineResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=users/*/pipelines/*}/triggerAsync"
@@ -1020,7 +1020,7 @@ service PipelinePublicService {
   // The pipeline is identified by its resource name, formed by the parent
   // organization and ID of the pipeline.
   //
-  // For more information, see [Run Pipeline](https://www.instill.tech/docs/pipeline/run-pipeline).
+  // For more information, see [Run Pipeline](https://instill-ai.dev/docs/pipeline/run-pipeline).
   rpc TriggerOrganizationPipelineStream(TriggerOrganizationPipelineStreamRequest) returns (stream TriggerOrganizationPipelineStreamResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=organizations/*/pipelines/*}/trigger-stream"
@@ -1039,7 +1039,7 @@ service PipelinePublicService {
   // The pipeline is identified by its resource name, formed by the parent
   // organization and ID of the pipeline.
   //
-  // For more information, see [Run Pipeline](https://www.instill.tech/docs/pipeline/run-pipeline).
+  // For more information, see [Run Pipeline](https://instill-ai.dev/docs/pipeline/run-pipeline).
   rpc TriggerOrganizationPipeline(TriggerOrganizationPipelineRequest) returns (TriggerOrganizationPipelineResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=organizations/*/pipelines/*}/trigger"
@@ -1059,7 +1059,7 @@ service PipelinePublicService {
   // The pipeline is identified by its resource name, formed by the parent
   // organization and ID of the pipeline.
   //
-  // For more information, see [Run Pipeline](https://www.instill.tech/docs/pipeline/run-pipeline).
+  // For more information, see [Run Pipeline](https://instill-ai.dev/docs/pipeline/run-pipeline).
   rpc TriggerAsyncOrganizationPipeline(TriggerAsyncOrganizationPipelineRequest) returns (TriggerAsyncOrganizationPipelineResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=organizations/*/pipelines/*}/triggerAsync"
