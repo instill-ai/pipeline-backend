@@ -3,7 +3,7 @@ availableTasks:
   - TASK_CRUD_TASK
   - TASK_CRUD_PROJECT
   - TASK_CRUD_PORTFOLIO
-documentationUrl: https://www.instill.tech/docs/component/application/asana
+documentationUrl: https://instill-ai.dev/docs/component/application/asana
 icon: assets/asana.svg
 id: asana
 public: true

@@ -2,7 +2,7 @@ name: component-definitions/json
 uid: 28f53d15-6150-46e6-99aa-f76b70a926c0
 id: json
 title: JSON
-documentationUrl: https://www.instill.tech/docs/component/operator/json
+documentationUrl: https://instill-ai.dev/docs/component/operator/json
 icon: Instill AI/json.svg
 spec:
   componentSpecification:

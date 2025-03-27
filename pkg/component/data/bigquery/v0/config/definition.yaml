@@ -2,7 +2,7 @@ availableTasks:
   - TASK_INSERT
   - TASK_READ
 custom: false
-documentationUrl: https://www.instill.tech/docs/component/data/bigquery
+documentationUrl: https://instill-ai.dev/docs/component/data/bigquery
 icon: assets/bigquery.svg
 iconUrl: ''
 id: bigquery

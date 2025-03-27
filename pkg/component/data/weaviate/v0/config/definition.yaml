@@ -5,7 +5,7 @@ availableTasks:
   - TASK_UPDATE
   - TASK_DELETE
   - TASK_DELETE_COLLECTION
-documentationUrl: https://www.instill.tech/docs/component/data/weaviate
+documentationUrl: https://instill-ai.dev/docs/component/data/weaviate
 icon: assets/weaviate.svg
 id: weaviate
 public: true

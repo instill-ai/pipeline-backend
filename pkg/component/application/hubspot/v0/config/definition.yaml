@@ -14,7 +14,7 @@ availableTasks:
   - TASK_RETRIEVE_ASSOCIATION
   - TASK_GET_OWNER
   - TASK_GET_ALL
-documentationUrl: https://www.instill.tech/docs/component/application/hubspot
+documentationUrl: https://instill-ai.dev/docs/component/application/hubspot
 icon: assets/hubspot.svg
 id: hubspot
 public: true

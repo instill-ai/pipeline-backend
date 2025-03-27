@@ -6,7 +6,7 @@ availableTasks:
   - TASK_DELETE
   - TASK_CREATE_TABLE
   - TASK_DROP_TABLE
-documentationUrl: https://www.instill.tech/docs/component/data/sql
+documentationUrl: https://instill-ai.dev/docs/component/data/sql
 icon: assets/sql.svg
 id: sql
 public: true

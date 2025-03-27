@@ -2,7 +2,7 @@ name: component-definitions/openai
 uid: 9fb6a2cb-bff5-4c69-bc6d-4538dd8e3362
 id: openai
 title: OpenAI
-documentationUrl: https://www.instill.tech/docs/component/ai/openai
+documentationUrl: https://instill-ai.dev/docs/component/ai/openai
 icon: OpenAI/openai.svg
 spec:
   componentSpecification:

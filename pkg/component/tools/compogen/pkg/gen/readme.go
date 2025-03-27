@@ -194,7 +194,7 @@ func (g *READMEGenerator) Generate() error {
 		"insertHeaderByConstValue": insertHeaderByConstValue,
 		"hosts": func() []host {
 			return []host{
-				{Name: "Instill-Cloud", URL: "https://api.instill.tech"},
+				{Name: "Instill-Cloud", URL: "https://api.instill-ai.com"},
 				{Name: "Instill-Core", URL: "http://localhost:8080"},
 			}
 		},

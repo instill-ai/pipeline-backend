@@ -123,8 +123,6 @@ message OrganizationProfile {
 // the public user information plus some fields that should only be accessed by
 // the user themselves.
 message AuthenticatedUser {
-  option (google.api.resource) = {type: "api.instill.tech/AuthenticatedUser"};
-
   // The name of the user, defined by its ID.
   // - Format: `users/{user.id}`.
   string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -182,7 +180,6 @@ message Owner {
 // contain any private information about the user.
 message User {
   option (google.api.resource) = {
-    type: "api.instill.tech/User"
     pattern: "users/{user.id}"
     pattern: "users/{user.uid}"
   };
@@ -360,10 +357,7 @@ message GetUserRequest {
   // View allows clients to specify the desired resource view in the response.
   optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
   // User ID
-  string user_id = 3 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference).type = "api.instill.tech/User"
-  ];
+  string user_id = 3 [(google.api.field_behavior) = REQUIRED];
 }
 
 // GetUserResponse contains the requested user.
@@ -505,8 +499,6 @@ message CheckNamespaceByUIDAdminResponse {
 
 // API tokens allow users to make requests to the Instill AI API.
 message ApiToken {
-  option (google.api.resource) = {type: "api.instill.tech/ApiToken"};
-
   // When users trigger a pipeline which uses an API token, the token is
   // updated with the current time. This field is used to track the last time
   // the token was used.
@@ -596,10 +588,7 @@ message GetTokenRequest {
   // Reserverd for `name`
   reserved 1;
   // Token ID
-  string token_id = 2 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/ApiToken"}
-  ];
+  string token_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
 // GetTokenResponse contains the requested token.
@@ -613,10 +602,7 @@ message DeleteTokenRequest {
   // Reserverd for `name`
   reserved 1;
   // Token ID
-  string token_id = 2 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/ApiToken"}
-  ];
+  string token_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
 // DeleteTokenResponse is an empty response.
@@ -760,10 +746,7 @@ message AuthChangePasswordResponse {}
 // Organizations group several users. As entities, they can own resources such
 // as pipelines or releases.
 message Organization {
-  option (google.api.resource) = {
-    type: "api.instill.tech/Organization"
-    pattern: "organizations/{organization.id}"
-  };
+  option (google.api.resource) = {pattern: "organizations/{organization.id}"};
 
   // The name of the organization, defined by its ID.
   // - Format: `organization/{organization.id}`.
@@ -836,10 +819,7 @@ message GetOrganizationRequest {
   // View allows clients to specify the desired resource view in the response.
   optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
   // Organization ID
-  string organization_id = 3 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference).type = "api.instill.tech/Organization"
-  ];
+  string organization_id = 3 [(google.api.field_behavior) = REQUIRED];
 }
 
 // GetOrganizationResponse contains the requested organization.
@@ -872,10 +852,7 @@ message DeleteOrganizationRequest {
   // Reserverd for `name`
   reserved 1;
   // Organization ID
-  string organization_id = 2 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference).type = "api.instill.tech/Organization"
-  ];
+  string organization_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
 // DeleteOrganizationResponse is an empty response.

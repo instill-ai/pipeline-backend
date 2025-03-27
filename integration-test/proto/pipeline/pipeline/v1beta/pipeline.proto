@@ -11,7 +11,6 @@ import "../../../pipeline/pipeline/v1beta/common.proto";
 import "../../../pipeline/pipeline/v1beta/component_definition.proto";
 // Google API
 import "google/api/field_behavior.proto";
-import "google/api/resource.proto";
 // Protocol Buffers Well-Known Types
 import "google/longrunning/operations.proto";
 import "google/protobuf/field_mask.proto";
@@ -73,7 +72,7 @@ message Endpoints {
 // A Pipeline is an end-to-end workflow that automates a sequence of components
 // to process data.
 //
-// For more information, see [Pipeline](https://www.instill.tech/docs/pipeline/introduction) in
+// For more information, see [Pipeline](https://instill-ai.dev/docs/pipeline/introduction) in
 // the official documentation.
 message Pipeline {
   // View defines how a Pipeline is presented.
@@ -806,7 +805,6 @@ message CreateUserPipelineRequest {
   // - Format: `users/{user.id}`.
   string parent = 2 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {child_type: "api.instill.tech/Pipeline"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_name"}
     }
@@ -840,7 +838,6 @@ message ListUserPipelinesRequest {
   // - Format: `users/{user.id}`.
   string parent = 5 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {child_type: "api.instill.tech/Pipeline"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_name"}
     }
@@ -872,7 +869,6 @@ message GetUserPipelineRequest {
   // - Format: `users/{user.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_pipeline_name"}
     }
@@ -913,7 +909,6 @@ message DeleteUserPipelineRequest {
   // - Format: `users/{user.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_pipeline_name"}
     }
@@ -940,7 +935,6 @@ message ValidateUserPipelineRequest {
   // - Format: `users/{user.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_pipeline_name"}
     }
@@ -963,7 +957,6 @@ message RenameUserPipelineRequest {
   // - Format: `users/{user.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_pipeline_name"}
     }
@@ -987,7 +980,7 @@ message TriggerUserPipelineRequest {
   // - Format: `users/{user.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_pipeline_name"}
     }
@@ -1015,7 +1008,7 @@ message TriggerUserPipelineWithStreamRequest {
   // - Format: `users/{user.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_pipeline_name"}
     }
@@ -1069,7 +1062,7 @@ message TriggerAsyncUserPipelineRequest {
   // - Format: `users/{user.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_pipeline_name"}
     }
@@ -1097,7 +1090,7 @@ message CreateUserPipelineReleaseRequest {
   // Format: `users/{user.id}/pipelines/{pipeline.id}`
   string parent = 2 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {child_type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_name"}
     }
@@ -1129,7 +1122,7 @@ message ListUserPipelineReleasesRequest {
   // Format: `users/{user.id}/pipelines/{pipeline.id}`.
   string parent = 5 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {child_type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_name"}
     }
@@ -1156,7 +1149,7 @@ message GetUserPipelineReleaseRequest {
   // - Format: `users/{user.id}/pipelines/{pipeline.id}/releases/{release.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_pipeline_release_name"}
     }
@@ -1198,7 +1191,7 @@ message DeleteUserPipelineReleaseRequest {
   // - Format: `users/{user.id}/pipelines/{pipeline.id}/releases/{release.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_pipeline_release_name"}
     }
@@ -1216,7 +1209,7 @@ message RestoreUserPipelineReleaseRequest {
   // - Format: `users/{user.id}/pipelines/{pipeline.id}/releases/{release.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_pipeline_release_name"}
     }
@@ -1237,7 +1230,7 @@ message RenameUserPipelineReleaseRequest {
   // - Format: `users/{user.id}/pipelines/{pipeline.id}/releases/{release.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_pipeline_release_name"}
     }
@@ -1261,7 +1254,7 @@ message TriggerUserPipelineReleaseRequest {
   // - Format: `users/{user.id}/pipelines/{pipeline.id}/releases/{release.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_pipeline_release_name"}
     }
@@ -1290,7 +1283,7 @@ message TriggerAsyncUserPipelineReleaseRequest {
   // - Format: `users/{user.id}/pipelines/{pipeline.id}/releases/{release.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "user_pipeline_release_name"}
     }
@@ -1317,7 +1310,7 @@ message CreateOrganizationPipelineRequest {
   // - Format: `organizations/{organization.id}`.
   string parent = 2 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {child_type: "api.instill.tech/Pipeline"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_name"}
     }
@@ -1351,7 +1344,7 @@ message ListOrganizationPipelinesRequest {
   // - Format: `organizations/{organization.id}`.
   string parent = 5 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {child_type: "api.instill.tech/Pipeline"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_name"}
     }
@@ -1383,7 +1376,7 @@ message GetOrganizationPipelineRequest {
   // - Format: `organizations/{organization.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_pipeline_name"}
     }
@@ -1424,7 +1417,7 @@ message DeleteOrganizationPipelineRequest {
   // - Format: `organizations/{organization.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_pipeline_name"}
     }
@@ -1442,7 +1435,7 @@ message ValidateOrganizationPipelineRequest {
   // - Format: `organizations/{organization.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_pipeline_name"}
     }
@@ -1465,7 +1458,7 @@ message RenameOrganizationPipelineRequest {
   // - Format: `organizations/{organization.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_pipeline_name"}
     }
@@ -1489,7 +1482,7 @@ message TriggerOrganizationPipelineRequest {
   // - Format: `organizations/{organization.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_pipeline_name"}
     }
@@ -1517,7 +1510,7 @@ message TriggerOrganizationPipelineStreamRequest {
   // - Format: `organizations/{organization.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_pipeline_name"}
     }
@@ -1545,7 +1538,6 @@ message TriggerAsyncOrganizationPipelineRequest {
   // - Format: `organizations/{organization.id}/pipelines/{pipeline.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_pipeline_name"}
     }
@@ -1572,7 +1564,7 @@ message CreateOrganizationPipelineReleaseRequest {
   // Format: `organizations/{organization.id}/pipelines/{pipeline.id}`
   string parent = 2 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {child_type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_name"}
     }
@@ -1604,7 +1596,7 @@ message ListOrganizationPipelineReleasesRequest {
   // Format: `organizations/{organization.id}/pipelines/{pipeline.id}`
   string parent = 5 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {child_type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_name"}
     }
@@ -1632,7 +1624,7 @@ message GetOrganizationPipelineReleaseRequest {
   // `organizations/{organization.id}/pipelines/{pipeline.id}/releases/{release.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_pipeline_release_name"}
     }
@@ -1676,7 +1668,7 @@ message DeleteOrganizationPipelineReleaseRequest {
   // `organizations/{organization.id}/pipelines/{pipeline.id}/releases/{release.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_pipeline_release_name"}
     }
@@ -1695,7 +1687,7 @@ message RestoreOrganizationPipelineReleaseRequest {
   // `organizations/{organization.id}/pipelines/{pipeline.id}/releases/{release.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_pipeline_release_name"}
     }
@@ -1718,7 +1710,7 @@ message RenameOrganizationPipelineReleaseRequest {
   // `organizations/{organization.id}/pipelines/{pipeline.id}/releases/{release.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_pipeline_release_name"}
     }
@@ -1743,7 +1735,7 @@ message TriggerOrganizationPipelineReleaseRequest {
   // `organizations/{organization.id}/pipelines/{pipeline.id}/releases/{release.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_pipeline_release_name"}
     }
@@ -1772,7 +1764,7 @@ message TriggerAsyncOrganizationPipelineReleaseRequest {
   // `organizations/{organization.id}/pipelines/{pipeline.id}/releases/{release.id}`.
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "organization_pipeline_release_name"}
     }
@@ -1878,7 +1870,7 @@ message LookUpPipelineAdminRequest {
   // - Format: `pipelines/{pipeline.uid}`.
   string permalink = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration: {path_param_name: "pipeline_permalink"}
     }

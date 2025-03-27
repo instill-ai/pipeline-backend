@@ -7,7 +7,7 @@ availableTasks:
   - TASK_DROP_COLLECTION
   - TASK_CREATE_PARTITION
   - TASK_DROP_PARTITION
-documentationUrl: https://www.instill.tech/docs/component/data/zilliz
+documentationUrl: https://instill-ai.dev/docs/component/data/zilliz
 icon: assets/zilliz.svg
 id: zilliz
 public: true
