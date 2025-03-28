@@ -300,7 +300,7 @@ func ExecutePythonCode(pythonCode string, params map[string]interface{}) ([]byte
 		errChan <- nil
 	}()
 
-	outputBytes, err := cmdRunner.CombinedOutput()
+	outputBytes, err := cmdRunner.Output()
 
 	if err != nil {
 		errorStr := string(outputBytes)
