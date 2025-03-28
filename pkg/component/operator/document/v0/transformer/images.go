@@ -96,8 +96,12 @@ func (c *DocumentToImageConverter) Convert(inputStruct *ConvertDocumentToImagesI
 
 	var pageNumbers pageNumbers
 	err = json.Unmarshal(pageNumbersBytes, &pageNumbers)
-	if err != nil || pageNumbers.Error != "" {
-		return nil, fmt.Errorf("unmarshal page numbers: %w, %s", err, pageNumbers.Error)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshalling page numbers (%s): %w", string(pageNumbersBytes), err)
+	}
+
+	if pageNumbers.Error != "" {
+		return nil, fmt.Errorf("page numbers contains error: %s", pageNumbers.Error)
 	}
 
 	if pageNumbers.PageNumbers == 0 {
