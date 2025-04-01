@@ -11,6 +11,7 @@ spec:
           condition:
             instillShortDescription: config whether the component will be executed or skipped
             instillUIOrder: 1
+            instillFormat: string
             type: string
           input:
             description: Input
@@ -24,13 +25,16 @@ spec:
             required:
               - object
             title: Input
+            instillFormat: object
             type: object
           task:
             const: TASK_MARSHAL
             title: Marshal
         title: Marshal
+        instillFormat: object
         type: object
     title: JSON Component
+    instillFormat: object
     type: object
   dataSpecifications:
     TASK_MARSHAL:
@@ -43,10 +47,12 @@ spec:
             instillUIOrder: 0
             required: []
             title: Object
+            instillFormat: object
             type: object
         required:
           - object
         title: Input
+        instillFormat: object
         type: object
       output:
         description: Output
@@ -54,14 +60,15 @@ spec:
         properties:
           string:
             description: Data
-            instillFormat: string
             instillShortDescription: Data
             instillUIOrder: 0
             title: Data
+            instillFormat: string
             type: string
         required:
           - string
         title: Output
+        instillFormat: object
         type: object
 public: true
 version: 1.0.0

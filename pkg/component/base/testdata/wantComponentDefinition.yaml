@@ -14,6 +14,7 @@ spec:
             instillUpstreamTypes:
               - value
               - template
+            instillFormat: string
             type: string
           input:
             instillUIOrder: 0
@@ -25,22 +26,26 @@ spec:
                 instillShortDescription: ID of the model to use
                 instillUIOrder: 0
                 title: Model
+                instillFormat: string
                 type: string
               text:
                 description: The text
                 instillShortDescription: The text
                 instillUIOrder: 1
                 title: Text
+                instillFormat: string
                 type: string
             required:
               - text
               - model
             title: Input
+            instillFormat: object
             type: object
           task:
             const: TASK_TEXT_EMBEDDINGS
             instillShortDescription: Turn text into numbers, unlocking use cases like search.
             title: Text Embeddings
+        instillFormat: object
         type: object
     properties:
       setup:
@@ -53,12 +58,15 @@ spec:
             instillShortDescription: Fill in your OpenAI API key. To find your keys, visit your OpenAI's API Keys page.
             instillUIOrder: 0
             title: API Key
+            instillFormat: string
             type: string
         required:
           - api-key
         title: OpenAI Connection
+        instillFormat: object
         type: object
     title: OpenAI Component
+    instillFormat: object
     type: object
   dataSpecifications:
     TASK_TEXT_EMBEDDINGS:
@@ -72,17 +80,20 @@ spec:
             instillShortDescription: ID of the model to use
             instillUIOrder: 0
             title: Model
+            instillFormat: string
             type: string
           text:
             description: The text
             instillShortDescription: The text
             instillUIOrder: 1
             title: Text
+            instillFormat: string
             type: string
         required:
           - text
           - model
         title: Input
+        instillFormat: object
         type: object
       output:
         instillUIOrder: 0
@@ -91,12 +102,15 @@ spec:
             instillUIOrder: 0
             items:
               title: Embedding
+              instillFormat: number
               type: number
             title: Embedding
+            instillFormat: array
             type: array
         required:
           - embedding
         title: Output
+        instillFormat: object
         type: object
 type: COMPONENT_TYPE_AI
 public: true
