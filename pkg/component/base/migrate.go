@@ -1,6 +1,8 @@
 package base
 
 import (
+	"strings"
+
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 )
@@ -48,6 +50,21 @@ func convertFormatFieldsRecursive(s *structpb.Struct, isCompSpec bool) {
 		if _, ok := fields["description"]; ok {
 			if _, ok := fields["instillShortDescription"]; !ok {
 				fields["instillShortDescription"] = fields["description"]
+			}
+		}
+		// Console still requires the instillFormat field for backwards
+		// compatibility. For most types, we use the same value for
+		// instillFormat as the type field. The only exception is array of
+		// objects, which cannot be properly displayed in console. For these
+		// cases, we use instillFormat="json" to ensure proper rendering.
+		if _, ok := fields["type"]; ok {
+			fields["instillFormat"] = structpb.NewStringValue(strings.Split(fields["type"].GetStringValue(), "/")[0])
+			if fields["type"].GetStringValue() == "array" {
+				if item, ok := fields["items"]; ok {
+					if subType, ok := item.GetStructValue().Fields["type"]; ok && subType.GetStringValue() == "object" {
+						fields["instillFormat"] = structpb.NewStringValue("json")
+					}
+				}
 			}
 		}
 
