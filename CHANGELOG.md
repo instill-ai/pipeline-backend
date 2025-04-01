@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.52.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.52.0-beta...v0.52.1-beta) (2025-04-01)
+
+
+### Bug Fixes
+
+* **component:** make component definition response compatiable with Console ([#995](https://github.com/instill-ai/pipeline-backend/issues/995)) ([9e4286c](https://github.com/instill-ai/pipeline-backend/commit/9e4286c5e31a39115fe58bdfe3990c05a4e522b1))
+
 ## [0.52.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.51.0-beta...v0.52.0-beta) (2025-03-28)
 
 
