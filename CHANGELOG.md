@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.52.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.52.1-beta...v0.52.2-beta) (2025-04-10)
+
+
+### Bug Fixes
+
+* **iterator:** always initialize pipeline output template ([#997](https://github.com/instill-ai/pipeline-backend/issues/997)) ([3020465](https://github.com/instill-ai/pipeline-backend/commit/3020465c7ccee23c6729d2a41601c04a67ae03e6))
+
 ## [0.52.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.52.0-beta...v0.52.1-beta) (2025-04-01)
 
 
