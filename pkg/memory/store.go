@@ -43,10 +43,11 @@ func (s *Store) NewWorkflowMemory(_ context.Context, workflowID string, batchSiz
 	wfmData := make([]format.Value, batchSize)
 	for idx := range batchSize {
 		m := data.Map{
-			string(PipelineVariable):   data.Map{},
-			string(PipelineSecret):     data.Map{},
-			string(PipelineConnection): data.Map{},
-			string(PipelineOutput):     data.Map{},
+			string(PipelineVariable):       data.Map{},
+			string(PipelineSecret):         data.Map{},
+			string(PipelineConnection):     data.Map{},
+			string(PipelineOutput):         data.Map{},
+			string(PipelineOutputTemplate): data.Map{},
 		}
 
 		wfmData[idx] = m

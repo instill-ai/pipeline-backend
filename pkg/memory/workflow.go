@@ -274,6 +274,11 @@ func (wfm *WorkflowMemory) SetPipelineData(ctx context.Context, batchIdx int, t 
 	if !wfm.streaming {
 		return nil
 	}
+
+	if t != PipelineOutput {
+		return nil
+	}
+
 	// TODO: simplify struct conversion
 	s, err := value.ToStructValue()
 	if err != nil {
@@ -287,10 +292,6 @@ func (wfm *WorkflowMemory) SetPipelineData(ctx context.Context, batchIdx int, t 
 	err = json.Unmarshal(b, &data)
 	if err != nil {
 		return err
-	}
-
-	if t != PipelineOutput {
-		return nil
 	}
 
 	event := pubsub.Event{

@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -165,26 +166,26 @@ func (o *outputWriter) Write(ctx context.Context, output *structpb.Struct) (err 
 func (o *outputWriter) write(ctx context.Context, val format.Value) (err error) {
 	wfm, err := o.memoryStore.GetWorkflowMemory(ctx, o.workflowID)
 	if err != nil {
-		return err
+		return fmt.Errorf("getting workflow memory: %w", err)
 	}
 
 	if err := wfm.SetComponentData(ctx, o.originalIdx, o.compID, memory.ComponentDataOutput, val); err != nil {
-		return err
+		return fmt.Errorf("setting component output data: %w", err)
 	}
 
 	if o.streaming {
 		outputTemplate, err := wfm.Get(ctx, o.originalIdx, string(memory.PipelineOutputTemplate))
 		if err != nil {
-			return err
+			return fmt.Errorf("getting output template: %w", err)
 		}
 
 		output, err := recipe.Render(ctx, outputTemplate, o.originalIdx, wfm, true)
 		if err != nil {
-			return err
+			return fmt.Errorf("rendering output template: %w", err)
 		}
 		err = wfm.SetPipelineData(ctx, o.originalIdx, memory.PipelineOutput, output)
 		if err != nil {
-			return err
+			return fmt.Errorf("setting pipeline output data: %w", err)
 		}
 	}
 
