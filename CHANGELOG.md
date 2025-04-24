@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.52.3-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.52.2-beta...v0.52.3-beta) (2025-04-24)
+
+
+### Bug Fixes
+
+* **component,artifact:** remove duplicated connection close ([#1001](https://github.com/instill-ai/pipeline-backend/issues/1001)) ([6e98c0e](https://github.com/instill-ai/pipeline-backend/commit/6e98c0ed421a2b65409615cbca04cc7dde517b5f))
+
 ## [0.52.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.52.1-beta...v0.52.2-beta) (2025-04-10)
 
 
