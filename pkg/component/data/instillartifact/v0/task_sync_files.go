@@ -53,9 +53,7 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 		return nil, fmt.Errorf("convert input to struct: %w", err)
 	}
 
-	artifactClient, connection := e.client, e.connection
-
-	defer connection.Close()
+	artifactClient := e.client
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
