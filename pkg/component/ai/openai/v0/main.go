@@ -276,35 +276,24 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			body.ToolChoice = toolChoice
 		}
 
-		// workaround, the OpenAI service can not accept this param
-		if inputStruct.Model != "gpt-4-vision-preview" {
-			if inputStruct.ResponseFormat != nil {
-				body.ResponseFormat = &responseFormatReqStruct{
-					Type: inputStruct.ResponseFormat.Type,
-				}
-				if inputStruct.ResponseFormat.Type == "json_schema" {
-					if inputStruct.Model == "gpt-4o-mini" || inputStruct.Model == "gpt-4o" || inputStruct.Model == "gpt-4o-2024-08-06" {
-						sch := map[string]any{}
-						if inputStruct.ResponseFormat.JSONSchema != "" {
-							err = json.Unmarshal([]byte(inputStruct.ResponseFormat.JSONSchema), &sch)
-							if err != nil {
-								job.Error.Error(ctx, err)
-								return
-							}
-							body.ResponseFormat = &responseFormatReqStruct{
-								Type:       inputStruct.ResponseFormat.Type,
-								JSONSchema: sch,
-							}
-						}
-
-					} else {
-						job.Error.Error(ctx, fmt.Errorf("this model doesn't support response format: json_schema"))
+		if inputStruct.ResponseFormat != nil {
+			body.ResponseFormat = &responseFormatReqStruct{
+				Type: inputStruct.ResponseFormat.Type,
+			}
+			if inputStruct.ResponseFormat.Type == "json_schema" {
+				sch := map[string]any{}
+				if inputStruct.ResponseFormat.JSONSchema != "" {
+					err = json.Unmarshal([]byte(inputStruct.ResponseFormat.JSONSchema), &sch)
+					if err != nil {
+						job.Error.Error(ctx, err)
 						return
 					}
-
+					body.ResponseFormat = &responseFormatReqStruct{
+						Type:       inputStruct.ResponseFormat.Type,
+						JSONSchema: sch,
+					}
 				}
 			}
-
 		}
 
 		req := client.SetDoNotParseResponse(true).R().SetBody(body)
