@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.52.4-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.52.3-beta...v0.52.4-beta) (2025-04-24)
+
+
+### Bug Fixes
+
+* **component,openai:** remove response format check ([#1003](https://github.com/instill-ai/pipeline-backend/issues/1003)) ([c6d02eb](https://github.com/instill-ai/pipeline-backend/commit/c6d02eb8e879a6888e66d7a422f78d353ae87a80))
+
 ## [0.52.3-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.52.2-beta...v0.52.3-beta) (2025-04-24)
 
 
