@@ -93,7 +93,7 @@ TASK_SEGMENT:
         description: A list of segmented audio data.
         uiOrder: 0
         items:
-          type: string
+          type: audio
         title: Audios
         type: array
     required:
