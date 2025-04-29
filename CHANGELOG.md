@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.52.5-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.52.4-beta...v0.52.5-beta) (2025-04-29)
+
+
+### Bug Fixes
+
+* **component,audio:** fix wrong instill type ([#1005](https://github.com/instill-ai/pipeline-backend/issues/1005)) ([b999cf4](https://github.com/instill-ai/pipeline-backend/commit/b999cf4b7f2981cd2a72049c7091752bb7c55d1e))
+
 ## [0.52.4-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.52.3-beta...v0.52.4-beta) (2025-04-24)
 
 
