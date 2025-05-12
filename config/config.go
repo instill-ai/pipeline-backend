@@ -86,9 +86,8 @@ type ServerConfig struct {
 		MaxWorkflowRetry   int32 `koanf:"maxworkflowretry"`
 		MaxActivityRetry   int32 `koanf:"maxactivityretry"`
 	}
-	InstanceID         string `koanf:"instanceid"`
-	DataChanBufferSize int    `koanf:"datachanbuffersize"`
-	InstillCoreHost    string `koanf:"instillcorehost"`
+	InstanceID      string `koanf:"instanceid"`
+	InstillCoreHost string `koanf:"instillcorehost"`
 }
 
 // ComponentConfig contains the configuration of different components. Global

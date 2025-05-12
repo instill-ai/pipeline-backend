@@ -2,6 +2,7 @@
 
 We appreciate your contribution to this amazing project! Any form of engagement
 is welcome, including but not limiting to
+
 - feature request
 - documentation wording
 - bug report
@@ -33,18 +34,18 @@ backend with your local changes.
 
 #### Building 🔮 Instill Core suite
 
-```sh
-$ cd $MY_WORKSPACE
-$ git clone https://github.com/instill-ai/instill-core && cd instill-core
-$ make latest PROFILE=exclude-pipeline # launch all the dependent services except pipeline-backend
+```shell
+cd $MY_WORKSPACE
+git clone https://github.com/instill-ai/instill-core && cd instill-core
+make latest PROFILE=exclude-pipeline # launch all the dependent services except pipeline-backend
 ```
 
 #### Building 💧 Instill Pipeline backend
 
-```sh
-$ cd $MY_WORKSPACE
-$ git clone https://github.com/instill-ai/pipeline-backend && cd pipeline-backend
-$ make build-dev && make dev
+```shell
+cd $MY_WORKSPACE
+git clone https://github.com/instill-ai/pipeline-backend && cd pipeline-backend
+make build-dev && make dev
 ```
 
 Now, you have the Go project set up in the container, in which you can compile
@@ -61,22 +62,22 @@ applications:
   client ID and secret must be injected.
 
 You can set the values of these global secrets in
-[`.env.component`](./.env.component) before running the Docker container in
+[`.env.secrets.component`](./.env.secrets.component) before running the Docker container in
 order to add a global configuration to your components.
 
 #### Run the server and the Temporal worker
 
-```sh
-$ docker exec pipeline-backend go run ./cmd/migration
-$ docker exec pipeline-backend go run ./cmd/init
-$ docker exec -d pipeline-backend go run ./cmd/worker # run without -d in a separate terminal if you want to access the logs
-$ docker exec pipeline-backend go run ./cmd/main
+```shell
+docker exec pipeline-backend go run ./cmd/migration
+docker exec pipeline-backend go run ./cmd/init
+docker exec -d pipeline-backend go run ./cmd/worker # run without -d in a separate terminal if you want to access the logs
+docker exec pipeline-backend go run ./cmd/main
 ```
 
 #### Run the unit tests
 
-```bash
-$ make coverage DBTEST=true
+```shell
+make coverage DBTEST=true
 ```
 
 The repository tests in `make coverage` run against a real database (in contrast
@@ -86,14 +87,15 @@ main DB. You can set the database host and name by overriding the `TEST_DBHOST`
 and `TEST_DBNAME` values.
 
 Certain tests depend on external packages and aren't run by default:
+
 - For [`docconv`](https://github.com/sajari/docconv) tests, add `OCR=true` flag and install its [dependencies](https://github.com/sajari/docconv?tab=readme-ov-file#dependencies).
-- For [`onnxruntime`](https://github.com/microsoft/onnxruntime) tests, add `ONNX=true` flag. Follow the [guideline](#set-up-onnx-runtime) to set up ONNX Runtime (Linux only).
+- For [`onnxruntime`](https://github.com/microsoft/onnxruntime) tests, add `ONNX=true` flag. Follow the [guideline](./#set-up-onnx-runtime) to set up ONNX Runtime (Linux only).
 
 #### Run the integration tests
 
-```bash
-$ docker exec -it pipeline-backend /bin/bash
-$ make integration-test API_GATEWAY_URL=api-gateway:8080 DB_HOST=pg-sql
+```shell
+docker exec -it pipeline-backend /bin/bash
+make integration-test API_GATEWAY_URL=api-gateway:8080 DB_HOST=pg-sql
 ```
 
 `API_GATEWAY_URL` points to the `api-gateway` container and triggers the public
@@ -105,8 +107,8 @@ If empty, tests will try to connect to `localhost:5432`.
 
 #### Remove the dev container
 
-```bash
-$ make rm
+```shell
+make rm
 ```
 
 ### Set up ONNX Runtime (Linux only)
@@ -114,14 +116,15 @@ $ make rm
 1. Download the latest [ONNX Runtime release](https://github.com/microsoft/onnxruntime/releases) for your system.
 
 2. Install ONNX Runtime:
-   ```bash
-   sudo mkdir -p /usr/local/onnxruntime
-   sudo tar -xzf onnxruntime-*-*-*.tgz -C /usr/local/onnxruntime --strip-components=1
-   export ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime
-   export LD_RUN_PATH=$ONNXRUNTIME_ROOT_PATH/lib
-   export LIBRARY_PATH=$ONNXRUNTIME_ROOT_PATH/lib
-   export C_INCLUDE_PATH=$ONNXRUNTIME_ROOT_PATH/include
-   ```
+
+```shell
+sudo mkdir -p /usr/local/onnxruntime
+sudo tar -xzf onnxruntime-*-*-*.tgz -C /usr/local/onnxruntime --strip-components=1
+export ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime
+export LD_RUN_PATH=$ONNXRUNTIME_ROOT_PATH/lib
+export LIBRARY_PATH=$ONNXRUNTIME_ROOT_PATH/lib
+export C_INCLUDE_PATH=$ONNXRUNTIME_ROOT_PATH/include
+```
 
 **Note:** If you don't have sudo access, extract to a user-writeable location (e.g., `~/onnxruntime`), set `ONNXRUNTIME_ROOT_PATH` accordingly, and adjust the environment variables as shown above. No need to create symlinks in this case.
 

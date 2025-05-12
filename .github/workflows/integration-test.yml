@@ -31,70 +31,45 @@ jobs:
     name: PR head branch
     runs-on: ubuntu-latest
     steps:
-      # mono occupies port 8084 which conflicts with mgmt-backend
-      - name: Stop mono service
-        run: |
-          sudo lsof -t -i:8084 | xargs -r sudo kill -9
-          sudo lsof -i -P -n | grep LISTEN
-
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          overprovision-lvm: "true"
+          root-reserve-mb: 5120
           remove-dotnet: "true"
-          build-mount-path: "/var/lib/docker/"
+          remove-android: "true"
+          remove-haskell: "true"
+          remove-codeql: "true"
+          remove-docker-images: "true"
+          build-mount-path: "/var/lib/docker"
 
       - name: Restart docker
         run: sudo service docker restart
 
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Checkout (pipeline-backend)
+        uses: actions/checkout@v4
         with:
+          repository: instill-ai/pipeline-backend
           ref: ${{ github.event.pull_request.head.sha }}
+          path: pipeline-backend
 
-      - name: Load .env file
+      - name: Load .env file (pipeline-backend)
         uses: cardinalby/export-env-action@v2
         with:
-          envFile: .env
+          envFile: ./pipeline-backend/.env
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build image
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          load: true
-          build-args: |
-            SERVICE_NAME=pipeline-backend
-            SERVICE_VERSION=${{ github.sha }}
-          tags: instill/pipeline-backend:latest
-
-      - name: Checkout repo (instill-core)
-        uses: actions/checkout@v3
+      - name: Checkout (instill-core)
+        uses: actions/checkout@v4
         with:
           repository: instill-ai/instill-core
+          ref: main
+          path: instill-core
 
       - name: Load .env file (instill-core)
         uses: cardinalby/export-env-action@v2
         with:
-          envFile: .env
+          envFile: ./instill-core/.env
 
-      - name: Launch Instill Core (latest)
-        # CFG_COMPONENT_SECRETS_GITHUB* variables are injected to test OAuth connection
-        # creation
-        run: |
-          COMPOSE_PROFILES=all \
-          COMPONENT_ENV=.env.component-test \
-          EDITION=local-ce:test \
-          RAY_LATEST_TAG=latest \
-          RAY_RELEASE_TAG=${RAY_SERVER_VERSION} \
-          docker compose -f docker-compose.yml -f docker-compose-latest.yml up -d --quiet-pull
-          COMPOSE_PROFILES=all \
-          EDITION=local-ce:test \
-          docker compose -f docker-compose.yml -f docker-compose-latest.yml rm -f
-
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GOLANG_VERSION }}
 
@@ -105,16 +80,45 @@ jobs:
             --with github.com/grafana/xk6-sql@v${{ env.XK6_SQL_VERSION }} \
             --with github.com/grafana/xk6-sql-driver-postgres@v${{ env.XK6_SQL_POSTGRES_VERSION }} && sudo cp k6 /usr/bin
 
-      - name: Checkout (pipeline)
-        uses: actions/checkout@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          username: drop@instill.tech
+          password: ${{ secrets.botDockerHubPassword }}
 
-      - name: Load .env file
-        uses: cardinalby/export-env-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get short SHA
+        id: short-sha
+        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Build image
+        uses: docker/build-push-action@v6
         with:
-          envFile: .env
+          context: pipeline-backend
+          load: true
+          build-args: |
+            SERVICE_NAME=pipeline-backend
+            SERVICE_VERSION=${{ steps.short-sha.outputs.SHORT_SHA }}
+          tags: instill/pipeline-backend:${{ steps.short-sha.outputs.SHORT_SHA }}
+          cache-from: |
+            type=registry,ref=instill/pipeline-backend:buildcache
+          cache-to: |
+            type=registry,ref=instill/pipeline-backend:buildcache,mode=max
+
+      - name: Launch Instill Core CE (latest)
+        working-directory: instill-core
+        run: |
+          make latest EDITION=local-ce:test ENV_SECRETS_COMPONENT=.env.secrets.component.test
 
       - name: Run integration-test
+        working-directory: pipeline-backend
         run: |
           make integration-test API_GATEWAY_URL=localhost:8080
+
+      - name: Tear down Instill Core CE
+        if: always()
+        working-directory: instill-core
+        run: |
+          make down
