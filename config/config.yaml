@@ -17,7 +17,6 @@ server:
     maxworkflowretry: 1
     maxactivityretry: 1
   instanceid: "pipeline-backend"
-  datachanbuffersize: 100
   instillcorehost: http://localhost:8080
 component:
 database:

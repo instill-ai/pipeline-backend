@@ -125,19 +125,18 @@ func (e *execution) SendTextBasedTemplateMessage(in *structpb.Struct) (*structpb
 		}
 
 		var param buttonParameter
-		if splitParam[1] == "quick_reply" || splitParam[1] == "copy_code" {
+		switch splitParam[1] {
+		case "quick_reply", "copy_code":
 			param = buttonParameter{
 				Type:    "payload",
 				Payload: splitParam[2],
 			}
-
-		} else if splitParam[1] == "url" {
+		case "url":
 			param = buttonParameter{
 				Type: "text",
 				Text: splitParam[2],
 			}
-
-		} else {
+		default:
 			return nil, fmt.Errorf("wrong button_type. button_type is either 'quick_reply', 'url' or 'copy_code'")
 		}
 
@@ -314,19 +313,18 @@ func (e *execution) SendMediaBasedTemplateMessage(in *structpb.Struct) (*structp
 		}
 
 		var param buttonParameter
-		if splitParam[1] == "quick_reply" || splitParam[1] == "copy_code" {
+		switch splitParam[1] {
+		case "quick_reply", "copy_code":
 			param = buttonParameter{
 				Type:    "payload",
 				Payload: splitParam[2],
 			}
-
-		} else if splitParam[1] == "url" {
+		case "url":
 			param = buttonParameter{
 				Type: "text",
 				Text: splitParam[2],
 			}
-
-		} else {
+		default:
 			return nil, fmt.Errorf("wrong button_type. button_type is either 'quick_reply', 'url' or 'copy_code'")
 		}
 
@@ -454,19 +452,18 @@ func (e *execution) SendLocationBasedTemplateMessage(in *structpb.Struct) (*stru
 		}
 
 		var param buttonParameter
-		if splitParam[1] == "quick_reply" || splitParam[1] == "copy_code" {
+		switch splitParam[1] {
+		case "quick_reply", "copy_code":
 			param = buttonParameter{
 				Type:    "payload",
 				Payload: splitParam[2],
 			}
-
-		} else if splitParam[1] == "url" {
+		case "url":
 			param = buttonParameter{
 				Type: "text",
 				Text: splitParam[2],
 			}
-
-		} else {
+		default:
 			return nil, fmt.Errorf("wrong button_type. button_type is either 'quick_reply', 'url' or 'copy_code'")
 		}
 

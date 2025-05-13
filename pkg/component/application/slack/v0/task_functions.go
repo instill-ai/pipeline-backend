@@ -181,7 +181,7 @@ func (e *execution) sendMessage(in *structpb.Struct) (*structpb.Struct, error) {
 		return nil, fmt.Errorf("fetching channel ID: %w", err)
 	}
 
-	message := strings.Replace(params.Message, "\\n", "\n", -1)
+	message := strings.ReplaceAll(params.Message, "\\n", "\n")
 	_, _, err = client.PostMessage(targetChannelID, slack.MsgOptionText(message, false))
 	if err != nil {
 		return nil, fmt.Errorf("posting message: %w", err)

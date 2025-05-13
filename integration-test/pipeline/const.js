@@ -120,7 +120,6 @@ export const simplePayload = {
   ],
 };
 
-// TODO read from env
 let dbHost = 'localhost';
 if (__ENV.DB_HOST) {
   dbHost = __ENV.DB_HOST;

@@ -220,7 +220,7 @@ type encImageData struct {
 
 func (i *imageData) GobEncode() ([]byte, error) {
 	return json.Marshal(encImageData{
-		encFileData: i.fileData.asEncodedStruct(),
+		encFileData: i.asEncodedStruct(),
 		Width:       i.width,
 		Height:      i.height,
 	})

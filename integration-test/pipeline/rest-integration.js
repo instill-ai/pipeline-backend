@@ -110,7 +110,7 @@ export function CheckConnections(data) {
   var resourcePath = `${collectionPath}/${connectionID}`;
   var integrationID = "github";
 
-  var setup = {"token": "one2THREE"};
+  var setup = { "token": "one2THREE" };
   var identity = "identitti";
 
   group("Integration API: Create connection", () => {
@@ -138,7 +138,7 @@ export function CheckConnections(data) {
 
     // Besides an OAuth configuration on the component definition, OAuth
     // support requires the client ID and secret to be defined in the config
-    // (as environment variables). Make sure .env.component contains a client
+    // (as environment variables). Make sure .env.secrets.component contains a client
     // secret and ID for GitHub and that it doesn't for Slack.
 
     // Successful creation: OAuth
@@ -217,7 +217,7 @@ export function CheckConnections(data) {
         id: "invalid-setup",
         integrationId: integrationID,
         method: "METHOD_OAUTH",
-        setup: {"token": 234},
+        setup: { "token": 234 },
         scopes: ["repo", "write:repo_hook"],
         identity: identity,
       }),
@@ -234,7 +234,7 @@ export function CheckConnections(data) {
         id: "invalid-method",
         integrationId: integrationID,
         method: "METHOD_DICTIONARY",
-        setup: {"token": 234},
+        setup: { "token": 234 },
         scopes: ["repo", "write:repo_hook"],
         identity: identity,
       }),
@@ -299,7 +299,7 @@ export function CheckConnections(data) {
 
 
     // With connection ID filter
-    var pathWithFilter =  path + `?filter=qConnection="${dbIDPrefix}"`;
+    var pathWithFilter = path + `?filter=qConnection="${dbIDPrefix}"`;
     var firstPage = http.request("GET", pipelinePublicHost + pathWithFilter, null, data.header);
     check(firstPage, {
       [`GET ${pathWithFilter} response status is 200`]: (r) => r.status === 200,
@@ -376,7 +376,7 @@ component:
         ),
         {
           [`POST /v1beta/namespaces/${defaultUsername}/pipelines ${reqBody.id} response status is 201`]:
-          (r) => r.status === 201,
+            (r) => r.status === 201,
         }
       );
     }
@@ -429,7 +429,7 @@ component:
         id: newID,
         // Fields with an underlying structpb.Struct type (setup,
         // oAuthAccessDetails) will be updated in block.
-        setup: {"token": newToken},
+        setup: { "token": newToken },
         identity: newIdentity,
         oAuthAccessDetails: {
           access_token: newToken,

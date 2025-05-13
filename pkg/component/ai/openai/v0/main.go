@@ -152,7 +152,8 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 
 		if inputStruct.ChatHistory != nil {
 			for _, chat := range inputStruct.ChatHistory {
-				if chat.Role == "user" {
+				switch chat.Role {
+				case "user":
 					cs := make([]Content, len(chat.Content))
 					for i, c := range chat.Content {
 						cs[i] = Content{
@@ -167,7 +168,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 						}
 					}
 					messages = append(messages, multiModalMessage{Role: chat.Role, Content: cs})
-				} else if chat.Role == "assistant" {
+				case "assistant":
 					content := ""
 					for _, c := range chat.Content {
 						// OpenAI doesn't support multi-modal content for
@@ -178,7 +179,6 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 					}
 					messages = append(messages, message{Role: chat.Role, Content: content})
 				}
-
 			}
 		}
 		if inputStruct.SystemMessage != nil {

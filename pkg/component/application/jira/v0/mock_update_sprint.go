@@ -83,7 +83,7 @@ func mockUpdateSprint(res http.ResponseWriter, req *http.Request) {
 					CompleteDate:  fakeSprints[i].CompleteDate,
 				},
 			}
-			resp.fakeSprint.getSelf()
+			resp.getSelf()
 			break
 		}
 	}

@@ -47,7 +47,7 @@ func WriteField(writer *multipart.Writer, key string, value string) {
 
 // ScrapeWebpageHTML scrape the HTML content of a webpage
 func ScrapeWebpageHTML(doc *goquery.Document) (string, error) {
-	return doc.Selection.Html()
+	return doc.Html()
 }
 
 // ScrapeWebpageTitle extracts and returns the title from the *goquery.Document

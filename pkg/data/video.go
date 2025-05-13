@@ -254,7 +254,7 @@ type encVideoData struct {
 
 func (vid *videoData) GobEncode() ([]byte, error) {
 	return json.Marshal(encVideoData{
-		encFileData: vid.fileData.asEncodedStruct(),
+		encFileData: vid.asEncodedStruct(),
 		Width:       vid.width,
 		Height:      vid.height,
 		Duration:    vid.duration,

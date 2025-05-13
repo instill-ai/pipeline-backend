@@ -27,13 +27,14 @@ func (a Array) Get(p *path.Path) (v format.Value, err error) {
 	if err != nil {
 		return nil, err
 	}
-	if firstSeg.SegmentType == path.IndexSegment {
+	switch firstSeg.SegmentType {
+	case path.IndexSegment:
 		index := firstSeg.Index
 		if index >= len(a) {
 			return nil, fmt.Errorf("path not found: %s", p)
 		}
 		return a[index].Get(remainingPath)
-	} else if firstSeg.SegmentType == path.AttributeSegment {
+	case path.AttributeSegment:
 		getter, exists := arrayGetters[firstSeg.Attribute]
 		if !exists {
 			return nil, fmt.Errorf("path not found: %s", p)

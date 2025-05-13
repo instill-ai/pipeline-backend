@@ -184,7 +184,7 @@ func (c *converter) processSetupMap(ctx context.Context, ownerPermalink string, 
 		case map[string]any:
 			rendered[k] = c.processSetupMap(ctx, ownerPermalink, v)
 		case string:
-			if !(strings.HasPrefix(v, "${"+constant.SegSecret+".") && strings.HasSuffix(v, "}")) {
+			if !strings.HasPrefix(v, "${"+constant.SegSecret+".") || !strings.HasSuffix(v, "}") {
 				rendered[k] = v
 				continue
 			}
@@ -309,11 +309,12 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, ownerPer
 				}
 				splits := strings.Split(path, ".")
 
-				if splits[1] == constant.SegOutput {
+				switch splits[1] {
+				case constant.SegOutput:
 					walk = structpb.NewStructValue(output)
-				} else if splits[1] == constant.SegInput {
+				case constant.SegInput:
 					walk = structpb.NewStructValue(input)
-				} else {
+				default:
 					// Skip schema generation if the configuration is not valid.
 					continue
 				}
@@ -322,10 +323,7 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, ownerPer
 				success := true
 
 				// Traverse the schema of upstream component
-				for {
-					if len(path) == 0 {
-						break
-					}
+				for len(path) > 0 {
 
 					splits := strings.Split(path, ".")
 					curr := splits[1]
@@ -580,7 +578,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 
 	pbPipeline := pb.Pipeline{
 		Name:       fmt.Sprintf("%s/pipelines/%s", ownerName, dbPipeline.ID),
-		Uid:        dbPipeline.BaseDynamic.UID.String(),
+		Uid:        dbPipeline.UID.String(),
 		Id:         dbPipeline.ID,
 		CreateTime: timestamppb.New(dbPipeline.CreateTime),
 		UpdateTime: timestamppb.New(dbPipeline.UpdateTime),
@@ -794,7 +792,7 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 
 	pbPipelineRelease := pb.PipelineRelease{
 		Name:       fmt.Sprintf("%s/pipelines/%s/releases/%s", owner, dbPipeline.ID, dbPipelineRelease.ID),
-		Uid:        dbPipelineRelease.BaseDynamic.UID.String(),
+		Uid:        dbPipelineRelease.UID.String(),
 		Id:         dbPipelineRelease.ID,
 		CreateTime: timestamppb.New(dbPipelineRelease.CreateTime),
 		UpdateTime: timestamppb.New(dbPipelineRelease.UpdateTime),
@@ -983,20 +981,18 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 							return nil, fmt.Errorf("generate pipeline data spec error")
 						}
 
-						if seg.Key == constant.SegOutput {
+						switch seg.Key {
+						case constant.SegOutput:
 							walk = structpb.NewStructValue(output)
-						} else if seg.Key == constant.SegInput {
+						case constant.SegInput:
 							walk = structpb.NewStructValue(input)
-						} else {
+						default:
 							return nil, fmt.Errorf("generate pipeline data spec error")
 						}
 					}
 				}
 
-				for {
-					if remainingPath == nil || remainingPath.IsEmpty() {
-						break
-					}
+				for remainingPath != nil && !remainingPath.IsEmpty() {
 
 					seg, remainingPath, err = remainingPath.TrimFirst()
 					if err != nil {
@@ -1137,7 +1133,7 @@ func (c *converter) ConvertSecretToPB(ctx context.Context, dbSecret *datamodel.S
 
 	return &pb.Secret{
 		Name:        fmt.Sprintf("%s/secrets/%s", ownerName, dbSecret.ID),
-		Uid:         dbSecret.BaseDynamicHardDelete.UID.String(),
+		Uid:         dbSecret.UID.String(),
 		Id:          dbSecret.ID,
 		CreateTime:  timestamppb.New(dbSecret.CreateTime),
 		UpdateTime:  timestamppb.New(dbSecret.UpdateTime),

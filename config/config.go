@@ -86,9 +86,8 @@ type ServerConfig struct {
 		MaxWorkflowRetry   int32 `koanf:"maxworkflowretry"`
 		MaxActivityRetry   int32 `koanf:"maxactivityretry"`
 	}
-	InstanceID         string `koanf:"instanceid"`
-	DataChanBufferSize int    `koanf:"datachanbuffersize"`
-	InstillCoreHost    string `koanf:"instillcorehost"`
+	InstanceID      string `koanf:"instanceid"`
+	InstillCoreHost string `koanf:"instillcorehost"`
 }
 
 // ComponentConfig contains the configuration of different components. Global
@@ -216,7 +215,7 @@ func Init(filePath string) error {
 	}
 
 	if err := k.Load(env.ProviderWithValue("CFG_", ".", func(s string, v string) (string, interface{}) {
-		key := strings.Replace(strings.ToLower(strings.TrimPrefix(s, "CFG_")), "_", ".", -1)
+		key := strings.ReplaceAll(strings.ToLower(strings.TrimPrefix(s, "CFG_")), "_", ".")
 		if strings.Contains(v, ",") {
 			return key, strings.Split(strings.TrimSpace(v), ",")
 		}

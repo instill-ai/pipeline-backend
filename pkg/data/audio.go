@@ -225,7 +225,7 @@ type encAudioData struct {
 
 func (a *audioData) GobEncode() ([]byte, error) {
 	return json.Marshal(encAudioData{
-		encFileData: a.fileData.asEncodedStruct(),
+		encFileData: a.asEncodedStruct(),
 		Duration:    a.duration,
 		SampleRate:  a.sampleRate,
 	})

@@ -225,7 +225,7 @@ func checkEnvelopeCondition(email Email, search Search) bool {
 		}
 	}
 	if search.SearchFrom != "" {
-		if !(email.From == search.SearchFrom) {
+		if email.From != search.SearchFrom {
 			return false
 		}
 	}

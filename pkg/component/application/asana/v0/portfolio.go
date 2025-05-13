@@ -190,7 +190,7 @@ func (c *Client) DeletePortfolio(ctx context.Context, props *structpb.Struct) (*
 	}
 
 	apiEndpoint := fmt.Sprintf("/portfolios/%s", input.ID)
-	req := c.Client.R()
+	req := c.R()
 
 	_, err := req.Delete(apiEndpoint)
 	if err != nil {

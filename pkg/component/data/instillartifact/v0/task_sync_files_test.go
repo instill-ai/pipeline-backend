@@ -261,11 +261,12 @@ func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 		mock.NotNil(in.File.ExternalMetadata)
 
 		var mockFileUID string
-		if in.File.Name == fileName {
+		switch in.File.Name {
+		case fileName:
 			mockFileUID = catalogFileUID
-		} else if in.File.Name == fileName2 {
+		case fileName2:
 			mockFileUID = catalogFileUID2
-		} else {
+		default:
 			panic("Unexpected file name")
 		}
 

@@ -33,17 +33,17 @@ func convertFormatFieldsRecursive(s *structpb.Struct, isCompSpec bool) {
 	fields := s.Fields
 	for key, value := range fields {
 
-		switch {
-		case key == "upstreamTypes":
+		switch key {
+		case "upstreamTypes":
 			fields["instillUpstreamTypes"] = value
 			delete(fields, "upstreamTypes")
-		case key == "upstreamType":
+		case "upstreamType":
 			fields["instillUpstreamType"] = value
 			delete(fields, "upstreamType")
-		case key == "uiOrder":
+		case "uiOrder":
 			fields["instillUIOrder"] = value
 			delete(fields, "uiOrder")
-		case key == "shortDescription":
+		case "shortDescription":
 			fields["instillShortDescription"] = value
 			delete(fields, "shortDescription")
 		}

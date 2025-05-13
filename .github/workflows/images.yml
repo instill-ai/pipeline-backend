@@ -19,7 +19,7 @@ jobs:
       - name: Restart docker
         run: sudo service docker restart
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.botGitHubToken }}
 
@@ -29,17 +29,17 @@ jobs:
           envFile: .env
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: dropletbot
           password: ${{ secrets.botDockerHubPassword }}
 
       - name: Build and push amd64 (latest)
         if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
           context: .
@@ -64,7 +64,7 @@ jobs:
 
       - name: Build and push amd64 (release)
         if: github.event_name == 'release'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
           context: .
@@ -89,7 +89,7 @@ jobs:
       - name: Restart docker
         run: sudo service docker restart
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.botGitHubToken }}
 
@@ -99,17 +99,17 @@ jobs:
           envFile: .env
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: dropletbot
           password: ${{ secrets.botDockerHubPassword }}
 
       - name: Build and push arm64 (latest)
         if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           platforms: linux/arm64
           context: .
@@ -134,7 +134,7 @@ jobs:
 
       - name: Build and push arm64 (release)
         if: github.event_name == 'release'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           platforms: linux/arm64
           context: .
@@ -151,7 +151,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: dropletbot
           password: ${{ secrets.botDockerHubPassword }}

@@ -947,10 +947,7 @@ func (h *PublicHandler) preTriggerNamespacePipeline(ctx context.Context, req Tri
 	// if err != nil {
 	// 	return ns, nil, id, nil, false, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
 	// }
-	returnTraces := false
-	if resource.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true" {
-		returnTraces = true
-	}
+	returnTraces := resource.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true"
 
 	return ns, id, pbPipeline, returnTraces, nil
 
@@ -1700,10 +1697,7 @@ func (h *PublicHandler) preTriggerNamespacePipelineRelease(ctx context.Context, 
 	if err != nil {
 		return ns, "", nil, nil, false, err
 	}
-	returnTraces := false
-	if resource.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true" {
-		returnTraces = true
-	}
+	returnTraces := resource.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true"
 
 	return ns, req.GetReleaseId(), pbPipeline, pbPipelineRelease, returnTraces, nil
 

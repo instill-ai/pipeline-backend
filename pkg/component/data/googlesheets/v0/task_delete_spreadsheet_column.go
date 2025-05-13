@@ -35,7 +35,7 @@ func (e *execution) deleteSpreadsheetColumn(ctx context.Context, job *base.Job) 
 	}
 
 	// Find the column index
-	var columnIndex int = -1
+	var columnIndex = -1
 	if len(resp.Values) > 0 {
 		for i, header := range resp.Values[0] {
 			if header.(string) == input.ColumnName {

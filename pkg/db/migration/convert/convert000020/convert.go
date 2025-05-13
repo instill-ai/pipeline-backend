@@ -50,9 +50,10 @@ func (c *NamespaceIDMigrator) migratePipeline() error {
 			}
 
 			nsType := ""
-			if ns.Type == mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_ORGANIZATION {
+			switch ns.Type {
+			case mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_ORGANIZATION:
 				nsType = "organizations"
-			} else if ns.Type == mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_USER {
+			case mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_USER:
 				nsType = "users"
 			}
 			result := tx.Model(p).Where("uid = ?", p.UID).Update("namespace_id", ns.Id).Update("namespace_type", nsType)
@@ -82,9 +83,10 @@ func (c *NamespaceIDMigrator) migrateSecret() error {
 			}
 
 			nsType := ""
-			if ns.Type == mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_ORGANIZATION {
+			switch ns.Type {
+			case mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_ORGANIZATION:
 				nsType = "organizations"
-			} else if ns.Type == mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_USER {
+			case mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_USER:
 				nsType = "users"
 			}
 			result := tx.Model(s).Where("uid = ?", s.UID).Update("namespace_id", ns.Id).Update("namespace_type", nsType)

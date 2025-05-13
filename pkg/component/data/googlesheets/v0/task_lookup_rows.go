@@ -31,7 +31,7 @@ func (e *execution) lookupRowsHelper(ctx context.Context, sharedLink string, she
 	headers := resp.Values[0]
 
 	// Find the target column index
-	var columnIndex int = -1
+	var columnIndex = -1
 	for i, header := range headers {
 		if header.(string) == columnName {
 			columnIndex = i
