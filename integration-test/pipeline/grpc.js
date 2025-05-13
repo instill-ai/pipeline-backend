@@ -143,9 +143,10 @@ export function teardown(data) {
     client.close();
   });
 
-  client.connect(constant.pipelineGRPCPublicHost, {
-    plaintext: true,
-  });
+  group("Integration API: Delete data created by this test", () => {
+    var q = `DELETE FROM pipeline WHERE id LIKE '${constant.dbIDPrefix}%';`;
+    constant.db.exec(q);
 
-  client.close();
+    constant.db.close();
+  });
 }

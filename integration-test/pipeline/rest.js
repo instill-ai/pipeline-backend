@@ -103,7 +103,7 @@ export function teardown(data) {
     }
   });
 
-  group("Integration API: Delete all connections created by this test", () => {
+  group("Integration API: Delete data created by this test", () => {
     var q = `DELETE FROM connection WHERE id LIKE '${constant.dbIDPrefix}%';`;
     constant.db.exec(q);
 

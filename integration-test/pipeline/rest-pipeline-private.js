@@ -30,7 +30,7 @@ export function CheckList(data) {
     for (var i = 0; i < numPipelines; i++) {
       reqBodies[i] = Object.assign(
         {
-          id: randomString(10),
+          id: constant.dbIDPrefix + randomString(10),
           description: randomString(50),
         },
         constant.simplePipelineWithYAMLRecipe
@@ -198,7 +198,7 @@ export function CheckLookUp(data) {
   group("Pipelines API: Look up a pipeline by uid by admin", () => {
     var reqBody = Object.assign(
       {
-        id: randomString(10),
+        id: constant.dbIDPrefix + randomString(10),
       },
       constant.simplePipelineWithYAMLRecipe
     );

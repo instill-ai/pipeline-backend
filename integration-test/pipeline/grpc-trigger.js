@@ -18,7 +18,7 @@ export function CheckTrigger(data) {
 
       var reqGRPC = Object.assign(
         {
-          id: randomString(10),
+          id: constant.dbIDPrefix + randomString(10),
           description: randomString(50),
         },
         constant.simplePipelineWithYAMLRecipe
@@ -84,7 +84,7 @@ export function CheckTrigger(data) {
 
       var reqGRPC = Object.assign(
         {
-          id: randomString(10),
+          id: constant.dbIDPrefix + randomString(10),
           description: randomString(50),
         },
         constant.simplePipelineWithYAMLRecipe

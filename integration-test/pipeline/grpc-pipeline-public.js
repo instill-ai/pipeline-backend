@@ -17,7 +17,7 @@ export function CheckCreate(data) {
 
     var reqBody = Object.assign(
       {
-        id: randomString(32),
+        id: constant.dbIDPrefix + randomString(10),
         description: randomString(50),
       },
       constant.simplePipelineWithYAMLRecipe
@@ -163,7 +163,7 @@ export function CheckCreate(data) {
       }
     );
 
-    reqBody.id = randomString(40);
+    reqBody.id = constant.dbIDPrefix + randomString(40);
     check(
       client.invoke(
         "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
@@ -243,7 +243,7 @@ export function CheckList(data) {
     for (var i = 0; i < numPipelines; i++) {
       reqBodies[i] = Object.assign(
         {
-          id: randomString(10),
+          id: constant.dbIDPrefix + randomString(10),
           description: randomString(50),
         },
         constant.simplePipelineWithYAMLRecipe
@@ -430,7 +430,7 @@ export function CheckGet(data) {
 
     var reqBody = Object.assign(
       {
-        id: randomString(10),
+        id: constant.dbIDPrefix + randomString(10),
         description: randomString(50),
       },
       constant.simplePipelineWithYAMLRecipe
@@ -536,7 +536,7 @@ export function CheckUpdate(data) {
 
     var reqBody = Object.assign(
       {
-        id: randomString(10),
+        id: constant.dbIDPrefix + randomString(10),
       },
       constant.simplePipelineWithYAMLRecipe
     );
@@ -696,7 +696,7 @@ export function CheckRename(data) {
 
     var reqBody = Object.assign(
       {
-        id: randomString(10),
+        id: constant.dbIDPrefix + randomString(10),
       },
       constant.simplePipelineWithYAMLRecipe
     );
@@ -767,7 +767,7 @@ export function CheckLookUp(data) {
 
     var reqBody = Object.assign(
       {
-        id: randomString(10),
+        id: constant.dbIDPrefix + randomString(10),
       },
       constant.simplePipelineWithYAMLRecipe
     );

@@ -44,7 +44,7 @@ export function CheckTrigger(data) {
   group("Pipelines API: Trigger a pipeline", () => {
     var reqHTTP = Object.assign(
       {
-        id: randomString(10),
+        id: constant.dbIDPrefix + randomString(10),
         description: randomString(50),
       },
       constant.simplePipelineWithYAMLRecipe
@@ -66,7 +66,7 @@ export function CheckTrigger(data) {
   group("Pipelines API: Trigger a pipeline with YAML recipe", () => {
     var reqHTTP = Object.assign(
       {
-        id: randomString(10),
+        id: constant.dbIDPrefix + randomString(10),
         description: randomString(50),
       },
       constant.simplePipelineWithYAMLRecipe

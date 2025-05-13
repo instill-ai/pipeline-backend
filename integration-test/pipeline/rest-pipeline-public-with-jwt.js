@@ -12,7 +12,7 @@ export function CheckCreate(data) {
     () => {
       var reqBody = Object.assign(
         {
-          id: randomString(32),
+          id: constant.dbIDPrefix + randomString(10),
           description: randomString(50),
         },
         constant.simplePipelineWithYAMLRecipe
@@ -57,7 +57,7 @@ export function CheckGet(data) {
   group(`Pipelines API: Get a pipeline [with random "Instill-User-Uid" header]`, () => {
     var reqBody = Object.assign(
       {
-        id: randomString(10),
+        id: constant.dbIDPrefix + randomString(10),
         description: randomString(50),
       },
       constant.simplePipelineWithYAMLRecipe
@@ -113,7 +113,7 @@ export function CheckUpdate(data) {
     () => {
       var reqBody = Object.assign(
         {
-          id: randomString(10),
+          id: constant.dbIDPrefix + randomString(10),
         },
         constant.simplePipelineWithYAMLRecipe
       );
@@ -173,7 +173,7 @@ export function CheckRename(data) {
   group(
     `Pipelines API: Rename a pipeline [with random "Instill-User-Uid" header]`,
     () => {
-      var id = randomString(10);
+      var id = constant.dbIDPrefix + randomString(10);
       var reqBody = Object.assign(
         {
           id: id,
@@ -196,7 +196,7 @@ export function CheckRename(data) {
           r.json().pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
       });
 
-      reqBody.new_pipeline_id = randomString(10);
+      reqBody.new_pipeline_id = constant.dbIDPrefix + randomString(10);
 
       // Cannot rename a pipeline of a non-exist user
       check(
@@ -236,7 +236,7 @@ export function CheckLookUp(data) {
     () => {
       var reqBody = Object.assign(
         {
-          id: randomString(10),
+          id: constant.dbIDPrefix + randomString(10),
         },
         constant.simplePipelineWithYAMLRecipe
       );
