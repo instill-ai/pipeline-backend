@@ -79,9 +79,10 @@ func (e *execution) taskTextGeneration(in *structpb.Struct) (*structpb.Struct, e
 		}
 		message := cohereSDK.Message{}
 		message.Role = chatMessage.Role
-		if message.Role == "USER" {
+		switch message.Role {
+		case "USER":
 			message.User = &cohereSDK.ChatMessage{Message: messageContent}
-		} else if message.Role == "CHATBOT" {
+		case "CHATBOT":
 			message.Chatbot = &cohereSDK.ChatMessage{Message: messageContent}
 		}
 		messages = append(messages, &message)

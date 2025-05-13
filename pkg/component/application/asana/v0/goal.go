@@ -199,7 +199,7 @@ func (c *Client) DeleteGoal(ctx context.Context, props *structpb.Struct) (*struc
 	}
 
 	apiEndpoint := "/goals/" + input.ID
-	req := c.Client.R()
+	req := c.R()
 
 	_, err := req.Delete(apiEndpoint)
 	if err != nil {

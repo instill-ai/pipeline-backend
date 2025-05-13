@@ -241,7 +241,7 @@ func (c *Client) DeleteTask(ctx context.Context, props *structpb.Struct) (*struc
 	}
 
 	apiEndpoint := fmt.Sprintf("/tasks/%s", input.ID)
-	req := c.Client.R()
+	req := c.R()
 
 	_, err := req.Delete(apiEndpoint)
 	if err != nil {
@@ -366,9 +366,10 @@ func (c *Client) TaskEditTag(ctx context.Context, props *structpb.Struct) (*stru
 	}
 
 	apiEndpoint := fmt.Sprintf("/tasks/%s/", input.ID)
-	if input.EditOption == "add" {
+	switch input.EditOption {
+	case "add":
 		apiEndpoint += "addTag"
-	} else if input.EditOption == "remove" {
+	case "remove":
 		apiEndpoint += "removeTag"
 	}
 
@@ -403,9 +404,10 @@ func (c *Client) TaskEditFollower(ctx context.Context, props *structpb.Struct) (
 	}
 
 	apiEndpoint := fmt.Sprintf("/tasks/%s/", input.ID)
-	if input.EditOption == "add" {
+	switch input.EditOption {
+	case "add":
 		apiEndpoint += "addFollowers"
-	} else if input.EditOption == "remove" {
+	case "remove":
 		apiEndpoint += "removeFollowers"
 	}
 	followers := strings.Split(input.Followers, ",")
@@ -448,9 +450,10 @@ func (c *Client) TaskEditProject(ctx context.Context, props *structpb.Struct) (*
 	}
 
 	apiEndpoint := fmt.Sprintf("/tasks/%s/", input.ID)
-	if input.EditOption == "add" {
+	switch input.EditOption {
+	case "add":
 		apiEndpoint += "addProject"
-	} else if input.EditOption == "remove" {
+	case "remove":
 		apiEndpoint += "removeProject"
 	}
 	body, _ := json.Marshal(map[string]interface{}{

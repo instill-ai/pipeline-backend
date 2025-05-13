@@ -215,7 +215,7 @@ func Init(filePath string) error {
 	}
 
 	if err := k.Load(env.ProviderWithValue("CFG_", ".", func(s string, v string) (string, interface{}) {
-		key := strings.Replace(strings.ToLower(strings.TrimPrefix(s, "CFG_")), "_", ".", -1)
+		key := strings.ReplaceAll(strings.ToLower(strings.TrimPrefix(s, "CFG_")), "_", ".")
 		if strings.Contains(v, ",") {
 			return key, strings.Split(strings.TrimSpace(v), ",")
 		}

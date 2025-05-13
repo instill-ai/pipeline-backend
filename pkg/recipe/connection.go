@@ -25,7 +25,7 @@ var (
 
 // ConnectionIDFromReference ...
 func ConnectionIDFromReference(ref string) (string, error) {
-	if !(strings.HasPrefix(ref, connRefPrefix) && strings.HasSuffix(ref, connRefSuffix)) {
+	if !strings.HasPrefix(ref, connRefPrefix) || !strings.HasSuffix(ref, connRefSuffix) {
 		return "", errmsg.AddMessage(
 			ErrInvalidConnectionReference,
 			"String setup only supports connection references (${connection.<conn-id>}).",

@@ -692,19 +692,20 @@ func (s *service) generateCloneTargetNamespace(ctx context.Context, targetNamesp
 	}
 
 	var targetNS resource.Namespace
-	if resp.Type == mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_USER {
+	switch resp.Type {
+	case mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_USER:
 		targetNS = resource.Namespace{
 			NsType: resource.User,
 			NsID:   targetNamespace,
 			NsUID:  uuid.FromStringOrNil(resp.Uid),
 		}
-	} else if resp.Type == mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_ORGANIZATION {
+	case mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_ORGANIZATION:
 		targetNS = resource.Namespace{
 			NsType: resource.Organization,
 			NsID:   targetNamespace,
 			NsUID:  uuid.FromStringOrNil(resp.Uid),
 		}
-	} else {
+	default:
 		return resource.Namespace{}, errdomain.ErrInvalidCloneTarget
 	}
 

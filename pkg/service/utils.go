@@ -80,13 +80,14 @@ func (s *service) GetNamespaceByUID(ctx context.Context, namespaceUID uuid.UUID)
 	if err != nil {
 		return resource.Namespace{}, err
 	}
-	if resp.Type == mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_USER {
+	switch resp.Type {
+	case mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_USER:
 		return resource.Namespace{
 			NsType: resource.User,
 			NsID:   resp.Id,
 			NsUID:  namespaceUID,
 		}, nil
-	} else if resp.Type == mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_ORGANIZATION {
+	case mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_ORGANIZATION:
 		return resource.Namespace{
 			NsType: resource.Organization,
 			NsID:   resp.Id,
@@ -104,13 +105,14 @@ func (s *service) GetNamespaceByID(ctx context.Context, namespaceID string) (res
 	if err != nil {
 		return resource.Namespace{}, err
 	}
-	if resp.Type == mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_USER {
+	switch resp.Type {
+	case mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_USER:
 		return resource.Namespace{
 			NsType: resource.User,
 			NsID:   namespaceID,
 			NsUID:  uuid.FromStringOrNil(resp.Uid),
 		}, nil
-	} else if resp.Type == mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_ORGANIZATION {
+	case mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_ORGANIZATION:
 		return resource.Namespace{
 			NsType: resource.Organization,
 			NsID:   namespaceID,

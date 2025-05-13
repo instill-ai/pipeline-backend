@@ -35,7 +35,7 @@ type taskUpsertInput struct {
 }
 
 func (in *taskUpsertInput) asRequest() (*upsertReq, error) {
-	pv, err := in.vector.toPinecone()
+	pv, err := in.toPinecone()
 	if err != nil {
 		return nil, err
 	}

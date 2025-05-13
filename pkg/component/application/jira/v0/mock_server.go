@@ -358,12 +358,13 @@ func mockIssuesSearch(res http.ResponseWriter, req *http.Request) {
 		startAt    string
 		maxResults string
 	)
-	if req.Method == http.MethodGet {
+	switch req.Method {
+	case http.MethodGet:
 		opt = req.URL.Query()
 		jql = opt.Get("jql")
 		startAt = opt.Get("startAt")
 		maxResults = opt.Get("maxResults")
-	} else if req.Method == http.MethodPost {
+	case http.MethodPost:
 		body := mockIssuesSearchReq{}
 		err = json.NewDecoder(req.Body).Decode(&body)
 		if err != nil {
@@ -373,7 +374,7 @@ func mockIssuesSearch(res http.ResponseWriter, req *http.Request) {
 		jql = body.JQL
 		startAt = strconv.Itoa(body.StartAt)
 		maxResults = strconv.Itoa(body.MaxResults)
-	} else {
+	default:
 		res.WriteHeader(http.StatusMethodNotAllowed)
 		_, _ = res.Write([]byte(`{"errorMessages":["Method not allowed"]}`))
 		return

@@ -475,20 +475,19 @@ func (u *Unmarshaler) unmarshalInterface(v format.Value, field reflect.Value, st
 					field.Set(reflect.ValueOf(converted))
 					return nil
 				case format.Document:
-					if formatTag == "application/pdf" {
+					switch formatTag {
+					case "application/pdf":
 						converted, err := val.PDF()
 						if err != nil {
 							return err
 						}
 						field.Set(reflect.ValueOf(converted))
-						return nil
-					} else if formatTag == "text/plain" {
+					case "text/plain":
 						converted, err := val.Text()
 						if err != nil {
 							return err
 						}
 						field.Set(reflect.ValueOf(converted))
-						return nil
 					}
 				}
 			}
@@ -629,13 +628,14 @@ func (m *Marshaler) marshalStruct(v reflect.Value) (Map, error) {
 					}
 					fieldValue = reflect.ValueOf(converted)
 				case format.Document:
-					if formatTag == "application/pdf" {
+					switch formatTag {
+					case "application/pdf":
 						converted, err := v.PDF()
 						if err != nil {
 							return nil, err
 						}
 						fieldValue = reflect.ValueOf(converted)
-					} else if formatTag == "text/plain" {
+					case "text/plain":
 						converted, err := v.Text()
 						if err != nil {
 							return nil, err

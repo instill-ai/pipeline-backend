@@ -135,7 +135,7 @@ func (c *Client) UpdateProject(ctx context.Context, props *structpb.Struct) (*st
 				DueOn:          input.DueOn,
 				StartOn:        input.StartOn,
 				Color:          input.Color,
-				PrivacySetting: strings.Replace(input.PrivacySetting, " ", "_", -1),
+				PrivacySetting: strings.ReplaceAll(input.PrivacySetting, " ", "_"),
 				Archived:       input.Archived,
 			},
 		})
@@ -194,7 +194,7 @@ func (c *Client) CreateProject(ctx context.Context, props *structpb.Struct) (*st
 				DueOn:          input.DueOn,
 				StartOn:        input.StartOn,
 				Color:          input.Color,
-				PrivacySetting: strings.Replace(input.PrivacySetting, " ", "_", -1),
+				PrivacySetting: strings.ReplaceAll(input.PrivacySetting, " ", "_"),
 				Workspace:      input.Workspace,
 				Team:           input.Team,
 			},
@@ -227,7 +227,7 @@ func (c *Client) DeleteProject(ctx context.Context, props *structpb.Struct) (*st
 	}
 
 	apiEndpoint := fmt.Sprintf("/projects/%s", input.ID)
-	req := c.Client.R()
+	req := c.R()
 
 	_, err := req.Delete(apiEndpoint)
 	if err != nil {

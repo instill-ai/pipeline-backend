@@ -35,7 +35,7 @@ func asValidationError(err error) error {
 
 	errs := make([]error, len(ve))
 	for i, fe := range ve {
-		errs[i] = fmt.Errorf(fieldErrorMessage(fe))
+		errs[i] = fmt.Errorf("%s", fieldErrorMessage(fe))
 	}
 
 	return errors.Join(errs...)

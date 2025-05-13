@@ -294,10 +294,11 @@ func (sp MarkdownTextSplitter) processChunks(lists []List, headers []Header) []C
 				currentEndPosition = 0   // To be set in isPrepended Block
 
 				overlapType := sp.overlapType(lists, i)
-				if overlapType == "no overlap" {
+				switch overlapType {
+				case "no overlap":
 					i--
 					addListCount = 0
-				} else if overlapType == "last chunk final list" {
+				case "last chunk final list":
 					// countI[i] < 10 is a protection against infinite loop. A list item should not be split more than 5 times.
 					if i > 1 && countI[i] < 5 {
 						i -= 2
@@ -305,7 +306,7 @@ func (sp MarkdownTextSplitter) processChunks(lists []List, headers []Header) []C
 						i--
 					}
 					addListCount = -1
-				} else if overlapType == "previous list" {
+				case "previous list":
 					shouldOverlapPreviousList = true
 					addListCount = -1
 					i--

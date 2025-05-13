@@ -18,7 +18,8 @@ func (c *client) updateIssue(ctx context.Context, job *base.Job) error {
 	}
 
 	var updatedIssue *updateIssueResp
-	if input.Update.UpdateType == "Custom Update" {
+	switch input.Update.UpdateType {
+	case "Custom Update":
 		updatedIssue, err = updateIssue(c.Client, &input)
 		if err != nil {
 			return fmt.Errorf("updating issue: %w", err)
@@ -36,7 +37,7 @@ func (c *client) updateIssue(ctx context.Context, job *base.Job) error {
 			},
 		}
 		return job.Output.WriteData(ctx, output)
-	} else if input.Update.UpdateType == "Move Issue to Epic" {
+	case "Move Issue to Epic":
 		err = moveIssueToEpic(c.Client, input.IssueKey, input.Update.EpicKey)
 		if err != nil {
 			if !strings.Contains(errmsg.Message(err), "The request contains a next-gen issue") {
@@ -65,7 +66,7 @@ func (c *client) updateIssue(ctx context.Context, job *base.Job) error {
 
 		output := updateIssueOutput{Issue: *issue}
 		return job.Output.WriteData(ctx, output)
-	} else {
+	default:
 		return errmsg.AddMessage(
 			fmt.Errorf("invalid update type"),
 			fmt.Sprintf("%s is an invalid update type", input.Update.UpdateType),
