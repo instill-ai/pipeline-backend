@@ -1967,6 +1967,11 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 	if err != nil {
 		return nil, nil, errdomain.ErrNotFound
 	}
+
+	if dbPipeline.Recipe == nil {
+		return nil, nil, fmt.Errorf("pipeline must have a valid recipe in order to be triggered")
+	}
+
 	pipelineUID := dbPipeline.UID
 
 	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
