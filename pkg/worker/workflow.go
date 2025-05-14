@@ -567,24 +567,25 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	err := w.repository.UpdateComponentRun(ctx, param.SystemVariables.PipelineTriggerID, param.ID, &datamodel.ComponentRun{StartedTime: startTime})
 	if err != nil {
 		logger.Error("failed to log component run start time", zap.Error(err))
-	} else {
-		defer func() {
-			componentRun := &datamodel.ComponentRun{
-				CompletedTime: null.TimeFrom(time.Now()),
-				TotalDuration: null.IntFrom(time.Since(startTime).Milliseconds()),
-			}
-			if err != nil {
-				componentRun.Status = datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_FAILED)
-				componentRun.Error = null.StringFrom(err.Error())
-			} else {
-				componentRun.Status = datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED)
-			}
-			err = w.repository.UpdateComponentRun(ctx, param.SystemVariables.PipelineTriggerID, param.ID, componentRun)
-			if err != nil {
-				logger.Error("failed to log component run end time", zap.Error(err))
-			}
-		}()
 	}
+
+	defer func() {
+		componentRun := &datamodel.ComponentRun{
+			Status:        datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED),
+			CompletedTime: null.TimeFrom(time.Now()),
+			TotalDuration: null.IntFrom(time.Since(startTime).Milliseconds()),
+		}
+
+		if err != nil {
+			componentRun.Status = datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_FAILED)
+			componentRun.Error = null.StringFrom(err.Error())
+		}
+
+		err = w.repository.UpdateComponentRun(ctx, param.SystemVariables.PipelineTriggerID, param.ID, componentRun)
+		if err != nil {
+			logger.Error("failed to log component run end time", zap.Error(err))
+		}
+	}()
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
 	if err != nil {
@@ -662,7 +663,8 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 				return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
 			}
 
-			return componentActivityError(ctx, wfm, errors.New(msg), componentActivityErrorType, param.ID)
+			err = fmt.Errorf("%s", msg)
+			return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
 		}
 
 		if err := wfm.SetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusCompleted, true); err != nil {

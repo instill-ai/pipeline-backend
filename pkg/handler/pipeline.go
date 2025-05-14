@@ -1000,6 +1000,7 @@ func (h *PublicHandler) TriggerNamespacePipeline(ctx context.Context, req *pb.Tr
 		return nil, err
 	}
 
+	// TODO: it would be useful to return the trigger UID here.
 	return &pb.TriggerNamespacePipelineResponse{Outputs: outputs, Metadata: metadata}, nil
 }
 

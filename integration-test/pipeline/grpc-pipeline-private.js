@@ -48,7 +48,7 @@ export function CheckList(data) {
     for (var i = 0; i < numPipelines; i++) {
       reqBodies[i] = Object.assign(
         {
-          id: randomString(10),
+          id: constant.dbIDPrefix + randomString(10),
           description: randomString(50),
         },
         constant.simplePipelineWithYAMLRecipe
@@ -229,7 +229,7 @@ export function CheckLookUp(data) {
 
     var reqBody = Object.assign(
       {
-        id: randomString(10),
+        id: constant.dbIDPrefix + randomString(10),
       },
       constant.simplePipelineWithYAMLRecipe
     );

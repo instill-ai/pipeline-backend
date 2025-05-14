@@ -17,7 +17,7 @@ export function CheckCreate(data) {
 
       var reqBody = Object.assign(
         {
-          id: randomString(32),
+          id: constant.dbIDPrefix + randomString(10),
           description: randomString(50),
         },
         constant.simplePipelineWithYAMLRecipe
@@ -77,7 +77,7 @@ export function CheckGet(data) {
 
     var reqBody = Object.assign(
       {
-        id: randomString(10),
+        id: constant.dbIDPrefix + randomString(10),
         description: randomString(50),
       },
       constant.simplePipelineWithYAMLRecipe
@@ -143,7 +143,7 @@ export function CheckUpdate(data) {
 
       var reqBody = Object.assign(
         {
-          id: randomString(10),
+          id: constant.dbIDPrefix + randomString(10),
         },
         constant.simplePipelineWithYAMLRecipe
       );
@@ -217,7 +217,7 @@ export function CheckRename(data) {
 
       var reqBody = Object.assign(
         {
-          id: randomString(10),
+          id: constant.dbIDPrefix + randomString(10),
         },
         constant.simplePipelineWithYAMLRecipe
       );
@@ -288,7 +288,7 @@ export function CheckLookUp(data) {
 
       var reqBody = Object.assign(
         {
-          id: randomString(10),
+          id: constant.dbIDPrefix + randomString(10),
         },
         constant.simplePipelineWithYAMLRecipe
       );
