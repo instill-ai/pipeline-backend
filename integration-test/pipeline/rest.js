@@ -86,6 +86,7 @@ export default function (data) {
   pipelinePublic.CheckLookUp(data);
 
   trigger.CheckTrigger(data);
+  trigger.CheckPipelineRuns(data);
   triggerAsync.CheckTrigger(data);
 
   componentDefinition.CheckList(data);
