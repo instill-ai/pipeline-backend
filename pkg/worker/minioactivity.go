@@ -12,12 +12,11 @@ import (
 	"gopkg.in/guregu/null.v4"
 
 	"github.com/gofrs/uuid"
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
-
-	miniox "github.com/instill-ai/x/minio"
+	"github.com/instill-ai/x/constant"
+	"github.com/instill-ai/x/minio"
 )
 
 // UploadRecipeToMinIOParam contains the information to upload a pipeline
@@ -45,7 +44,7 @@ func (w *worker) UploadRecipeToMinIOActivity(ctx context.Context, param UploadRe
 
 	url, minioObjectInfo, err := w.minioClient.WithLogger(log).UploadFileBytes(
 		ctx,
-		&miniox.UploadFileBytesParam{
+		&minio.UploadFileBytesParam{
 			UserUID:       param.Metadata.UserUID,
 			FilePath:      fmt.Sprintf("pipeline-runs/recipe/%s.json", param.Metadata.PipelineTriggerID),
 			FileBytes:     b,
@@ -111,7 +110,7 @@ func (w *worker) UploadOutputsToMinIOActivity(ctx context.Context, param *MinIOU
 
 	url, objectInfo, err := w.minioClient.WithLogger(log).UploadFile(
 		ctx,
-		&miniox.UploadFileParam{
+		&minio.UploadFileParam{
 			UserUID:       param.UserUID,
 			FilePath:      objectName,
 			FileContent:   outputStructs,
@@ -187,7 +186,7 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 
 	url, objectInfo, err := w.minioClient.WithLogger(log).UploadFile(
 		ctx,
-		&miniox.UploadFileParam{
+		&minio.UploadFileParam{
 			UserUID:       param.SystemVariables.PipelineUserUID,
 			FilePath:      objectName,
 			FileContent:   compInputs,
@@ -268,7 +267,7 @@ func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *Comp
 
 	url, objectInfo, err := w.minioClient.WithLogger(log).UploadFile(
 		ctx,
-		&miniox.UploadFileParam{
+		&minio.UploadFileParam{
 			UserUID:       param.SystemVariables.PipelineUserUID,
 			FilePath:      objectName,
 			FileContent:   compOutputs,

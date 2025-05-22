@@ -29,6 +29,8 @@ import (
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	constantx "github.com/instill-ai/x/constant"
+	resourcex "github.com/instill-ai/x/resource"
 )
 
 // TODO: in the repository, we'd better use uid as our function params
@@ -190,7 +192,7 @@ func (r *repository) GetHubStats(uidAllowList []uuid.UUID) (*datamodel.HubStats,
 func (r *repository) CheckPinnedUser(ctx context.Context, db *gorm.DB, table string) *gorm.DB {
 	db = db.WithContext(ctx)
 
-	userUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+	userUID := resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)
 	if userUID == "" {
 		return db
 	}
@@ -206,7 +208,7 @@ func (r *repository) CheckPinnedUser(ctx context.Context, db *gorm.DB, table str
 // period to ensure that the data is synchronized from the primary DB to the
 // replica DB.
 func (r *repository) PinUser(ctx context.Context, table string) {
-	userUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+	userUID := resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)
 	if userUID == "" {
 		return
 	}

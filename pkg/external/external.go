@@ -20,12 +20,12 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/x/minio"
+	"github.com/instill-ai/x/resource"
 
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	usagepb "github.com/instill-ai/protogen-go/core/usage/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
-	resourcex "github.com/instill-ai/x/resource"
 )
 
 // InitPipelinePublicServiceClient initialises a PipelineServiceClient instance
@@ -312,7 +312,7 @@ func (f *artifactBinaryFetcher) fetchFromBlobStorage(ctx context.Context, urlUID
 	// If we want a full audit of the MinIO actions (or if we want to check
 	// object permissions), we need to update the signature to pass the user
 	// UID explicitly.
-	_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+	_, userUID := resource.GetRequesterUIDAndUserUID(ctx)
 	b, _, err = f.fileGetter.GetFile(ctx, minio.GetFileParams{
 		BucketName: bucketName,
 		Path:       objectPath,

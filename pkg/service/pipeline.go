@@ -42,6 +42,7 @@ import (
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	constantx "github.com/instill-ai/x/constant"
 	resourcex "github.com/instill-ai/x/resource"
 	temporalx "github.com/instill-ai/x/temporal"
 )
@@ -146,7 +147,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 		if !granted {
 			return nil, errdomain.ErrUnauthorized
 		}
-	} else if ns.NsUID != uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)) {
+	} else if ns.NsUID != uuid.FromStringOrNil(resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)) {
 		return nil, errdomain.ErrUnauthorized
 	}
 
@@ -1691,7 +1692,7 @@ func (s *service) triggerPipeline(
 		return nil, nil, err
 	}
 
-	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
+	isStreaming := resourcex.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
 
 	we, err := s.temporalClient.ExecuteWorkflow(
 		temporalx.PropagateMetadata(ctx),
@@ -1708,7 +1709,7 @@ func (s *service) triggerPipeline(
 				PipelineUserUID:      user.NsUID,
 				PipelineRequesterUID: requester.NsUID,
 				PipelineRequesterID:  requester.NsID,
-				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
+				HeaderAuthorization:  resourcex.GetRequestSingleHeader(ctx, "authorization"),
 				ExpiryRule:           triggerParams.expiryRule,
 			},
 			Streaming: isStreaming,
@@ -1787,7 +1788,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 		return nil, err
 	}
 
-	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
+	isStreaming := resourcex.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
 
 	we, err := s.temporalClient.ExecuteWorkflow(
 		temporalx.PropagateMetadata(ctx),
@@ -1804,7 +1805,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 				PipelineUserUID:      params.userUID,
 				PipelineRequesterUID: requester.NsUID,
 				PipelineRequesterID:  requester.NsID,
-				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
+				HeaderAuthorization:  resourcex.GetRequestSingleHeader(ctx, "authorization"),
 				ExpiryRule:           params.expiryRule,
 			},
 			Streaming: isStreaming,
@@ -1887,14 +1888,14 @@ func (s *service) getOutputsAndMetadata(ctx context.Context, userUID uuid.UUID, 
 // checkRequesterPermission validates that the authenticated user can make
 // requests on behalf of the resource identified by the requester UID.
 func (s *service) checkRequesterPermission(ctx context.Context, pipeline *datamodel.Pipeline) error {
-	authType := resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey)
+	authType := resourcex.GetRequestSingleHeader(ctx, constantx.HeaderAuthTypeKey)
 	if authType != "user" {
 		// Only authenticated users can switch namespaces.
 		return errdomain.ErrUnauthorized
 	}
 
-	requester := resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey)
-	authenticatedUser := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+	requester := resourcex.GetRequestSingleHeader(ctx, constantx.HeaderRequesterUIDKey)
+	authenticatedUser := resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)
 	if requester == "" || authenticatedUser == requester {
 		// Request doesn't contain impersonation.
 		return nil

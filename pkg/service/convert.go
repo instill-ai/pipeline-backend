@@ -44,6 +44,8 @@ import (
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	constantx "github.com/instill-ai/x/constant"
+	resourcex "github.com/instill-ai/x/resource"
 )
 
 type Converter interface {
@@ -513,7 +515,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 
 	ownerName := fmt.Sprintf("%s/%s", dbPipeline.NamespaceType, dbPipeline.NamespaceID)
 
-	ctxUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+	ctxUserUID := resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)
 
 	if view == pb.Pipeline_VIEW_FULL {
 		if err := c.IncludeDetailInRecipe(ctx, dbPipeline.Owner, dbPipeline.Recipe, useDynamicDef); err != nil {

@@ -29,6 +29,7 @@ import (
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	resourcex "github.com/instill-ai/x/resource"
 )
 
 func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pb.ListPipelinesAdminRequest) (*pb.ListPipelinesAdminResponse, error) {
@@ -947,7 +948,7 @@ func (h *PublicHandler) preTriggerNamespacePipeline(ctx context.Context, req Tri
 	// if err != nil {
 	// 	return ns, nil, id, nil, false, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
 	// }
-	returnTraces := resource.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true"
+	returnTraces := resourcex.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true"
 
 	return ns, id, pbPipeline, returnTraces, nil
 
@@ -1698,7 +1699,7 @@ func (h *PublicHandler) preTriggerNamespacePipelineRelease(ctx context.Context, 
 	if err != nil {
 		return ns, "", nil, nil, false, err
 	}
-	returnTraces := resource.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true"
+	returnTraces := resourcex.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true"
 
 	return ns, req.GetReleaseId(), pbPipeline, pbPipelineRelease, returnTraces, nil
 

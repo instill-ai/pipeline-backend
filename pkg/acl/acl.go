@@ -17,7 +17,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/instill-ai/pipeline-backend/pkg/resource"
+	"github.com/instill-ai/x/resource"
+
+	constantx "github.com/instill-ai/x/constant"
 )
 
 type ACLClientInterface interface {
@@ -99,7 +101,7 @@ func InitOpenFGAClient(ctx context.Context, host string, port int) (openfga.Open
 }
 
 func (c *ACLClient) getClient(ctx context.Context, mode Mode) openfga.OpenFGAServiceClient {
-	userUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+	userUID := resource.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)
 
 	if mode == WriteMode {
 		// To solve the read-after-write inconsistency problem,
@@ -317,14 +319,14 @@ func (c *ACLClient) CheckPermission(ctx context.Context, objectType string, obje
 		return true, nil
 	}
 
-	userType := resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey)
+	userType := resource.GetRequestSingleHeader(ctx, constantx.HeaderAuthTypeKey)
 
 	var userUID string
 	switch userType {
 	case "user":
-		userUID = resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+		userUID = resource.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)
 	default:
-		userUID = resource.GetRequestSingleHeader(ctx, constant.HeaderVisitorUIDKey)
+		userUID = resource.GetRequestSingleHeader(ctx, constantx.HeaderVisitorUIDKey)
 	}
 
 	data, err := c.getClient(ctx, ReadMode).Check(ctx, &openfga.CheckRequest{
@@ -366,13 +368,13 @@ func (c *ACLClient) CheckPublicExecutable(ctx context.Context, objectType string
 
 func (c *ACLClient) ListPermissions(ctx context.Context, objectType string, role string, isPublic bool) ([]uuid.UUID, error) {
 
-	userType := resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey)
+	userType := resource.GetRequestSingleHeader(ctx, constantx.HeaderAuthTypeKey)
 	var userUIDStr string
 	if userType == "user" {
-		userUIDStr = resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+		userUIDStr = resource.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)
 
 	} else {
-		userUIDStr = resource.GetRequestSingleHeader(ctx, constant.HeaderVisitorUIDKey)
+		userUIDStr = resource.GetRequestSingleHeader(ctx, constantx.HeaderVisitorUIDKey)
 	}
 
 	if isPublic {

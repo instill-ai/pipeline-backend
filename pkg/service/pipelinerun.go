@@ -12,16 +12,15 @@ import (
 	"go.uber.org/zap"
 	"gopkg.in/guregu/null.v4"
 
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
-	"github.com/instill-ai/pipeline-backend/pkg/resource"
+	"github.com/instill-ai/x/constant"
+	"github.com/instill-ai/x/minio"
+	"github.com/instill-ai/x/resource"
 
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
-	miniox "github.com/instill-ai/x/minio"
-	resourcex "github.com/instill-ai/x/resource"
 )
 
 const defaultPipelineReleaseID = "latest"
@@ -83,7 +82,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 		return nil, err
 	}
 
-	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+	requesterUID, userUID := resource.GetRequesterUIDAndUserUID(ctx)
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 
@@ -197,7 +196,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRunsRequest, filter filtering.Filter) (*pb.ListComponentRunsResponse, error) {
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
-	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+	requesterUID, userUID := resource.GetRequesterUIDAndUserUID(ctx)
 
 	orderBy, err := ordering.ParseOrderBy(req)
 	if err != nil {
@@ -386,7 +385,7 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListP
 
 type uploadPipelineRunInputsToMinioParam struct {
 	pipelineTriggerID string
-	expiryRule        miniox.ExpiryRule
+	expiryRule        minio.ExpiryRule
 	pipelineData      []map[string]any
 }
 
@@ -399,9 +398,9 @@ func (s *service) uploadPipelineRunInputsToMinio(ctx context.Context, param uplo
 		zap.Any("pipelineData", param.pipelineData),
 	)
 
-	_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+	_, userUID := resource.GetRequesterUIDAndUserUID(ctx)
 	url, objectInfo, err := minioClient.WithLogger(s.log).
-		UploadFile(ctx, &miniox.UploadFileParam{
+		UploadFile(ctx, &minio.UploadFileParam{
 			UserUID:       userUID,
 			FilePath:      objectName,
 			FileContent:   param.pipelineData,

@@ -23,13 +23,13 @@ import (
 	fieldmaskutil "github.com/mennanov/fieldmask-utils"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
-	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/checkfield"
+	"github.com/instill-ai/x/constant"
 	"github.com/instill-ai/x/errmsg"
+	"github.com/instill-ai/x/resource"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
