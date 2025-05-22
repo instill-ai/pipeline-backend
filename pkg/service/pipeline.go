@@ -43,6 +43,7 @@ import (
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	resourcex "github.com/instill-ai/x/resource"
+	temporalx "github.com/instill-ai/x/temporal"
 )
 
 var preserveTags = []string{"featured", "feature"}
@@ -1691,8 +1692,9 @@ func (s *service) triggerPipeline(
 	}
 
 	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
+
 	we, err := s.temporalClient.ExecuteWorkflow(
-		ctx,
+		temporalx.PropagateMetadata(ctx),
 		workflowOptions,
 		"TriggerPipelineWorkflow",
 		&worker.TriggerPipelineWorkflowParam{
@@ -1786,8 +1788,9 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 	}
 
 	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
+
 	we, err := s.temporalClient.ExecuteWorkflow(
-		ctx,
+		temporalx.PropagateMetadata(ctx),
 		workflowOptions,
 		"TriggerPipelineWorkflow",
 		&worker.TriggerPipelineWorkflowParam{

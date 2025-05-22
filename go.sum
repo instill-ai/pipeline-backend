@@ -953,6 +953,10 @@ github.com/instill-ai/usage-client v0.3.0-alpha.0.20250313022849-49504d982f18 h1
 github.com/instill-ai/usage-client v0.3.0-alpha.0.20250313022849-49504d982f18/go.mod h1:/B+Irg9TYBlP+X79GZ+yvPxFvC+7fbRL7APNGiJlDSk=
 github.com/instill-ai/x v0.8.0-alpha h1:GJl8QATrtH7Vc9zeMARhxuAqsTShQoY3GiKwLQdu/l8=
 github.com/instill-ai/x v0.8.0-alpha/go.mod h1:l6xECxln5VQz7tSafeDWSdCN1sKizzVamHxlMMGenzg=
+github.com/instill-ai/x v0.8.0-alpha.0.20250522111731-55c0b3cae328 h1:gJdJzWEdxc3RNxYr27Y68imG+gKvGTXOAEpdTVqtW2A=
+github.com/instill-ai/x v0.8.0-alpha.0.20250522111731-55c0b3cae328/go.mod h1:uzCqJuS/AuCPiY8HhzQpz7I3L5pJfIZZNw/euT6SfHE=
+github.com/instill-ai/x v0.8.0-alpha.0.20250522141741-d2571d735e5c h1:/QrfuEpN6B3+bu9vUqJd0Ft07cH49C9Fstx6FntQ/hA=
+github.com/instill-ai/x v0.8.0-alpha.0.20250522141741-d2571d735e5c/go.mod h1:uzCqJuS/AuCPiY8HhzQpz7I3L5pJfIZZNw/euT6SfHE=
 github.com/intel/goresctrl v0.2.0/go.mod h1:+CZdzouYFn5EsxgqAQTEzMfwKwuc0fVdMrT9FCCAVRQ=
 github.com/itchyny/gojq v0.12.14 h1:6k8vVtsrhQSYgSGg827AD+PVVaB1NLXEdX+dda2oZCc=
 github.com/itchyny/gojq v0.12.14/go.mod h1:y1G7oO7XkcR1LPZO59KyoCRy08T3j9vDYRV0GgYSS+s=
