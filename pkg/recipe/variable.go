@@ -8,10 +8,11 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
+	"github.com/instill-ai/x/constant"
+	"github.com/instill-ai/x/minio"
 
-	miniox "github.com/instill-ai/x/minio"
+	resourcex "github.com/instill-ai/x/resource"
 )
 
 // SystemVariables contain information about a pipeline trigger.
@@ -42,7 +43,7 @@ type SystemVariables struct {
 
 	// ExpiryRule defines the tag and object expiration for the blob storage
 	// associated to the pipeline run data (e.g. recipe, input, output).
-	ExpiryRule miniox.ExpiryRule `json:"__EXPIRY_RULE"`
+	ExpiryRule minio.ExpiryRule `json:"__EXPIRY_RULE"`
 
 	HeaderAuthorization string `json:"__PIPELINE_HEADER_AUTHORIZATION"`
 	ModelBackend        string `json:"__MODEL_BACKEND"`
@@ -58,10 +59,10 @@ type SystemVariables struct {
 // the context and instance configuration.
 func GenerateSystemVariables(ctx context.Context, sysVar SystemVariables) (map[string]any, error) {
 	if sysVar.PipelineUserUID.IsNil() {
-		sysVar.PipelineUserUID = uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
+		sysVar.PipelineUserUID = uuid.FromStringOrNil(resourcex.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
 	}
 	if sysVar.HeaderAuthorization == "" {
-		sysVar.HeaderAuthorization = resource.GetRequestSingleHeader(ctx, "Authorization")
+		sysVar.HeaderAuthorization = resourcex.GetRequestSingleHeader(ctx, "Authorization")
 	}
 	if sysVar.ModelBackend == "" {
 		sysVar.ModelBackend = fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort)

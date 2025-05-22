@@ -12,7 +12,6 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
@@ -20,6 +19,8 @@ import (
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	constantx "github.com/instill-ai/x/constant"
+	resourcex "github.com/instill-ai/x/resource"
 )
 
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -50,7 +51,7 @@ func (s *service) checkNamespacePermission(ctx context.Context, ns resource.Name
 			return errdomain.ErrUnauthorized
 		}
 	} else {
-		if ns.NsUID != uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)) {
+		if ns.NsUID != uuid.FromStringOrNil(resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)) {
 			return errdomain.ErrUnauthorized
 		}
 	}
@@ -59,7 +60,7 @@ func (s *service) checkNamespacePermission(ctx context.Context, ns resource.Name
 
 func (s *service) GetCtxUserNamespace(ctx context.Context) (resource.Namespace, error) {
 
-	uid := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
+	uid := uuid.FromStringOrNil(resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey))
 	resp, err := s.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{
 		Uid: uid.String(),
 	})

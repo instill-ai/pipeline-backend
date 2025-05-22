@@ -21,16 +21,16 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	"github.com/instill-ai/x/constant"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
-	mockx "github.com/instill-ai/x/mock"
+	miniomock "github.com/instill-ai/x/mock"
 )
 
 var db *gorm.DB
@@ -166,7 +166,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 		Owner: nil,
 	}, nil)
 
-	mockMinio := mockx.NewMinioIMock(mc)
+	mockMinio := miniomock.NewClientMock(mc)
 	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some errors"))
 
 	for i, testCase := range testCases {
@@ -378,7 +378,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 		Owner: nil,
 	}, nil)
 
-	mockMinio := mockx.NewMinioIMock(mc)
+	mockMinio := miniomock.NewClientMock(mc)
 	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some error happens"))
 
 	for i, testCase := range testCases {
@@ -482,7 +482,7 @@ func TestService_ListPipelineRunsByRequester(t *testing.T) {
 		Owner: nil,
 	}, nil)
 
-	mockMinio := mockx.NewMinioIMock(mc)
+	mockMinio := miniomock.NewClientMock(mc)
 
 	tx := db.Begin()
 	c.Cleanup(func() { tx.Rollback() })

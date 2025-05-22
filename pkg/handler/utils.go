@@ -4,8 +4,10 @@ import (
 	"context"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/instill-ai/x/resource"
+
+	constantx "github.com/instill-ai/x/constant"
 )
 
 func authenticateUser(ctx context.Context, allowVisitor bool) error {
@@ -13,8 +15,8 @@ func authenticateUser(ctx context.Context, allowVisitor bool) error {
 		return nil
 	}
 
-	if resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey) == "user" {
-		if resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey) == "" {
+	if resource.GetRequestSingleHeader(ctx, constantx.HeaderAuthTypeKey) == "user" {
+		if resource.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey) == "" {
 			return service.ErrUnauthenticated
 		}
 		return nil
@@ -24,7 +26,7 @@ func authenticateUser(ctx context.Context, allowVisitor bool) error {
 		return service.ErrUnauthenticated
 	}
 
-	if resource.GetRequestSingleHeader(ctx, constant.HeaderVisitorUIDKey) == "" {
+	if resource.GetRequestSingleHeader(ctx, constantx.HeaderVisitorUIDKey) == "" {
 		return service.ErrUnauthenticated
 	}
 

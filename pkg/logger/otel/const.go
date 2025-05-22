@@ -6,9 +6,9 @@ import (
 
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
+	"github.com/instill-ai/x/constant"
+	"github.com/instill-ai/x/resource"
 )
 
 type Option func(l logMessage) logMessage
