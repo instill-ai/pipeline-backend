@@ -205,7 +205,11 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		HeartbeatTimeout: 2 * time.Minute,
 	}
 
-	ctx, _ = workflow.CreateSession(ctx, sessionOptions)
+	ctx, err := workflow.CreateSession(ctx, sessionOptions)
+	if err != nil {
+		logger.Error("Failed to create session", zap.Error(err))
+		return err
+	}
 	defer workflow.CompleteSession(ctx)
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
@@ -227,7 +231,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		UserUID:    param.SystemVariables.PipelineUserUID,
 		Streaming:  param.Streaming,
 	}
-	err := workflow.ExecuteActivity(ctx, w.LoadWorkflowMemoryActivity, loadWFMParam).Get(ctx, nil)
+	err = workflow.ExecuteActivity(ctx, w.LoadWorkflowMemoryActivity, loadWFMParam).Get(ctx, nil)
 	if err != nil {
 		return err
 	}
