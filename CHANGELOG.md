@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.53.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.52.5-beta...v0.53.0-beta) (2025-06-03)
+
+
+### Features
+
+* **temporal:** propagate request metadata to Temporal headers ([#1009](https://github.com/instill-ai/pipeline-backend/issues/1009)) ([0e90a99](https://github.com/instill-ai/pipeline-backend/commit/0e90a99775e7e69990b979817a94b386a15432bf))
+
+
+### Bug Fixes
+
+* **worker:** catch the error when creating Temporal session failed ([#1011](https://github.com/instill-ai/pipeline-backend/issues/1011)) ([d238d3b](https://github.com/instill-ai/pipeline-backend/commit/d238d3b4821459e425639d7355096bedc27ddea4))
+
 ## [0.52.5-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.52.4-beta...v0.52.5-beta) (2025-05-14)
 
 
