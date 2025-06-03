@@ -413,7 +413,7 @@ func testTaskEditFollowers(t *testing.T) {
 			input: TaskEditFollowerInput{
 				Action:     "edit follower",
 				ID:         "1234",
-				Followers:  "1234,test@instill.tech",
+				Followers:  "1234,test@instill-ai.com",
 				EditOption: "add",
 			},
 			wantResp: TaskTaskOutput{

@@ -202,7 +202,7 @@ func testDuplicateProject(t *testing.T) {
 				Action:             "duplicate",
 				ID:                 "1234",
 				Name:               "New Test Project",
-				Team:               "test@instill.tech",
+				Team:               "test@instill-ai.com",
 				ShouldSkipWeekends: true,
 			},
 			wantResp: ProjectTaskOutput{
