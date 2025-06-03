@@ -96,7 +96,7 @@ compogen readme path/to/component/config path/to/component/README.mdx \
 - In the "supported tasks" tables, provide better documentation for nested
   arrays and objects (currently the type doesn't support nesting).
 - If task definitions contain examples for the (required) input and output
-  fields, generate param samples as in https://github.com/instill-ai/instill.tech/blob/main/docs/component/ai/openai.en.mdx
+  fields, generate param samples as in https://github.com/instill-ai/instill-ai.com/blob/main/docs/component/ai/openai.en.mdx
 - Automate command module version.
 
 ## Next steps

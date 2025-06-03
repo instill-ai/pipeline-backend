@@ -14,18 +14,6 @@ jobs:
     name: Build and push image
     uses: instill-ai/pipeline-backend/.github/workflows/images.yml@main
     secrets: inherit
-  backends:
-    needs: build-push-image
-    if: github.ref == 'refs/heads/main'
-    name: Backends
-    strategy:
-      fail-fast: false
-      matrix:
-        component: [pipeline-backend]
-    uses: instill-ai/instill-core/.github/workflows/integration-test-backend.yml@main
-    with:
-      component: ${{ matrix.component }}
-      target: latest
   pr-head:
     if: github.event_name == 'pull_request'
     name: PR head branch

@@ -1,4 +1,0 @@
-instill pipeline:
-  - "**"
-instill component:
-  - "pkg/component/**"

@@ -426,7 +426,7 @@ func taskAddFollowers(res http.ResponseWriter, req *http.Request) {
 
 	for _, v := range FakeTask {
 		if v.GID == taskGID {
-			if len(body.Followers) == 2 && body.Followers[0] == "1234" && body.Followers[1] == "test@instill.tech" {
+			if len(body.Followers) == 2 && body.Followers[0] == "1234" && body.Followers[1] == "test@instill-ai.com" {
 				if err = json.NewEncoder(res).Encode(
 					map[string]interface{}{
 						"data": v,

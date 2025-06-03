@@ -38,7 +38,7 @@ Note To access Instill Cloud, register an account with your email address.
 
 Instill Console, or Console is a user-friendly web-based UI application that improves accessibility and usability across both Instill Core and Instill Cloud. It allows you to dive into the creation of AI apps or the processing of unstructured data without the need for coding skills.
 
-To access the Instill Core console, please launch Instill Core and navigate to http://localhost:3000. For the Instill Cloud console, simply go to https://console.instill.tech.
+To access the Instill Core console, please launch Instill Core and navigate to http://localhost:3000. For the Instill Cloud console, simply go to https://console.instill-ai.com.
 
 📺 Instill CLI: Bring Instill Core/Cloud to your command line
 

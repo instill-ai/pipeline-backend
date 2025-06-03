@@ -8,7 +8,7 @@ server:
   usage:
     enabled: true
     tlsenabled: true
-    host: usage.instill.tech
+    host: usage.instill-ai.com
     port: 443
   debug: true
   maxdatasize: 12 # MB in unit
