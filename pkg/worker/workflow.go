@@ -797,6 +797,13 @@ type PreIteratorActivityParam struct {
 	IteratorRecipe  *datamodel.Recipe
 }
 
+// iteratorComponentData is used to hold the component data in an iterator
+// element before building its workflow memory.
+type iteratorComponentData struct {
+	input format.Value
+	setup format.Value
+}
+
 // PreIteratorActivity generates the workflow memory for each element in an
 // iteration. In order to execute iterator components concurrently, each
 // element in the iterator triggers a TriggerPipelineWorkflow.
@@ -936,6 +943,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param PreIteratorActiv
 		}
 	}
 
+	// Get common workflow memory data.
 	variable, err := wfm.Get(ctx, param.BatchIdx, constant.SegVariable)
 	if err != nil {
 		return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
@@ -949,19 +957,46 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param PreIteratorActiv
 		return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 	}
 
-	childWorkflowIDs := make([]string, len(indexes))
-	for e, rangeIndex := range indexes {
-		// Create child workflow ID.
-		elemWFID := fmt.Sprintf("%s:%d", baseWorkflowID, e)
-		childWorkflowIDs[e] = elemWFID
+	upstreamComponents := map[string]format.Value{}
+	for _, id := range param.UpstreamIDs {
+		component, err := wfm.Get(ctx, param.BatchIdx, id)
+		if err != nil {
+			err := fmt.Errorf("fetching upstream component data: %w", err)
+			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+		}
 
-		// Each element in the iterator generates a workflow memory (and a
-		// triggered workflow). Therefore, batch size is 1 and we'll set and
-		// access the data at the 0 index.
+		upstreamComponents[id] = component
+	}
+
+	iteratorComponents := map[string]iteratorComponentData{}
+	for compID, comp := range param.IteratorRecipe.Component {
+		input, err := data.NewValue(comp.Input)
+		if err != nil {
+			err := fmt.Errorf("converting component input to format.Value: %w", err)
+			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+		}
+		setup, err := data.NewValue(comp.Setup)
+		if err != nil {
+			err := fmt.Errorf("converting component setup to format.Value: %w", err)
+			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+		}
+
+		iteratorComponents[compID] = iteratorComponentData{
+			input: input,
+			setup: setup,
+		}
+	}
+
+	// Each element in the iterator generates a workflow memory (and a
+	// triggered workflow). Therefore, batch size is 1 and we'll set and access
+	// the data at the 0 index.
+	// The following function extracts the common code to initialize, commit
+	// and purge the workflow memory of an element.
+	commitChildWFM := func(e, rangeIndex int) (workflowID string, err error) {
+		elemWFID := fmt.Sprintf("%s:%d", baseWorkflowID, e)
 		elemWFM, err := w.memoryStore.NewWorkflowMemory(ctx, elemWFID, 1)
 		if err != nil {
-			err = fmt.Errorf("initializing workflow memory: %w", err)
-			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+			return "", fmt.Errorf("initializing workflow memory: %w", err)
 		}
 
 		defer w.memoryStore.PurgeWorkflowMemory(elemWFID)
@@ -985,62 +1020,62 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param PreIteratorActiv
 		}
 
 		if err := elemWFM.Set(ctx, 0, key, elem); err != nil {
-			err = fmt.Errorf("setting element input in workflow memory: %w", err)
-			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+			return "", fmt.Errorf("setting element input in workflow memory: %w", err)
 		}
+
+		// The following code doesn't depend on the iterator element.
+		// Therefore, we could squeeze some performance by generating a
+		// single workflow memory and committing it with different IDs.
+		// However, this would mean exposing internal fields of the workflow
+		// memory like the ID and potentially misusing this field. For now, the
+		// performance gain of having one workflow per iterator element is
+		// enough.
 
 		// Set pipeline data
-		err = elemWFM.SetPipelineData(ctx, 0, memory.PipelineVariable, variable)
-		if err != nil {
-			err = fmt.Errorf("setting variable in workflow memory: %w", err)
-			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+		if err := elemWFM.SetPipelineData(ctx, 0, memory.PipelineVariable, variable); err != nil {
+			return "", fmt.Errorf("setting variable in workflow memory: %w", err)
 		}
-		err = elemWFM.SetPipelineData(ctx, 0, memory.PipelineSecret, secret)
-		if err != nil {
-			err = fmt.Errorf("setting secret in workflow memory: %w", err)
-			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+		if err := elemWFM.SetPipelineData(ctx, 0, memory.PipelineSecret, secret); err != nil {
+			return "", fmt.Errorf("setting secret in workflow memory: %w", err)
 		}
-		err = elemWFM.SetPipelineData(ctx, 0, memory.PipelineConnection, connection)
-		if err != nil {
-			err = fmt.Errorf("setting connection in workflow memory: %w", err)
-			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+		if err := elemWFM.SetPipelineData(ctx, 0, memory.PipelineConnection, connection); err != nil {
+			return "", fmt.Errorf("setting connection in workflow memory: %w", err)
 		}
 
-		for _, id := range param.UpstreamIDs {
-			component, err := wfm.Get(ctx, param.BatchIdx, id)
-			if err != nil {
-				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
-			}
-			err = elemWFM.Set(ctx, 0, id, component)
-			if err != nil {
-				err = fmt.Errorf("setting upstream component data: %w", err)
-				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+		for id, component := range upstreamComponents {
+			if err := elemWFM.Set(ctx, 0, id, component); err != nil {
+				return "", fmt.Errorf("setting upstream component data: %w", err)
 			}
 		}
-		for compID, comp := range param.IteratorRecipe.Component {
-			inputVal, err := data.NewValue(comp.Input)
-			if err != nil {
-				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
-			}
-			setupVal, err := data.NewValue(comp.Setup)
-			if err != nil {
-				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
-			}
+
+		for compID, compData := range iteratorComponents {
 			elemWFM.InitComponent(ctx, 0, compID)
 
-			inputVal = setIteratorIndex(inputVal, param.Index, rangeIndex)
+			inputVal := setIteratorIndex(compData.input, param.Index, rangeIndex)
 			if err := elemWFM.SetComponentData(ctx, 0, compID, memory.ComponentDataInputTemplate, inputVal); err != nil {
-				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
-			}
-			if err := elemWFM.SetComponentData(ctx, 0, compID, memory.ComponentDataSetupTemplate, setupVal); err != nil {
-				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+				return "", fmt.Errorf("setting component input: %w", err)
 			}
 
-			if err := w.memoryStore.CommitWorkflowData(ctx, param.SystemVariables.PipelineUserUID, elemWFM); err != nil {
-				err := fmt.Errorf("committing workflow memory: %w", err)
-				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+			if err := elemWFM.SetComponentData(ctx, 0, compID, memory.ComponentDataSetupTemplate, compData.setup); err != nil {
+				return "", fmt.Errorf("setting component setup: %w", err)
 			}
 		}
+
+		if err := w.memoryStore.CommitWorkflowData(ctx, param.SystemVariables.PipelineUserUID, elemWFM); err != nil {
+			return "", fmt.Errorf("committing workflow memory: %w", err)
+		}
+
+		return elemWFID, nil
+	}
+
+	childWorkflowIDs := make([]string, len(indexes))
+	for e, rangeIndex := range indexes {
+		elemWFID, err := commitChildWFM(e, rangeIndex)
+		if err != nil {
+			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+		}
+
+		childWorkflowIDs[e] = elemWFID
 	}
 
 	logger.Info("PreIteratorActivity completed")
