@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.54.0-rc](https://github.com/instill-ai/pipeline-backend/compare/v0.53.0-beta...v0.54.0-rc) (2025-06-06)
+
+
+### Features
+
+* **iterator:** execute elements in iterator concurrently ([#1014](https://github.com/instill-ai/pipeline-backend/issues/1014)) ([25b3a35](https://github.com/instill-ai/pipeline-backend/commit/25b3a35b147a3a915b9283fe4108465a8ae87be1))
+
+
+### Miscellaneous Chores
+
+* **main:** release v0.45.0-rc ([#1016](https://github.com/instill-ai/pipeline-backend/issues/1016)) ([04d53cb](https://github.com/instill-ai/pipeline-backend/commit/04d53cbfad651c8bbd16f839c4f90ea866610f65))
+* **main:** release v0.54.0-rc ([#1017](https://github.com/instill-ai/pipeline-backend/issues/1017)) ([3ab7010](https://github.com/instill-ai/pipeline-backend/commit/3ab7010aebde8b7e4a3bcbe59a7033a329a5199a))
+
 ## [0.53.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.52.5-beta...v0.53.0-beta) (2025-06-03)
 
 
