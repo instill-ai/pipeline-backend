@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.54.1-rc](https://github.com/instill-ai/pipeline-backend/compare/v0.54.0-rc...v0.54.1-rc) (2025-06-13)
+
+
+### Bug Fixes
+
+* **component,http:** fix incorrect marshaling in the request body ([#1022](https://github.com/instill-ai/pipeline-backend/issues/1022)) ([1f19681](https://github.com/instill-ai/pipeline-backend/commit/1f19681974d1a819478b02f01a5c331e18321481))
+* **component,openai:** resize the image before sending to OpenAI ([#1020](https://github.com/instill-ai/pipeline-backend/issues/1020)) ([0a65d6b](https://github.com/instill-ai/pipeline-backend/commit/0a65d6bf206ac31b93e44ac80b415b2a3849ac2b))
+
+
+### Miscellaneous
+
+* **config:** update config.json ([#1018](https://github.com/instill-ai/pipeline-backend/issues/1018)) ([56d80d6](https://github.com/instill-ai/pipeline-backend/commit/56d80d6d4054126b9a3c293196dec56855955b7a))
+
 ## [0.54.0-rc](https://github.com/instill-ai/pipeline-backend/compare/v0.53.0-beta...v0.54.0-rc) (2025-06-06)
 
 
