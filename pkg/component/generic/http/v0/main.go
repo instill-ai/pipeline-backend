@@ -153,7 +153,11 @@ func (e *execution) executeHTTP(ctx context.Context, job *base.Job) error {
 	// An API error is a valid output in this component.
 	req := e.client.R()
 	if in.Body != nil {
-		req.SetBody(in.Body.String())
+		jsonValue, err := in.Body.ToJSONValue()
+		if err != nil {
+			return fmt.Errorf("failed to convert body to JSON value: %w", err)
+		}
+		req.SetBody(jsonValue)
 	}
 
 	resp, err := req.Execute(taskMethod[e.Task], in.EndpointURL)
