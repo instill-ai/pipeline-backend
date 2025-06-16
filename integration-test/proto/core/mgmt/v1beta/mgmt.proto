@@ -1096,8 +1096,10 @@ message UserSubscription {
     PLAN_UNSPECIFIED = 0;
     // Free plan.
     PLAN_FREE = 1;
-    // Pro plan.
-    PLAN_PRO = 2;
+    // 2 is reserved for the deprecated PLAN_PRO value.
+    reserved 2;
+    // Starter plan.
+    PLAN_STARTER = 3;
   }
 
   // Plan identifier.
