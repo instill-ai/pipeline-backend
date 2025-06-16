@@ -27,20 +27,19 @@ guide](../pkg/component/CONTRIBUTING.md).
 ### Environment setup
 
 If you want to see your changes in action you'll need to build Instill Core locally.
-First, launch the latest version of 🔮 [**Instill
-Core**](https://github.com/instill-ai/instill-core) suite. Then, build and
-launch the 💧 [**Instill Pipeline**](https://github.com/instill-ai/pipeline-backend)
+First, launch the latest version of [**Instill Core**](https://github.com/instill-ai/instill-core) suite. Then, build and
+launch the [**Instill Core Pipeline**](https://github.com/instill-ai/pipeline-backend)
 backend with your local changes.
 
-#### Building 🔮 Instill Core suite
+#### Launching 🔮 Instill Core suite
 
 ```shell
 cd $MY_WORKSPACE
 git clone https://github.com/instill-ai/instill-core && cd instill-core
-make latest PROFILE=exclude-pipeline # launch all the dependent services except pipeline-backend
+make latest PROFILE=api-gateway,mgmt,model,artifact,console
 ```
 
-#### Building 💧 Instill Pipeline backend
+#### Building the development container
 
 ```shell
 cd $MY_WORKSPACE
@@ -48,7 +47,7 @@ git clone https://github.com/instill-ai/pipeline-backend && cd pipeline-backend
 make build-dev && make dev
 ```
 
-Now, you have the Go project set up in the container, in which you can compile
+Now, you have the Go project set up in the container where you can compile
 and run the binaries together with the integration test in each container shell.
 
 ##### Injecting component secrets
