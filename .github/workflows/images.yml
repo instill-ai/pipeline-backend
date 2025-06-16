@@ -69,8 +69,8 @@ jobs:
           cache-from: type=registry,ref=instill/pipeline-backend:buildcache
           cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
 
-      - name: Build and push amd64 (rc)
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Build and push amd64 (rc/release)
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
@@ -78,22 +78,8 @@ jobs:
           push: true
           build-args: |
             SERVICE_NAME=pipeline-backend
-            SERVICE_VERSION=${{ steps.set_version.outputs.no_v_tag }}-rc
-          tags: instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-amd64-rc
-          cache-from: type=registry,ref=instill/pipeline-backend:buildcache
-          cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
-
-      - name: Build and push amd64 (release)
-        if: github.event_name == 'release'
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64
-          context: .
-          push: true
-          build-args: |
-            SERVICE_NAME=pipeline-backend
-            SERVICE_VERSION=${{steps.set_version.outputs.no_v_tag}}
-          tags: instill/pipeline-backend:${{steps.set_version.outputs.no_v_tag}}-amd64
+            SERVICE_VERSION=${{ steps.set_version.outputs.no_v_tag }}
+          tags: instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-amd64
           cache-from: type=registry,ref=instill/pipeline-backend:buildcache
           cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
 
@@ -153,8 +139,8 @@ jobs:
           cache-from: type=registry,ref=instill/pipeline-backend:buildcache
           cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
 
-      - name: Build and push arm64 (rc)
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Build and push arm64 (rc/release)
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
         uses: docker/build-push-action@v6
         with:
           platforms: linux/arm64
@@ -162,22 +148,8 @@ jobs:
           push: true
           build-args: |
             SERVICE_NAME=pipeline-backend
-            SERVICE_VERSION=${{ steps.set_version.outputs.no_v_tag }}-rc
-          tags: instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-arm64-rc
-          cache-from: type=registry,ref=instill/pipeline-backend:buildcache
-          cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
-
-      - name: Build and push arm64 (release)
-        if: github.event_name == 'release'
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/arm64
-          context: .
-          push: true
-          build-args: |
-            SERVICE_NAME=pipeline-backend
-            SERVICE_VERSION=${{steps.set_version.outputs.no_v_tag}}
-          tags: instill/pipeline-backend:${{steps.set_version.outputs.no_v_tag}}-arm64
+            SERVICE_VERSION=${{ steps.set_version.outputs.no_v_tag }}
+          tags: instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-arm64
           cache-from: type=registry,ref=instill/pipeline-backend:buildcache
           cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
 
@@ -191,8 +163,15 @@ jobs:
           username: dropletbot
           password: ${{ secrets.botDockerHubPassword }}
 
+      - name: Create and push multi-arch manifest (latest)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker buildx imagetools create -t instill/pipeline-backend:latest \
+            instill/pipeline-backend:latest-amd64 \
+            instill/pipeline-backend:latest-arm64
+
       - name: Set Versions
-        if: github.event_name == 'release'
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
         uses: actions/github-script@v6
         id: set_version
         with:
@@ -202,22 +181,8 @@ jobs:
             core.setOutput('tag', tag)
             core.setOutput('no_v_tag', no_v_tag)
 
-      - name: Create and push multi-arch manifest (latest)
-        if: github.ref == 'refs/heads/main'
-        run: |
-          docker buildx imagetools create -t instill/pipeline-backend:latest \
-            instill/pipeline-backend:latest-amd64 \
-            instill/pipeline-backend:latest-arm64
-
-      - name: Create and push multi-arch manifest (rc)
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          docker buildx imagetools create -t instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-rc \
-            instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-amd64-rc \
-            instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-arm64-rc
-
-      - name: Create and push multi-arch manifest (release)
-        if: github.event_name == 'release'
+      - name: Create and push multi-arch manifest (rc/release)
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
         run: |
           docker buildx imagetools create -t instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }} \
             instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-amd64 \
