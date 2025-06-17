@@ -43,6 +43,21 @@ $defs:
         order: 1
         required: []
         title: Body
+      header:
+        description: |-
+          The request HTTP headers. It must be an object where the values are
+          an array of strings.
+        uiOrder: 2
+        order: 2
+        required: []
+        title: Header
+        type: json
+        example:
+          Extra-Header-One:
+            - myHeaderValue
+          Extra-Header-Two:
+            - val1
+            - val2
     required:
       - endpoint-url
     title: Input Without Body
