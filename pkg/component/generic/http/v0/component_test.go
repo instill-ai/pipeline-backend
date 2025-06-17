@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"slices"
+	"strings"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
@@ -41,11 +43,22 @@ var testAuth = map[authType]map[string]any{
 	},
 }
 
+var passThroughHeaders = []string{"Instill-User-Uid", "Content-Type"}
+
 func TestComponent(t *testing.T) {
 	c := qt.New(t)
 
 	// Setup test HTTP server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Return the received headers
+		for k, h := range r.Header {
+			if !slices.Contains(passThroughHeaders, k) {
+				continue
+			}
+
+			w.Header().Set(k, strings.Join(h, ","))
+		}
+
 		switch r.URL.Path {
 		case "/json":
 			w.Header().Set("Content-Type", "application/json")
@@ -100,7 +113,24 @@ func TestComponent(t *testing.T) {
 			setup: noAuthType,
 			expected: httpOutput{
 				Body:       data.Map{"message": data.NewString("hello")},
-				Header:     map[string][]string{"Content-Type": {"application/json"}},
+				Header:     http.Header{"Content-Type": {"application/json"}},
+				StatusCode: 200,
+			},
+		},
+		{
+			name: "GET JSON response, pass headers",
+			task: "TASK_GET",
+			input: httpInput{
+				EndpointURL: ts.URL + "/json",
+				Header:      http.Header{"Instill-User-Uid": {"unodostres"}},
+			},
+			setup: noAuthType,
+			expected: httpOutput{
+				Body: data.Map{"message": data.NewString("hello")},
+				Header: http.Header{
+					"Content-Type":     {"application/json"},
+					"Instill-User-Uid": {"unodostres"},
+				},
 				StatusCode: 200,
 			},
 		},
@@ -113,7 +143,7 @@ func TestComponent(t *testing.T) {
 			setup: noAuthType,
 			expected: httpOutput{
 				Body:       data.NewString("hello"),
-				Header:     map[string][]string{"Content-Type": {"text/plain"}},
+				Header:     http.Header{"Content-Type": {"text/plain"}},
 				StatusCode: 200,
 			},
 		},
@@ -129,7 +159,7 @@ func TestComponent(t *testing.T) {
 					v, _ := data.NewFileFromBytes([]byte("hello"), "application/octet-stream", "test.bin")
 					return v
 				}(),
-				Header:     map[string][]string{"Content-Type": {"application/octet-stream"}},
+				Header:     http.Header{"Content-Type": {"application/octet-stream"}},
 				StatusCode: 200,
 			},
 		},
@@ -144,7 +174,7 @@ func TestComponent(t *testing.T) {
 			setup: noAuthType,
 			expected: httpOutput{
 				Body:       data.Map{"message": data.NewString("hello")},
-				Header:     map[string][]string{"Content-Type": {"application/json"}},
+				Header:     http.Header{"Content-Type": {"application/json"}},
 				StatusCode: 200,
 			},
 		},
@@ -153,13 +183,13 @@ func TestComponent(t *testing.T) {
 			task: "TASK_PATCH",
 			input: httpInput{
 				EndpointURL: ts.URL + "/text",
-				Header:      map[string][]string{"Content-Type": {"text/plain"}},
+				Header:      http.Header{"Content-Type": {"text/plain"}},
 				Body:        data.NewString("hello"),
 			},
 			setup: noAuthType,
 			expected: httpOutput{
 				Body:       data.NewString("hello"),
-				Header:     map[string][]string{"Content-Type": {"text/plain"}},
+				Header:     http.Header{"Content-Type": {"text/plain"}},
 				StatusCode: 200,
 			},
 		},
@@ -172,7 +202,7 @@ func TestComponent(t *testing.T) {
 			setup: noAuthType,
 			expected: httpOutput{
 				Body:       data.Map{"message": data.NewString("hello")},
-				Header:     map[string][]string{"Content-Type": {"application/json"}},
+				Header:     http.Header{"Content-Type": {"application/json"}},
 				StatusCode: 200,
 			},
 		},
@@ -186,7 +216,7 @@ func TestComponent(t *testing.T) {
 			setup: noAuthType,
 			expected: httpOutput{
 				Body:       data.Map{"message": data.NewString("hello")},
-				Header:     map[string][]string{"Content-Type": {"application/json"}},
+				Header:     http.Header{"Content-Type": {"application/json"}},
 				StatusCode: 200,
 			},
 		},
@@ -199,7 +229,7 @@ func TestComponent(t *testing.T) {
 			setup: noAuthType,
 			expected: httpOutput{
 				Body:       data.NewString("Internal Server Error\n"),
-				Header:     map[string][]string{"Content-Type": {"text/plain; charset=utf-8"}},
+				Header:     http.Header{"Content-Type": {"text/plain; charset=utf-8"}},
 				StatusCode: 500,
 			},
 		},
@@ -212,7 +242,7 @@ func TestComponent(t *testing.T) {
 			setup: basicAuthType,
 			expected: httpOutput{
 				Body:       data.Map{"message": data.NewString("authenticated")},
-				Header:     map[string][]string{"Content-Type": {"application/json"}},
+				Header:     http.Header{"Content-Type": {"application/json"}},
 				StatusCode: 200,
 			},
 		},
@@ -225,7 +255,7 @@ func TestComponent(t *testing.T) {
 			setup: noAuthType,
 			expected: httpOutput{
 				Body:       data.NewString("Unauthorized\n"),
-				Header:     map[string][]string{"Content-Type": {"text/plain; charset=utf-8"}},
+				Header:     http.Header{"Content-Type": {"text/plain; charset=utf-8"}},
 				StatusCode: 401,
 			},
 		},
@@ -238,7 +268,7 @@ func TestComponent(t *testing.T) {
 			setup: bearerTokenType,
 			expected: httpOutput{
 				Body:       data.Map{"message": data.NewString("authenticated")},
-				Header:     map[string][]string{"Content-Type": {"application/json"}},
+				Header:     http.Header{"Content-Type": {"application/json"}},
 				StatusCode: 200,
 			},
 		},
@@ -251,7 +281,7 @@ func TestComponent(t *testing.T) {
 			setup: noAuthType,
 			expected: httpOutput{
 				Body:       data.NewString("Unauthorized\n"),
-				Header:     map[string][]string{"Content-Type": {"text/plain; charset=utf-8"}},
+				Header:     http.Header{"Content-Type": {"text/plain; charset=utf-8"}},
 				StatusCode: 401,
 			},
 		},
@@ -288,7 +318,10 @@ func TestComponent(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 			c.Assert(capturedOutput.Body.Equal(tc.expected.Body), qt.IsTrue)
 			c.Assert(capturedOutput.StatusCode, qt.Equals, tc.expected.StatusCode)
-			c.Assert(capturedOutput.Header["Content-Type"], qt.DeepEquals, tc.expected.Header["Content-Type"])
+
+			for k, h := range tc.expected.Header {
+				c.Assert(capturedOutput.Header[k], qt.DeepEquals, h)
+			}
 		})
 	}
 }

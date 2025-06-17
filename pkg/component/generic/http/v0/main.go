@@ -160,6 +160,10 @@ func (e *execution) executeHTTP(ctx context.Context, job *base.Job) error {
 		req.SetBody(jsonValue)
 	}
 
+	for k, h := range in.Header {
+		req.SetHeader(k, strings.Join(h, ","))
+	}
+
 	resp, err := req.Execute(taskMethod[e.Task], in.EndpointURL)
 	if err != nil {
 		return fmt.Errorf("executing HTTP request: %w", err)
