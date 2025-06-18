@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.55.0](https://github.com/instill-ai/pipeline-backend/compare/v0.54.0-rc...v0.55.0) (2025-06-18)
+
+
+### Bug Fixes
+
+* **component,http:** fix incorrect marshaling in the request body ([#1022](https://github.com/instill-ai/pipeline-backend/issues/1022)) ([1f19681](https://github.com/instill-ai/pipeline-backend/commit/1f19681974d1a819478b02f01a5c331e18321481))
+* **component,openai:** resize the image before sending to OpenAI ([#1020](https://github.com/instill-ai/pipeline-backend/issues/1020)) ([0a65d6b](https://github.com/instill-ai/pipeline-backend/commit/0a65d6bf206ac31b93e44ac80b415b2a3849ac2b))
+
+
+### Miscellaneous
+
+* **config:** update config.json ([#1018](https://github.com/instill-ai/pipeline-backend/issues/1018)) ([56d80d6](https://github.com/instill-ai/pipeline-backend/commit/56d80d6d4054126b9a3c293196dec56855955b7a))
+* **proto:** adopt latest `protogen-go` package ([#1024](https://github.com/instill-ai/pipeline-backend/issues/1024)) ([427598d](https://github.com/instill-ai/pipeline-backend/commit/427598d3c1bb3aa025a3fd0870bb491784612b36))
+* release v0.55.0 ([3b516e0](https://github.com/instill-ai/pipeline-backend/commit/3b516e04aa4d1095c3cc93e9723e582a4b7b4d39))
+* release v0.55.0 ([2cfa80c](https://github.com/instill-ai/pipeline-backend/commit/2cfa80c3203e08a72024f3454e3a7f4a3b01de8c))
+
+
+### Documentation
+
+* **CONTRIBUTING:** update content ([#1027](https://github.com/instill-ai/pipeline-backend/issues/1027)) ([3b84ff0](https://github.com/instill-ai/pipeline-backend/commit/3b84ff05fea11f379b05dfc4c1d2a0643d3b017d))
+
 ## [0.54.0-rc](https://github.com/instill-ai/pipeline-backend/compare/v0.53.0-beta...v0.54.0-rc) (2025-06-06)
 
 
