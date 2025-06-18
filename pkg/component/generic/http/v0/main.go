@@ -147,7 +147,7 @@ func (e *execution) executeHTTP(ctx context.Context, job *base.Job) error {
 
 	in := httpInput{}
 	if err := job.Input.ReadData(ctx, &in); err != nil {
-		return err
+		return fmt.Errorf("reading input data: %w", err)
 	}
 
 	// An API error is a valid output in this component.
@@ -160,9 +160,13 @@ func (e *execution) executeHTTP(ctx context.Context, job *base.Job) error {
 		req.SetBody(jsonValue)
 	}
 
+	for k, h := range in.Header {
+		req.SetHeader(k, strings.Join(h, ","))
+	}
+
 	resp, err := req.Execute(taskMethod[e.Task], in.EndpointURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("executing HTTP request: %w", err)
 	}
 
 	// Try to parse response as JSON first
@@ -173,11 +177,11 @@ func (e *execution) executeHTTP(ctx context.Context, job *base.Job) error {
 	case strings.Contains(contentType, "application/json"):
 		var jsonBody any
 		if err := json.Unmarshal(resp.Body(), &jsonBody); err != nil {
-			return fmt.Errorf("failed to parse JSON response: %w", err)
+			return fmt.Errorf("parsing JSON response: %w", err)
 		}
 		value, err := data.NewValue(jsonBody)
 		if err != nil {
-			return fmt.Errorf("failed to convert JSON response to format.Value: %w", err)
+			return fmt.Errorf("converting JSON response to format.Value: %w", err)
 		}
 		out := httpOutput{
 			StatusCode: resp.StatusCode(),
