@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.55.1](https://github.com/instill-ai/pipeline-backend/compare/v0.55.0...v0.55.1) (2025-06-21)
+
+
+### Features
+
+* **http:** add header parameter in HTTP component ([#1028](https://github.com/instill-ai/pipeline-backend/issues/1028)) ([64d0807](https://github.com/instill-ai/pipeline-backend/commit/64d0807d0152876bad5164687f0447366e7a6ac1))
+
+
+### Bug Fixes
+
+* **component,document:** fix the wrong python script output parsing ([#1031](https://github.com/instill-ai/pipeline-backend/issues/1031)) ([b306708](https://github.com/instill-ai/pipeline-backend/commit/b306708cf7ca794a58ae5c97ed3c0051f037c8d0))
+
 ## [0.55.0](https://github.com/instill-ai/pipeline-backend/compare/v0.54.0-rc...v0.55.0) (2025-06-18)
 
 
