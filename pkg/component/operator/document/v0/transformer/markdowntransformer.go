@@ -114,7 +114,7 @@ func (t *pdfToMarkdownTransformer) transform() (converterOutput, error) {
 		errChan <- nil
 	}()
 
-	outputBytes, err := cmdRunner.CombinedOutput()
+	outputBytes, err := cmdRunner.Output()
 	benchmarkLog = benchmarkLog.With(zap.Time("convert", time.Now()))
 	if err != nil {
 		errorStr := string(outputBytes)
