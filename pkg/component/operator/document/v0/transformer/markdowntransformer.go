@@ -114,7 +114,8 @@ func (t *pdfToMarkdownTransformer) transform() (converterOutput, error) {
 		errChan <- nil
 	}()
 
-	outputBytes, err := cmdRunner.Output()
+	outputBytes, err := cmdRunner.CombinedOutput()
+
 	benchmarkLog = benchmarkLog.With(zap.Time("convert", time.Now()))
 	if err != nil {
 		errorStr := string(outputBytes)
@@ -132,7 +133,17 @@ func (t *pdfToMarkdownTransformer) transform() (converterOutput, error) {
 	}
 
 	if output.SystemError != "" {
-		return output, fmt.Errorf("converting PDF to Markdown: %s", output.SystemError)
+		// There are documents that will fail to be converted to MD. Usually,
+		// the document-to-markdwon task is a step in a pipeline to obtain an
+		// approximate result or to feed it into other components that will
+		// refine it. In most cases, we don't want this failure to stop the
+		// execution of the pipeline, so we continue with a blank result.
+		//
+		// TODO jvallesm: INS-8156 implements a failover mechanism so pipeline
+		// recipes can determine if a component failure is fatal or not. When
+		// that's implemented, we should return an error here instead of
+		// continuing.
+		t.logger.Error("Failed to convert PDF to Markdown. Continuing with empty result.", zap.String("systemError", output.SystemError))
 	}
 
 	if len(output.Logs) > 0 {
