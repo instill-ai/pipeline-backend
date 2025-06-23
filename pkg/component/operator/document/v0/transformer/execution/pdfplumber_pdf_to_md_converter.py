@@ -12,9 +12,15 @@ from io import BytesIO, StringIO
 
 
 if __name__ == "__main__":
-    # Capture warnings and errors. These are printed to stderr by default, which
-    # will prevent clients from unmarshalling the response.
+    # Capture all stderr output and logging warnings/errors
+    stderr_capture = StringIO()
     conversion_logs = StringIO()
+
+    # Redirect stderr to capture all stderr output
+    original_stderr = sys.stderr
+    sys.stderr = stderr_capture
+
+    # Set up logging to capture warnings and errors
     log_handler = logging.StreamHandler(conversion_logs)
     log_handler.setLevel(logging.WARNING)
 
@@ -24,28 +30,28 @@ if __name__ == "__main__":
     # Add the handler to capture warnings/errors
     logging.getLogger().addHandler(log_handler)
 
-    json_str = sys.stdin.buffer.read().decode('utf-8')
-    params = json.loads(json_str)
-    display_image_tag = params["display-image-tag"]
-    display_all_page_image = params["display-all-page-image"]
-    pdf_string = params["PDF"]
-    if "resolution" in params and params["resolution"] != 0 and params["resolution"] != None:
-        resolution = params["resolution"]
-    else:
-        resolution = 300
-    decoded_bytes = base64.b64decode(pdf_string)
-    pdf_file_obj = BytesIO(decoded_bytes)
-    pdf = PDFTransformer(pdf_file_obj, display_image_tag)
-
-    result = ""
-    images = []
-    separator_number = 30
-    image_index = 0
-    errors = []
-    all_page_images = []
-    markdowns = []
-
     try:
+        json_str = sys.stdin.buffer.read().decode('utf-8')
+        params = json.loads(json_str)
+        display_image_tag = params["display-image-tag"]
+        display_all_page_image = params["display-all-page-image"]
+        pdf_string = params["PDF"]
+        if "resolution" in params and params["resolution"] != 0 and params["resolution"] != None:
+            resolution = params["resolution"]
+        else:
+            resolution = 300
+        decoded_bytes = base64.b64decode(pdf_string)
+        pdf_file_obj = BytesIO(decoded_bytes)
+        pdf = PDFTransformer(pdf_file_obj, display_image_tag)
+
+        result = ""
+        images = []
+        separator_number = 30
+        image_index = 0
+        errors = []
+        all_page_images = []
+        markdowns = []
+
         times = len(pdf.raw_pages) // separator_number + 1
         for i in range(times):
             pdf = PDFTransformer(x=pdf_file_obj, display_image_tag=display_image_tag, image_index=image_index, resolution=resolution)
@@ -73,6 +79,15 @@ if __name__ == "__main__":
             errors += pdf.errors
             markdowns += pdf.markdowns
 
+        # Combine all captured output
+        all_logs = []
+        stderr_content = stderr_capture.getvalue().strip()
+        if stderr_content:
+            all_logs.extend(stderr_content.splitlines())
+        log_content = conversion_logs.getvalue().strip()
+        if log_content:
+            all_logs.extend(log_content.splitlines())
+
         output = {
             "body": result,
             "images": images,
@@ -80,8 +95,14 @@ if __name__ == "__main__":
             "all_page_images": all_page_images,
             "display_all_page_image": display_all_page_image,
             "markdowns": markdowns,
-            "logs": conversion_logs.getvalue().splitlines(),
+            "logs": all_logs,
         }
+
+        # Restore original stderr for the final output
+        sys.stderr = original_stderr
         print(json.dumps(output))
+
     except Exception as e:
+        # Restore original stderr before printing error
+        sys.stderr = original_stderr
         print(json.dumps({"system_error": str(e)}), file=sys.stderr)
