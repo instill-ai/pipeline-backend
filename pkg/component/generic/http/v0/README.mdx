@@ -112,7 +112,7 @@ Send a HTTP GET request.
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
 | Body | `output-body-schema` | string | The request body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
 </div>
@@ -141,7 +141,7 @@ Send a HTTP POST request.
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_POST` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
 | Body | `body` | any | The request body. |
 | Body | `output-body-schema` | string | The JSON schema of output body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
@@ -171,7 +171,7 @@ Send a HTTP PATCH request.
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_PATCH` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
 | Body | `body` | any | The request body. |
 | Body | `output-body-schema` | string | The JSON schema of output body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
@@ -201,7 +201,7 @@ Send a HTTP PUT request.
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_PUT` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
 | Body | `body` | any | The request body. |
 | Body | `output-body-schema` | string | The JSON schema of output body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
@@ -231,7 +231,7 @@ Send a HTTP DELETE request.
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
 | Body | `body` | any | The request body. |
 | Body | `output-body-schema` | string | The JSON schema of output body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
@@ -261,7 +261,7 @@ Send a HTTP HEAD request.
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_HEAD` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
 | Body | `output-body-schema` | string | The request body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
 </div>
@@ -290,7 +290,7 @@ Send a HTTP OPTIONS request.
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_OPTIONS` |
-| Endpoint URL (required) | `endpoint-url` | string | The API endpoint url. |
+| Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
 | Body | `body` | any | The request body. |
 | Body | `output-body-schema` | string | The JSON schema of output body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |

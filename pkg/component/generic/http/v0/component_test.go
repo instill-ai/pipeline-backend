@@ -2,11 +2,7 @@ package http
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
-	"net/http/httptest"
-	"slices"
-	"strings"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
@@ -27,7 +23,6 @@ const (
 )
 
 var testAuth = map[authType]map[string]any{
-
 	noAuthType: {},
 	basicAuthType: {
 		"username": username,
@@ -43,252 +38,285 @@ var testAuth = map[authType]map[string]any{
 	},
 }
 
-var passThroughHeaders = []string{"Instill-User-Uid", "Content-Type"}
-
 func TestComponent(t *testing.T) {
 	c := qt.New(t)
+	c.Parallel()
 
-	// Setup test HTTP server
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Return the received headers
-		for k, h := range r.Header {
-			if !slices.Contains(passThroughHeaders, k) {
-				continue
+	// respEquals returns a checker for equality between the received response
+	// and the expected one.
+	respEquals := func(want httpOutput) func(*qt.C, httpOutput) {
+		return func(c *qt.C, got httpOutput) {
+			c.Check(got.StatusCode, qt.Equals, want.StatusCode)
+
+			jGot, err := got.Body.ToJSONValue()
+			c.Assert(err, qt.IsNil)
+
+			jWant, err := want.Body.ToJSONValue()
+			c.Assert(err, qt.IsNil)
+
+			c.Check(jGot, qt.DeepEquals, jWant)
+
+			for k, h := range want.Header {
+				c.Check(got.Header[k], qt.DeepEquals, h)
 			}
-
-			w.Header().Set(k, strings.Join(h, ","))
 		}
+	}
 
-		switch r.URL.Path {
-		case "/json":
-			w.Header().Set("Content-Type", "application/json")
-			err := json.NewEncoder(w).Encode(map[string]string{"message": "hello"})
-			c.Assert(err, qt.IsNil)
-		case "/text":
-			w.Header().Set("Content-Type", "text/plain")
-			_, err := w.Write([]byte("hello"))
-			c.Assert(err, qt.IsNil)
-		case "/file":
-			w.Header().Set("Content-Type", "application/octet-stream")
-			w.Header().Set("Content-Disposition", `attachment; filename="test.bin"`)
-			_, err := w.Write([]byte("hello"))
-			c.Assert(err, qt.IsNil)
-		case "/error":
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		case "/auth":
-			user, pass, ok := r.BasicAuth()
-			if !ok || user != username || pass != password {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-			w.Header().Set("Content-Type", "application/json")
-			err := json.NewEncoder(w).Encode(map[string]string{"message": "authenticated"})
-			c.Assert(err, qt.IsNil)
-		case "/bearer":
-			authHeader := r.Header.Get("Authorization")
-			if authHeader != "Bearer "+token {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-			w.Header().Set("Content-Type", "application/json")
-			err := json.NewEncoder(w).Encode(map[string]string{"message": "authenticated"})
-			c.Assert(err, qt.IsNil)
-		}
-	}))
-	defer ts.Close()
-
+	// These tests use public test endpoints instead of httptest.NewServer() in
+	// order to avoid the private address restriction.
 	testCases := []struct {
-		name     string
-		task     string
-		input    httpInput
-		setup    authType
-		expected httpOutput
+		name   string
+		task   string
+		input  httpInput
+		setup  authType
+		expect func(c *qt.C, got httpOutput)
 	}{
 		{
 			name: "GET JSON response",
 			task: "TASK_GET",
 			input: httpInput{
-				EndpointURL: ts.URL + "/json",
+				// Returns a fixed JSON document.
+				EndpointURL: "https://httpbin.org/json",
 			},
 			setup: noAuthType,
-			expected: httpOutput{
-				Body:       data.Map{"message": data.NewString("hello")},
+			expect: respEquals(httpOutput{
+				Body: body(c, map[string]any{
+					"slideshow": map[string]any{
+						"author": "Yours Truly",
+						"date":   "date of publication",
+						"slides": []any{
+							map[string]any{
+								"title": "Wake up to WonderWidgets!",
+								"type":  "all",
+							},
+							map[string]any{
+								"items": []any{
+									"Why <em>WonderWidgets</em> are great",
+									"Who <em>buys</em> WonderWidgets",
+								},
+								"title": "Overview",
+								"type":  "all",
+							},
+						},
+						"title": "Sample Slide Show",
+					},
+				}),
 				Header:     http.Header{"Content-Type": {"application/json"}},
-				StatusCode: 200,
-			},
+				StatusCode: http.StatusOK,
+			}),
 		},
 		{
 			name: "GET JSON response, pass headers",
 			task: "TASK_GET",
 			input: httpInput{
-				EndpointURL: ts.URL + "/json",
+				// Returns the headers in the request.
+				EndpointURL: "https://httpbin.org/headers",
 				Header:      http.Header{"Instill-User-Uid": {"unodostres"}},
 			},
 			setup: noAuthType,
-			expected: httpOutput{
-				Body: data.Map{"message": data.NewString("hello")},
-				Header: http.Header{
-					"Content-Type":     {"application/json"},
-					"Instill-User-Uid": {"unodostres"},
-				},
-				StatusCode: 200,
+			expect: func(c *qt.C, out httpOutput) {
+				c.Check(out.StatusCode, qt.Equals, http.StatusOK)
+
+				h, ok := out.Body.(data.Map)["headers"]
+				c.Assert(ok, qt.IsTrue, qt.Commentf("response has no headers field"))
+
+				got, err := h.ToJSONValue()
+				c.Assert(err, qt.IsNil)
+
+				c.Check(got.(map[string]any)["Instill-User-Uid"], qt.Equals, "unodostres")
 			},
 		},
 		{
 			name: "GET text response",
 			task: "TASK_GET",
 			input: httpInput{
-				EndpointURL: ts.URL + "/text",
+				// Returns a fixed text document.
+				EndpointURL: "https://httpbin.org/robots.txt",
 			},
 			setup: noAuthType,
-			expected: httpOutput{
-				Body:       data.NewString("hello"),
+			expect: respEquals(httpOutput{
+				Body:       data.NewString("User-agent: *\nDisallow: /deny\n"),
 				Header:     http.Header{"Content-Type": {"text/plain"}},
-				StatusCode: 200,
-			},
+				StatusCode: http.StatusOK,
+			}),
 		},
 		{
 			name: "GET binary response",
 			task: "TASK_GET",
 			input: httpInput{
-				EndpointURL: ts.URL + "/file",
+				// Returns 10 random bytes.
+				EndpointURL: "https://httpbin.org/bytes/10",
 			},
 			setup: noAuthType,
-			expected: httpOutput{
-				Body: func() format.Value {
-					v, _ := data.NewFileFromBytes([]byte("hello"), "application/octet-stream", "test.bin")
-					return v
-				}(),
-				Header:     http.Header{"Content-Type": {"application/octet-stream"}},
-				StatusCode: 200,
+			expect: func(c *qt.C, out httpOutput) {
+				c.Check(out.StatusCode, qt.Equals, http.StatusOK)
+				c.Check(out.Header.Get("Content-Type"), qt.Equals, "application/octet-stream")
+
+				// Check that the body is a binary file
+				file, ok := out.Body.(format.File)
+				c.Assert(ok, qt.IsTrue, qt.Commentf("expected binary file response"))
+				c.Check(file.ContentType().String(), qt.Equals, "application/octet-stream")
+
+				// Verify we got 10 bytes as expected
+				bytes, err := file.Binary()
+				c.Assert(err, qt.IsNil)
+				c.Check(len(bytes.ByteArray()), qt.Equals, 10)
 			},
 		},
 		{
 			name: "POST JSON request/response",
 			task: "TASK_POST",
 			input: httpInput{
-				EndpointURL: ts.URL + "/json",
+				// Returns the request body in the response.
+				EndpointURL: "https://httpbin.org/post",
 				Header:      map[string][]string{"Content-Type": {"application/json"}},
 				Body:        data.Map{"message": data.NewString("hello")},
 			},
 			setup: noAuthType,
-			expected: httpOutput{
-				Body:       data.Map{"message": data.NewString("hello")},
-				Header:     http.Header{"Content-Type": {"application/json"}},
-				StatusCode: 200,
+			expect: func(c *qt.C, out httpOutput) {
+				c.Check(out.StatusCode, qt.Equals, http.StatusOK)
+				c.Check(out.Header.Get("Content-Type"), qt.Equals, "application/json")
+
+				body, ok := out.Body.(data.Map)
+				c.Assert(ok, qt.IsTrue, qt.Commentf("expected JSON object response"))
+
+				// Check that the request data was echoed back correctly
+				c.Check(body["json"].(data.Map)["message"].String(), qt.Equals, "hello")
 			},
 		},
 		{
 			name: "PATCH text request/response",
 			task: "TASK_PATCH",
 			input: httpInput{
-				EndpointURL: ts.URL + "/text",
+				// Returns the request body in the response.
+				EndpointURL: "https://httpbin.org/patch",
 				Header:      http.Header{"Content-Type": {"text/plain"}},
 				Body:        data.NewString("hello"),
 			},
 			setup: noAuthType,
-			expected: httpOutput{
-				Body:       data.NewString("hello"),
-				Header:     http.Header{"Content-Type": {"text/plain"}},
-				StatusCode: 200,
+			expect: func(c *qt.C, out httpOutput) {
+				c.Check(out.StatusCode, qt.Equals, http.StatusOK)
+				c.Check(out.Header.Get("Content-Type"), qt.Equals, "application/json")
+
+				body, ok := out.Body.(data.Map)
+				c.Assert(ok, qt.IsTrue, qt.Commentf("expected JSON object response"))
+
+				c.Check(body["data"].String(), qt.Equals, "hello")
 			},
 		},
 		{
 			name: "DELETE request",
 			task: "TASK_DELETE",
 			input: httpInput{
-				EndpointURL: ts.URL + "/json",
+				// Returns the request body in the response.
+				EndpointURL: "https://httpbin.org/delete",
 			},
 			setup: noAuthType,
-			expected: httpOutput{
-				Body:       data.Map{"message": data.NewString("hello")},
-				Header:     http.Header{"Content-Type": {"application/json"}},
-				StatusCode: 200,
+			expect: func(c *qt.C, out httpOutput) {
+				c.Check(out.StatusCode, qt.Equals, http.StatusOK)
+				c.Check(out.Header.Get("Content-Type"), qt.Equals, "application/json")
 			},
 		},
 		{
 			name: "PUT request",
 			task: "TASK_PUT",
 			input: httpInput{
-				EndpointURL: ts.URL + "/json",
+				// Returns the request body in the response.
+				EndpointURL: "https://httpbin.org/put",
 				Body:        data.Map{"message": data.NewString("hello")},
 			},
 			setup: noAuthType,
-			expected: httpOutput{
-				Body:       data.Map{"message": data.NewString("hello")},
-				Header:     http.Header{"Content-Type": {"application/json"}},
-				StatusCode: 200,
+			expect: func(c *qt.C, out httpOutput) {
+				c.Check(out.StatusCode, qt.Equals, http.StatusOK)
+				c.Check(out.Header.Get("Content-Type"), qt.Equals, "application/json")
+
+				body, ok := out.Body.(data.Map)
+				c.Assert(ok, qt.IsTrue, qt.Commentf("expected JSON object response"))
+
+				// Check that the request data was echoed back correctly
+				c.Check(body["json"].(data.Map)["message"].String(), qt.Equals, "hello")
 			},
 		},
 		{
 			name: "GET error response",
 			task: "TASK_GET",
 			input: httpInput{
-				EndpointURL: ts.URL + "/error",
+				// Returns the provided status code.
+				EndpointURL: "https://httpbin.org/status/500",
 			},
 			setup: noAuthType,
-			expected: httpOutput{
-				Body:       data.NewString("Internal Server Error\n"),
-				Header:     http.Header{"Content-Type": {"text/plain; charset=utf-8"}},
+			expect: respEquals(httpOutput{
+				Body:       data.NewString(""),
+				Header:     http.Header{"Content-Type": {"text/html; charset=utf-8"}},
 				StatusCode: 500,
-			},
+			}),
 		},
 		{
 			name: "GET with basic auth",
 			task: "TASK_GET",
 			input: httpInput{
-				EndpointURL: ts.URL + "/auth",
+				// Requires basic auth with foo/bar.
+				EndpointURL: "https://httpbin.org/basic-auth/foo/bar",
 			},
 			setup: basicAuthType,
-			expected: httpOutput{
-				Body:       data.Map{"message": data.NewString("authenticated")},
+			expect: respEquals(httpOutput{
+				Body: body(c, map[string]any{
+					"authenticated": true,
+					"user":          "foo",
+				}),
 				Header:     http.Header{"Content-Type": {"application/json"}},
-				StatusCode: 200,
-			},
+				StatusCode: http.StatusOK,
+			}),
 		},
 		{
 			name: "GET with invalid basic auth",
 			task: "TASK_GET",
 			input: httpInput{
-				EndpointURL: ts.URL + "/auth",
+				// Requires basic auth with foo/bar.
+				EndpointURL: "https://httpbin.org/basic-auth/foo/bar",
 			},
 			setup: noAuthType,
-			expected: httpOutput{
-				Body:       data.NewString("Unauthorized\n"),
-				Header:     http.Header{"Content-Type": {"text/plain; charset=utf-8"}},
+			expect: respEquals(httpOutput{
+				Body:       data.NewString(""),
 				StatusCode: 401,
-			},
+			}),
 		},
 		{
 			name: "GET with bearer token",
 			task: "TASK_GET",
 			input: httpInput{
-				EndpointURL: ts.URL + "/bearer",
+				// Requires bearer token.
+				EndpointURL: "https://httpbin.org/bearer",
 			},
 			setup: bearerTokenType,
-			expected: httpOutput{
-				Body:       data.Map{"message": data.NewString("authenticated")},
+			expect: respEquals(httpOutput{
+				Body: body(c, map[string]any{
+					"authenticated": true,
+					"token":         "123",
+				}),
 				Header:     http.Header{"Content-Type": {"application/json"}},
-				StatusCode: 200,
-			},
+				StatusCode: http.StatusOK,
+			}),
 		},
 		{
 			name: "GET with invalid bearer token",
 			task: "TASK_GET",
 			input: httpInput{
-				EndpointURL: ts.URL + "/bearer",
+				// Requires bearer token.
+				EndpointURL: "https://httpbin.org/bearer",
 			},
 			setup: noAuthType,
-			expected: httpOutput{
-				Body:       data.NewString("Unauthorized\n"),
-				Header:     http.Header{"Content-Type": {"text/plain; charset=utf-8"}},
+			expect: respEquals(httpOutput{
+				Body:       data.NewString(""),
 				StatusCode: 401,
-			},
+			}),
 		},
 	}
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *qt.C) {
+			c.Parallel()
+
 			component := Init(base.Component{})
 			c.Assert(component, qt.IsNotNil)
 
@@ -316,12 +344,8 @@ func TestComponent(t *testing.T) {
 
 			err = execution.Execute(context.Background(), []*base.Job{job})
 			c.Assert(err, qt.IsNil)
-			c.Assert(capturedOutput.Body.Equal(tc.expected.Body), qt.IsTrue)
-			c.Assert(capturedOutput.StatusCode, qt.Equals, tc.expected.StatusCode)
 
-			for k, h := range tc.expected.Header {
-				c.Assert(capturedOutput.Header[k], qt.DeepEquals, h)
-			}
+			tc.expect(c, capturedOutput)
 		})
 	}
 }
@@ -334,4 +358,12 @@ func cfg(atype authType) *structpb.Struct {
 	})
 
 	return setup
+}
+
+func body(c *qt.C, in map[string]any) format.Value {
+	v, err := data.NewJSONValue(in)
+	if err != nil {
+		c.Fatal(err)
+	}
+	return v
 }
