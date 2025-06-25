@@ -4,7 +4,7 @@ server:
   https:
     cert:
     key:
-  edition: local-ce:dev
+  edition: docker-ce:dev
   usage:
     enabled: true
     tlsenabled: true

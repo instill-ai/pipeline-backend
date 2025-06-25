@@ -44,6 +44,25 @@ jobs:
           username: drop@instill-ai.com
           password: ${{ secrets.botDockerHubPassword }}
 
+      - name: Set short commit SHA
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "COMMIT_SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+
+      - name: Build and push amd64 (latest)
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64
+          context: .
+          push: true
+          build-args: |
+            SERVICE_NAME=${{ env.SERVICE_NAME }}
+            SERVICE_VERSION=${{ env.COMMIT_SHORT_SHA }}
+          tags: instill/pipeline-backend:latest-amd64
+          cache-from: type=registry,ref=instill/pipeline-backend:buildcache
+          cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
+
       - name: Set Versions
         if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
         uses: actions/github-script@v6
@@ -55,20 +74,6 @@ jobs:
             core.setOutput('tag', tag)
             core.setOutput('no_v_tag', no_v_tag)
 
-      - name: Build and push amd64 (latest)
-        if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64
-          context: .
-          push: true
-          build-args: |
-            SERVICE_NAME=pipeline-backend
-            SERVICE_VERSION=${{ github.sha }}
-          tags: instill/pipeline-backend:latest-amd64
-          cache-from: type=registry,ref=instill/pipeline-backend:buildcache
-          cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
-
       - name: Build and push amd64 (rc/release)
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
         uses: docker/build-push-action@v6
@@ -77,7 +82,7 @@ jobs:
           context: .
           push: true
           build-args: |
-            SERVICE_NAME=pipeline-backend
+            SERVICE_NAME=${{ env.SERVICE_NAME }}
             SERVICE_VERSION=${{ steps.set_version.outputs.no_v_tag }}
           tags: instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-amd64
           cache-from: type=registry,ref=instill/pipeline-backend:buildcache
@@ -114,6 +119,25 @@ jobs:
           username: dropletbot
           password: ${{ secrets.botDockerHubPassword }}
 
+      - name: Set short commit SHA
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "COMMIT_SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+
+      - name: Build and push arm64 (latest)
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/arm64
+          context: .
+          push: true
+          build-args: |
+            SERVICE_NAME=${{ env.SERVICE_NAME }}
+            SERVICE_VERSION=${{ env.COMMIT_SHORT_SHA }}
+          tags: instill/pipeline-backend:latest-arm64
+          cache-from: type=registry,ref=instill/pipeline-backend:buildcache
+          cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
+
       - name: Set Versions
         if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
         uses: actions/github-script@v6
@@ -125,20 +149,6 @@ jobs:
             core.setOutput('tag', tag)
             core.setOutput('no_v_tag', no_v_tag)
 
-      - name: Build and push arm64 (latest)
-        if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/arm64
-          context: .
-          push: true
-          build-args: |
-            SERVICE_NAME=pipeline-backend
-            SERVICE_VERSION=${{ github.sha }}
-          tags: instill/pipeline-backend:latest-arm64
-          cache-from: type=registry,ref=instill/pipeline-backend:buildcache
-          cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
-
       - name: Build and push arm64 (rc/release)
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
         uses: docker/build-push-action@v6
@@ -147,7 +157,7 @@ jobs:
           context: .
           push: true
           build-args: |
-            SERVICE_NAME=pipeline-backend
+            SERVICE_NAME=${{ env.SERVICE_NAME }}
             SERVICE_VERSION=${{ steps.set_version.outputs.no_v_tag }}
           tags: instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-arm64
           cache-from: type=registry,ref=instill/pipeline-backend:buildcache

@@ -9,14 +9,8 @@ on:
       - main
 
 jobs:
-  build-push-image:
-    if: github.ref == 'refs/heads/main'
-    name: Build and push image
-    uses: instill-ai/pipeline-backend/.github/workflows/images.yml@main
-    secrets: inherit
-  pr-head:
-    if: github.event_name == 'pull_request'
-    name: PR head branch
+  integration-test:
+    name: Integration test
     runs-on: ubuntu-latest
     steps:
       - name: Maximize build space
@@ -77,14 +71,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Set short commit SHA
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "COMMIT_SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+
       - name: Build image
         uses: docker/build-push-action@v6
         with:
           context: pipeline-backend
           load: true
           build-args: |
-            SERVICE_NAME=pipeline-backend
-            SERVICE_VERSION=${{ github.sha }}
+            SERVICE_NAME=${{ env.SERVICE_NAME }}
+            SERVICE_VERSION=${{ env.COMMIT_SHORT_SHA }}
           tags: instill/pipeline-backend:latest
           cache-from: |
             type=registry,ref=instill/pipeline-backend:buildcache
@@ -94,7 +93,7 @@ jobs:
       - name: Launch Instill Core CE (latest)
         working-directory: instill-core
         run: |
-          make latest EDITION=local-ce:test ENV_SECRETS_COMPONENT=.env.secrets.component.test
+          make latest EDITION=docker-ce:test ENV_SECRETS_COMPONENT=.env.secrets.component.test
 
       - name: Run integration-test
         working-directory: pipeline-backend
