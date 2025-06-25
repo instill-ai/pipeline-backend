@@ -7,7 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"mime"
+	"net"
 	"net/http"
+	"net/url"
+	"slices"
 	"strings"
 	"sync"
 
@@ -16,6 +19,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
@@ -139,15 +143,69 @@ func getAuthentication(setup *structpb.Struct) (authentication, error) {
 }
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-
 	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }
 
-func (e *execution) executeHTTP(ctx context.Context, job *base.Job) error {
+// validateURL checks the component's input is a valid URL. This component only
+// accepts requests to *publicly available* endpoints. Any call to the internal
+// network will produce an error.
+func (e *execution) validateURL(endpointURL string) error {
+	parsedURL, err := url.Parse(endpointURL)
+	if err != nil {
+		return errmsg.AddMessage(
+			fmt.Errorf("parsing endpoint URL: %w", err),
+			"Couldn't parse the endpoint URL as a valid URI reference",
+		)
+	}
 
+	host := parsedURL.Hostname()
+	if host == "" {
+		err := fmt.Errorf("missing hostname")
+		return errmsg.AddMessage(err, "Endpoint URL must have a hostname")
+	}
+
+	var whitelistedHosts = []string{
+		// Pipeline's public port is exposed to call pipelines from pipelines.
+		// When a `pipeline` component is implemented, this won't be necessary.
+		fmt.Sprintf("%s:%d", config.Config.Server.InstanceID, config.Config.Server.PublicPort),
+		// Model's public port is exposed until the model component allows
+		// triggering models in the custom mode.
+		fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort),
+	}
+	// Certain pipelines used by artifact-backend need to trigger pipelines and
+	// models via this component.
+	// TODO jvallesm: Remove this after INS-8119 is completed.
+	if slices.Contains(whitelistedHosts, parsedURL.Host) {
+		return nil
+	}
+
+	// Get IP addresses for the host
+	ips, err := net.LookupIP(host)
+	if err != nil {
+		return fmt.Errorf("looking up IP: %w", err)
+	}
+
+	// Check if any resolved IP is in private ranges
+	for _, ip := range ips {
+		if ip.IsPrivate() || ip.IsLoopback() {
+			return errmsg.AddMessage(
+				fmt.Errorf("endpoint URL resolves to private/internal IP address"),
+				"URL must point to a publicly available endpoint (no private/internal addresses)",
+			)
+		}
+	}
+
+	return nil
+}
+
+func (e *execution) executeHTTP(ctx context.Context, job *base.Job) error {
 	in := httpInput{}
 	if err := job.Input.ReadData(ctx, &in); err != nil {
 		return fmt.Errorf("reading input data: %w", err)
+	}
+
+	if err := e.validateURL(in.EndpointURL); err != nil {
+		return fmt.Errorf("validating URL: %w", err)
 	}
 
 	// An API error is a valid output in this component.

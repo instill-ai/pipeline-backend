@@ -11,10 +11,13 @@ $defs:
         required: []
         title: Body
       endpoint-url:
-        description: The API endpoint url.
+        title: Endpoint URL
+        description: |-
+          The API endpoint URL. It must be a valid URI reference and point to
+          an external IP address. If the URL resolves to an internal or private
+          IP, the component will throw an error.
         type: string
         uiOrder: 0
-        title: Endpoint Url
       output-body-schema:
         description: The JSON schema of output body.
         type: string
@@ -45,10 +48,13 @@ $defs:
     uiOrder: 0
     properties:
       endpoint-url:
-        description: The API endpoint url.
+        title: Endpoint URL
+        description: |-
+          The API endpoint URL. It must be a valid URI reference and point to
+          an external IP address. If the URL resolves to an internal or private
+          IP, the component will throw an error.
         type: string
         uiOrder: 0
-        title: Endpoint Url
       output-body-schema:
         description: The request body.
         type: string
