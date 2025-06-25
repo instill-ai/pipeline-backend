@@ -22,22 +22,6 @@ const (
 	authValue = "321"
 )
 
-var testAuth = map[authType]map[string]any{
-	noAuthType: {},
-	basicAuthType: {
-		"username": username,
-		"password": password,
-	},
-	bearerTokenType: {
-		"token": token,
-	},
-	apiKeyType: {
-		"auth-location": string(query),
-		"key":           authKey,
-		"value":         authValue,
-	},
-}
-
 func TestComponent(t *testing.T) {
 	c := qt.New(t)
 	c.Parallel()
@@ -351,7 +335,19 @@ func TestComponent(t *testing.T) {
 }
 
 func cfg(atype authType) *structpb.Struct {
-	auth := testAuth[atype]
+	auth := map[string]any{}
+	switch atype {
+	case basicAuthType:
+		auth["username"] = username
+		auth["password"] = password
+	case bearerTokenType:
+		auth["token"] = token
+	case apiKeyType:
+		auth["auth-location"] = string(query)
+		auth["key"] = authKey
+		auth["value"] = authValue
+	}
+
 	auth["auth-type"] = string(atype)
 	setup, _ := structpb.NewStruct(map[string]any{
 		"authentication": auth,
