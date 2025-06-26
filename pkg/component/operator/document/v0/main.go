@@ -20,8 +20,6 @@ const (
 	taskConvertToText     string = "TASK_CONVERT_TO_TEXT"
 	taskConvertToImages   string = "TASK_CONVERT_TO_IMAGES"
 	taskSplitInPages      string = "TASK_SPLIT_IN_PAGES"
-
-	pythonInterpreter string = "/opt/venv/bin/python"
 )
 
 var (
