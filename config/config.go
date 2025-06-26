@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	EditionLocalCE      = "local-ce:dev"
+	EditionLocalCE      = "docker-ce:dev"
 	EditionCloudDev     = "cloud:dev"
 	EditionCloudStaging = "cloud:staging"
 	EditionCloudProd    = "cloud"

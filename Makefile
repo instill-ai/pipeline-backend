@@ -13,7 +13,7 @@ GOTEST_FLAGS := CFG_DATABASE_HOST=${TEST_DBHOST} CFG_DATABASE_NAME=${TEST_DBNAME
 .PHONY: dev
 dev: ## Run dev container
 	@docker compose ls -q | grep -q "instill-core" && true || \
-		(echo "Error: Run \"make latest PROFILE=exclude-pipeline\" in instill-core repository (https://github.com/instill-ai/instill-core) in your local machine first." && exit 1)
+		(echo "Error: Run \"make latest\" in instill-core repository (https://github.com/instill-ai/instill-core) in your local machine first and run \"docker rm -f ${SERVICE_NAME} ${SERVICE_NAME}-worker\"." && exit 1)
 	@docker inspect --type container ${SERVICE_NAME} >/dev/null 2>&1 && echo "A container named ${SERVICE_NAME} is already running." || \
 		echo "Run dev container ${SERVICE_NAME}. To stop it, run \"make stop\"."
 	@docker run -d --rm \
@@ -28,12 +28,17 @@ dev: ## Run dev container
 .PHONY: latest
 latest: ## Run latest container
 	@docker compose ls -q | grep -q "instill-core" && true || \
-		(echo "Error: Run \"make latest PROFILE=exclude-pipeline\" in instill-core repository (https://github.com/instill-ai/instill-core) in your local machine first." && exit 1)
+		(echo "Error: Run \"make latest\" in instill-core repository (https://github.com/instill-ai/instill-core) in your local machine first and run \"docker rm -f ${SERVICE_NAME} ${SERVICE_NAME}-worker\"." && exit 1)
 	@docker inspect --type container ${SERVICE_NAME} >/dev/null 2>&1 && echo "A container named ${SERVICE_NAME} is already running." || \
 		echo "Run latest container ${SERVICE_NAME} and ${SERVICE_NAME}-worker. To stop it, run \"make stop\"."
 	@docker run --network=instill-network \
 		--name ${SERVICE_NAME} \
-		-d instill/${SERVICE_NAME}:latest ./${SERVICE_NAME}
+		-d instill/${SERVICE_NAME}:latest \
+		/bin/sh -c "\
+		./${SERVICE_NAME}-migrate && \
+		./${SERVICE_NAME}-init && \
+		./${SERVICE_NAME} \
+		"
 	@docker run --network=instill-network \
 		--name ${SERVICE_NAME}-worker \
 		-d instill/${SERVICE_NAME}:latest ./${SERVICE_NAME}-worker
@@ -56,7 +61,7 @@ build-dev: ## Build dev docker image
 build-latest: ## Build latest docker image
 	@docker build \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
-		-t instill/pipeline-backend:latest .
+		-t instill/${SERVICE_NAME}:latest .
 
 .PHONY: go-gen
 go-gen: ## Generate codes
@@ -116,7 +121,7 @@ test: ## Run unit test
 .PHONY: integration-test
 integration-test: ## Run integration test
 	@ # DB_HOST points to localhost by default. Override this variable if
-	@ # pipeline-backend's database isn't accessible at that host.
+	@ # ${SERVICE_NAME}'s database isn't accessible at that host.
 	@TEST_FOLDER_ABS_PATH=${PWD} k6 run \
 		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} \
 		-e API_GATEWAY_URL=${API_GATEWAY_URL} \

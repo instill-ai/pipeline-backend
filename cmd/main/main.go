@@ -57,11 +57,13 @@ import (
 const gracefulShutdownWaitPeriod = 15 * time.Second
 const gracefulShutdownTimeout = 60 * time.Minute
 
-var propagator propagation.TextMapPropagator
+var (
+	// These variables might be overridden at buildtime.
+	serviceVersion = "dev"
+	serviceName    = "pipeline-backend"
 
-// These variables might be overridden at buildtime.
-var version = "dev"
-var serviceName = "pipeline-backend"
+	propagator propagation.TextMapPropagator
+)
 
 func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler) http.Handler {
 	return h2c.NewHandler(
@@ -212,7 +214,7 @@ func main() {
 		Logger: logger,
 		AppInfo: minio.AppInfo{
 			Name:    serviceName,
-			Version: version,
+			Version: serviceVersion,
 		},
 	}
 	minIOFileGetter, err := minio.NewFileGetter(minIOParams)
@@ -325,7 +327,7 @@ func main() {
 			logger.Info("try to start usage reporter")
 			go func() {
 				for {
-					usg = usage.NewUsage(ctx, repo, mgmtPrivateServiceClient, redisClient, usageServiceClient)
+					usg = usage.NewUsage(ctx, repo, mgmtPrivateServiceClient, redisClient, usageServiceClient, serviceVersion)
 					if usg != nil {
 						usg.StartReporter(ctx)
 						logger.Info("usage reporter started")
