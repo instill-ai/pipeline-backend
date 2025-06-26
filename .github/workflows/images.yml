@@ -44,6 +44,25 @@ jobs:
           username: drop@instill-ai.com
           password: ${{ secrets.botDockerHubPassword }}
 
+      - name: Set short commit SHA
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "COMMIT_SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+
+      - name: Build and push amd64 (latest)
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64
+          context: .
+          push: true
+          build-args: |
+            SERVICE_NAME=${{ env.SERVICE_NAME }}
+            SERVICE_VERSION=${{ env.COMMIT_SHORT_SHA }}
+          tags: instill/${{ env.SERVICE_NAME }}:latest-amd64
+          cache-from: type=registry,ref=instill/${{ env.SERVICE_NAME }}:buildcache
+          cache-to: type=registry,ref=instill/${{ env.SERVICE_NAME }}:buildcache,mode=max
+
       - name: Set Versions
         if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
         uses: actions/github-script@v6
@@ -55,20 +74,6 @@ jobs:
             core.setOutput('tag', tag)
             core.setOutput('no_v_tag', no_v_tag)
 
-      - name: Build and push amd64 (latest)
-        if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64
-          context: .
-          push: true
-          build-args: |
-            SERVICE_NAME=pipeline-backend
-            SERVICE_VERSION=${{ github.sha }}
-          tags: instill/pipeline-backend:latest-amd64
-          cache-from: type=registry,ref=instill/pipeline-backend:buildcache
-          cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
-
       - name: Build and push amd64 (rc/release)
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
         uses: docker/build-push-action@v6
@@ -77,11 +82,11 @@ jobs:
           context: .
           push: true
           build-args: |
-            SERVICE_NAME=pipeline-backend
+            SERVICE_NAME=${{ env.SERVICE_NAME }}
             SERVICE_VERSION=${{ steps.set_version.outputs.no_v_tag }}
-          tags: instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-amd64
-          cache-from: type=registry,ref=instill/pipeline-backend:buildcache
-          cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
+          tags: instill/${{ env.SERVICE_NAME }}:${{ steps.set_version.outputs.no_v_tag }}-amd64
+          cache-from: type=registry,ref=instill/${{ env.SERVICE_NAME }}:buildcache
+          cache-to: type=registry,ref=instill/${{ env.SERVICE_NAME }}:buildcache,mode=max
 
   build-arm64:
     runs-on: ubuntu-24.04-arm
@@ -114,6 +119,25 @@ jobs:
           username: dropletbot
           password: ${{ secrets.botDockerHubPassword }}
 
+      - name: Set short commit SHA
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "COMMIT_SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+
+      - name: Build and push arm64 (latest)
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/arm64
+          context: .
+          push: true
+          build-args: |
+            SERVICE_NAME=${{ env.SERVICE_NAME }}
+            SERVICE_VERSION=${{ env.COMMIT_SHORT_SHA }}
+          tags: instill/${{ env.SERVICE_NAME }}:latest-arm64
+          cache-from: type=registry,ref=instill/${{ env.SERVICE_NAME }}:buildcache
+          cache-to: type=registry,ref=instill/${{ env.SERVICE_NAME }}:buildcache,mode=max
+
       - name: Set Versions
         if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
         uses: actions/github-script@v6
@@ -125,20 +149,6 @@ jobs:
             core.setOutput('tag', tag)
             core.setOutput('no_v_tag', no_v_tag)
 
-      - name: Build and push arm64 (latest)
-        if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/arm64
-          context: .
-          push: true
-          build-args: |
-            SERVICE_NAME=pipeline-backend
-            SERVICE_VERSION=${{ github.sha }}
-          tags: instill/pipeline-backend:latest-arm64
-          cache-from: type=registry,ref=instill/pipeline-backend:buildcache
-          cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
-
       - name: Build and push arm64 (rc/release)
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
         uses: docker/build-push-action@v6
@@ -147,16 +157,25 @@ jobs:
           context: .
           push: true
           build-args: |
-            SERVICE_NAME=pipeline-backend
+            SERVICE_NAME=${{ env.SERVICE_NAME }}
             SERVICE_VERSION=${{ steps.set_version.outputs.no_v_tag }}
-          tags: instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-arm64
-          cache-from: type=registry,ref=instill/pipeline-backend:buildcache
-          cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
+          tags: instill/${{ env.SERVICE_NAME }}:${{ steps.set_version.outputs.no_v_tag }}-arm64
+          cache-from: type=registry,ref=instill/${{ env.SERVICE_NAME }}:buildcache
+          cache-to: type=registry,ref=instill/${{ env.SERVICE_NAME }}:buildcache,mode=max
 
   merge-manifests:
     needs: [build-amd64, build-arm64]
     runs-on: ubuntu-24.04
     steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.botGitHubToken }}
+
+      - name: Load .env file
+        uses: cardinalby/export-env-action@v2
+        with:
+          envFile: .env
+
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
@@ -166,9 +185,9 @@ jobs:
       - name: Create and push multi-arch manifest (latest)
         if: github.ref == 'refs/heads/main'
         run: |
-          docker buildx imagetools create -t instill/pipeline-backend:latest \
-            instill/pipeline-backend:latest-amd64 \
-            instill/pipeline-backend:latest-arm64
+          docker buildx imagetools create -t instill/${{ env.SERVICE_NAME }}:latest \
+            instill/${{ env.SERVICE_NAME }}:latest-amd64 \
+            instill/${{ env.SERVICE_NAME }}:latest-arm64
 
       - name: Set Versions
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
@@ -184,6 +203,6 @@ jobs:
       - name: Create and push multi-arch manifest (rc/release)
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
         run: |
-          docker buildx imagetools create -t instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }} \
-            instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-amd64 \
-            instill/pipeline-backend:${{ steps.set_version.outputs.no_v_tag }}-arm64
+          docker buildx imagetools create -t instill/${{ env.SERVICE_NAME }}:${{ steps.set_version.outputs.no_v_tag }} \
+            instill/${{ env.SERVICE_NAME }}:${{ steps.set_version.outputs.no_v_tag }}-amd64 \
+            instill/${{ env.SERVICE_NAME }}:${{ steps.set_version.outputs.no_v_tag }}-arm64

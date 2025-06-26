@@ -4,14 +4,14 @@ server:
   https:
     cert:
     key:
-  edition: local-ce:dev
+  edition: docker-ce:dev
   usage:
     enabled: true
     tlsenabled: true
     host: usage.instill-ai.com
     port: 443
   debug: true
-  maxdatasize: 12 # MB in unit
+  maxdatasize: 1024 # MB in unit
   workflow:
     maxworkflowtimeout: 3600 # in seconds
     maxworkflowretry: 1

@@ -37,37 +37,34 @@ ENV C_INCLUDE_PATH=${ONNXRUNTIME_ROOT_PATH}/include
 ENV LD_RUN_PATH=${ONNXRUNTIME_ROOT_PATH}/lib
 ENV LIBRARY_PATH=${ONNXRUNTIME_ROOT_PATH}/lib
 
-WORKDIR /src
-
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . .
+WORKDIR /build
 
 ARG SERVICE_NAME SERVICE_VERSION TARGETOS TARGETARCH
-RUN --mount=target=. \
+
+RUN --mount=type=bind,target=. \
+    --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    --mount=type=cache,target=/go/pkg \
     GOOS=$TARGETOS GOARCH=$TARGETARCH \
     go build -ldflags "-w -X main.version=${SERVICE_VERSION} -X main.serviceName=${SERVICE_NAME}" \
     -tags=ocr,onnx -o /${SERVICE_NAME} ./cmd/main
 
-RUN --mount=target=. \
+RUN --mount=type=bind,target=. \
+    --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    --mount=type=cache,target=/go/pkg \
-    GOOS=$TARGETOS GOARCH=$TARGETARCH \
-    go build -ldflags "-w -X main.version=${SERVICE_VERSION} -X main.serviceName=${SERVICE_NAME}-worker" \
+    GOOS=$TARGETOS GOARCH=$TARGETARCH \    
+    go build -ldflags "-w -X main.serviceVersion=${SERVICE_VERSION} -X main.serviceName=${SERVICE_NAME}-worker" \
     -tags=ocr,onnx -o /${SERVICE_NAME}-worker ./cmd/worker
 
-RUN --mount=target=. \
+RUN --mount=type=bind,target=. \
+    --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    --mount=type=cache,target=/go/pkg \
     GOOS=$TARGETOS GOARCH=$TARGETARCH \
     go build -ldflags "-w -X main.version=${SERVICE_VERSION} -X main.serviceName=${SERVICE_NAME}-migrate" \
     -tags=ocr,onnx -o /${SERVICE_NAME}-migrate ./cmd/migration
 
-RUN --mount=target=. \
+RUN --mount=type=bind,target=. \
+    --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    --mount=type=cache,target=/go/pkg \
     GOOS=$TARGETOS GOARCH=$TARGETARCH \
     go build -ldflags "-w -X main.version=${SERVICE_VERSION} -X main.serviceName=${SERVICE_NAME}-init" \
     -tags=ocr,onnx -o /${SERVICE_NAME}-init ./cmd/init
@@ -117,14 +114,14 @@ ENV BASE_DOCLING_PATH=/home/nobody
 RUN mkdir -p ${BASE_DOCLING_PATH}/.EasyOCR/model && chown -R nobody:nogroup ${BASE_DOCLING_PATH}
 
 RUN apt update && \
-    apt install -y wget unzip && \
+    apt install -y unzip && \
     wget https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/latin_g2.zip && \
     unzip latin_g2.zip -d ${BASE_DOCLING_PATH}/.EasyOCR/model/ && \
     rm latin_g2.zip && \
     wget https://github.com/JaidedAI/EasyOCR/releases/download/pre-v1.1.6/craft_mlt_25k.zip && \
     unzip craft_mlt_25k.zip -d ${BASE_DOCLING_PATH}/.EasyOCR/model/ && \
     rm craft_mlt_25k.zip && \
-    apt remove -y wget unzip && \
+    apt remove -y unzip && \
     apt autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
@@ -135,22 +132,24 @@ RUN /opt/venv/bin/python import_artifacts.py && rm import_artifacts.py
 
 USER nobody:nogroup
 
-ARG SERVICE_NAME
+ARG SERVICE_NAME SERVICE_VERSION
 
 ENV HOME=${BASE_DOCLING_PATH}
 WORKDIR /${SERVICE_NAME}
 
 ENV GODEBUG=tlsrsakex=1
 
-COPY --from=build --chown=nobody:nogroup /src/config ./config
-COPY --from=build --chown=nobody:nogroup /src/release-please ./release-please
-COPY --from=build --chown=nobody:nogroup /src/pkg/db/migration ./pkg/db/migration
-
 COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-migrate ./
 COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-init ./
 COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-worker ./
 COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME} ./
 
+COPY --chown=nobody:nogroup ./config ./config
+COPY --chown=nobody:nogroup ./pkg/db/migration ./pkg/db/migration
+
 # Set up ONNX model and environment variable
 COPY --chown=nobody:nogroup ./pkg/component/resources/onnx/silero_vad.onnx /${SERVICE_NAME}/pkg/component/resources/onnx/silero_vad.onnx
 ENV ONNX_MODEL_FOLDER_PATH=/${SERVICE_NAME}/pkg/component/resources/onnx
+
+ENV SERVICE_NAME=${SERVICE_NAME}
+ENV SERVICE_VERSION=${SERVICE_VERSION}

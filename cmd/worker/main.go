@@ -38,9 +38,11 @@ import (
 const gracefulShutdownWaitPeriod = 15 * time.Second
 const gracefulShutdownTimeout = 60 * time.Minute
 
-// These variables might be overridden at buildtime.
-var version = "dev"
-var serviceName = "pipeline-backend-worker"
+var (
+	// These variables might be overridden at buildtime.
+	serviceVersion = "dev"
+	serviceName    = "pipeline-backend-worker"
+)
 
 func main() {
 	if err := config.Init(config.ParseConfigFlag()); err != nil {
@@ -82,7 +84,7 @@ func main() {
 		Logger: logger,
 		AppInfo: minio.AppInfo{
 			Name:    serviceName,
-			Version: version,
+			Version: serviceVersion,
 		},
 	}
 	minIOFileGetter, err := minio.NewFileGetter(minIOParams)
