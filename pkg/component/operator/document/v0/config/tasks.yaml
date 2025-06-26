@@ -199,3 +199,43 @@ TASK_CONVERT_TO_IMAGES:
       - images
     title: Output
     type: object
+TASK_SPLIT_IN_PAGES:
+  shortDescription: Divide a document in batches of N pages.
+  input:
+    title: Input
+    description: Input.
+    uiOrder: 0
+    type: object
+    properties:
+      document:
+        title: Document
+        description: Document encoded in Base64. For now, only PDF documents are accepted.
+        type: string
+        uiOrder: 0
+      batch-size:
+        title: Batch size
+        description: Pages in each batch.
+        uiOrder: 1
+        type: number
+        default: 1
+    required:
+      - document
+  output:
+    title: Output
+    description: Output.
+    uiOrder: 0
+    type: object
+    properties:
+      pages:
+        title: Batches
+        description: |-
+          An ordered list of Base64-encoded documents, each one containing N
+          pages of the input document. Page order in the input document is
+          preserved both in the batch array elements and in the pages within
+          each batch.
+        uiOrder: 0
+        type: array
+        items:
+          type: string
+    required:
+      - batches

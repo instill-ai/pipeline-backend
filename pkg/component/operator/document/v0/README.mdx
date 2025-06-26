@@ -10,6 +10,7 @@ It can carry out the following tasks:
 - [Convert to Markdown](#convert-to-markdown)
 - [Convert to Text](#convert-to-text)
 - [Convert to Images](#convert-to-images)
+- [Split in Pages](#split-in-pages)
 
 
 
@@ -121,6 +122,32 @@ Convert Document to images.
 | :--- | :--- | :--- | :--- |
 | Images | `images` | array[string] | Images converted from the document. |
 | Filenames (optional) | `filenames` | array[string] | The filenames of the images. The filenames will be appended with the page number. e.g. 'example-1.jpg'. |
+</div>
+
+
+### Split in Pages
+
+Divide a document in batches of N pages.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SPLIT_IN_PAGES` |
+| Document (required) | `document` | string | Document encoded in Base64. For now, only PDF documents are accepted. |
+| Batch Size | `batch-size` | number | Pages in each batch. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Batches (optional) | `pages` | array[string] | An ordered list of Base64-encoded documents, each one containing N pages of the input document. Page order in the input document is preserved both in the batch array elements and in the pages within each batch. |
 </div>
 
 
