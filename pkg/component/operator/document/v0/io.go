@@ -52,3 +52,14 @@ type ConvertToTextOutput struct {
 	Error    string `instill:"error"`
 	Filename string `instill:"filename"`
 }
+
+// SplitInPagesInput defines the input for the page split task.
+type SplitInPagesInput struct {
+	BatchSize uint32          `instill:"batch-size"`
+	Document  format.Document `instill:"document"`
+}
+
+// SplitInPagesOutput defines the output for the page split task.
+type SplitInPagesOutput struct {
+	Batches []format.Document `instill:"batches"`
+}
