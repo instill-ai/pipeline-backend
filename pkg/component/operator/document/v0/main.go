@@ -19,7 +19,7 @@ const (
 	taskConvertToMarkdown string = "TASK_CONVERT_TO_MARKDOWN"
 	taskConvertToText     string = "TASK_CONVERT_TO_TEXT"
 	taskConvertToImages   string = "TASK_CONVERT_TO_IMAGES"
-	pythonInterpreter     string = "/opt/venv/bin/python"
+	taskSplitInPages      string = "TASK_SPLIT_IN_PAGES"
 )
 
 var (
@@ -105,6 +105,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 		e.execute = e.convertToText
 	case taskConvertToImages:
 		e.execute = e.convertDocumentToImages
+	case taskSplitInPages:
+		e.execute = e.splitInPages
 	default:
 		return nil, fmt.Errorf("%s task is not supported", x.Task)
 	}

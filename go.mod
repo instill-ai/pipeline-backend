@@ -16,6 +16,7 @@ require (
 	github.com/belong-inc/go-hubspot v0.9.0
 	github.com/chromedp/chromedp v0.13.6
 	github.com/cohere-ai/cohere-go/v2 v2.14.1
+	github.com/dslipak/pdf v0.0.2
 	github.com/elastic/go-elasticsearch/v8 v8.18.0
 	github.com/emersion/go-imap/v2 v2.0.0-beta.5
 	github.com/emersion/go-message v0.18.2
@@ -65,6 +66,7 @@ require (
 	github.com/nakagami/firebirdsql v0.9.15
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/openfga/api/proto v0.0.0-20240318145204-66b9e5cb403c
+	github.com/pdfcpu/pdfcpu v0.11.0
 	github.com/pkoukk/tiktoken-go v0.1.7
 	github.com/redis/go-redis/v9 v9.9.0
 	github.com/sijms/go-ora v1.3.2
@@ -125,6 +127,9 @@ require (
 	github.com/envoyproxy/go-control-plane/envoy v1.32.4 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.0 // indirect
 	github.com/go-json-experiment/json v0.0.0-20250517221953-25912455fbc8 // indirect
+	github.com/hhrutter/lzw v1.0.0 // indirect
+	github.com/hhrutter/pkcs7 v0.2.0 // indirect
+	github.com/hhrutter/tiff v1.0.2 // indirect
 	github.com/minio/crc64nvme v1.0.2 // indirect
 	github.com/minio/minio-go/v7 v7.0.92 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
@@ -146,6 +151,7 @@ require (
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/detectors/gcp v1.36.0 // indirect
 	go.temporal.io/sdk/contrib/tally v0.2.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
 require (
