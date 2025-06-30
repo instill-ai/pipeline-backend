@@ -14,11 +14,11 @@ availableTasks:
 custom: false
 documentationUrl: https://instill-ai.dev/docs/component/ai/instill-model
 icon: assets/instill-model.svg
-iconUrl: ''
+iconUrl: ""
 id: instill-model
 public: true
 title: Instill Model
-description: Connect the AI models served on the Instill Model Platform.
+description: Connect the AI models served in the Instill Core Model platform.
 tombstone: false
 type: COMPONENT_TYPE_AI
 uid: ddcf42c3-4c30-4c65-9585-25f1c89b2b48

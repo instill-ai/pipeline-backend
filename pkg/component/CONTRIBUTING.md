@@ -1,12 +1,11 @@
 # Contributing Guidelines
 
-## Introduction
-
 This document will guide you through the steps to contribute with a new
 component. You'll add and test an operator that takes a string `target` as input
-and returns a `"Hello, ${target}!"` string as the component output
+and returns a `"Hello, ${target}!"` string as the component output.
 
 In order to add a new component, you need to:
+
 - Define the component configuration. This will determine the tasks that can be
   performed by the component and their input and output parameters. The
   console frontend will use the configuration files to render the component
@@ -16,7 +15,7 @@ In order to add a new component, you need to:
 - Initialize the component, i.e., include the implementation of the component
   interfaces as a dependency in the `pipeline-backend` execution.
 
-### Prerequisites
+## Prerequisites
 
 This guide builds on top of other documents:
 
@@ -27,16 +26,17 @@ This guide builds on top of other documents:
 - The repository's [contribution guidelines](../../.github/CONTRIBUTING.md)
   document the conventions you'll need to follow when contributing to this
   repository. They also contain a guide on how to set your development
-  environment, in case you want to [see your component in
-  action](#use-the-component-in-💧-instill-pipeline).
+  environment, in case you want to [see your component in action](#use-the-component-in-instill-core-pipeline).
 - If you find yourself wanting to know more, visit the [Instill
   Docs](https://instill-ai.dev/docs).
 
+## Component
+
 ### Create the component package
 
-```sh
-$ cd $MY_WORKSPACE/pipeline-backend/pkg/component
-$ mkdir -p operator/hello/v0 && cd $_
+```shell
+cd $MY_WORKSPACE/pipeline-backend/pkg/component
+mkdir -p operator/hello/v0 && cd $_
 ```
 
 Components are isolated in their own packages under their component type (`ai`,
@@ -47,7 +47,7 @@ being triggered.
 
 At the end of this guide, this will be the structure of the package:
 
-```
+```shell
 operator/hello/v0
  ├──.compogen
  │  └──extra-bottom.mdx
@@ -120,7 +120,6 @@ This file defines the component properties:
   pipelines) but they will appear in the component definition list endpoint.
 - **`public`** indicates whether the component is visible to the public.
 
-
 #### `tasks.yaml`
 
 The `tasks.yaml` file describes the task details of the component. The key
@@ -161,7 +160,7 @@ TASK_GREET:
 
 This file defines the input and output schema of each task:
 
-**Properties within a Task**
+#### Properties within a Task
 
 - **`title`** is used by the console to provide the title of the task in the
   component.
@@ -172,7 +171,7 @@ This file defines the input and output schema of each task:
 - **`input`** is a schema that describes the input of the task.
 - **`output`** is a schema that describes the output of the task.
 
-**Properties within `input` and `output` Objects**
+#### Properties within `input` and `output` Objects
 
 - **`required`** indicates whether the property is required.
 - **`type`**: describes the format of this field, which could be `string`,
@@ -235,7 +234,7 @@ your component to support this sort of connection:
 - The OAuth 2.0 exchange for an access token is implemented in the frontend.
   Make sure to engage with [Instill
   Product](https://github.com/orgs/instill-ai/teams/product) in order to
-  prioritise the OAuth support for this component.
+  prioritize the OAuth support for this component.
 
 ### Implement the component interfaces
 
@@ -243,6 +242,7 @@ Pipeline communicates with components through the `IComponent` interface,
 defined in the [`base`](../base) package. This package also defines base
 implementations for these interfaces, so the `hello` component will only need to
 override the following methods:
+
 - `CreateExecution(ComponentExecution)
   (IExecution, error)` will return an implementation of the `IExecution`
   interface. A base execution implementation is passed in order to define only
@@ -413,7 +413,7 @@ to return a human-friendly errors to the API clients and console users.
 #### Unit tests
 
 Before initializing testing your component in **Instill Core**, we can unit
-test its behaviour. The following code covers the newly added logic by
+test its behavior. The following code covers the newly added logic by
 replicating how the `pipeline-backend` workers execute the component logic.
 Create a `main_test.go` file containing the following code:
 
@@ -511,14 +511,12 @@ func TestOperator_CreateExecution(t *testing.T) {
 }
 ```
 
-
 In our testing methodology, we use two main approaches for mocking external services:
 
 1. In some components, we mock only the interface and skip testing the actual client, as with services like Slack and HubSpot.
 2. In other components, we create a fake server for test purposes, as with OpenAI integrations.
 
 Moving forward, we plan to standardize on the second approach, integrating all components to use a fake server setup for testing.
-
 
 ### Initialize the component
 
@@ -552,15 +550,15 @@ func Init(logger *zap.Logger) *Store {
 }
 ```
 
-### Use the component in 💧 Instill Pipeline
+### Use the component in Instill Core Pipeline
 
 Re-run your local `pipeline-backend` build:
 
-```sh
-$ make rm && make dev
-$ docker exec pipeline-backend go run ./cmd/init # this will load the new component into the database
-$ docker exec -d pipeline-backend go run ./cmd/worker # run without -d in a separate terminal if you want to access the logs
-$ docker exec pipeline-backend go run ./cmd/main
+```shell
+make rm && make dev
+docker exec pipeline-backend go run ./cmd/init # this will load the new component into the database
+docker exec -d pipeline-backend go run ./cmd/worker # run without -d in a separate terminal if you want to access the logs
+docker exec pipeline-backend go run ./cmd/main
 ```
 
 Head to the console at http://localhost:3000/ (default password is `password`)
@@ -614,8 +612,8 @@ document, just add the following line on top of `operator/hello/v0/main.go`:
 
 Then, go to the base of the `pipeline-backend` repository and run:
 
-```sh
-$ make gen-component-doc
+```shell
+make gen-component-doc
 ```
 
 #### Adding extra sections
@@ -623,9 +621,9 @@ $ make gen-component-doc
 The documentation of the component can be extended with the `--extraContents`
 flag:
 
-```sh
-$ mkdir -p operator/hello/.compogen
-$ echo '### Final words
+```shell
+mkdir -p operator/hello/.compogen
+echo '### Final words
 
 Thank you for reading!' > operator/hello/.compogen/extra-bottom.mdx
 ```
@@ -650,7 +648,7 @@ Semantic Versioning guidelines.
   - At this point, since there might be pipelines using the previous version, a
     new package MUST be created. E.g., `operator/json/v0` -> `operator/json/v1`.
 - Build and pre-release labels are discouraged, as components are shipped as
-  part of **💧 Instill Pipeline** and they aren't likely to need such fine-grained
+  part of **Instill Core Pipeline** and they aren't likely to need such fine-grained
   version control.
 
 It is recommended to start a component at `v0.1.0`. A major version 0 is

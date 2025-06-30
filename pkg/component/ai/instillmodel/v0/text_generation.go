@@ -1,4 +1,4 @@
-package instill
+package instillmodel
 
 import (
 	"fmt"
