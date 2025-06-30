@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"mime"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -248,7 +249,13 @@ func (f *binaryFetcher) convertDataURIToBytes(url string) (b []byte, contentType
 }
 
 // Pattern matches: https://{domain}/v1alpha/namespaces/{namespace}/blob-urls/{uid}
+// This is a deprecated pattern, we should use the presigned pattern instead.
 var minioURLPattern = regexp.MustCompile(`https?://[^/]+/v1alpha/namespaces/[^/]+/blob-urls/([^/]+)$`)
+
+// Pattern matches: https://{domain}/v1alpha/blob-urls/{encoded_presigned_url}
+// This is the new pattern, we should use this instead of the deprecated pattern.
+// The new design totally rely on the presigned URL provided by MinIO, without the need to get object URL from table.
+var minioURLPresignedPattern = regexp.MustCompile(`https?://[^/]+/v1alpha/blob-urls/([^/]+)$`)
 
 // ArtifactBinaryFetcher fetches binary data from a URL.
 // If that URL comes from an object uploaded on Instill Artifact,
@@ -269,19 +276,40 @@ func NewArtifactBinaryFetcher(ac artifactpb.ArtifactPrivateServiceClient, fg *mi
 	}
 }
 
-func (f *artifactBinaryFetcher) FetchFromURL(ctx context.Context, url string) (b []byte, contentType string, filename string, err error) {
-	if strings.HasPrefix(url, "data:") {
-		return f.binaryFetcher.convertDataURIToBytes(url)
+func (f *artifactBinaryFetcher) FetchFromURL(ctx context.Context, fileURL string) (b []byte, contentType string, filename string, err error) {
+	if strings.HasPrefix(fileURL, "data:") {
+		return f.binaryFetcher.convertDataURIToBytes(fileURL)
 	}
-	if matches := minioURLPattern.FindStringSubmatch(url); matches != nil {
+	if matches := minioURLPattern.FindStringSubmatch(fileURL); matches != nil {
 		if len(matches) < 2 {
-			err = fmt.Errorf("invalid blob storage url: %s", url)
+			err = fmt.Errorf("invalid blob storage url: %s", fileURL)
 			return
 		}
 
 		return f.fetchFromBlobStorage(ctx, uuid.FromStringOrNil(matches[1]))
 	}
-	return f.binaryFetcher.FetchFromURL(ctx, url)
+	if matches := minioURLPresignedPattern.FindStringSubmatch(fileURL); matches != nil {
+		if len(matches) < 1 {
+			err = fmt.Errorf("invalid blob storage url: %s", fileURL)
+			return
+		}
+		parsedURL, err := url.Parse(fileURL)
+		if err != nil {
+			return nil, "", "", err
+		}
+		// The presigned URL is encoded in the format:
+		// scheme://host/v1alpha/blob-urls/base64_encoded_presigned_url
+		// Here we decode the base64 string to the presigned URL.
+		base64Decoded, err := base64.StdEncoding.DecodeString(strings.Split(parsedURL.Path, "/")[3])
+		if err != nil {
+			return nil, "", "", err
+		}
+
+		// the decoded presigned URL is a self-contained URL that can be used
+		// to upload or download the object directly.
+		return f.binaryFetcher.FetchFromURL(ctx, string(base64Decoded))
+	}
+	return f.binaryFetcher.FetchFromURL(ctx, fileURL)
 }
 
 func (f *artifactBinaryFetcher) fetchFromBlobStorage(ctx context.Context, urlUID uuid.UUID) (b []byte, contentType string, filename string, err error) {
