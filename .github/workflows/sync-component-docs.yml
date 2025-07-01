@@ -1,0 +1,41 @@
+name: Sync component docs
+
+on:
+  workflow_call:
+  push:
+    branches:
+      - main
+    tags:
+      - "*-rc"
+    paths:
+      - "pkg/component/**"
+  release:
+    types: [published]
+
+jobs:
+  sync-dev:
+    name: Dev
+    # if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/sync-component-docs-reusable.yml
+    with:
+      target_branch: v0-dev
+      commit_message: "triggered by main branch push: https://github.com/instill-ai/pipeline-backend/commit/${{ github.sha }}"
+    secrets: inherit
+
+  sync-rc:
+    name: RC
+    if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref_name, '-rc')
+    uses: ./.github/workflows/sync-component-docs-reusable.yml
+    with:
+      target_branch: v0-rc
+      commit_message: "triggered by RC tag: ${{ github.ref_name }}"
+    secrets: inherit
+
+  sync-release:
+    name: Release
+    if: github.event_name == 'release'
+    uses: ./.github/workflows/sync-component-docs-reusable.yml
+    with:
+      target_branch: v0
+      commit_message: "triggered by release: ${{ github.ref_name }}"
+    secrets: inherit

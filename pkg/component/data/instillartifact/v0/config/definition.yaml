@@ -12,7 +12,7 @@ icon: assets/instill-artifact.svg
 id: instill-artifact
 public: true
 title: Instill Artifact
-description: Manipulate and smart search files and data in the artifact store.
+description: Access files and perform RAG-based search and retrieval through catalogs in the Instill Core platform.
 tombstone: false
 type: COMPONENT_TYPE_DATA
 uid: 6ec46048-f82f-4452-ba19-79698af9186e

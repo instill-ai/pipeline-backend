@@ -1,4 +1,4 @@
-package instill
+package instillmodel
 
 type RequestWrapper struct {
 	Data      any `json:"data,omitempty"`
