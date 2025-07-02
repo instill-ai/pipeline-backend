@@ -15,7 +15,7 @@ on:
 jobs:
   sync-dev:
     name: Dev
-    # if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/sync-component-docs-reusable.yml
     with:
       target_branch: v0-dev
