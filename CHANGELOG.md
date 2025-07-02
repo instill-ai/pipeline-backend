@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.56.0](https://github.com/instill-ai/pipeline-backend/compare/v0.55.0...v0.56.0) (2025-07-01)
+
+
+### Features
+
+* **document:** add TASK_SPLIT_IN_PAGES ([#1035](https://github.com/instill-ai/pipeline-backend/issues/1035)) ([3bcb944](https://github.com/instill-ai/pipeline-backend/commit/3bcb94455c7c142ea8844c5013c795b76d011a6c))
+* **http:** add header parameter in HTTP component ([#1028](https://github.com/instill-ai/pipeline-backend/issues/1028)) ([64d0807](https://github.com/instill-ai/pipeline-backend/commit/64d0807d0152876bad5164687f0447366e7a6ac1))
+
+
+### Bug Fixes
+
+* **component,document:** fix the wrong python script output parsing ([#1031](https://github.com/instill-ai/pipeline-backend/issues/1031)) ([b306708](https://github.com/instill-ai/pipeline-backend/commit/b306708cf7ca794a58ae5c97ed3c0051f037c8d0))
+* **Dockerfile:** correct serviceVersion injection ([#1036](https://github.com/instill-ai/pipeline-backend/issues/1036)) ([61573ac](https://github.com/instill-ai/pipeline-backend/commit/61573ac1961e92645254a706b0a747c6f6f98a47))
+* **document:** make Python scripts fail silently on document-to-markdown conversion ([#1032](https://github.com/instill-ai/pipeline-backend/issues/1032)) ([8b97006](https://github.com/instill-ai/pipeline-backend/commit/8b97006ec422013f75712d88f1ea82b3c4112fed))
+
+
+### Miscellaneous
+
+* **http:** block internal endpoints in HTTP component. ([#1033](https://github.com/instill-ai/pipeline-backend/issues/1033)) ([dff15b1](https://github.com/instill-ai/pipeline-backend/commit/dff15b1abfbc6514d110401c57cbccca6be3fc37))
+* **main:** release v0.56.0 ([713e079](https://github.com/instill-ai/pipeline-backend/commit/713e079a02a0b71459e7290bd04df2b367dfcd95))
+* **main:** release v0.56.0 ([#1039](https://github.com/instill-ai/pipeline-backend/issues/1039)) ([2273d5b](https://github.com/instill-ai/pipeline-backend/commit/2273d5bbcaa1686b31c1e26b9e906acc64c96c91))
+
 ## [0.55.0](https://github.com/instill-ai/pipeline-backend/compare/v0.54.0-rc...v0.55.0) (2025-06-18)
 
 
