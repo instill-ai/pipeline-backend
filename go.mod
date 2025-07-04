@@ -27,7 +27,7 @@ require (
 	github.com/gage-technologies/mistral-go v1.1.0
 	github.com/go-audio/audio v1.0.0
 	github.com/go-audio/wav v1.1.0
-	github.com/go-chi/chi/v5 v5.2.1
+	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-openapi/strfmt v0.23.0
 	github.com/go-redis/redismock/v9 v9.2.0
 	github.com/go-resty/resty/v2 v2.16.5
