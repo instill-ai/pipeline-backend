@@ -24,7 +24,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/openai/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/perplexity/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/stabilityai/v0"
-	"github.com/instill-ai/pipeline-backend/pkg/component/ai/universalai/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/asana/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/email/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/freshdesk/v0"
@@ -133,12 +132,6 @@ func Init(param InitParams) *Store {
 			// OpenAI
 			conn := openai.Init(baseComp)
 			conn = conn.WithInstillCredentials(secrets[conn.GetDefinitionID()])
-			compStore.Import(conn)
-		}
-		{
-			conn := universalai.Init(baseComp)
-			// Please apply more keys when we add more vendors
-			conn = conn.WithInstillCredentials("openai", secrets["openai"])
 			compStore.Import(conn)
 		}
 		{
