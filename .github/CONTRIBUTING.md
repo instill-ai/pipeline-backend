@@ -36,7 +36,13 @@ backend with your local changes.
 ```shell
 cd $MY_WORKSPACE
 git clone https://github.com/instill-ai/instill-core && cd instill-core
-make latest PROFILE=api-gateway,mgmt,model,artifact,console
+make latest
+```
+
+#### Remove the containers to avoid conflicts
+
+```shell
+docker rm -f pipeline-backend pipeline-backend-worker
 ```
 
 #### Building the development container
