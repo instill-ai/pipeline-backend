@@ -51,10 +51,10 @@ jobs:
             local component_id=""
             local component_title=""
             local component_description=""
-            
+
             # Find the latest version directory (v0, v1, v2, etc.)
             latest_version=$(find "$component_source_dir" -maxdepth 1 -type d -name "v*" | sort -V | tail -n 1)
-            
+
             # Extract metadata from definition.yaml in the latest version
             if [[ -n "$latest_version" && -f "$latest_version/config/definition.yaml" ]]; then
               component_id=$(yq -r '.id' "$latest_version/config/definition.yaml")
@@ -67,7 +67,7 @@ jobs:
               component_title="$component_name"
               component_description="Component definition is missing"
             fi
-            
+
             # Return values (bash doesn't have return values, so we use global variables)
             COMPONENT_ID="$component_id"
             COMPONENT_TITLE="$component_title"
@@ -82,7 +82,43 @@ jobs:
             
             echo "Comparing $component_type components..."
             
-            # Find all README.mdx files in source directory
+            # Create target directory if it doesn't exist
+            mkdir -p "$target_dir"
+            
+            # Step 1: Remove target files that don't exist in source
+            echo "Cleaning up orphaned files..."
+            for target_file in "$target_dir"/*.mdx; do
+              if [[ -f "$target_file" ]]; then
+                component_id=$(basename "$target_file" .mdx)
+                
+                # Check if this component exists in source
+                component_exists=false
+                for source_component_dir in "$source_dir"/*; do
+                  if [[ -d "$source_component_dir" ]]; then
+                    latest_version=$(find "$source_component_dir" -maxdepth 1 -type d -name "v*" | sort -V | tail -n 1)
+                    if [[ -n "$latest_version" && -f "$latest_version/config/definition.yaml" ]]; then
+                      source_component_id=$(yq -r '.id' "$latest_version/config/definition.yaml")
+                      if [[ "$source_component_id" == "$component_id" ]]; then
+                        component_exists=true
+                        break
+                      fi
+                    fi
+                  fi
+                done
+                
+                if [[ "$component_exists" == "false" ]]; then
+                  echo "Removing orphaned file: $component_id.mdx"
+                  rm "$target_file"
+                  # Stage the deletion properly
+                  cd "$target_dir"
+                  git rm "$component_id.mdx"
+                  cd - > /dev/null
+                fi
+              fi
+            done
+            
+            # Step 2: Sync source files to target
+            echo "Syncing source files..."
             find "$source_dir" -name "README.mdx" | while read -r source_file; do
               # Get the component path (e.g., anthropic/v0/README.mdx from pkg/component/ai/anthropic/v0/README.mdx)
               component_path="${source_file#$source_dir/}"
@@ -94,12 +130,14 @@ jobs:
               component_source_dir="$source_dir/$component_name"
               get_component_metadata "$component_source_dir"
               
+              # Skip if component ID is null or empty
+              if [[ "$COMPONENT_ID" == "null" || -z "$COMPONENT_ID" ]]; then
+                echo "Skipping component with invalid ID: $component_name"
+                continue
+              fi
+              
               # Create flattened filename using component ID (e.g., anthropic.mdx)
               target_file="$target_dir/${COMPONENT_ID}.mdx"
-              
-              # Create target directory if it doesn't exist
-              target_file_dir=$(dirname "$target_file")
-              mkdir -p "$target_file_dir"
               
               # Compare files and copy if different
               if [ ! -f "$target_file" ] || ! cmp -s "$source_file" "$target_file"; then
@@ -119,9 +157,9 @@ jobs:
             local target_dir="$2"
             local component_type="$3"
             local index_file="readme/docs/Component/${component_type}.mdx"
-            
+
             echo "Updating component index for $component_type..."
-            
+
             # Remove existing table if it exists
             if [[ "${OSTYPE}" == "darwin"* ]]; then
               # macOS
@@ -131,17 +169,17 @@ jobs:
               sed -i '/^ *|.*| *$/d; /^[[:space:]]*:-+[[:space:]]*|[[:space:]]*-+.*$/d' "$index_file"
               sed -i '/^$/N;/^\n$/D' "$index_file"
             fi
-            
+
             # Add new table header
             echo "" >> "$index_file"
             echo "| Name | Description |" >> "$index_file"
             echo "|:--|:--|" >> "$index_file"
-            
+
             # Add components to table
             for component_file in "$target_dir"/*.mdx; do
               if [[ -f "$component_file" ]]; then
                 component_id=$(basename "$component_file" .mdx)
-                
+
                 # Find the corresponding source directory by matching component_id in definition.yaml files
                 component_source_dir=""
                 for dir in "$source_dir"/*; do
@@ -153,7 +191,7 @@ jobs:
                     fi
                   fi
                 done
-                
+
                 # Use the metadata we found
                 if [[ -n "$component_source_dir" ]]; then
                   component_title="$COMPONENT_TITLE"
@@ -162,12 +200,12 @@ jobs:
                   component_title="$component_id"
                   component_description="Component definition is missing"
                 fi
-                
+
                 # Create table row
                 echo "| [$component_title](/docs/$component_id) | $component_description |" >> "$index_file"
               fi
             done
-            
+
             # Stage the updated index file
             cd "readme/docs/Component"
             git add "${component_type}.mdx"

@@ -7,8 +7,6 @@ on:
       - main
     tags:
       - "*-rc"
-    paths:
-      - "pkg/component/**"
   release:
     types: [published]
 
