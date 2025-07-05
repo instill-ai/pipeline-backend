@@ -1,7 +1,7 @@
 name: Sync component docs
 
 on:
-  workflow_call:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -13,6 +13,14 @@ on:
     types: [published]
 
 jobs:
+  sync-manual:
+    name: Sync component docs (manual trigger)
+    if: github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/sync-component-docs-reusable.yml
+    with:
+      target_branch: v0-dev
+      commit_message: "triggered by manual workflow dispatch"
+    secrets: inherit
   sync-dev:
     name: Dev
     if: github.ref == 'refs/heads/main'
