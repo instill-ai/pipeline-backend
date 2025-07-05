@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.56.1](https://github.com/instill-ai/pipeline-backend/compare/v0.56.0...v0.56.1) (2025-07-05)
+
+
+### Features
+
+* **component:** retire openai.v1 and universal-ai component ([#1042](https://github.com/instill-ai/pipeline-backend/issues/1042)) ([d332bbe](https://github.com/instill-ai/pipeline-backend/commit/d332bbe87fba2114b4c38ad3d384546a89673646))
+* **external:** support new blob-url path in artifactBinaryFetcher ([#1037](https://github.com/instill-ai/pipeline-backend/issues/1037)) ([11a5d16](https://github.com/instill-ai/pipeline-backend/commit/11a5d16057f5b4dd775e4348265a2c671560e62a))
+
+
+### Miscellaneous
+
+* **dep:** bump up usage-client version ([#1043](https://github.com/instill-ai/pipeline-backend/issues/1043)) ([f357f03](https://github.com/instill-ai/pipeline-backend/commit/f357f035ebc5c83159c5bf6ec25a184e79cc400a))
+* **deps:** bump github.com/go-chi/chi/v5 from 5.2.1 to 5.2.2 ([#1030](https://github.com/instill-ai/pipeline-backend/issues/1030)) ([6ad1380](https://github.com/instill-ai/pipeline-backend/commit/6ad138028e58cebe04db14b9846cc10ac3e87034))
+
 ## [0.56.0](https://github.com/instill-ai/pipeline-backend/compare/v0.55.0...v0.56.0) (2025-07-01)
 
 
