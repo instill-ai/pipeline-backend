@@ -69,9 +69,14 @@ $defs:
         uiOrder: 2
         title: Text Content
         type: string
+      source-file-uid:
+        description: The UID of the source file.
+        uiOrder: 3
+        title: Source File UID
+        type: string
       source-file-name:
         description: The name of the source file.
-        uiOrder: 3
+        uiOrder: 4
         title: Source File Name
         type: string
     required:
@@ -79,6 +84,7 @@ $defs:
       - similarity-score
       - text-content
       - source-file-name
+      - source-file-uid
     title: Chunk
     type: object
   namespace:

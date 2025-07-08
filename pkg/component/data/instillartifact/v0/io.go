@@ -190,6 +190,8 @@ type SimilarityChunk struct {
 	SimilarityScore float32 `json:"similarity-score"`
 	// Text content of the chunk
 	TextContent string `json:"text-content"`
+	// Source file UID
+	SourceFileUID string `json:"source-file-uid"`
 	// Source file name
 	SourceFileName string `json:"source-file-name"`
 	// Content type

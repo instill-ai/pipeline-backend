@@ -39,15 +39,16 @@ func (e *execution) query(input *structpb.Struct) (*structpb.Struct, error) {
 
 	output := QueryOutput{
 		Answer: queryRes.Answer,
-		Chunks: []SimilarityChunk{},
+		Chunks: make([]SimilarityChunk, 0, len(queryRes.GetSimilarChunks())),
 	}
 
-	for _, chunkPB := range queryRes.SimilarChunks {
+	for _, chunkPB := range queryRes.GetSimilarChunks() {
 		output.Chunks = append(output.Chunks, SimilarityChunk{
-			ChunkUID:        chunkPB.ChunkUid,
-			SimilarityScore: chunkPB.SimilarityScore,
-			TextContent:     chunkPB.TextContent,
-			SourceFileName:  chunkPB.SourceFile,
+			ChunkUID:        chunkPB.GetChunkUid(),
+			SimilarityScore: chunkPB.GetSimilarityScore(),
+			TextContent:     chunkPB.GetTextContent(),
+			SourceFileName:  chunkPB.GetSourceFile(),
+			SourceFileUID:   chunkPB.GetChunkMetadata().GetOriginalFileUid(),
 		})
 	}
 

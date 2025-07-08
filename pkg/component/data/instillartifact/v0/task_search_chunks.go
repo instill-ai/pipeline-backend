@@ -70,15 +70,16 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 	}
 
 	output := SearchChunksOutput{
-		Chunks: []SimilarityChunk{},
+		Chunks: make([]SimilarityChunk, 0, len(searchRes.GetSimilarChunks())),
 	}
 
-	for _, chunkPB := range searchRes.SimilarChunks {
+	for _, chunkPB := range searchRes.GetSimilarChunks() {
 		output.Chunks = append(output.Chunks, SimilarityChunk{
-			ChunkUID:        chunkPB.ChunkUid,
-			SimilarityScore: chunkPB.SimilarityScore,
-			TextContent:     chunkPB.TextContent,
-			SourceFileName:  chunkPB.SourceFile,
+			ChunkUID:        chunkPB.GetChunkUid(),
+			SimilarityScore: chunkPB.GetSimilarityScore(),
+			TextContent:     chunkPB.GetTextContent(),
+			SourceFileName:  chunkPB.GetSourceFile(),
+			SourceFileUID:   chunkPB.GetChunkMetadata().GetOriginalFileUid(),
 			ContentType:     chunkPB.GetChunkMetadata().GetContentType().String(),
 		})
 	}
