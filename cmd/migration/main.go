@@ -107,7 +107,7 @@ func main() {
 	codeMigrator, cleanup := initCodeMigrator(ctx)
 	defer cleanup()
 
-	if err := runMigration(dsn, databaseConfig.Version, codeMigrator.Migrate); err != nil {
+	if err := runMigration(dsn, database.TargetSchemaVersion, codeMigrator.Migrate); err != nil {
 		log.With(zap.Error(err)).Fatal("Running migration")
 	}
 }
