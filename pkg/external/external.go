@@ -300,7 +300,7 @@ func (f *artifactBinaryFetcher) FetchFromURL(ctx context.Context, fileURL string
 		// The presigned URL is encoded in the format:
 		// scheme://host/v1alpha/blob-urls/base64_encoded_presigned_url
 		// Here we decode the base64 string to the presigned URL.
-		base64Decoded, err := base64.StdEncoding.DecodeString(strings.Split(parsedURL.Path, "/")[3])
+		base64Decoded, err := base64.URLEncoding.DecodeString(strings.Split(parsedURL.Path, "/")[3])
 		if err != nil {
 			return nil, "", "", err
 		}
