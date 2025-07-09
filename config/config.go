@@ -120,7 +120,6 @@ type DatabaseConfig struct {
 		ReplicationTimeFrame int    `koanf:"replicationtimeframe"` // in seconds
 	} `koanf:"replica"`
 	Name     string `koanf:"name"`
-	Version  uint   `koanf:"version"`
 	TimeZone string `koanf:"timezone"`
 	Pool     struct {
 		IdleConnections int           `koanf:"idleconnections"`

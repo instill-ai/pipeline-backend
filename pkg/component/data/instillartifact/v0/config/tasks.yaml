@@ -69,9 +69,14 @@ $defs:
         uiOrder: 2
         title: Text Content
         type: string
+      source-file-uid:
+        description: The UID of the source file.
+        uiOrder: 3
+        title: Source File UID
+        type: string
       source-file-name:
         description: The name of the source file.
-        uiOrder: 3
+        uiOrder: 4
         title: Source File Name
         type: string
     required:
@@ -79,6 +84,7 @@ $defs:
       - similarity-score
       - text-content
       - source-file-name
+      - source-file-uid
     title: Chunk
     type: object
   namespace:
@@ -582,11 +588,11 @@ TASK_RETRIEVE:
         uiOrder: 2
         type: integer
         title: Top K
-      filename:
-        description: File name to filter, empty for all.
+      file-uid:
+        description: Optional filter by file.
         uiOrder: 3
         type: string
-        title: Filename
+        title: File UID
       file-media-type:
         description: The media type to filter, empty for all.
         uiOrder: 4
@@ -606,6 +612,14 @@ TASK_RETRIEVE:
           - summary
           - augmented
         title: Content type
+      filename:
+        description: |-
+          File name to filter, empty for all. This field is deprecated and the
+          file UID should be used instead. The filename isn't unique by catalog
+          and therefore the filter might produce unexpected results.
+        uiOrder: 6
+        type: string
+        title: Filename
     required:
       - namespace
       - catalog-id

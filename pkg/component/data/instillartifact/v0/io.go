@@ -164,12 +164,16 @@ type SearchChunksInput struct {
 	TextPrompt string `json:"text-prompt"`
 	// TopK for searching chunks
 	TopK uint32 `json:"top-k"`
-	// File name to filter
-	Filename string `json:"filename"`
+	// File filter
+	FileUID string `json:"file-uid"`
 	// The media type to filter
 	FileMediaType string `json:"file-media-type"`
 	// The content type to filter
-	ContetType string `json:"content-type"`
+	ContentType string `json:"content-type"`
+
+	// File name to filter
+	// Deprecated, use FileUID instead
+	Filename string `json:"filename"`
 }
 
 // SearchChunksOutput is the output for searching chunks
@@ -186,6 +190,8 @@ type SimilarityChunk struct {
 	SimilarityScore float32 `json:"similarity-score"`
 	// Text content of the chunk
 	TextContent string `json:"text-content"`
+	// Source file UID
+	SourceFileUID string `json:"source-file-uid"`
 	// Source file name
 	SourceFileName string `json:"source-file-name"`
 	// Content type

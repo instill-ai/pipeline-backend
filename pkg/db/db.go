@@ -12,6 +12,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 )
 
+// TargetSchemaVersion determines the database schema version.
+const TargetSchemaVersion uint = 40
+
 var db *gorm.DB
 var once sync.Once
 
