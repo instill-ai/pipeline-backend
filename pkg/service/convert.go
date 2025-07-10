@@ -34,7 +34,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
@@ -45,6 +44,7 @@ import (
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	constantx "github.com/instill-ai/x/constant"
+	logx "github.com/instill-ai/x/log"
 	resourcex "github.com/instill-ai/x/resource"
 )
 
@@ -216,16 +216,13 @@ func (c *converter) processSetupMap(ctx context.Context, ownerPermalink string, 
 }
 
 func (c *converter) includeComponentDetail(ctx context.Context, ownerPermalink string, comp *datamodel.Component, useDynamicDef bool) error {
-	l, _ := logger.GetZapLogger(ctx)
-	l = l.With(
-		zap.String("owner", ownerPermalink),
-		zap.String("compType", comp.Type),
-	)
+	logger, _ := logx.GetZapLogger(ctx)
+	logger.Info("includeComponentDetail", zap.String("owner", ownerPermalink), zap.String("compType", comp.Type))
 
 	if !useDynamicDef || comp.Input == nil {
 		def, err := c.component.GetDefinitionByID(comp.Type, nil, nil)
 		if err != nil {
-			l.Error("Couldn't include component details.", zap.Error(err))
+			logger.Error("Couldn't include component details.", zap.Error(err))
 			comp.Definition = nil
 			return nil
 		}
@@ -250,7 +247,7 @@ func (c *converter) includeComponentDetail(ctx context.Context, ownerPermalink s
 		Setup: setup,
 	})
 	if err != nil {
-		l.Error("Couldn't include component details.", zap.Error(err))
+		logger.Error("Couldn't include component details.", zap.Error(err))
 		comp.Definition = nil
 		return nil
 	}
@@ -409,7 +406,7 @@ func (c *converter) IncludeDetailInRecipe(ctx context.Context, ownerPermalink st
 
 // ConvertPipelineToDB converts protobuf data model to db data model
 func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error) {
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 
 	profileImage, err := c.compressProfileImage(pbPipeline.GetProfileImage())
 	if err != nil {
@@ -499,7 +496,7 @@ func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespa
 // ConvertPipelineToPB converts db data model to protobuf data model
 func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool, useDynamicDef bool) (*pb.Pipeline, error) {
 
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 
 	// Clone the pipeline to avoid share memory write
 	dbPipelineByte, err := json.Marshal(dbPipelineOrigin)
@@ -696,7 +693,7 @@ func (c *converter) ConvertPipelinesToPB(ctx context.Context, dbPipelines []*dat
 
 // ConvertPipelineReleaseToDB converts protobuf data model to db data model
 func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pb.PipelineRelease) (*datamodel.PipelineRelease, error) {
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 
 	return &datamodel.PipelineRelease{
 		ID: pbPipelineRelease.GetId(),
@@ -752,7 +749,7 @@ func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID 
 // ConvertPipelineReleaseToPB converts db data model to protobuf data model
 func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pb.Pipeline_View) (*pb.PipelineRelease, error) {
 
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 
 	owner := fmt.Sprintf("%s/%s", dbPipeline.NamespaceType, dbPipeline.NamespaceID)
 
@@ -1091,7 +1088,7 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 
 func (c *converter) ConvertSecretToDB(ctx context.Context, ns resource.Namespace, pbSecret *pb.Secret) (*datamodel.Secret, error) {
 
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 
 	return &datamodel.Secret{
 		BaseDynamicHardDelete: datamodel.BaseDynamicHardDelete{

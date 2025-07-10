@@ -12,19 +12,64 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
+	grpczap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/legacy"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
+	grpcclientx "github.com/instill-ai/x/client/grpc"
+	logx "github.com/instill-ai/x/log"
 )
 
-var log *zap.Logger
+func main() {
 
-func checkExist(databaseConfig config.DatabaseConfig) error {
+	if err := config.Init(config.ParseConfigFlag()); err != nil {
+		panic(err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	logx.Debug = config.Config.Server.Debug
+	logger, _ := logx.GetZapLogger(ctx)
+	defer func() {
+		// can't handle the error due to https://github.com/uber-go/zap/issues/880
+		_ = logger.Sync()
+	}()
+
+	// Set gRPC logging based on debug mode
+	if config.Config.Server.Debug {
+		grpczap.ReplaceGrpcLoggerV2WithVerbosity(logger, 0) // All logs
+	} else {
+		grpczap.ReplaceGrpcLoggerV2WithVerbosity(logger, 3) // verbosity 3 will avoid [transport] from emitting
+	}
+
+	databaseConfig := config.Config.Database
+	if err := checkExist(databaseConfig, logger); err != nil {
+		logger.Fatal("Checking database existence", zap.Error(err))
+	}
+
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?%s",
+		databaseConfig.Username,
+		databaseConfig.Password,
+		databaseConfig.Host,
+		databaseConfig.Port,
+		databaseConfig.Name,
+		"sslmode=disable",
+	)
+
+	codeMigrator, cleanup := initCodeMigrator(ctx, logger)
+	defer cleanup()
+
+	if err := runMigration(dsn, database.TargetSchemaVersion, codeMigrator.Migrate, logger); err != nil {
+		logger.Fatal("Running migration", zap.Error(err))
+	}
+}
+
+func checkExist(databaseConfig config.DatabaseConfig, logger *zap.Logger) error {
 	db, err := sql.Open(
 		"postgres",
 		fmt.Sprintf("host=%s user=%s password=%s dbname=postgres port=%d sslmode=disable TimeZone=%s",
@@ -64,7 +109,7 @@ func checkExist(databaseConfig config.DatabaseConfig) error {
 
 		if databaseConfig.Name == databaseName {
 			dbExist = true
-			log.With(zap.String("name", databaseName)).Info("Database exists")
+			logger.Info("Database exists", zap.String("name", databaseName))
 		}
 	}
 
@@ -73,7 +118,7 @@ func checkExist(databaseConfig config.DatabaseConfig) error {
 	}
 
 	if !dbExist {
-		log.With(zap.String("name", databaseConfig.Name)).Info("Create database")
+		logger.Info("Create database", zap.String("name", databaseConfig.Name))
 		if _, err := db.Exec(fmt.Sprintf("CREATE DATABASE %s;", databaseConfig.Name)); err != nil {
 			return fmt.Errorf("creating database: %w", err)
 		}
@@ -82,40 +127,11 @@ func checkExist(databaseConfig config.DatabaseConfig) error {
 	return nil
 }
 
-func main() {
-	ctx := context.Background()
-	log, _ = logger.GetZapLogger(ctx)
-
-	if err := config.Init(config.ParseConfigFlag()); err != nil {
-		log.With(zap.Error(err)).Fatal("Loading configuration")
-	}
-
-	databaseConfig := config.Config.Database
-	if err := checkExist(databaseConfig); err != nil {
-		log.With(zap.Error(err)).Fatal("Checking database existence")
-	}
-
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?%s",
-		databaseConfig.Username,
-		databaseConfig.Password,
-		databaseConfig.Host,
-		databaseConfig.Port,
-		databaseConfig.Name,
-		"sslmode=disable",
-	)
-
-	codeMigrator, cleanup := initCodeMigrator(ctx)
-	defer cleanup()
-
-	if err := runMigration(dsn, database.TargetSchemaVersion, codeMigrator.Migrate); err != nil {
-		log.With(zap.Error(err)).Fatal("Running migration")
-	}
-}
-
 func runMigration(
 	dsn string,
 	expectedVersion uint,
 	execCode func(version uint) error,
+	logger *zap.Logger,
 ) error {
 	migrateFolder, err := os.Getwd()
 	if err != nil {
@@ -132,11 +148,11 @@ func runMigration(
 		return fmt.Errorf("getting current version: %w", err)
 	}
 
-	log.With(
+	logger.Info("Running migration",
 		zap.Uint("expectedVersion", expectedVersion),
 		zap.Uint("currentVersion", curVersion),
 		zap.Bool("dirty", dirty),
-	).Info("Running migration")
+	)
 
 	if dirty {
 		return fmt.Errorf("database is dirty, please fix it")
@@ -145,7 +161,7 @@ func runMigration(
 	step := curVersion
 	for {
 		if expectedVersion <= step {
-			log.With(zap.Uint("expectedVersion", expectedVersion)).Info("Migration completed")
+			logger.Info("Migration completed", zap.Uint("expectedVersion", expectedVersion))
 			break
 		}
 
@@ -164,7 +180,7 @@ func runMigration(
 			}
 		}
 
-		log.With(zap.Uint("step", step+1)).Info("Step up")
+		logger.Info("Step up", zap.Uint("step", step+1))
 		if err := m.Steps(1); err != nil {
 			return fmt.Errorf("stepping up: %w", err)
 		}
@@ -181,20 +197,20 @@ func runMigration(
 	return nil
 }
 
-func initCodeMigrator(ctx context.Context) (cm *migration.CodeMigrator, cleanup func()) {
-	l, _ := logger.GetZapLogger(ctx)
+func initCodeMigrator(ctx context.Context, logger *zap.Logger) (cm *migration.CodeMigrator, cleanup func()) {
 	cleanups := make([]func(), 0)
 
 	rh := service.NewRetentionHandler()
-	mgmtPrivateServiceClient, mgmtPrivateServiceClientConn := external.InitMgmtPrivateServiceClient(ctx)
-	if mgmtPrivateServiceClientConn != nil {
-		cleanups = append(cleanups, func() { _ = mgmtPrivateServiceClientConn.Close() })
+	mgmtPrivateServiceClient, mgmtPrivateClose, err := grpcclientx.NewMgmtPrivateClient(config.Config.MgmtBackend)
+	if err != nil {
+		logger.Fatal("failed to create mgmt private service client", zap.Error(err))
 	}
+	cleanups = append(cleanups, func() { _ = mgmtPrivateClose() })
 
 	db := database.GetConnection().WithContext(ctx)
 	cleanups = append(cleanups, func() { database.Close(db) })
 	codeMigrator := &migration.CodeMigrator{
-		Logger:                   l,
+		Logger:                   logger,
 		DB:                       db,
 		RetentionHandler:         rh,
 		MGMTPrivateServiceClient: mgmtPrivateServiceClient,

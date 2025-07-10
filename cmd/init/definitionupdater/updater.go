@@ -9,18 +9,18 @@ import (
 	"github.com/launchdarkly/go-semver"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	logx "github.com/instill-ai/x/log"
 )
 
 // UpdateComponentDefinitionIndex updates the component definitions in the
 // database based on latest version of their definition.json file.
 func UpdateComponentDefinitionIndex(ctx context.Context, repo repository.Repository) error {
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 
 	defs := componentstore.Init(componentstore.InitParams{
 		Logger: logger,

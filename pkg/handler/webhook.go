@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 
-	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -14,11 +13,6 @@ import (
 )
 
 func (h *PublicHandler) DispatchPipelineWebhookEvent(ctx context.Context, req *pb.DispatchPipelineWebhookEventRequest) (resp *pb.DispatchPipelineWebhookEventResponse, err error) {
-
-	eventName := "DispatchPipelineWebhookEvent"
-	ctx, span := tracer.Start(ctx, eventName,
-		trace.WithSpanKind(trace.SpanKindServer))
-	defer span.End()
 
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -36,7 +30,6 @@ func (h *PublicHandler) DispatchPipelineWebhookEvent(ctx context.Context, req *p
 		Message:     req.GetMessage(),
 	})
 	if err != nil {
-		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 

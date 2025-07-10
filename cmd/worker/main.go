@@ -14,25 +14,33 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/otel"
 	"go.temporal.io/api/workflowservice/v1"
-	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/contrib/opentelemetry"
+	"go.temporal.io/sdk/interceptor"
 	"go.temporal.io/sdk/worker"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/durationpb"
+	"gorm.io/gorm"
+
+	grpczap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	temporalclient "go.temporal.io/sdk/client"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/pubsub"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/instill-ai/x/client"
 	"github.com/instill-ai/x/minio"
 	"github.com/instill-ai/x/temporal"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
-	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pipelineworker "github.com/instill-ai/pipeline-backend/pkg/worker"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	grpcclientx "github.com/instill-ai/x/client/grpc"
+	logx "github.com/instill-ai/x/log"
 )
 
 const gracefulShutdownWaitPeriod = 15 * time.Second
@@ -49,89 +57,34 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	// setup tracing and metrics
 	ctx, cancel := context.WithCancel(context.Background())
-
-	tp, err := customotel.SetupTracing(ctx, "pipeline-backend-worker")
-	if err != nil {
-		panic(err)
-	}
-
-	defer func() {
-		err = tp.Shutdown(ctx)
-	}()
-
-	ctx, span := otel.Tracer("worker-tracer").Start(ctx, "main")
 	defer cancel()
 
-	logger, _ := logger.GetZapLogger(ctx)
+	logx.Debug = config.Config.Server.Debug
+	logger, _ := logx.GetZapLogger(ctx)
 	defer func() {
 		// can't handle the error due to https://github.com/uber-go/zap/issues/880
 		_ = logger.Sync()
 	}()
 
-	db := database.GetSharedConnection()
-	defer database.Close(db)
-
-	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
-	defer redisClient.Close()
-
-	timeseries := repository.MustNewInfluxDB(ctx)
-	defer timeseries.Close()
-
-	minIOParams := minio.ClientParams{
-		Config: config.Config.Minio,
-		Logger: logger,
-		AppInfo: minio.AppInfo{
-			Name:    serviceName,
-			Version: serviceVersion,
-		},
-	}
-	minIOFileGetter, err := minio.NewFileGetter(minIOParams)
-	if err != nil {
-		logger.Fatal("Failed to create MinIO file getter", zap.Error(err))
+	// Set gRPC logging based on debug mode
+	if config.Config.Server.Debug {
+		grpczap.ReplaceGrpcLoggerV2WithVerbosity(logger, 0) // All logs
+	} else {
+		grpczap.ReplaceGrpcLoggerV2WithVerbosity(logger, 3) // verbosity 3 will avoid [transport] from emitting
 	}
 
-	retentionHandler := service.NewRetentionHandler()
-	minIOParams.ExpiryRules = retentionHandler.ListExpiryRules()
-	minIOClient, err := minio.NewMinIOClientAndInitBucket(ctx, minIOParams)
-	if err != nil {
-		logger.Fatal("failed to create MinIO client", zap.Error(err))
-	}
-
-	temporalClientOptions, err := temporal.ClientOptions(config.Config.Temporal, logger)
-	if err != nil {
-		logger.Fatal("Unable to build Temporal client options", zap.Error(err))
-	}
-
-	temporalClient, err := client.Dial(temporalClientOptions)
-	if err != nil {
-		logger.Fatal("Unable to create Temporal client", zap.Error(err))
-	}
-	defer temporalClient.Close()
+	// Initialize all clients
+	pipelinePublicServiceClient, artifactPublicServiceClient, artifactPrivateServiceClient,
+		redisClient, db, minIOClient, minIOFileGetter, temporalClient, timeseries, closeClients := newClients(ctx, logger)
+	defer closeClients()
 
 	// for only local temporal cluster
 	if config.Config.Temporal.ServerRootCA == "" && config.Config.Temporal.ClientCert == "" && config.Config.Temporal.ClientKey == "" {
 		initTemporalNamespace(ctx, temporalClient)
 	}
 
-	repo := repository.NewRepository(db, redisClient)
-
-	pipelinePublicServiceClient, pipelinePublicServiceClientConn := external.InitPipelinePublicServiceClient(ctx)
-	if pipelinePublicServiceClientConn != nil {
-		defer pipelinePublicServiceClientConn.Close()
-	}
-
-	artifactPublicServiceClient, artifactPublicServiceClientConn := external.InitArtifactPublicServiceClient(ctx)
-	if artifactPublicServiceClientConn != nil {
-		defer artifactPublicServiceClientConn.Close()
-	}
-
-	artifactPrivateServiceClient, artifactPrivateServiceClientConn := external.InitArtifactPrivateServiceClient(ctx)
-	if artifactPrivateServiceClientConn != nil {
-		defer artifactPrivateServiceClientConn.Close()
-	}
-
+	// Keep NewArtifactBinaryFetcher as requested
 	binaryFetcher := external.NewArtifactBinaryFetcher(artifactPrivateServiceClient, minIOFileGetter)
 
 	compStore := componentstore.Init(componentstore.InitParams{
@@ -143,6 +96,8 @@ func main() {
 
 	pubsub := pubsub.NewRedisPubSub(redisClient)
 	ms := memory.NewStore(pubsub, minIOClient.WithLogger(logger))
+
+	repo := repository.NewRepository(db, redisClient)
 
 	cw := pipelineworker.NewWorker(
 		pipelineworker.WorkerConfig{
@@ -193,8 +148,6 @@ func main() {
 	w.RegisterActivity(cw.UploadComponentInputsActivity)
 	w.RegisterActivity(cw.UploadComponentOutputsActivity)
 
-	span.End()
-
 	if err := w.Start(); err != nil {
 		logger.Fatal(fmt.Sprintf("Unable to start worker: %s", err))
 	}
@@ -209,7 +162,7 @@ func main() {
 
 	// When the server receives a SIGTERM, we'll try to finish ongoing
 	// workflows. This is because pipeline trigger activities use a shared
-	// in-process memory, which prevents worfklows from recovering from
+	// in-process memory, which prevents workflows from recovering from
 	// interruptions.
 	// To handle this properly, we should make activities independent of
 	// the shared memory.
@@ -221,8 +174,123 @@ func main() {
 	w.Stop()
 }
 
-func initTemporalNamespace(ctx context.Context, client client.Client) {
-	logger, _ := logger.GetZapLogger(ctx)
+func newClients(ctx context.Context, logger *zap.Logger) (
+	pipelinepb.PipelinePublicServiceClient,
+	artifactpb.ArtifactPublicServiceClient,
+	artifactpb.ArtifactPrivateServiceClient,
+	*redis.Client,
+	*gorm.DB,
+	minio.Client,
+	*minio.FileGetter,
+	temporalclient.Client,
+	*repository.InfluxDB,
+	func(),
+) {
+	closeFuncs := map[string]func() error{}
+
+	// Initialize external service clients
+	pipelinePublicServiceClient, pipelinePublicClose, err := grpcclientx.NewPipelinePublicClient(client.ServiceConfig{
+		Host:       config.Config.Server.InstanceID,
+		PublicPort: config.Config.Server.PublicPort,
+		HTTPS: client.HTTPSConfig{
+			Cert: config.Config.Server.HTTPS.Cert,
+			Key:  config.Config.Server.HTTPS.Key,
+		},
+	})
+	if err != nil {
+		logger.Fatal("failed to create pipeline public service client", zap.Error(err))
+	}
+	closeFuncs["pipelinePublic"] = pipelinePublicClose
+
+	artifactPublicServiceClient, artifactPublicClose, err := grpcclientx.NewArtifactPublicClient(config.Config.ArtifactBackend)
+	if err != nil {
+		logger.Fatal("failed to create artifact public service client", zap.Error(err))
+	}
+	closeFuncs["artifactPublic"] = artifactPublicClose
+
+	artifactPrivateServiceClient, artifactPrivateClose, err := grpcclientx.NewArtifactPrivateClient(config.Config.ArtifactBackend)
+	if err != nil {
+		logger.Fatal("failed to create artifact private service client", zap.Error(err))
+	}
+	closeFuncs["artifactPrivate"] = artifactPrivateClose
+
+	// Initialize database
+	db := database.GetSharedConnection()
+	closeFuncs["database"] = func() error {
+		database.Close(db)
+		return nil
+	}
+
+	// Initialize redis client
+	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
+	closeFuncs["redis"] = redisClient.Close
+
+	// Initialize InfluxDB
+	timeseries := repository.MustNewInfluxDB(ctx)
+	closeFuncs["influxDB"] = func() error {
+		timeseries.Close()
+		return nil
+	}
+
+	// Initialize Temporal client
+	temporalTracingInterceptor, err := opentelemetry.NewTracingInterceptor(opentelemetry.TracerOptions{
+		Tracer:            otel.Tracer(serviceName + "-temporal"),
+		TextMapPropagator: otel.GetTextMapPropagator(),
+	})
+	if err != nil {
+		logger.Fatal("Unable to create temporal tracing interceptor", zap.Error(err))
+	}
+
+	temporalClientOptions, err := temporal.ClientOptions(config.Config.Temporal, logger)
+	if err != nil {
+		logger.Fatal("Unable to build Temporal client options", zap.Error(err))
+	}
+
+	temporalClientOptions.Interceptors = []interceptor.ClientInterceptor{temporalTracingInterceptor}
+	temporalClient, err := temporalclient.Dial(temporalClientOptions)
+	if err != nil {
+		logger.Fatal("Unable to create Temporal client", zap.Error(err))
+	}
+	closeFuncs["temporal"] = func() error {
+		temporalClient.Close()
+		return nil
+	}
+
+	// Initialize MinIO client
+	minIOParams := minio.ClientParams{
+		Config: config.Config.Minio,
+		Logger: logger,
+		AppInfo: minio.AppInfo{
+			Name:    serviceName,
+			Version: serviceVersion,
+		},
+	}
+	minIOFileGetter, err := minio.NewFileGetter(minIOParams)
+	if err != nil {
+		logger.Fatal("Failed to create MinIO file getter", zap.Error(err))
+	}
+
+	retentionHandler := service.NewRetentionHandler()
+	minIOParams.ExpiryRules = retentionHandler.ListExpiryRules()
+	minIOClient, err := minio.NewMinIOClientAndInitBucket(ctx, minIOParams)
+	if err != nil {
+		logger.Fatal("failed to create MinIO client", zap.Error(err))
+	}
+
+	closer := func() {
+		for conn, fn := range closeFuncs {
+			if err := fn(); err != nil {
+				logger.Error("Failed to close conn", zap.Error(err), zap.String("conn", conn))
+			}
+		}
+	}
+
+	return pipelinePublicServiceClient, artifactPublicServiceClient, artifactPrivateServiceClient,
+		redisClient, db, minIOClient, minIOFileGetter, temporalClient, timeseries, closer
+}
+
+func initTemporalNamespace(ctx context.Context, client temporalclient.Client) {
+	logger, _ := logx.GetZapLogger(ctx)
 
 	resp, err := client.WorkflowService().ListNamespaces(ctx, &workflowservice.ListNamespacesRequest{})
 	if err != nil {

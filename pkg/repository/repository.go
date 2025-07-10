@@ -23,7 +23,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/paginate"
 
@@ -1019,9 +1018,7 @@ func (r *repository) UpdateNamespaceSecretByID(ctx context.Context, ownerPermali
 	r.PinUser(ctx, "secret")
 	db := r.CheckPinnedUser(ctx, r.db, "secret")
 
-	logger, _ := logger.GetZapLogger(ctx)
 	if result := db.Select("*").Omit("UID").Model(&datamodel.Secret{}).Where("id = ? AND owner = ?", id, ownerPermalink).Updates(secret); result.Error != nil {
-		logger.Error(result.Error.Error())
 		return result.Error
 	}
 	return nil

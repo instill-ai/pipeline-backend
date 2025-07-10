@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/redis/go-redis/v9"
-	"go.opentelemetry.io/otel"
 
 	"github.com/instill-ai/pipeline-backend/cmd/init/definitionupdater"
 
@@ -16,14 +15,12 @@ import (
 )
 
 func main() {
+
 	if err := config.Init(config.ParseConfigFlag()); err != nil {
 		log.Fatal(err.Error())
 	}
+
 	ctx, cancel := context.WithCancel(context.Background())
-	ctx, span := otel.Tracer("init-tracer").Start(ctx,
-		"main",
-	)
-	defer span.End()
 	defer cancel()
 
 	db := database.GetConnection()

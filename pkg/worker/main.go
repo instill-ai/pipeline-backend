@@ -9,17 +9,17 @@ import (
 	"go.temporal.io/sdk/workflow"
 	"go.uber.org/zap"
 
+	"github.com/instill-ai/pipeline-backend/pkg/component/generic/scheduler/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/minio"
 
-	"github.com/instill-ai/pipeline-backend/pkg/component/generic/scheduler/v0"
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	logx "github.com/instill-ai/x/log"
 )
 
 // TaskQueue is the Temporal task queue name for pipeline-backend
@@ -88,7 +88,7 @@ type worker struct {
 func NewWorker(
 	workerConfig WorkerConfig,
 ) Worker {
-	logger, _ := logger.GetZapLogger(context.Background())
+	logger, _ := logx.GetZapLogger(context.Background())
 	return &worker{
 		repository:                   workerConfig.Repository,
 		redisClient:                  workerConfig.RedisClient,

@@ -31,7 +31,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
@@ -43,6 +42,7 @@ import (
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	constantx "github.com/instill-ai/x/constant"
+	logx "github.com/instill-ai/x/log"
 	resourcex "github.com/instill-ai/x/resource"
 	temporalx "github.com/instill-ai/x/temporal"
 )
@@ -1668,7 +1668,7 @@ func (s *service) triggerPipeline(
 	triggerParams triggerParams,
 	returnTraces bool) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {
 
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 
 	defer func() {
 		_ = s.memory.CleanupWorkflowMemory(context.Background(), triggerParams.userUID, triggerParams.pipelineTriggerID)
@@ -1754,8 +1754,8 @@ type triggerParams struct {
 }
 
 func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams) (*longrunningpb.Operation, error) {
-	logger, _ := logger.GetZapLogger(ctx)
-	logger = logger.With(zap.String("triggerID", params.pipelineTriggerID))
+	logger, _ := logx.GetZapLogger(ctx)
+	logger.Info("triggerAsyncPipeline", zap.String("triggerID", params.pipelineTriggerID))
 
 	workflowOptions := client.StartWorkflowOptions{
 		ID:                       params.pipelineTriggerID,
