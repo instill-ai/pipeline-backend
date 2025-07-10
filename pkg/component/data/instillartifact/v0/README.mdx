@@ -359,9 +359,10 @@ search the chunks in the catalog.
 | Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
 | Text Prompt (required) | `text-prompt` | string | The prompt string to search the chunks. |
 | Top K | `top-k` | integer | The number of top chunks to return. The range is from 1~20, and default is 5. |
-| Filename | `filename` | string | File name to filter, empty for all. |
+| File UID | `file-uid` | string | Optional filter by file. |
 | File Media Type | `file-media-type` | string | The media type to filter, empty for all. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`document`</li><li>`image`</li><li>`audio`</li><li>`video`</li></ul></details>  |
 | Content Type | `content-type` | string | The content type to filter, empty for all. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`chunk`</li><li>`summary`</li><li>`augmented`</li></ul></details>  |
+| Filename | `filename` | string | File name to filter, empty for all. This field is deprecated and the file UID should be used instead. The filename isn't unique by catalog and therefore the filter might produce unexpected results. |
 </div>
 
 
@@ -388,6 +389,7 @@ search the chunks in the catalog.
 | Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
 | Similarity | `similarity-score` | number | The similarity score of the chunk. |
 | Source File Name | `source-file-name` | string | The name of the source file. |
+| Source File UID | `source-file-uid` | string | The UID of the source file. |
 | Text Content | `text-content` | string | The text content of the chunk. |
 </div>
 </details>
@@ -433,6 +435,7 @@ Reply the questions based on the files in the catalog.
 | Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
 | Similarity | `similarity-score` | number | The similarity score of the chunk. |
 | Source File Name | `source-file-name` | string | The name of the source file. |
+| Source File UID | `source-file-uid` | string | The UID of the source file. |
 | Text Content | `text-content` | string | The text content of the chunk. |
 </div>
 </details>

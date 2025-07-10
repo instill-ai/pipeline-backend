@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/launchdarkly/go-semver"
+	"go.uber.org/zap"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
@@ -25,10 +26,31 @@ func UpdateComponentDefinitionIndex(ctx context.Context, repo repository.Reposit
 	defs := componentstore.Init(componentstore.InitParams{
 		Logger: logger,
 	}).ListDefinitions(nil, true)
-	for _, def := range defs {
 
+	// Create a map of UIDs from the current definitions for quick lookup
+	currentDefUIDs := make(map[string]bool)
+	for _, def := range defs {
+		currentDefUIDs[def.GetUid()] = true
 		if err := updateComponentDefinition(ctx, def, repo); err != nil {
 			return err
+		}
+	}
+
+	// Get all component definitions from the database
+	dbDefs, err := repo.ListAllComponentDefinitions(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get component definitions from database: %w", err)
+	}
+
+	// Delete component definitions that don't exist in the current definitions
+	for _, dbDef := range dbDefs {
+		if !currentDefUIDs[dbDef.UID.String()] {
+			logger.Info("Deleting component definition that no longer exists",
+				zap.String("uid", dbDef.UID.String()),
+				zap.String("id", dbDef.ID))
+			if err := repo.DeleteComponentDefinition(ctx, dbDef.UID); err != nil {
+				return fmt.Errorf("failed to delete component definition %s: %w", dbDef.ID, err)
+			}
 		}
 	}
 

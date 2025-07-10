@@ -72,9 +72,11 @@ type Repository interface {
 	GetPipelineByIDAdmin(ctx context.Context, id string, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 	GetPipelineReleaseByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
 
+	ListAllComponentDefinitions(context.Context) ([]*datamodel.ComponentDefinition, error)
 	ListComponentDefinitionUIDs(context.Context, ListComponentDefinitionsParams) (uids []*datamodel.ComponentDefinition, totalSize int64, err error)
 	GetDefinitionByUID(context.Context, uuid.UUID) (*datamodel.ComponentDefinition, error)
 	UpsertComponentDefinition(context.Context, *pb.ComponentDefinition) error
+	DeleteComponentDefinition(context.Context, uuid.UUID) error
 	ListIntegrations(context.Context, ListIntegrationsParams) (IntegrationList, error)
 
 	CreateNamespaceConnection(context.Context, *datamodel.Connection) (*datamodel.Connection, error)
@@ -799,6 +801,15 @@ func (r *repository) ListComponentDefinitionUIDs(_ context.Context, p ListCompon
 	return defs, totalSize, nil
 }
 
+// ListAllComponentDefinitions fetches all component definitions from the database.
+func (r *repository) ListAllComponentDefinitions(_ context.Context) ([]*datamodel.ComponentDefinition, error) {
+	var defs []*datamodel.ComponentDefinition
+	if err := r.db.Find(&defs).Error; err != nil {
+		return nil, err
+	}
+	return defs, nil
+}
+
 // GetComponentDefinition fetches the component definition datamodel given its
 // UID. Note that the repository only stores an index of the component
 // definition fields that the clients need to filter by and that the source of
@@ -825,6 +836,15 @@ func (r *repository) UpsertComponentDefinition(_ context.Context, cd *pb.Compone
 		return result.Error
 	}
 
+	return nil
+}
+
+// DeleteComponentDefinition deletes a component definition from the database by its UID.
+func (r *repository) DeleteComponentDefinition(_ context.Context, uid uuid.UUID) error {
+	result := r.db.Where("uid = ?", uid.String()).Delete(&datamodel.ComponentDefinition{})
+	if result.Error != nil {
+		return result.Error
+	}
 	return nil
 }
 
