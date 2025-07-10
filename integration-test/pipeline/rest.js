@@ -46,8 +46,8 @@ export function setup() {
     "timeout": "600s",
   }
 
-  var resp = http.request("GET", `${constant.mgmtPublicHost}/v1beta/user`, {}, {headers: {"Authorization": `Bearer ${loginResp.json().accessToken}`}})
-  return {header: header, expectedOwner: resp.json().user}
+  var resp = http.request("GET", `${constant.mgmtPublicHost}/v1beta/user`, {}, { headers: { "Authorization": `Bearer ${loginResp.json().accessToken}` } })
+  return { header: header, expectedOwner: resp.json().user }
 }
 
 export default function (data) {

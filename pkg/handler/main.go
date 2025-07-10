@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"go.opentelemetry.io/otel"
-	"go.uber.org/zap"
-
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
@@ -18,13 +15,10 @@ import (
 
 // TODO: in the public_handler, we should convert all id to uuid when calling service
 
-var tracer = otel.Tracer("pipeline-backend.public-handler.tracer")
-
 // PublicHandler handles public API
 type PublicHandler struct {
 	pipelinepb.UnimplementedPipelinePublicServiceServer
 	service service.Service
-	log     *zap.Logger
 
 	ready bool
 }
@@ -40,10 +34,9 @@ type TriggerPipelineReleaseRequestInterface interface {
 }
 
 // NewPublicHandler initiates a handler instance
-func NewPublicHandler(s service.Service, log *zap.Logger) *PublicHandler {
+func NewPublicHandler(s service.Service) *PublicHandler {
 	return &PublicHandler{
 		service: s,
-		log:     log,
 	}
 }
 
@@ -85,14 +78,12 @@ func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinepb.Readiness
 type PrivateHandler struct {
 	pipelinepb.UnimplementedPipelinePrivateServiceServer
 	service service.Service
-	log     *zap.Logger
 }
 
 // NewPrivateHandler initiates a handler instance
-func NewPrivateHandler(s service.Service, log *zap.Logger) *PrivateHandler {
+func NewPrivateHandler(s service.Service) *PrivateHandler {
 	return &PrivateHandler{
 		service: s,
-		log:     log,
 	}
 }
 
@@ -106,6 +97,7 @@ func (h *PrivateHandler) SetService(s service.Service) {
 	h.service = s
 }
 
+// CheckName checks if a name is available.
 func (h *PublicHandler) CheckName(ctx context.Context, req *pipelinepb.CheckNameRequest) (resp *pipelinepb.CheckNameResponse, err error) {
 	name := req.GetName()
 

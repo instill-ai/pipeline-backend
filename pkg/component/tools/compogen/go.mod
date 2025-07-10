@@ -1,6 +1,6 @@
 module github.com/instill-ai/pipeline-backend/pkg/component/tools/compogen
 
-go 1.24.2
+go 1.24.4
 
 require (
 	github.com/frankban/quicktest v1.14.6

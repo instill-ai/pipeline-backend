@@ -9,7 +9,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	logx "github.com/instill-ai/x/log"
 )
 
 // RedisPubSub is a Redis-based event publisher and subscriber.
@@ -36,8 +36,8 @@ func (r *RedisPubSub) PublishEvent(ctx context.Context, topic string, ev Event) 
 
 // Subscribe creates a subscription on a Redis channel.
 func (r *RedisPubSub) Subscribe(ctx context.Context, topic string) Subscription {
-	log, _ := logger.GetZapLogger(ctx)
-	log = log.With(zap.String("topic", topic))
+	log, _ := logx.GetZapLogger(ctx)
+	log.Info("Subscribe", zap.String("topic", topic))
 
 	return &redisSubscription{
 		topic:  topic,

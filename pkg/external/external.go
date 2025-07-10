@@ -2,7 +2,6 @@ package external
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"mime"
@@ -13,175 +12,14 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-resty/resty/v2"
 	"github.com/gofrs/uuid"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/x/minio"
 	"github.com/instill-ai/x/resource"
 
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	usagepb "github.com/instill-ai/protogen-go/core/usage/v1beta"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
-// InitPipelinePublicServiceClient initialises a PipelineServiceClient instance
-func InitPipelinePublicServiceClient(ctx context.Context) (pipelinepb.PipelinePublicServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger(ctx)
-
-	var clientDialOpts grpc.DialOption
-	var creds credentials.TransportCredentials
-	var err error
-	if config.Config.Server.HTTPS.Cert != "" && config.Config.Server.HTTPS.Key != "" {
-		creds, err = credentials.NewServerTLSFromFile(config.Config.Server.HTTPS.Cert, config.Config.Server.HTTPS.Key)
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-		clientDialOpts = grpc.WithTransportCredentials(creds)
-	} else {
-		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-
-	// We need to specify the host because several parts of the code (e.g.
-	// worker) might be deployed in a separate container.
-	clientConn, err := grpc.NewClient(
-		fmt.Sprintf("%v:%v", config.Config.Server.InstanceID, config.Config.Server.PublicPort),
-		clientDialOpts,
-		grpc.WithDefaultCallOptions(
-			grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize),
-			grpc.MaxCallSendMsgSize(constant.MaxPayloadSize),
-		),
-	)
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, nil
-	}
-
-	return pipelinepb.NewPipelinePublicServiceClient(clientConn), clientConn
-}
-
-// InitMgmtPublicServiceClient initialises a MgmtPublicServiceClient instance
-func InitMgmtPublicServiceClient(ctx context.Context) (mgmtpb.MgmtPublicServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger(ctx)
-
-	var clientDialOpts grpc.DialOption
-	if config.Config.MgmtBackend.HTTPS.Cert != "" && config.Config.MgmtBackend.HTTPS.Key != "" {
-		creds, err := credentials.NewServerTLSFromFile(config.Config.MgmtBackend.HTTPS.Cert, config.Config.MgmtBackend.HTTPS.Key)
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-		clientDialOpts = grpc.WithTransportCredentials(creds)
-	} else {
-		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-
-	clientConn, err := grpc.NewClient(fmt.Sprintf("%v:%v", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, nil
-	}
-
-	return mgmtpb.NewMgmtPublicServiceClient(clientConn), clientConn
-}
-
-// InitMgmtPrivateServiceClient initialises a MgmtPrivateServiceClient instance
-func InitMgmtPrivateServiceClient(ctx context.Context) (mgmtpb.MgmtPrivateServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger(ctx)
-
-	var clientDialOpts grpc.DialOption
-	if config.Config.MgmtBackend.HTTPS.Cert != "" && config.Config.MgmtBackend.HTTPS.Key != "" {
-		creds, err := credentials.NewServerTLSFromFile(config.Config.MgmtBackend.HTTPS.Cert, config.Config.MgmtBackend.HTTPS.Key)
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-		clientDialOpts = grpc.WithTransportCredentials(creds)
-	} else {
-		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-
-	clientConn, err := grpc.NewClient(fmt.Sprintf("%v:%v", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PrivatePort), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, nil
-	}
-
-	return mgmtpb.NewMgmtPrivateServiceClient(clientConn), clientConn
-}
-
-// InitUsageServiceClient initialises a UsageServiceClient instance (no mTLS)
-func InitUsageServiceClient(ctx context.Context) (usagepb.UsageServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger(ctx)
-
-	var clientDialOpts grpc.DialOption
-	var err error
-	if config.Config.Server.Usage.TLSEnabled {
-		tlsConfig := &tls.Config{MinVersion: tls.VersionTLS12}
-		clientDialOpts = grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig))
-	} else {
-		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-
-	clientConn, err := grpc.NewClient(fmt.Sprintf("%v:%v", config.Config.Server.Usage.Host, config.Config.Server.Usage.Port), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, nil
-	}
-
-	return usagepb.NewUsageServiceClient(clientConn), clientConn
-}
-
-// InitArtifactPublicServiceClient initialises a ArtifactPublicServiceClient instance
-func InitArtifactPublicServiceClient(ctx context.Context) (artifactpb.ArtifactPublicServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger(ctx)
-
-	var clientDialOpts grpc.DialOption
-	if config.Config.ArtifactBackend.HTTPS.Cert != "" && config.Config.ArtifactBackend.HTTPS.Key != "" {
-		creds, err := credentials.NewServerTLSFromFile(config.Config.ArtifactBackend.HTTPS.Cert, config.Config.ArtifactBackend.HTTPS.Key)
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-		clientDialOpts = grpc.WithTransportCredentials(creds)
-	} else {
-		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-
-	clientConn, err := grpc.NewClient(fmt.Sprintf("%v:%v", config.Config.ArtifactBackend.Host, config.Config.ArtifactBackend.PublicPort), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, nil
-	}
-
-	return artifactpb.NewArtifactPublicServiceClient(clientConn), clientConn
-}
-
-// InitArtifactPrivateServiceClient initialises a ArtifactPrivateServiceClient instance
-func InitArtifactPrivateServiceClient(ctx context.Context) (artifactpb.ArtifactPrivateServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger(ctx)
-
-	var clientDialOpts grpc.DialOption
-	if config.Config.ArtifactBackend.HTTPS.Cert != "" && config.Config.ArtifactBackend.HTTPS.Key != "" {
-		creds, err := credentials.NewServerTLSFromFile(config.Config.ArtifactBackend.HTTPS.Cert, config.Config.ArtifactBackend.HTTPS.Key)
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-		clientDialOpts = grpc.WithTransportCredentials(creds)
-	} else {
-		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-
-	clientConn, err := grpc.NewClient(fmt.Sprintf("%v:%v", config.Config.ArtifactBackend.Host, config.Config.ArtifactBackend.PrivatePort), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, nil
-	}
-
-	return artifactpb.NewArtifactPrivateServiceClient(clientConn), clientConn
-}
-
+// BinaryFetcher is an interface that fetches binary data from a URL.
 type BinaryFetcher interface {
 	FetchFromURL(ctx context.Context, url string) (body []byte, contentType string, filename string, err error)
 }
@@ -190,12 +28,14 @@ type binaryFetcher struct {
 	httpClient *resty.Client
 }
 
+// NewBinaryFetcher creates a new BinaryFetcher instance.
 func NewBinaryFetcher() BinaryFetcher {
 	return &binaryFetcher{
 		httpClient: resty.New().SetRetryCount(3),
 	}
 }
 
+// FetchFromURL fetches binary data from a URL.
 func (f *binaryFetcher) FetchFromURL(ctx context.Context, url string) (body []byte, contentType string, filename string, err error) {
 
 	if strings.HasPrefix(url, "data:") {
@@ -222,32 +62,6 @@ func (f *binaryFetcher) FetchFromURL(ctx context.Context, url string) (body []by
 	return
 }
 
-func (f *binaryFetcher) convertDataURIToBytes(url string) (b []byte, contentType string, filename string, err error) {
-	slices := strings.Split(url, ",")
-	if len(slices) == 1 {
-		b, err = base64.StdEncoding.DecodeString(url)
-		if err != nil {
-			return
-		}
-		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
-	} else {
-		mime := strings.Split(slices[0], ":")
-		tags := ""
-		contentType, tags, _ = strings.Cut(mime[1], ";")
-		b, err = base64.StdEncoding.DecodeString(slices[1])
-		if err != nil {
-			return
-		}
-		for _, tag := range strings.Split(tags, ";") {
-			key, value, _ := strings.Cut(tag, "=")
-			if key == "filename" || key == "fileName" || key == "file-name" {
-				filename = value
-			}
-		}
-	}
-	return b, contentType, filename, nil
-}
-
 // Pattern matches: https://{domain}/v1alpha/namespaces/{namespace}/blob-urls/{uid}
 // This is a deprecated pattern, we should use the presigned pattern instead.
 var minioURLPattern = regexp.MustCompile(`https?://[^/]+/v1alpha/namespaces/[^/]+/blob-urls/([^/]+)$`)
@@ -266,6 +80,7 @@ type artifactBinaryFetcher struct {
 	fileGetter     *minio.FileGetter
 }
 
+// NewArtifactBinaryFetcher creates a new ArtifactBinaryFetcher instance.
 func NewArtifactBinaryFetcher(ac artifactpb.ArtifactPrivateServiceClient, fg *minio.FileGetter) BinaryFetcher {
 	return &artifactBinaryFetcher{
 		binaryFetcher: &binaryFetcher{
@@ -351,4 +166,30 @@ func (f *artifactBinaryFetcher) fetchFromBlobStorage(ctx context.Context, urlUID
 	}
 	contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
 	return b, contentType, objectRes.Object.Name, nil
+}
+
+func (f *binaryFetcher) convertDataURIToBytes(url string) (b []byte, contentType string, filename string, err error) {
+	slices := strings.Split(url, ",")
+	if len(slices) == 1 {
+		b, err = base64.StdEncoding.DecodeString(url)
+		if err != nil {
+			return
+		}
+		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
+	} else {
+		mime := strings.Split(slices[0], ":")
+		tags := ""
+		contentType, tags, _ = strings.Cut(mime[1], ";")
+		b, err = base64.StdEncoding.DecodeString(slices[1])
+		if err != nil {
+			return
+		}
+		for _, tag := range strings.Split(tags, ";") {
+			key, value, _ := strings.Cut(tag, "=")
+			if key == "filename" || key == "fileName" || key == "file-name" {
+				filename = value
+			}
+		}
+	}
+	return b, contentType, filename, nil
 }

@@ -14,7 +14,6 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
@@ -24,6 +23,7 @@ import (
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	logx "github.com/instill-ai/x/log"
 )
 
 // Service interface
@@ -133,7 +133,7 @@ func NewService(
 	artifactPublicServiceClient artifactpb.ArtifactPublicServiceClient,
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient,
 ) Service {
-	zapLogger, _ := logger.GetZapLogger(context.Background())
+	zapLogger, _ := logx.GetZapLogger(context.Background())
 
 	return &service{
 		repository:                   repository,

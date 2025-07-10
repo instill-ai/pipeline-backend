@@ -14,6 +14,7 @@ import (
 	"github.com/knadh/koanf/providers/file"
 	"github.com/redis/go-redis/v9"
 
+	"github.com/instill-ai/x/client"
 	"github.com/instill-ai/x/minio"
 	"github.com/instill-ai/x/temporal"
 )
@@ -37,12 +38,12 @@ type AppConfig struct {
 	Temporal        temporal.ClientConfig `koanf:"temporal"`
 	Cache           CacheConfig           `koanf:"cache"`
 	Log             LogConfig             `koanf:"log"`
-	MgmtBackend     MgmtBackendConfig     `koanf:"mgmtbackend"`
-	ModelBackend    ModelBackendConfig    `koanf:"modelbackend"`
+	MgmtBackend     client.ServiceConfig  `koanf:"mgmtbackend"`
+	ModelBackend    client.ServiceConfig  `koanf:"modelbackend"`
 	OpenFGA         OpenFGAConfig         `koanf:"openfga"`
-	ArtifactBackend ArtifactBackendConfig `koanf:"artifactbackend"`
+	ArtifactBackend client.ServiceConfig  `koanf:"artifactbackend"`
 	Minio           minio.Config          `koanf:"minio"`
-	AgentBackend    AgentBackendConfig    `koanf:"agentbackend"`
+	AgentBackend    client.ServiceConfig  `koanf:"agentbackend"`
 	APIGateway      APIGatewayConfig      `koanf:"apigateway"`
 }
 
@@ -154,46 +155,6 @@ type LogConfig struct {
 type CacheConfig struct {
 	Redis struct {
 		RedisOptions redis.Options `koanf:"redisoptions"`
-	}
-}
-
-// MgmtBackendConfig related to mgmt-backend
-type MgmtBackendConfig struct {
-	Host        string `koanf:"host"`
-	PublicPort  int    `koanf:"publicport"`
-	PrivatePort int    `koanf:"privateport"`
-	HTTPS       struct {
-		Cert string `koanf:"cert"`
-		Key  string `koanf:"key"`
-	}
-}
-
-// ModelBackendConfig related to mgmt-backend
-type ModelBackendConfig struct {
-	Host       string `koanf:"host"`
-	PublicPort int    `koanf:"publicport"`
-	HTTPS      struct {
-		Cert string `koanf:"cert"`
-		Key  string `koanf:"key"`
-	}
-}
-
-type ArtifactBackendConfig struct {
-	Host        string `koanf:"host"`
-	PublicPort  int    `koanf:"publicport"`
-	PrivatePort int    `koanf:"privateport"`
-	HTTPS       struct {
-		Cert string `koanf:"cert"`
-		Key  string `koanf:"key"`
-	}
-}
-
-type AgentBackendConfig struct {
-	Host       string `koanf:"host"`
-	PublicPort int    `koanf:"publicport"`
-	HTTPS      struct {
-		Cert string `koanf:"cert"`
-		Key  string `koanf:"key"`
 	}
 }
 

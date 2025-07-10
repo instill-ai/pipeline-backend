@@ -11,7 +11,8 @@ import (
 	client "github.com/influxdata/influxdb-client-go/v2"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
+
+	logx "github.com/instill-ai/x/log"
 )
 
 // InfluxDB reads and writes time series data from InfluxDB.
@@ -22,7 +23,7 @@ type InfluxDB struct {
 
 // MustNewInfluxDB returns an initialized InfluxDB repository.
 func MustNewInfluxDB(ctx context.Context) *InfluxDB {
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 
 	opts := client.DefaultOptions()
 	if config.Config.Server.Debug {

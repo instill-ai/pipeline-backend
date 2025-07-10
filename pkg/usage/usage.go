@@ -11,7 +11,6 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
@@ -19,6 +18,7 @@ import (
 	usagepb "github.com/instill-ai/protogen-go/core/usage/v1beta"
 	usageclient "github.com/instill-ai/usage-client/client"
 	usagereporter "github.com/instill-ai/usage-client/reporter"
+	logx "github.com/instill-ai/x/log"
 )
 
 // Usage interface
@@ -38,7 +38,7 @@ type usage struct {
 
 // NewUsage initiates a usage instance
 func NewUsage(ctx context.Context, r repository.Repository, m mgmtpb.MgmtPrivateServiceClient, rc *redis.Client, usc usagepb.UsageServiceClient, serviceVersion string) Usage {
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 
 	var defaultOwnerUID string
 	if resp, err := m.GetUserAdmin(ctx, &mgmtpb.GetUserAdminRequest{UserId: constant.DefaultUserID}); err == nil {
@@ -64,7 +64,7 @@ func NewUsage(ctx context.Context, r repository.Repository, m mgmtpb.MgmtPrivate
 func (u *usage) RetrieveUsageData() any {
 
 	ctx := context.Background()
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 
 	logger.Debug("Retrieve usage data...")
 
@@ -213,7 +213,7 @@ func (u *usage) StartReporter(ctx context.Context) {
 		return
 	}
 
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 
 	var defaultOwnerUID string
 	if resp, err := u.mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtpb.GetUserAdminRequest{UserId: constant.DefaultUserID}); err == nil {
@@ -237,7 +237,7 @@ func (u *usage) TriggerSingleReporter(ctx context.Context) {
 		return
 	}
 
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 
 	var defaultOwnerUID string
 	if resp, err := u.mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtpb.GetUserAdminRequest{UserId: constant.DefaultUserID}); err == nil {

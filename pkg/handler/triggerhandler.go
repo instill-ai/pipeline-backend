@@ -23,11 +23,11 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/pubsub"
 
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	logx "github.com/instill-ai/x/log"
 )
 
 // StreamingHandler intercepts pipeline trigger requests to stream the
@@ -812,8 +812,8 @@ func newStreamingHandler(writer http.ResponseWriter, sub pubsub.EventSubscriber)
 // TODO streamingHandler's methods should be merged into StreamingHandler as
 // unexported methods.
 func (sh *streamingHandler) handle(ctx context.Context, triggerID string) {
-	logger, _ := logger.GetZapLogger(ctx)
-	logger = logger.With(zap.String("triggerID", triggerID))
+	logger, _ := logx.GetZapLogger(ctx)
+	logger.Info("StreamingHandler", zap.String("triggerID", triggerID))
 
 	sh.writer.Header().Set("Content-Type", "text/event-stream")
 	sh.writer.Header().Set("Cache-Control", "no-cache")

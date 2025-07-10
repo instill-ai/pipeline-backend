@@ -11,8 +11,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"go.einride.tech/aip/filtering"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 	"go.uber.org/zap"
@@ -26,7 +24,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/pubsub"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
@@ -40,8 +37,10 @@ import (
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	logx "github.com/instill-ai/x/log"
 )
 
+// TriggerPipelineWorkflowParam contains the parameters for TriggerPipelineWorkflow
 type TriggerPipelineWorkflowParam struct {
 	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 	Recipe          *datamodel.Recipe
@@ -55,12 +54,14 @@ type TriggerPipelineWorkflowParam struct {
 	ParentOriginalIdx *int
 }
 
+// SchedulePipelineLoaderActivityParam contains the parameters for SchedulePipelineLoaderActivity
 type SchedulePipelineLoaderActivityParam struct {
 	Namespace          resource.Namespace
 	PipelineUID        uuid.UUID
 	PipelineReleaseUID uuid.UUID
 }
 
+// SchedulePipelineLoaderActivityResult contains the result of SchedulePipelineLoaderActivity
 type SchedulePipelineLoaderActivityResult struct {
 	ScheduleID string
 	Pipeline   *datamodel.Pipeline
@@ -106,33 +107,26 @@ type PostIteratorActivityParam struct {
 	SystemVariables       recipe.SystemVariables
 }
 
-// InitComponentsActivityParam ...
+// InitComponentsActivityParam contains the parameters for InitComponentsActivity
 type InitComponentsActivityParam struct {
 	WorkflowID      string
 	SystemVariables recipe.SystemVariables
 	Recipe          *datamodel.Recipe
 }
 
+// UpdatePipelineRunActivityParam contains the parameters for UpdatePipelineRunActivity
 type UpdatePipelineRunActivityParam struct {
 	PipelineTriggerID string
 	PipelineRun       *datamodel.PipelineRun
 }
 
+// UpsertComponentRunActivityParam contains the parameters for UpsertComponentRunActivity
 type UpsertComponentRunActivityParam struct {
 	ComponentRun *datamodel.ComponentRun
 }
 
-var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
-
-func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *scheduler.SchedulePipelineWorkflowParam) error {
-	eventName := "SchedulePipelineWorkflow"
-	sCtx, span := tracer.Start(
-		context.Background(),
-		eventName,
-		trace.WithSpanKind(trace.SpanKindServer),
-	)
-	defer span.End()
-
+// SchedulePipelineWorkflow schedules a pipeline workflow
+func (w *worker) SchedulePipelineWorkflow(ctx workflow.Context, param *scheduler.SchedulePipelineWorkflowParam) error {
 	msg := scheduleEventMessage{
 		UID:         param.UID.String(),
 		TriggeredAt: time.Now().Format(time.RFC3339),
@@ -147,7 +141,7 @@ func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *schedul
 		return err
 	}
 
-	_, err = w.pipelinePublicServiceClient.DispatchPipelineWebhookEvent(sCtx, &pb.DispatchPipelineWebhookEventRequest{
+	_, err = w.pipelinePublicServiceClient.DispatchPipelineWebhookEvent(context.Background(), &pb.DispatchPipelineWebhookEventRequest{
 		WebhookType: "scheduler",
 		Message:     structPayload,
 	})
@@ -176,22 +170,9 @@ func (w *worker) CleanupMemoryWorkflow(ctx workflow.Context, userUID uuid.UUID, 
 // The workflow is only responsible for orchestrating the DAG, not processing or reading/writing the data.
 // All data processing should be done in activities.
 func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error {
-	eventName := "TriggerPipelineWorkflow"
-	startTime := time.Now()
-	sCtx, span := tracer.Start(
-		context.Background(),
-		eventName,
-		trace.WithSpanKind(trace.SpanKindServer),
-	)
-	defer span.End()
 
-	logger, _ := logger.GetZapLogger(sCtx)
-	logger = logger.With(
-		zap.String("pipelineUID", param.SystemVariables.PipelineUID.String()),
-		zap.String("pipelineTriggerID", param.SystemVariables.PipelineTriggerID),
-	)
-
-	logger.Info("TriggerPipelineWorkflow started")
+	logger, _ := logx.GetZapLogger(context.Background())
+	logger.Info("TriggerPipelineWorkflow started", zap.String("pipelineUID", param.SystemVariables.PipelineUID.String()), zap.String("pipelineTriggerID", param.SystemVariables.PipelineTriggerID))
 
 	// Options for activity worker
 	ao := workflow.ActivityOptions{
@@ -227,7 +208,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	// TODO [INS-7456]: Remove the in-memory dependency so activities can be
 	// executed by different processes. This can be achieved by loading and
 	// committing the memory in every activity, or by removing the data blobs
-	// from the memory and hodling only a reference that can be used to pull
+	// from the memory and holding only a reference that can be used to pull
 	// the data.
 	loadWFMParam := LoadWorkflowMemoryActivityParam{
 		WorkflowID: workflowID,
@@ -466,6 +447,7 @@ groupLoop:
 		}
 	}
 
+	startTime := time.Now()
 	duration := time.Since(startTime)
 	if isParentPipeline {
 		if err := workflow.ExecuteActivity(ctx, w.OutputActivity, &ComponentActivityParam{
@@ -500,11 +482,10 @@ groupLoop:
 		dataPoint.Status = mgmtpb.Status_STATUS_COMPLETED
 
 		if len(errs) > 0 {
-			span.SetStatus(1, "workflow error")
 			dataPoint.Status = mgmtpb.Status_STATUS_ERRORED
 		}
 
-		if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
+		if err := w.writeNewDataPoint(context.Background(), dataPoint); err != nil {
 			logger.Warn(err.Error())
 		}
 	}
@@ -543,9 +524,8 @@ groupLoop:
 }
 
 func (w *worker) UpdatePipelineRunActivity(ctx context.Context, param *UpdatePipelineRunActivityParam) error {
-	logger, _ := logger.GetZapLogger(ctx)
-	logger = logger.With(zap.String("PipelineTriggerUID", param.PipelineTriggerID))
-	logger.Info("UpdatePipelineRunActivity started")
+	logger, _ := logx.GetZapLogger(ctx)
+	logger.Info("UpdatePipelineRunActivity started", zap.String("PipelineTriggerUID", param.PipelineTriggerID))
 
 	err := w.repository.UpdatePipelineRun(ctx, param.PipelineTriggerID, param.PipelineRun)
 	if err != nil {
@@ -558,9 +538,9 @@ func (w *worker) UpdatePipelineRunActivity(ctx context.Context, param *UpdatePip
 }
 
 func (w *worker) UpsertComponentRunActivity(ctx context.Context, param *UpsertComponentRunActivityParam) error {
-	logger, _ := logger.GetZapLogger(ctx)
-	logger = logger.With(zap.String("PipelineTriggerUID", param.ComponentRun.PipelineTriggerUID.String()), zap.String("ComponentID", param.ComponentRun.ComponentID))
-	logger.Info("UpsertComponentRunActivity started")
+	logger, _ := logx.GetZapLogger(ctx)
+	logger.Info("UpsertComponentRunActivity started", zap.String("PipelineTriggerUID", param.ComponentRun.PipelineTriggerUID.String()), zap.String("ComponentID", param.ComponentRun.ComponentID))
+
 	err := w.repository.UpsertComponentRun(ctx, param.ComponentRun)
 	if err != nil {
 		logger.Error("failed to log component run start", zap.Error(err))
@@ -570,7 +550,7 @@ func (w *worker) UpsertComponentRunActivity(ctx context.Context, param *UpsertCo
 }
 
 func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) error {
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 	logger.Info("ComponentActivity started")
 
 	startTime := time.Now()
@@ -688,7 +668,7 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 }
 
 func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityParam) error {
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 	logger.Info("OutputActivity started")
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
@@ -808,7 +788,7 @@ type iteratorComponentData struct {
 // iteration. In order to execute iterator components concurrently, each
 // element in the iterator triggers a TriggerPipelineWorkflow.
 func (w *worker) PreIteratorActivity(ctx context.Context, param PreIteratorActivityParam) (*ChildPipelineTriggerParams, error) {
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 	logger.Info("PreIteratorActivity started")
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
@@ -1087,7 +1067,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param PreIteratorActiv
 
 // PostIteratorActivity merges the trigger memory from each iteration.
 func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error {
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 	logger.Info("PostIteratorActivity started")
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
@@ -1319,7 +1299,7 @@ func (w *worker) mergeInputConnections(
 //   - Initializes the pipeline template, wiring the pipeline and component input
 //     and outputs.
 func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponentsActivityParam) error {
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 	logger.Info("InitComponentsActivity started")
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
@@ -1430,7 +1410,7 @@ func (w *worker) InitComponentsActivity(ctx context.Context, param *InitComponen
 }
 
 func (w *worker) SendStartedEventActivity(ctx context.Context, workflowID string) error {
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 	logger.Info("SendStartedEventActivity started")
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, workflowID)
@@ -1470,7 +1450,7 @@ func (w *worker) SendStartedEventActivity(ctx context.Context, workflowID string
 // SendCompletedEventActivity sends a pipeline update event with the pipeline
 // completion.
 func (w *worker) SendCompletedEventActivity(ctx context.Context, workflowID string) error {
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 	logger.Info("SendCompletedEventActivity started")
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, workflowID)
@@ -1529,7 +1509,7 @@ func (w *worker) SendCompletedEventActivity(ctx context.Context, workflowID stri
 // CommitWorkflowMemoryActivity stores the workflow memory data in an external
 // datastore.
 func (w *worker) CommitWorkflowMemoryActivity(ctx context.Context, workflowID string, sysVars recipe.SystemVariables) error {
-	logger, _ := logger.GetZapLogger(ctx)
+	logger, _ := logx.GetZapLogger(ctx)
 	logger.Info("CommitWorkflowMemoryActivity started")
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, workflowID)
@@ -1546,15 +1526,14 @@ func (w *worker) CommitWorkflowMemoryActivity(ctx context.Context, workflowID st
 }
 
 func (w *worker) IncreasePipelineTriggerCountActivity(ctx context.Context, sv recipe.SystemVariables) error {
-	l, _ := logger.GetZapLogger(ctx)
-	l = l.With(zap.Reflect("systemVariables", sv))
-	l.Info("IncreasePipelineTriggerCountActivity started")
+	logger, _ := logx.GetZapLogger(ctx)
+	logger.Info("IncreasePipelineTriggerCountActivity started", zap.Reflect("systemVariables", sv))
 
 	if err := w.repository.AddPipelineRuns(ctx, sv.PipelineUID); err != nil {
-		l.With(zap.Error(err)).Error("Couldn't update number of pipeline runs.")
+		logger.Error("Couldn't update number of pipeline runs.", zap.Error(err))
 	}
 
-	l.Info("IncreasePipelineTriggerCountActivity completed")
+	logger.Info("IncreasePipelineTriggerCountActivity completed")
 	return nil
 }
 
