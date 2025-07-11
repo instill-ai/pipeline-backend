@@ -136,7 +136,7 @@ integration-test: ## Run integration test
 
 .PHONY: gen-mock
 gen-mock: ## Generate mock files
-	@go install github.com/gojuno/minimock/v3/cmd/minimock@v3.4.0
+	@go install github.com/gojuno/minimock/v3/cmd/minimock@v3.4.5
 	@go generate -run minimock ./...
 
 .PHONY: gen-component-doc
