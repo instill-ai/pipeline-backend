@@ -17,7 +17,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 const (
@@ -177,7 +177,7 @@ type Column struct {
 	Type string
 }
 
-func (c *component) GetDefinition(sysVars map[string]any, compConfig *base.ComponentConfig) (*pb.ComponentDefinition, error) {
+func (c *component) GetDefinition(sysVars map[string]any, compConfig *base.ComponentConfig) (*pipelinepb.ComponentDefinition, error) {
 
 	ctx := context.Background()
 	oriDef, err := c.Component.GetDefinition(nil, nil)
@@ -189,7 +189,7 @@ func (c *component) GetDefinition(sysVars map[string]any, compConfig *base.Compo
 		return oriDef, nil
 	}
 
-	def := proto.Clone(oriDef).(*pb.ComponentDefinition)
+	def := proto.Clone(oriDef).(*pipelinepb.ComponentDefinition)
 	client, err := NewClient(compConfig.Setup["json-key"].(string), compConfig.Setup["project-id"].(string))
 	if err != nil || client == nil {
 		return nil, fmt.Errorf("error creating BigQuery client: %v", err)

@@ -14,7 +14,6 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/openai/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/x/errmsg"
 )
 
 var (
@@ -59,9 +58,9 @@ func TestOpenAITextGeneration(t *testing.T) {
 	// validating the format of error messages can also be useful to detect
 	// breaking changes in the API.
 	c.Check(err, qt.ErrorMatches, "unsuccessful HTTP response")
-	c.Check(errmsg.Message(err), qt.Matches, ".*Incorrect API key provided.*")
+	c.Check(errorsx.Message(err), qt.Matches, ".*Incorrect API key provided.*")
 
 	c.Logf("op: %v", op)
 	c.Logf("err: %v", err)
-	c.Log("end-user err:", errmsg.MessageOrErr(err))
+	c.Log("end-user err:", errorsxMessageOrErr(err))
 }

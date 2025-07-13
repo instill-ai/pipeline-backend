@@ -13,11 +13,10 @@ import (
 	"github.com/frankban/quicktest"
 	"github.com/gojuno/minimock/v3"
 
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
-
-	artifactPB "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
-	timestampPB "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func Test_uploadFile(t *testing.T) {
@@ -78,18 +77,18 @@ func Test_uploadFile(t *testing.T) {
 				clientMock.ListCatalogsMock.
 					Times(1).
 					Expect(minimock.AnyContext,
-						&artifactPB.ListCatalogsRequest{
+						&artifactpb.ListCatalogsRequest{
 							NamespaceId: "fakeNs",
 						},
-					).Return(&artifactPB.ListCatalogsResponse{
-					Catalogs: []*artifactPB.Catalog{},
+					).Return(&artifactpb.ListCatalogsResponse{
+					Catalogs: []*artifactpb.Catalog{},
 				}, nil)
 
 				clientMock.
 					CreateCatalogMock.
 					Times(1).
 					Expect(minimock.AnyContext,
-						&artifactPB.CreateCatalogRequest{
+						&artifactpb.CreateCatalogRequest{
 							NamespaceId: "fakeNs",
 							Name:        "fakeID",
 						}).
@@ -97,27 +96,27 @@ func Test_uploadFile(t *testing.T) {
 			}
 			clientMock.UploadCatalogFileMock.Times(1).
 				Expect(minimock.AnyContext,
-					&artifactPB.UploadCatalogFileRequest{
+					&artifactpb.UploadCatalogFileRequest{
 						NamespaceId: "fakeNs",
 						CatalogId:   "fakeID",
-						File: &artifactPB.File{
+						File: &artifactpb.File{
 							Name:    tc.fileName,
-							Type:    artifactPB.FileType_FILE_TYPE_PDF,
+							Type:    artifactpb.FileType_FILE_TYPE_PDF,
 							Content: base64.StdEncoding.EncodeToString(fileContent),
 						},
 					},
 				).
-				Return(&artifactPB.UploadCatalogFileResponse{
-					File: &artifactPB.File{
+				Return(&artifactpb.UploadCatalogFileResponse{
+					File: &artifactpb.File{
 						FileUid: "fakeFileID",
 						Name:    tc.fileName,
-						Type:    artifactPB.FileType_FILE_TYPE_PDF,
+						Type:    artifactpb.FileType_FILE_TYPE_PDF,
 						Size:    1,
-						CreateTime: &timestampPB.Timestamp{
+						CreateTime: &timestamppb.Timestamp{
 							Seconds: 1,
 							Nanos:   1,
 						},
-						UpdateTime: &timestampPB.Timestamp{
+						UpdateTime: &timestamppb.Timestamp{
 							Seconds: 1,
 							Nanos:   1,
 						},
@@ -125,7 +124,7 @@ func Test_uploadFile(t *testing.T) {
 				}, nil)
 
 			clientMock.ProcessCatalogFilesMock.
-				Expect(minimock.AnyContext, &artifactPB.ProcessCatalogFilesRequest{
+				Expect(minimock.AnyContext, &artifactpb.ProcessCatalogFilesRequest{
 					FileUids: []string{"fakeFileID"},
 				}).
 				Times(1).
@@ -227,7 +226,7 @@ func Test_uploadFiles(t *testing.T) {
 					CreateCatalogMock.
 					Times(1).
 					Expect(minimock.AnyContext,
-						&artifactPB.CreateCatalogRequest{
+						&artifactpb.CreateCatalogRequest{
 							NamespaceId: "fakeNs",
 							Name:        "fakeID",
 						}).
@@ -239,27 +238,27 @@ func Test_uploadFiles(t *testing.T) {
 			for i, fileName := range tc.fileNames {
 				clientMock.UploadCatalogFileMock.
 					When(minimock.AnyContext,
-						&artifactPB.UploadCatalogFileRequest{
+						&artifactpb.UploadCatalogFileRequest{
 							NamespaceId: "fakeNs",
 							CatalogId:   "fakeID",
-							File: &artifactPB.File{
+							File: &artifactpb.File{
 								Name:    fileName,
-								Type:    artifactPB.FileType_FILE_TYPE_PDF,
+								Type:    artifactpb.FileType_FILE_TYPE_PDF,
 								Content: base64.StdEncoding.EncodeToString(fileContents[i]),
 							},
 						},
 					).
-					Then(&artifactPB.UploadCatalogFileResponse{
-						File: &artifactPB.File{
+					Then(&artifactpb.UploadCatalogFileResponse{
+						File: &artifactpb.File{
 							FileUid: fmt.Sprintf("fakeFileID%d", i),
 							Name:    fileName,
-							Type:    artifactPB.FileType_FILE_TYPE_PDF,
+							Type:    artifactpb.FileType_FILE_TYPE_PDF,
 							Size:    1,
-							CreateTime: &timestampPB.Timestamp{
+							CreateTime: &timestamppb.Timestamp{
 								Seconds: 1,
 								Nanos:   1,
 							},
-							UpdateTime: &timestampPB.Timestamp{
+							UpdateTime: &timestamppb.Timestamp{
 								Seconds: 1,
 								Nanos:   1,
 							},
@@ -268,7 +267,7 @@ func Test_uploadFiles(t *testing.T) {
 			}
 
 			clientMock.ProcessCatalogFilesMock.
-				Expect(minimock.AnyContext, &artifactPB.ProcessCatalogFilesRequest{
+				Expect(minimock.AnyContext, &artifactpb.ProcessCatalogFilesRequest{
 					FileUids: []string{"fakeFileID0", "fakeFileID1", "fakeFileID2"},
 				}).
 				Times(1).

@@ -19,7 +19,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 //go:embed testdata/dog.png
@@ -166,7 +167,7 @@ func TestComponent_ExecuteImageFromText(t *testing.T) {
 
 			if tc.wantErr != "" {
 				c.Assert(executionErr, qt.Not(qt.IsNil))
-				c.Check(errmsg.Message(executionErr), qt.Equals, tc.wantErr)
+				c.Check(errorsx.Message(executionErr), qt.Equals, tc.wantErr)
 			}
 		})
 	}
@@ -314,7 +315,7 @@ func TestComponent_ExecuteImageFromImage(t *testing.T) {
 
 			if tc.wantErr != "" {
 				c.Assert(executionErr, qt.Not(qt.IsNil))
-				c.Check(errmsg.Message(executionErr), qt.Equals, tc.wantErr)
+				c.Check(errorsx.Message(executionErr), qt.Equals, tc.wantErr)
 			}
 		})
 	}
@@ -358,7 +359,7 @@ func TestComponent_Test(t *testing.T) {
 		c.Check(err, qt.IsNotNil)
 
 		wantMsg := "Stability AI responded with a 401 status code. Incorrect API key provided"
-		c.Check(errmsg.Message(err), qt.Equals, wantMsg)
+		c.Check(errorsx.Message(err), qt.Equals, wantMsg)
 	})
 
 	c.Run("ok - disconnected", func(c *qt.C) {

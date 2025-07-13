@@ -40,29 +40,29 @@ import (
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	constantx "github.com/instill-ai/x/constant"
+	errorsx "github.com/instill-ai/x/errors"
 	logx "github.com/instill-ai/x/log"
 	resourcex "github.com/instill-ai/x/resource"
 )
 
 type Converter interface {
-	ConvertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error)
-	ConvertPipelineToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool, useDynamicDef bool) (*pb.Pipeline, error)
-	ConvertPipelinesToPB(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) ([]*pb.Pipeline, error)
+	ConvertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pipelinepb.Pipeline) (*datamodel.Pipeline, error)
+	ConvertPipelineToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, view pipelinepb.Pipeline_View, checkPermission bool, useDynamicDef bool) (*pipelinepb.Pipeline, error)
+	ConvertPipelinesToPB(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pipelinepb.Pipeline_View, checkPermission bool) ([]*pipelinepb.Pipeline, error)
 
-	ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pb.PipelineRelease) (*datamodel.PipelineRelease, error)
-	ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pb.Pipeline_View) (*pb.PipelineRelease, error)
-	ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view pb.Pipeline_View) ([]*pb.PipelineRelease, error)
+	ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pipelinepb.PipelineRelease) (*datamodel.PipelineRelease, error)
+	ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pipelinepb.Pipeline_View) (*pipelinepb.PipelineRelease, error)
+	ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinepb.Pipeline_View) ([]*pipelinepb.PipelineRelease, error)
 
-	ConvertSecretToDB(ctx context.Context, ns resource.Namespace, pbSecret *pb.Secret) (*datamodel.Secret, error)
-	ConvertSecretToPB(ctx context.Context, dbSecret *datamodel.Secret) (*pb.Secret, error)
-	ConvertSecretsToPB(ctx context.Context, dbSecrets []*datamodel.Secret) ([]*pb.Secret, error)
+	ConvertSecretToDB(ctx context.Context, ns resource.Namespace, pbSecret *pipelinepb.Secret) (*datamodel.Secret, error)
+	ConvertSecretToPB(ctx context.Context, dbSecret *datamodel.Secret) (*pipelinepb.Secret, error)
+	ConvertSecretsToPB(ctx context.Context, dbSecrets []*datamodel.Secret) ([]*pipelinepb.Secret, error)
 
 	IncludeDetailInRecipe(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, useDynamicDef bool) error
-	GeneratePipelineDataSpec(variables map[string]*datamodel.Variable, outputs map[string]*datamodel.Output, compsOrigin datamodel.ComponentMap) (*pb.DataSpecification, error)
+	GeneratePipelineDataSpec(variables map[string]*datamodel.Variable, outputs map[string]*datamodel.Output, compsOrigin datamodel.ComponentMap) (*pipelinepb.DataSpecification, error)
 }
 
 type converter struct {
@@ -172,7 +172,7 @@ func (c *converter) processSetup(ctx context.Context, ownerPermalink string, set
 	default:
 		return nil, fmt.Errorf(
 			"%w: setup field can only have string or map[string]any types",
-			errdomain.ErrInvalidArgument,
+			errorsx.ErrInvalidArgument,
 		)
 	}
 }
@@ -378,7 +378,7 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, ownerPer
 		}
 	}
 
-	comp.DataSpecification = &pb.DataSpecification{
+	comp.DataSpecification = &pipelinepb.DataSpecification{
 		Output: dataOutput,
 	}
 
@@ -405,7 +405,7 @@ func (c *converter) IncludeDetailInRecipe(ctx context.Context, ownerPermalink st
 }
 
 // ConvertPipelineToDB converts protobuf data model to db data model
-func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error) {
+func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pipelinepb.Pipeline) (*datamodel.Pipeline, error) {
 	logger, _ := logx.GetZapLogger(ctx)
 
 	profileImage, err := c.compressProfileImage(pbPipeline.GetProfileImage())
@@ -494,7 +494,7 @@ func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespa
 }
 
 // ConvertPipelineToPB converts db data model to protobuf data model
-func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool, useDynamicDef bool) (*pb.Pipeline, error) {
+func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *datamodel.Pipeline, view pipelinepb.Pipeline_View, checkPermission bool, useDynamicDef bool) (*pipelinepb.Pipeline, error) {
 
 	logger, _ := logx.GetZapLogger(ctx)
 
@@ -514,7 +514,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 
 	ctxUserUID := resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)
 
-	if view == pb.Pipeline_VIEW_FULL {
+	if view == pipelinepb.Pipeline_VIEW_FULL {
 		if err := c.IncludeDetailInRecipe(ctx, dbPipeline.Owner, dbPipeline.Recipe, useDynamicDef); err != nil {
 			return nil, err
 		}
@@ -522,7 +522,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 
 	profileImage := fmt.Sprintf("%s/v1beta/%s/pipelines/%s/image", c.instillCoreHost, ownerName, dbPipeline.ID)
 
-	pbSharing := &pb.Sharing{}
+	pbSharing := &pipelinepb.Sharing{}
 
 	b, err := json.Marshal(dbPipeline.Sharing)
 	if err != nil {
@@ -547,7 +547,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 	}
 
 	var pbRecipe *structpb.Struct
-	webhooks := map[string]*pb.Endpoints_WebhookEndpoint{}
+	webhooks := map[string]*pipelinepb.Endpoints_WebhookEndpoint{}
 	if dbPipeline.Recipe != nil {
 		b, err = json.Marshal(dbPipeline.Recipe)
 		if err != nil {
@@ -555,7 +555,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		}
 		if dbPipeline.Recipe.On != nil {
 			for w := range dbPipeline.Recipe.On {
-				webhooks[w] = &pb.Endpoints_WebhookEndpoint{
+				webhooks[w] = &pipelinepb.Endpoints_WebhookEndpoint{
 					Url: fmt.Sprintf(
 						"%s/v1beta/namespaces/%s/pipelines/%s/events?event=%s&code=%s",
 						config.Config.Server.InstillCoreHost,
@@ -575,7 +575,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		}
 	}
 
-	pbPipeline := pb.Pipeline{
+	pbPipeline := pipelinepb.Pipeline{
 		Name:       fmt.Sprintf("%s/pipelines/%s", ownerName, dbPipeline.ID),
 		Uid:        dbPipeline.UID.String(),
 		Id:         dbPipeline.ID,
@@ -595,7 +595,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		Sharing:     pbSharing,
 		OwnerName:   ownerName,
 		Tags:        tags,
-		Stats: &pb.Pipeline_Stats{
+		Stats: &pipelinepb.Pipeline_Stats{
 			NumberOfRuns:   int32(dbPipeline.NumberOfRuns),
 			NumberOfClones: int32(dbPipeline.NumberOfClones),
 			LastRunTime:    timestamppb.New(dbPipeline.LastRunTime),
@@ -604,7 +604,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		DocumentationUrl: &dbPipeline.DocumentationURL.String,
 		License:          &dbPipeline.License.String,
 		ProfileImage:     &profileImage,
-		Endpoints: &pb.Endpoints{
+		Endpoints: &pipelinepb.Endpoints{
 			Webhooks: webhooks,
 		},
 	}
@@ -616,7 +616,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 	}
 	pbPipeline.Owner = owner
 
-	pbPipeline.Permission = &pb.Permission{}
+	pbPipeline.Permission = &pipelinepb.Permission{}
 	if checkPermission {
 		if dbPipeline.OwnerUID().String() == ctxUserUID {
 			pbPipeline.Permission.CanEdit = true
@@ -639,7 +639,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 
 	}
 
-	if view > pb.Pipeline_VIEW_BASIC {
+	if view > pipelinepb.Pipeline_VIEW_BASIC {
 		if dbPipeline.Metadata != nil {
 			str := structpb.Struct{}
 			err := str.UnmarshalJSON(dbPipeline.Metadata)
@@ -650,7 +650,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		}
 	}
 
-	if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL {
+	if pbRecipe != nil && view == pipelinepb.Pipeline_VIEW_FULL {
 		spec, err := c.GeneratePipelineDataSpec(dbPipeline.Recipe.Variable, dbPipeline.Recipe.Output, dbPipeline.Recipe.Component)
 		if err == nil {
 			pbPipeline.DataSpecification = spec
@@ -663,16 +663,16 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 	}
 	pbPipeline.Releases = pbReleases
 
-	pbPipeline.Visibility = pb.Pipeline_VISIBILITY_PRIVATE
+	pbPipeline.Visibility = pipelinepb.Pipeline_VISIBILITY_PRIVATE
 	if dbPipeline.IsPublic() {
-		pbPipeline.Visibility = pb.Pipeline_VISIBILITY_PUBLIC
+		pbPipeline.Visibility = pipelinepb.Pipeline_VISIBILITY_PUBLIC
 	}
 	return &pbPipeline, nil
 }
 
 // ConvertPipelinesToPB converts db data model to protobuf data model
-func (c *converter) ConvertPipelinesToPB(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) ([]*pb.Pipeline, error) {
-	pbPipelines := make([]*pb.Pipeline, len(dbPipelines))
+func (c *converter) ConvertPipelinesToPB(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pipelinepb.Pipeline_View, checkPermission bool) ([]*pipelinepb.Pipeline, error) {
+	pbPipelines := make([]*pipelinepb.Pipeline, len(dbPipelines))
 
 	for idx := range dbPipelines {
 		pbPipeline, err := c.ConvertPipelineToPB(
@@ -692,7 +692,7 @@ func (c *converter) ConvertPipelinesToPB(ctx context.Context, dbPipelines []*dat
 }
 
 // ConvertPipelineReleaseToDB converts protobuf data model to db data model
-func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pb.PipelineRelease) (*datamodel.PipelineRelease, error) {
+func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pipelinepb.PipelineRelease) (*datamodel.PipelineRelease, error) {
 	logger, _ := logx.GetZapLogger(ctx)
 
 	return &datamodel.PipelineRelease{
@@ -747,20 +747,20 @@ func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID 
 }
 
 // ConvertPipelineReleaseToPB converts db data model to protobuf data model
-func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pb.Pipeline_View) (*pb.PipelineRelease, error) {
+func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pipelinepb.Pipeline_View) (*pipelinepb.PipelineRelease, error) {
 
 	logger, _ := logx.GetZapLogger(ctx)
 
 	owner := fmt.Sprintf("%s/%s", dbPipeline.NamespaceType, dbPipeline.NamespaceID)
 
-	if view == pb.Pipeline_VIEW_FULL {
+	if view == pipelinepb.Pipeline_VIEW_FULL {
 		if err := c.IncludeDetailInRecipe(ctx, dbPipeline.Owner, dbPipelineRelease.Recipe, false); err != nil {
 			return nil, err
 		}
 	}
 
 	var pbRecipe *structpb.Struct
-	webhooks := map[string]*pb.Endpoints_WebhookEndpoint{}
+	webhooks := map[string]*pipelinepb.Endpoints_WebhookEndpoint{}
 	if dbPipelineRelease.Recipe != nil {
 		b, err := json.Marshal(dbPipelineRelease.Recipe)
 		if err != nil {
@@ -768,7 +768,7 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 		}
 		if dbPipelineRelease.Recipe.On != nil {
 			for w := range dbPipelineRelease.Recipe.On {
-				webhooks[w] = &pb.Endpoints_WebhookEndpoint{
+				webhooks[w] = &pipelinepb.Endpoints_WebhookEndpoint{
 					Url: fmt.Sprintf(
 						"%s/v1beta/namespaces/%s/pipelines/%s/releases/%s/events?event=%s&code=%s",
 						config.Config.Server.InstillCoreHost,
@@ -789,7 +789,7 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 		}
 	}
 
-	pbPipelineRelease := pb.PipelineRelease{
+	pbPipelineRelease := pipelinepb.PipelineRelease{
 		Name:       fmt.Sprintf("%s/pipelines/%s/releases/%s", owner, dbPipeline.ID, dbPipelineRelease.ID),
 		Uid:        dbPipelineRelease.UID.String(),
 		Id:         dbPipelineRelease.ID,
@@ -806,12 +806,12 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 		Readme:      dbPipelineRelease.Readme,
 		Recipe:      pbRecipe,
 		RawRecipe:   dbPipelineRelease.RecipeYAML,
-		Endpoints: &pb.Endpoints{
+		Endpoints: &pipelinepb.Endpoints{
 			Webhooks: webhooks,
 		},
 	}
 
-	if view > pb.Pipeline_VIEW_BASIC {
+	if view > pipelinepb.Pipeline_VIEW_BASIC {
 		if dbPipelineRelease.Metadata != nil {
 			str := structpb.Struct{}
 			err := str.UnmarshalJSON(dbPipelineRelease.Metadata)
@@ -822,7 +822,7 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 		}
 	}
 
-	if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL {
+	if pbRecipe != nil && view == pipelinepb.Pipeline_VIEW_FULL {
 		spec, err := c.GeneratePipelineDataSpec(dbPipelineRelease.Recipe.Variable, dbPipelineRelease.Recipe.Output, dbPipelineRelease.Recipe.Component)
 		if err == nil {
 			pbPipelineRelease.DataSpecification = spec
@@ -833,8 +833,8 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 }
 
 // ConvertPipelineReleaseToPB converts db data model to protobuf data model
-func (c *converter) ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view pb.Pipeline_View) ([]*pb.PipelineRelease, error) {
-	pbPipelineReleases := make([]*pb.PipelineRelease, len(dbPipelineRelease))
+func (c *converter) ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinepb.Pipeline_View) ([]*pipelinepb.PipelineRelease, error) {
+	pbPipelineReleases := make([]*pipelinepb.PipelineRelease, len(dbPipelineRelease))
 	for idx := range dbPipelineRelease {
 		pbRelease, err := c.ConvertPipelineReleaseToPB(
 			ctx,
@@ -886,7 +886,7 @@ func checkFormat(format string) string {
 }
 
 // TODO: refactor these codes
-func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Variable, outputs map[string]*datamodel.Output, compsOrigin datamodel.ComponentMap) (pipelineDataSpec *pb.DataSpecification, err error) {
+func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Variable, outputs map[string]*datamodel.Output, compsOrigin datamodel.ComponentMap) (pipelineDataSpec *pipelinepb.DataSpecification, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -896,7 +896,7 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 	}()
 
 	success := true
-	pipelineDataSpec = &pb.DataSpecification{}
+	pipelineDataSpec = &pipelinepb.DataSpecification{}
 
 	dataInput := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 	dataInput.Fields["type"] = structpb.NewStringValue("object")
@@ -1086,7 +1086,7 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 
 }
 
-func (c *converter) ConvertSecretToDB(ctx context.Context, ns resource.Namespace, pbSecret *pb.Secret) (*datamodel.Secret, error) {
+func (c *converter) ConvertSecretToDB(ctx context.Context, ns resource.Namespace, pbSecret *pipelinepb.Secret) (*datamodel.Secret, error) {
 
 	logger, _ := logx.GetZapLogger(ctx)
 
@@ -1126,11 +1126,11 @@ func (c *converter) ConvertSecretToDB(ctx context.Context, ns resource.Namespace
 	}, nil
 }
 
-func (c *converter) ConvertSecretToPB(ctx context.Context, dbSecret *datamodel.Secret) (*pb.Secret, error) {
+func (c *converter) ConvertSecretToPB(ctx context.Context, dbSecret *datamodel.Secret) (*pipelinepb.Secret, error) {
 
 	ownerName := fmt.Sprintf("%s/%s", dbSecret.NamespaceType, dbSecret.NamespaceID)
 
-	return &pb.Secret{
+	return &pipelinepb.Secret{
 		Name:        fmt.Sprintf("%s/secrets/%s", ownerName, dbSecret.ID),
 		Uid:         dbSecret.UID.String(),
 		Id:          dbSecret.ID,
@@ -1141,10 +1141,10 @@ func (c *converter) ConvertSecretToPB(ctx context.Context, dbSecret *datamodel.S
 
 }
 
-func (c *converter) ConvertSecretsToPB(ctx context.Context, dbSecrets []*datamodel.Secret) ([]*pb.Secret, error) {
+func (c *converter) ConvertSecretsToPB(ctx context.Context, dbSecrets []*datamodel.Secret) ([]*pipelinepb.Secret, error) {
 
 	var err error
-	pbSecrets := make([]*pb.Secret, len(dbSecrets))
+	pbSecrets := make([]*pipelinepb.Secret, len(dbSecrets))
 	for idx := range dbSecrets {
 		pbSecrets[idx], err = c.ConvertSecretToPB(ctx, dbSecrets[idx])
 		if err != nil {

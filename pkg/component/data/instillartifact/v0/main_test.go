@@ -8,11 +8,12 @@ import (
 	"github.com/frankban/quicktest"
 	"github.com/gojuno/minimock/v3"
 
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 
-	artifactPB "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
-	timestampPB "google.golang.org/protobuf/types/known/timestamppb"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 )
 
 func Test_getFilesMetadata(t *testing.T) {
@@ -44,22 +45,22 @@ func Test_getFilesMetadata(t *testing.T) {
 		clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
 		clientMock.ListCatalogFilesMock.
-			Expect(minimock.AnyContext, &artifactPB.ListCatalogFilesRequest{
+			Expect(minimock.AnyContext, &artifactpb.ListCatalogFilesRequest{
 				NamespaceId: "fakeNs",
 				CatalogId:   "fakeID"}).
 			Times(1).
-			Return(&artifactPB.ListCatalogFilesResponse{
-				Files: []*artifactPB.File{
+			Return(&artifactpb.ListCatalogFilesResponse{
+				Files: []*artifactpb.File{
 					{
 						FileUid: "fakeFileID",
 						Name:    "fakeFileName",
-						Type:    artifactPB.FileType_FILE_TYPE_PDF,
+						Type:    artifactpb.FileType_FILE_TYPE_PDF,
 						Size:    1,
-						CreateTime: &timestampPB.Timestamp{
+						CreateTime: &timestamppb.Timestamp{
 							Seconds: 1,
 							Nanos:   1,
 						},
-						UpdateTime: &timestampPB.Timestamp{
+						UpdateTime: &timestamppb.Timestamp{
 							Seconds: 1,
 							Nanos:   1,
 						},
@@ -119,19 +120,19 @@ func Test_getChunksMetadata(t *testing.T) {
 
 		clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
-		clientMock.ListChunksMock.Expect(minimock.AnyContext, &artifactPB.ListChunksRequest{
+		clientMock.ListChunksMock.Expect(minimock.AnyContext, &artifactpb.ListChunksRequest{
 			NamespaceId: "fakeNs",
 			CatalogId:   "fakeID",
 			FileUid:     "fakeFileID",
-		}).Times(1).Return(&artifactPB.ListChunksResponse{
-			Chunks: []*artifactPB.Chunk{
+		}).Times(1).Return(&artifactpb.ListChunksResponse{
+			Chunks: []*artifactpb.Chunk{
 				{
 					ChunkUid:    "fakeChunkID",
 					Retrievable: true,
 					StartPos:    0,
 					EndPos:      1,
 					Tokens:      1,
-					CreateTime: &timestampPB.Timestamp{
+					CreateTime: &timestamppb.Timestamp{
 						Seconds: 1,
 						Nanos:   1,
 					},
@@ -195,19 +196,19 @@ func Test_getFileInMarkdown(t *testing.T) {
 
 		clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
-		clientMock.GetSourceFileMock.Expect(minimock.AnyContext, &artifactPB.GetSourceFileRequest{
+		clientMock.GetSourceFileMock.Expect(minimock.AnyContext, &artifactpb.GetSourceFileRequest{
 			NamespaceId: "fakeNs",
 			CatalogId:   "fakeID",
 			FileUid:     "fakeFileID",
-		}).Times(1).Return(&artifactPB.GetSourceFileResponse{
-			SourceFile: &artifactPB.SourceFile{
+		}).Times(1).Return(&artifactpb.GetSourceFileResponse{
+			SourceFile: &artifactpb.SourceFile{
 				OriginalFileUid: "fakeFileID",
 				Content:         "fakeContent",
-				CreateTime: &timestampPB.Timestamp{
+				CreateTime: &timestamppb.Timestamp{
 					Seconds: 1,
 					Nanos:   1,
 				},
-				UpdateTime: &timestampPB.Timestamp{
+				UpdateTime: &timestamppb.Timestamp{
 					Seconds: 1,
 					Nanos:   1,
 				},
@@ -267,15 +268,15 @@ func Test_searchChunks(t *testing.T) {
 		clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
 		clientMock.SimilarityChunksSearchMock.
-			Expect(minimock.AnyContext, &artifactPB.SimilarityChunksSearchRequest{
+			Expect(minimock.AnyContext, &artifactpb.SimilarityChunksSearchRequest{
 				NamespaceId: "fakeNs",
 				CatalogId:   "fakeID",
 				TextPrompt:  "fakePrompt",
 				TopK:        1,
 			}).
 			Times(1).
-			Return(&artifactPB.SimilarityChunksSearchResponse{
-				SimilarChunks: []*artifactPB.SimilarityChunk{
+			Return(&artifactpb.SimilarityChunksSearchResponse{
+				SimilarChunks: []*artifactpb.SimilarityChunk{
 					{
 						ChunkUid:        "fakeChunkID",
 						SimilarityScore: float32(1),
@@ -337,16 +338,16 @@ func Test_query(t *testing.T) {
 		clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
 		clientMock.QuestionAnsweringMock.
-			Expect(minimock.AnyContext, &artifactPB.QuestionAnsweringRequest{
+			Expect(minimock.AnyContext, &artifactpb.QuestionAnsweringRequest{
 				NamespaceId: "fakeNs",
 				CatalogId:   "fakeID",
 				Question:    "fakeQuestion",
 				TopK:        1,
 			}).
 			Times(1).
-			Return(&artifactPB.QuestionAnsweringResponse{
+			Return(&artifactpb.QuestionAnsweringResponse{
 				Answer: "fakeAnswer",
-				SimilarChunks: []*artifactPB.SimilarityChunk{
+				SimilarChunks: []*artifactpb.SimilarityChunk{
 					{
 						ChunkUid:        "fakeChunkID",
 						SimilarityScore: float32(1),
@@ -384,17 +385,17 @@ func Test_matchFileStatus(t *testing.T) {
 
 	testCases := []struct {
 		name     string
-		status   artifactPB.FileProcessStatus
+		status   artifactpb.FileProcessStatus
 		expected bool
 	}{
 		{
 			name:     "process status completed",
-			status:   artifactPB.FileProcessStatus_FILE_PROCESS_STATUS_COMPLETED,
+			status:   artifactpb.FileProcessStatus_FILE_PROCESS_STATUS_COMPLETED,
 			expected: true,
 		},
 		{
 			name:     "process status failed",
-			status:   artifactPB.FileProcessStatus_FILE_PROCESS_STATUS_FAILED,
+			status:   artifactpb.FileProcessStatus_FILE_PROCESS_STATUS_FAILED,
 			expected: false,
 		},
 	}
@@ -427,16 +428,16 @@ func Test_matchFileStatus(t *testing.T) {
 			clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
 			clientMock.ListCatalogFilesMock.
-				Expect(minimock.AnyContext, &artifactPB.ListCatalogFilesRequest{
+				Expect(minimock.AnyContext, &artifactpb.ListCatalogFilesRequest{
 					NamespaceId: "fakeNs",
 					CatalogId:   "fakeID",
-					Filter: &artifactPB.ListCatalogFilesFilter{
+					Filter: &artifactpb.ListCatalogFilesFilter{
 						FileUids: []string{"fakeFileID"},
 					},
 				}).
 				Times(1).
-				Return(&artifactPB.ListCatalogFilesResponse{
-					Files: []*artifactPB.File{
+				Return(&artifactpb.ListCatalogFilesResponse{
+					Files: []*artifactpb.File{
 						{
 							ProcessStatus: tc.status,
 						},

@@ -29,7 +29,7 @@ import (
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	miniomock "github.com/instill-ai/x/mock"
 )
 
@@ -222,7 +222,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			m[constant.HeaderUserUIDKey] = testCase.viewer.String()
 
 			ctxWithHeader := metadata.NewIncomingContext(context.Background(), metadata.New(m))
-			req := &pb.ListPipelineRunsRequest{
+			req := &pipelinepb.ListPipelineRunsRequest{
 				NamespaceId: ownerUID.String(),
 				PipelineId:  pipelineID,
 				Page:        0,
@@ -440,7 +440,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			m[constant.HeaderUserUIDKey] = testCase.viewer.String()
 
 			ctxWithHeader := metadata.NewIncomingContext(context.Background(), metadata.New(m))
-			req := &pb.ListPipelineRunsRequest{
+			req := &pipelinepb.ListPipelineRunsRequest{
 				NamespaceId: "org1",
 				PipelineId:  pipelineID,
 				Page:        0,
@@ -531,7 +531,7 @@ func TestService_ListPipelineRunsByRequester(t *testing.T) {
 	m[constant.HeaderUserUIDKey] = ownerNamespace.String()
 
 	ctxWithHeader := metadata.NewIncomingContext(ctx, metadata.New(m))
-	resp, err := svc.ListPipelineRunsByRequester(ctxWithHeader, &pb.ListPipelineRunsByRequesterRequest{
+	resp, err := svc.ListPipelineRunsByRequester(ctxWithHeader, &pipelinepb.ListPipelineRunsByRequesterRequest{
 		RequesterId: "test-user",
 	})
 	c.Assert(err, qt.IsNil)
@@ -555,7 +555,7 @@ func TestService_ListPipelineRunsByRequester(t *testing.T) {
 	err = repo.UpsertPipelineRun(ctx, pipelineRun)
 	c.Assert(err, qt.IsNil)
 
-	resp, err = svc.ListPipelineRunsByRequester(ctxWithHeader, &pb.ListPipelineRunsByRequesterRequest{
+	resp, err = svc.ListPipelineRunsByRequester(ctxWithHeader, &pipelinepb.ListPipelineRunsByRequesterRequest{
 		RequesterId: "test-user",
 	})
 	c.Assert(err, qt.IsNil)

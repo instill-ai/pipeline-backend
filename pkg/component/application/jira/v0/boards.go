@@ -5,7 +5,7 @@ import (
 
 	_ "embed"
 
-	"github.com/instill-ai/x/errmsg"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 // Board is the Jira board object.
@@ -64,7 +64,7 @@ func getBoard(c *client, boardID int) (*getBoardResp, error) {
 	resp, err := req.Get(apiEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf(
-			err.Error(), errmsg.Message(err),
+			err.Error(), errorsx.Message(err),
 		)
 	}
 	result := resp.Result().(*getBoardResp)

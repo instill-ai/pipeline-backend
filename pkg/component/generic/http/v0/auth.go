@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 type authType string
@@ -36,7 +37,7 @@ type basicAuth struct {
 
 func (a basicAuth) setAuthInClient(c *httpclient.Client) error {
 	if a.Username == "" || a.Password == "" {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("invalid auth"),
 			"Basic Auth error: username or password is empty.",
 		)
@@ -63,7 +64,7 @@ type apiKeyAuth struct {
 
 func (a apiKeyAuth) setAuthInClient(c *httpclient.Client) error {
 	if a.Key == "" || a.Value == "" {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("invalid auth"),
 			"API Key Auth error: key or value is empty.",
 		)
@@ -86,7 +87,7 @@ type bearerTokenAuth struct {
 
 func (a bearerTokenAuth) setAuthInClient(c *httpclient.Client) error {
 	if a.Token == "" {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("invalid auth"),
 			"Bearer Token Auth error: token is empty.",
 		)

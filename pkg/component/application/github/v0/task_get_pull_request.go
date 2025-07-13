@@ -6,9 +6,10 @@ import (
 	"fmt"
 
 	"github.com/google/go-github/v62/github"
-	"github.com/instill-ai/x/errmsg"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 func (client *Client) getPullRequest(ctx context.Context, job *base.Job) error {
@@ -50,7 +51,7 @@ func (client *Client) getPullRequest(ctx context.Context, job *base.Job) error {
 			return addErrMsgToClientError(err)
 		}
 		if len(prs) == 0 {
-			return errmsg.AddMessage(
+			return errorsx.AddMessage(
 				fmt.Errorf("no pull request found"),
 				"No pull request found",
 			)

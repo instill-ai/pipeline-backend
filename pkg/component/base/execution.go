@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/x/errmsg"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 // IExecution allows components to be executed.
@@ -113,7 +113,7 @@ const SecretKeyword = "__INSTILL_SECRET"
 // component setup contains credentials that reference a global secret that
 // wasn't injected into the component.
 func NewUnresolvedCredential(key string) error {
-	return errmsg.AddMessage(
+	return errorsx.AddMessage(
 		fmt.Errorf("unresolved global credential"),
 		fmt.Sprintf("The configuration field %s references a global secret "+
 			"but it doesn't support Instill Credentials.", key),

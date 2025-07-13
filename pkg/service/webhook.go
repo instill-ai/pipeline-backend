@@ -18,9 +18,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	"github.com/instill-ai/x/errmsg"
 
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 type DispatchPipelineWebhookEventParams struct {
@@ -118,8 +117,8 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 
 					conn, err := s.repository.GetNamespaceConnectionByID(ctx, loadPipelineResult.ns.NsUID, connID)
 					if err != nil {
-						if errors.Is(err, errdomain.ErrNotFound) {
-							err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
+						if errors.Is(err, errorsx.ErrNotFound) {
+							err = errorsx.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
 						}
 						return DispatchPipelineWebhookEventResult{}, err
 					}

@@ -16,50 +16,50 @@ import (
 
 	"github.com/instill-ai/x/checkfield"
 
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	errorsx "github.com/instill-ai/x/errors"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 // CreateUserSecret creates a user secret.
-func (h *PublicHandler) CreateUserSecret(ctx context.Context, req *pb.CreateUserSecretRequest) (resp *pb.CreateUserSecretResponse, err error) {
-	r, err := h.CreateNamespaceSecret(ctx, &pb.CreateNamespaceSecretRequest{
+func (h *PublicHandler) CreateUserSecret(ctx context.Context, req *pipelinepb.CreateUserSecretRequest) (resp *pipelinepb.CreateUserSecretResponse, err error) {
+	r, err := h.CreateNamespaceSecret(ctx, &pipelinepb.CreateNamespaceSecretRequest{
 		NamespaceId: strings.Split(req.Parent, "/")[1],
 		Secret:      req.Secret,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &pb.CreateUserSecretResponse{Secret: r.Secret}, nil
+	return &pipelinepb.CreateUserSecretResponse{Secret: r.Secret}, nil
 }
 
 // CreateOrganizationSecret creates an organization secret.
-func (h *PublicHandler) CreateOrganizationSecret(ctx context.Context, req *pb.CreateOrganizationSecretRequest) (resp *pb.CreateOrganizationSecretResponse, err error) {
-	r, err := h.CreateNamespaceSecret(ctx, &pb.CreateNamespaceSecretRequest{
+func (h *PublicHandler) CreateOrganizationSecret(ctx context.Context, req *pipelinepb.CreateOrganizationSecretRequest) (resp *pipelinepb.CreateOrganizationSecretResponse, err error) {
+	r, err := h.CreateNamespaceSecret(ctx, &pipelinepb.CreateNamespaceSecretRequest{
 		NamespaceId: strings.Split(req.Parent, "/")[1],
 		Secret:      req.Secret,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &pb.CreateOrganizationSecretResponse{Secret: r.Secret}, nil
+	return &pipelinepb.CreateOrganizationSecretResponse{Secret: r.Secret}, nil
 }
 
 // CreateNamespaceSecret creates a namespace secret.
-func (h *PublicHandler) CreateNamespaceSecret(ctx context.Context, req *pb.CreateNamespaceSecretRequest) (resp *pb.CreateNamespaceSecretResponse, err error) {
+func (h *PublicHandler) CreateNamespaceSecret(ctx context.Context, req *pipelinepb.CreateNamespaceSecretRequest) (resp *pipelinepb.CreateNamespaceSecretResponse, err error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload secret resource
 	if err := checkfield.CheckRequiredFields(req.GetSecret(), append(createSecretRequiredFields, immutableSecretFields...)); err != nil {
-		return nil, ErrCheckRequiredFields
+		return nil, errorsx.ErrCheckRequiredFields
 	}
 
 	// Set all OUTPUT_ONLY fields to zero value on the requested payload secret resource
 	if err := checkfield.CheckCreateOutputOnlyFields(req.GetSecret(), outputOnlySecretFields); err != nil {
-		return nil, ErrCheckOutputOnlyFields
+		return nil, errorsx.ErrCheckOutputOnlyFields
 	}
 
 	// Return error if resource ID does not follow RFC-1034
 	if err := checkfield.CheckResourceID(req.GetSecret().GetId()); err != nil {
-		return nil, fmt.Errorf("%w: invalid pipeline ID: %w", errdomain.ErrInvalidArgument, err)
+		return nil, fmt.Errorf("%w: invalid pipeline ID: %w", errorsx.ErrInvalidArgument, err)
 	}
 
 	ns, err := h.service.GetNamespaceByID(ctx, req.GetNamespaceId())
@@ -83,12 +83,12 @@ func (h *PublicHandler) CreateNamespaceSecret(ctx context.Context, req *pb.Creat
 		return nil, err
 	}
 
-	return &pb.CreateNamespaceSecretResponse{Secret: secret}, nil
+	return &pipelinepb.CreateNamespaceSecretResponse{Secret: secret}, nil
 }
 
 // ListUserSecrets lists user secrets.
-func (h *PublicHandler) ListUserSecrets(ctx context.Context, req *pb.ListUserSecretsRequest) (resp *pb.ListUserSecretsResponse, err error) {
-	r, err := h.ListNamespaceSecrets(ctx, &pb.ListNamespaceSecretsRequest{
+func (h *PublicHandler) ListUserSecrets(ctx context.Context, req *pipelinepb.ListUserSecretsRequest) (resp *pipelinepb.ListUserSecretsResponse, err error) {
+	r, err := h.ListNamespaceSecrets(ctx, &pipelinepb.ListNamespaceSecretsRequest{
 		NamespaceId: strings.Split(req.Parent, "/")[1],
 		PageSize:    req.PageSize,
 		PageToken:   req.PageToken,
@@ -96,12 +96,12 @@ func (h *PublicHandler) ListUserSecrets(ctx context.Context, req *pb.ListUserSec
 	if err != nil {
 		return nil, err
 	}
-	return &pb.ListUserSecretsResponse{Secrets: r.Secrets, NextPageToken: r.NextPageToken, TotalSize: r.TotalSize}, nil
+	return &pipelinepb.ListUserSecretsResponse{Secrets: r.Secrets, NextPageToken: r.NextPageToken, TotalSize: r.TotalSize}, nil
 }
 
 // ListOrganizationSecrets lists organization secrets.
-func (h *PublicHandler) ListOrganizationSecrets(ctx context.Context, req *pb.ListOrganizationSecretsRequest) (resp *pb.ListOrganizationSecretsResponse, err error) {
-	r, err := h.ListNamespaceSecrets(ctx, &pb.ListNamespaceSecretsRequest{
+func (h *PublicHandler) ListOrganizationSecrets(ctx context.Context, req *pipelinepb.ListOrganizationSecretsRequest) (resp *pipelinepb.ListOrganizationSecretsResponse, err error) {
+	r, err := h.ListNamespaceSecrets(ctx, &pipelinepb.ListNamespaceSecretsRequest{
 		NamespaceId: strings.Split(req.Parent, "/")[1],
 		PageSize:    req.PageSize,
 		PageToken:   req.PageToken,
@@ -109,11 +109,11 @@ func (h *PublicHandler) ListOrganizationSecrets(ctx context.Context, req *pb.Lis
 	if err != nil {
 		return nil, err
 	}
-	return &pb.ListOrganizationSecretsResponse{Secrets: r.Secrets, NextPageToken: r.NextPageToken, TotalSize: r.TotalSize}, nil
+	return &pipelinepb.ListOrganizationSecretsResponse{Secrets: r.Secrets, NextPageToken: r.NextPageToken, TotalSize: r.TotalSize}, nil
 }
 
 // ListNamespaceSecrets lists namespace secrets.
-func (h *PublicHandler) ListNamespaceSecrets(ctx context.Context, req *pb.ListNamespaceSecretsRequest) (resp *pb.ListNamespaceSecretsResponse, err error) {
+func (h *PublicHandler) ListNamespaceSecrets(ctx context.Context, req *pipelinepb.ListNamespaceSecretsRequest) (resp *pipelinepb.ListNamespaceSecretsResponse, err error) {
 
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
@@ -129,7 +129,7 @@ func (h *PublicHandler) ListNamespaceSecrets(ctx context.Context, req *pb.ListNa
 		return nil, err
 	}
 
-	return &pb.ListNamespaceSecretsResponse{
+	return &pipelinepb.ListNamespaceSecretsResponse{
 		Secrets:       pbSecrets,
 		NextPageToken: nextPageToken,
 		TotalSize:     totalSize,
@@ -137,27 +137,27 @@ func (h *PublicHandler) ListNamespaceSecrets(ctx context.Context, req *pb.ListNa
 }
 
 // GetUserSecret gets a user secret.
-func (h *PublicHandler) GetUserSecret(ctx context.Context, req *pb.GetUserSecretRequest) (resp *pb.GetUserSecretResponse, err error) {
+func (h *PublicHandler) GetUserSecret(ctx context.Context, req *pipelinepb.GetUserSecretRequest) (resp *pipelinepb.GetUserSecretResponse, err error) {
 	splits := strings.Split(req.Name, "/")
-	r, err := h.GetNamespaceSecret(ctx, &pb.GetNamespaceSecretRequest{NamespaceId: splits[1], SecretId: splits[3]})
+	r, err := h.GetNamespaceSecret(ctx, &pipelinepb.GetNamespaceSecretRequest{NamespaceId: splits[1], SecretId: splits[3]})
 	if err != nil {
 		return nil, err
 	}
-	return &pb.GetUserSecretResponse{Secret: r.Secret}, nil
+	return &pipelinepb.GetUserSecretResponse{Secret: r.Secret}, nil
 }
 
 // GetOrganizationSecret gets an organization secret.
-func (h *PublicHandler) GetOrganizationSecret(ctx context.Context, req *pb.GetOrganizationSecretRequest) (resp *pb.GetOrganizationSecretResponse, err error) {
+func (h *PublicHandler) GetOrganizationSecret(ctx context.Context, req *pipelinepb.GetOrganizationSecretRequest) (resp *pipelinepb.GetOrganizationSecretResponse, err error) {
 	splits := strings.Split(req.Name, "/")
-	r, err := h.GetNamespaceSecret(ctx, &pb.GetNamespaceSecretRequest{NamespaceId: splits[1], SecretId: splits[3]})
+	r, err := h.GetNamespaceSecret(ctx, &pipelinepb.GetNamespaceSecretRequest{NamespaceId: splits[1], SecretId: splits[3]})
 	if err != nil {
 		return nil, err
 	}
-	return &pb.GetOrganizationSecretResponse{Secret: r.Secret}, nil
+	return &pipelinepb.GetOrganizationSecretResponse{Secret: r.Secret}, nil
 }
 
 // GetNamespaceSecret gets a namespace secret.
-func (h *PublicHandler) GetNamespaceSecret(ctx context.Context, req *pb.GetNamespaceSecretRequest) (*pb.GetNamespaceSecretResponse, error) {
+func (h *PublicHandler) GetNamespaceSecret(ctx context.Context, req *pipelinepb.GetNamespaceSecretRequest) (*pipelinepb.GetNamespaceSecretResponse, error) {
 
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
@@ -173,13 +173,13 @@ func (h *PublicHandler) GetNamespaceSecret(ctx context.Context, req *pb.GetNames
 		return nil, err
 	}
 
-	return &pb.GetNamespaceSecretResponse{Secret: pbSecret}, nil
+	return &pipelinepb.GetNamespaceSecretResponse{Secret: pbSecret}, nil
 }
 
 // UpdateUserSecret updates a user secret.
-func (h *PublicHandler) UpdateUserSecret(ctx context.Context, req *pb.UpdateUserSecretRequest) (resp *pb.UpdateUserSecretResponse, err error) {
+func (h *PublicHandler) UpdateUserSecret(ctx context.Context, req *pipelinepb.UpdateUserSecretRequest) (resp *pipelinepb.UpdateUserSecretResponse, err error) {
 	splits := strings.Split(req.Secret.Name, "/")
-	r, err := h.UpdateNamespaceSecret(ctx, &pb.UpdateNamespaceSecretRequest{
+	r, err := h.UpdateNamespaceSecret(ctx, &pipelinepb.UpdateNamespaceSecretRequest{
 		NamespaceId: splits[1],
 		SecretId:    splits[3],
 		Secret:      req.Secret,
@@ -188,13 +188,13 @@ func (h *PublicHandler) UpdateUserSecret(ctx context.Context, req *pb.UpdateUser
 	if err != nil {
 		return nil, err
 	}
-	return &pb.UpdateUserSecretResponse{Secret: r.Secret}, nil
+	return &pipelinepb.UpdateUserSecretResponse{Secret: r.Secret}, nil
 }
 
 // UpdateOrganizationSecret updates an organization secret.
-func (h *PublicHandler) UpdateOrganizationSecret(ctx context.Context, req *pb.UpdateOrganizationSecretRequest) (resp *pb.UpdateOrganizationSecretResponse, err error) {
+func (h *PublicHandler) UpdateOrganizationSecret(ctx context.Context, req *pipelinepb.UpdateOrganizationSecretRequest) (resp *pipelinepb.UpdateOrganizationSecretResponse, err error) {
 	splits := strings.Split(req.Secret.Name, "/")
-	r, err := h.UpdateNamespaceSecret(ctx, &pb.UpdateNamespaceSecretRequest{
+	r, err := h.UpdateNamespaceSecret(ctx, &pipelinepb.UpdateNamespaceSecretRequest{
 		NamespaceId: splits[1],
 		SecretId:    splits[3],
 		Secret:      req.Secret,
@@ -203,11 +203,11 @@ func (h *PublicHandler) UpdateOrganizationSecret(ctx context.Context, req *pb.Up
 	if err != nil {
 		return nil, err
 	}
-	return &pb.UpdateOrganizationSecretResponse{Secret: r.Secret}, nil
+	return &pipelinepb.UpdateOrganizationSecretResponse{Secret: r.Secret}, nil
 }
 
 // UpdateNamespaceSecret updates a namespace secret.
-func (h *PublicHandler) UpdateNamespaceSecret(ctx context.Context, req *pb.UpdateNamespaceSecretRequest) (*pb.UpdateNamespaceSecretResponse, error) {
+func (h *PublicHandler) UpdateNamespaceSecret(ctx context.Context, req *pipelinepb.UpdateNamespaceSecretRequest) (*pipelinepb.UpdateNamespaceSecretResponse, error) {
 
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
@@ -234,33 +234,33 @@ func (h *PublicHandler) UpdateNamespaceSecret(ctx context.Context, req *pb.Updat
 	}
 	// Validate the field mask
 	if !pbUpdateMask.IsValid(pbSecretReq) {
-		return nil, ErrUpdateMask
+		return nil, errorsx.ErrUpdateMask
 	}
 
-	getResp, err := h.GetNamespaceSecret(ctx, &pb.GetNamespaceSecretRequest{NamespaceId: req.NamespaceId, SecretId: req.SecretId})
+	getResp, err := h.GetNamespaceSecret(ctx, &pipelinepb.GetNamespaceSecretRequest{NamespaceId: req.NamespaceId, SecretId: req.SecretId})
 	if err != nil {
 		return nil, err
 	}
 
 	pbUpdateMask, err = checkfield.CheckUpdateOutputOnlyFields(pbUpdateMask, outputOnlySecretFields)
 	if err != nil {
-		return nil, ErrCheckOutputOnlyFields
+		return nil, errorsx.ErrCheckOutputOnlyFields
 	}
 
 	mask, err := fieldmask_utils.MaskFromProtoFieldMask(pbUpdateMask, strcase.ToCamel)
 	if err != nil {
-		return nil, ErrFieldMask
+		return nil, errorsx.ErrFieldMask
 	}
 
 	if mask.IsEmpty() {
-		return &pb.UpdateNamespaceSecretResponse{Secret: getResp.GetSecret()}, nil
+		return &pipelinepb.UpdateNamespaceSecretResponse{Secret: getResp.GetSecret()}, nil
 	}
 
 	pbSecretToUpdate := getResp.GetSecret()
 
 	// Return error if IMMUTABLE fields are intentionally changed
 	if err := checkfield.CheckUpdateImmutableFields(pbSecretReq, pbSecretToUpdate, immutableSecretFields); err != nil {
-		return nil, ErrCheckUpdateImmutableFields
+		return nil, errorsx.ErrCheckUpdateImmutableFields
 	}
 
 	// Only the fields mentioned in the field mask will be copied to `pbSecretToUpdate`, other fields are left intact
@@ -274,31 +274,31 @@ func (h *PublicHandler) UpdateNamespaceSecret(ctx context.Context, req *pb.Updat
 		return nil, err
 	}
 
-	return &pb.UpdateNamespaceSecretResponse{Secret: pbSecret}, nil
+	return &pipelinepb.UpdateNamespaceSecretResponse{Secret: pbSecret}, nil
 }
 
 // DeleteUserSecret deletes a user secret.
-func (h *PublicHandler) DeleteUserSecret(ctx context.Context, req *pb.DeleteUserSecretRequest) (resp *pb.DeleteUserSecretResponse, err error) {
+func (h *PublicHandler) DeleteUserSecret(ctx context.Context, req *pipelinepb.DeleteUserSecretRequest) (resp *pipelinepb.DeleteUserSecretResponse, err error) {
 	splits := strings.Split(req.Name, "/")
-	_, err = h.DeleteNamespaceSecret(ctx, &pb.DeleteNamespaceSecretRequest{NamespaceId: splits[1], SecretId: splits[3]})
+	_, err = h.DeleteNamespaceSecret(ctx, &pipelinepb.DeleteNamespaceSecretRequest{NamespaceId: splits[1], SecretId: splits[3]})
 	if err != nil {
 		return nil, err
 	}
-	return &pb.DeleteUserSecretResponse{}, nil
+	return &pipelinepb.DeleteUserSecretResponse{}, nil
 }
 
 // DeleteOrganizationSecret deletes an organization secret.
-func (h *PublicHandler) DeleteOrganizationSecret(ctx context.Context, req *pb.DeleteOrganizationSecretRequest) (resp *pb.DeleteOrganizationSecretResponse, err error) {
+func (h *PublicHandler) DeleteOrganizationSecret(ctx context.Context, req *pipelinepb.DeleteOrganizationSecretRequest) (resp *pipelinepb.DeleteOrganizationSecretResponse, err error) {
 	splits := strings.Split(req.Name, "/")
-	_, err = h.DeleteNamespaceSecret(ctx, &pb.DeleteNamespaceSecretRequest{NamespaceId: splits[1], SecretId: splits[3]})
+	_, err = h.DeleteNamespaceSecret(ctx, &pipelinepb.DeleteNamespaceSecretRequest{NamespaceId: splits[1], SecretId: splits[3]})
 	if err != nil {
 		return nil, err
 	}
-	return &pb.DeleteOrganizationSecretResponse{}, nil
+	return &pipelinepb.DeleteOrganizationSecretResponse{}, nil
 }
 
 // DeleteNamespaceSecret deletes a namespace secret.
-func (h *PublicHandler) DeleteNamespaceSecret(ctx context.Context, req *pb.DeleteNamespaceSecretRequest) (*pb.DeleteNamespaceSecretResponse, error) {
+func (h *PublicHandler) DeleteNamespaceSecret(ctx context.Context, req *pipelinepb.DeleteNamespaceSecretRequest) (*pipelinepb.DeleteNamespaceSecretResponse, error) {
 
 	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
 	if err != nil {
@@ -307,7 +307,7 @@ func (h *PublicHandler) DeleteNamespaceSecret(ctx context.Context, req *pb.Delet
 	if err := authenticateUser(ctx, false); err != nil {
 		return nil, err
 	}
-	_, err = h.GetNamespaceSecret(ctx, &pb.GetNamespaceSecretRequest{NamespaceId: req.NamespaceId, SecretId: req.SecretId})
+	_, err = h.GetNamespaceSecret(ctx, &pipelinepb.GetNamespaceSecretRequest{NamespaceId: req.NamespaceId, SecretId: req.SecretId})
 	if err != nil {
 		return nil, err
 	}
@@ -321,5 +321,5 @@ func (h *PublicHandler) DeleteNamespaceSecret(ctx context.Context, req *pb.Delet
 		return nil, err
 	}
 
-	return &pb.DeleteNamespaceSecretResponse{}, nil
+	return &pipelinepb.DeleteNamespaceSecretResponse{}, nil
 }

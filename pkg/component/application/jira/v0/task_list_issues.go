@@ -8,7 +8,8 @@ import (
 	"github.com/go-resty/resty/v2"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 func (c *client) listIssues(ctx context.Context, job *base.Job) error {
@@ -28,12 +29,12 @@ func (c *client) listIssues(ctx context.Context, job *base.Job) error {
 	}
 
 	if len(boards.Boards) == 0 {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("board not found"),
 			fmt.Sprintf("board with name %s not found", input.BoardName),
 		)
 	} else if len(boards.Boards) > 1 {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("multiple boards found"),
 			fmt.Sprintf("multiple boards are found with the partial name \"%s\". Please provide a more specific name", input.BoardName),
 		)
@@ -77,7 +78,7 @@ func (c *client) listIssues(ctx context.Context, job *base.Job) error {
 	case "JQL query":
 		jql = input.RangeData.JQL
 	default:
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("invalid range"),
 			fmt.Sprintf("%s is an invalid range", input.RangeData.Range),
 		)
@@ -109,7 +110,7 @@ func (c *client) listIssues(ctx context.Context, job *base.Job) error {
 
 	issues, ok := resp.Result().(*listIssuesResp)
 	if !ok {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("failed to convert response to `List Issue` Output"),
 			fmt.Sprintf("failed to convert %v to `List Issue` Output", resp.Result()),
 		)

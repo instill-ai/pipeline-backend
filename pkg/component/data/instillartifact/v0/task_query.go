@@ -10,7 +10,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
-	artifactPB "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 )
 
 func (e *execution) query(input *structpb.Struct) (*structpb.Struct, error) {
@@ -27,7 +27,7 @@ func (e *execution) query(input *structpb.Struct) (*structpb.Struct, error) {
 	defer cancel()
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
-	queryRes, err := artifactClient.QuestionAnswering(ctx, &artifactPB.QuestionAnsweringRequest{
+	queryRes, err := artifactClient.QuestionAnswering(ctx, &artifactpb.QuestionAnsweringRequest{
 		NamespaceId: inputStruct.Namespace,
 		CatalogId:   inputStruct.CatalogID,
 		Question:    inputStruct.Question,

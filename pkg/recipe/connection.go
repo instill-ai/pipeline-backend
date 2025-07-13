@@ -9,15 +9,14 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/instill-ai/x/errmsg"
 
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 var (
 	// ErrInvalidConnectionReference indicates a malformed or missing
 	// connection reference.
-	ErrInvalidConnectionReference = fmt.Errorf("%w: connection reference", errdomain.ErrInvalidArgument)
+	ErrInvalidConnectionReference = fmt.Errorf("%w: connection reference", errorsx.ErrInvalidArgument)
 
 	connRefPrefix, connRefSuffix   = fmt.Sprintf("${%s.", constant.SegConnection), "}"
 	lConnRefPrefix, lConnRefSuffix = len(connRefPrefix), len(connRefSuffix)
@@ -26,7 +25,7 @@ var (
 // ConnectionIDFromReference ...
 func ConnectionIDFromReference(ref string) (string, error) {
 	if !strings.HasPrefix(ref, connRefPrefix) || !strings.HasSuffix(ref, connRefSuffix) {
-		return "", errmsg.AddMessage(
+		return "", errorsx.AddMessage(
 			ErrInvalidConnectionReference,
 			"String setup only supports connection references (${connection.<conn-id>}).",
 		)
@@ -55,11 +54,11 @@ func FetchReferencedSetup(
 
 	conn, err := getNamespaceConnectionByID(ctx, id)
 	if err != nil {
-		if !errors.Is(err, errdomain.ErrNotFound) {
+		if !errors.Is(err, errorsx.ErrNotFound) {
 			return nil, fmt.Errorf("fetching connection: %w", err)
 		}
 
-		return nil, errmsg.AddMessage(
+		return nil, errorsx.AddMessage(
 			ErrInvalidConnectionReference,
 			fmt.Sprintf("Connection %s doesn't exist.", id),
 		)

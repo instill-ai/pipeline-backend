@@ -5,8 +5,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/instill-ai/x/errmsg"
 	"github.com/slack-go/slack"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 var types = []string{"private_channel", "public_channel"}
@@ -30,7 +31,7 @@ func loopChannelListAPI(client slackClient, channelName string) (string, error) 
 		}
 
 		if targetChannelID == "" && nextCur == "" {
-			return "", errmsg.AddMessage(
+			return "", errorsx.AddMessage(
 				fmt.Errorf("couldn't find channel by name"),
 				fmt.Sprintf("Couldn't find channel [%s].", channelName),
 			)

@@ -11,7 +11,7 @@ import (
 	"gorm.io/datatypes"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 // Pipeline is the data model of the pipeline table
@@ -240,13 +240,13 @@ type On struct {
 }
 
 type ComponentConfig struct {
-	Type       string                  `json:"type,omitempty"`
-	Task       string                  `json:"task,omitempty"`
-	Input      map[string]any          `json:"input,omitempty"`
-	Condition  *string                 `json:"condition,omitempty"`
-	Setup      map[string]any          `json:"setup,omitempty"`
-	Metadata   map[string]any          `json:"metadata,omitempty"`
-	Definition *pb.ComponentDefinition `json:"definition,omitempty"`
+	Type       string                          `json:"type,omitempty"`
+	Task       string                          `json:"task,omitempty"`
+	Input      map[string]any                  `json:"input,omitempty"`
+	Condition  *string                         `json:"condition,omitempty"`
+	Setup      map[string]any                  `json:"setup,omitempty"`
+	Metadata   map[string]any                  `json:"metadata,omitempty"`
+	Definition *pipelinepb.ComponentDefinition `json:"definition,omitempty"`
 }
 
 type IteratorComponent struct {

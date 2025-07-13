@@ -58,6 +58,7 @@ func NewUsage(ctx context.Context, r repository.Repository, m mgmtpb.MgmtPrivate
 		mgmtPrivateServiceClient: m,
 		redisClient:              rc,
 		reporter:                 reporter,
+		serviceVersion:           serviceVersion,
 	}
 }
 

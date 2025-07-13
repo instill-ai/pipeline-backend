@@ -13,7 +13,8 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 type MockSlackClient struct{}
@@ -196,7 +197,7 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 					c.Assert(err, qt.ErrorMatches, tc.wantErr)
 				}
 				if tc.wantErrMsg != "" {
-					c.Assert(errmsg.Message(err), qt.Equals, tc.wantErrMsg)
+					c.Assert(errorsx.Message(err), qt.Equals, tc.wantErrMsg)
 				}
 			})
 
@@ -294,7 +295,7 @@ func TestComponent_ExecuteReadTask(t *testing.T) {
 					c.Assert(err, qt.ErrorMatches, tc.wantErr)
 				}
 				if tc.wantErrMsg != "" {
-					c.Assert(errmsg.Message(err), qt.Equals, tc.wantErrMsg)
+					c.Assert(errorsx.Message(err), qt.Equals, tc.wantErrMsg)
 				}
 			})
 

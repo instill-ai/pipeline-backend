@@ -14,7 +14,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
-	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
 
 const (
@@ -51,21 +51,21 @@ func IsBillableEvent(eventName string) bool {
 
 type PipelineUsageMetricData struct {
 	OwnerUID  string
-	OwnerType mgmtPB.OwnerType
+	OwnerType mgmtpb.OwnerType
 
 	// User represents the authenticated user. Only user authentication is
 	// supported at the moment.
 	UserUID  string
-	UserType mgmtPB.OwnerType
+	UserType mgmtpb.OwnerType
 
 	// Requester will differ from User impersonates another namespace when
 	// triggering the pipeline. The only supported impersonation is from an
 	// authenticated user to an organization they belong to.
 	RequesterUID  string
-	RequesterType mgmtPB.OwnerType
+	RequesterType mgmtpb.OwnerType
 
-	TriggerMode         mgmtPB.Mode
-	Status              mgmtPB.Status
+	TriggerMode         mgmtpb.Mode
+	Status              mgmtpb.Status
 	PipelineID          string
 	PipelineUID         string
 	PipelineReleaseID   string
@@ -136,10 +136,10 @@ func DeprecatedNewPipelineDatapoint(data PipelineUsageMetricData) *write.Point {
 
 type ConnectorUsageMetricData struct {
 	OwnerUID               string
-	OwnerType              mgmtPB.OwnerType
+	OwnerType              mgmtpb.OwnerType
 	UserUID                string
-	UserType               mgmtPB.OwnerType
-	Status                 mgmtPB.Status
+	UserType               mgmtpb.OwnerType
+	Status                 mgmtpb.Status
 	ConnectorID            string
 	ConnectorUID           string
 	ConnectorExecuteUID    string

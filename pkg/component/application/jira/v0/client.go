@@ -12,7 +12,8 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 const apiBaseURL = "https://api.atlassian.com"
@@ -44,13 +45,13 @@ func newClient(_ context.Context, setup *structpb.Struct, logger *zap.Logger) (*
 	token := authConfig.Token
 	baseURL := authConfig.BaseURL
 	if token == "" {
-		return nil, errmsg.AddMessage(
+		return nil, errorsx.AddMessage(
 			fmt.Errorf("token not provided"),
 			"token not provided",
 		)
 	}
 	if email == "" {
-		return nil, errmsg.AddMessage(
+		return nil, errorsx.AddMessage(
 			fmt.Errorf("email not provided"),
 			"email not provided",
 		)

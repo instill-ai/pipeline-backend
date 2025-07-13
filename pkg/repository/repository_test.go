@@ -31,9 +31,9 @@ import (
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 var db *gorm.DB
@@ -260,7 +260,7 @@ func TestRepository_Connection(t *testing.T) {
 
 	c.Run("nok - connection not found", func(c *qt.C) {
 		_, err := newRepo(c).GetNamespaceConnectionByID(ctx, uuid.Must(uuid.NewV4()), "foo")
-		c.Check(errors.Is(err, errdomain.ErrNotFound), qt.IsTrue)
+		c.Check(errors.Is(err, errorsx.ErrNotFound), qt.IsTrue)
 	})
 
 	c.Run("nok - missing integration reference", func(c *qt.C) {
@@ -281,19 +281,19 @@ func TestRepository_Connection(t *testing.T) {
 		_, err := repo.CreateNamespaceConnection(ctx, conn)
 		c.Check(err, qt.IsNil)
 		_, err = repo.CreateNamespaceConnection(ctx, conn)
-		c.Check(errors.Is(err, errdomain.ErrAlreadyExists), qt.IsTrue)
+		c.Check(errors.Is(err, errorsx.ErrAlreadyExists), qt.IsTrue)
 	})
 
 	c.Run("nok - update not found", func(c *qt.C) {
 		repo := newRepo(c)
 		conn := newConn()
 		_, err := repo.UpdateNamespaceConnectionByUID(ctx, uuid.Must(uuid.NewV4()), conn)
-		c.Check(errors.Is(err, errdomain.ErrNotFound), qt.IsTrue)
+		c.Check(errors.Is(err, errorsx.ErrNotFound), qt.IsTrue)
 	})
 
 	c.Run("nok - deletion not found", func(c *qt.C) {
 		err := newRepo(c).DeleteNamespaceConnectionByID(ctx, uuid.Must(uuid.NewV4()), "foo")
-		c.Check(errors.Is(err, errdomain.ErrNotFound), qt.IsTrue)
+		c.Check(errors.Is(err, errorsx.ErrNotFound), qt.IsTrue)
 	})
 
 	c.Run("ok - create, get, list", func(c *qt.C) {

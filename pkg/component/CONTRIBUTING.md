@@ -394,7 +394,7 @@ func (e *execution) greet(in *structpb.Struct) (*structpb.Struct, error) {
 
   greetee := in.Fields["target"].GetStringValue()
   if greetee == "Voldemort" {
-    return nil, errmsg.AddMessage(fmt.Errorf("invalid greetee"), "He-Who-Must-Not-Be-Named can't be greeted.")
+    return nil, errorsx.AddMessage(fmt.Errorf("invalid greetee"), "He-Who-Must-Not-Be-Named can't be greeted.")
   }
 
   greeting := "Hello, " + greetee + "!"
@@ -489,7 +489,7 @@ func TestOperator_Execute(t *testing.T) {
 
     err = x.Execute(ctx, []*base.Job{job})
     c.Assert(err, qt.ErrorMatches, "invalid greetee")
-    c.Assert(errmsg.Message(err), qt.Matches, "He-Who-Must-Not-Be-Named can't be greeted.")
+    c.Assert(errorsx.Message(err), qt.Matches, "He-Who-Must-Not-Be-Named can't be greeted.")
   })
 }
 

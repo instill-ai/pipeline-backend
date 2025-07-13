@@ -11,7 +11,8 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 // 1. Fetch FlatAdvancedSearch from LeadIQ
@@ -34,7 +35,7 @@ func (e *execution) executeFindProspects(ctx context.Context, job *base.Job) err
 	flatAdvancedSearchResp := flatAdvancedSearchResp{}
 	if err := e.sendRequest(ctx, client, logger, flatAdvancedSearchQuery, flatAdvancedSearchIn, &flatAdvancedSearchResp); err != nil {
 		msg := fmt.Sprintf("LeadIQ API result error: %v", err)
-		err = errmsg.AddMessage(fmt.Errorf("sending flat advanced search request to LeadIQ with error"), msg)
+		err = errorsx.AddMessage(fmt.Errorf("sending flat advanced search request to LeadIQ with error"), msg)
 		job.Error.Error(ctx, err)
 		return err
 	}
@@ -88,7 +89,7 @@ func (e *execution) executeFindProspects(ctx context.Context, job *base.Job) err
 		searchPeopleResp := searchPeopleResp{}
 		if err := e.sendRequest(ctx, client, logger, searchPeopleQuery, searchPeopleIn, &searchPeopleResp); err != nil {
 			msg := fmt.Sprintf("LeadIQ API result error: %v", err)
-			err = errmsg.AddMessage(fmt.Errorf("sending search people request to LeadIQ with error"), msg)
+			err = errorsx.AddMessage(fmt.Errorf("sending search people request to LeadIQ with error"), msg)
 			job.Error.Error(ctx, err)
 			return err
 		}

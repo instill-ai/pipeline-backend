@@ -18,7 +18,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 
-	artifactPB "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 )
 
 var (
@@ -81,7 +81,7 @@ func Test_ExecuteSyncFiles(t *testing.T) {
 	setUploadCatalogFileMock(testServer)
 	setProcessCatalogFilesMock(testServer)
 
-	artifactPB.RegisterArtifactPublicServiceServer(grpcServer, testServer)
+	artifactpb.RegisterArtifactPublicServiceServer(grpcServer, testServer)
 	lis, err := net.Listen("tcp", ":0")
 	c.Assert(err, qt.IsNil)
 
@@ -199,10 +199,10 @@ var (
 )
 
 func setListCatalogsMock(s *mock.ArtifactPublicServiceServerMock) {
-	s.ListCatalogsMock.Set(func(ctx context.Context, in *artifactPB.ListCatalogsRequest) (*artifactPB.ListCatalogsResponse, error) {
+	s.ListCatalogsMock.Set(func(ctx context.Context, in *artifactpb.ListCatalogsRequest) (*artifactpb.ListCatalogsResponse, error) {
 		mock.Equal(in.NamespaceId, namespace)
-		return &artifactPB.ListCatalogsResponse{
-			Catalogs: []*artifactPB.Catalog{
+		return &artifactpb.ListCatalogsResponse{
+			Catalogs: []*artifactpb.Catalog{
 				{
 					CatalogId: catalogID,
 					Name:      catalogID,
@@ -213,7 +213,7 @@ func setListCatalogsMock(s *mock.ArtifactPublicServiceServerMock) {
 }
 
 func setListCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock) {
-	s.ListCatalogFilesMock.Set(func(ctx context.Context, in *artifactPB.ListCatalogFilesRequest) (*artifactPB.ListCatalogFilesResponse, error) {
+	s.ListCatalogFilesMock.Set(func(ctx context.Context, in *artifactpb.ListCatalogFilesRequest) (*artifactpb.ListCatalogFilesResponse, error) {
 		mock.Equal(in.CatalogId, catalogID)
 
 		metadataStruct2 := new(structpb.Struct)
@@ -228,8 +228,8 @@ func setListCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock) {
 		err = protojson.Unmarshal(jsonData, metadataStruct3)
 		mock.Nil(err)
 
-		return &artifactPB.ListCatalogFilesResponse{
-			Files: []*artifactPB.File{
+		return &artifactpb.ListCatalogFilesResponse{
+			Files: []*artifactpb.File{
 				{
 					FileUid:          catalogFileUID2,
 					ExternalMetadata: metadataStruct2,
@@ -244,19 +244,19 @@ func setListCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock) {
 }
 
 func setDeleteCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
-	s.DeleteCatalogFileMock.Times(2).Set(func(ctx context.Context, in *artifactPB.DeleteCatalogFileRequest) (*artifactPB.DeleteCatalogFileResponse, error) {
+	s.DeleteCatalogFileMock.Times(2).Set(func(ctx context.Context, in *artifactpb.DeleteCatalogFileRequest) (*artifactpb.DeleteCatalogFileResponse, error) {
 		mock.Contains([]string{catalogFileUID2, catalogFileUID3}, in.FileUid)
 
-		return &artifactPB.DeleteCatalogFileResponse{}, nil
+		return &artifactpb.DeleteCatalogFileResponse{}, nil
 	})
 
 }
 
 func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
-	s.UploadCatalogFileMock.Times(2).Set(func(ctx context.Context, in *artifactPB.UploadCatalogFileRequest) (*artifactPB.UploadCatalogFileResponse, error) {
+	s.UploadCatalogFileMock.Times(2).Set(func(ctx context.Context, in *artifactpb.UploadCatalogFileRequest) (*artifactpb.UploadCatalogFileResponse, error) {
 		mock.Equal(in.NamespaceId, namespace)
 		mock.Equal(in.CatalogId, catalogID)
-		mock.Equal(in.File.Type, artifactPB.FileType_FILE_TYPE_PDF)
+		mock.Equal(in.File.Type, artifactpb.FileType_FILE_TYPE_PDF)
 		mock.NotNil(in.File.Content)
 		mock.NotNil(in.File.ExternalMetadata)
 
@@ -270,8 +270,8 @@ func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 			panic("Unexpected file name")
 		}
 
-		return &artifactPB.UploadCatalogFileResponse{
-			File: &artifactPB.File{
+		return &artifactpb.UploadCatalogFileResponse{
+			File: &artifactpb.File{
 				FileUid:          mockFileUID,
 				Name:             in.File.Name,
 				Type:             in.File.Type,
@@ -285,9 +285,9 @@ func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 }
 
 func setProcessCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock) {
-	s.ProcessCatalogFilesMock.Set(func(ctx context.Context, in *artifactPB.ProcessCatalogFilesRequest) (*artifactPB.ProcessCatalogFilesResponse, error) {
+	s.ProcessCatalogFilesMock.Set(func(ctx context.Context, in *artifactpb.ProcessCatalogFilesRequest) (*artifactpb.ProcessCatalogFilesResponse, error) {
 		mock.DeepEquals(in.FileUids, []string{catalogFileUID, catalogFileUID2})
 
-		return &artifactPB.ProcessCatalogFilesResponse{}, nil
+		return &artifactpb.ProcessCatalogFilesResponse{}, nil
 	})
 }

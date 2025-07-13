@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 func (c *client) createSprint(ctx context.Context, job *base.Job) error {
@@ -23,7 +24,7 @@ func (c *client) createSprint(ctx context.Context, job *base.Job) error {
 		} else if _, err := time.Parse(time.RFC3339, opt.StartDate+"T00:00:00Z"); err == nil {
 			opt.StartDate = opt.StartDate + "T00:00:00.000Z"
 		} else {
-			return errmsg.AddMessage(
+			return errorsx.AddMessage(
 				err,
 				fmt.Sprintf("invalid start date format: %s", opt.StartDate),
 			)
@@ -31,14 +32,14 @@ func (c *client) createSprint(ctx context.Context, job *base.Job) error {
 	}
 	if _, err := time.Parse(time.RFC3339, opt.EndDate); err != nil {
 		if opt.EndDate == "" {
-			return errmsg.AddMessage(
+			return errorsx.AddMessage(
 				fmt.Errorf("end date is required"),
 				"end date is required",
 			)
 		} else if _, err := time.Parse(time.RFC3339, opt.EndDate+"T00:00:00Z"); err == nil {
 			opt.EndDate = opt.EndDate + "T00:00:00.000Z"
 		} else {
-			return errmsg.AddMessage(
+			return errorsx.AddMessage(
 				err,
 				fmt.Sprintf("invalid end date format: %s", opt.EndDate),
 			)
@@ -51,12 +52,12 @@ func (c *client) createSprint(ctx context.Context, job *base.Job) error {
 	}
 
 	if len(boards.Boards) == 0 {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("board not found"),
 			fmt.Sprintf("board with name %s not found", opt.BoardName),
 		)
 	} else if len(boards.Boards) > 1 {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("multiple boards found"),
 			fmt.Sprintf("multiple boards are found with the partial name \"%s\". Please provide a more specific name", opt.BoardName),
 		)
@@ -74,12 +75,12 @@ func (c *client) createSprint(ctx context.Context, job *base.Job) error {
 
 	resp, err := req.Post(apiBaseURL)
 	if err != nil {
-		return errmsg.AddMessage(fmt.Errorf("creating sprint: %w", err), errmsg.Message(err))
+		return errorsx.AddMessage(fmt.Errorf("creating sprint: %w", err), errorsx.Message(err))
 	}
 
 	sprint, ok := resp.Result().(*createSprintResp)
 	if !ok {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("failed to convert response to `Create Sprint` Output"),
 			fmt.Sprintf("failed to convert %v to `Create Sprint` Output", resp.Result()),
 		)

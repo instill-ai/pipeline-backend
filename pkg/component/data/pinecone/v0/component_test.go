@@ -19,7 +19,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 const (
@@ -311,7 +312,7 @@ func TestComponent_Execute(t *testing.T) {
 		ow.WriteMock.Optional().Return(nil)
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 			want := "Pinecone responded with a 400 status code. Cannot provide both ID and vector at the same time."
-			c.Check(errmsg.Message(err), qt.Equals, want)
+			c.Check(errorsx.Message(err), qt.Equals, want)
 		})
 
 		err = exec.Execute(ctx, []*base.Job{job})
@@ -337,7 +338,7 @@ func TestComponent_Execute(t *testing.T) {
 		ow.WriteMock.Optional().Return(nil)
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 			want := "Failed to call http://no-such.host/.*. Please check that the component configuration is correct."
-			c.Check(errmsg.Message(err), qt.Matches, want)
+			c.Check(errorsx.Message(err), qt.Matches, want)
 		})
 
 		err = exec.Execute(ctx, []*base.Job{job})

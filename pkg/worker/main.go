@@ -18,7 +18,7 @@ import (
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	logx "github.com/instill-ai/x/log"
 )
 
@@ -66,7 +66,7 @@ type WorkerConfig struct {
 	ArtifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	ArtifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
 	BinaryFetcher                external.BinaryFetcher
-	PipelinePublicServiceClient  pb.PipelinePublicServiceClient
+	PipelinePublicServiceClient  pipelinepb.PipelinePublicServiceClient
 }
 
 // worker represents resources required to run Temporal workflow and activity
@@ -80,7 +80,7 @@ type worker struct {
 	memoryStore                  *memory.Store
 	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
-	pipelinePublicServiceClient  pb.PipelinePublicServiceClient
+	pipelinePublicServiceClient  pipelinepb.PipelinePublicServiceClient
 	binaryFetcher                external.BinaryFetcher
 }
 

@@ -12,7 +12,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
-	artifactPB "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 )
 
 const (
@@ -44,7 +44,7 @@ type execution struct {
 	base.ComponentExecution
 
 	execute    func(*structpb.Struct) (*structpb.Struct, error)
-	client     artifactPB.ArtifactPublicServiceClient
+	client     artifactpb.ArtifactPublicServiceClient
 	connection Connection
 }
 

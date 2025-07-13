@@ -11,21 +11,20 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	"github.com/instill-ai/x/errmsg"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
-func (s *service) CreateNamespaceSecret(ctx context.Context, ns resource.Namespace, pbSecret *pb.Secret) (*pb.Secret, error) {
+func (s *service) CreateNamespaceSecret(ctx context.Context, ns resource.Namespace, pbSecret *pipelinepb.Secret) (*pipelinepb.Secret, error) {
 
 	if err := s.checkNamespacePermission(ctx, ns); err != nil {
 		return nil, err
 	}
 
 	if pbSecret.GetId() == constant.GlobalSecretKey {
-		return nil, errmsg.AddMessage(
-			fmt.Errorf("%w: reserved secret ID", errdomain.ErrInvalidArgument),
+		return nil, errorsx.AddMessage(
+			fmt.Errorf("%w: reserved secret ID", errorsx.ErrInvalidArgument),
 			"The secret ID is reserved",
 		)
 	}
@@ -48,7 +47,7 @@ func (s *service) CreateNamespaceSecret(ctx context.Context, ns resource.Namespa
 
 }
 
-func (s *service) ListNamespaceSecrets(ctx context.Context, ns resource.Namespace, pageSize int32, pageToken string, filter filtering.Filter) ([]*pb.Secret, int32, string, error) {
+func (s *service) ListNamespaceSecrets(ctx context.Context, ns resource.Namespace, pageSize int32, pageToken string, filter filtering.Filter) ([]*pipelinepb.Secret, int32, string, error) {
 
 	if err := s.checkNamespacePermission(ctx, ns); err != nil {
 		return nil, 0, "", err
@@ -63,7 +62,7 @@ func (s *service) ListNamespaceSecrets(ctx context.Context, ns resource.Namespac
 	return pbSecrets, int32(ps), pt, err
 }
 
-func (s *service) GetNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string) (*pb.Secret, error) {
+func (s *service) GetNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string) (*pipelinepb.Secret, error) {
 
 	if err := s.checkNamespacePermission(ctx, ns); err != nil {
 		return nil, err
@@ -73,12 +72,12 @@ func (s *service) GetNamespaceSecretByID(ctx context.Context, ns resource.Namesp
 
 	dbSecret, err := s.repository.GetNamespaceSecretByID(ctx, ownerPermalink, id)
 	if err != nil {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 	return s.converter.ConvertSecretToPB(ctx, dbSecret)
 }
 
-func (s *service) UpdateNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string, updatedSecret *pb.Secret) (*pb.Secret, error) {
+func (s *service) UpdateNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string, updatedSecret *pipelinepb.Secret) (*pipelinepb.Secret, error) {
 
 	if err := s.checkNamespacePermission(ctx, ns); err != nil {
 		return nil, err
@@ -88,7 +87,7 @@ func (s *service) UpdateNamespaceSecretByID(ctx context.Context, ns resource.Nam
 
 	dbSecret, err := s.converter.ConvertSecretToDB(ctx, ns, updatedSecret)
 	if err != nil {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	if _, err = s.repository.GetNamespaceSecretByID(ctx, ownerPermalink, id); err != nil {
@@ -130,7 +129,7 @@ func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, setup an
 		if ok, err := s.component.IsSecretField(uid, key); err == nil && ok {
 			if s, ok := v.(string); ok {
 				if !strings.HasPrefix(s, "${") || !strings.HasSuffix(s, "}") {
-					return errCanNotUsePlaintextSecret
+					return errorsx.ErrCanNotUsePlaintextSecret
 				}
 			}
 		}

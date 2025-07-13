@@ -23,9 +23,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
-	"github.com/instill-ai/x/errmsg"
 
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 const (
@@ -95,7 +95,7 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	case taskGet, taskPost, taskPatch, taskPut, taskDelete, taskHead, taskOptions:
 		e.execute = e.executeHTTP
 	default:
-		return nil, errmsg.AddMessage(
+		return nil, errorsx.AddMessage(
 			fmt.Errorf("not supported task: %s", x.Task),
 			fmt.Sprintf("%s task is not supported.", x.Task),
 		)
@@ -152,7 +152,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 func (e *execution) validateURL(endpointURL string) error {
 	parsedURL, err := url.Parse(endpointURL)
 	if err != nil {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("parsing endpoint URL: %w", err),
 			"Couldn't parse the endpoint URL as a valid URI reference",
 		)
@@ -161,7 +161,7 @@ func (e *execution) validateURL(endpointURL string) error {
 	host := parsedURL.Hostname()
 	if host == "" {
 		err := fmt.Errorf("missing hostname")
-		return errmsg.AddMessage(err, "Endpoint URL must have a hostname")
+		return errorsx.AddMessage(err, "Endpoint URL must have a hostname")
 	}
 
 	var whitelistedHosts = []string{
@@ -188,7 +188,7 @@ func (e *execution) validateURL(endpointURL string) error {
 	// Check if any resolved IP is in private ranges
 	for _, ip := range ips {
 		if ip.IsPrivate() || ip.IsLoopback() {
-			return errmsg.AddMessage(
+			return errorsx.AddMessage(
 				fmt.Errorf("endpoint URL resolves to private/internal IP address"),
 				"URL must point to a publicly available endpoint (no private/internal addresses)",
 			)
@@ -289,7 +289,7 @@ func (c *component) Test(sysVars map[string]any, setup *structpb.Struct) error {
 }
 
 // Generate the model_name enum based on the task
-func (c *component) GetDefinition(sysVars map[string]any, compConfig *base.ComponentConfig) (*pb.ComponentDefinition, error) {
+func (c *component) GetDefinition(sysVars map[string]any, compConfig *base.ComponentConfig) (*pipelinepb.ComponentDefinition, error) {
 	oriDef, err := c.Component.GetDefinition(nil, nil)
 	if err != nil {
 		return nil, err
@@ -298,7 +298,7 @@ func (c *component) GetDefinition(sysVars map[string]any, compConfig *base.Compo
 		return oriDef, nil
 	}
 
-	def := proto.Clone(oriDef).(*pb.ComponentDefinition)
+	def := proto.Clone(oriDef).(*pipelinepb.ComponentDefinition)
 	if compConfig == nil {
 		return def, nil
 	}

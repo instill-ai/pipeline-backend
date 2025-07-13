@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/go-github/v62/github"
 
-	"github.com/instill-ai/x/errmsg"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 // RepositoriesService is a wrapper around the github.RepositoriesService
@@ -33,7 +33,7 @@ type RepoInfo struct {
 
 func (info RepoInfo) getOwner() (string, error) {
 	if info.Owner == "" {
-		return "", errmsg.AddMessage(
+		return "", errorsx.AddMessage(
 			fmt.Errorf("owner not provided"),
 			"Owner not provided.",
 		)
@@ -43,7 +43,7 @@ func (info RepoInfo) getOwner() (string, error) {
 
 func (info RepoInfo) getRepository() (string, error) {
 	if info.Repository == "" {
-		return "", errmsg.AddMessage(
+		return "", errorsx.AddMessage(
 			fmt.Errorf("repository not provided"),
 			"Repository not provided.",
 		)

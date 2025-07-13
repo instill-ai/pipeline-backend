@@ -7,10 +7,10 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
-type releaseStage pb.ComponentDefinition_ReleaseStage
+type releaseStage pipelinepb.ComponentDefinition_ReleaseStage
 
 func (rs *releaseStage) UnmarshalJSON(b []byte) error {
 	var s string
@@ -18,13 +18,13 @@ func (rs *releaseStage) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	*rs = releaseStage(pb.ComponentDefinition_ReleaseStage_value[s])
+	*rs = releaseStage(pipelinepb.ComponentDefinition_ReleaseStage_value[s])
 	return nil
 }
 
 func (rs releaseStage) String() string {
-	pbRS := pb.ComponentDefinition_ReleaseStage(rs)
-	if pbRS == pb.ComponentDefinition_RELEASE_STAGE_GA {
+	pbRS := pipelinepb.ComponentDefinition_ReleaseStage(rs)
+	if pbRS == pipelinepb.ComponentDefinition_RELEASE_STAGE_GA {
 		return "GA"
 	}
 

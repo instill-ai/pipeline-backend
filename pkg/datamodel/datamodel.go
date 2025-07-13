@@ -16,8 +16,8 @@ import (
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
-	taskPB "github.com/instill-ai/protogen-go/common/task/v1alpha"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	taskpb "github.com/instill-ai/protogen-go/common/task/v1alpha"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 const Iterator = "iterator"
@@ -318,18 +318,18 @@ type Component struct {
 	Definition *Definition `json:"definition,omitempty" yaml:"-"`
 
 	// Fields for iterators
-	Range             any                   `json:"range,omitempty" yaml:"range,omitempty"`
-	Index             string                `json:"index,omitempty" yaml:"index,omitempty"`
-	Component         ComponentMap          `json:"component,omitempty" yaml:"component,omitempty"`
-	OutputElements    map[string]string     `json:"outputElements,omitempty" yaml:"output-elements,omitempty"`
-	DataSpecification *pb.DataSpecification `json:"dataSpecification,omitempty" yaml:"-"`
+	Range             any                           `json:"range,omitempty" yaml:"range,omitempty"`
+	Index             string                        `json:"index,omitempty" yaml:"index,omitempty"`
+	Component         ComponentMap                  `json:"component,omitempty" yaml:"component,omitempty"`
+	OutputElements    map[string]string             `json:"outputElements,omitempty" yaml:"output-elements,omitempty"`
+	DataSpecification *pipelinepb.DataSpecification `json:"dataSpecification,omitempty" yaml:"-"`
 }
 
 type Definition struct {
-	*pb.ComponentDefinition
+	*pipelinepb.ComponentDefinition
 }
 type DataSpecification struct {
-	*pb.DataSpecification
+	*pipelinepb.DataSpecification
 }
 
 func (c *Definition) MarshalJSON() ([]byte, error) {
@@ -367,7 +367,7 @@ type SharingCode struct {
 }
 
 // PipelineRole is an alias type for Protobuf enum
-type PipelineRole pb.Role
+type PipelineRole pipelinepb.Role
 
 // Scan function for custom GORM type Recipe
 func (r *Recipe) Scan(value interface{}) error {
@@ -459,27 +459,27 @@ func (p *SharingCode) Value() (driver.Value, error) {
 
 // Scan function for custom GORM type PipelineRole
 func (p *PipelineRole) Scan(value interface{}) error {
-	*p = PipelineRole(pb.Role_value[value.(string)])
+	*p = PipelineRole(pipelinepb.Role_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type PipelineRole
 func (p PipelineRole) Value() (driver.Value, error) {
-	return pb.Role(p).String(), nil
+	return pipelinepb.Role(p).String(), nil
 }
 
 // ConnectorType is an alias type for Protobuf enum ConnectorType
-type Task taskPB.Task
+type Task taskpb.Task
 
 // Scan function for custom GORM type Task
 func (r *Task) Scan(value interface{}) error {
-	*r = Task(taskPB.Task_value[value.(string)])
+	*r = Task(taskpb.Task_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type Task
 func (r Task) Value() (driver.Value, error) {
-	return taskPB.Task(r).String(), nil
+	return taskpb.Task(r).String(), nil
 }
 
 // ComponentDefinition is the data model for the component defintion table.
@@ -537,7 +537,7 @@ var FeatureScores = map[string]int{
 
 // ComponentDefinitionFromProto parses a ComponentDefinition from the proto
 // structure.
-func ComponentDefinitionFromProto(cdpb *pb.ComponentDefinition) *ComponentDefinition {
+func ComponentDefinitionFromProto(cdpb *pipelinepb.ComponentDefinition) *ComponentDefinition {
 	props, hasIntegration := cdpb.GetSpec().GetComponentSpecification().GetFields()["properties"]
 	if hasIntegration {
 		_, hasIntegration = props.GetStructValue().GetFields()["setup"]
@@ -561,31 +561,31 @@ func ComponentDefinitionFromProto(cdpb *pb.ComponentDefinition) *ComponentDefini
 }
 
 // ComponentType is an alias type for proto enum ComponentType.
-type ComponentType pb.ComponentType
+type ComponentType pipelinepb.ComponentType
 
 // Scan function for custom GORM type ComponentType
 func (c *ComponentType) Scan(value any) error {
-	*c = ComponentType(pb.ComponentType_value[value.(string)])
+	*c = ComponentType(pipelinepb.ComponentType_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type ComponentType
 func (c ComponentType) Value() (driver.Value, error) {
-	return pb.ComponentType(c).String(), nil
+	return pipelinepb.ComponentType(c).String(), nil
 }
 
 // ReleaseStage is an alias type for proto enum ComponentDefinition_ReleaseStage.
-type ReleaseStage pb.ComponentDefinition_ReleaseStage
+type ReleaseStage pipelinepb.ComponentDefinition_ReleaseStage
 
 // Scan function for custom GORM type ReleaseStage
 func (c *ReleaseStage) Scan(value any) error {
-	*c = ReleaseStage(pb.ComponentDefinition_ReleaseStage_value[value.(string)])
+	*c = ReleaseStage(pipelinepb.ComponentDefinition_ReleaseStage_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type ReleaseStage
 func (c ReleaseStage) Value() (driver.Value, error) {
-	return pb.ComponentDefinition_ReleaseStage(c).String(), nil
+	return pipelinepb.ComponentDefinition_ReleaseStage(c).String(), nil
 }
 
 type Secret struct {
@@ -599,17 +599,17 @@ type Secret struct {
 }
 
 // ConnectionMethod is an alias type for the proto enum that allows us to use its string value in the database.
-type ConnectionMethod pb.Role
+type ConnectionMethod pipelinepb.Role
 
 // Scan function for custom GORM type ConnectionMethod
 func (m *ConnectionMethod) Scan(value interface{}) error {
-	*m = ConnectionMethod(pb.Connection_Method_value[value.(string)])
+	*m = ConnectionMethod(pipelinepb.Connection_Method_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type ConnectionMethod
 func (m ConnectionMethod) Value() (driver.Value, error) {
-	return pb.Connection_Method(m).String(), nil
+	return pipelinepb.Connection_Method(m).String(), nil
 }
 
 // Connection is the data model for the `integration` table

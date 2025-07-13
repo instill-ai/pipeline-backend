@@ -43,16 +43,20 @@ cache:
   redis:
     redisoptions:
       addr: redis:6379
-log:
-  external: false
-  otelcollector:
-    host: otel-collector
-    port: 8095
+otelcollector:
+  enable: false
+  host: otel-collector
+  port: 4317
 temporal:
   hostport: temporal:7233
-  namespace: pipeline-backend
+  namespace: model-backend
   retention: 1d
   metricsport: 8096
+  servername:
+  serverrootca:
+  clientcert:
+  clientkey:
+  insecureskipverify:
 mgmtbackend:
   host: mgmt-backend
   publicport: 8084

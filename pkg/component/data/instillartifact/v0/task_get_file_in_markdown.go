@@ -10,7 +10,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
-	artifactPB "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 )
 
 func (e *execution) getFileInMarkdown(input *structpb.Struct) (*structpb.Struct, error) {
@@ -27,7 +27,7 @@ func (e *execution) getFileInMarkdown(input *structpb.Struct) (*structpb.Struct,
 	defer cancel()
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
-	fileTextsRes, err := artifactClient.GetSourceFile(ctx, &artifactPB.GetSourceFileRequest{
+	fileTextsRes, err := artifactClient.GetSourceFile(ctx, &artifactpb.GetSourceFileRequest{
 		NamespaceId: inputStruct.Namespace,
 		CatalogId:   inputStruct.CatalogID,
 		FileUid:     inputStruct.FileUID,

@@ -10,11 +10,10 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
-
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
-func checkTask(compID, targetTask string, compSpec *structpb.Struct, compProperties map[string]any, validationErrors *[]*pb.ErrPipelineValidation) {
+func checkTask(compID, targetTask string, compSpec *structpb.Struct, compProperties map[string]any, validationErrors *[]*pipelinepb.ErrPipelineValidation) {
 	taskMatch := false
 	for _, t := range compSpec.Fields["oneOf"].GetListValue().Values {
 		task := t.GetStructValue().Fields["properties"].GetStructValue().Fields["task"].GetStructValue().Fields["const"].GetStringValue()
@@ -24,7 +23,7 @@ func checkTask(compID, targetTask string, compSpec *structpb.Struct, compPropert
 		}
 	}
 	if !taskMatch {
-		*validationErrors = append(*validationErrors, &pb.ErrPipelineValidation{
+		*validationErrors = append(*validationErrors, &pipelinepb.ErrPipelineValidation{
 			Location: "component." + compID,
 			Error:    "task not correct",
 		})
@@ -32,9 +31,9 @@ func checkTask(compID, targetTask string, compSpec *structpb.Struct, compPropert
 	// return nil
 }
 
-func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.ErrPipelineValidation, error) {
+func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pipelinepb.ErrPipelineValidation, error) {
 
-	validationErrors := []*pb.ErrPipelineValidation{}
+	validationErrors := []*pipelinepb.ErrPipelineValidation{}
 
 	schema := map[string]any{}
 
@@ -54,7 +53,7 @@ func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.ErrPipel
 
 		case datamodel.Iterator:
 			nestedCompProperties := map[string]any{}
-			nestedValidationErrors := []*pb.ErrPipelineValidation{}
+			nestedValidationErrors := []*pipelinepb.ErrPipelineValidation{}
 			for nestedID, nestedComp := range comp.Component {
 				if nestedComp.Type != datamodel.Iterator {
 					def, err := s.component.GetDefinitionByID(nestedComp.Type, nil, nil)
@@ -66,7 +65,7 @@ func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.ErrPipel
 
 			}
 			for _, e := range nestedValidationErrors {
-				validationErrors = append(validationErrors, &pb.ErrPipelineValidation{
+				validationErrors = append(validationErrors, &pipelinepb.ErrPipelineValidation{
 					Location: "component." + id + "." + e.Location,
 					Error:    e.Error,
 				})
@@ -123,7 +122,7 @@ func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.ErrPipel
 				}
 				loc := strings.ReplaceAll(detail.InstanceLocation, "/", ".")
 				loc = loc[1:]
-				validationErrors = append(validationErrors, &pb.ErrPipelineValidation{
+				validationErrors = append(validationErrors, &pipelinepb.ErrPipelineValidation{
 					Location: loc,
 					Error:    detail.Error,
 				})

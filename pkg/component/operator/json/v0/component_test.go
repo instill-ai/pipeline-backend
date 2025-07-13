@@ -12,7 +12,8 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 const asJSON = `
@@ -265,7 +266,7 @@ func TestOperator_Execute(t *testing.T) {
 			})
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				if tc.wantErr != "" {
-					c.Check(errmsg.Message(err), qt.Matches, tc.wantErr)
+					c.Check(errorsx.Message(err), qt.Matches, tc.wantErr)
 				}
 			})
 
@@ -290,6 +291,6 @@ func TestOperator_CreateExecution(t *testing.T) {
 			Task:      task,
 		})
 		c.Check(err, qt.IsNotNil)
-		c.Check(errmsg.Message(err), qt.Equals, want)
+		c.Check(errorsx.Message(err), qt.Equals, want)
 	})
 }

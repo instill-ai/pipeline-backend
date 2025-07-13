@@ -19,8 +19,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 	"github.com/instill-ai/pipeline-backend/pkg/component/resources/schemas"
 
-	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	modelpb "github.com/instill-ai/protogen-go/model/model/v1alpha"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 // TODO: The Instill Model component will be refactored soon to align the data
@@ -192,7 +192,7 @@ func (c *component) Test(sysVars map[string]any, setup *structpb.Struct) error {
 	defer cancel()
 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(sysVars))
-	_, err := gRPCCLient.ListModels(ctx, &modelPB.ListModelsRequest{})
+	_, err := gRPCCLient.ListModels(ctx, &modelpb.ListModelsRequest{})
 	if err != nil {
 		return err
 	}
@@ -208,7 +208,7 @@ type ModelsResp struct {
 }
 
 // Generate the `model_name` enum based on the task.
-func (c *component) GetDefinition(sysVars map[string]any, compConfig *base.ComponentConfig) (*pb.ComponentDefinition, error) {
+func (c *component) GetDefinition(sysVars map[string]any, compConfig *base.ComponentConfig) (*pipelinepb.ComponentDefinition, error) {
 
 	oriDef, err := c.Component.GetDefinition(nil, nil)
 	if err != nil {
@@ -217,7 +217,7 @@ func (c *component) GetDefinition(sysVars map[string]any, compConfig *base.Compo
 	if sysVars == nil && compConfig == nil {
 		return oriDef, nil
 	}
-	def := proto.Clone(oriDef).(*pb.ComponentDefinition)
+	def := proto.Clone(oriDef).(*pipelinepb.ComponentDefinition)
 
 	if getModelServerURL(sysVars) == "" {
 		return def, nil
@@ -237,7 +237,7 @@ func (c *component) GetDefinition(sysVars map[string]any, compConfig *base.Compo
 	pageSize := int32(100)
 	modelNameMap := map[string]*structpb.ListValue{}
 	for {
-		resp, err := gRPCCLient.ListModels(ctx, &modelPB.ListModelsRequest{PageToken: &pageToken, PageSize: &pageSize, View: modelPB.View_VIEW_BASIC.Enum()})
+		resp, err := gRPCCLient.ListModels(ctx, &modelpb.ListModelsRequest{PageToken: &pageToken, PageSize: &pageSize, View: modelpb.View_VIEW_BASIC.Enum()})
 		if err != nil {
 			return def, nil
 		}

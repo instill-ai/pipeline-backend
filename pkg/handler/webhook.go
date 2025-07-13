@@ -9,10 +9,10 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
-func (h *PublicHandler) DispatchPipelineWebhookEvent(ctx context.Context, req *pb.DispatchPipelineWebhookEventRequest) (resp *pb.DispatchPipelineWebhookEventResponse, err error) {
+func (h *PublicHandler) DispatchPipelineWebhookEvent(ctx context.Context, req *pipelinepb.DispatchPipelineWebhookEventRequest) (resp *pipelinepb.DispatchPipelineWebhookEventResponse, err error) {
 
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -33,6 +33,6 @@ func (h *PublicHandler) DispatchPipelineWebhookEvent(ctx context.Context, req *p
 		return nil, err
 	}
 
-	return &pb.DispatchPipelineWebhookEventResponse{Response: output.Response}, nil
+	return &pipelinepb.DispatchPipelineWebhookEventResponse{Response: output.Response}, nil
 
 }

@@ -15,11 +15,11 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	constantx "github.com/instill-ai/x/constant"
+	errorsx "github.com/instill-ai/x/errors"
 	resourcex "github.com/instill-ai/x/resource"
 )
 
@@ -48,11 +48,11 @@ func (s *service) checkNamespacePermission(ctx context.Context, ns resource.Name
 			return err
 		}
 		if !granted {
-			return errdomain.ErrUnauthorized
+			return errorsx.ErrUnauthorized
 		}
 	} else {
 		if ns.NsUID != uuid.FromStringOrNil(resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)) {
-			return errdomain.ErrUnauthorized
+			return errorsx.ErrUnauthorized
 		}
 	}
 	return nil
