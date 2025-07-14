@@ -16,7 +16,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 const (
@@ -250,7 +251,7 @@ func testTask(c *qt.C, p taskParams) {
 		ow.WriteMock.Optional().Return(nil)
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 			c.Check(err, qt.ErrorMatches, ".*no such host")
-			c.Check(errmsg.Message(err), qt.Matches, "Failed to call .*check that the component configuration is correct.")
+			c.Check(errorsx.Message(err), qt.Matches, "Failed to call .*check that the component configuration is correct.")
 		})
 
 		err = exec.Execute(ctx, []*base.Job{job})
@@ -353,7 +354,7 @@ func testTask(c *qt.C, p taskParams) {
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				if tc.wantErr != "" {
 					c.Check(err, qt.IsNotNil)
-					c.Check(errmsg.Message(err), qt.Equals, tc.wantErr)
+					c.Check(errorsx.Message(err), qt.Equals, tc.wantErr)
 				}
 			})
 

@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 func (c *client) updateSprint(ctx context.Context, job *base.Job) error {
@@ -33,7 +34,7 @@ func (c *client) updateSprint(ctx context.Context, job *base.Job) error {
 		} else if _, err := time.Parse(time.RFC3339, body.StartDate+"T00:00:00Z"); err == nil {
 			body.StartDate = body.StartDate + "T00:00:00.000Z"
 		} else {
-			return errmsg.AddMessage(
+			return errorsx.AddMessage(
 				err,
 				fmt.Sprintf("invalid start date format: %v", input.StartDate),
 			)
@@ -41,14 +42,14 @@ func (c *client) updateSprint(ctx context.Context, job *base.Job) error {
 	}
 	if _, err := time.Parse(time.RFC3339, body.EndDate); err != nil {
 		if body.EndDate == "" {
-			return errmsg.AddMessage(
+			return errorsx.AddMessage(
 				fmt.Errorf("end date is required"),
 				"end date is required",
 			)
 		} else if _, err := time.Parse(time.RFC3339, body.EndDate+"T00:00:00Z"); err == nil {
 			body.EndDate = body.EndDate + "T00:00:00.000Z"
 		} else {
-			return errmsg.AddMessage(
+			return errorsx.AddMessage(
 				err,
 				fmt.Sprintf("invalid end date format: %s", input.EndDate),
 			)
@@ -84,7 +85,7 @@ func (c *client) updateSprint(ctx context.Context, job *base.Job) error {
 
 	updatedSprint, ok := resp.Result().(*Sprint)
 	if !ok {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("failed to convert response to `Update Sprint` Output"),
 			fmt.Sprintf("failed to convert %v to `Update Sprint` Output", resp.Result()),
 		)

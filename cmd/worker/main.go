@@ -39,8 +39,9 @@ import (
 	pipelineworker "github.com/instill-ai/pipeline-backend/pkg/worker"
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
-	grpcclientx "github.com/instill-ai/x/client/grpc"
+	clientgrpcx "github.com/instill-ai/x/client/grpc"
 	logx "github.com/instill-ai/x/log"
+	otelx "github.com/instill-ai/x/otel"
 )
 
 const gracefulShutdownWaitPeriod = 15 * time.Second
@@ -59,6 +60,16 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	// Setup all OpenTelemetry components
+	cleanup := otelx.SetupWithCleanup(ctx,
+		otelx.WithServiceName(serviceName),
+		otelx.WithServiceVersion(serviceVersion),
+		otelx.WithHost(config.Config.OTELCollector.Host),
+		otelx.WithPort(config.Config.OTELCollector.Port),
+		otelx.WithCollectorEnable(config.Config.OTELCollector.Enable),
+	)
+	defer cleanup()
 
 	logx.Debug = config.Config.Server.Debug
 	logger, _ := logx.GetZapLogger(ctx)
@@ -189,26 +200,35 @@ func newClients(ctx context.Context, logger *zap.Logger) (
 	closeFuncs := map[string]func() error{}
 
 	// Initialize external service clients
-	pipelinePublicServiceClient, pipelinePublicClose, err := grpcclientx.NewPipelinePublicClient(client.ServiceConfig{
-		Host:       config.Config.Server.InstanceID,
-		PublicPort: config.Config.Server.PublicPort,
-		HTTPS: client.HTTPSConfig{
-			Cert: config.Config.Server.HTTPS.Cert,
-			Key:  config.Config.Server.HTTPS.Key,
-		},
-	})
+	pipelinePublicServiceClient, pipelinePublicClose, err := clientgrpcx.NewClient[pipelinepb.PipelinePublicServiceClient](
+		clientgrpcx.WithServiceConfig(client.ServiceConfig{
+			Host:       config.Config.Server.InstanceID,
+			PublicPort: config.Config.Server.PublicPort,
+			HTTPS: client.HTTPSConfig{
+				Cert: config.Config.Server.HTTPS.Cert,
+				Key:  config.Config.Server.HTTPS.Key,
+			},
+		}),
+		clientgrpcx.WithSetOTELClientHandler(config.Config.OTELCollector.Enable),
+	)
 	if err != nil {
 		logger.Fatal("failed to create pipeline public service client", zap.Error(err))
 	}
 	closeFuncs["pipelinePublic"] = pipelinePublicClose
 
-	artifactPublicServiceClient, artifactPublicClose, err := grpcclientx.NewArtifactPublicClient(config.Config.ArtifactBackend)
+	artifactPublicServiceClient, artifactPublicClose, err := clientgrpcx.NewClient[artifactpb.ArtifactPublicServiceClient](
+		clientgrpcx.WithServiceConfig(config.Config.ArtifactBackend),
+		clientgrpcx.WithSetOTELClientHandler(config.Config.OTELCollector.Enable),
+	)
 	if err != nil {
 		logger.Fatal("failed to create artifact public service client", zap.Error(err))
 	}
 	closeFuncs["artifactPublic"] = artifactPublicClose
 
-	artifactPrivateServiceClient, artifactPrivateClose, err := grpcclientx.NewArtifactPrivateClient(config.Config.ArtifactBackend)
+	artifactPrivateServiceClient, artifactPrivateClose, err := clientgrpcx.NewClient[artifactpb.ArtifactPrivateServiceClient](
+		clientgrpcx.WithServiceConfig(config.Config.ArtifactBackend),
+		clientgrpcx.WithSetOTELClientHandler(config.Config.OTELCollector.Enable),
+	)
 	if err != nil {
 		logger.Fatal("failed to create artifact private service client", zap.Error(err))
 	}

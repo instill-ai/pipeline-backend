@@ -29,14 +29,13 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
-	"github.com/instill-ai/x/errmsg"
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	errorsx "github.com/instill-ai/x/errors"
 	logx "github.com/instill-ai/x/log"
 )
 
@@ -141,7 +140,7 @@ func (w *worker) SchedulePipelineWorkflow(ctx workflow.Context, param *scheduler
 		return err
 	}
 
-	_, err = w.pipelinePublicServiceClient.DispatchPipelineWebhookEvent(context.Background(), &pb.DispatchPipelineWebhookEventRequest{
+	_, err = w.pipelinePublicServiceClient.DispatchPipelineWebhookEvent(context.Background(), &pipelinepb.DispatchPipelineWebhookEventRequest{
 		WebhookType: "scheduler",
 		Message:     structPayload,
 	})
@@ -1136,7 +1135,7 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 // If the trigger is streamed, it will send an event to halt the execution.
 func (w *worker) preTriggerErr(ctx context.Context, workflowID string, wfm *memory.WorkflowMemory) func(error) error {
 	return func(err error) error {
-		if msg := errmsg.Message(err); msg != "" {
+		if msg := errorsx.Message(err); msg != "" {
 			err = temporal.NewApplicationErrorWithCause(msg, preTriggerErrorType, err)
 		}
 
@@ -1175,8 +1174,8 @@ func (w *worker) preTriggerErr(ctx context.Context, workflowID string, wfm *memo
 func (w *worker) fetchConnectionAsValue(ctx context.Context, requesterUID uuid.UUID, connectionID string) (format.Value, error) {
 	conn, err := w.repository.GetNamespaceConnectionByID(ctx, requesterUID, connectionID)
 	if err != nil {
-		if errors.Is(err, errdomain.ErrNotFound) {
-			return nil, errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connectionID))
+		if errors.Is(err, errorsx.ErrNotFound) {
+			return nil, errorsx.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connectionID))
 		}
 
 		return nil, fmt.Errorf("fetching connection: %w", err)
@@ -1222,7 +1221,7 @@ func (w *worker) loadConnectionFromComponent(
 
 	conn, err := w.fetchConnectionAsValue(ctx, requesterUID, connID)
 	if err != nil {
-		if !errors.Is(err, errdomain.ErrNotFound) {
+		if !errors.Is(err, errorsx.ErrNotFound) {
 			return err
 		}
 
@@ -1264,7 +1263,7 @@ func (w *worker) mergeInputConnections(
 			// connection referenced in the recipe must exist in the
 			// requester's namespace.
 			if conn.Equal(data.NewNull()) {
-				return nil, errmsg.AddMessage(
+				return nil, errorsx.AddMessage(
 					fmt.Errorf("connection doesn't exist"),
 					fmt.Sprintf("Connection %s doesn't exist.", connID),
 				)
@@ -1585,7 +1584,7 @@ func componentActivityError(ctx context.Context, wfm *memory.WorkflowMemory, err
 		if wfmErr := wfm.SetComponentStatus(ctx, batchIdx, componentID, memory.ComponentStatusErrored, true); wfmErr != nil {
 			return wfmErr
 		}
-		if wfmErr := wfm.SetComponentErrorMessage(ctx, batchIdx, componentID, errmsg.MessageOrErr(err)); wfmErr != nil {
+		if wfmErr := wfm.SetComponentErrorMessage(ctx, batchIdx, componentID, errorsx.MessageOrErr(err)); wfmErr != nil {
 			return wfmErr
 		}
 	}
@@ -1593,7 +1592,7 @@ func componentActivityError(ctx context.Context, wfm *memory.WorkflowMemory, err
 	// If no end-user message is present in the error, MessageOrErr will return
 	// the string version of the error. For an end user, this extra information
 	// is more actionable than no information at all.
-	msg := fmt.Sprintf("Component %s failed to execute. %s", componentID, errmsg.MessageOrErr(err))
+	msg := fmt.Sprintf("Component %s failed to execute. %s", componentID, errorsx.MessageOrErr(err))
 	return temporal.NewApplicationErrorWithCause(msg, errType, err)
 }
 

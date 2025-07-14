@@ -15,7 +15,8 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 const (
@@ -140,7 +141,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 
 			if len(resp) < 1 {
 				err := fmt.Errorf("invalid response")
-				job.Error.Error(ctx, errmsg.AddMessage(err, "Hugging Face didn't return any result"))
+				job.Error.Error(ctx, errorsx.AddMessage(err, "Hugging Face didn't return any result"))
 				continue
 			}
 
@@ -209,7 +210,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 
 			if len(resp) < 1 {
 				err := fmt.Errorf("invalid response")
-				job.Error.Error(ctx, errmsg.AddMessage(err, "Hugging Face didn't return any result"))
+				job.Error.Error(ctx, errorsx.AddMessage(err, "Hugging Face didn't return any result"))
 				continue
 			}
 
@@ -235,7 +236,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 
 			if len(resp) < 1 {
 				err := fmt.Errorf("invalid response")
-				job.Error.Error(ctx, errmsg.AddMessage(err, "Hugging Face didn't return any result"))
+				job.Error.Error(ctx, errorsx.AddMessage(err, "Hugging Face didn't return any result"))
 				continue
 			}
 
@@ -286,7 +287,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 
 			if len(resp) < 1 {
 				err := fmt.Errorf("invalid response")
-				job.Error.Error(ctx, errmsg.AddMessage(err, "Hugging Face didn't return any result"))
+				job.Error.Error(ctx, errorsx.AddMessage(err, "Hugging Face didn't return any result"))
 				continue
 			}
 
@@ -546,7 +547,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 
 			if len(resp) < 1 {
 				err := fmt.Errorf("invalid response")
-				job.Error.Error(ctx, errmsg.AddMessage(err, "Hugging Face didn't return any result"))
+				job.Error.Error(ctx, errorsx.AddMessage(err, "Hugging Face didn't return any result"))
 				continue
 			}
 
@@ -610,7 +611,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 			}
 
 		default:
-			job.Error.Error(ctx, errmsg.AddMessage(
+			job.Error.Error(ctx, errorsx.AddMessage(
 				fmt.Errorf("not supported task: %s", e.Task),
 				fmt.Sprintf("%s task is not supported.", e.Task),
 			))

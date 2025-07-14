@@ -24,7 +24,7 @@ import (
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 func fakeNamespace() resource.Namespace {
@@ -103,7 +103,7 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 
 	converter.ConvertPipelineToDBMock.Return(&newDataPipeline, nil)
 
-	pbPipeline := pb.Pipeline{
+	pbPipeline := pipelinepb.Pipeline{
 		Id:   "pipelineID",
 		Name: "pipelineName",
 		Tags: []string{"tag1", "tag2"},

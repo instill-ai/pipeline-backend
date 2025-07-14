@@ -37,7 +37,7 @@ type AppConfig struct {
 	InfluxDB        InfluxDBConfig        `koanf:"influxdb"`
 	Temporal        temporal.ClientConfig `koanf:"temporal"`
 	Cache           CacheConfig           `koanf:"cache"`
-	Log             LogConfig             `koanf:"log"`
+	OTELCollector   OTELCollectorConfig   `koanf:"otelcollector"`
 	MgmtBackend     client.ServiceConfig  `koanf:"mgmtbackend"`
 	ModelBackend    client.ServiceConfig  `koanf:"modelbackend"`
 	OpenFGA         OpenFGAConfig         `koanf:"openfga"`
@@ -47,14 +47,14 @@ type AppConfig struct {
 	APIGateway      APIGatewayConfig      `koanf:"apigateway"`
 }
 
-// APIGateway config
+// APIGatewayConfig related to API gateway
 type APIGatewayConfig struct {
 	Host       string `koanf:"host"`
 	PublicPort int    `koanf:"publicport"`
 	TLSEnabled bool   `koanf:"tlsenabled"`
 }
 
-// OpenFGA config
+// OpenFGAConfig related to OpenFGA
 type OpenFGAConfig struct {
 	Host    string `koanf:"host"`
 	Port    int    `koanf:"port"`
@@ -156,6 +156,13 @@ type CacheConfig struct {
 	Redis struct {
 		RedisOptions redis.Options `koanf:"redisoptions"`
 	}
+}
+
+// OTELCollectorConfig related to OpenTelemetry collector
+type OTELCollectorConfig struct {
+	Enable bool   `koanf:"enable"`
+	Host   string `koanf:"host"`
+	Port   int    `koanf:"port"`
 }
 
 // Init - Assign global config to decoded config struct

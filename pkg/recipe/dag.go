@@ -14,10 +14,10 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
-	"github.com/instill-ai/x/errmsg"
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 type unionFind struct {
@@ -170,7 +170,7 @@ func Render(ctx context.Context, template format.Value, batchIdx int, wfm *memor
 				if allowUnresolved {
 					return data.NewNull(), nil
 				}
-				return nil, errmsg.AddMessage(
+				return nil, errorsx.AddMessage(
 					fmt.Errorf("resolving reference: %w", err),
 					"Couldn't resolve reference "+s+".",
 				)
@@ -336,15 +336,15 @@ func FindReferenceParent(input string) []string {
 	return upstreams
 }
 
-func GenerateTraces(ctx context.Context, compIDs []string, wfm *memory.WorkflowMemory, full bool) (map[string]*pb.Trace, error) {
-	trace := map[string]*pb.Trace{}
+func GenerateTraces(ctx context.Context, compIDs []string, wfm *memory.WorkflowMemory, full bool) (map[string]*pipelinepb.Trace, error) {
+	trace := map[string]*pipelinepb.Trace{}
 
 	batchSize := wfm.GetBatchSize()
 	for _, compID := range compIDs {
 		inputs := make([]*structpb.Struct, batchSize)
 		outputs := make([]*structpb.Struct, batchSize)
 		errors := make([]*structpb.Struct, batchSize)
-		traceStatuses := make([]pb.Trace_Status, batchSize)
+		traceStatuses := make([]pipelinepb.Trace_Status, batchSize)
 
 		for dataIdx := range batchSize {
 			completed, err := wfm.GetComponentStatus(ctx, dataIdx, compID, memory.ComponentStatusCompleted)
@@ -356,11 +356,11 @@ func GenerateTraces(ctx context.Context, compIDs []string, wfm *memory.WorkflowM
 				continue
 			}
 			if completed {
-				traceStatuses[dataIdx] = pb.Trace_STATUS_COMPLETED
+				traceStatuses[dataIdx] = pipelinepb.Trace_STATUS_COMPLETED
 			} else if skipped {
-				traceStatuses[dataIdx] = pb.Trace_STATUS_SKIPPED
+				traceStatuses[dataIdx] = pipelinepb.Trace_STATUS_SKIPPED
 			} else {
-				traceStatuses[dataIdx] = pb.Trace_STATUS_ERROR
+				traceStatuses[dataIdx] = pipelinepb.Trace_STATUS_ERROR
 			}
 
 			if compErr, err := wfm.GetComponentData(ctx, dataIdx, compID, memory.ComponentDataError); err == nil {
@@ -391,7 +391,7 @@ func GenerateTraces(ctx context.Context, compIDs []string, wfm *memory.WorkflowM
 			}
 		}
 
-		trace[compID] = &pb.Trace{
+		trace[compID] = &pipelinepb.Trace{
 			Statuses: traceStatuses,
 			Inputs:   inputs,
 			Outputs:  outputs,

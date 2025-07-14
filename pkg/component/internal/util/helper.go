@@ -15,9 +15,9 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/h2non/filetype"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
-	timestampPB "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func GetFileExt(fileData []byte) string {
@@ -319,7 +319,7 @@ func TrimBase64Mime(b64 string) string {
 	return splitB64[len(splitB64)-1]
 }
 
-func FormatToISO8601(ts *timestampPB.Timestamp) string {
+func FormatToISO8601(ts *timestamppb.Timestamp) string {
 	return ts.AsTime().UTC().Format(time.RFC3339)
 }
 

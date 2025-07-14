@@ -10,7 +10,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
-	artifactPB "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 )
 
 func (e *execution) getFilesMetadata(input *structpb.Struct) (*structpb.Struct, error) {
@@ -29,7 +29,7 @@ func (e *execution) getFilesMetadata(input *structpb.Struct) (*structpb.Struct, 
 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
-	filesRes, err := artifactClient.ListCatalogFiles(ctx, &artifactPB.ListCatalogFilesRequest{
+	filesRes, err := artifactClient.ListCatalogFiles(ctx, &artifactpb.ListCatalogFilesRequest{
 		NamespaceId: inputStruct.Namespace,
 		CatalogId:   inputStruct.CatalogID,
 	})
@@ -45,7 +45,7 @@ func (e *execution) getFilesMetadata(input *structpb.Struct) (*structpb.Struct, 
 	output.setOutput(filesRes)
 
 	for filesRes != nil && filesRes.NextPageToken != "" {
-		filesRes, err = artifactClient.ListCatalogFiles(ctx, &artifactPB.ListCatalogFilesRequest{
+		filesRes, err = artifactClient.ListCatalogFiles(ctx, &artifactpb.ListCatalogFilesRequest{
 			NamespaceId: inputStruct.Namespace,
 			CatalogId:   inputStruct.CatalogID,
 			PageToken:   filesRes.NextPageToken,
@@ -61,12 +61,12 @@ func (e *execution) getFilesMetadata(input *structpb.Struct) (*structpb.Struct, 
 	return base.ConvertToStructpb(output)
 }
 
-func (output *GetFilesMetadataOutput) setOutput(filesRes *artifactPB.ListCatalogFilesResponse) {
+func (output *GetFilesMetadataOutput) setOutput(filesRes *artifactpb.ListCatalogFilesResponse) {
 	for _, filePB := range filesRes.Files {
 		output.Files = append(output.Files, FileOutput{
 			FileUID:    filePB.FileUid,
 			FileName:   filePB.Name,
-			FileType:   artifactPB.FileType_name[int32(filePB.Type)],
+			FileType:   artifactpb.FileType_name[int32(filePB.Type)],
 			CreateTime: filePB.CreateTime.AsTime().Format(time.RFC3339),
 			UpdateTime: filePB.UpdateTime.AsTime().Format(time.RFC3339),
 			Size:       filePB.Size,

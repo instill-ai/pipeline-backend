@@ -10,7 +10,8 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 type userInputReadTask struct {
@@ -167,7 +168,7 @@ func (e *execution) sendMessage(in *structpb.Struct) (*structpb.Struct, error) {
 	case params.AsUser:
 		client = e.userClient
 		if client == nil {
-			return nil, errmsg.AddMessage(
+			return nil, errorsx.AddMessage(
 				fmt.Errorf("empty user token"),
 				"To send messages on behalf of the user, fill the user-token field in the component setup.",
 			)

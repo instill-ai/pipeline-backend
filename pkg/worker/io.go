@@ -11,7 +11,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 type setupReader struct {
@@ -223,7 +224,7 @@ func (e *errorHandler) Error(ctx context.Context, err error) {
 	}
 
 	_ = wfm.SetComponentStatus(ctx, e.originalIdx, e.compID, memory.ComponentStatusErrored, true)
-	_ = wfm.SetComponentErrorMessage(ctx, e.originalIdx, e.compID, errmsg.MessageOrErr(err))
+	_ = wfm.SetComponentErrorMessage(ctx, e.originalIdx, e.compID, errorsx.MessageOrErr(err))
 
 	if e.parentWorkflowID != nil {
 		iterWfm, iterWfmErr := e.memoryStore.GetWorkflowMemory(ctx, *e.parentWorkflowID)
@@ -231,6 +232,6 @@ func (e *errorHandler) Error(ctx context.Context, err error) {
 			return
 		}
 		_ = iterWfm.SetComponentStatus(ctx, *e.parentOriginalIdx, *e.parentCompID, memory.ComponentStatusErrored, true)
-		_ = iterWfm.SetComponentErrorMessage(ctx, *e.parentOriginalIdx, *e.parentCompID, errmsg.MessageOrErr(err))
+		_ = iterWfm.SetComponentErrorMessage(ctx, *e.parentOriginalIdx, *e.parentCompID, errorsx.MessageOrErr(err))
 	}
 }

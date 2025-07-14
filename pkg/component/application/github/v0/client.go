@@ -10,7 +10,7 @@ import (
 	"golang.org/x/oauth2"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/x/errmsg"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 // Client is a struct that contains the github client and the repositories service
@@ -76,7 +76,7 @@ func addErrMsgToClientError(err error) error {
 					}
 				}
 			}
-			return errmsg.AddMessage(err, msg)
+			return errorsx.AddMessage(err, msg)
 		}
 	}
 	return err

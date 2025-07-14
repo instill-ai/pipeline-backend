@@ -35,13 +35,12 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
-	"github.com/instill-ai/x/errmsg"
 	"github.com/instill-ai/x/minio"
 
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	constantx "github.com/instill-ai/x/constant"
+	errorsx "github.com/instill-ai/x/errors"
 	logx "github.com/instill-ai/x/log"
 	resourcex "github.com/instill-ai/x/resource"
 	temporalx "github.com/instill-ai/x/temporal"
@@ -119,7 +118,7 @@ func (s *service) GetPipelineByUID(ctx context.Context, uid uuid.UUID, view pipe
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", uid, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, uid, view <= pipelinepb.Pipeline_VIEW_BASIC, true)
@@ -145,10 +144,10 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 			return nil, err
 		}
 		if !granted {
-			return nil, errdomain.ErrUnauthorized
+			return nil, errorsx.ErrUnauthorized
 		}
 	} else if ns.NsUID != uuid.FromStringOrNil(resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)) {
-		return nil, errdomain.ErrUnauthorized
+		return nil, errorsx.ErrUnauthorized
 	}
 
 	dbPipeline, err := s.converter.ConvertPipelineToDB(ctx, ns, pbPipeline)
@@ -284,13 +283,13 @@ func (s *service) GetNamespacePipelineByID(ctx context.Context, ns resource.Name
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, view <= pipelinepb.Pipeline_VIEW_BASIC, true)
 	if err != nil {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, view, true, true)
@@ -351,8 +350,8 @@ func (s *service) marshalEventSettings(ctx context.Context, ns resource.Namespac
 
 			conn, err := s.repository.GetNamespaceConnectionByID(ctx, ns.NsUID, connID)
 			if err != nil {
-				if errors.Is(err, errdomain.ErrNotFound) {
-					err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
+				if errors.Is(err, errorsx.ErrNotFound) {
+					err = errorsx.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
 				}
 				return nil, nil, err
 			}
@@ -535,13 +534,13 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrUnauthorized
+		return nil, errorsx.ErrUnauthorized
 	}
 
 	var existingPipeline *datamodel.Pipeline
@@ -638,19 +637,19 @@ func (s *service) DeleteNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {
-		return errdomain.ErrNotFound
+		return errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return err
 	} else if !granted {
-		return errdomain.ErrNotFound
+		return errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return err
 	} else if !granted {
-		return errdomain.ErrUnauthorized
+		return errorsx.ErrUnauthorized
 	}
 
 	// TODO: pagination
@@ -708,7 +707,7 @@ func (s *service) generateCloneTargetNamespace(ctx context.Context, targetNamesp
 			NsUID:  uuid.FromStringOrNil(resp.Uid),
 		}
 	default:
-		return resource.Namespace{}, errdomain.ErrInvalidCloneTarget
+		return resource.Namespace{}, errorsx.ErrInvalidArgument
 	}
 
 	return targetNS, nil
@@ -778,19 +777,19 @@ func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrUnauthorized
+		return nil, errorsx.ErrUnauthorized
 	}
 
 	validateErrs, err := s.checkRecipe(dbPipeline.Recipe)
@@ -809,18 +808,18 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 	// Validation: Pipeline existence
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true, true)
 	if err != nil {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrUnauthorized
+		return nil, errorsx.ErrUnauthorized
 	}
 
 	if err := s.repository.UpdateNamespacePipelineIDByID(ctx, ownerPermalink, id, newID); err != nil {
@@ -861,7 +860,7 @@ func (s *service) preTriggerPipeline(
 ) error {
 	batchSize := len(pipelineData)
 	if batchSize > constant.MaxBatchSize {
-		return ErrExceedMaxBatchSize
+		return errorsx.ErrExceedMaxBatchSize
 	}
 
 	typeMap := map[string]string{}
@@ -962,7 +961,7 @@ func (s *service) preTriggerPipeline(
 					uploadingPipelineData[idx][k] = defaultValueMap[k].(bool)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_BoolValue); !ok {
-						return fmt.Errorf("%w: invalid boolean value: %v", errdomain.ErrInvalidArgument, v)
+						return fmt.Errorf("%w: invalid boolean value: %v", errorsx.ErrInvalidArgument, v)
 					}
 					variable[k] = data.NewBoolean(v.GetBoolValue())
 					uploadingPipelineData[idx][k] = v.GetBoolValue()
@@ -982,7 +981,7 @@ func (s *service) preTriggerPipeline(
 					uploadingDataArray := make([]any, len(v.GetListValue().Values))
 					for i, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_BoolValue); !ok {
-							return fmt.Errorf("%w: invalid boolean value: %v", errdomain.ErrInvalidArgument, val)
+							return fmt.Errorf("%w: invalid boolean value: %v", errorsx.ErrInvalidArgument, val)
 						}
 						array[i] = data.NewBoolean(val.GetBoolValue())
 						uploadingDataArray[i] = val.GetBoolValue()
@@ -996,7 +995,7 @@ func (s *service) preTriggerPipeline(
 					uploadingPipelineData[idx][k] = defaultValueMap[k].(string)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
-						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
+						return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, v)
 					}
 					variable[k] = data.NewString(v.GetStringValue())
 					uploadingPipelineData[idx][k] = v.GetStringValue()
@@ -1016,7 +1015,7 @@ func (s *service) preTriggerPipeline(
 					uploadingDataArray := make([]any, len(v.GetListValue().Values))
 					for i, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
-							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
+							return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, val)
 						}
 						array[i] = data.NewString(val.GetStringValue())
 						uploadingDataArray[i] = val.GetStringValue()
@@ -1030,7 +1029,7 @@ func (s *service) preTriggerPipeline(
 					uploadingPipelineData[idx][k] = defaultValueMap[k].(float64)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_NumberValue); !ok {
-						return fmt.Errorf("%w: invalid number value: %v", errdomain.ErrInvalidArgument, v)
+						return fmt.Errorf("%w: invalid number value: %v", errorsx.ErrInvalidArgument, v)
 					}
 					variable[k] = data.NewNumberFromFloat(v.GetNumberValue())
 					uploadingPipelineData[idx][k] = v.GetNumberValue()
@@ -1050,7 +1049,7 @@ func (s *service) preTriggerPipeline(
 					uploadingDataArray := make([]any, len(v.GetListValue().Values))
 					for i, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_NumberValue); !ok {
-							return fmt.Errorf("%w: invalid number value: %v", errdomain.ErrInvalidArgument, val)
+							return fmt.Errorf("%w: invalid number value: %v", errorsx.ErrInvalidArgument, val)
 						}
 						array[i] = data.NewNumberFromFloat(val.GetNumberValue())
 						uploadingDataArray[i] = val.GetNumberValue()
@@ -1077,7 +1076,7 @@ func (s *service) preTriggerPipeline(
 
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_NumberValue); !ok {
-						return fmt.Errorf("%w: invalid number value: %v", errdomain.ErrInvalidArgument, v)
+						return fmt.Errorf("%w: invalid number value: %v", errorsx.ErrInvalidArgument, v)
 					}
 					variable[k] = data.NewNumberFromFloat(v.GetNumberValue())
 					uploadingPipelineData[idx][k] = v.GetNumberValue()
@@ -1109,7 +1108,7 @@ func (s *service) preTriggerPipeline(
 					uploadingDataArray := make([]any, len(v.GetListValue().Values))
 					for i, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_NumberValue); !ok {
-							return fmt.Errorf("%w: invalid number value: %v", errdomain.ErrInvalidArgument, val)
+							return fmt.Errorf("%w: invalid number value: %v", errorsx.ErrInvalidArgument, val)
 						}
 						array[i] = data.NewNumberFromFloat(val.GetNumberValue())
 						uploadingDataArray[i] = val.GetNumberValue()
@@ -1126,7 +1125,7 @@ func (s *service) preTriggerPipeline(
 					uploadingPipelineData[idx][k] = defaultValueMap[k].(string)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
-						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
+						return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, v)
 					}
 					variable[k], err = data.NewImageFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
@@ -1152,7 +1151,7 @@ func (s *service) preTriggerPipeline(
 					arrayWithURL := make([]any, len(v.GetListValue().Values))
 					for i, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
-							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
+							return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, val)
 						}
 						array[i], err = data.NewImageFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
@@ -1172,7 +1171,7 @@ func (s *service) preTriggerPipeline(
 					uploadingPipelineData[idx][k] = defaultValueMap[k].(string)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
-						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
+						return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, v)
 					}
 					variable[k], err = data.NewAudioFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
@@ -1198,7 +1197,7 @@ func (s *service) preTriggerPipeline(
 					arrayWithURL := make([]any, len(v.GetListValue().Values))
 					for i, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
-							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
+							return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, val)
 						}
 						array[i], err = data.NewAudioFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
@@ -1218,7 +1217,7 @@ func (s *service) preTriggerPipeline(
 					uploadingPipelineData[idx][k] = defaultValueMap[k].(string)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
-						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
+						return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, v)
 					}
 					variable[k], err = data.NewVideoFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
@@ -1244,7 +1243,7 @@ func (s *service) preTriggerPipeline(
 					arrayWithURL := make([]any, len(v.GetListValue().Values))
 					for i, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
-							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
+							return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, val)
 						}
 						array[i], err = data.NewVideoFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
@@ -1265,7 +1264,7 @@ func (s *service) preTriggerPipeline(
 					uploadingPipelineData[idx][k] = defaultValueMap[k].(string)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
-						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
+						return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, v)
 					}
 					variable[k], err = data.NewDocumentFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
@@ -1291,7 +1290,7 @@ func (s *service) preTriggerPipeline(
 					arrayWithURL := make([]any, len(v.GetListValue().Values))
 					for i, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
-							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
+							return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, val)
 						}
 						array[i], err = data.NewDocumentFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
@@ -1311,7 +1310,7 @@ func (s *service) preTriggerPipeline(
 					uploadingPipelineData[idx][k] = defaultValueMap[k].(string)
 				} else {
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
-						return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, v)
+						return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, v)
 					}
 					variable[k], err = data.NewBinaryFromURL(ctx, s.binaryFetcher, v.GetStringValue())
 					if err != nil {
@@ -1337,7 +1336,7 @@ func (s *service) preTriggerPipeline(
 					arrayWithURL := make([]any, len(v.GetListValue().Values))
 					for i, val := range v.GetListValue().Values {
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
-							return fmt.Errorf("%w: invalid string value: %v", errdomain.ErrInvalidArgument, val)
+							return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, val)
 						}
 						array[i], err = data.NewBinaryFromURL(ctx, s.binaryFetcher, val.GetStringValue())
 						if err != nil {
@@ -1429,19 +1428,19 @@ func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resourc
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, false, false)
 	if err != nil {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrUnauthorized
+		return nil, errorsx.ErrUnauthorized
 	}
 
 	dbPipelineReleaseToCreate, err := s.converter.ConvertPipelineReleaseToDB(ctx, pipelineUID, pipelineRelease)
@@ -1483,12 +1482,12 @@ func (s *service) ListNamespacePipelineReleases(ctx context.Context, ns resource
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, true, false)
 	if err != nil {
-		return nil, 0, "", errdomain.ErrNotFound
+		return nil, 0, "", errorsx.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, 0, "", err
 	} else if !granted {
-		return nil, 0, "", errdomain.ErrNotFound
+		return nil, 0, "", errorsx.ErrNotFound
 	}
 
 	dbPipelineReleases, ps, pt, err := s.repository.ListNamespacePipelineReleases(ctx, ownerPermalink, pipelineUID, int64(pageSize), pageToken, view <= pipelinepb.Pipeline_VIEW_BASIC, filter, showDeleted, true)
@@ -1506,12 +1505,12 @@ func (s *service) GetNamespacePipelineReleaseByID(ctx context.Context, ns resour
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, true, false)
 	if err != nil {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, view <= pipelinepb.Pipeline_VIEW_BASIC)
@@ -1529,18 +1528,18 @@ func (s *service) UpdateNamespacePipelineReleaseByID(ctx context.Context, ns res
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, true, false)
 	if err != nil {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrUnauthorized
+		return nil, errorsx.ErrUnauthorized
 	}
 
 	if _, err := s.GetNamespacePipelineReleaseByID(ctx, ns, pipelineUID, id, pipelinepb.Pipeline_VIEW_BASIC); err != nil {
@@ -1569,18 +1568,18 @@ func (s *service) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns r
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, true, false)
 	if err != nil {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, errdomain.ErrUnauthorized
+		return nil, errorsx.ErrUnauthorized
 	}
 
 	// Validation: Pipeline existence
@@ -1607,18 +1606,18 @@ func (s *service) DeleteNamespacePipelineReleaseByID(ctx context.Context, ns res
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, true, false)
 	if err != nil {
-		return errdomain.ErrNotFound
+		return errorsx.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return err
 	} else if !granted {
-		return errdomain.ErrNotFound
+		return errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return err
 	} else if !granted {
-		return errdomain.ErrUnauthorized
+		return errorsx.ErrUnauthorized
 	}
 
 	return s.repository.DeleteNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id)
@@ -1629,18 +1628,18 @@ func (s *service) RestoreNamespacePipelineReleaseByID(ctx context.Context, ns re
 
 	pipeline, err := s.GetPipelineByUID(ctx, pipelineUID, pipelinepb.Pipeline_VIEW_BASIC)
 	if err != nil {
-		return errdomain.ErrNotFound
+		return errorsx.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", uuid.FromStringOrNil(pipeline.GetUid()), "admin"); err != nil {
 		return err
 	} else if !granted {
-		return errdomain.ErrNotFound
+		return errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", uuid.FromStringOrNil(pipeline.GetUid()), "admin"); err != nil {
 		return err
 	} else if !granted {
-		return errdomain.ErrUnauthorized
+		return errorsx.ErrUnauthorized
 	}
 
 	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, false)
@@ -1726,11 +1725,11 @@ func (s *service) triggerPipeline(
 		// and mark the code as 400 InvalidArgument for now.
 		// We should further categorize them into InvalidArgument or
 		// PreconditionFailed or InternalError in the future.
-		err = fmt.Errorf("%w:%w", ErrTriggerFail, err)
+		err = fmt.Errorf("%w:%w", errorsx.ErrTriggerFail, err)
 
 		var applicationErr *temporal.ApplicationError
 		if errors.As(err, &applicationErr) && applicationErr.Message() != "" {
-			err = errmsg.AddMessage(err, applicationErr.Message())
+			err = errorsx.AddMessage(err, applicationErr.Message())
 		}
 
 		return nil, nil, err
@@ -1825,11 +1824,11 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 
 		err = we.Get(subCtx, nil)
 		if err != nil {
-			err = fmt.Errorf("%w:%w", ErrTriggerFail, err)
+			err = fmt.Errorf("%w:%w", errorsx.ErrTriggerFail, err)
 
 			var applicationErr *temporal.ApplicationError
 			if errors.As(err, &applicationErr) && applicationErr.Message() != "" {
-				err = errmsg.AddMessage(err, applicationErr.Message())
+				err = errorsx.AddMessage(err, applicationErr.Message())
 			}
 			logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
 
@@ -1891,7 +1890,7 @@ func (s *service) checkRequesterPermission(ctx context.Context, pipeline *datamo
 	authType := resourcex.GetRequestSingleHeader(ctx, constantx.HeaderAuthTypeKey)
 	if authType != "user" {
 		// Only authenticated users can switch namespaces.
-		return errdomain.ErrUnauthorized
+		return errorsx.ErrUnauthorized
 	}
 
 	requester := resourcex.GetRequestSingleHeader(ctx, constantx.HeaderRequesterUIDKey)
@@ -1905,14 +1904,14 @@ func (s *service) checkRequesterPermission(ctx context.Context, pipeline *datamo
 	// organization namespace.
 	isMember, err := s.aclClient.CheckPermission(ctx, "organization", uuid.FromStringOrNil(requester), "member")
 	if err != nil {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("checking organization membership: %w", err),
 			"Couldn't check organization membership.",
 		)
 	}
 
 	if !isMember {
-		return fmt.Errorf("authenticated user doesn't belong to requester organization: %w", errdomain.ErrUnauthorized)
+		return fmt.Errorf("authenticated user doesn't belong to requester organization: %w", errorsx.ErrUnauthorized)
 	}
 
 	if pipeline.IsPublic() {
@@ -1929,14 +1928,14 @@ func (s *service) checkRequesterPermission(ctx context.Context, pipeline *datamo
 	// shareable link.
 	canTrigger, err := s.aclClient.CheckLinkPermission(ctx, "pipeline", pipeline.UID, "executor")
 	if err != nil {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("checking shareable link permissions: %w", err),
 			"Couldn't validate shareable link.",
 		)
 	}
 
 	if !canTrigger {
-		return fmt.Errorf("organization can't trigger private external pipeline: %w", errdomain.ErrUnauthorized)
+		return fmt.Errorf("organization can't trigger private external pipeline: %w", errorsx.ErrUnauthorized)
 	}
 
 	return nil
@@ -1946,13 +1945,13 @@ func (s *service) checkTriggerPermission(ctx context.Context, pipeline *datamode
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", pipeline.UID, "reader"); err != nil {
 		return err
 	} else if !granted {
-		return errdomain.ErrNotFound
+		return errorsx.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", pipeline.UID, "executor"); err != nil {
 		return err
 	} else if !granted {
-		return errdomain.ErrUnauthorized
+		return errorsx.ErrUnauthorized
 	}
 
 	// For now, impersonation is only implemented for pipeline triggers. When
@@ -1969,7 +1968,7 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {
-		return nil, nil, errdomain.ErrNotFound
+		return nil, nil, errorsx.ErrNotFound
 	}
 
 	if dbPipeline.Recipe == nil {
@@ -2033,7 +2032,7 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
@@ -2091,7 +2090,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, false, true)
 	if err != nil {
-		return nil, nil, errdomain.ErrNotFound
+		return nil, nil, errorsx.ErrNotFound
 	}
 	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
 	requester, err := s.GetNamespaceByUID(ctx, requesterUID)
@@ -2155,7 +2154,7 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, false, true)
 	if err != nil {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)

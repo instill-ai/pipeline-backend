@@ -13,8 +13,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	errorsx "github.com/instill-ai/x/errors"
 	logx "github.com/instill-ai/x/log"
 )
 
@@ -57,14 +57,14 @@ func UpdateComponentDefinitionIndex(ctx context.Context, repo repository.Reposit
 	return nil
 }
 
-func updateComponentDefinition(ctx context.Context, cd *pb.ComponentDefinition, repo repository.Repository) error {
+func updateComponentDefinition(ctx context.Context, cd *pipelinepb.ComponentDefinition, repo repository.Repository) error {
 	uid, err := uuid.FromString(cd.GetUid())
 	if err != nil {
 		return fmt.Errorf("invalid UID in component definition %s: %w", cd.GetId(), err)
 	}
 
 	inDB, err := repo.GetDefinitionByUID(ctx, uid)
-	if err != nil && !errors.Is(err, errdomain.ErrNotFound) {
+	if err != nil && !errors.Is(err, errorsx.ErrNotFound) {
 		return fmt.Errorf("error fetching component definition %s from DB: %w", cd.GetId(), err)
 	}
 

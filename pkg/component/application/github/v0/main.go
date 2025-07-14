@@ -16,7 +16,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 const (
@@ -106,7 +107,7 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	case taskListReviewComments:
 		e.execute = e.client.listReviewComments
 	default:
-		return nil, errmsg.AddMessage(
+		return nil, errorsx.AddMessage(
 			fmt.Errorf("not supported task: %s", x.Task),
 			fmt.Sprintf("%s task is not supported.", x.Task),
 		)

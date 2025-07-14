@@ -20,7 +20,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
-	grpcclientx "github.com/instill-ai/x/client/grpc"
+	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	clientgrpcx "github.com/instill-ai/x/client/grpc"
 	logx "github.com/instill-ai/x/log"
 )
 
@@ -64,7 +65,7 @@ func main() {
 	codeMigrator, cleanup := initCodeMigrator(ctx, logger)
 	defer cleanup()
 
-	if err := runMigration(dsn, database.TargetSchemaVersion, codeMigrator.Migrate, logger); err != nil {
+	if err := runMigration(dsn, migration.TargetSchemaVersion, codeMigrator.Migrate, logger); err != nil {
 		logger.Fatal("Running migration", zap.Error(err))
 	}
 }
@@ -201,7 +202,10 @@ func initCodeMigrator(ctx context.Context, logger *zap.Logger) (cm *migration.Co
 	cleanups := make([]func(), 0)
 
 	rh := service.NewRetentionHandler()
-	mgmtPrivateServiceClient, mgmtPrivateClose, err := grpcclientx.NewMgmtPrivateClient(config.Config.MgmtBackend)
+	mgmtPrivateServiceClient, mgmtPrivateClose, err := clientgrpcx.NewClient[mgmtpb.MgmtPrivateServiceClient](
+		clientgrpcx.WithServiceConfig(config.Config.MgmtBackend),
+		clientgrpcx.WithSetOTELClientHandler(config.Config.OTELCollector.Enable),
+	)
 	if err != nil {
 		logger.Fatal("failed to create mgmt private service client", zap.Error(err))
 	}

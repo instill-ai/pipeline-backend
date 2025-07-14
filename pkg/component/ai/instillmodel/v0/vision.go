@@ -7,8 +7,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
-
-	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
+	modelpb "github.com/instill-ai/protogen-go/model/model/v1alpha"
 )
 
 type VisionRequestData struct {
@@ -16,7 +15,7 @@ type VisionRequestData struct {
 	Type        string `json:"type"`
 }
 
-func (e *execution) executeVisionTask(grpcClient modelPB.ModelPublicServiceClient, nsID string, modelID string, version string, inputs []*structpb.Struct) ([]*structpb.Struct, error) {
+func (e *execution) executeVisionTask(grpcClient modelpb.ModelPublicServiceClient, nsID string, modelID string, version string, inputs []*structpb.Struct) ([]*structpb.Struct, error) {
 	if len(inputs) <= 0 {
 		return nil, fmt.Errorf("invalid input: %v for model: %s/%s/%s", inputs, nsID, modelID, version)
 	}

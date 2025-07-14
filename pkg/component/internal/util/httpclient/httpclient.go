@@ -11,7 +11,7 @@ import (
 	"github.com/go-resty/resty/v2"
 	"go.uber.org/zap"
 
-	"github.com/instill-ai/x/errmsg"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 const (
@@ -157,7 +157,7 @@ func wrapWithErrMessage(apiName string) func(*resty.Client, *resty.Response) err
 		}
 
 		msg := fmt.Sprintf("%s responded with a %d status code. %s", apiName, resp.StatusCode(), issue)
-		return errmsg.AddMessage(fmt.Errorf("unsuccessful HTTP response"), msg)
+		return errorsx.AddMessage(fmt.Errorf("unsuccessful HTTP response"), msg)
 	}
 }
 
@@ -201,7 +201,7 @@ func New(name, host string, options ...Option) *Client {
 func WrapURLError(err error) error {
 	uerr := new(url.Error)
 	if errors.As(err, &uerr) {
-		err = errmsg.AddMessage(
+		err = errorsx.AddMessage(
 			err,
 			fmt.Sprintf("Failed to call %s. Please check that the component configuration is correct.", uerr.URL),
 		)

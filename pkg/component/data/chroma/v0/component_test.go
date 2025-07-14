@@ -17,7 +17,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 func TestComponent_ExecuteQueryTask(t *testing.T) {
@@ -134,7 +135,7 @@ func TestComponent_ExecuteQueryTask(t *testing.T) {
 			})
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				if tc.wantErr != "" {
-					c.Check(errmsg.Message(err), qt.Matches, tc.wantErr)
+					c.Check(errorsx.Message(err), qt.Matches, tc.wantErr)
 				}
 			})
 
@@ -246,7 +247,7 @@ func TestComponent_ExecuteDeleteTask(t *testing.T) {
 			})
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				if tc.wantErr != "" {
-					c.Check(errmsg.Message(err), qt.Matches, tc.wantErr)
+					c.Check(errorsx.Message(err), qt.Matches, tc.wantErr)
 				}
 			})
 
@@ -362,7 +363,7 @@ func TestComponent_ExecuteUpsertTask(t *testing.T) {
 			})
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				if tc.wantErr != "" {
-					c.Check(errmsg.Message(err), qt.Matches, tc.wantErr)
+					c.Check(errorsx.Message(err), qt.Matches, tc.wantErr)
 				}
 			})
 
@@ -478,7 +479,7 @@ func TestComponent_ExecuteBatchUpsertTask(t *testing.T) {
 			})
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				if tc.wantErr != "" {
-					c.Check(errmsg.Message(err), qt.Matches, tc.wantErr)
+					c.Check(errorsx.Message(err), qt.Matches, tc.wantErr)
 				}
 			})
 
@@ -571,7 +572,7 @@ func TestComponent_ExecuteCreateCollectionTask(t *testing.T) {
 			})
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				if tc.wantErr != "" {
-					c.Check(errmsg.Message(err), qt.Matches, tc.wantErr)
+					c.Check(errorsx.Message(err), qt.Matches, tc.wantErr)
 				}
 			})
 
@@ -653,7 +654,7 @@ func TestComponent_ExecuteDeleteCollectionTask(t *testing.T) {
 			})
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				if tc.wantErr != "" {
-					c.Check(errmsg.Message(err), qt.Matches, tc.wantErr)
+					c.Check(errorsx.Message(err), qt.Matches, tc.wantErr)
 				}
 			})
 

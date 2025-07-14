@@ -13,7 +13,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 func Test_SplitInPages(t *testing.T) {
@@ -121,7 +122,7 @@ func Test_SplitInPages(t *testing.T) {
 
 			if tc.wantErr != "" {
 				c.Assert(capturedErr, qt.IsNotNil)
-				c.Check(errmsg.Message(capturedErr), qt.Matches, tc.wantErr)
+				c.Check(errorsx.Message(capturedErr), qt.Matches, tc.wantErr)
 				return
 			}
 

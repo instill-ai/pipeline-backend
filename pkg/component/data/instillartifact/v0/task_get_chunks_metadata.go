@@ -10,7 +10,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
-	artifactPB "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 )
 
 func (e *execution) getChunksMetadata(input *structpb.Struct) (*structpb.Struct, error) {
@@ -27,7 +27,7 @@ func (e *execution) getChunksMetadata(input *structpb.Struct) (*structpb.Struct,
 	defer cancel()
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
-	chunksRes, err := artifactClient.ListChunks(ctx, &artifactPB.ListChunksRequest{
+	chunksRes, err := artifactClient.ListChunks(ctx, &artifactpb.ListChunksRequest{
 		NamespaceId: inputStruct.Namespace,
 		CatalogId:   inputStruct.CatalogID,
 		FileUid:     inputStruct.FileUID,

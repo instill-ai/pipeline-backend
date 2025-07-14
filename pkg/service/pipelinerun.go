@@ -20,7 +20,7 @@ import (
 
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 const defaultPipelineReleaseID = "latest"
@@ -71,7 +71,7 @@ func (s *service) logPipelineRunError(ctx context.Context, pipelineTriggerID str
 	}
 }
 
-func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRunsRequest, filter filtering.Filter) (*pb.ListPipelineRunsResponse, error) {
+func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipelineRunsRequest, filter filtering.Filter) (*pipelinepb.ListPipelineRunsResponse, error) {
 	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("invalid namespace: %w", err)
@@ -141,8 +141,8 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 		userIDMap[reqUID] = &runner.Id
 	}
 
-	// Convert datamodel.PipelineRun to pb.PipelineRun
-	pbPipelineRuns := make([]*pb.PipelineRun, len(pipelineRuns))
+	// Convert datamodel.PipelineRun to pipelinepb.PipelineRun
+	pbPipelineRuns := make([]*pipelinepb.PipelineRun, len(pipelineRuns))
 	for i, run := range pipelineRuns {
 		pbRun, err := s.convertPipelineRunToPB(run)
 		if err != nil {
@@ -185,7 +185,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 		pbPipelineRuns[i] = pbRun
 	}
 
-	return &pb.ListPipelineRunsResponse{
+	return &pipelinepb.ListPipelineRunsResponse{
 		PipelineRuns: pbPipelineRuns,
 		TotalSize:    int32(totalCount),
 		Page:         int32(page),
@@ -193,7 +193,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRuns
 	}, nil
 }
 
-func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRunsRequest, filter filtering.Filter) (*pb.ListComponentRunsResponse, error) {
+func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListComponentRunsRequest, filter filtering.Filter) (*pipelinepb.ListComponentRunsResponse, error) {
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 	requesterUID, userUID := resource.GetRequesterUIDAndUserUID(ctx)
@@ -247,8 +247,8 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 		metadataMap[content.Name] = content.Content
 	}
 
-	// Convert datamodel.ComponentRun to pb.ComponentRun
-	pbComponentRuns := make([]*pb.ComponentRun, len(componentRuns))
+	// Convert datamodel.ComponentRun to pipelinepb.ComponentRun
+	pbComponentRuns := make([]*pipelinepb.ComponentRun, len(componentRuns))
 	for i, run := range componentRuns {
 		pbRun, err := s.convertComponentRunToPB(run)
 		if err != nil {
@@ -277,7 +277,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 		pbComponentRuns[i] = pbRun
 	}
 
-	return &pb.ListComponentRunsResponse{
+	return &pipelinepb.ListComponentRunsResponse{
 		ComponentRuns: pbComponentRuns,
 		TotalSize:     int32(totalCount),
 		Page:          int32(page),
@@ -285,7 +285,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pb.ListComponentRu
 	}, nil
 }
 
-func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListPipelineRunsByRequesterRequest) (*pb.ListPipelineRunsByRequesterResponse, error) {
+func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pipelinepb.ListPipelineRunsByRequesterRequest) (*pipelinepb.ListPipelineRunsByRequesterResponse, error) {
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 
@@ -359,9 +359,9 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListP
 		userIDMap[requesterID] = &runner.Id
 	}
 
-	pbPipelineRuns := make([]*pb.PipelineRun, len(pipelineRuns))
+	pbPipelineRuns := make([]*pipelinepb.PipelineRun, len(pipelineRuns))
 
-	var pbRun *pb.PipelineRun
+	var pbRun *pipelinepb.PipelineRun
 	for i, run := range pipelineRuns {
 		pbRun, err = s.convertPipelineRunToPB(run)
 		if err != nil {
@@ -375,7 +375,7 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pb.ListP
 		pbPipelineRuns[i] = pbRun
 	}
 
-	return &pb.ListPipelineRunsByRequesterResponse{
+	return &pipelinepb.ListPipelineRunsByRequesterResponse{
 		PipelineRuns: pbPipelineRuns,
 		TotalSize:    int32(totalCount),
 		Page:         int32(page),

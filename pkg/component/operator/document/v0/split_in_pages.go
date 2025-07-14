@@ -11,7 +11,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 func (e *execution) splitInPages(ctx context.Context, job *base.Job) error {
@@ -24,7 +25,7 @@ func (e *execution) splitInPages(ctx context.Context, job *base.Job) error {
 	fe := util.TransformContentTypeToFileExtension(ct)
 	if fe != "pdf" {
 		// return fmt.Errorf("invalid file extension: %s", fe)
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("invalid file extension"),
 			"Page split task takes only PDF documents.",
 		)

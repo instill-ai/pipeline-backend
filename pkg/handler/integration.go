@@ -9,15 +9,15 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 // GetIntegration returns the details of an integration.
-func (h *PublicHandler) GetIntegration(ctx context.Context, req *pb.GetIntegrationRequest) (*pb.GetIntegrationResponse, error) {
+func (h *PublicHandler) GetIntegration(ctx context.Context, req *pipelinepb.GetIntegrationRequest) (*pipelinepb.GetIntegrationResponse, error) {
 
 	view := req.GetView()
-	if view == pb.View_VIEW_UNSPECIFIED {
-		view = pb.View_VIEW_BASIC
+	if view == pipelinepb.View_VIEW_UNSPECIFIED {
+		view = pipelinepb.View_VIEW_BASIC
 	}
 
 	integration, err := h.service.GetIntegration(ctx, req.GetIntegrationId(), view)
@@ -25,11 +25,11 @@ func (h *PublicHandler) GetIntegration(ctx context.Context, req *pb.GetIntegrati
 		return nil, err
 	}
 
-	return &pb.GetIntegrationResponse{Integration: integration}, nil
+	return &pipelinepb.GetIntegrationResponse{Integration: integration}, nil
 }
 
 // ListIntegrations returns a paginated list of available integrations.
-func (h *PublicHandler) ListIntegrations(ctx context.Context, req *pb.ListIntegrationsRequest) (*pb.ListIntegrationsResponse, error) {
+func (h *PublicHandler) ListIntegrations(ctx context.Context, req *pipelinepb.ListIntegrationsRequest) (*pipelinepb.ListIntegrationsResponse, error) {
 
 	resp, err := h.service.ListIntegrations(ctx, req)
 	if err != nil {
@@ -41,7 +41,7 @@ func (h *PublicHandler) ListIntegrations(ctx context.Context, req *pb.ListIntegr
 
 // CreateNamespaceConnection creates a connection under the ownership of
 // a namespace.
-func (h *PublicHandler) CreateNamespaceConnection(ctx context.Context, req *pb.CreateNamespaceConnectionRequest) (*pb.CreateNamespaceConnectionResponse, error) {
+func (h *PublicHandler) CreateNamespaceConnection(ctx context.Context, req *pipelinepb.CreateNamespaceConnectionRequest) (*pipelinepb.CreateNamespaceConnectionResponse, error) {
 
 	if err := authenticateUser(ctx, false); err != nil {
 		return nil, err
@@ -59,12 +59,12 @@ func (h *PublicHandler) CreateNamespaceConnection(ctx context.Context, req *pb.C
 		return nil, err
 	}
 
-	return &pb.CreateNamespaceConnectionResponse{Connection: conn}, nil
+	return &pipelinepb.CreateNamespaceConnectionResponse{Connection: conn}, nil
 }
 
 // UpdateNamespaceConnection updates a connection with the supplied connection
 // fields.
-func (h *PublicHandler) UpdateNamespaceConnection(ctx context.Context, req *pb.UpdateNamespaceConnectionRequest) (*pb.UpdateNamespaceConnectionResponse, error) {
+func (h *PublicHandler) UpdateNamespaceConnection(ctx context.Context, req *pipelinepb.UpdateNamespaceConnectionRequest) (*pipelinepb.UpdateNamespaceConnectionResponse, error) {
 
 	if err := authenticateUser(ctx, false); err != nil {
 		return nil, err
@@ -75,11 +75,11 @@ func (h *PublicHandler) UpdateNamespaceConnection(ctx context.Context, req *pb.U
 		return nil, err
 	}
 
-	return &pb.UpdateNamespaceConnectionResponse{Connection: conn}, nil
+	return &pipelinepb.UpdateNamespaceConnectionResponse{Connection: conn}, nil
 }
 
 // DeleteNamespaceConnection deletes a connection.
-func (h *PublicHandler) DeleteNamespaceConnection(ctx context.Context, req *pb.DeleteNamespaceConnectionRequest) (*pb.DeleteNamespaceConnectionResponse, error) {
+func (h *PublicHandler) DeleteNamespaceConnection(ctx context.Context, req *pipelinepb.DeleteNamespaceConnectionRequest) (*pipelinepb.DeleteNamespaceConnectionResponse, error) {
 
 	if err := authenticateUser(ctx, false); err != nil {
 		return nil, err
@@ -97,13 +97,13 @@ func (h *PublicHandler) DeleteNamespaceConnection(ctx context.Context, req *pb.D
 		return nil, err
 	}
 
-	return &pb.DeleteNamespaceConnectionResponse{}, nil
+	return &pipelinepb.DeleteNamespaceConnectionResponse{}, nil
 }
 
 // ListPipelineIDsByConnectionID returns a paginated list with the IDs of the
 // pipelines that reference a given connection. All the pipelines will belong
 // to the same namespace as the connection.
-func (h *PublicHandler) ListPipelineIDsByConnectionID(ctx context.Context, req *pb.ListPipelineIDsByConnectionIDRequest) (*pb.ListPipelineIDsByConnectionIDResponse, error) {
+func (h *PublicHandler) ListPipelineIDsByConnectionID(ctx context.Context, req *pipelinepb.ListPipelineIDsByConnectionIDRequest) (*pipelinepb.ListPipelineIDsByConnectionIDResponse, error) {
 
 	if err := authenticateUser(ctx, false); err != nil {
 		return nil, err
@@ -120,12 +120,12 @@ func (h *PublicHandler) ListPipelineIDsByConnectionID(ctx context.Context, req *
 // TestNamespaceConnection makes a request to the 3rd party app that the
 // connection is configured to communicate with, and checks the result of the
 // call.
-func (h *PublicHandler) TestNamespaceConnection(ctx context.Context, req *pb.TestNamespaceConnectionRequest) (*pb.TestNamespaceConnectionResponse, error) {
+func (h *PublicHandler) TestNamespaceConnection(ctx context.Context, req *pipelinepb.TestNamespaceConnectionRequest) (*pipelinepb.TestNamespaceConnectionResponse, error) {
 	return nil, nil //status.Errorf(codes.Unimplemented, "not implemented")
 }
 
 // GetNamespaceConnection fetches the details of a namespace connection.
-func (h *PublicHandler) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespaceConnectionRequest) (*pb.GetNamespaceConnectionResponse, error) {
+func (h *PublicHandler) GetNamespaceConnection(ctx context.Context, req *pipelinepb.GetNamespaceConnectionRequest) (*pipelinepb.GetNamespaceConnectionResponse, error) {
 
 	if err := authenticateUser(ctx, false); err != nil {
 		return nil, err
@@ -136,12 +136,12 @@ func (h *PublicHandler) GetNamespaceConnection(ctx context.Context, req *pb.GetN
 		return nil, err
 	}
 
-	return &pb.GetNamespaceConnectionResponse{Connection: conn}, nil
+	return &pipelinepb.GetNamespaceConnectionResponse{Connection: conn}, nil
 }
 
 // ListNamespaceConnections returns a paginated list of connections created by
 // a namespace.
-func (h *PublicHandler) ListNamespaceConnections(ctx context.Context, req *pb.ListNamespaceConnectionsRequest) (*pb.ListNamespaceConnectionsResponse, error) {
+func (h *PublicHandler) ListNamespaceConnections(ctx context.Context, req *pipelinepb.ListNamespaceConnectionsRequest) (*pipelinepb.ListNamespaceConnectionsResponse, error) {
 
 	if err := authenticateUser(ctx, false); err != nil {
 		return nil, err
@@ -156,9 +156,9 @@ func (h *PublicHandler) ListNamespaceConnections(ctx context.Context, req *pb.Li
 }
 
 // LookUpConnectionAdmin fetches a connection by UID.
-func (h *PrivateHandler) LookUpConnectionAdmin(ctx context.Context, req *pb.LookUpConnectionAdminRequest) (*pb.LookUpConnectionAdminResponse, error) {
-	view := pb.View_VIEW_BASIC
-	if req.GetView() != pb.View_VIEW_UNSPECIFIED {
+func (h *PrivateHandler) LookUpConnectionAdmin(ctx context.Context, req *pipelinepb.LookUpConnectionAdminRequest) (*pipelinepb.LookUpConnectionAdminResponse, error) {
+	view := pipelinepb.View_VIEW_BASIC
+	if req.GetView() != pipelinepb.View_VIEW_UNSPECIFIED {
 		view = req.GetView()
 	}
 
@@ -168,5 +168,5 @@ func (h *PrivateHandler) LookUpConnectionAdmin(ctx context.Context, req *pb.Look
 		return nil, err
 	}
 
-	return &pb.LookUpConnectionAdminResponse{Connection: conn}, nil
+	return &pipelinepb.LookUpConnectionAdminResponse{Connection: conn}, nil
 }

@@ -6,7 +6,8 @@ import (
 	"strings"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 func (c *client) updateIssue(ctx context.Context, job *base.Job) error {
@@ -40,7 +41,7 @@ func (c *client) updateIssue(ctx context.Context, job *base.Job) error {
 	case "Move Issue to Epic":
 		err = moveIssueToEpic(c.Client, input.IssueKey, input.Update.EpicKey)
 		if err != nil {
-			if !strings.Contains(errmsg.Message(err), "The request contains a next-gen issue") {
+			if !strings.Contains(errorsx.Message(err), "The request contains a next-gen issue") {
 				return fmt.Errorf("moving issue to epic: %w", err)
 			}
 			input.Update.UpdateType = "Custom Update"
@@ -52,9 +53,9 @@ func (c *client) updateIssue(ctx context.Context, job *base.Job) error {
 				},
 			})
 			if _, err = updateIssue(c.Client, &input); err != nil {
-				return errmsg.AddMessage(
+				return errorsx.AddMessage(
 					fmt.Errorf("failed to update issue with parent key"),
-					"You can only move issues to epics. The Jira API response with: "+errmsg.Message(err),
+					"You can only move issues to epics. The Jira API response with: "+errorsx.Message(err),
 				)
 			}
 		}
@@ -67,7 +68,7 @@ func (c *client) updateIssue(ctx context.Context, job *base.Job) error {
 		output := updateIssueOutput{Issue: *issue}
 		return job.Output.WriteData(ctx, output)
 	default:
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("invalid update type"),
 			fmt.Sprintf("%s is an invalid update type", input.Update.UpdateType),
 		)

@@ -28,20 +28,19 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/checkfield"
 	"github.com/instill-ai/x/constant"
-	"github.com/instill-ai/x/errmsg"
 	"github.com/instill-ai/x/resource"
 
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
-var errIntegrationNotFound = errmsg.AddMessage(errdomain.ErrNotFound, "Integration does not exist.")
+var errIntegrationNotFound = errorsx.AddMessage(errorsx.ErrNotFound, "Integration does not exist.")
 
-func (s *service) GetIntegration(ctx context.Context, id string, view pb.View) (*pb.Integration, error) {
+func (s *service) GetIntegration(ctx context.Context, id string, view pipelinepb.View) (*pipelinepb.Integration, error) {
 	cd, err := s.getComponentDefinitionByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, errdomain.ErrNotFound) {
+		if errors.Is(err, errorsx.ErrNotFound) {
 			err = errIntegrationNotFound
 		}
 
@@ -60,7 +59,7 @@ func (s *service) GetIntegration(ctx context.Context, id string, view pb.View) (
 	return integration, nil
 }
 
-func (s *service) ListIntegrations(ctx context.Context, req *pb.ListIntegrationsRequest) (*pb.ListIntegrationsResponse, error) {
+func (s *service) ListIntegrations(ctx context.Context, req *pipelinepb.ListIntegrationsRequest) (*pipelinepb.ListIntegrationsResponse, error) {
 	declarations, err := filtering.NewDeclarations(
 		filtering.DeclareStandardFunctions(),
 		filtering.DeclareIdent("qIntegration", filtering.TypeString),
@@ -91,20 +90,20 @@ func (s *service) ListIntegrations(ctx context.Context, req *pb.ListIntegrations
 	}
 
 	cdIndices := integrationsPage.ComponentDefinitions
-	integrations := make([]*pb.Integration, len(cdIndices))
+	integrations := make([]*pipelinepb.Integration, len(cdIndices))
 	for i, cdIdx := range cdIndices {
 		cd, err := s.component.GetDefinitionByUID(cdIdx.UID, vars, nil)
 		if err != nil {
 			return nil, fmt.Errorf("fetching component definition: %w", err)
 		}
 
-		integrations[i], err = s.componentDefinitionToIntegration(ctx, cd, pb.View_VIEW_BASIC)
+		integrations[i], err = s.componentDefinitionToIntegration(ctx, cd, pipelinepb.View_VIEW_BASIC)
 		if err != nil {
 			return nil, fmt.Errorf("converting component definition: %w", err)
 		}
 	}
 
-	return &pb.ListIntegrationsResponse{
+	return &pipelinepb.ListIntegrationsResponse{
 		Integrations:  integrations,
 		NextPageToken: integrationsPage.NextPageToken,
 		TotalSize:     integrationsPage.TotalSize,
@@ -115,9 +114,9 @@ var errIntegrationConversion = fmt.Errorf("component definition has no integrati
 
 func (s *service) componentDefinitionToIntegration(
 	ctx context.Context,
-	cd *pb.ComponentDefinition,
-	view pb.View,
-) (*pb.Integration, error) {
+	cd *pipelinepb.ComponentDefinition,
+	view pipelinepb.View,
+) (*pipelinepb.Integration, error) {
 
 	props, hasIntegration := cd.GetSpec().GetComponentSpecification().GetFields()["properties"]
 	if !hasIntegration {
@@ -131,7 +130,7 @@ func (s *service) componentDefinitionToIntegration(
 
 	// TODO add HelpLink
 
-	integration := &pb.Integration{
+	integration := &pipelinepb.Integration{
 		Uid:         cd.GetUid(),
 		Id:          cd.GetId(),
 		Title:       cd.GetTitle(),
@@ -141,7 +140,7 @@ func (s *service) componentDefinitionToIntegration(
 		View:        view,
 	}
 
-	if view != pb.View_VIEW_FULL {
+	if view != pipelinepb.View_VIEW_FULL {
 		return integration, nil
 	}
 
@@ -182,7 +181,7 @@ func (s *service) componentDefinitionToIntegration(
 		return nil, fmt.Errorf("marshalling OAuth config: %w", err)
 	}
 
-	integration.OAuthConfig = new(pb.Integration_OAuthConfig)
+	integration.OAuthConfig = new(pipelinepb.Integration_OAuthConfig)
 	if err := protojson.Unmarshal(j, integration.OAuthConfig); err != nil {
 		return nil, fmt.Errorf("unmarshaling OAuth config: %w", err)
 	}
@@ -236,10 +235,10 @@ var outputOnlyConnectionFields = []string{
 	"update_time",
 }
 
-// validateConnection validates the fields of a pb.Connection. In particular,it
+// validateConnection validates the fields of a pipelinepb.Connection. In particular,it
 // verifies the setup fulfills its integration's schema.
 // Note that the connection input will be modified.
-func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integration) error {
+func (s *service) validateConnection(conn *pipelinepb.Connection, integration *pipelinepb.Integration) error {
 	// https://github.com/instill-ai/protobufs/pull/475 removed
 	// protoc-gen-validate because it broke the generated code used in the
 	// Python SDK.
@@ -249,31 +248,31 @@ func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integr
 	// }
 
 	switch conn.GetMethod() {
-	case pb.Connection_METHOD_DICTIONARY:
-		err := fmt.Errorf("%w: invalid payload in dictionary connection", errdomain.ErrInvalidArgument)
+	case pipelinepb.Connection_METHOD_DICTIONARY:
+		err := fmt.Errorf("%w: invalid payload in dictionary connection", errorsx.ErrInvalidArgument)
 		if integration.GetOAuthConfig() != nil {
-			return errmsg.AddMessage(err, integration.GetTitle()+" connection only accepts METHOD_OAUTH.")
+			return errorsx.AddMessage(err, integration.GetTitle()+" connection only accepts METHOD_OAUTH.")
 		}
 		if len(conn.GetScopes()) > 0 {
-			return errmsg.AddMessage(err, "Scopes only apply to OAuth connections.")
+			return errorsx.AddMessage(err, "Scopes only apply to OAuth connections.")
 		}
 		if conn.GetOAuthAccessDetails() != nil {
-			return errmsg.AddMessage(err, "OAuth access details only apply to OAuth connections.")
+			return errorsx.AddMessage(err, "OAuth access details only apply to OAuth connections.")
 		}
 		if conn.Identity != nil {
-			return errmsg.AddMessage(err, "Identity only applies to OAuth connections.")
+			return errorsx.AddMessage(err, "Identity only applies to OAuth connections.")
 		}
-	case pb.Connection_METHOD_OAUTH:
-		err := fmt.Errorf("%w: invalid payload in OAuth connection", errdomain.ErrInvalidArgument)
+	case pipelinepb.Connection_METHOD_OAUTH:
+		err := fmt.Errorf("%w: invalid payload in OAuth connection", errorsx.ErrInvalidArgument)
 		if integration.GetOAuthConfig() == nil {
-			return errmsg.AddMessage(err, integration.GetTitle()+" connection doesn't accept METHOD_OAUTH.")
+			return errorsx.AddMessage(err, integration.GetTitle()+" connection doesn't accept METHOD_OAUTH.")
 		}
 		if conn.GetIdentity() == "" {
-			return errmsg.AddMessage(err, "Identity must be provided in OAuth connections.")
+			return errorsx.AddMessage(err, "Identity must be provided in OAuth connections.")
 		}
 	default:
-		err := fmt.Errorf("%w: unsupported method", errdomain.ErrInvalidArgument)
-		return errmsg.AddMessage(err, "Invalid method "+conn.GetMethod().String()+".")
+		err := fmt.Errorf("%w: unsupported method", errorsx.ErrInvalidArgument)
+		return errorsx.AddMessage(err, "Invalid method "+conn.GetMethod().String()+".")
 	}
 
 	// Validate setup fulfills integration schema.
@@ -296,7 +295,7 @@ func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integr
 
 	setup := conn.GetSetup().AsMap()
 	if err := validator.Validate(setup); err != nil {
-		return fmt.Errorf("%w: %w", errdomain.ErrInvalidArgument, err)
+		return fmt.Errorf("%w: %w", errorsx.ErrInvalidArgument, err)
 	}
 
 	conn.Setup, err = structpb.NewStruct(setup)
@@ -310,7 +309,7 @@ func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integr
 // validateConnectionCreation checks an input connection is valid for creation.
 // Note that OUTUPUT_ONLY fields and undefined setup fields will be set to
 // zero.
-func (s *service) validateConnectionCreation(conn *pb.Connection, integration *pb.Integration) error {
+func (s *service) validateConnectionCreation(conn *pipelinepb.Connection, integration *pipelinepb.Integration) error {
 	// Check REQUIRED fields are provided in the request.
 	requiredFields := []string{
 		"id",
@@ -319,17 +318,17 @@ func (s *service) validateConnectionCreation(conn *pb.Connection, integration *p
 		"setup",
 	}
 	if err := checkfield.CheckRequiredFields(conn, requiredFields); err != nil {
-		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
+		return fmt.Errorf("%w:%w", errorsx.ErrInvalidArgument, err)
 	}
 
 	// Set all OUTPUT_ONLY fields to zero value.
 	if err := checkfield.CheckCreateOutputOnlyFields(conn, outputOnlyConnectionFields); err != nil {
-		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
+		return fmt.Errorf("%w:%w", errorsx.ErrInvalidArgument, err)
 	}
 
 	// Validate resource ID.
 	if err := checkfield.CheckResourceID(conn.GetId()); err != nil {
-		return fmt.Errorf("%w: %w", errdomain.ErrInvalidArgument, err)
+		return fmt.Errorf("%w: %w", errorsx.ErrInvalidArgument, err)
 	}
 
 	return s.validateConnection(conn, integration)
@@ -338,12 +337,12 @@ func (s *service) validateConnectionCreation(conn *pb.Connection, integration *p
 var errEmptyMask = fmt.Errorf("empty mask")
 
 // validateConnectionUpdate checks an input connection is valid for update.
-// Note that OUTUPUT_ONLY fields and undefined setup fields will be set to
+// Note that OUTPUT_ONLY fields and undefined setup fields will be set to
 // zero in the input connection.
 func (s *service) validateConnectionUpdate(
-	updateReq, destConn *pb.Connection,
+	updateReq, destConn *pipelinepb.Connection,
 	pbMask *fieldmaskpb.FieldMask,
-	integration *pb.Integration,
+	integration *pipelinepb.Integration,
 ) (err error) {
 	// google.protobuf.Struct needs to be updated in block.
 	for i, path := range pbMask.Paths {
@@ -356,17 +355,17 @@ func (s *service) validateConnectionUpdate(
 	}
 
 	if !pbMask.IsValid(updateReq) {
-		return fmt.Errorf("%w: invalid input mask", errdomain.ErrInvalidArgument)
+		return fmt.Errorf("%w: invalid input mask", errorsx.ErrInvalidArgument)
 	}
 
 	pbMask, err = checkfield.CheckUpdateOutputOnlyFields(pbMask, outputOnlyConnectionFields)
 	if err != nil {
-		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
+		return fmt.Errorf("%w:%w", errorsx.ErrInvalidArgument, err)
 	}
 
 	mask, err := fieldmaskutil.MaskFromProtoFieldMask(pbMask, strcase.ToCamel)
 	if err != nil {
-		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
+		return fmt.Errorf("%w:%w", errorsx.ErrInvalidArgument, err)
 	}
 
 	if mask.IsEmpty() {
@@ -376,7 +375,7 @@ func (s *service) validateConnectionUpdate(
 	// Return error if IMMUTABLE fields are intentionally changed.
 	immutableFields := []string{"integration_id"}
 	if err := checkfield.CheckUpdateImmutableFields(updateReq, destConn, immutableFields); err != nil {
-		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
+		return fmt.Errorf("%w:%w", errorsx.ErrInvalidArgument, err)
 	}
 
 	// Only the fields mentioned in the field mask will be copied to the
@@ -388,7 +387,7 @@ func (s *service) validateConnectionUpdate(
 	return s.validateConnection(destConn, integration)
 }
 
-func (s *service) CreateNamespaceConnection(ctx context.Context, req *pb.CreateNamespaceConnectionRequest) (*pb.Connection, error) {
+func (s *service) CreateNamespaceConnection(ctx context.Context, req *pipelinepb.CreateNamespaceConnectionRequest) (*pipelinepb.Connection, error) {
 	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
@@ -399,10 +398,10 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, req *pb.CreateN
 	}
 
 	conn := req.GetConnection()
-	integration, err := s.GetIntegration(ctx, conn.GetIntegrationId(), pb.View_VIEW_FULL)
+	integration, err := s.GetIntegration(ctx, conn.GetIntegrationId(), pipelinepb.View_VIEW_FULL)
 	if err != nil {
 		if errors.Is(err, errIntegrationNotFound) {
-			return nil, fmt.Errorf("%w: invalid integration ID", errdomain.ErrInvalidArgument)
+			return nil, fmt.Errorf("%w: invalid integration ID", errorsx.ErrInvalidArgument)
 		}
 
 		return nil, fmt.Errorf("fetching integration details: %w", err)
@@ -445,10 +444,10 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, req *pb.CreateN
 		return nil, fmt.Errorf("persisting connection: %w", err)
 	}
 
-	return s.connectionToPB(inserted, conn.GetNamespaceId(), pb.View_VIEW_FULL)
+	return s.connectionToPB(inserted, conn.GetNamespaceId(), pipelinepb.View_VIEW_FULL)
 }
 
-func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pb.UpdateNamespaceConnectionRequest) (*pb.Connection, error) {
+func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pipelinepb.UpdateNamespaceConnectionRequest) (*pipelinepb.Connection, error) {
 	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
@@ -463,15 +462,15 @@ func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pb.UpdateN
 		return nil, fmt.Errorf("fetching connection: %w", err)
 	}
 
-	destConn, err := s.connectionToPB(inDB, ns.NsID, pb.View_VIEW_FULL)
+	destConn, err := s.connectionToPB(inDB, ns.NsID, pipelinepb.View_VIEW_FULL)
 	if err != nil {
 		return nil, fmt.Errorf("converting database connection to proto: %w", err)
 	}
 
-	integration, err := s.GetIntegration(ctx, inDB.Integration.ID, pb.View_VIEW_FULL)
+	integration, err := s.GetIntegration(ctx, inDB.Integration.ID, pipelinepb.View_VIEW_FULL)
 	if err != nil {
 		if errors.Is(err, errIntegrationNotFound) {
-			return nil, fmt.Errorf("%w: invalid integration ID", errdomain.ErrInvalidArgument)
+			return nil, fmt.Errorf("%w: invalid integration ID", errorsx.ErrInvalidArgument)
 		}
 
 		return nil, fmt.Errorf("fetching integration details: %w", err)
@@ -483,7 +482,7 @@ func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pb.UpdateN
 			return nil, err
 		}
 
-		return s.connectionToPB(inDB, ns.NsID, pb.View_VIEW_FULL)
+		return s.connectionToPB(inDB, ns.NsID, pipelinepb.View_VIEW_FULL)
 	}
 
 	jsonSetup, err := destConn.GetSetup().MarshalJSON()
@@ -517,13 +516,13 @@ func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pb.UpdateN
 		return nil, fmt.Errorf("persisting connection: %w", err)
 	}
 
-	return s.connectionToPB(updated, destConn.GetNamespaceId(), pb.View_VIEW_FULL)
+	return s.connectionToPB(updated, destConn.GetNamespaceId(), pipelinepb.View_VIEW_FULL)
 }
 
-func (s *service) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespaceConnectionRequest) (*pb.Connection, error) {
+func (s *service) GetNamespaceConnection(ctx context.Context, req *pipelinepb.GetNamespaceConnectionRequest) (*pipelinepb.Connection, error) {
 	view := req.GetView()
-	if view == pb.View_VIEW_UNSPECIFIED {
-		view = pb.View_VIEW_BASIC
+	if view == pipelinepb.View_VIEW_UNSPECIFIED {
+		view = pipelinepb.View_VIEW_BASIC
 	}
 
 	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
@@ -543,14 +542,14 @@ func (s *service) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespa
 	return s.connectionToPB(inDB, req.GetNamespaceId(), view)
 }
 
-func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view pb.View) (*pb.Connection, error) {
-	pbConn := &pb.Connection{
+func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view pipelinepb.View) (*pipelinepb.Connection, error) {
+	pbConn := &pipelinepb.Connection{
 		Uid:              conn.UID.String(),
 		Id:               conn.ID,
 		NamespaceId:      nsID,
 		IntegrationId:    conn.Integration.ID,
 		IntegrationTitle: conn.Integration.Title,
-		Method:           pb.Connection_Method(conn.Method),
+		Method:           pipelinepb.Connection_Method(conn.Method),
 		View:             view,
 		CreateTime:       timestamppb.New(conn.CreateTime),
 		UpdateTime:       timestamppb.New(conn.UpdateTime),
@@ -560,7 +559,7 @@ func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view p
 		pbConn.Identity = &conn.Identity.String
 	}
 
-	if view != pb.View_VIEW_FULL {
+	if view != pipelinepb.View_VIEW_FULL {
 		return pbConn, nil
 	}
 
@@ -582,7 +581,7 @@ func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view p
 	return pbConn, nil
 }
 
-func (s *service) ListNamespaceConnections(ctx context.Context, req *pb.ListNamespaceConnectionsRequest) (*pb.ListNamespaceConnectionsResponse, error) {
+func (s *service) ListNamespaceConnections(ctx context.Context, req *pipelinepb.ListNamespaceConnectionsRequest) (*pipelinepb.ListNamespaceConnectionsResponse, error) {
 	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
@@ -617,14 +616,14 @@ func (s *service) ListNamespaceConnections(ctx context.Context, req *pb.ListName
 		return nil, fmt.Errorf("fetching connections: %w", err)
 	}
 
-	resp := &pb.ListNamespaceConnectionsResponse{
-		Connections:   make([]*pb.Connection, len(dbConns.Connections)),
+	resp := &pipelinepb.ListNamespaceConnectionsResponse{
+		Connections:   make([]*pipelinepb.Connection, len(dbConns.Connections)),
 		NextPageToken: dbConns.NextPageToken,
 		TotalSize:     dbConns.TotalSize,
 	}
 
 	for i, inDB := range dbConns.Connections {
-		resp.Connections[i], err = s.connectionToPB(inDB, req.GetNamespaceId(), pb.View_VIEW_BASIC)
+		resp.Connections[i], err = s.connectionToPB(inDB, req.GetNamespaceId(), pipelinepb.View_VIEW_BASIC)
 		if err != nil {
 			return nil, fmt.Errorf("building proto connection: %w", err)
 		}
@@ -647,7 +646,7 @@ func (s *service) DeleteNamespaceConnection(ctx context.Context, namespaceID, id
 
 }
 
-func (s *service) ListPipelineIDsByConnectionID(ctx context.Context, req *pb.ListPipelineIDsByConnectionIDRequest) (*pb.ListPipelineIDsByConnectionIDResponse, error) {
+func (s *service) ListPipelineIDsByConnectionID(ctx context.Context, req *pipelinepb.ListPipelineIDsByConnectionIDRequest) (*pipelinepb.ListPipelineIDsByConnectionIDResponse, error) {
 	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
@@ -683,14 +682,14 @@ func (s *service) ListPipelineIDsByConnectionID(ctx context.Context, req *pb.Lis
 		return nil, fmt.Errorf("fetching connections: %w", err)
 	}
 
-	return &pb.ListPipelineIDsByConnectionIDResponse{
+	return &pipelinepb.ListPipelineIDsByConnectionIDResponse{
 		PipelineIds:   page.PipelineIDs,
 		NextPageToken: page.NextPageToken,
 		TotalSize:     page.TotalSize,
 	}, nil
 }
 
-func (s *service) GetConnectionByUIDAdmin(ctx context.Context, uid uuid.UUID, view pb.View) (*pb.Connection, error) {
+func (s *service) GetConnectionByUIDAdmin(ctx context.Context, uid uuid.UUID, view pipelinepb.View) (*pipelinepb.Connection, error) {
 	inDB, err := s.repository.GetConnectionByUID(ctx, uid)
 	if err != nil {
 		return nil, fmt.Errorf("fetching connection: %w", err)

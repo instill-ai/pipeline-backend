@@ -5,7 +5,8 @@ import (
 	"fmt"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 func (c *client) createIssue(ctx context.Context, job *base.Job) error {
@@ -28,7 +29,7 @@ func (c *client) createIssue(ctx context.Context, job *base.Job) error {
 	createdResult, ok := resp.Result().(*createIssueResp)
 
 	if !ok {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("failed to convert response to `Create Issue` Output"),
 			fmt.Sprintf("failed to convert %v to `Create Issue` Output", resp.Result()),
 		)

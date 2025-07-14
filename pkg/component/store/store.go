@@ -65,7 +65,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/web/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 var (
@@ -323,38 +323,38 @@ func (s *Store) UnregisterEvent(ctx context.Context, defID string, settings *bas
 }
 
 // GetDefinitionByUID returns a component definition by its UID.
-func (s *Store) GetDefinitionByUID(defUID uuid.UUID, sysVars map[string]any, compConfig *base.ComponentConfig) (*pb.ComponentDefinition, error) {
+func (s *Store) GetDefinitionByUID(defUID uuid.UUID, sysVars map[string]any, compConfig *base.ComponentConfig) (*pipelinepb.ComponentDefinition, error) {
 	if c, ok := s.componentUIDMap[defUID]; ok {
 		def, err := c.comp.GetDefinition(sysVars, compConfig)
 		if err != nil {
 			return nil, err
 		}
-		return proto.Clone(def).(*pb.ComponentDefinition), err
+		return proto.Clone(def).(*pipelinepb.ComponentDefinition), err
 	}
 	return nil, ErrComponentDefinitionNotFound
 }
 
 // GetDefinitionByID returns a component definition by its ID.
-func (s *Store) GetDefinitionByID(defID string, sysVars map[string]any, compConfig *base.ComponentConfig) (*pb.ComponentDefinition, error) {
+func (s *Store) GetDefinitionByID(defID string, sysVars map[string]any, compConfig *base.ComponentConfig) (*pipelinepb.ComponentDefinition, error) {
 	if c, ok := s.componentIDMap[defID]; ok {
 		def, err := c.comp.GetDefinition(sysVars, compConfig)
 		if err != nil {
 			return nil, err
 		}
-		return proto.Clone(def).(*pb.ComponentDefinition), err
+		return proto.Clone(def).(*pipelinepb.ComponentDefinition), err
 	}
 	return nil, ErrComponentDefinitionNotFound
 }
 
 // ListDefinitions returns all the loaded component definitions.
-func (s *Store) ListDefinitions(sysVars map[string]any, returnTombstone bool) []*pb.ComponentDefinition {
-	defs := []*pb.ComponentDefinition{}
+func (s *Store) ListDefinitions(sysVars map[string]any, returnTombstone bool) []*pipelinepb.ComponentDefinition {
+	defs := []*pipelinepb.ComponentDefinition{}
 	for _, uid := range s.componentUIDs {
 		c := s.componentUIDMap[uid]
 		def, err := c.comp.GetDefinition(sysVars, nil)
 		if err == nil {
 			if !def.Tombstone || returnTombstone {
-				defs = append(defs, proto.Clone(def).(*pb.ComponentDefinition))
+				defs = append(defs, proto.Clone(def).(*pipelinepb.ComponentDefinition))
 			}
 		}
 	}

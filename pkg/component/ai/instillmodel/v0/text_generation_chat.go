@@ -10,8 +10,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/openai/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
-
-	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
+	modelpb "github.com/instill-ai/protogen-go/model/model/v1alpha"
 )
 
 type TextGenerationInput struct {
@@ -47,7 +46,7 @@ type ChatParameter struct {
 	TopP        int     `json:"top-p,omitempty"`
 }
 
-func (e *execution) executeTextGenerationChat(grpcClient modelPB.ModelPublicServiceClient, nsID string, modelID string, version string, inputs []*structpb.Struct) ([]*structpb.Struct, error) {
+func (e *execution) executeTextGenerationChat(grpcClient modelpb.ModelPublicServiceClient, nsID string, modelID string, version string, inputs []*structpb.Struct) ([]*structpb.Struct, error) {
 
 	if len(inputs) <= 0 {
 		return nil, fmt.Errorf("invalid input: %v for model: %s/%s/%s", inputs, nsID, modelID, version)

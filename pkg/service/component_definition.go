@@ -11,8 +11,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
 	component "github.com/instill-ai/pipeline-backend/pkg/component/store"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	errorsx "github.com/instill-ai/x/errors"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 func (s *service) pageSizeInRange(pageSize int32) int {
@@ -36,12 +36,12 @@ func (s *service) pageInRange(page int32) int {
 }
 
 // ListComponentDefinitions returns a paginated list of components.
-func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComponentDefinitionsRequest) (*pb.ListComponentDefinitionsResponse, error) {
+func (s *service) ListComponentDefinitions(ctx context.Context, req *pipelinepb.ListComponentDefinitionsRequest) (*pipelinepb.ListComponentDefinitionsResponse, error) {
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 	page := s.pageInRange(req.GetPage())
 
-	var compType pb.ComponentType
-	var releaseStage pb.ComponentDefinition_ReleaseStage
+	var compType pipelinepb.ComponentType
+	var releaseStage pipelinepb.ComponentDefinition_ReleaseStage
 	declarations, err := filtering.NewDeclarations(
 		filtering.DeclareStandardFunctions(),
 		filtering.DeclareIdent("qTitle", filtering.TypeString),
@@ -68,7 +68,7 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 		return nil, err
 	}
 
-	defs := make([]*pb.ComponentDefinition, len(uids))
+	defs := make([]*pipelinepb.ComponentDefinition, len(uids))
 
 	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
 	if err != nil {
@@ -80,14 +80,14 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 		if err != nil {
 			return nil, err
 		}
-		if req.GetView() != pb.ComponentDefinition_VIEW_FULL {
+		if req.GetView() != pipelinepb.ComponentDefinition_VIEW_FULL {
 			def.Spec = nil
 		}
 
 		defs[i] = def
 	}
 
-	resp := &pb.ListComponentDefinitionsResponse{
+	resp := &pipelinepb.ListComponentDefinitionsResponse{
 		PageSize:             int32(pageSize),
 		Page:                 int32(page),
 		TotalSize:            int32(totalSize),
@@ -97,7 +97,7 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 	return resp, nil
 }
 
-func (s *service) getComponentDefinitionByID(ctx context.Context, id string) (*pb.ComponentDefinition, error) {
+func (s *service) getComponentDefinitionByID(ctx context.Context, id string) (*pipelinepb.ComponentDefinition, error) {
 	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (s *service) getComponentDefinitionByID(ctx context.Context, id string) (*p
 	cd, err := s.component.GetDefinitionByID(id, vars, nil)
 	if err != nil {
 		if errors.Is(err, component.ErrComponentDefinitionNotFound) {
-			err = fmt.Errorf("fetching component definition: %w", errdomain.ErrNotFound)
+			err = fmt.Errorf("fetching component definition: %w", errorsx.ErrNotFound)
 		}
 		return nil, err
 	}

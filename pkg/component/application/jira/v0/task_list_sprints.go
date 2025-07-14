@@ -5,7 +5,8 @@ import (
 	"fmt"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 func (c *client) listSprints(ctx context.Context, job *base.Job) error {
@@ -29,7 +30,7 @@ func (c *client) listSprints(ctx context.Context, job *base.Job) error {
 
 	sprints, ok := resp.Result().(*listSprintsResp)
 	if !ok {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("failed to convert %v to `List Sprint` Output", resp.Result()),
 			fmt.Sprintf("failed to convert %v to `List Sprint` Output", resp.Result()),
 		)

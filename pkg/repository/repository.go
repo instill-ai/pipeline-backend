@@ -26,9 +26,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/paginate"
 
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	constantx "github.com/instill-ai/x/constant"
+	errorsx "github.com/instill-ai/x/errors"
 	resourcex "github.com/instill-ai/x/resource"
 )
 
@@ -75,7 +75,7 @@ type Repository interface {
 	ListAllComponentDefinitions(context.Context) ([]*datamodel.ComponentDefinition, error)
 	ListComponentDefinitionUIDs(context.Context, ListComponentDefinitionsParams) (uids []*datamodel.ComponentDefinition, totalSize int64, err error)
 	GetDefinitionByUID(context.Context, uuid.UUID) (*datamodel.ComponentDefinition, error)
-	UpsertComponentDefinition(context.Context, *pb.ComponentDefinition) error
+	UpsertComponentDefinition(context.Context, *pipelinepb.ComponentDefinition) error
 	DeleteComponentDefinition(context.Context, uuid.UUID) error
 	ListIntegrations(context.Context, ListIntegrationsParams) (IntegrationList, error)
 
@@ -136,11 +136,11 @@ func (r *repository) toDomainErr(err error) error {
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == "23505" || errors.Is(err, gorm.ErrDuplicatedKey) {
-		return errdomain.ErrAlreadyExists
+		return errorsx.ErrAlreadyExists
 	}
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return errdomain.ErrNotFound
+		return errorsx.ErrNotFound
 	}
 
 	return err
@@ -284,7 +284,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	if pageToken != "" {
 		tokens, err := DecodeToken(pageToken)
 		if err != nil {
-			return nil, 0, "", newPageTokenErr(err)
+			return nil, 0, "", errorsx.NewPageTokenErr(err)
 		}
 
 		for _, o := range order.Fields {
@@ -521,7 +521,7 @@ func (r *repository) UpdateNamespacePipelineByUID(ctx context.Context, uid uuid.
 		Updates(pipeline); result.Error != nil {
 		return result.Error
 	} else if result.RowsAffected == 0 {
-		return ErrNoDataUpdated
+		return errorsx.ErrNoDataUpdated
 	}
 	return nil
 }
@@ -540,7 +540,7 @@ func (r *repository) DeleteNamespacePipelineByID(ctx context.Context, ownerPerma
 	}
 
 	if result.RowsAffected == 0 {
-		return ErrNoDataDeleted
+		return errorsx.ErrNoDataDeleted
 	}
 
 	return nil
@@ -556,7 +556,7 @@ func (r *repository) UpdateNamespacePipelineIDByID(ctx context.Context, ownerPer
 		Update("id", newID); result.Error != nil {
 		return result.Error
 	} else if result.RowsAffected == 0 {
-		return ErrNoDataUpdated
+		return errorsx.ErrNoDataUpdated
 	}
 	return nil
 }
@@ -602,7 +602,7 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 	if pageToken != "" {
 		createTime, uid, err := paginate.DecodeToken(pageToken)
 		if err != nil {
-			return nil, 0, "", newPageTokenErr(err)
+			return nil, 0, "", errorsx.NewPageTokenErr(err)
 		}
 		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createTime, uid)
 	}
@@ -675,7 +675,7 @@ func (r *repository) UpdateNamespacePipelineReleaseByID(ctx context.Context, own
 		Updates(pipelineRelease); result.Error != nil {
 		return result.Error
 	} else if result.RowsAffected == 0 {
-		return ErrNoDataUpdated
+		return errorsx.ErrNoDataUpdated
 	}
 	return nil
 }
@@ -694,7 +694,7 @@ func (r *repository) DeleteNamespacePipelineReleaseByID(ctx context.Context, own
 	}
 
 	if result.RowsAffected == 0 {
-		return ErrNoDataDeleted
+		return errorsx.ErrNoDataDeleted
 	}
 
 	return nil
@@ -710,7 +710,7 @@ func (r *repository) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, o
 		Update("id", newID); result.Error != nil {
 		return result.Error
 	} else if result.RowsAffected == 0 {
-		return ErrNoDataUpdated
+		return errorsx.ErrNoDataUpdated
 	}
 	return nil
 }
@@ -829,7 +829,7 @@ func (r *repository) GetDefinitionByUID(_ context.Context, uid uuid.UUID) (*data
 // datamodel (i.e. the fields used for filtering) and stores it in the
 // database. If the record already exists, it will be updated with the provided
 // fields.
-func (r *repository) UpsertComponentDefinition(_ context.Context, cd *pb.ComponentDefinition) error {
+func (r *repository) UpsertComponentDefinition(_ context.Context, cd *pipelinepb.ComponentDefinition) error {
 	record := datamodel.ComponentDefinitionFromProto(cd)
 	result := r.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(record)
 	if result.Error != nil {
@@ -1057,7 +1057,7 @@ func (r *repository) DeleteNamespaceSecretByID(ctx context.Context, ownerPermali
 	}
 
 	if result.RowsAffected == 0 {
-		return ErrNoDataDeleted
+		return errorsx.ErrNoDataDeleted
 	}
 
 	return nil
@@ -1100,7 +1100,7 @@ func (r *repository) DeletePipelineTags(ctx context.Context, pipelineUID uuid.UU
 
 	if result.RowsAffected == 0 {
 
-		return ErrNoDataDeleted
+		return errorsx.ErrNoDataDeleted
 
 	}
 
@@ -1387,7 +1387,7 @@ func (r *repository) UpdateNamespaceConnectionByUID(ctx context.Context, uid uui
 	}
 
 	if result.RowsAffected == 0 {
-		return nil, errdomain.ErrNotFound
+		return nil, errorsx.ErrNotFound
 	}
 
 	// Extra query is used to return the associated integration.
@@ -1403,7 +1403,7 @@ func (r *repository) DeleteNamespaceConnectionByID(ctx context.Context, nsUID uu
 	}
 
 	if result.RowsAffected == 0 {
-		return errdomain.ErrNotFound
+		return errorsx.ErrNotFound
 	}
 
 	return nil

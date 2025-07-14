@@ -10,7 +10,7 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 
-	"github.com/instill-ai/x/errmsg"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 // Issue is the Jira issue object.
@@ -70,7 +70,7 @@ func getIssue(client *resty.Client, issueKey string, updateHistory bool) (*Issue
 	if resp != nil && resp.StatusCode() == 404 {
 		return nil, fmt.Errorf(
 			err.Error(),
-			errmsg.Message(err)+"Please check you have the correct permissions to access this resource.",
+			errorsx.Message(err)+"Please check you have the correct permissions to access this resource.",
 		)
 	}
 	if err != nil {
@@ -79,7 +79,7 @@ func getIssue(client *resty.Client, issueKey string, updateHistory bool) (*Issue
 
 	issue, ok := resp.Result().(*Issue)
 	if !ok {
-		return nil, errmsg.AddMessage(
+		return nil, errorsx.AddMessage(
 			fmt.Errorf("failed to convert response to `Get Issue` Output"),
 			fmt.Sprintf("failed to convert %v to `Get Issue` Output", resp.Result()),
 		)
@@ -225,7 +225,7 @@ func moveIssueToEpic(client *resty.Client, issueKey, epicKey string) error {
 		return err
 	}
 	if resp.StatusCode() != 204 {
-		return errmsg.AddMessage(
+		return errorsx.AddMessage(
 			fmt.Errorf("failed to move issue to epic"),
 			fmt.Sprintf(`failed to move issue "%s" to epic "%s"`, issueKey, epicKey),
 		)
@@ -235,7 +235,7 @@ func moveIssueToEpic(client *resty.Client, issueKey, epicKey string) error {
 
 func updateIssue(client *resty.Client, input *updateIssueInput) (*updateIssueResp, error) {
 	if input.Update.UpdateType != "Custom Update" {
-		return nil, errmsg.AddMessage(
+		return nil, errorsx.AddMessage(
 			fmt.Errorf("invalid update type"),
 			fmt.Sprintf("%s is an invalid update type", input.Update.UpdateType),
 		)
@@ -244,7 +244,7 @@ func updateIssue(client *resty.Client, input *updateIssueInput) (*updateIssueRes
 	fieldsInfo := make(map[string]interface{})
 	for _, field := range input.Update.UpdateFields {
 		if field.FieldName == "" {
-			return nil, errmsg.AddMessage(
+			return nil, errorsx.AddMessage(
 				fmt.Errorf("field name is required"),
 				"field name is required",
 			)
@@ -269,7 +269,7 @@ func updateIssue(client *resty.Client, input *updateIssueInput) (*updateIssueRes
 		case "copy":
 			updateInfo[field.FieldName] = append(updateInfo[field.FieldName], additionalFields{Copy: field.Value})
 		default:
-			return nil, errmsg.AddMessage(
+			return nil, errorsx.AddMessage(
 				fmt.Errorf("invalid action"),
 				fmt.Sprintf("%s is an invalid action", field.Action),
 			)
@@ -310,7 +310,7 @@ func updateIssue(client *resty.Client, input *updateIssueInput) (*updateIssueRes
 	updatedIssue, ok := resp.Result().(*updateIssueResp)
 
 	if !ok {
-		return nil, errmsg.AddMessage(
+		return nil, errorsx.AddMessage(
 			fmt.Errorf("failed to convert response to `Update Issue` Output"),
 			fmt.Sprintf("failed to convert %v to `Update Issue` Output", resp.Result()),
 		)

@@ -14,13 +14,13 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 
-	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
+	modelpb "github.com/instill-ai/protogen-go/model/model/v1alpha"
 )
 
 const maxPayloadSize int = 1024 * 1024 * 32
 
-// initModelPublicServiceClient initialises a ModelPublicServiceClient instance
-func initModelPublicServiceClient(serverURL string) (modelPB.ModelPublicServiceClient, *grpc.ClientConn) {
+// initModelPublicServiceClient initializes a ModelPublicServiceClient instance
+func initModelPublicServiceClient(serverURL string) (modelpb.ModelPublicServiceClient, *grpc.ClientConn) {
 	var clientDialOpts grpc.DialOption
 
 	if strings.HasPrefix(serverURL, "https://") {
@@ -35,17 +35,17 @@ func initModelPublicServiceClient(serverURL string) (modelPB.ModelPublicServiceC
 		return nil, nil
 	}
 
-	return modelPB.NewModelPublicServiceClient(clientConn), clientConn
+	return modelpb.NewModelPublicServiceClient(clientConn), clientConn
 }
 
-func trigger(gRPCClient modelPB.ModelPublicServiceClient, vars map[string]any, nsID string, modelID string, version string, taskInputs []*structpb.Struct) ([]*structpb.Struct, error) {
+func trigger(gRPCClient modelpb.ModelPublicServiceClient, vars map[string]any, nsID string, modelID string, version string, taskInputs []*structpb.Struct) ([]*structpb.Struct, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(vars))
 
-	res, err := gRPCClient.TriggerNamespaceModel(ctx, &modelPB.TriggerNamespaceModelRequest{
+	res, err := gRPCClient.TriggerNamespaceModel(ctx, &modelpb.TriggerNamespaceModelRequest{
 		NamespaceId: nsID,
 		ModelId:     modelID,
 		Version:     version,

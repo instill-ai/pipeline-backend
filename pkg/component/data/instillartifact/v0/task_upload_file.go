@@ -13,7 +13,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 
-	artifactPB "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 )
 
 func (input *UploadFileInput) isNewCatalog() bool {
@@ -38,7 +38,7 @@ func (e *execution) uploadFile(input *structpb.Struct) (*structpb.Struct, error)
 
 	if inputStruct.isNewCatalog() {
 
-		catalogs, err := artifactClient.ListCatalogs(ctx, &artifactPB.ListCatalogsRequest{
+		catalogs, err := artifactClient.ListCatalogs(ctx, &artifactpb.ListCatalogsRequest{
 			NamespaceId: inputStruct.Options.Namespace,
 		})
 
@@ -55,7 +55,7 @@ func (e *execution) uploadFile(input *structpb.Struct) (*structpb.Struct, error)
 		}
 
 		if !found {
-			_, err = artifactClient.CreateCatalog(ctx, &artifactPB.CreateCatalogRequest{
+			_, err = artifactClient.CreateCatalog(ctx, &artifactpb.CreateCatalogRequest{
 				NamespaceId: inputStruct.Options.Namespace,
 				Name:        inputStruct.Options.CatalogID,
 				Description: inputStruct.Options.Description,
@@ -81,13 +81,13 @@ func (e *execution) uploadFile(input *structpb.Struct) (*structpb.Struct, error)
 
 	content := util.GetFileBase64Content(file)
 
-	typePB := artifactPB.FileType_value[typeString]
-	filePB := &artifactPB.File{
+	typePB := artifactpb.FileType_value[typeString]
+	filePB := &artifactpb.File{
 		Name:    inputStruct.Options.FileName,
-		Type:    artifactPB.FileType(typePB),
+		Type:    artifactpb.FileType(typePB),
 		Content: content,
 	}
-	uploadRes, err := artifactClient.UploadCatalogFile(ctx, &artifactPB.UploadCatalogFileRequest{
+	uploadRes, err := artifactClient.UploadCatalogFile(ctx, &artifactpb.UploadCatalogFileRequest{
 		NamespaceId: inputStruct.Options.Namespace,
 		CatalogId:   inputStruct.Options.CatalogID,
 		File:        filePB,
@@ -102,7 +102,7 @@ func (e *execution) uploadFile(input *structpb.Struct) (*structpb.Struct, error)
 	output.File = FileOutput{
 		FileUID:    uploadedFilePB.FileUid,
 		FileName:   uploadedFilePB.Name,
-		FileType:   artifactPB.FileType_name[int32(uploadedFilePB.Type)],
+		FileType:   artifactpb.FileType_name[int32(uploadedFilePB.Type)],
 		CreateTime: uploadedFilePB.CreateTime.AsTime().Format(time.RFC3339),
 		UpdateTime: uploadedFilePB.UpdateTime.AsTime().Format(time.RFC3339),
 		Size:       uploadedFilePB.Size,
@@ -110,7 +110,7 @@ func (e *execution) uploadFile(input *structpb.Struct) (*structpb.Struct, error)
 	}
 
 	// TODO: chuang, will need to process again in another task.
-	_, err = artifactClient.ProcessCatalogFiles(ctx, &artifactPB.ProcessCatalogFilesRequest{
+	_, err = artifactClient.ProcessCatalogFiles(ctx, &artifactpb.ProcessCatalogFilesRequest{
 		FileUids: []string{uploadedFilePB.FileUid},
 	})
 

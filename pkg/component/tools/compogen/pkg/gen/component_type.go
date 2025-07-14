@@ -1,7 +1,7 @@
 package gen
 
 import (
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 // ComponentType holds the possible subtypes of a component (e.g.
@@ -17,11 +17,11 @@ const (
 )
 
 var toComponentType = map[string]ComponentType{
-	pb.ComponentType_COMPONENT_TYPE_AI.String():          cstAI,
-	pb.ComponentType_COMPONENT_TYPE_APPLICATION.String(): cstApplication,
-	pb.ComponentType_COMPONENT_TYPE_DATA.String():        cstData,
-	pb.ComponentType_COMPONENT_TYPE_OPERATOR.String():    cstOperator,
-	pb.ComponentType_COMPONENT_TYPE_GENERIC.String():     cstGeneric,
+	pipelinepb.ComponentType_COMPONENT_TYPE_AI.String():          cstAI,
+	pipelinepb.ComponentType_COMPONENT_TYPE_APPLICATION.String(): cstApplication,
+	pipelinepb.ComponentType_COMPONENT_TYPE_DATA.String():        cstData,
+	pipelinepb.ComponentType_COMPONENT_TYPE_OPERATOR.String():    cstOperator,
+	pipelinepb.ComponentType_COMPONENT_TYPE_GENERIC.String():     cstGeneric,
 }
 
 var modifiesArticle = map[ComponentType]bool{

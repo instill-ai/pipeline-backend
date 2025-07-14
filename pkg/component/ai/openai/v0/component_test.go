@@ -18,7 +18,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 const (
@@ -140,7 +141,7 @@ func TestComponent_Execute(t *testing.T) {
 
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				want := "OpenAI responded with a 401 status code. Incorrect API key provided."
-				c.Check(errmsg.Message(err), qt.Equals, want)
+				c.Check(errorsx.Message(err), qt.Equals, want)
 			})
 
 			err = x.Execute(ctx, []*base.Job{job})
@@ -170,7 +171,7 @@ func TestComponent_Execute(t *testing.T) {
 
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 			want := "FOOBAR task is not supported."
-			c.Check(errmsg.Message(err), qt.Equals, want)
+			c.Check(errorsx.Message(err), qt.Equals, want)
 		})
 
 		err = exec.Execute(ctx, []*base.Job{job})
@@ -207,7 +208,7 @@ func TestComponent_Test(t *testing.T) {
 		c.Check(err, qt.IsNotNil)
 
 		wantMsg := "OpenAI responded with a 401 status code. Incorrect API key provided."
-		c.Check(errmsg.Message(err), qt.Equals, wantMsg)
+		c.Check(errorsx.Message(err), qt.Equals, wantMsg)
 	})
 
 	c.Run("ok - disconnected", func(c *qt.C) {
@@ -317,6 +318,6 @@ func TestComponent_WithConfig(t *testing.T) {
 		})
 		c.Check(err, qt.IsNotNil)
 		c.Check(err, qt.ErrorMatches, "unresolved global credential")
-		c.Check(errmsg.Message(err), qt.Matches, "The configuration field api-key references a global secret but.*")
+		c.Check(errorsx.Message(err), qt.Matches, "The configuration field api-key references a global secret but.*")
 	})
 }

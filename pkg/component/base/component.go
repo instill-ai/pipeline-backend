@@ -23,7 +23,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 
-	pb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
 
 const conditionJSON = `
@@ -78,7 +78,7 @@ type IComponent interface {
 
 	// Note: Some content in the definition JSON schema needs to be generated
 	// by sysVars or component setting.
-	GetDefinition(sysVars map[string]any, compConfig *ComponentConfig) (*pb.ComponentDefinition, error)
+	GetDefinition(sysVars map[string]any, compConfig *ComponentConfig) (*pipelinepb.ComponentDefinition, error)
 
 	// CreateExecution takes a ComponentExecution that can be used to compose
 	// the core component behaviour with the particular business logic in the
@@ -165,7 +165,7 @@ type Component struct {
 	Logger          *zap.Logger
 	NewUsageHandler UsageHandlerCreator
 
-	definition   *pb.ComponentDefinition
+	definition   *pipelinepb.ComponentDefinition
 	secretFields []string
 
 	BinaryFetcher  external.BinaryFetcher
@@ -321,8 +321,8 @@ func EventIDToTitle(id string) string {
 	return cases.Title(language.English).String(title)
 }
 
-func generateComponentTaskCards(tasks []string, taskStructs map[string]*structpb.Struct) []*pb.ComponentTask {
-	taskCards := make([]*pb.ComponentTask, 0, len(tasks))
+func generateComponentTaskCards(tasks []string, taskStructs map[string]*structpb.Struct) []*pipelinepb.ComponentTask {
+	taskCards := make([]*pipelinepb.ComponentTask, 0, len(tasks))
 	for _, k := range tasks {
 		if v, ok := taskStructs[k]; ok {
 			title := v.Fields["title"].GetStringValue()
@@ -335,7 +335,7 @@ func generateComponentTaskCards(tasks []string, taskStructs map[string]*structpb
 				description = v.Fields["description"].GetStringValue()
 			}
 
-			taskCards = append(taskCards, &pb.ComponentTask{
+			taskCards = append(taskCards, &pipelinepb.ComponentTask{
 				Name:        k,
 				Title:       title,
 				Description: description,
@@ -346,8 +346,8 @@ func generateComponentTaskCards(tasks []string, taskStructs map[string]*structpb
 	return taskCards
 }
 
-func generateComponentEventCards(events []string, eventStructs map[string]*structpb.Struct) []*pb.ComponentEvent {
-	eventCards := make([]*pb.ComponentEvent, 0, len(events))
+func generateComponentEventCards(events []string, eventStructs map[string]*structpb.Struct) []*pipelinepb.ComponentEvent {
+	eventCards := make([]*pipelinepb.ComponentEvent, 0, len(events))
 	for _, k := range events {
 		if v, ok := eventStructs[k]; ok {
 			title := v.Fields["title"].GetStringValue()
@@ -360,7 +360,7 @@ func generateComponentEventCards(events []string, eventStructs map[string]*struc
 				description = v.Fields["description"].GetStringValue()
 			}
 
-			eventCards = append(eventCards, &pb.ComponentEvent{
+			eventCards = append(eventCards, &pipelinepb.ComponentEvent{
 				Name:        k,
 				Title:       title,
 				Description: description,
@@ -370,7 +370,7 @@ func generateComponentEventCards(events []string, eventStructs map[string]*struc
 	return eventCards
 }
 
-func generateComponentSpec(title string, tasks []*pb.ComponentTask, taskStructs map[string]*structpb.Struct) (*structpb.Struct, error) {
+func generateComponentSpec(title string, tasks []*pipelinepb.ComponentTask, taskStructs map[string]*structpb.Struct) (*structpb.Struct, error) {
 	var err error
 	componentSpec := &structpb.Struct{Fields: map[string]*structpb.Value{}}
 	componentSpec.Fields["title"] = structpb.NewStringValue(fmt.Sprintf("%s Component", title))
@@ -445,9 +445,9 @@ type Event struct {
 	MessageExamples []any  `json:"messageExamples"`
 }
 
-func generateEventSpecs(eventJSONBytes []byte) (map[string]*pb.EventSpecification, error) {
+func generateEventSpecs(eventJSONBytes []byte) (map[string]*pipelinepb.EventSpecification, error) {
 
-	specs := map[string]*pb.EventSpecification{}
+	specs := map[string]*pipelinepb.EventSpecification{}
 	var j EventJSON
 	err := json.Unmarshal(eventJSONBytes, &j)
 	if err != nil {
@@ -486,7 +486,7 @@ func generateEventSpecs(eventJSONBytes []byte) (map[string]*pb.EventSpecificatio
 			}
 			pbMessageExamples = append(pbMessageExamples, pbMessageExample)
 		}
-		specs[t] = &pb.EventSpecification{
+		specs[t] = &pipelinepb.EventSpecification{
 			Title:           e.Title,
 			Description:     e.Description,
 			ConfigSchema:    pbConfigSchema,
@@ -497,11 +497,11 @@ func generateEventSpecs(eventJSONBytes []byte) (map[string]*pb.EventSpecificatio
 	return specs, nil
 }
 
-func generateDataSpecs(tasks map[string]*structpb.Struct) (map[string]*pb.DataSpecification, error) {
+func generateDataSpecs(tasks map[string]*structpb.Struct) (map[string]*pipelinepb.DataSpecification, error) {
 
-	specs := map[string]*pb.DataSpecification{}
+	specs := map[string]*pipelinepb.DataSpecification{}
 	for k := range tasks {
-		spec := &pb.DataSpecification{}
+		spec := &pipelinepb.DataSpecification{}
 		taskJSONStruct := proto.Clone(tasks[k]).(*structpb.Struct)
 		spec.Input = taskJSONStruct.Fields["input"].GetStructValue()
 		spec.Output = taskJSONStruct.Fields["output"].GetStructValue()
@@ -511,7 +511,7 @@ func generateDataSpecs(tasks map[string]*structpb.Struct) (map[string]*pb.DataSp
 	return specs, nil
 }
 
-func loadTasks(availableTasks []string, tasksJSONBytes []byte) ([]*pb.ComponentTask, map[string]*structpb.Struct, error) {
+func loadTasks(availableTasks []string, tasksJSONBytes []byte) ([]*pipelinepb.ComponentTask, map[string]*structpb.Struct, error) {
 
 	taskStructs := map[string]*structpb.Struct{}
 	var err error
@@ -535,7 +535,7 @@ func loadTasks(availableTasks []string, tasksJSONBytes []byte) ([]*pb.ComponentT
 	return tasks, taskStructs, nil
 }
 
-func loadEvents(availableEvents []string, eventsJSONBytes []byte) ([]*pb.ComponentEvent, error) {
+func loadEvents(availableEvents []string, eventsJSONBytes []byte) ([]*pipelinepb.ComponentEvent, error) {
 	eventStructs := map[string]*structpb.Struct{}
 	var err error
 
@@ -648,10 +648,10 @@ func (c *Component) GetLogger() *zap.Logger {
 }
 
 // GetDefinition returns the component definition.
-func (c *Component) GetDefinition(sysVars map[string]any, compConfig *ComponentConfig) (*pb.ComponentDefinition, error) {
+func (c *Component) GetDefinition(sysVars map[string]any, compConfig *ComponentConfig) (*pipelinepb.ComponentDefinition, error) {
 
 	var err error
-	definition := proto.Clone(c.definition).(*pb.ComponentDefinition)
+	definition := proto.Clone(c.definition).(*pipelinepb.ComponentDefinition)
 	definition.Spec.ComponentSpecification, err = convertFormatFields(definition.Spec.ComponentSpecification, true)
 	if err != nil {
 		return nil, err
@@ -745,7 +745,7 @@ func (c *Component) LoadDefinition(definitionYAMLBytes, setupYAMLBytes, tasksYAM
 		return err
 	}
 
-	c.definition = &pb.ComponentDefinition{}
+	c.definition = &pipelinepb.ComponentDefinition{}
 	err = protojson.UnmarshalOptions{DiscardUnknown: true}.Unmarshal(definitionJSONBytes, c.definition)
 	if err != nil {
 		return err
@@ -754,7 +754,7 @@ func (c *Component) LoadDefinition(definitionYAMLBytes, setupYAMLBytes, tasksYAM
 	c.definition.Name = fmt.Sprintf("component-definitions/%s", c.definition.Id)
 	c.definition.Tasks = tasks
 	if c.definition.Spec == nil {
-		c.definition.Spec = &pb.ComponentDefinition_Spec{}
+		c.definition.Spec = &pipelinepb.ComponentDefinition_Spec{}
 	}
 	c.definition.Spec.ComponentSpecification, err = generateComponentSpec(c.definition.Title, tasks, taskStructs)
 	if err != nil {
@@ -914,7 +914,7 @@ func (c *Component) ListSecretFields() ([]string, error) {
 	return c.secretFields, nil
 }
 
-func (c *Component) initSecretField(def *pb.ComponentDefinition) {
+func (c *Component) initSecretField(def *pipelinepb.ComponentDefinition) {
 	if c.secretFields == nil {
 		c.secretFields = []string{}
 	}

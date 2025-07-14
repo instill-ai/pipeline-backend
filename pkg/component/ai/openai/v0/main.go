@@ -22,7 +22,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/resources/schemas"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
-	"github.com/instill-ai/x/errmsg"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 const (
@@ -539,7 +540,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		}
 
 	default:
-		job.Error.Error(ctx, errmsg.AddMessage(
+		job.Error.Error(ctx, errorsx.AddMessage(
 			fmt.Errorf("not supported task: %s", e.Task),
 			fmt.Sprintf("%s task is not supported.", e.Task),
 		))

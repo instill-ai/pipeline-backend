@@ -8,9 +8,9 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	healthcheckpb "github.com/instill-ai/protogen-go/common/healthcheck/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 // TODO: in the public_handler, we should convert all id to uuid when calling service
@@ -112,7 +112,7 @@ func (h *PublicHandler) CheckName(ctx context.Context, req *pipelinepb.CheckName
 
 	if rscType == "pipelines" {
 		_, err := h.service.GetNamespacePipelineByID(ctx, ns, name, pipelinepb.Pipeline_VIEW_BASIC)
-		if err != nil && errors.Is(err, errdomain.ErrNotFound) {
+		if err != nil && errors.Is(err, errorsx.ErrNotFound) {
 			return &pipelinepb.CheckNameResponse{
 				Availability: pipelinepb.CheckNameResponse_NAME_AVAILABLE,
 			}, nil
