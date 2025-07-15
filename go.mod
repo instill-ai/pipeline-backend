@@ -47,7 +47,7 @@ require (
 	github.com/influxdata/influxdb-client-go/v2 v2.14.0
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20250707160902-77023eb2f033
 	github.com/instill-ai/usage-client v0.4.0
-	github.com/instill-ai/x v0.8.0-alpha.0.20250714023551-3829fd844cd5
+	github.com/instill-ai/x v0.9.0-alpha
 	github.com/itchyny/gojq v0.12.17
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/jmoiron/sqlx v1.4.0
@@ -121,6 +121,10 @@ require (
 	github.com/hhrutter/lzw v1.0.0 // indirect
 	github.com/hhrutter/pkcs7 v0.2.0 // indirect
 	github.com/hhrutter/tiff v1.0.2 // indirect
+	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
+	github.com/jackc/pgconn v1.14.3 // indirect
+	github.com/jackc/pgio v1.0.0 // indirect
+	github.com/jackc/pgproto3/v2 v2.3.3 // indirect
 	github.com/minio/crc64nvme v1.0.2 // indirect
 	github.com/minio/minio-go/v7 v7.0.92 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect

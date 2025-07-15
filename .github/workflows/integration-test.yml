@@ -72,8 +72,14 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Set short commit SHA
+        if: github.ref == 'refs/heads/main'
         run: |
           echo "COMMIT_SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+
+      - name: Set PR head commit SHA
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "COMMIT_SHORT_SHA=$(echo ${{ github.event.pull_request.head.sha }} | cut -c1-7)" >> $GITHUB_ENV
 
       - name: Build image
         uses: docker/build-push-action@v6
