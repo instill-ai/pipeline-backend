@@ -8,7 +8,7 @@ on:
     paths-ignore:
       - "README.md"
     tags:
-      - "*-rc"
+      - "*-rc*"
   release:
     types: [published]
 
