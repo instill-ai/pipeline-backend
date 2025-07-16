@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.57.0](https://github.com/instill-ai/pipeline-backend/compare/v0.56.0...v0.57.0) (2025-07-16)
+
+
+### Features
+
+* **artifact:** add file UID param in retrieval task ([#1046](https://github.com/instill-ai/pipeline-backend/issues/1046)) ([df241f5](https://github.com/instill-ai/pipeline-backend/commit/df241f514304f7d0abd79b8ed4c97c3b0b9c0a37))
+* **component:** retire openai.v1 and universal-ai component ([#1042](https://github.com/instill-ai/pipeline-backend/issues/1042)) ([d332bbe](https://github.com/instill-ai/pipeline-backend/commit/d332bbe87fba2114b4c38ad3d384546a89673646))
+* **external:** support new blob-url path in artifactBinaryFetcher ([#1037](https://github.com/instill-ai/pipeline-backend/issues/1037)) ([11a5d16](https://github.com/instill-ai/pipeline-backend/commit/11a5d16057f5b4dd775e4348265a2c671560e62a))
+* **otel:** integrate OTEL using gRPC interceptor ([#1050](https://github.com/instill-ai/pipeline-backend/issues/1050)) ([70edddd](https://github.com/instill-ai/pipeline-backend/commit/70edddd40d249d58584b678b511e2cedbe4a91b3))
+
+
+### Bug Fixes
+
+* **external:** use URLEncoding to decode blob URL ([#1047](https://github.com/instill-ai/pipeline-backend/issues/1047)) ([893cf5b](https://github.com/instill-ai/pipeline-backend/commit/893cf5b797d27bc2a0532eb838b4bf73da0a087c))
+* **init:** remove components from the database if they no longer exist in the definition list ([#1049](https://github.com/instill-ai/pipeline-backend/issues/1049)) ([82fe19d](https://github.com/instill-ai/pipeline-backend/commit/82fe19df724d24e61af4b613a5d83bc8ee39295c))
+
+
+### Miscellaneous
+
+* **dep:** bump up usage-client version ([#1043](https://github.com/instill-ai/pipeline-backend/issues/1043)) ([f357f03](https://github.com/instill-ai/pipeline-backend/commit/f357f035ebc5c83159c5bf6ec25a184e79cc400a))
+* **deps:** bump github.com/go-chi/chi/v5 from 5.2.1 to 5.2.2 ([#1030](https://github.com/instill-ai/pipeline-backend/issues/1030)) ([6ad1380](https://github.com/instill-ai/pipeline-backend/commit/6ad138028e58cebe04db14b9846cc10ac3e87034))
+* release v0.57.0 ([5789441](https://github.com/instill-ai/pipeline-backend/commit/5789441fa53d9dd930518902eb47b2b4ad9ea985))
+
+
+### Refactor
+
+* **main:** align backend codebase ([#1048](https://github.com/instill-ai/pipeline-backend/issues/1048)) ([9de0b03](https://github.com/instill-ai/pipeline-backend/commit/9de0b039b9618a760fcb9114e03b819ff4306322))
+
 ## [0.56.0](https://github.com/instill-ai/pipeline-backend/compare/v0.55.0...v0.56.0) (2025-07-01)
 
 
