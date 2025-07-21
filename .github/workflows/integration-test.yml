@@ -89,13 +89,13 @@ jobs:
           build-args: |
             SERVICE_NAME=${{ env.SERVICE_NAME }}
             SERVICE_VERSION=${{ env.COMMIT_SHORT_SHA }}
-          tags: instill/pipeline-backend:latest
+          tags: instill/pipeline-backend:${{ env.COMMIT_SHORT_SHA }}
           cache-from: |
             type=registry,ref=instill/pipeline-backend:buildcache
           cache-to: |
             type=registry,ref=instill/pipeline-backend:buildcache,mode=max
 
-      - name: Launch Instill Core CE (latest)
+      - name: Launch Instill Core CE (commit hash)
         working-directory: instill-core
         run: |
           make latest EDITION=docker-ce:test ENV_SECRETS_COMPONENT=.env.secrets.component.test
