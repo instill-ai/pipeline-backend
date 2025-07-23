@@ -98,7 +98,7 @@ jobs:
       - name: Launch Instill Core CE (commit hash)
         working-directory: instill-core
         run: |
-          make latest EDITION=docker-ce:test ENV_SECRETS_COMPONENT=.env.secrets.component.test
+          make compose-dev EDITION=docker-ce:test ENV_SECRETS_COMPONENT=.env.secrets.component.test PIPELINE_BACKEND_VERSION=${{ env.COMMIT_SHORT_SHA }}
 
       - name: Run integration-test
         working-directory: pipeline-backend
