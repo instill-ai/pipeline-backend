@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.57.1](https://github.com/instill-ai/pipeline-backend/compare/v0.57.0...v0.57.1) (2025-07-25)
+
+
+### Bug Fixes
+
+* **cmd:** move Temporal namespace creation to cmd/init ([#1053](https://github.com/instill-ai/pipeline-backend/issues/1053)) ([11c6847](https://github.com/instill-ai/pipeline-backend/commit/11c6847609d0f85ee904e5c4982e11c5f0bd2c89))
+* **component:** fix missing propagation of original request header instill-artifact component ([#1056](https://github.com/instill-ai/pipeline-backend/issues/1056)) ([2b9f265](https://github.com/instill-ai/pipeline-backend/commit/2b9f265aea2e1aa938cb3e990e2af32a9ee747b5))
+
 ## [0.57.0](https://github.com/instill-ai/pipeline-backend/compare/v0.56.0...v0.57.0) (2025-07-16)
 
 
