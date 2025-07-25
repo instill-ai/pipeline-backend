@@ -50,6 +50,9 @@ type SystemVariables struct {
 	MgmtBackend         string `json:"__MGMT_BACKEND"`
 	ArtifactBackend     string `json:"__ARTIFACT_BACKEND"`
 	AgentBackend        string `json:"__AGENT_BACKEND"`
+
+	// OriginalHeader contains the original context header from the request.
+	OriginalHeader map[string]string `json:"__ORIGINAL_HEADER"`
 }
 
 // TODO: GenerateSystemVariables will be refactored for better code structure.

@@ -49,6 +49,11 @@ func getRequestMetadata(vars map[string]any) metadata.MD {
 		"Instill-Auth-Type", "user",
 	)
 
+	originalHeader := util.GetOriginalHeader(vars)
+	for k, v := range originalHeader {
+		md.Set(k, v.(string))
+	}
+
 	if requester := util.GetInstillRequesterUID(vars); requester != "" {
 		md.Set("Instill-Requester-Uid", requester)
 	}
