@@ -19,6 +19,7 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -1709,7 +1710,18 @@ func (s *service) triggerPipeline(
 				PipelineRequesterUID: requester.NsUID,
 				PipelineRequesterID:  requester.NsID,
 				HeaderAuthorization:  resourcex.GetRequestSingleHeader(ctx, "authorization"),
-				ExpiryRule:           triggerParams.expiryRule,
+				OriginalHeader: func() map[string]string {
+					md, ok := metadata.FromIncomingContext(ctx)
+					if !ok {
+						return nil
+					}
+					header := make(map[string]string)
+					for k, v := range md {
+						header[k] = v[0]
+					}
+					return header
+				}(),
+				ExpiryRule: triggerParams.expiryRule,
 			},
 			Streaming: isStreaming,
 			Mode:      mgmtpb.Mode_MODE_SYNC,
@@ -1805,7 +1817,18 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 				PipelineRequesterUID: requester.NsUID,
 				PipelineRequesterID:  requester.NsID,
 				HeaderAuthorization:  resourcex.GetRequestSingleHeader(ctx, "authorization"),
-				ExpiryRule:           params.expiryRule,
+				OriginalHeader: func() map[string]string {
+					md, ok := metadata.FromIncomingContext(ctx)
+					if !ok {
+						return nil
+					}
+					header := make(map[string]string)
+					for k, v := range md {
+						header[k] = v[0]
+					}
+					return header
+				}(),
+				ExpiryRule: params.expiryRule,
 			},
 			Streaming: isStreaming,
 			Mode:      mgmtpb.Mode_MODE_ASYNC,

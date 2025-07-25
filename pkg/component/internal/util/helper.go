@@ -215,6 +215,13 @@ func GetInstillRequesterUID(vars map[string]any) string {
 	return vars["__PIPELINE_REQUESTER_UID"].(string)
 }
 
+func GetOriginalHeader(vars map[string]any) map[string]any {
+	if v, ok := vars["__ORIGINAL_HEADER"]; ok {
+		return v.(map[string]any)
+	}
+	return nil
+}
+
 func ConvertDataFrameToMarkdownTable(rows [][]string) string {
 	var sb strings.Builder
 
