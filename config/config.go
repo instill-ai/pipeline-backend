@@ -80,9 +80,8 @@ type ServerConfig struct {
 		Host       string `koanf:"host"`
 		Port       int    `koanf:"port"`
 	}
-	Debug       bool `koanf:"debug"`
-	MaxDataSize int  `koanf:"maxdatasize"`
-	Workflow    struct {
+	Debug    bool `koanf:"debug"`
+	Workflow struct {
 		MaxWorkflowTimeout int32 `koanf:"maxworkflowtimeout"`
 		MaxWorkflowRetry   int32 `koanf:"maxworkflowretry"`
 		MaxActivityRetry   int32 `koanf:"maxactivityretry"`

@@ -11,7 +11,6 @@ server:
     host: usage.instill-ai.com
     port: 443
   debug: true
-  maxdatasize: 1024 # MB in unit
   workflow:
     maxworkflowtimeout: 3600 # in seconds
     maxworkflowretry: 1

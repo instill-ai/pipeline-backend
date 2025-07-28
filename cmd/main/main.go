@@ -60,8 +60,8 @@ const gracefulShutdownTimeout = 60 * time.Minute
 
 var (
 	// These variables might be overridden at buildtime.
-	serviceVersion = "dev"
 	serviceName    = "pipeline-backend"
+	serviceVersion = "dev"
 )
 
 func main() {
@@ -437,20 +437,23 @@ func newClients(ctx context.Context, logger *zap.Logger) (
 	}
 
 	// Initialize Temporal client
-	temporalTracingInterceptor, err := opentelemetry.NewTracingInterceptor(opentelemetry.TracerOptions{
-		Tracer:            otel.Tracer(serviceName + "-temporal"),
-		TextMapPropagator: otel.GetTextMapPropagator(),
-	})
-	if err != nil {
-		logger.Fatal("Unable to create temporal tracing interceptor", zap.Error(err))
-	}
-
 	temporalClientOptions, err := temporal.ClientOptions(config.Config.Temporal, logger)
 	if err != nil {
 		logger.Fatal("Unable to build Temporal client options", zap.Error(err))
 	}
 
-	temporalClientOptions.Interceptors = []interceptor.ClientInterceptor{temporalTracingInterceptor}
+	// Only add interceptor if tracing is enabled
+	if config.Config.OTELCollector.Enable {
+		temporalTracingInterceptor, err := opentelemetry.NewTracingInterceptor(opentelemetry.TracerOptions{
+			Tracer:            otel.Tracer(serviceName),
+			TextMapPropagator: otel.GetTextMapPropagator(),
+		})
+		if err != nil {
+			logger.Fatal("Unable to create temporal tracing interceptor", zap.Error(err))
+		}
+		temporalClientOptions.Interceptors = []interceptor.ClientInterceptor{temporalTracingInterceptor}
+	}
+
 	temporalClient, err := temporalclient.Dial(temporalClientOptions)
 	if err != nil {
 		logger.Fatal("Unable to create Temporal client", zap.Error(err))
