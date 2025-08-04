@@ -125,38 +125,130 @@ TASK_CHAT:
             type: boolean
             default: false
             uiOrder: 3
+          search-mode:
+            title: Search Mode
+            description: Controls the search mode used for the request. When set to 'academic', results will prioritize scholarly sources like peer-reviewed
+              papers and academic journals. When set to 'sec', results will prioritize financial and legal sources.
+            shortDescription: Controls the search mode used for the request.
+            type: string
+            enum:
+              - academic
+              - web
+              - sec
+            default: web
+            uiOrder: 4
           search-domain-filter:
             title: Search Domain Filter
             description: Given a list of domains, limit the citations used by the online model to URLs from the specified domains. Currently limited to
               only 3 domains for whitelisting and blacklisting. For blacklisting add a `-` to the beginning of the domain string.
             type: string
-            uiOrder: 4
+            uiOrder: 5
+          return-related-questions:
+            title: Return Related Questions
+            description: Determines whether related questions should be returned.
+            shortDescription: Determines whether related questions should be returned.
+            type: boolean
+            default: false
+            uiOrder: 6
           search-recency-filter:
             title: Search Recency Filter
-            description: Returns search results within the specified time interval - does not apply to images. Values include `month`, `week`, `day`, `hour`.
+            description: Returns search results within the specified time interval - does not apply to images. Values include `month`, `week`, `day`, `year`.
             type: string
-            uiOrder: 5
+            uiOrder: 6
+          search-after-date-filter:
+            title: Search After Date Filter
+            description: Filters search results to only include content published after this date. Format should be %m/%d/%Y (e.g. 3/1/2025)
+            type: string
+            uiOrder: 7
+          search-before-date-filter:
+            title: Search Before Date Filter
+            description: Filters search results to only include content published before this date. Format should be %m/%d/%Y (e.g. 3/1/2025)
+            type: string
+            uiOrder: 8
+          last-updated-after-filter:
+            title: Last Updated After Filter
+            description: Filters search results to only include content last updated after this date. Format should be %m/%d/%Y (e.g. 3/1/2025)
+            type: string
+            uiOrder: 9
+          last-updated-before-filter:
+            title: Last Updated Before Filter
+            description: Filters search results to only include content last updated before this date. Format should be %m/%d/%Y (e.g. 3/1/2025)
+            type: string
+            uiOrder: 10
+          web-search-options:
+            title: Web Search Options
+            description: Configuration for using web search in model responses.
+            shortDescription: Configuration for using web search in model responses.
+            properties:
+              search-context-size:
+                title: Search Context Size
+                description: "Determines how much search context is retrieved for the model. Options are: low (minimizes context for cost savings but less\
+                  \ comprehensive answers), medium (balanced approach suitable for most queries), and high (maximizes context for comprehensive answers\
+                  \ but at higher cost)."
+                shortDescription: Determines how much search context is retrieved for the model.
+                type: string
+                enum:
+                  - low
+                  - medium
+                  - high
+                default: low
+                uiOrder: 1
+              user-location:
+                title: User Location
+                description: To refine search results based on geography, you can specify an approximate user location.
+                shortDescription: To refine search results based on geography, you can specify an approximate user location.
+                properties:
+                  latitude:
+                    title: Latitude
+                    description: The latitude of the user's location.
+                    shortDescription: The latitude of the user's location.
+                    type: number
+                    uiOrder: 1
+                  longitude:
+                    title: Longitude
+                    description: The longitude of the user's location.
+                    shortDescription: The longitude of the user's location.
+                    type: number
+                    uiOrder: 2
+                  country:
+                    title: Country
+                    description: The two letter ISO country code of the user's location.
+                    shortDescription: The two letter ISO country code of the user's location.
+                    type: string
+                    uiOrder: 3
+                required: []
+                uiOrder: 1
+                type: object
+            uiOrder: 3
+            type: object
           top-k:
             title: Top K
             description: The number of tokens to keep for highest top-k filtering, specified as an integer between 0 and 2048 inclusive. If set to 0, top-k
               filtering is disabled. We recommend either altering top_k or top_p, but not both.
             type: number
             default: 0
-            uiOrder: 6
+            uiOrder: 11
           presence-penalty:
             title: Presence Penalty
             description: A value between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the
               model's likelihood to talk about new topics. Incompatible with `frequency_penalty`.
             type: number
             default: 0
-            uiOrder: 7
+            uiOrder: 12
           frequency-penalty:
             title: Frequency Penalty
             description: A multiplicative penalty greater than 0. Values greater than 1.0 penalize new tokens based on their existing frequency in the text
               so far, decreasing the model's likelihood to repeat the same line verbatim. A value of 1.0 means no penalty. Incompatible with `presence_penalty`.
             type: number
             default: 1
-            uiOrder: 8
+            uiOrder: 13
+          enable-search-classifier:
+            title: Enable Search Classifier
+            description: Whether to enable search classifier.
+            shortDescription: Whether to enable search classifier.
+            type: boolean
+            default: false
+            uiOrder: 14
         required: []
         uiOrder: 1
         title: Input Parameter
@@ -232,6 +324,36 @@ TASK_CHAT:
             items:
               type: string
             uiOrder: 1
+            type: array
+          search-results:
+            title: Search Results
+            description: A list of search results related to the response.
+            shortDescription: A list of search results related to the response.
+            items:
+              properties:
+                title:
+                  title: Title
+                  description: The title of the search result.
+                  shortDescription: The title of the search result.
+                  type: string
+                  uiOrder: 0
+                url:
+                  title: URL
+                  description: The URL of the search result.
+                  shortDescription: The URL of the search result.
+                  type: string
+                  uiOrder: 1
+                date:
+                  title: Date
+                  description: The date of the search result.
+                  shortDescription: The date of the search result.
+                  type: string
+                  uiOrder: 2
+              required:
+                - title
+                - url
+              type: object
+            uiOrder: 2
             type: array
         required:
           - choices

@@ -69,7 +69,7 @@ func (e *execution) executeTextChat(ctx context.Context, job *base.Job) error {
 		return fmt.Errorf("sending chat request to Perplexity: %w", err)
 	}
 
-	if chatReq.Stream {
+	if chatReq.Stream != nil && *chatReq.Stream {
 		outputStruct, err := streaming(ctx, restyResp, job)
 		if err != nil {
 			err = fmt.Errorf("streaming: %w", err)
@@ -151,17 +151,25 @@ func buildChatReq(inputStruct TextChatInput) (*chatReq, error) {
 	messages = append(messages, userMessage)
 
 	return &chatReq{
-		Model:               inputStruct.Data.Model,
-		Messages:            messages,
-		MaxTokens:           inputStruct.Parameter.MaxTokens,
-		Temperature:         inputStruct.Parameter.Temperature,
-		TopP:                inputStruct.Parameter.TopP,
-		SearchDomainFilter:  inputStruct.Parameter.SearchDomainFilter,
-		SearchRecencyFilter: inputStruct.Parameter.SearchRecencyFilter,
-		TopK:                inputStruct.Parameter.TopK,
-		Stream:              inputStruct.Parameter.Stream,
-		PresencePenalty:     inputStruct.Parameter.PresencePenalty,
-		FrequencyPenalty:    inputStruct.Parameter.FrequencyPenalty,
+		Model:                   inputStruct.Data.Model,
+		Messages:                messages,
+		EnableSearchClassifier:  inputStruct.Parameter.EnableSearchClassifier,
+		ReturnRelatedQuestions:  inputStruct.Parameter.ReturnRelatedQuestions,
+		SearchAfterDateFilter:   inputStruct.Parameter.SearchAfterDateFilter,
+		SearchBeforeDateFilter:  inputStruct.Parameter.SearchBeforeDateFilter,
+		LastUpdatedAfterFilter:  inputStruct.Parameter.LastUpdatedAfterFilter,
+		LastUpdatedBeforeFilter: inputStruct.Parameter.LastUpdatedBeforeFilter,
+		WebSearchOptions:        inputStruct.Parameter.WebSearchOptions,
+		SearchMode:              inputStruct.Parameter.SearchMode,
+		MaxTokens:               inputStruct.Parameter.MaxTokens,
+		Temperature:             inputStruct.Parameter.Temperature,
+		TopP:                    inputStruct.Parameter.TopP,
+		SearchDomainFilter:      inputStruct.Parameter.SearchDomainFilter,
+		SearchRecencyFilter:     inputStruct.Parameter.SearchRecencyFilter,
+		TopK:                    inputStruct.Parameter.TopK,
+		Stream:                  inputStruct.Parameter.Stream,
+		PresencePenalty:         inputStruct.Parameter.PresencePenalty,
+		FrequencyPenalty:        inputStruct.Parameter.FrequencyPenalty,
 	}, nil
 }
 
@@ -184,6 +192,13 @@ func buildOutputStruct(resp chatResp) TextChatOutput {
 	outputData.Choices = choices
 
 	outputData.Citations = append(outputData.Citations, resp.Citations...)
+	for _, searchResult := range resp.SearchResults {
+		outputData.SearchResults = append(outputData.SearchResults, SearchResult{
+			Title: searchResult.Title,
+			URL:   searchResult.URL,
+			Date:  searchResult.Date,
+		})
+	}
 	return TextChatOutput{
 		Data: outputData,
 		Metadata: Metadata{
@@ -244,17 +259,25 @@ func streaming(ctx context.Context, resp *resty.Response, job *base.Job) (*TextC
 }
 
 type chatReq struct {
-	Model               string    `json:"model"`
-	Messages            []message `json:"messages"`
-	MaxTokens           int       `json:"max_tokens"`
-	Temperature         float64   `json:"temperature"`
-	TopP                float64   `json:"top_p"`
-	SearchDomainFilter  []string  `json:"search_domain_filter"`
-	SearchRecencyFilter string    `json:"search_recency_filter"`
-	TopK                int       `json:"top_k"`
-	Stream              bool      `json:"stream"`
-	PresencePenalty     float64   `json:"presence_penalty"`
-	FrequencyPenalty    float64   `json:"frequency_penalty"`
+	Model                   string            `json:"model"`
+	Messages                []message         `json:"messages"`
+	MaxTokens               *int              `json:"max_tokens,omitempty"`
+	Temperature             *float64          `json:"temperature,omitempty"`
+	TopP                    *float64          `json:"top_p,omitempty"`
+	SearchMode              *string           `json:"search_mode,omitempty"`
+	SearchDomainFilter      []string          `json:"search_domain_filter,omitempty"`
+	SearchRecencyFilter     *string           `json:"search_recency_filter,omitempty"`
+	SearchAfterDateFilter   *string           `json:"search_after_date_filter,omitempty"`
+	SearchBeforeDateFilter  *string           `json:"search_before_date_filter,omitempty"`
+	LastUpdatedAfterFilter  *string           `json:"last_updated_after_filter,omitempty"`
+	LastUpdatedBeforeFilter *string           `json:"last_updated_before_filter,omitempty"`
+	WebSearchOptions        *WebSearchOptions `json:"web_search_options,omitempty"`
+	TopK                    *int              `json:"top_k,omitempty"`
+	Stream                  *bool             `json:"stream,omitempty"`
+	PresencePenalty         *float64          `json:"presence_penalty,omitempty"`
+	FrequencyPenalty        *float64          `json:"frequency_penalty,omitempty"`
+	ReturnRelatedQuestions  *bool             `json:"return_related_questions,omitempty"`
+	EnableSearchClassifier  *bool             `json:"enable_search_classifier,omitempty"`
 }
 
 type message struct {
@@ -263,13 +286,14 @@ type message struct {
 }
 
 type chatResp struct {
-	ID        string   `json:"id"`
-	Model     string   `json:"model"`
-	Created   int64    `json:"created"`
-	Usage     usage    `json:"usage"`
-	Citations []string `json:"citations"`
-	Object    string   `json:"object"`
-	Choices   []choice `json:"choices"`
+	ID            string         `json:"id"`
+	Model         string         `json:"model"`
+	Created       int64          `json:"created"`
+	Usage         usage          `json:"usage"`
+	Citations     []string       `json:"citations"`
+	SearchResults []SearchResult `json:"search_results"`
+	Object        string         `json:"object"`
+	Choices       []choice       `json:"choices"`
 }
 
 type usage struct {
