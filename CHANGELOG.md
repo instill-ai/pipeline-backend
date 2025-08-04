@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.58.1](https://github.com/instill-ai/pipeline-backend/compare/v0.58.0...v0.58.1) (2025-08-04)
+
+
+### Features
+
+* **component,perplexity:** adopt latest perplexity API ([#1060](https://github.com/instill-ai/pipeline-backend/issues/1060)) ([bc8a2b0](https://github.com/instill-ai/pipeline-backend/commit/bc8a2b0eb2d6446bcb481767b9854cb275f4a68a))
+
 ## [0.58.0](https://github.com/instill-ai/pipeline-backend/compare/v0.57.0...v0.58.0) (2025-07-31)
 
 
