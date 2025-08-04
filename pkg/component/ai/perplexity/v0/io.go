@@ -39,16 +39,34 @@ type Content struct {
 	Type string `instill:"type"`
 }
 
+type WebSearchOptions struct {
+	// SearchContextSize is the search context size.
+	SearchContextSize *string `instill:"search-context-size,default=low" json:"search_context_size,omitempty"`
+	// UserLocation is the user location.
+	UserLocation *UserLocation `instill:"user-location" json:"user_location,omitempty"`
+}
+
+type UserLocation struct {
+	// Latitude is the latitude of the user's location.
+	Latitude *float64 `instill:"latitude" json:"latitude,omitempty"`
+	// Longitude is the longitude of the user's location.
+	Longitude *float64 `instill:"longitude" json:"longitude,omitempty"`
+	// Country is the country of the user's location.
+	Country *string `instill:"country" json:"country,omitempty"`
+}
+
 // Parameter contains the input parameter.
 type Parameter struct {
 	// MaxTokens is the maximum number of tokens to generate.
-	MaxTokens int `instill:"max-tokens,default=50"`
+	MaxTokens *int `instill:"max-tokens,default=50"`
 	// Temperature is the temperature of the model.
-	Temperature float64 `instill:"temperature,default=0.2"`
+	Temperature *float64 `instill:"temperature,default=0.2"`
 	// TopP is the top-p value of the model.
-	TopP float64 `instill:"top-p,default=0.9"`
+	TopP *float64 `instill:"top-p,default=0.9"`
 	// Stream is whether to stream the output.
-	Stream bool `instill:"stream,default=false"`
+	Stream *bool `instill:"stream,default=false"`
+	// SearchMode is the search mode to be used.
+	SearchMode *string `instill:"search-mode,default=web"`
 	// SearchDomainFilter gives the list of domains,
 	// limit the citations used by the online model to URLs from the specified
 	// domains. Currently limited to only 3 domains for whitelisting and
@@ -56,20 +74,35 @@ type Parameter struct {
 	// string.
 	SearchDomainFilter []string `instill:"search-domain-filter"`
 	// SearchRecencyFilter returns search results within the specified time interval
-	// - does not apply to images. Values include `month`, `week`, `day`, `hour`."
-	SearchRecencyFilter string `instill:"search-recency-filter"`
+	// - does not apply to images. Values include `month`, `week`, `day`, `year`."
+	// ReturnRelatedQuestions determines whether related questions should be returned.
+	ReturnRelatedQuestions *bool   `instill:"return-related-questions,default=false"`
+	SearchRecencyFilter    *string `instill:"search-recency-filter"`
+	// SearchAfterDateFilter filters search results to only include content published after this date.
+	SearchAfterDateFilter *string `instill:"search-after-date-filter"`
+	// SearchBeforeDateFilter filters search results to only include content published before this date.
+	SearchBeforeDateFilter *string `instill:"search-before-date-filter"`
+	// LastUpdatedAfterFilter filters search results to only include content last updated after this date.
+	LastUpdatedAfterFilter *string `instill:"last-updated-after-filter"`
+	// LastUpdatedBeforeFilter filters search results to only include content last updated before this date.
+	LastUpdatedBeforeFilter *string `instill:"last-updated-before-filter"`
+	// WebSearchOptions is the web search options.
+	WebSearchOptions *WebSearchOptions `instill:"web-search-options"`
 	// TopK is the top-k value of the model.
-	TopK int `instill:"top-k,default=0"`
+	TopK *int `instill:"top-k,default=0"`
 	// PresencePenalty is a value between -2.0 and 2.0. Positive values penalize new
 	// tokens based on whether they appear in the text so far, increasing the
 	// model's likelihood to talk about new topics. Incompatible with
 	// `frequency_penalty`.
-	PresencePenalty float64 `instill:"presence-penalty,default=0"`
+	PresencePenalty *float64 `instill:"presence-penalty,default=0"`
 	// FrequencyPenalty is a multiplicative penalty greater than 0. Values greater
 	// than 1.0 penalize new tokens based on their existing frequency in the text so
 	// far, decreasing the model's likelihood to repeat the same line verbatim. A
 	// value of 1.0 means no penalty. Incompatible with `presence_penalty`.
-	FrequencyPenalty float64 `instill:"frequency-penalty,default=1"`
+	FrequencyPenalty *float64 `instill:"frequency-penalty,default=1"`
+
+	// EnableSearchClassifier is whether to enable search classifier.
+	EnableSearchClassifier *bool `instill:"enable-search-classifier,default=false"`
 }
 
 // TextChatOutput is the output for the TASK_CHAT task.
@@ -86,6 +119,18 @@ type OutputData struct {
 	Choices []Choice `instill:"choices"`
 	// Citations is the citation of the output.
 	Citations []string `instill:"citations"`
+	// SearchResults is the search results of the output.
+	SearchResults []SearchResult `instill:"search-results"`
+}
+
+// SearchResult is the structure of a search result.
+type SearchResult struct {
+	// Title is the title of the search result.
+	Title string `instill:"title" json:"title"`
+	// URL is the URL of the search result.
+	URL string `instill:"url" json:"url"`
+	// Date is the date of the search result.
+	Date string `instill:"date" json:"date"`
 }
 
 // Choice is the structure of a chat completion choice.

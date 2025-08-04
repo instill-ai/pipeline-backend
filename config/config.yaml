@@ -48,7 +48,7 @@ otelcollector:
   port: 4317
 temporal:
   hostport: temporal:7233
-  namespace: model-backend
+  namespace: instill-core
   retention: 1d
   metricsport: 8096
   servername:
