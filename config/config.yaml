@@ -51,10 +51,7 @@ temporal:
   namespace: instill-core
   retention: 1d
   metricsport: 8096
-  servername:
-  serverrootca:
-  clientcert:
-  clientkey:
+  apikey:
   insecureskipverify:
 mgmtbackend:
   host: mgmt-backend
