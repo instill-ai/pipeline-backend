@@ -13,17 +13,17 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	"github.com/instill-ai/x/minio"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	logx "github.com/instill-ai/x/log"
+	miniox "github.com/instill-ai/x/minio"
 )
 
 // Service interface
@@ -107,11 +107,11 @@ type service struct {
 	mgmtPrivateServiceClient     mgmtpb.MgmtPrivateServiceClient
 	aclClient                    acl.ACLClientInterface
 	converter                    Converter
-	minioClient                  minio.Client
+	minioClient                  miniox.Client
 	memory                       *memory.Store
 	log                          *zap.Logger
 	retentionHandler             MetadataRetentionHandler
-	binaryFetcher                external.BinaryFetcher
+	binaryFetcher                binary.Fetcher
 	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
 }
@@ -125,11 +125,11 @@ func NewService(
 	converter Converter,
 	mgmtPublicServiceClient mgmtpb.MgmtPublicServiceClient,
 	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient,
-	minioClient minio.Client,
+	minioClient miniox.Client,
 	componentStore *componentstore.Store,
 	memory *memory.Store,
 	retentionHandler MetadataRetentionHandler,
-	binaryFetcher external.BinaryFetcher,
+	binaryFetcher binary.Fetcher,
 	artifactPublicServiceClient artifactpb.ArtifactPublicServiceClient,
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient,
 ) Service {

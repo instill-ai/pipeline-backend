@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 // Package data provides functionality for marshaling and unmarshaling between
@@ -49,7 +49,7 @@ type Marshaler struct {
 
 // Unmarshaler is used to unmarshal data into a struct.
 type Unmarshaler struct {
-	binaryFetcher external.BinaryFetcher
+	binaryFetcher binary.Fetcher
 }
 
 // NewMarshaler creates a new Marshaler.
@@ -58,7 +58,7 @@ func NewMarshaler() *Marshaler {
 }
 
 // NewUnmarshaler creates a new Unmarshaler with a binary fetcher.
-func NewUnmarshaler(binaryFetcher external.BinaryFetcher) *Unmarshaler {
+func NewUnmarshaler(binaryFetcher binary.Fetcher) *Unmarshaler {
 	return &Unmarshaler{binaryFetcher}
 }
 

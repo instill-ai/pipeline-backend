@@ -11,9 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
+
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 type videoData struct {
@@ -54,7 +55,7 @@ func NewVideoFromBytes(b []byte, contentType, filename string) (video *videoData
 	return createVideoData(b, contentType, filename)
 }
 
-func NewVideoFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string) (video *videoData, err error) {
+func NewVideoFromURL(ctx context.Context, binaryFetcher binary.Fetcher, url string) (video *videoData, err error) {
 	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, url)
 	if err != nil {
 		return nil, err

@@ -30,7 +30,6 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/middleware"
@@ -38,7 +37,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/usage"
-	"github.com/instill-ai/x/temporal"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
@@ -53,6 +51,7 @@ import (
 	otelx "github.com/instill-ai/x/otel"
 	servergrpcx "github.com/instill-ai/x/server/grpc"
 	gatewayx "github.com/instill-ai/x/server/grpc/gateway"
+	temporalx "github.com/instill-ai/x/temporal"
 )
 
 const gracefulShutdownWaitPeriod = 15 * time.Second
@@ -120,16 +119,28 @@ func main() {
 	// Initialize all clients
 	pipelinePublicServiceClient, mgmtPublicServiceClient, mgmtPrivateServiceClient,
 		artifactPublicServiceClient, artifactPrivateServiceClient, redisClient, db,
-		minIOClient, minIOFileGetter, aclClient, temporalClient, closeClients := newClients(ctx, logger)
+		aclClient, temporalClient, closeClients := newClients(ctx, logger)
 	defer closeClients()
 
-	// Keep NewArtifactBinaryFetcher as requested
-	binaryFetcher := external.NewArtifactBinaryFetcher(artifactPrivateServiceClient, minIOFileGetter)
+	// Initialize MinIO client
+	minIOParams := miniox.ClientParams{
+		Config:      config.Config.Minio,
+		Logger:      logger,
+		ExpiryRules: service.NewRetentionHandler().ListExpiryRules(),
+		AppInfo: miniox.AppInfo{
+			Name:    serviceName,
+			Version: serviceVersion,
+		},
+	}
+
+	minIOClient, err := miniox.NewMinIOClientAndInitBucket(ctx, minIOParams)
+	if err != nil {
+		logger.Fatal("failed to create MinIO client", zap.Error(err))
+	}
 
 	compStore := componentstore.Init(componentstore.InitParams{
 		Logger:         logger,
 		Secrets:        config.Config.Component.Secrets,
-		BinaryFetcher:  binaryFetcher,
 		TemporalClient: temporalClient,
 	})
 
@@ -156,7 +167,7 @@ func main() {
 		compStore,
 		ms,
 		service.NewRetentionHandler(),
-		binaryFetcher,
+		compStore.GetBinaryFetcher(),
 		artifactPublicServiceClient,
 		artifactPrivateServiceClient,
 	)
@@ -368,8 +379,6 @@ func newClients(ctx context.Context, logger *zap.Logger) (
 	artifactpb.ArtifactPrivateServiceClient,
 	*redis.Client,
 	*gorm.DB,
-	miniox.Client,
-	*miniox.FileGetter,
 	acl.ACLClient,
 	temporalclient.Client,
 	func(),
@@ -437,7 +446,7 @@ func newClients(ctx context.Context, logger *zap.Logger) (
 	}
 
 	// Initialize Temporal client
-	temporalClientOptions, err := temporal.ClientOptions(config.Config.Temporal, logger)
+	temporalClientOptions, err := temporalx.ClientOptions(config.Config.Temporal, logger)
 	if err != nil {
 		logger.Fatal("Unable to build Temporal client options", zap.Error(err))
 	}
@@ -484,27 +493,6 @@ func newClients(ctx context.Context, logger *zap.Logger) (
 
 	aclClient := acl.NewACLClient(fgaClient, fgaReplicaClient, redisClient)
 
-	// Initialize MinIO client
-	minIOParams := miniox.ClientParams{
-		Config: config.Config.Minio,
-		Logger: logger,
-		AppInfo: miniox.AppInfo{
-			Name:    serviceName,
-			Version: serviceVersion,
-		},
-	}
-	minIOFileGetter, err := miniox.NewFileGetter(minIOParams)
-	if err != nil {
-		logger.Fatal("Failed to create MinIO file getter", zap.Error(err))
-	}
-
-	retentionHandler := service.NewRetentionHandler()
-	minIOParams.ExpiryRules = retentionHandler.ListExpiryRules()
-	minIOClient, err := miniox.NewMinIOClientAndInitBucket(ctx, minIOParams)
-	if err != nil {
-		logger.Fatal("failed to create MinIO client", zap.Error(err))
-	}
-
 	closer := func() {
 		for conn, fn := range closeFuncs {
 			if err := fn(); err != nil {
@@ -515,5 +503,5 @@ func newClients(ctx context.Context, logger *zap.Logger) (
 
 	return pipelinePublicServiceClient, mgmtPublicServiceClient, mgmtPrivateServiceClient,
 		artifactPublicServiceClient, artifactPrivateServiceClient, redisClient, db,
-		minIOClient, minIOFileGetter, aclClient, temporalClient, closer
+		aclClient, temporalClient, closer
 }

@@ -11,20 +11,19 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.temporal.io/sdk/client"
 
-	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	"github.com/instill-ai/x/minio"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	miniox "github.com/instill-ai/x/minio"
 )
 
 func fakeNamespace() resource.Namespace {
@@ -70,10 +69,8 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 	converter := mock.NewConverterMock(mc)
 	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
 
-	compStore := componentstore.Init(componentstore.InitParams{
-		Secrets:       config.Config.Component.Secrets,
-		BinaryFetcher: external.NewBinaryFetcher(),
-	})
+	// Create a simple binary fetcher for testing
+	binaryFetcher := binary.NewFetcher()
 
 	service := newService(
 		serviceConfig{
@@ -83,8 +80,9 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 			aCLClient:                aclClient,
 			converter:                converter,
 			mgmtPrivateServiceClient: mgmtPrivateClient,
-			componentStore:           compStore,
+			componentStore:           nil,
 			memory:                   memory.NewStore(nil, nil),
+			binaryFetcher:            binaryFetcher,
 		},
 	)
 
@@ -129,11 +127,11 @@ type serviceConfig struct {
 	converter                    Converter
 	mgmtPublicServiceClient      mgmtpb.MgmtPublicServiceClient
 	mgmtPrivateServiceClient     mgmtpb.MgmtPrivateServiceClient
-	minioClient                  minio.Client
+	minioClient                  miniox.Client
 	componentStore               *componentstore.Store
 	memory                       *memory.Store
 	retentionHandler             MetadataRetentionHandler
-	binaryFetcher                external.BinaryFetcher
+	binaryFetcher                binary.Fetcher
 	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
 }

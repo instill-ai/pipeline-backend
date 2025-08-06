@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
+
 	"github.com/gabriel-vasile/mimetype"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 func encodeDataURI(b []byte, contentType string) (s string, err error) {
@@ -51,7 +52,7 @@ func NewBinaryFromBytes(b []byte, contentType, filename string) (format.Value, e
 	}
 }
 
-func NewBinaryFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string) (format.Value, error) {
+func NewBinaryFromURL(ctx context.Context, binaryFetcher binary.Fetcher, url string) (format.Value, error) {
 	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, url)
 	if err != nil {
 		return nil, err

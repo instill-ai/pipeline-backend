@@ -3,6 +3,8 @@ package worker
 import (
 	"context"
 
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
+
 	"github.com/gofrs/uuid"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/redis/go-redis/v9"
@@ -10,16 +12,15 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/generic/scheduler/v0"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
-	"github.com/instill-ai/x/minio"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	logx "github.com/instill-ai/x/log"
+	miniox "github.com/instill-ai/x/minio"
 )
 
 // TaskQueue is the Temporal task queue name for pipeline-backend
@@ -61,11 +62,11 @@ type WorkerConfig struct {
 	RedisClient                  *redis.Client
 	InfluxDBWriteClient          api.WriteAPI
 	Component                    *componentstore.Store
-	MinioClient                  minio.Client
+	MinioClient                  miniox.Client
 	MemoryStore                  *memory.Store
 	ArtifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	ArtifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
-	BinaryFetcher                external.BinaryFetcher
+	BinaryFetcher                binary.Fetcher
 	PipelinePublicServiceClient  pipelinepb.PipelinePublicServiceClient
 }
 
@@ -75,13 +76,13 @@ type worker struct {
 	redisClient                  *redis.Client
 	influxDBWriteClient          api.WriteAPI
 	component                    *componentstore.Store
-	minioClient                  minio.Client
+	minioClient                  miniox.Client
 	log                          *zap.Logger
 	memoryStore                  *memory.Store
 	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
 	pipelinePublicServiceClient  pipelinepb.PipelinePublicServiceClient
-	binaryFetcher                external.BinaryFetcher
+	binaryFetcher                binary.Fetcher
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition

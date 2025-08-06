@@ -14,9 +14,9 @@ import (
 	"github.com/knadh/koanf/providers/file"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/instill-ai/x/client"
-	"github.com/instill-ai/x/minio"
-	"github.com/instill-ai/x/temporal"
+	clientx "github.com/instill-ai/x/client"
+	miniox "github.com/instill-ai/x/minio"
+	temporalx "github.com/instill-ai/x/temporal"
 )
 
 const (
@@ -31,20 +31,20 @@ var Config AppConfig
 
 // AppConfig defines
 type AppConfig struct {
-	Server          ServerConfig          `koanf:"server"`
-	Component       ComponentConfig       `koanf:"component"`
-	Database        DatabaseConfig        `koanf:"database"`
-	InfluxDB        InfluxDBConfig        `koanf:"influxdb"`
-	Temporal        temporal.ClientConfig `koanf:"temporal"`
-	Cache           CacheConfig           `koanf:"cache"`
-	OTELCollector   OTELCollectorConfig   `koanf:"otelcollector"`
-	MgmtBackend     client.ServiceConfig  `koanf:"mgmtbackend"`
-	ModelBackend    client.ServiceConfig  `koanf:"modelbackend"`
-	OpenFGA         OpenFGAConfig         `koanf:"openfga"`
-	ArtifactBackend client.ServiceConfig  `koanf:"artifactbackend"`
-	Minio           minio.Config          `koanf:"minio"`
-	AgentBackend    client.ServiceConfig  `koanf:"agentbackend"`
-	APIGateway      APIGatewayConfig      `koanf:"apigateway"`
+	Server          ServerConfig           `koanf:"server"`
+	Component       ComponentConfig        `koanf:"component"`
+	Database        DatabaseConfig         `koanf:"database"`
+	InfluxDB        InfluxDBConfig         `koanf:"influxdb"`
+	Temporal        temporalx.ClientConfig `koanf:"temporal"`
+	Cache           CacheConfig            `koanf:"cache"`
+	OTELCollector   OTELCollectorConfig    `koanf:"otelcollector"`
+	MgmtBackend     clientx.ServiceConfig  `koanf:"mgmtbackend"`
+	ModelBackend    clientx.ServiceConfig  `koanf:"modelbackend"`
+	OpenFGA         OpenFGAConfig          `koanf:"openfga"`
+	ArtifactBackend clientx.ServiceConfig  `koanf:"artifactbackend"`
+	Minio           miniox.Config          `koanf:"minio"`
+	AgentBackend    clientx.ServiceConfig  `koanf:"agentbackend"`
+	APIGateway      APIGatewayConfig       `koanf:"apigateway"`
 }
 
 // APIGatewayConfig related to API gateway

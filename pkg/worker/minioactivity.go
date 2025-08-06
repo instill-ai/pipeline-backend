@@ -2,21 +2,24 @@ package worker
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"mime"
+	"strings"
 	"time"
 
+	"github.com/gabriel-vasile/mimetype"
+	"github.com/gofrs/uuid"
 	"go.uber.org/zap"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/structpb"
 	"gopkg.in/guregu/null.v4"
 
-	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
-	"github.com/instill-ai/pipeline-backend/pkg/utils"
-	"github.com/instill-ai/x/constant"
-	"github.com/instill-ai/x/minio"
+
+	constantx "github.com/instill-ai/x/constant"
+	miniox "github.com/instill-ai/x/minio"
 )
 
 // UploadRecipeToMinIOParam contains the information to upload a pipeline
@@ -44,11 +47,11 @@ func (w *worker) UploadRecipeToMinIOActivity(ctx context.Context, param UploadRe
 
 	url, minioObjectInfo, err := w.minioClient.WithLogger(log).UploadFileBytes(
 		ctx,
-		&minio.UploadFileBytesParam{
+		&miniox.UploadFileBytesParam{
 			UserUID:       param.Metadata.UserUID,
 			FilePath:      fmt.Sprintf("pipeline-runs/recipe/%s.json", param.Metadata.PipelineTriggerID),
 			FileBytes:     b,
-			FileMimeType:  constant.ContentTypeJSON,
+			FileMimeType:  constantx.ContentTypeJSON,
 			ExpiryRuleTag: param.Metadata.ExpiryRuleTag,
 		},
 	)
@@ -64,11 +67,11 @@ func (w *worker) UploadRecipeToMinIOActivity(ctx context.Context, param UploadRe
 		URL:  url,
 	}}})
 	if err != nil {
-		log.Error("failed to log pipeline run with recipe snapshot", zap.Error(err))
+		log.Error("failed to save pipeline run recipe snapshot", zap.Error(err))
 		return err
 	}
 
-	log.Info("UploadRecipeToMinIOActivity finished")
+	log.Info("UploadRecipeToMinIOActivity completed")
 	return nil
 }
 
@@ -110,11 +113,11 @@ func (w *worker) UploadOutputsToMinIOActivity(ctx context.Context, param *MinIOU
 
 	url, objectInfo, err := w.minioClient.WithLogger(log).UploadFile(
 		ctx,
-		&minio.UploadFileParam{
+		&miniox.UploadFileParam{
 			UserUID:       param.UserUID,
 			FilePath:      objectName,
 			FileContent:   outputStructs,
-			FileMimeType:  constant.ContentTypeJSON,
+			FileMimeType:  constantx.ContentTypeJSON,
 			ExpiryRuleTag: param.ExpiryRuleTag,
 		},
 	)
@@ -165,19 +168,8 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 		compInputs[i] = varStr.GetStructValue()
 	}
 
-	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
-
-	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
-
-	paramsForUpload := utils.UploadBlobParams{
-		NamespaceID:    param.SystemVariables.PipelineRequesterID,
-		NamespaceUID:   param.SystemVariables.PipelineRequesterUID,
-		ExpiryRule:     param.SystemVariables.ExpiryRule,
-		Logger:         log,
-		ArtifactClient: &w.artifactPublicServiceClient,
-	}
-
-	compInputs, err = utils.UploadBlobDataAndReplaceWithURLs(ctx, compInputs, paramsForUpload)
+	// Process unstructured data in the inputs and upload to MinIO
+	compInputs, err = w.processAndUploadUnstructuredData(ctx, compInputs, param)
 	if err != nil {
 		return err
 	}
@@ -186,11 +178,11 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 
 	url, objectInfo, err := w.minioClient.WithLogger(log).UploadFile(
 		ctx,
-		&minio.UploadFileParam{
+		&miniox.UploadFileParam{
 			UserUID:       param.SystemVariables.PipelineUserUID,
 			FilePath:      objectName,
 			FileContent:   compInputs,
-			FileMimeType:  constant.ContentTypeJSON,
+			FileMimeType:  constantx.ContentTypeJSON,
 			ExpiryRuleTag: param.SystemVariables.ExpiryRule.Tag,
 		},
 	)
@@ -249,29 +241,19 @@ func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *Comp
 		compOutputs[i] = varStr.GetStructValue()
 	}
 
-	sysVarJSON := utils.StructToMap(param.SystemVariables, "json")
-	ctx = metadata.NewOutgoingContext(ctx, utils.GetRequestMetadata(sysVarJSON))
-
-	paramsForUpload := utils.UploadBlobParams{
-		NamespaceID:    param.SystemVariables.PipelineRequesterID,
-		NamespaceUID:   param.SystemVariables.PipelineRequesterUID,
-		ExpiryRule:     param.SystemVariables.ExpiryRule,
-		Logger:         log,
-		ArtifactClient: &w.artifactPublicServiceClient,
-	}
-
-	compOutputs, err = utils.UploadBlobDataAndReplaceWithURLs(ctx, compOutputs, paramsForUpload)
+	// Process unstructured data in the outputs and upload to MinIO
+	compOutputs, err = w.processAndUploadUnstructuredData(ctx, compOutputs, param)
 	if err != nil {
 		return err
 	}
 
 	url, objectInfo, err := w.minioClient.WithLogger(log).UploadFile(
 		ctx,
-		&minio.UploadFileParam{
+		&miniox.UploadFileParam{
 			UserUID:       param.SystemVariables.PipelineUserUID,
 			FilePath:      objectName,
 			FileContent:   compOutputs,
-			FileMimeType:  constant.ContentTypeJSON,
+			FileMimeType:  constantx.ContentTypeJSON,
 			ExpiryRuleTag: param.SystemVariables.ExpiryRule.Tag,
 		},
 	)
@@ -294,4 +276,104 @@ func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *Comp
 	}
 
 	return nil
+}
+
+// processAndUploadUnstructuredData processes unstructured data in structs and uploads to MinIO
+func (w *worker) processAndUploadUnstructuredData(ctx context.Context, dataStructs []*structpb.Struct, param *ComponentActivityParam) ([]*structpb.Struct, error) {
+	updatedDataStructs := make([]*structpb.Struct, len(dataStructs))
+	for i, dataStruct := range dataStructs {
+		updatedDataStruct, err := processStructUnstructuredData(ctx, dataStruct, w.uploadUnstructuredDataToMinIO, param)
+		if err != nil {
+			// Note: we don't want to fail the whole process if one of the data structs fails to upload.
+			updatedDataStructs[i] = dataStruct
+		} else {
+			updatedDataStructs[i] = updatedDataStruct
+		}
+	}
+	return updatedDataStructs, nil
+}
+
+// uploadUnstructuredDataToMinIO uploads unstructured data to MinIO and returns a download URL
+func (w *worker) uploadUnstructuredDataToMinIO(ctx context.Context, data string, param *ComponentActivityParam) (string, error) {
+	// Generate unique object name
+	uid, err := uuid.NewV4()
+	if err != nil {
+		return "", fmt.Errorf("generate uuid: %w", err)
+	}
+
+	// Get MIME type
+	mimeType, err := getMimeType(data)
+	if err != nil {
+		return "", fmt.Errorf("get mime type: %w", err)
+	}
+
+	// Remove prefix and decode base64 data
+	base64Data := removePrefix(data)
+	decodedData, err := base64.StdEncoding.DecodeString(base64Data)
+	if err != nil {
+		return "", fmt.Errorf("decode base64 data: %w", err)
+	}
+
+	// Generate object name with extension
+	objectName := fmt.Sprintf("%s/%s%s", param.SystemVariables.PipelineRequesterUID.String(), uid.String(), getFileExtension(mimeType))
+
+	// Upload to MinIO
+	uploadParam := miniox.UploadFileBytesParam{
+		UserUID:       param.SystemVariables.PipelineRequesterUID,
+		FilePath:      objectName,
+		FileBytes:     decodedData,
+		FileMimeType:  mimeType,
+		ExpiryRuleTag: param.SystemVariables.ExpiryRule.Tag,
+	}
+
+	downloadURL, _, err := w.minioClient.UploadFileBytes(ctx, &uploadParam)
+	if err != nil {
+		return "", fmt.Errorf("upload to MinIO: %w", err)
+	}
+
+	return downloadURL, nil
+}
+
+// getMimeType extracts or detects the MIME type from data
+func getMimeType(data string) (string, error) {
+	var mimeType string
+	if strings.HasPrefix(data, "data:") {
+		contentType := strings.TrimPrefix(data, "data:")
+		parts := strings.SplitN(contentType, ";", 2)
+		if len(parts) == 0 {
+			return "", fmt.Errorf("invalid data url")
+		}
+		mimeType = parts[0]
+	} else {
+		b, err := base64.StdEncoding.DecodeString(data)
+		if err != nil {
+			return "", fmt.Errorf("decode base64 string: %w", err)
+		}
+		mimeType = strings.Split(mimetype.Detect(b).String(), ";")[0]
+	}
+	return mimeType, nil
+}
+
+// getFileExtension maps MIME types to file extensions
+func getFileExtension(mimeType string) string {
+	ext, err := mime.ExtensionsByType(mimeType)
+	if err != nil {
+		return ""
+	}
+	if len(ext) == 0 {
+		return ""
+	}
+	return ext[0]
+}
+
+// removePrefix removes the data URI prefix and returns the base64 data
+func removePrefix(data string) string {
+	if strings.HasPrefix(data, "data:") {
+		parts := strings.SplitN(data, ",", 2)
+		if len(parts) == 0 {
+			return ""
+		}
+		return parts[1]
+	}
+	return data
 }

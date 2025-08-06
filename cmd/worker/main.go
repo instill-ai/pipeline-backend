@@ -21,14 +21,11 @@ import (
 	temporalclient "go.temporal.io/sdk/client"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/pubsub"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/x/client"
-	"github.com/instill-ai/x/minio"
-	"github.com/instill-ai/x/temporal"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
@@ -37,7 +34,9 @@ import (
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	clientgrpcx "github.com/instill-ai/x/client/grpc"
 	logx "github.com/instill-ai/x/log"
+	miniox "github.com/instill-ai/x/minio"
 	otelx "github.com/instill-ai/x/otel"
+	temporalx "github.com/instill-ai/x/temporal"
 )
 
 const gracefulShutdownWaitPeriod = 15 * time.Second
@@ -83,16 +82,27 @@ func main() {
 
 	// Initialize all clients
 	pipelinePublicServiceClient, artifactPublicServiceClient, artifactPrivateServiceClient,
-		redisClient, db, minIOClient, minIOFileGetter, temporalClient, timeseries, closeClients := newClients(ctx, logger)
+		redisClient, db, temporalClient, timeseries, closeClients := newClients(ctx, logger)
 	defer closeClients()
 
-	// Keep NewArtifactBinaryFetcher as requested
-	binaryFetcher := external.NewArtifactBinaryFetcher(artifactPrivateServiceClient, minIOFileGetter)
+	minIOParams := miniox.ClientParams{
+		Config:      config.Config.Minio,
+		Logger:      logger,
+		ExpiryRules: service.NewRetentionHandler().ListExpiryRules(),
+		AppInfo: miniox.AppInfo{
+			Name:    serviceName,
+			Version: serviceVersion,
+		},
+	}
+
+	minIOClient, err := miniox.NewMinIOClientAndInitBucket(ctx, minIOParams)
+	if err != nil {
+		logger.Fatal("failed to create MinIO client", zap.Error(err))
+	}
 
 	compStore := componentstore.Init(componentstore.InitParams{
 		Logger:         logger,
 		Secrets:        config.Config.Component.Secrets,
-		BinaryFetcher:  binaryFetcher,
 		TemporalClient: temporalClient,
 	})
 
@@ -111,7 +121,7 @@ func main() {
 			MemoryStore:                  ms,
 			ArtifactPublicServiceClient:  artifactPublicServiceClient,
 			ArtifactPrivateServiceClient: artifactPrivateServiceClient,
-			BinaryFetcher:                binaryFetcher,
+			BinaryFetcher:                compStore.GetBinaryFetcher(),
 			PipelinePublicServiceClient:  pipelinePublicServiceClient,
 		},
 	)
@@ -195,8 +205,6 @@ func newClients(ctx context.Context, logger *zap.Logger) (
 	artifactpb.ArtifactPrivateServiceClient,
 	*redis.Client,
 	*gorm.DB,
-	minio.Client,
-	*minio.FileGetter,
 	temporalclient.Client,
 	*repository.InfluxDB,
 	func(),
@@ -257,7 +265,7 @@ func newClients(ctx context.Context, logger *zap.Logger) (
 	}
 
 	// Initialize Temporal client
-	temporalClientOptions, err := temporal.ClientOptions(config.Config.Temporal, logger)
+	temporalClientOptions, err := temporalx.ClientOptions(config.Config.Temporal, logger)
 	if err != nil {
 		logger.Fatal("Unable to build Temporal client options", zap.Error(err))
 	}
@@ -283,27 +291,6 @@ func newClients(ctx context.Context, logger *zap.Logger) (
 		return nil
 	}
 
-	// Initialize MinIO client
-	minIOParams := minio.ClientParams{
-		Config: config.Config.Minio,
-		Logger: logger,
-		AppInfo: minio.AppInfo{
-			Name:    serviceName,
-			Version: serviceVersion,
-		},
-	}
-	minIOFileGetter, err := minio.NewFileGetter(minIOParams)
-	if err != nil {
-		logger.Fatal("Failed to create MinIO file getter", zap.Error(err))
-	}
-
-	retentionHandler := service.NewRetentionHandler()
-	minIOParams.ExpiryRules = retentionHandler.ListExpiryRules()
-	minIOClient, err := minio.NewMinIOClientAndInitBucket(ctx, minIOParams)
-	if err != nil {
-		logger.Fatal("failed to create MinIO client", zap.Error(err))
-	}
-
 	closer := func() {
 		for conn, fn := range closeFuncs {
 			if err := fn(); err != nil {
@@ -313,5 +300,5 @@ func newClients(ctx context.Context, logger *zap.Logger) (
 	}
 
 	return pipelinePublicServiceClient, artifactPublicServiceClient, artifactPrivateServiceClient,
-		redisClient, db, minIOClient, minIOFileGetter, temporalClient, timeseries, closer
+		redisClient, db, temporalClient, timeseries, closer
 }

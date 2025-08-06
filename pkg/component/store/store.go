@@ -63,7 +63,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/text/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/video/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/web/v0"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
 
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
@@ -78,27 +78,31 @@ type Store struct {
 	componentUIDs   []uuid.UUID
 	componentUIDMap map[uuid.UUID]*component
 	componentIDMap  map[string]*component
+	binaryFetcher   binary.Fetcher
 }
 
 type component struct {
 	comp base.IComponent
 }
 
+// InitParams contains the parameters for initializing the component store.
 type InitParams struct {
 	Logger              *zap.Logger
 	Secrets             config.ComponentSecrets
 	UsageHandlerCreator base.UsageHandlerCreator
-	BinaryFetcher       external.BinaryFetcher
 	TemporalClient      temporalclient.Client
 }
 
 // Init initializes the components implemented in this repository and loads
 // their information to memory.
 func Init(param InitParams) *Store {
+	// Create the binary fetcher with the provided dependencies
+	binaryFetcher := binary.NewFetcher()
+
 	baseComp := base.Component{
 		Logger:          param.Logger,
 		NewUsageHandler: param.UsageHandlerCreator,
-		BinaryFetcher:   param.BinaryFetcher,
+		BinaryFetcher:   binaryFetcher,
 		TemporalClient:  param.TemporalClient,
 	}
 	secrets := param.Secrets
@@ -107,6 +111,7 @@ func Init(param InitParams) *Store {
 		compStore = &Store{
 			componentUIDMap: map[uuid.UUID]*component{},
 			componentIDMap:  map[string]*component{},
+			binaryFetcher:   binaryFetcher,
 		}
 		compStore.Import(base64.Init(baseComp))
 		compStore.Import(json.Init(baseComp))
@@ -244,6 +249,11 @@ func Init(param InitParams) *Store {
 	return compStore
 }
 
+// GetBinaryFetcher returns the binary fetcher instance used by the store
+func (s *Store) GetBinaryFetcher() binary.Fetcher {
+	return s.binaryFetcher
+}
+
 // Import loads the component definitions into memory.
 func (s *Store) Import(comp base.IComponent) {
 	c := &component{comp: comp}
@@ -294,6 +304,7 @@ func (s *Store) CreateExecution(p ExecutionParams) (*base.ExecutionWrapper, erro
 	return &base.ExecutionWrapper{IExecution: x}, nil
 }
 
+// IdentifyEvent identifies the event and returns the identifiers.
 func (s *Store) IdentifyEvent(ctx context.Context, defID string, rawEvent *base.RawEvent) (identifierResult *base.IdentifierResult, err error) {
 	if c, ok := s.componentIDMap[defID]; ok {
 		return c.comp.IdentifyEvent(ctx, rawEvent)
@@ -301,6 +312,7 @@ func (s *Store) IdentifyEvent(ctx context.Context, defID string, rawEvent *base.
 	return nil, fmt.Errorf("component definition not found")
 }
 
+// ParseEvent parses the raw event and returns a parsed event.
 func (s *Store) ParseEvent(ctx context.Context, defID string, rawEvent *base.RawEvent) (parsedEvent *base.ParsedEvent, err error) {
 	if c, ok := s.componentIDMap[defID]; ok {
 		return c.comp.ParseEvent(ctx, rawEvent)
@@ -308,6 +320,7 @@ func (s *Store) ParseEvent(ctx context.Context, defID string, rawEvent *base.Raw
 	return nil, fmt.Errorf("component definition not found")
 }
 
+// RegisterEvent registers an event handler for the component.
 func (s *Store) RegisterEvent(ctx context.Context, defID string, settings *base.RegisterEventSettings) (identifiers []base.Identifier, err error) {
 	if c, ok := s.componentIDMap[defID]; ok {
 		return c.comp.RegisterEvent(ctx, settings)
@@ -315,6 +328,7 @@ func (s *Store) RegisterEvent(ctx context.Context, defID string, settings *base.
 	return nil, fmt.Errorf("component definition not found")
 }
 
+// UnregisterEvent unregisters an event handler for the component.
 func (s *Store) UnregisterEvent(ctx context.Context, defID string, settings *base.UnregisterEventSettings, identifiers []base.Identifier) error {
 	if c, ok := s.componentIDMap[defID]; ok {
 		return c.comp.UnregisterEvent(ctx, settings, identifiers)

@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 type audioData struct {
@@ -52,7 +52,7 @@ func NewAudioFromBytes(b []byte, contentType, filename string) (*audioData, erro
 	return createAudioData(b, contentType, filename)
 }
 
-func NewAudioFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string) (video *audioData, err error) {
+func NewAudioFromURL(ctx context.Context, binaryFetcher binary.Fetcher, url string) (video *audioData, err error) {
 	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, url)
 	if err != nil {
 		return nil, err

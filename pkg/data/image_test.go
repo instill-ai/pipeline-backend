@@ -6,8 +6,7 @@ import (
 	"testing"
 
 	qt "github.com/frankban/quicktest"
-
-	"github.com/instill-ai/pipeline-backend/pkg/external"
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
 )
 
 func TestNewImageFromBytes(t *testing.T) {
@@ -58,7 +57,7 @@ func TestNewImageFromURL(t *testing.T) {
 	c := qt.New(t)
 
 	ctx := context.Background()
-	binaryFetcher := external.NewBinaryFetcher()
+	binaryFetcher := binary.NewFetcher()
 	testCases := []struct {
 		name string
 		url  string

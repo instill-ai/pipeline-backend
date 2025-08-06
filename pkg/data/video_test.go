@@ -10,7 +10,7 @@ import (
 
 	qt "github.com/frankban/quicktest"
 
-	"github.com/instill-ai/pipeline-backend/pkg/external"
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
 )
 
 func TestNewVideoFromBytes(t *testing.T) {
@@ -71,7 +71,7 @@ func TestNewVideoFromURL(t *testing.T) {
 	c.Parallel()
 
 	ctx := context.Background()
-	binaryFetcher := external.NewBinaryFetcher()
+	binaryFetcher := binary.NewFetcher()
 	c.Run("Valid video URL", func(c *qt.C) {
 		c.Parallel()
 
