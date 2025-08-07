@@ -2,6 +2,7 @@ package googlesheets
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
@@ -18,7 +19,7 @@ func (e *execution) lookupRowsHelper(ctx context.Context, sharedLink string, she
 	resp, err := e.sheetService.Spreadsheets.Values.Get(
 		spreadsheetID,
 		sheetName,
-	).Context(ctx).Do()
+	).Context(ctx).ValueRenderOption("UNFORMATTED_VALUE").Do()
 	if err != nil {
 		return nil, err
 	}
@@ -61,6 +62,8 @@ func (e *execution) lookupRowsHelper(ctx context.Context, sharedLink string, she
 						rowMap[headerStr] = data.NewNumberFromFloat(r)
 					case bool:
 						rowMap[headerStr] = data.NewBoolean(r)
+					default:
+						rowMap[headerStr] = data.NewString(fmt.Sprintf("%v", r))
 					}
 				}
 			}

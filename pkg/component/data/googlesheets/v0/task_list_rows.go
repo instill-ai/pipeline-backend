@@ -21,7 +21,7 @@ func (e *execution) listRowsHelper(ctx context.Context, sharedLink string, sheet
 	headerResp, err := e.sheetService.Spreadsheets.Values.Get(
 		spreadsheetID,
 		sheetName+"!1:1",
-	).Context(ctx).Do()
+	).Context(ctx).ValueRenderOption("UNFORMATTED_VALUE").Do()
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (e *execution) listRowsHelper(ctx context.Context, sharedLink string, sheet
 	dataResp, err := e.sheetService.Spreadsheets.Values.Get(
 		spreadsheetID,
 		dataRange,
-	).Context(ctx).Do()
+	).Context(ctx).ValueRenderOption("UNFORMATTED_VALUE").Do()
 	if err != nil {
 		return nil, err
 	}
@@ -84,6 +84,8 @@ func (e *execution) listRowsHelper(ctx context.Context, sharedLink string, sheet
 					rowMap[headerStr] = data.NewNumberFromFloat(r)
 				case bool:
 					rowMap[headerStr] = data.NewBoolean(r)
+				default:
+					rowMap[headerStr] = data.NewString(fmt.Sprintf("%v", r))
 				}
 			}
 		}

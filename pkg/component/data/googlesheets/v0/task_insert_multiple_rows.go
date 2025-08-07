@@ -23,11 +23,11 @@ func (e *execution) insertRowsHelper(ctx context.Context, sharedLink string, she
 		return nil, err
 	}
 
-	// Get the last row index by querying the sheet data
+	// Get the sheet data
 	resp, err := e.sheetService.Spreadsheets.Values.Get(
 		spreadsheetID,
 		sheetName,
-	).Context(ctx).Do()
+	).Context(ctx).ValueRenderOption("UNFORMATTED_VALUE").Do()
 	if err != nil {
 		return nil, err
 	}
@@ -38,104 +38,172 @@ func (e *execution) insertRowsHelper(ctx context.Context, sharedLink string, she
 	}
 	headers := resp.Values[0] // First row contains headers
 
-	// Create values array for each row
-	var values [][]any
-	for _, row := range rows {
-		rowValues := make([]any, len(headers))
+	// Calculate the starting row number for insertion
+	totalExistingRows := len(resp.Values)
+	startRowIndex := totalExistingRows // 0-based index for the first new row
+
+	var requests []*sheets.Request
+
+	// First, insert empty rows to make space
+	if len(rows) > 0 {
+		insertRequest := &sheets.Request{
+			InsertDimension: &sheets.InsertDimensionRequest{
+				Range: &sheets.DimensionRange{
+					SheetId:    sheetID,
+					Dimension:  "ROWS",
+					StartIndex: int64(startRowIndex),
+					EndIndex:   int64(startRowIndex + len(rows)),
+				},
+			},
+		}
+		requests = append(requests, insertRequest)
+	}
+
+	// Create update requests for each row with cell data and formatting
+	for rowIdx, row := range rows {
+		currentRowIndex := startRowIndex + rowIdx
+
 		for colIdx, header := range headers {
 			headerStr, ok := header.(string)
 			if !ok {
 				continue
 			}
+
+			var cell *sheets.CellData
 			if val, exists := row[headerStr]; exists {
-				rowValues[colIdx] = val.String()
-			}
-		}
-		values = append(values, rowValues)
-	}
+				if val == nil {
+					// Update with empty value if cell is nil
+					emptyStr := ""
+					cell = &sheets.CellData{
+						UserEnteredValue: &sheets.ExtendedValue{
+							StringValue: &emptyStr,
+						},
+					}
+				} else {
+					switch v := val.(type) {
+					case format.Number:
+						valueStr := v.Float64()
+						cell = &sheets.CellData{
+							UserEnteredValue: &sheets.ExtendedValue{
+								NumberValue: &valueStr,
+							},
+						}
+					case format.Boolean:
+						valueStr := v.Boolean()
+						cell = &sheets.CellData{
+							UserEnteredValue: &sheets.ExtendedValue{
+								BoolValue: &valueStr,
+							},
+						}
+					default:
+						valueStr := val.String()
+						cell = &sheets.CellData{
+							UserEnteredValue: &sheets.ExtendedValue{
+								StringValue: &valueStr,
+							},
+						}
+					}
+				}
 
-	// Create insert dimension request
-	request := &sheets.Request{
-		AppendCells: &sheets.AppendCellsRequest{
-			SheetId: sheetID,
-			Rows:    []*sheets.RowData{},
-			Fields:  "*",
-		},
-	}
-
-	// Add each row to the request
-	for _, rowValues := range values {
-		cells := make([]*sheets.CellData, len(headers))
-		for colIdx, value := range rowValues {
-			if value == nil {
-				cells[colIdx] = &sheets.CellData{
-					UserEnteredValue: &sheets.ExtendedValue{
-						StringValue: new(string), // Empty string for nil values
+				// Add the cell update request
+				updateRequest := &sheets.Request{
+					UpdateCells: &sheets.UpdateCellsRequest{
+						Range: &sheets.GridRange{
+							SheetId:          sheetID,
+							StartRowIndex:    int64(currentRowIndex),
+							EndRowIndex:      int64(currentRowIndex + 1),
+							StartColumnIndex: int64(colIdx),
+							EndColumnIndex:   int64(colIdx + 1),
+						},
+						Rows: []*sheets.RowData{
+							{
+								Values: []*sheets.CellData{cell},
+							},
+						},
+						Fields: "userEnteredValue",
 					},
 				}
-			} else {
-				valueStr := value.(string)
-				cells[colIdx] = &sheets.CellData{
-					UserEnteredValue: &sheets.ExtendedValue{
-						StringValue: &valueStr,
-					},
-				}
+				requests = append(requests, updateRequest)
 			}
 		}
-		request.AppendCells.Rows = append(request.AppendCells.Rows, &sheets.RowData{
-			Values: cells,
-		})
+
+		// Copy formatting from the previous row if it exists
+		if totalExistingRows > 1 { // More than just headers
+			prevRowIndex := totalExistingRows - 1 // Last data row before insertion
+
+			copyFormatRequest := &sheets.Request{
+				CopyPaste: &sheets.CopyPasteRequest{
+					Source: &sheets.GridRange{
+						SheetId:          sheetID,
+						StartRowIndex:    int64(prevRowIndex),
+						EndRowIndex:      int64(prevRowIndex + 1),
+						StartColumnIndex: 0,
+						EndColumnIndex:   int64(len(headers)),
+					},
+					Destination: &sheets.GridRange{
+						SheetId:          sheetID,
+						StartRowIndex:    int64(currentRowIndex),
+						EndRowIndex:      int64(currentRowIndex + 1),
+						StartColumnIndex: 0,
+						EndColumnIndex:   int64(len(headers)),
+					},
+					PasteType: "PASTE_FORMAT",
+				},
+			}
+			requests = append(requests, copyFormatRequest)
+		}
 	}
 
-	// Execute batch update
-	batchUpdateRequest := &sheets.BatchUpdateSpreadsheetRequest{
-		Requests: []*sheets.Request{request},
+	// Execute all requests in batch
+	if len(requests) > 0 {
+		batchUpdateRequest := &sheets.BatchUpdateSpreadsheetRequest{
+			Requests: requests,
+		}
+
+		_, err = e.sheetService.Spreadsheets.BatchUpdate(spreadsheetID, batchUpdateRequest).Context(ctx).Do()
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	_, err = e.sheetService.Spreadsheets.BatchUpdate(spreadsheetID, batchUpdateRequest).Context(ctx).Do()
-	if err != nil {
-		return nil, err
-	}
+	// Fetch the inserted rows from Google Sheets
+	insertedRows := make([]Row, len(rows))
+	for i := range rows {
+		rowNumber := startRowIndex + i + 1 // Convert to 1-based for display
+		// Get the specific row
+		rowRange := fmt.Sprintf("%s!%d:%d", sheetName, rowNumber, rowNumber)
+		rowResp, err := e.sheetService.Spreadsheets.Values.Get(spreadsheetID, rowRange).Context(ctx).ValueRenderOption("UNFORMATTED_VALUE").Do()
+		if err != nil {
+			return nil, err
+		}
 
-	// Get the last row number before insertion
-	lastRowResp, err := e.sheetService.Spreadsheets.Values.Get(
-		spreadsheetID,
-		fmt.Sprintf("%s!A1:A", sheetName),
-	).Context(ctx).Do()
-	if err != nil {
-		return nil, err
-	}
-
-	startRow := len(lastRowResp.Values) - len(values) + 1
-	rowNumbers := make([]int, len(values))
-	for i := range values {
-		rowNumbers[i] = startRow + i
-	}
-
-	// Convert the inserted values back to map format
-	insertedRows := make([]Row, len(values))
-	for i, rowValues := range values {
 		rowMap := make(map[string]format.Value)
-		for j, val := range rowValues {
-			if j >= len(headers) {
-				continue
-			}
-			headerStr, ok := headers[j].(string)
-			if !ok {
-				continue
-			}
-			switch val := val.(type) {
-			case string:
-				rowMap[headerStr] = data.NewString(val)
-			case float64:
-				rowMap[headerStr] = data.NewNumberFromFloat(val)
-			case bool:
-				rowMap[headerStr] = data.NewBoolean(val)
+		if len(rowResp.Values) > 0 {
+			rowValues := rowResp.Values[0]
+			for j, header := range headers {
+				headerStr, ok := header.(string)
+				if !ok || j >= len(rowValues) {
+					continue
+				}
+
+				if rowValues[j] != nil {
+					switch v := rowValues[j].(type) {
+					case string:
+						rowMap[headerStr] = data.NewString(v)
+					case float64:
+						rowMap[headerStr] = data.NewNumberFromFloat(v)
+					case bool:
+						rowMap[headerStr] = data.NewBoolean(v)
+					default:
+						rowMap[headerStr] = data.NewString(fmt.Sprintf("%v", v))
+					}
+				}
 			}
 		}
+
 		insertedRows[i] = Row{
 			RowValue:  rowMap,
-			RowNumber: rowNumbers[i],
+			RowNumber: rowNumber,
 		}
 	}
 
