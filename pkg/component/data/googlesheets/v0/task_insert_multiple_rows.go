@@ -68,13 +68,18 @@ func (e *execution) insertRowsHelper(ctx context.Context, sharedLink string, she
 		cells := make([]*sheets.CellData, len(headers))
 		for colIdx, value := range rowValues {
 			if value == nil {
-				continue
-			}
-			valueStr := value.(string)
-			cells[colIdx] = &sheets.CellData{
-				UserEnteredValue: &sheets.ExtendedValue{
-					StringValue: &valueStr,
-				},
+				cells[colIdx] = &sheets.CellData{
+					UserEnteredValue: &sheets.ExtendedValue{
+						StringValue: new(string), // Empty string for nil values
+					},
+				}
+			} else {
+				valueStr := value.(string)
+				cells[colIdx] = &sheets.CellData{
+					UserEnteredValue: &sheets.ExtendedValue{
+						StringValue: &valueStr,
+					},
+				}
 			}
 		}
 		request.AppendCells.Rows = append(request.AppendCells.Rows, &sheets.RowData{
