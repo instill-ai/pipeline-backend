@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.58.3](https://github.com/instill-ai/pipeline-backend/compare/v0.58.2...v0.58.3) (2025-08-07)
+
+
+### Bug Fixes
+
+* **component,googlesheets:** fix the wrong cell type ([#1065](https://github.com/instill-ai/pipeline-backend/issues/1065)) ([3ee8ba8](https://github.com/instill-ai/pipeline-backend/commit/3ee8ba8daef19982fc7f6a9ef46156d918cccdc0))
+
 ## [0.58.2](https://github.com/instill-ai/pipeline-backend/compare/v0.58.1...v0.58.2) (2025-08-07)
 
 
