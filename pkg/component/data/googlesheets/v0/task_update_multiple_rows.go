@@ -50,11 +50,22 @@ func (e *execution) updateRowsHelper(ctx context.Context, sharedLink string, she
 
 			if val, exists := row.RowValue[headerStr]; exists {
 				// Only add cell data if key exists in input row
-				valueStr := val.String()
-				cell := &sheets.CellData{
-					UserEnteredValue: &sheets.ExtendedValue{
-						StringValue: &valueStr,
-					},
+				var cell *sheets.CellData
+				if val == nil {
+					// Update with empty value if cell is nil
+					emptyStr := ""
+					cell = &sheets.CellData{
+						UserEnteredValue: &sheets.ExtendedValue{
+							StringValue: &emptyStr,
+						},
+					}
+				} else {
+					valueStr := val.String()
+					cell = &sheets.CellData{
+						UserEnteredValue: &sheets.ExtendedValue{
+							StringValue: &valueStr,
+						},
+					}
 				}
 
 				request := &sheets.Request{
