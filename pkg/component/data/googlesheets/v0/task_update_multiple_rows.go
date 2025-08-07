@@ -26,7 +26,7 @@ func (e *execution) updateRowsHelper(ctx context.Context, sharedLink string, she
 	resp, err := e.sheetService.Spreadsheets.Values.Get(
 		spreadsheetID,
 		sheetName,
-	).Context(ctx).Do()
+	).Context(ctx).ValueRenderOption("UNFORMATTED_VALUE").Do()
 	if err != nil {
 		return nil, err
 	}
@@ -60,11 +60,35 @@ func (e *execution) updateRowsHelper(ctx context.Context, sharedLink string, she
 						},
 					}
 				} else {
-					valueStr := val.String()
-					cell = &sheets.CellData{
-						UserEnteredValue: &sheets.ExtendedValue{
-							StringValue: &valueStr,
-						},
+					switch v := val.(type) {
+					case format.Number:
+						valueStr := v.Float64()
+						cell = &sheets.CellData{
+							UserEnteredValue: &sheets.ExtendedValue{
+								NumberValue: &valueStr,
+							},
+						}
+					case format.Boolean:
+						valueStr := v.Boolean()
+						cell = &sheets.CellData{
+							UserEnteredValue: &sheets.ExtendedValue{
+								BoolValue: &valueStr,
+							},
+						}
+					case format.String:
+						valueStr := v.String()
+						cell = &sheets.CellData{
+							UserEnteredValue: &sheets.ExtendedValue{
+								StringValue: &valueStr,
+							},
+						}
+					default:
+						valueStr := val.String()
+						cell = &sheets.CellData{
+							UserEnteredValue: &sheets.ExtendedValue{
+								StringValue: &valueStr,
+							},
+						}
 					}
 				}
 
@@ -106,7 +130,7 @@ func (e *execution) updateRowsHelper(ctx context.Context, sharedLink string, she
 	for i, row := range rows {
 		// Get the specific row
 		rowRange := fmt.Sprintf("%s!%d:%d", sheetName, row.RowNumber, row.RowNumber)
-		rowResp, err := e.sheetService.Spreadsheets.Values.Get(spreadsheetID, rowRange).Context(ctx).Do()
+		rowResp, err := e.sheetService.Spreadsheets.Values.Get(spreadsheetID, rowRange).Context(ctx).ValueRenderOption("UNFORMATTED_VALUE").Do()
 		if err != nil {
 			return nil, err
 		}
@@ -132,6 +156,8 @@ func (e *execution) updateRowsHelper(ctx context.Context, sharedLink string, she
 					rowMap[headerStr] = data.NewNumberFromFloat(v)
 				case bool:
 					rowMap[headerStr] = data.NewBoolean(v)
+				default:
+					rowMap[headerStr] = data.NewString(fmt.Sprintf("%v", v))
 				}
 			}
 		}
