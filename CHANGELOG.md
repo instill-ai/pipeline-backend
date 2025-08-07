@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.58.2](https://github.com/instill-ai/pipeline-backend/compare/v0.58.1...v0.58.2) (2025-08-07)
+
+
+### Features
+
+* **temporal:** remove Temporal namespace initialization ([#1059](https://github.com/instill-ai/pipeline-backend/issues/1059)) ([c940fa0](https://github.com/instill-ai/pipeline-backend/commit/c940fa0e4e1ea84335c8c1e82dfbd1d08a9fde94))
+
+
+### Bug Fixes
+
+* **component,googlesheets:** fix the wrong cell positions ([#1064](https://github.com/instill-ai/pipeline-backend/issues/1064)) ([d4de9e4](https://github.com/instill-ai/pipeline-backend/commit/d4de9e4a019023b596d26595fa96887ba16c025a))
+
 ## [0.58.1](https://github.com/instill-ai/pipeline-backend/compare/v0.58.0...v0.58.1) (2025-08-04)
 
 
