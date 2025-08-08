@@ -249,11 +249,6 @@ func Init(param InitParams) *Store {
 	return compStore
 }
 
-// GetBinaryFetcher returns the binary fetcher instance used by the store
-func (s *Store) GetBinaryFetcher() binary.Fetcher {
-	return s.binaryFetcher
-}
-
 // Import loads the component definitions into memory.
 func (s *Store) Import(comp base.IComponent) {
 	c := &component{comp: comp}

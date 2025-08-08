@@ -10,24 +10,20 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-// Fetcher is an interface that fetches binary data from a URL.
-type Fetcher interface {
-	FetchFromURL(ctx context.Context, url string) (body []byte, contentType string, filename string, err error)
-}
-
-type fetcher struct {
+// Fetcher is a struct that fetches binary data from a URL.
+type Fetcher struct {
 	httpClient *resty.Client
 }
 
-// NewFetcher creates a new BinaryFetcher instance.
+// NewFetcher creates a new Fetcher instance.
 func NewFetcher() Fetcher {
-	return &fetcher{
+	return Fetcher{
 		httpClient: resty.New().SetRetryCount(3),
 	}
 }
 
 // FetchFromURL fetches binary data from a URL.
-func (f *fetcher) FetchFromURL(ctx context.Context, url string) (body []byte, contentType string, filename string, err error) {
+func (f *Fetcher) FetchFromURL(ctx context.Context, url string) (body []byte, contentType string, filename string, err error) {
 	if strings.HasPrefix(url, "data:") {
 		return f.convertDataURIToBytes(url)
 	}
@@ -52,7 +48,7 @@ func (f *fetcher) FetchFromURL(ctx context.Context, url string) (body []byte, co
 	return
 }
 
-func (f *fetcher) convertDataURIToBytes(url string) (b []byte, contentType string, filename string, err error) {
+func (f *Fetcher) convertDataURIToBytes(url string) (b []byte, contentType string, filename string, err error) {
 	slices := strings.Split(url, ",")
 	if len(slices) == 1 {
 		b, err = base64.StdEncoding.DecodeString(url)

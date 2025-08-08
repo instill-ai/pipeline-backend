@@ -12,7 +12,6 @@ import (
 	"go.temporal.io/sdk/client"
 
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
-	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/mock"
@@ -69,9 +68,6 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 	converter := mock.NewConverterMock(mc)
 	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
 
-	// Create a simple binary fetcher for testing
-	binaryFetcher := binary.NewFetcher()
-
 	service := newService(
 		serviceConfig{
 			repository:               repo,
@@ -82,7 +78,6 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 			mgmtPrivateServiceClient: mgmtPrivateClient,
 			componentStore:           nil,
 			memory:                   memory.NewStore(nil, nil),
-			binaryFetcher:            binaryFetcher,
 		},
 	)
 
@@ -131,7 +126,6 @@ type serviceConfig struct {
 	componentStore               *componentstore.Store
 	memory                       *memory.Store
 	retentionHandler             MetadataRetentionHandler
-	binaryFetcher                binary.Fetcher
 	artifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
 }
@@ -154,7 +148,6 @@ func newService(cfg serviceConfig) Service {
 		cfg.componentStore,
 		cfg.memory,
 		cfg.retentionHandler,
-		cfg.binaryFetcher,
 		cfg.artifactPublicServiceClient,
 		cfg.artifactPrivateServiceClient,
 	)

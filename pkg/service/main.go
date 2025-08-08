@@ -129,7 +129,6 @@ func NewService(
 	componentStore *componentstore.Store,
 	memory *memory.Store,
 	retentionHandler MetadataRetentionHandler,
-	binaryFetcher binary.Fetcher,
 	artifactPublicServiceClient artifactpb.ArtifactPublicServiceClient,
 	artifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient,
 ) Service {
@@ -148,7 +147,6 @@ func NewService(
 		memory:                       memory,
 		log:                          zapLogger,
 		retentionHandler:             retentionHandler,
-		binaryFetcher:                binaryFetcher,
 		artifactPublicServiceClient:  artifactPublicServiceClient,
 		artifactPrivateServiceClient: artifactPrivateServiceClient,
 	}

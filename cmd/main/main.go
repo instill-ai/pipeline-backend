@@ -167,7 +167,6 @@ func main() {
 		compStore,
 		ms,
 		service.NewRetentionHandler(),
-		compStore.GetBinaryFetcher(),
 		artifactPublicServiceClient,
 		artifactPrivateServiceClient,
 	)

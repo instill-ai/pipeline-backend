@@ -66,7 +66,6 @@ type WorkerConfig struct {
 	MemoryStore                  *memory.Store
 	ArtifactPublicServiceClient  artifactpb.ArtifactPublicServiceClient
 	ArtifactPrivateServiceClient artifactpb.ArtifactPrivateServiceClient
-	BinaryFetcher                binary.Fetcher
 	PipelinePublicServiceClient  pipelinepb.PipelinePublicServiceClient
 }
 
@@ -100,7 +99,6 @@ func NewWorker(
 		log:                          logger,
 		artifactPublicServiceClient:  workerConfig.ArtifactPublicServiceClient,
 		artifactPrivateServiceClient: workerConfig.ArtifactPrivateServiceClient,
-		binaryFetcher:                workerConfig.BinaryFetcher,
 		pipelinePublicServiceClient:  workerConfig.PipelinePublicServiceClient,
 	}
 }

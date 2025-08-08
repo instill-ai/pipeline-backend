@@ -121,7 +121,6 @@ func main() {
 			MemoryStore:                  ms,
 			ArtifactPublicServiceClient:  artifactPublicServiceClient,
 			ArtifactPrivateServiceClient: artifactPrivateServiceClient,
-			BinaryFetcher:                compStore.GetBinaryFetcher(),
 			PipelinePublicServiceClient:  pipelinePublicServiceClient,
 		},
 	)
