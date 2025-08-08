@@ -257,6 +257,8 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			StreamOptions: &streamOptions{
 				IncludeUsage: true,
 			},
+			ReasoningEffort: inputStruct.ReasoningEffort,
+			Verbosity:       inputStruct.Verbosity,
 		}
 
 		if inputStruct.Prediction != nil {

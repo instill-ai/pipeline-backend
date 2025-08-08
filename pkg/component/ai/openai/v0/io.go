@@ -10,8 +10,8 @@ type taskTextGenerationInput struct {
 	ChatHistory      []*textMessage             `instill:"chat-history"`
 	Model            string                     `instill:"model"`
 	SystemMessage    *string                    `instill:"system-message"`
-	Temperature      *float32                   `instill:"temperature,default=1"`
-	TopP             *float32                   `instill:"top-p,default=1"`
+	Temperature      *float32                   `instill:"temperature"`
+	TopP             *float32                   `instill:"top-p"`
 	N                *int                       `instill:"n,default=1"`
 	Stop             *string                    `instill:"stop"`
 	MaxTokens        *int                       `instill:"max-tokens"`
@@ -21,6 +21,8 @@ type taskTextGenerationInput struct {
 	Prediction       *predictionStruct          `instill:"prediction"`
 	Tools            []toolStruct               `instill:"tools"`
 	ToolChoice       format.Value               `instill:"tool-choice"`
+	ReasoningEffort  *string                    `instill:"reasoning-effort"`
+	Verbosity        *string                    `instill:"verbosity"`
 }
 
 type taskTextGenerationOutput struct {

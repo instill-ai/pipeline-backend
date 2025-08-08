@@ -25,6 +25,8 @@ type textCompletionReq struct {
 	Prediction       *predictionReqStruct     `json:"prediction,omitempty"`
 	Tools            []toolReqStruct          `json:"tools,omitempty"`
 	ToolChoice       any                      `json:"tool_choice,omitempty"`
+	ReasoningEffort  *string                  `json:"reasoning_effort,omitempty"`
+	Verbosity        *string                  `json:"verbosity,omitempty"`
 }
 
 type predictionReqStruct struct {
