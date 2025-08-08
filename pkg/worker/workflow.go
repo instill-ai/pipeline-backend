@@ -37,6 +37,7 @@ import (
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 	errorsx "github.com/instill-ai/x/errors"
 	logx "github.com/instill-ai/x/log"
+	miniox "github.com/instill-ai/x/minio"
 )
 
 // TriggerPipelineWorkflowParam contains the parameters for TriggerPipelineWorkflow
@@ -1679,4 +1680,80 @@ func (w *worker) PurgeWorkflowMemoryActivity(_ context.Context, workflowID strin
 // anymore (e.g. for child workflows executed within an iterator).
 func (w *worker) CleanupWorkflowMemoryActivity(ctx context.Context, userUID uuid.UUID, workflowID string) error {
 	return w.memoryStore.CleanupWorkflowMemory(ctx, userUID, workflowID)
+}
+
+// writeNewDataPoint writes a new data point to influxdb and redis
+func (w *worker) writeNewDataPoint(ctx context.Context, data utils.PipelineUsageMetricData) error {
+	if config.Config.Server.Usage.Enabled {
+		bData, err := json.Marshal(data)
+		if err != nil {
+			return err
+		}
+
+		w.redisClient.RPush(ctx, fmt.Sprintf("user:%s:pipeline.trigger_data", data.OwnerUID), string(bData))
+	}
+
+	w.influxDBWriteClient.WritePoint(utils.NewPipelineDataPoint(data))
+	w.influxDBWriteClient.WritePoint(utils.DeprecatedNewPipelineDatapoint(data))
+
+	return nil
+}
+
+// uploadFileAndReplaceWithURL uploads file objects and replaces them with URLs
+func (w *worker) uploadFileAndReplaceWithURL(ctx context.Context, param *ComponentActivityParam, value *format.Value) format.Value {
+	logger, _ := logx.GetZapLogger(ctx)
+	if value == nil {
+		return nil
+	}
+	switch v := (*value).(type) {
+	case format.File:
+		downloadURL, err := w.uploadFileToMinIO(ctx, param, v)
+		if err != nil || downloadURL == "" {
+			logger.Warn("uploading blob data", zap.Error(err))
+			return v
+		}
+		return data.NewString(downloadURL)
+	case data.Array:
+		newArray := make(data.Array, len(v))
+		for i, item := range v {
+			newArray[i] = w.uploadFileAndReplaceWithURL(ctx, param, &item)
+		}
+		return newArray
+	case data.Map:
+		newMap := make(data.Map)
+		for k, v := range v {
+			newMap[k] = w.uploadFileAndReplaceWithURL(ctx, param, &v)
+		}
+		return newMap
+	default:
+		return v
+	}
+}
+
+// uploadFileToMinIO uploads a file directly to MinIO and returns a presigned download URL
+func (w *worker) uploadFileToMinIO(ctx context.Context, param *ComponentActivityParam, value format.File) (string, error) {
+	// Get file bytes
+	fileBytes, err := value.Binary()
+	if err != nil {
+		return "", fmt.Errorf("getting file bytes: %w", err)
+	}
+
+	// Create object name
+	objectName := fmt.Sprintf("%s/%s", param.SystemVariables.PipelineRequesterUID.String(), value.Filename().String())
+
+	// Upload file directly to MinIO using the client
+	uploadParam := miniox.UploadFileBytesParam{
+		UserUID:       param.SystemVariables.PipelineRequesterUID,
+		FilePath:      objectName,
+		FileBytes:     fileBytes.ByteArray(),
+		FileMimeType:  value.ContentType().String(),
+		ExpiryRuleTag: param.SystemVariables.ExpiryRule.Tag,
+	}
+
+	downloadURL, _, err := w.minioClient.UploadFileBytes(ctx, &uploadParam)
+	if err != nil {
+		return "", fmt.Errorf("uploading file to MinIO: %w", err)
+	}
+
+	return downloadURL, nil
 }

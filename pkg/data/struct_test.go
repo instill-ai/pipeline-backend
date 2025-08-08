@@ -7,15 +7,15 @@ import (
 
 	qt "github.com/frankban/quicktest"
 
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 func TestUnmarshal(t *testing.T) {
 	t.Parallel()
 	c := qt.New(t)
 
-	binaryFetcher := external.NewBinaryFetcher()
+	binaryFetcher := binary.NewFetcher()
 	unmarshaler := NewUnmarshaler(binaryFetcher)
 
 	c.Run("Basic types", func(c *qt.C) {

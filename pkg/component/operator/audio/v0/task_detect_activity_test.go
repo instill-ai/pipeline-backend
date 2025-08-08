@@ -19,7 +19,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
 )
 
 func TestDetectActivity(t *testing.T) {
@@ -125,7 +125,7 @@ func TestDetectActivity(t *testing.T) {
 				jsonValue, err := data.NewJSONValue(segmentsMap)
 				c.Assert(err, qt.IsNil)
 
-				binaryFetcher := external.NewBinaryFetcher()
+				binaryFetcher := binary.NewFetcher()
 				unmarshaler := data.NewUnmarshaler(binaryFetcher)
 				c.Assert(unmarshaler.Unmarshal(context.Background(), jsonValue, &expectedSegmentsStruct), qt.IsNil)
 				expectedSegments := expectedSegmentsStruct.Segments

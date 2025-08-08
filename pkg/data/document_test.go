@@ -7,7 +7,7 @@ import (
 
 	qt "github.com/frankban/quicktest"
 
-	"github.com/instill-ai/pipeline-backend/pkg/external"
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
 )
 
 func TestNewDocumentFromBytes(t *testing.T) {
@@ -53,7 +53,7 @@ func TestNewDocumentFromURL(t *testing.T) {
 	c.Parallel()
 
 	ctx := context.Background()
-	binaryFetcher := external.NewBinaryFetcher()
+	binaryFetcher := binary.NewFetcher()
 
 	test := func(name, url string, hasErr bool) {
 		c.Run(name, func(c *qt.C) {
