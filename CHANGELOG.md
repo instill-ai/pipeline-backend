@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.58.4](https://github.com/instill-ai/pipeline-backend/compare/v0.58.3...v0.58.4) (2025-08-08)
+
+
+### Features
+
+* **component,openai:** add reasoning-effort and verbosity fields ([#1067](https://github.com/instill-ai/pipeline-backend/issues/1067)) ([d2f0f87](https://github.com/instill-ai/pipeline-backend/commit/d2f0f876f3f8fb09355b280abda6e0e336778514))
+
 ## [0.58.3](https://github.com/instill-ai/pipeline-backend/compare/v0.58.2...v0.58.3) (2025-08-07)
 
 
