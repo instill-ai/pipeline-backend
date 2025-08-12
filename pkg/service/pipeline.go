@@ -2,16 +2,19 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"maps"
+	"mime"
 	"slices"
 	"strings"
 	"sync"
 	"time"
 
 	"cloud.google.com/go/longrunning/autogen/longrunningpb"
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/gofrs/uuid"
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
@@ -885,7 +888,7 @@ func (s *service) preTriggerPipeline(
 					if strings.HasPrefix(str, "http://") || strings.HasPrefix(str, "https://") {
 						continue
 					}
-					downloadURL, err := s.uploadBlobAndGetDownloadURL(ctx, str, requester, expiryRule)
+					downloadURL, err := s.uploadDataToMinIO(ctx, str, requester, expiryRule)
 					if err != nil {
 						return fmt.Errorf("upload blob and get download url: %w", err)
 					}
@@ -898,7 +901,7 @@ func (s *service) preTriggerPipeline(
 						if strings.HasPrefix(str[idx], "http://") || strings.HasPrefix(str[idx], "https://") {
 							continue
 						}
-						downloadURL, err := s.uploadBlobAndGetDownloadURL(ctx, str[idx], requester, expiryRule)
+						downloadURL, err := s.uploadDataToMinIO(ctx, str[idx], requester, expiryRule)
 						if err != nil {
 							return fmt.Errorf("upload blob and get download url: %w", err)
 						}
@@ -2339,4 +2342,78 @@ func (s *service) fetchRecipeSnapshot(ctx context.Context, pipelineTriggerID str
 	}
 
 	return recipe, nil
+}
+
+// uploadDataToMinIO uploads data directly to MinIO and returns a presigned download URL
+func (s *service) uploadDataToMinIO(ctx context.Context, data string, ns resource.Namespace, expiryRule minio.ExpiryRule) (string, error) {
+	// Generate object name with timestamp
+	timestamp := time.Now().Format(time.RFC3339)
+	mimeType, err := getMimeTypeForUpload(data)
+	if err != nil {
+		return "", fmt.Errorf("get mime type: %w", err)
+	}
+	objectName := fmt.Sprintf("%s/%s%s", ns.NsUID.String(), timestamp, getFileExtensionForUpload(mimeType))
+
+	// Decode base64 data
+	decodedData, err := decodeDataURIForUpload(data)
+	if err != nil {
+		return "", fmt.Errorf("decoding data: %w", err)
+	}
+
+	// Upload data directly to MinIO using the client
+	param := minio.UploadFileBytesParam{
+		UserUID:       ns.NsUID,
+		FilePath:      objectName,
+		FileBytes:     decodedData,
+		FileMimeType:  mimeType,
+		ExpiryRuleTag: expiryRule.Tag,
+	}
+
+	downloadURL, _, err := s.minioClient.UploadFileBytes(ctx, &param)
+	if err != nil {
+		return "", fmt.Errorf("uploading data to MinIO: %w", err)
+	}
+
+	return downloadURL, nil
+}
+
+func getMimeTypeForUpload(data string) (string, error) {
+	var mimeType string
+	if strings.HasPrefix(data, "data:") {
+		contentType := strings.TrimPrefix(data, "data:")
+		parts := strings.SplitN(contentType, ";", 2)
+		if len(parts) == 0 {
+			return "", fmt.Errorf("invalid data url")
+		}
+		mimeType = parts[0]
+	} else {
+		b, err := base64.StdEncoding.DecodeString(data)
+		if err != nil {
+			return "", fmt.Errorf("decode base64 string: %w", err)
+		}
+		mimeType = strings.Split(mimetype.Detect(b).String(), ";")[0]
+	}
+	return mimeType, nil
+}
+
+func getFileExtensionForUpload(mimeType string) string {
+	ext, err := mime.ExtensionsByType(mimeType)
+	if err != nil {
+		return ""
+	}
+	if len(ext) == 0 {
+		return ""
+	}
+	return ext[0]
+}
+
+func decodeDataURIForUpload(data string) ([]byte, error) {
+	if strings.HasPrefix(data, "data:") {
+		parts := strings.SplitN(data, ",", 2)
+		if len(parts) < 2 {
+			return nil, fmt.Errorf("invalid data URI format")
+		}
+		return base64.StdEncoding.DecodeString(parts[1])
+	}
+	return base64.StdEncoding.DecodeString(data)
 }

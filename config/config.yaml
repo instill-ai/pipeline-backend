@@ -81,7 +81,7 @@ minio:
   port: 9000
   user: minioadmin
   password: minioadmin
-  bucketname: instill-ai-vdp
+  bucketname: core-pipeline
   secure: false
 agentbackend:
   host: agent-backend

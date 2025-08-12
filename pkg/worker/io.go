@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
+
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 
@@ -52,10 +53,10 @@ type inputReader struct {
 	workflowID    string
 	compID        string
 	originalIdx   int
-	binaryFetcher external.BinaryFetcher
+	binaryFetcher binary.Fetcher
 }
 
-func newInputReader(memoryStore *memory.Store, workflowID string, compID string, originalIdx int, binaryFetcher external.BinaryFetcher) *inputReader {
+func newInputReader(memoryStore *memory.Store, workflowID string, compID string, originalIdx int, binaryFetcher binary.Fetcher) *inputReader {
 	return &inputReader{
 		memoryStore:   memoryStore,
 		workflowID:    workflowID,

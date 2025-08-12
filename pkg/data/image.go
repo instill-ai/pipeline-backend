@@ -15,9 +15,9 @@ import (
 
 	goimage "image"
 
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 type imageData struct {
@@ -54,7 +54,7 @@ func NewImageFromBytes(b []byte, contentType, filename string) (*imageData, erro
 }
 
 // NewImageFromURL creates a new imageData from a URL
-func NewImageFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string) (*imageData, error) {
+func NewImageFromURL(ctx context.Context, binaryFetcher binary.Fetcher, url string) (*imageData, error) {
 	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, url)
 	if err != nil {
 		return nil, err
