@@ -54,6 +54,15 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 		contentType = artifactpb.ContentType_CONTENT_TYPE_UNSPECIFIED
 	}
 
+	req := &artifactpb.SimilarityChunksSearchRequest{
+		NamespaceId:   inputStruct.Namespace,
+		CatalogId:     inputStruct.CatalogID,
+		TextPrompt:    inputStruct.TextPrompt,
+		TopK:          inputStruct.TopK,
+		FileMediaType: fileMediaType,
+		ContentType:   contentType,
+	}
+
 	// Validate file UID param. Empty UIDs will be filtered out, other invalid
 	// strings will cause an error.
 	fileUIDs := make([]string, 0, len(inputStruct.FileUIDs))
@@ -69,15 +78,11 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 		fileUIDs = append(fileUIDs, uid)
 	}
 
-	searchRes, err := artifactClient.SimilarityChunksSearch(ctx, &artifactpb.SimilarityChunksSearchRequest{
-		NamespaceId:   inputStruct.Namespace,
-		CatalogId:     inputStruct.CatalogID,
-		TextPrompt:    inputStruct.TextPrompt,
-		TopK:          inputStruct.TopK,
-		FileUids:      fileUIDs,
-		FileMediaType: fileMediaType,
-		ContentType:   contentType,
-	})
+	if len(fileUIDs) > 0 {
+		req.FileUids = fileUIDs
+	}
+
+	searchRes, err := artifactClient.SimilarityChunksSearch(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search chunks: %w", err)
 	}

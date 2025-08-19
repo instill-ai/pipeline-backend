@@ -27,6 +27,13 @@ func (e *execution) query(input *structpb.Struct) (*structpb.Struct, error) {
 	defer cancel()
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
+	req := &artifactpb.QuestionAnsweringRequest{
+		NamespaceId: inputStruct.Namespace,
+		CatalogId:   inputStruct.CatalogID,
+		Question:    inputStruct.Question,
+		TopK:        inputStruct.TopK,
+	}
+
 	// Validate file UID param. Empty UIDs will be filtered out, other invalid
 	// strings will cause an error.
 	fileUIDs := make([]string, 0, len(inputStruct.FileUIDs))
@@ -42,13 +49,11 @@ func (e *execution) query(input *structpb.Struct) (*structpb.Struct, error) {
 		fileUIDs = append(fileUIDs, uid)
 	}
 
-	queryRes, err := artifactClient.QuestionAnswering(ctx, &artifactpb.QuestionAnsweringRequest{
-		NamespaceId: inputStruct.Namespace,
-		CatalogId:   inputStruct.CatalogID,
-		Question:    inputStruct.Question,
-		TopK:        inputStruct.TopK,
-		FileUids:    fileUIDs,
-	})
+	if len(fileUIDs) > 0 {
+		req.FileUids = fileUIDs
+	}
+
+	queryRes, err := artifactClient.QuestionAnswering(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to question answering: %w", err)
 	}
