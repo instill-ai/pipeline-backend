@@ -164,16 +164,12 @@ type SearchChunksInput struct {
 	TextPrompt string `json:"text-prompt"`
 	// TopK for searching chunks
 	TopK uint32 `json:"top-k"`
-	// File filter
-	FileUID string `json:"file-uid"`
+	// File UID filter
+	FileUIDs []string `json:"file-uids"`
 	// The media type to filter
 	FileMediaType string `json:"file-media-type"`
 	// The content type to filter
 	ContentType string `json:"content-type"`
-
-	// File name to filter
-	// Deprecated, use FileUID instead
-	Filename string `json:"filename"`
 }
 
 // SearchChunksOutput is the output for searching chunks
@@ -208,6 +204,8 @@ type QueryInput struct {
 	Question string `json:"question"`
 	// TopK for querying
 	TopK int32 `json:"top-k"`
+	// File UID filter
+	FileUIDs []string `json:"file-uids"`
 }
 
 // QueryOutput is the output for querying
