@@ -588,11 +588,15 @@ TASK_RETRIEVE:
         uiOrder: 2
         type: integer
         title: Top K
-      file-uid:
-        description: Optional filter by file.
+      file-uids:
+        description: |
+          Optional list of file UIDs to filter the results by. The elements of
+          the list must be UUID-formatted strings.
         uiOrder: 3
-        type: string
-        title: File UID
+        type: array
+        items:
+          type: string
+        title: File UIDs
       file-media-type:
         description: The media type to filter, empty for all.
         uiOrder: 4
@@ -612,14 +616,6 @@ TASK_RETRIEVE:
           - summary
           - augmented
         title: Content type
-      filename:
-        description: |-
-          File name to filter, empty for all. This field is deprecated and the
-          file UID should be used instead. The filename isn't unique by catalog
-          and therefore the filter might produce unexpected results.
-        uiOrder: 6
-        type: string
-        title: Filename
     required:
       - namespace
       - catalog-id
@@ -663,6 +659,15 @@ TASK_ASK:
         uiOrder: 2
         type: integer
         title: Top K
+      file-uids:
+        description: |
+          Optional list of file UIDs to filter the results by. The elements of
+          the list must be UUID-formatted strings.
+        uiOrder: 3
+        type: array
+        items:
+          type: string
+        title: File UIDs
     required:
       - namespace
       - catalog-id

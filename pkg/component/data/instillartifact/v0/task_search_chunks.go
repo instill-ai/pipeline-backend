@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
@@ -53,18 +54,35 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 		contentType = artifactpb.ContentType_CONTENT_TYPE_UNSPECIFIED
 	}
 
-	searchRes, err := artifactClient.SimilarityChunksSearch(ctx, &artifactpb.SimilarityChunksSearchRequest{
+	req := &artifactpb.SimilarityChunksSearchRequest{
 		NamespaceId:   inputStruct.Namespace,
 		CatalogId:     inputStruct.CatalogID,
 		TextPrompt:    inputStruct.TextPrompt,
 		TopK:          inputStruct.TopK,
-		FileUid:       inputStruct.FileUID,
 		FileMediaType: fileMediaType,
 		ContentType:   contentType,
+	}
 
-		// Deprecated: we keep using it for backwards compatibility.
-		FileName: inputStruct.Filename,
-	})
+	// Validate file UID param. Empty UIDs will be filtered out, other invalid
+	// strings will cause an error.
+	fileUIDs := make([]string, 0, len(inputStruct.FileUIDs))
+	for _, uid := range inputStruct.FileUIDs {
+		if uid == "" {
+			continue
+		}
+
+		if _, err := uuid.FromString(uid); err != nil {
+			return nil, fmt.Errorf("invalid file UID %s: %w", uid, err)
+		}
+
+		fileUIDs = append(fileUIDs, uid)
+	}
+
+	if len(fileUIDs) > 0 {
+		req.FileUids = fileUIDs
+	}
+
+	searchRes, err := artifactClient.SimilarityChunksSearch(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search chunks: %w", err)
 	}
