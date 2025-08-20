@@ -20,8 +20,8 @@ import (
 	temporalclient "go.temporal.io/sdk/client"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/jsonref"
+	"github.com/instill-ai/pipeline-backend/pkg/data/binary"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
 )
@@ -161,6 +161,7 @@ type IdentifierResult struct {
 }
 
 // Component implements the common component methods.
+
 type Component struct {
 	Logger          *zap.Logger
 	NewUsageHandler UsageHandlerCreator
@@ -168,7 +169,7 @@ type Component struct {
 	definition   *pipelinepb.ComponentDefinition
 	secretFields []string
 
-	BinaryFetcher  external.BinaryFetcher
+	BinaryFetcher  binary.Fetcher
 	TemporalClient temporalclient.Client
 }
 
