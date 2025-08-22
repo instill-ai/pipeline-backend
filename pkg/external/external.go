@@ -147,7 +147,7 @@ func (f *artifactBinaryFetcher) fetchFromBlobStorage(ctx context.Context, urlUID
 
 	// TODO: we have agreed on to add the bucket name in pipelinepb.Object
 	// After the contract is updated, we have to replace it
-	bucketName := "instill-ai-blob"
+	bucketName := "core-blob"
 	objectPath := *objectRes.Object.Path
 
 	// TODO this won't always produce a valid user UID (e.g. the jobs in the
