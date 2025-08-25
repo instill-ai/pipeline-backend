@@ -168,7 +168,7 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 			}
 
 			if runOn.ReleaseUID == uuid.Nil {
-				pipelineRun := s.logPipelineRunStart(ctx, logPipelineRunStartParams{
+				_ = s.logPipelineRunStart(ctx, logPipelineRunStartParams{
 					pipelineTriggerID: pipelineTriggerID.String(),
 					pipelineUID:       loadPipelineResult.pipeline.UID,
 					pipelineReleaseID: defaultPipelineReleaseID,
@@ -177,7 +177,7 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 				})
 				defer func() {
 					if err != nil {
-						s.logPipelineRunError(ctx, pipelineTriggerID.String(), err, pipelineRun.StartedTime)
+						s.logPipelineRunError(ctx, pipelineTriggerID.String(), err)
 					}
 				}()
 				_, err = s.triggerAsyncPipeline(ctx, triggerParams{
@@ -194,7 +194,7 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 					return DispatchPipelineWebhookEventResult{}, err
 				}
 			} else {
-				pipelineRun := s.logPipelineRunStart(ctx, logPipelineRunStartParams{
+				_ = s.logPipelineRunStart(ctx, logPipelineRunStartParams{
 					pipelineTriggerID: pipelineTriggerID.String(),
 					pipelineUID:       loadPipelineResult.pipeline.UID,
 					pipelineReleaseID: loadPipelineResult.release.ID,
@@ -203,7 +203,7 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 				})
 				defer func() {
 					if err != nil {
-						s.logPipelineRunError(ctx, pipelineTriggerID.String(), err, pipelineRun.StartedTime)
+						s.logPipelineRunError(ctx, pipelineTriggerID.String(), err)
 					}
 				}()
 				_, err = s.triggerAsyncPipeline(ctx, triggerParams{

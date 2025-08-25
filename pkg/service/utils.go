@@ -136,12 +136,11 @@ func (s *service) convertPipelineRunToPB(run datamodel.PipelineRun) (*pipelinepb
 		Error:               run.Error.Ptr(),
 	}
 
-	if run.TotalDuration.Valid {
-		totalDuration := int32(run.TotalDuration.Int64)
-		result.TotalDuration = &totalDuration
-	}
 	if run.CompletedTime.Valid {
+		totalDuration := int32(run.CompletedTime.Time.Sub(run.StartedTime).Milliseconds())
+
 		result.CompleteTime = timestamppb.New(run.CompletedTime.Time)
+		result.TotalDuration = &totalDuration
 	}
 	if run.BlobDataExpirationTime.Valid {
 		result.BlobDataExpirationTime = timestamppb.New(run.BlobDataExpirationTime.Time)
@@ -159,12 +158,11 @@ func (s *service) convertComponentRunToPB(run datamodel.ComponentRun) (*pipeline
 		Error:          run.Error.Ptr(),
 	}
 
-	if run.TotalDuration.Valid {
-		totalDuration := int32(run.TotalDuration.Int64)
-		result.TotalDuration = &totalDuration
-	}
 	if run.CompletedTime.Valid {
+		totalDuration := int32(run.CompletedTime.Time.Sub(run.StartedTime))
+
 		result.CompleteTime = timestamppb.New(run.CompletedTime.Time)
+		result.TotalDuration = &totalDuration
 	}
 	if run.BlobDataExpirationTime.Valid {
 		result.BlobDataExpirationTime = timestamppb.New(run.BlobDataExpirationTime.Time)

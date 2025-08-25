@@ -1855,13 +1855,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 			}
 			logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
 
-			run, repoErr := s.repository.GetPipelineRunByUID(subCtx, uuid.FromStringOrNil(params.pipelineTriggerID))
-			if repoErr != nil {
-				logger.Error("failed to log pipeline run error", zap.Error(err), zap.Error(repoErr))
-				return
-			}
-
-			s.logPipelineRunError(subCtx, params.pipelineTriggerID, err, run.StartedTime)
+			s.logPipelineRunError(subCtx, params.pipelineTriggerID, err)
 			return
 		}
 	})
@@ -2006,7 +2000,7 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 		return nil, nil, fmt.Errorf("fetching requester namespace: %w", err)
 	}
 
-	pipelineRun := s.logPipelineRunStart(ctx, logPipelineRunStartParams{
+	_ = s.logPipelineRunStart(ctx, logPipelineRunStartParams{
 		pipelineTriggerID: pipelineTriggerID,
 		pipelineUID:       pipelineUID,
 		pipelineReleaseID: defaultPipelineReleaseID,
@@ -2015,7 +2009,7 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 	})
 	defer func() {
 		if err != nil {
-			s.logPipelineRunError(ctx, pipelineTriggerID, err, pipelineRun.StartedTime)
+			s.logPipelineRunError(ctx, pipelineTriggerID, err)
 		}
 	}()
 
@@ -2064,7 +2058,7 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 		return nil, fmt.Errorf("fetching requester namespace: %w", err)
 	}
 
-	pipelineRun := s.logPipelineRunStart(ctx, logPipelineRunStartParams{
+	_ = s.logPipelineRunStart(ctx, logPipelineRunStartParams{
 		pipelineTriggerID: pipelineTriggerID,
 		pipelineUID:       dbPipeline.UID,
 		pipelineReleaseID: defaultPipelineReleaseID,
@@ -2073,7 +2067,7 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 	})
 	defer func() {
 		if err != nil {
-			s.logPipelineRunError(ctx, pipelineTriggerID, err, pipelineRun.StartedTime)
+			s.logPipelineRunError(ctx, pipelineTriggerID, err)
 		}
 	}()
 
@@ -2126,7 +2120,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, err
 	}
 
-	pipelineRun := s.logPipelineRunStart(ctx, logPipelineRunStartParams{
+	_ = s.logPipelineRunStart(ctx, logPipelineRunStartParams{
 		pipelineTriggerID: pipelineTriggerID,
 		pipelineUID:       pipelineUID,
 		pipelineReleaseID: dbPipelineRelease.ID,
@@ -2135,7 +2129,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 	})
 	defer func() {
 		if err != nil {
-			s.logPipelineRunError(ctx, pipelineTriggerID, err, pipelineRun.StartedTime)
+			s.logPipelineRunError(ctx, pipelineTriggerID, err)
 		}
 	}()
 
@@ -2191,7 +2185,7 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		return nil, err
 	}
 
-	pipelineRun := s.logPipelineRunStart(ctx, logPipelineRunStartParams{
+	_ = s.logPipelineRunStart(ctx, logPipelineRunStartParams{
 		pipelineTriggerID: pipelineTriggerID,
 		pipelineUID:       pipelineUID,
 		pipelineReleaseID: dbPipelineRelease.ID,
@@ -2200,7 +2194,7 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 	})
 	defer func() {
 		if err != nil {
-			s.logPipelineRunError(ctx, pipelineTriggerID, err, pipelineRun.StartedTime)
+			s.logPipelineRunError(ctx, pipelineTriggerID, err)
 		}
 	}()
 

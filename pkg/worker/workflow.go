@@ -277,6 +277,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		return err
 	}
 
+	startTime := time.Now()
 	errs := []error{}
 	componentRunFutures := []workflow.Future{}
 	componentRunFailed := false
@@ -446,7 +447,6 @@ groupLoop:
 		}
 	}
 
-	startTime := time.Now()
 	duration := time.Since(startTime)
 	if isParentPipeline {
 		if err := workflow.ExecuteActivity(ctx, w.OutputActivity, &ComponentActivityParam{
@@ -476,7 +476,7 @@ groupLoop:
 		}
 
 		dataPoint := w.pipelineTriggerDataPoint(workflowID, param.SystemVariables, param.Mode)
-		dataPoint.TriggerTime = startTime.Format(time.RFC3339Nano)
+		dataPoint.TriggerTime = time.Now().Format(time.RFC3339Nano)
 		dataPoint.ComputeTimeDuration = duration.Seconds()
 		dataPoint.Status = mgmtpb.Status_STATUS_COMPLETED
 
@@ -502,7 +502,6 @@ groupLoop:
 		PipelineRun: &datamodel.PipelineRun{
 			CompletedTime: null.TimeFrom(time.Now()),
 			Status:        datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED),
-			TotalDuration: null.IntFrom(duration.Milliseconds()),
 		},
 	}
 	if componentRunFailed {
@@ -563,7 +562,6 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		componentRun := &datamodel.ComponentRun{
 			Status:        datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED),
 			CompletedTime: null.TimeFrom(time.Now()),
-			TotalDuration: null.IntFrom(time.Since(startTime).Milliseconds()),
 		}
 
 		if err != nil {
