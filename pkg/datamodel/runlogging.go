@@ -70,7 +70,6 @@ type PipelineRun struct {
 	PipelineVersion        string    `gorm:"type:varchar(255)" json:"pipeline-version"`                                // Pipeline version used in the run
 	Status                 RunStatus `gorm:"type:valid_trigger_status;index" json:"status"`                            // Current status of the run (e.g., Running, Completed, Failed)
 	Source                 RunSource `gorm:"type:valid_trigger_source" json:"source"`                                  // Origin of the run (e.g., Web click, API)
-	TotalDuration          null.Int  `gorm:"type:bigint" json:"total-duration"`                                        // Time taken to complete the run in nanoseconds
 	RunnerUID              uuid.UUID `gorm:"type:uuid" json:"runner-uid"`                                              // Identity of the user who initiated the run
 	RequesterUID           uuid.UUID `gorm:"type:uuid" json:"requester-uid"`                                           // Namespace used for the run, which is the requester
 	Inputs                 JSONB     `gorm:"type:jsonb" json:"inputs"`                                                 // Input files for the run
@@ -89,7 +88,6 @@ type ComponentRun struct {
 	PipelineTriggerUID     uuid.UUID   `gorm:"type:uuid;primaryKey;index" json:"pipeline-trigger-uid"`                   // Links to the parent PipelineRun
 	ComponentID            string      `gorm:"type:varchar(255);primaryKey" json:"component-id"`                         // Unique identifier for each pipeline component
 	Status                 RunStatus   `gorm:"type:varchar(50);index" json:"status"`                                     // Completion status of the component (e.g., Completed, Errored)
-	TotalDuration          null.Int    `gorm:"type:bigint" json:"total-duration"`                                        // Time taken to execute the component in nanoseconds
 	StartedTime            time.Time   `gorm:"type:timestamp with time zone;index" json:"started-time"`                  // Time when the component started execution
 	CompletedTime          null.Time   `gorm:"type:timestamp with time zone;index" json:"completed-time"`                // Time when the component finished execution
 	BlobDataExpirationTime null.Time   `gorm:"type:timestamp with time zone" json:"blob-data-expiration-time,omitempty"` // Time when the blob data (e.g. input or recipe) will expire.

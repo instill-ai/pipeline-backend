@@ -57,12 +57,11 @@ func (s *service) logPipelineRunStart(ctx context.Context, params logPipelineRun
 	return pipelineRun
 }
 
-func (s *service) logPipelineRunError(ctx context.Context, pipelineTriggerID string, err error, startedTime time.Time) {
+func (s *service) logPipelineRunError(ctx context.Context, pipelineTriggerID string, err error) {
 	now := time.Now()
 	pipelineRunUpdates := &datamodel.PipelineRun{
 		Error:         null.StringFrom(err.Error()),
 		Status:        datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_FAILED),
-		TotalDuration: null.IntFrom(now.Sub(startedTime).Milliseconds()),
 		CompletedTime: null.TimeFrom(now),
 	}
 

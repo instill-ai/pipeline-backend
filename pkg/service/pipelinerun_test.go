@@ -15,7 +15,6 @@ import (
 	"github.com/gojuno/minimock/v3"
 	"go.einride.tech/aip/filtering"
 	"google.golang.org/grpc/metadata"
-	"gopkg.in/guregu/null.v4"
 	"gorm.io/gorm"
 
 	qt "github.com/frankban/quicktest"
@@ -211,7 +210,6 @@ func TestService_ListPipelineRuns(t *testing.T) {
 				RunnerUID:          testCase.runner,
 				RequesterUID:       testCase.runNamespace,
 				StartedTime:        time.Now(),
-				TotalDuration:      null.IntFrom(42),
 			}
 
 			err = repo.UpsertPipelineRun(ctx, pipelineRun)
@@ -428,7 +426,6 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 				RunnerUID:          testCase.runner,
 				RequesterUID:       testCase.runNamespace,
 				StartedTime:        time.Now(),
-				TotalDuration:      null.IntFrom(42),
 				Components:         nil,
 			}
 
@@ -520,7 +517,6 @@ func TestService_ListPipelineRunsByRequester(t *testing.T) {
 		RunnerUID:          ownerUID,
 		RequesterUID:       ownerNamespace,
 		StartedTime:        time.Now(),
-		TotalDuration:      null.IntFrom(42),
 		Components:         nil,
 	}
 
@@ -548,7 +544,6 @@ func TestService_ListPipelineRunsByRequester(t *testing.T) {
 		RunnerUID:          ownerUID,
 		RequesterUID:       uuid.Must(uuid.NewV4()),
 		StartedTime:        time.Now(),
-		TotalDuration:      null.IntFrom(42),
 		Components:         nil,
 	}
 

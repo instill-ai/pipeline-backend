@@ -224,7 +224,7 @@ func TestRepository_Connection(t *testing.T) {
 
 	// Need to load and store component definitions as they're referenced by
 	// connections.
-	cds := componentstore.Init(logger, nil, nil, nil)
+	cds := componentstore.Init(componentstore.InitParams{Logger: logger})
 	openAI, err := cds.GetDefinitionByID("openai", nil, nil)
 	c.Assert(err, qt.IsNil)
 
@@ -437,6 +437,8 @@ func TestRepository_UpsertPipelineRun(t *testing.T) {
 	repo := NewRepository(tx, cache)
 
 	t0 := time.Now().UTC()
+	t1 := t0.Add(1 * time.Second)
+
 	pipelineUID, ownerUID := uuid.Must(uuid.NewV4()), uuid.Must(uuid.NewV4())
 	ownerPermalink := "users/" + ownerUID.String()
 
@@ -471,8 +473,8 @@ func TestRepository_UpsertPipelineRun(t *testing.T) {
 		RecipeSnapshot: datamodel.JSONB{{
 			URL: minioURL,
 		}},
-		StartedTime:   time.Now(),
-		TotalDuration: null.IntFrom(42),
+		StartedTime:   t0,
+		CompletedTime: null.TimeFrom(t1),
 		Components:    nil,
 	}
 
@@ -490,8 +492,8 @@ func TestRepository_UpsertPipelineRun(t *testing.T) {
 		PipelineTriggerUID: pipelineRun.PipelineTriggerUID,
 		ComponentID:        uuid.Must(uuid.NewV4()).String(),
 		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_FAILED),
-		TotalDuration:      null.IntFrom(10),
-		StartedTime:        time.Now(),
+		StartedTime:        t0,
+		CompletedTime:      null.TimeFrom(t1),
 		Inputs:             nil,
 		Outputs:            nil,
 	}
@@ -503,8 +505,8 @@ func TestRepository_UpsertPipelineRun(t *testing.T) {
 	err = tx.First(got2).Error
 	c.Assert(err, qt.IsNil)
 	c.Check(got2.Status, qt.Equals, componentRun.Status)
-	c.Check(got2.TotalDuration.Valid, qt.IsTrue)
-	c.Check(got2.TotalDuration.Int64, qt.Equals, componentRun.TotalDuration.Int64)
+	c.Check(got2.CompletedTime.Valid, qt.IsTrue)
+	c.Check(got2.CompletedTime.Time.Unix(), qt.Equals, componentRun.CompletedTime.Time.Unix())
 
 }
 
@@ -594,6 +596,8 @@ func TestRepository_GetPaginatedPipelineRunsWithPermissions(t *testing.T) {
 			c.Check(got.NumberOfRuns, qt.Equals, 0)
 			c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
 
+			t0 := time.Now().UTC()
+			t1 := t0.Add(1 * time.Second)
 			pipelineRun := &datamodel.PipelineRun{
 				PipelineTriggerUID: uuid.Must(uuid.NewV4()),
 				PipelineUID:        p.UID,
@@ -604,8 +608,8 @@ func TestRepository_GetPaginatedPipelineRunsWithPermissions(t *testing.T) {
 				RecipeSnapshot: datamodel.JSONB{{
 					URL: minioURL,
 				}},
-				StartedTime:   time.Now(),
-				TotalDuration: null.IntFrom(42),
+				StartedTime:   t0,
+				CompletedTime: null.TimeFrom(t1),
 				Components:    nil,
 			}
 
@@ -630,6 +634,7 @@ func TestRepository_GetPaginatedPipelineRunsByRequester(t *testing.T) {
 	cache, _ := redismock.NewClientMock()
 
 	t0 := time.Now().UTC()
+	t1 := t0.Add(1 * time.Second)
 
 	mockUIDs := make([]uuid.UUID, 5)
 	for i := range len(mockUIDs) {
@@ -637,7 +642,6 @@ func TestRepository_GetPaginatedPipelineRunsByRequester(t *testing.T) {
 	}
 	user1 := mockUIDs[0]
 	namespace1 := mockUIDs[1]
-	now := time.Now()
 
 	pipelineUID, ownerUID := mockUIDs[2], mockUIDs[3]
 	pipelineUID2 := mockUIDs[4]
@@ -691,8 +695,8 @@ func TestRepository_GetPaginatedPipelineRunsByRequester(t *testing.T) {
 		Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
 		RunnerUID:          user1,
 		RequesterUID:       namespace1,
-		StartedTime:        now.Add(-1 * time.Hour),
-		TotalDuration:      null.IntFrom(42),
+		StartedTime:        t0.Add(-1 * time.Hour),
+		CompletedTime:      null.TimeFrom(t1),
 		Components:         nil,
 	}
 
@@ -701,8 +705,8 @@ func TestRepository_GetPaginatedPipelineRunsByRequester(t *testing.T) {
 
 	resp, _, err := repo.GetPaginatedPipelineRunsByRequester(ctx, GetPipelineRunsByRequesterParams{
 		RequesterUID:   namespace1.String(),
-		StartTimeBegin: now.Add(-3 * time.Hour),
-		StartTimeEnd:   now.Add(-2 * time.Hour),
+		StartTimeBegin: t0.Add(-3 * time.Hour),
+		StartTimeEnd:   t0.Add(-2 * time.Hour),
 		Page:           0,
 		PageSize:       10,
 		Filter:         filtering.Filter{},
@@ -713,8 +717,8 @@ func TestRepository_GetPaginatedPipelineRunsByRequester(t *testing.T) {
 
 	resp, _, err = repo.GetPaginatedPipelineRunsByRequester(ctx, GetPipelineRunsByRequesterParams{
 		RequesterUID:   namespace1.String(),
-		StartTimeBegin: now.Add(-2 * time.Hour),
-		StartTimeEnd:   now,
+		StartTimeBegin: t0.Add(-2 * time.Hour),
+		StartTimeEnd:   t0,
 		Page:           0,
 		PageSize:       10,
 		Filter:         filtering.Filter{},
@@ -732,8 +736,8 @@ func TestRepository_GetPaginatedPipelineRunsByRequester(t *testing.T) {
 		Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
 		RunnerUID:          user1,
 		RequesterUID:       namespace1,
-		StartedTime:        now.Add(-2 * time.Hour),
-		TotalDuration:      null.IntFrom(42),
+		StartedTime:        t0.Add(-2 * time.Hour),
+		CompletedTime:      null.TimeFrom(t1),
 		Components:         nil,
 	}
 
@@ -742,8 +746,8 @@ func TestRepository_GetPaginatedPipelineRunsByRequester(t *testing.T) {
 
 	resp, _, err = repo.GetPaginatedPipelineRunsByRequester(ctx, GetPipelineRunsByRequesterParams{
 		RequesterUID:   namespace1.String(),
-		StartTimeBegin: now.Add(-2 * time.Hour),
-		StartTimeEnd:   now,
+		StartTimeBegin: t0.Add(-2 * time.Hour),
+		StartTimeEnd:   t0,
 		Page:           0,
 		PageSize:       10,
 		Filter:         filtering.Filter{},
