@@ -66,7 +66,7 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 	redisClient, _ := redismock.NewClientMock()
 	var temporalClient client.Client
 
-	aclClient := mock.NewACLClientInterfaceMock(mc)
+	aclClient := mock.NewACLClientMock(mc)
 	converter := mock.NewConverterMock(mc)
 	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
 
@@ -125,7 +125,7 @@ type serviceConfig struct {
 	repository                   repository.Repository
 	redisClient                  *redis.Client
 	temporalClient               client.Client
-	aCLClient                    acl.ACLClientInterface
+	aCLClient                    acl.ACLClient
 	converter                    Converter
 	mgmtPublicServiceClient      mgmtpb.MgmtPublicServiceClient
 	mgmtPrivateServiceClient     mgmtpb.MgmtPrivateServiceClient

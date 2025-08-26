@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
@@ -43,7 +44,7 @@ func generateShareCode() string {
 func (s *service) checkNamespacePermission(ctx context.Context, ns resource.Namespace) error {
 	// TODO: optimize ACL model
 	if ns.NsType == "organizations" {
-		granted, err := s.aclClient.CheckPermission(ctx, "organization", ns.NsUID, "member")
+		granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypeOrganization, ns.NsUID, "member")
 		if err != nil {
 			return err
 		}

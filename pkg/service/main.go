@@ -105,7 +105,7 @@ type service struct {
 	component                    *componentstore.Store
 	mgmtPublicServiceClient      mgmtpb.MgmtPublicServiceClient
 	mgmtPrivateServiceClient     mgmtpb.MgmtPrivateServiceClient
-	aclClient                    acl.ACLClientInterface
+	aclClient                    acl.ACLClient
 	converter                    Converter
 	minioClient                  minio.Client
 	memory                       *memory.Store
@@ -121,7 +121,7 @@ func NewService(
 	repository repository.Repository,
 	redisClient *redis.Client,
 	temporalClient client.Client,
-	aclClient acl.ACLClientInterface,
+	aclClient acl.ACLClient,
 	converter Converter,
 	mgmtPublicServiceClient mgmtpb.MgmtPublicServiceClient,
 	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient,

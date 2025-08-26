@@ -16,6 +16,7 @@ import (
 
 	"github.com/instill-ai/x/client"
 	"github.com/instill-ai/x/minio"
+	"github.com/instill-ai/x/openfga"
 	"github.com/instill-ai/x/temporal"
 )
 
@@ -40,7 +41,7 @@ type AppConfig struct {
 	OTELCollector   OTELCollectorConfig   `koanf:"otelcollector"`
 	MgmtBackend     client.ServiceConfig  `koanf:"mgmtbackend"`
 	ModelBackend    client.ServiceConfig  `koanf:"modelbackend"`
-	OpenFGA         OpenFGAConfig         `koanf:"openfga"`
+	OpenFGA         openfga.Config        `koanf:"openfga"`
 	ArtifactBackend client.ServiceConfig  `koanf:"artifactbackend"`
 	Minio           minio.Config          `koanf:"minio"`
 	AgentBackend    client.ServiceConfig  `koanf:"agentbackend"`
@@ -52,17 +53,6 @@ type APIGatewayConfig struct {
 	Host       string `koanf:"host"`
 	PublicPort int    `koanf:"publicport"`
 	TLSEnabled bool   `koanf:"tlsenabled"`
-}
-
-// OpenFGAConfig related to OpenFGA
-type OpenFGAConfig struct {
-	Host    string `koanf:"host"`
-	Port    int    `koanf:"port"`
-	Replica struct {
-		Host                 string `koanf:"host"`
-		Port                 int    `koanf:"port"`
-		ReplicationTimeFrame int    `koanf:"replicationtimeframe"` // in seconds
-	} `koanf:"replica"`
 }
 
 // ServerConfig defines HTTP server configurations

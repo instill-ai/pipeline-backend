@@ -27,6 +27,7 @@ import (
 	rpcstatus "google.golang.org/genproto/googleapis/rpc/status"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
@@ -43,6 +44,7 @@ import (
 	constantx "github.com/instill-ai/x/constant"
 	errorsx "github.com/instill-ai/x/errors"
 	logx "github.com/instill-ai/x/log"
+	openfgax "github.com/instill-ai/x/openfga"
 	resourcex "github.com/instill-ai/x/resource"
 	temporalx "github.com/instill-ai/x/temporal"
 )
@@ -116,7 +118,7 @@ func (s *service) ListPipelines(ctx context.Context, pageSize int32, pageToken s
 
 func (s *service) GetPipelineByUID(ctx context.Context, uid uuid.UUID, view pipelinepb.Pipeline_View) (*pipelinepb.Pipeline, error) {
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", uid, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, uid, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrNotFound
@@ -140,7 +142,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 
 	// TODO: optimize ACL model
 	if ns.NsType == "organizations" {
-		granted, err := s.aclClient.CheckPermission(ctx, "organization", ns.NsUID, "member")
+		granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypeOrganization, ns.NsUID, "member")
 		if err != nil {
 			return nil, err
 		}
@@ -181,9 +183,14 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 		return nil, err
 	}
 
-	ownerType := string(ns.NsType)[0 : len(string(ns.NsType))-1]
+	var ownerType openfgax.OwnerType
+	if string(ns.NsType) == "users" {
+		ownerType = openfgax.OwnerTypeUser
+	} else {
+		ownerType = openfgax.OwnerTypeOrganization
+	}
 	ownerUID := ns.NsUID
-	err = s.aclClient.SetOwner(ctx, "pipeline", dbCreatedPipeline.UID, ownerType, ownerUID)
+	err = s.aclClient.SetOwner(ctx, acl.ObjectTypePipeline, dbCreatedPipeline.UID, ownerType, ownerUID)
 	if err != nil {
 		return nil, err
 	}
@@ -287,7 +294,7 @@ func (s *service) GetNamespacePipelineByID(ctx context.Context, ns resource.Name
 		return nil, errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrNotFound
@@ -532,13 +539,13 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 		}
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrUnauthorized
@@ -641,13 +648,13 @@ func (s *service) DeleteNamespacePipelineByID(ctx context.Context, ns resource.N
 		return errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "reader"); err != nil {
 		return err
 	} else if !granted {
 		return errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "admin"); err != nil {
 		return err
 	} else if !granted {
 		return errorsx.ErrUnauthorized
@@ -781,13 +788,13 @@ func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource
 		return nil, errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "executor"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrUnauthorized
@@ -811,13 +818,13 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 	if err != nil {
 		return nil, errorsx.ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrUnauthorized
@@ -1432,13 +1439,13 @@ func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resourc
 		return nil, errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrUnauthorized
@@ -1485,7 +1492,7 @@ func (s *service) ListNamespacePipelineReleases(ctx context.Context, ns resource
 	if err != nil {
 		return nil, 0, "", errorsx.ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "reader"); err != nil {
 		return nil, 0, "", err
 	} else if !granted {
 		return nil, 0, "", errorsx.ErrNotFound
@@ -1508,7 +1515,7 @@ func (s *service) GetNamespacePipelineReleaseByID(ctx context.Context, ns resour
 	if err != nil {
 		return nil, errorsx.ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrNotFound
@@ -1531,13 +1538,13 @@ func (s *service) UpdateNamespacePipelineReleaseByID(ctx context.Context, ns res
 	if err != nil {
 		return nil, errorsx.ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrUnauthorized
@@ -1571,13 +1578,13 @@ func (s *service) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns r
 	if err != nil {
 		return nil, errorsx.ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrUnauthorized
@@ -1609,13 +1616,13 @@ func (s *service) DeleteNamespacePipelineReleaseByID(ctx context.Context, ns res
 	if err != nil {
 		return errorsx.ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "reader"); err != nil {
 		return err
 	} else if !granted {
 		return errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "admin"); err != nil {
 		return err
 	} else if !granted {
 		return errorsx.ErrUnauthorized
@@ -1631,13 +1638,13 @@ func (s *service) RestoreNamespacePipelineReleaseByID(ctx context.Context, ns re
 	if err != nil {
 		return errorsx.ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", uuid.FromStringOrNil(pipeline.GetUid()), "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, uuid.FromStringOrNil(pipeline.GetUid()), "admin"); err != nil {
 		return err
 	} else if !granted {
 		return errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", uuid.FromStringOrNil(pipeline.GetUid()), "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, uuid.FromStringOrNil(pipeline.GetUid()), "admin"); err != nil {
 		return err
 	} else if !granted {
 		return errorsx.ErrUnauthorized
@@ -1919,7 +1926,7 @@ func (s *service) checkRequesterPermission(ctx context.Context, pipeline *datamo
 
 	// The only impersonation that's currently implemented is switching to an
 	// organization namespace.
-	isMember, err := s.aclClient.CheckPermission(ctx, "organization", uuid.FromStringOrNil(requester), "member")
+	isMember, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypeOrganization, uuid.FromStringOrNil(requester), "member")
 	if err != nil {
 		return errorsx.AddMessage(
 			fmt.Errorf("checking organization membership: %w", err),
@@ -1943,7 +1950,7 @@ func (s *service) checkRequesterPermission(ctx context.Context, pipeline *datamo
 
 	// Organizations can only trigger external private pipelines through a
 	// shareable link.
-	canTrigger, err := s.aclClient.CheckLinkPermission(ctx, "pipeline", pipeline.UID, "executor")
+	canTrigger, err := s.aclClient.CheckPermission(ctx, "pipeline", pipeline.UID, "executor")
 	if err != nil {
 		return errorsx.AddMessage(
 			fmt.Errorf("checking shareable link permissions: %w", err),
@@ -1959,13 +1966,13 @@ func (s *service) checkRequesterPermission(ctx context.Context, pipeline *datamo
 }
 
 func (s *service) checkTriggerPermission(ctx context.Context, pipeline *datamodel.Pipeline) (err error) {
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", pipeline.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, pipeline.UID, "reader"); err != nil {
 		return err
 	} else if !granted {
 		return errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", pipeline.UID, "executor"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, pipeline.UID, "executor"); err != nil {
 		return err
 	} else if !granted {
 		return errorsx.ErrUnauthorized

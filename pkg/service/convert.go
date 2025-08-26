@@ -69,7 +69,7 @@ type converter struct {
 	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
 	redisClient              *redis.Client
 	component                *componentstore.Store
-	aclClient                acl.ACLClientInterface
+	aclClient                acl.ACLClient
 	repository               repository.Repository
 	instillCoreHost          string
 }
@@ -77,7 +77,7 @@ type converter struct {
 type ConverterConfig struct {
 	MgmtClient      mgmtpb.MgmtPrivateServiceClient
 	RedisClient     *redis.Client
-	ACLClient       acl.ACLClientInterface
+	ACLClient       acl.ACLClient
 	Repository      repository.Repository
 	InstillCoreHost string
 	ComponentStore  *componentstore.Store
@@ -623,14 +623,14 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 			pbPipeline.Permission.CanRelease = true
 			pbPipeline.Permission.CanTrigger = true
 		} else {
-			canEdit, err := c.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "writer")
+			canEdit, err := c.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "writer")
 			if err != nil {
 				return nil, err
 			}
 			pbPipeline.Permission.CanEdit = canEdit
 			pbPipeline.Permission.CanRelease = canEdit
 
-			canTrigger, err := c.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor")
+			canTrigger, err := c.aclClient.CheckPermission(ctx, acl.ObjectTypePipeline, dbPipeline.UID, "executor")
 			if err != nil {
 				return nil, err
 			}

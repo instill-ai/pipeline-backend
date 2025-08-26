@@ -25,7 +25,6 @@ import (
 	"gorm.io/gorm"
 
 	grpczap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
-	openfga "github.com/openfga/api/proto/openfga/v1"
 	temporalclient "go.temporal.io/sdk/client"
 
 	"github.com/instill-ai/pipeline-backend/config"
@@ -50,6 +49,7 @@ import (
 	clientgrpcx "github.com/instill-ai/x/client/grpc"
 	logx "github.com/instill-ai/x/log"
 	miniox "github.com/instill-ai/x/minio"
+	openfgax "github.com/instill-ai/x/openfga"
 	otelx "github.com/instill-ai/x/otel"
 	servergrpcx "github.com/instill-ai/x/server/grpc"
 	gatewayx "github.com/instill-ai/x/server/grpc/gateway"
@@ -141,11 +141,11 @@ func main() {
 		repo,
 		redisClient,
 		temporalClient,
-		&aclClient,
+		aclClient,
 		service.NewConverter(service.ConverterConfig{
 			MgmtClient:      mgmtPrivateServiceClient,
 			RedisClient:     redisClient,
-			ACLClient:       &aclClient,
+			ACLClient:       aclClient,
 			Repository:      repo,
 			InstillCoreHost: config.Config.Server.InstillCoreHost,
 			ComponentStore:  compStore,
@@ -467,22 +467,20 @@ func newClients(ctx context.Context, logger *zap.Logger) (
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	closeFuncs["redis"] = redisClient.Close
 
-	// Initialize ACL client
-	fgaClient, fgaClientConn := acl.InitOpenFGAClient(ctx, config.Config.OpenFGA.Host, config.Config.OpenFGA.Port)
-	if fgaClientConn != nil {
-		closeFuncs["fga"] = fgaClientConn.Close
+	// Initialize ACL client using x/openfga package
+	fgaClient, err := openfgax.NewClient(openfgax.ClientParams{
+		Config: config.Config.OpenFGA,
+		Logger: logger,
+	})
+	if err != nil {
+		logger.Fatal("Failed to create OpenFGA client", zap.Error(err))
 	}
 
-	var fgaReplicaClient openfga.OpenFGAServiceClient
-	if config.Config.OpenFGA.Replica.Host != "" {
-		var fgaReplicaClientConn *grpc.ClientConn
-		fgaReplicaClient, fgaReplicaClientConn = acl.InitOpenFGAClient(ctx, config.Config.OpenFGA.Replica.Host, config.Config.OpenFGA.Replica.Port)
-		if fgaReplicaClientConn != nil {
-			closeFuncs["fgaReplica"] = fgaReplicaClientConn.Close
-		}
-	}
+	// Log that we have the client ready for future migration
+	logger.Info("OpenFGA x/openfga client initialized", zap.String("host", config.Config.OpenFGA.Host))
 
-	aclClient := acl.NewACLClient(fgaClient, fgaReplicaClient, redisClient)
+	// Use the SDK client for ACL operations
+	aclClient := acl.NewFGAClient(fgaClient)
 
 	// Initialize MinIO client
 	minIOParams := miniox.ClientParams{
