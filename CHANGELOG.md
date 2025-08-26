@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.59.0](https://github.com/instill-ai/pipeline-backend/compare/v0.58.4...v0.59.0) (2025-08-26)
+
+
+### Features
+
+* **artifact:** allow search and query tasks to filter by several files ([#1069](https://github.com/instill-ai/pipeline-backend/issues/1069)) ([8b212fe](https://github.com/instill-ai/pipeline-backend/commit/8b212fe38e7a987cd6d08b363df5ab27749a149a))
+* **minio:** use new bucket names ([#1071](https://github.com/instill-ai/pipeline-backend/issues/1071)) ([c40fbed](https://github.com/instill-ai/pipeline-backend/commit/c40fbedd63257adcf7369c5d4b794b792bbbb707))
+
+
+### Bug Fixes
+
+* **run:** return correct total duration ([#1072](https://github.com/instill-ai/pipeline-backend/issues/1072)) ([5a15c45](https://github.com/instill-ai/pipeline-backend/commit/5a15c45aef907263691f695482d9ed549bd465d7))
+
+
+### Miscellaneous
+
+* release v0.59.0 ([#1073](https://github.com/instill-ai/pipeline-backend/issues/1073)) ([143fd2b](https://github.com/instill-ai/pipeline-backend/commit/143fd2be031bfcf0283d3193466bfb36319dcb06))
+
 ## [0.58.4](https://github.com/instill-ai/pipeline-backend/compare/v0.58.3...v0.58.4) (2025-08-08)
 
 
