@@ -3,9 +3,9 @@ availableTasks:
   - TASK_READ_OBJECTS
   - TASK_CREATE_BUCKET
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/data/gcs
+documentationUrl: https://docs.instill-ai.com/docs/gcs
 icon: assets/gcs.svg
-iconUrl: ''
+iconUrl: ""
 id: gcs
 public: true
 title: Google Cloud Storage

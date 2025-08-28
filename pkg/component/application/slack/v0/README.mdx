@@ -31,7 +31,7 @@ The component definition and tasks are defined in the [definition.yaml](https://
 In order to communicate with Slack, the following connection details need to be
 provided. You may specify them directly in a pipeline recipe as key-value pairs
 within the component's `setup` block, or you can create a **Connection** from
-the [**Integration Settings**](https://instill-ai.dev/docs/pipeline/integration)
+the [**Integration Settings**](https://docs.instill-ai.com/docs/set-up-component)
 page and reference the whole `setup` as `setup:
 ${connection.<my-connection-id>}`.
 
@@ -56,7 +56,7 @@ App](https://api.slack.com/docs/apps). In order to read / write messages from / 
 
 The Slack integration on **Instill Cloud** uses OAuth 2.0 to connect with Slack
 via the `instill-ai` app. There, [creating a
-connection](https://instill-ai.dev/docs/pipeline/integration#creating-a-connection)
+connection](https://docs.instill-ai.com/docs/set-up-component#creating-a-connection)
 will simply require authenticating on Slack. Your newly created connection,
 which you can reference in your pipelines, will allow you to read messages and
 send them on behalf of your user or the `instill-ai` bot on the channels where

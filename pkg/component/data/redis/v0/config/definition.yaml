@@ -3,9 +3,9 @@ availableTasks:
   - TASK_WRITE_CHAT_MESSAGE
   - TASK_WRITE_MULTI_MODAL_CHAT_MESSAGE
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/data/redis
+documentationUrl: https://docs.instill-ai.com/docs/redis
 icon: assets/redis.svg
-iconUrl: ''
+iconUrl: ""
 id: redis
 public: true
 title: Redis

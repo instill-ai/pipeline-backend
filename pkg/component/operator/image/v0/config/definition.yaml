@@ -9,9 +9,9 @@ availableTasks:
   - TASK_DRAW_INSTANCE_SEGMENTATION
   - TASK_DRAW_SEMANTIC_SEGMENTATION
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/operator/image
+documentationUrl: https://docs.instill-ai.com/docs/image
 icon: assets/image.svg
-iconUrl: ''
+iconUrl: ""
 id: image
 public: true
 spec: {}

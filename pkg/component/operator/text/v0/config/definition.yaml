@@ -1,9 +1,9 @@
 availableTasks:
   - TASK_CHUNK_TEXT
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/operator/text
+documentationUrl: https://docs.instill-ai.com/docs/text
 icon: assets/text.svg
-iconUrl: ''
+iconUrl: ""
 id: text
 public: true
 spec: {}

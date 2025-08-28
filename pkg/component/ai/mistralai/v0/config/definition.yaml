@@ -2,7 +2,7 @@ availableTasks:
   - TASK_TEXT_GENERATION_CHAT
   - TASK_TEXT_EMBEDDINGS
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/ai/mistral-ai
+documentationUrl: https://docs.instill-ai.com/docs/mistral-ai
 icon: assets/mistral-ai.svg
 id: mistral-ai
 public: true

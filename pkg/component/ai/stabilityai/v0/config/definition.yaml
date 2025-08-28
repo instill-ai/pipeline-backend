@@ -2,7 +2,7 @@ availableTasks:
   - TASK_TEXT_TO_IMAGE
   - TASK_IMAGE_TO_IMAGE
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/ai/stability-ai
+documentationUrl: https://docs.instill-ai.com/docs/stability-ai
 icon: assets/stability-ai.svg
 iconUrl: ''
 id: stability-ai

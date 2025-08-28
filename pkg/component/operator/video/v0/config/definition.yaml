@@ -4,7 +4,7 @@ availableTasks:
   - TASK_EXTRACT_AUDIO
   - TASK_EXTRACT_FRAMES
   - TASK_EMBED_AUDIO
-documentationUrl: https://instill-ai.dev/docs/component/operator/video
+documentationUrl: https://docs.instill-ai.com/docs/video
 icon: assets/video.svg
 id: video
 public: true

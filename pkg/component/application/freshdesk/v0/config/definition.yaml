@@ -14,7 +14,7 @@ availableTasks:
   - TASK_GET_ROLE
   - TASK_GET_GROUP
   - TASK_GET_SKILL
-documentationUrl: https://instill-ai.dev/docs/component/application/freshdesk
+documentationUrl: https://docs.instill-ai.com/docs/freshdesk
 icon: assets/freshdesk.svg
 id: freshdesk
 public: true
