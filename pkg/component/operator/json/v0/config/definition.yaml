@@ -4,9 +4,9 @@ availableTasks:
   - TASK_JQ
   - TASK_RENAME_FIELDS
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/operator/json
+documentationUrl: https://docs.instill-ai.com/docs/json
 icon: assets/json.svg
-iconUrl: ''
+iconUrl: ""
 id: json
 public: true
 spec: {}

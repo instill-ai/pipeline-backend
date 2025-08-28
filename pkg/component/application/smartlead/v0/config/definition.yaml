@@ -8,7 +8,7 @@ availableTasks:
   - TASK_UPDATE_CAMPAIGN_STATUS
   - TASK_GET_CAMPAIGN_METRIC
   - TASK_LIST_LEADS_STATUS
-documentationUrl: https://instill-ai.dev/docs/component/application/smartlead
+documentationUrl: https://docs.instill-ai.com/docs/smartlead
 icon: assets/smartlead.svg
 id: smartlead
 public: true

@@ -2,7 +2,7 @@ availableTasks:
   - TASK_CRAWL_SITE
   - TASK_SCRAPE_PAGES
   - TASK_SCRAPE_SITEMAP
-documentationUrl: https://instill-ai.dev/docs/component/operator/web
+documentationUrl: https://docs.instill-ai.com/docs/web
 icon: assets/web.svg
 id: web
 public: true

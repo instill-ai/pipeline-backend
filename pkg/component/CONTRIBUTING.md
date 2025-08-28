@@ -27,8 +27,8 @@ This guide builds on top of other documents:
   document the conventions you'll need to follow when contributing to this
   repository. They also contain a guide on how to set your development
   environment, in case you want to [see your component in action](#use-the-component-in-instill-core-pipeline).
-- If you find yourself wanting to know more, visit the [Instill
-  Docs](https://instill-ai.dev/docs).
+- If you find yourself wanting to know more, visit the [Instill Core
+  Docs](https://docs.instill-ai.com).
 
 ## Component
 
@@ -81,7 +81,7 @@ description: "'Hello, world' operator used as a template for adding components"
 spec: {}
 availableTasks:
   - TASK_GREET
-documentationUrl: https://instill-ai.dev/docs/component/operator/hello
+documentationUrl: https://docs.instill-ai.com/docs/hello
 icon: assets/hello.svg
 version: 0.1.0
 sourceUrl: https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/hello/v0
@@ -191,7 +191,7 @@ This file defines the input and output schema of each task:
 - **`type`** indicates the data type of the output field, which should be one
   of `string`, `number`, `boolean`, `file`, `document`, `image`, `video`,
   `audio`, `array`, or `object`. Please refer to [**Instill
-  Format**](https://instill-ai.dev/docs/pipeline/instill-format) for more details.
+  Format**](https://docs.instill-ai.com/docs/instill-types) for more details.
 
 - **`instillSecret`** indicates the data must reference the secrets and cannot
   be used in plaintext.
@@ -201,7 +201,7 @@ This file defines the input and output schema of each task:
 - **`type`** indicates the data type of the output field, which should be one
   of `string`, `number`, `boolean`, `file`, `document`, `image`, `video`,
   `audio`, `array`, or `object`. Please refer to [**Instill
-  Format**](https://instill-ai.dev/docs/pipeline/instill-format) for more details.
+  Format**](https://docs.instill-ai.com/docs/instill-types) for more details.
 
 See the [example recipe](#example-recipe) to understand how these fields map to
 the recipe of a pipeline when configured to use this operator.
@@ -215,7 +215,7 @@ configurations. The format is the same as the `input` objects in `tasks.yaml`.
 
 The setup of a component can be defined within the recipe as key-value fields,
 or as a reference to a **Connection** (see the
-[**Integrations**](https://instill-ai.dev/docs/pipeline/integration) doc for more
+[**Integrations**](https://docs.instill-ai.com/docs/set-up-component) doc for more
 information). Certain components support OAuth 2.0 integrations. If you want
 your component to support this sort of connection:
 

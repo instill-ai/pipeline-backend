@@ -16,7 +16,7 @@ availableTasks:
   - TASK_DELETE_ROW
   - TASK_DELETE_MULTIPLE_ROWS
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/data/google-sheets
+documentationUrl: https://docs.instill-ai.com/docs/google-sheets
 icon: assets/google-sheets.svg
 id: google-sheets
 public: true

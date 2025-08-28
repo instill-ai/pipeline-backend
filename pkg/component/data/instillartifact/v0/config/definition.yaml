@@ -7,7 +7,7 @@ availableTasks:
   - TASK_MATCH_FILE_STATUS
   - TASK_RETRIEVE
   - TASK_ASK
-documentationUrl: https://instill-ai.dev/docs/component/data/instill-artifact
+documentationUrl: https://docs.instill-ai.com/docs/instill-artifact
 icon: assets/instill-artifact.svg
 id: instill-artifact
 public: true

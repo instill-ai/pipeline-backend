@@ -8,7 +8,7 @@ availableTasks:
   - TASK_LIST_SPRINTS
   - TASK_UPDATE_ISSUE
   - TASK_UPDATE_SPRINT
-documentationUrl: https://instill-ai.dev/docs/component/application/jira
+documentationUrl: https://docs.instill-ai.com/docs/jira
 icon: assets/jira.svg
 id: jira
 public: true

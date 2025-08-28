@@ -17,7 +17,7 @@ availableTasks:
   - TASK_SPEECH_RECOGNITION
   - TASK_AUDIO_CLASSIFICATION
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/ai/hugging-face
+documentationUrl: https://docs.instill-ai.com/docs/hugging-face
 icon: assets/hugging-face.svg
 iconUrl: ''
 id: hugging-face

@@ -1,9 +1,9 @@
 availableTasks:
   - TASK_REGISTER
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/application/numbers
+documentationUrl: https://docs.instill-ai.com/docs/numbers
 icon: assets/numbers.svg
-iconUrl: ''
+iconUrl: ""
 id: numbers
 public: true
 title: Numbers Protocol

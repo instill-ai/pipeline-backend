@@ -4,7 +4,7 @@ availableTasks:
   - TASK_CONVERT_TO_IMAGES
   - TASK_SPLIT_IN_PAGES
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/operator/document
+documentationUrl: https://docs.instill-ai.com/docs/document
 icon: assets/document.svg
 id: document
 public: true

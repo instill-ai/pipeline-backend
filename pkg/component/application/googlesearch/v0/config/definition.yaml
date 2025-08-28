@@ -1,7 +1,7 @@
 availableTasks:
   - TASK_SEARCH
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/application/google-search
+documentationUrl: https://docs.instill-ai.com/docs/google-search
 icon: assets/google-search.svg
 iconUrl: ''
 id: google-search

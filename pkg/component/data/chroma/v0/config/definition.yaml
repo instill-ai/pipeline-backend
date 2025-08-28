@@ -5,7 +5,7 @@ availableTasks:
   - TASK_DELETE
   - TASK_CREATE_COLLECTION
   - TASK_DELETE_COLLECTION
-documentationUrl: https://instill-ai.dev/docs/component/data/chroma
+documentationUrl: https://docs.instill-ai.com/docs/chroma
 icon: assets/chroma.svg
 id: chroma
 public: true
