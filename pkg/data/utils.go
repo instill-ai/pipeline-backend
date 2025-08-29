@@ -35,6 +35,9 @@ func StandardizePath(path string) (newPath string, err error) {
 func NewBinaryFromBytes(b []byte, contentType, filename string) (format.Value, error) {
 	if contentType == "" {
 		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
+	} else {
+		// Normalize provided content type: strip parameters and lowercase
+		contentType = strings.ToLower(strings.TrimSpace(strings.Split(contentType, ";")[0]))
 	}
 
 	switch {
@@ -59,6 +62,9 @@ func NewBinaryFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher,
 
 	if contentType == "" {
 		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
+	} else {
+		// Normalize provided content type: strip parameters and lowercase
+		contentType = strings.ToLower(strings.TrimSpace(strings.Split(contentType, ";")[0]))
 	}
 
 	switch {
@@ -119,5 +125,6 @@ func isDocumentContentType(contentType string) bool {
 		contentType == MARKDOWN ||
 		contentType == CSV ||
 		contentType == PDF ||
+		contentType == OLE ||
 		strings.HasPrefix(contentType, "text/")
 }

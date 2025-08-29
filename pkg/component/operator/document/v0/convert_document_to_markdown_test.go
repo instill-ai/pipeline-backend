@@ -56,6 +56,16 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 			},
 		},
 		{
+			name:     "Convert DOC file",
+			filepath: "testdata/test.doc",
+			expected: ConvertDocumentToMarkdownOutput{
+				Body:          "# This is test file for markdown\n",
+				Images:        []format.Image{},
+				AllPageImages: []format.Image{},
+				Markdowns:     []string{"# This is test file for markdown\n"},
+			},
+		},
+		{
 			name:     "Convert HTML file",
 			filepath: "testdata/test.html",
 			expected: ConvertDocumentToMarkdownOutput{
@@ -67,6 +77,16 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 		{
 			name:     "Convert PPTX file",
 			filepath: "testdata/test.pptx",
+			expected: ConvertDocumentToMarkdownOutput{
+				Body:          "# This           is     test          file       for markdown\n",
+				Images:        []format.Image{},
+				AllPageImages: []format.Image{},
+				Markdowns:     []string{"# This           is     test          file       for markdown\n"},
+			},
+		},
+		{
+			name:     "Convert PPT file",
+			filepath: "testdata/test.ppt",
 			expected: ConvertDocumentToMarkdownOutput{
 				Body:          "# This           is     test          file       for markdown\n",
 				Images:        []format.Image{},
@@ -160,10 +180,14 @@ func mimeTypeByExtension(filepath string) string {
 		return "application/pdf"
 	case "testdata/test.docx":
 		return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+	case "testdata/test.doc":
+		return "application/msword"
 	case "testdata/test.html":
 		return "text/html"
 	case "testdata/test.pptx":
 		return "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+	case "testdata/test.ppt":
+		return "application/vnd.ms-powerpoint"
 	case "testdata/test.xlsx":
 		return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 	case "testdata/test.xls":
