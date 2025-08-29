@@ -492,6 +492,44 @@ func (u *Unmarshaler) unmarshalInterface(v format.Value, field reflect.Value, st
 				}
 			}
 		}
+		// Ensure assignable types are properly reconstructed to the target interface
+		// to avoid panics like: reflect.Set: *data.fileData is not assignable to type format.Document
+		// 1) If target field expects a Document, make sure we set a Document
+		if field.Type() == reflect.TypeOf((*format.Document)(nil)).Elem() {
+			// Already a Document → set directly
+			if doc, ok := v.(format.Document); ok {
+				field.Set(reflect.ValueOf(doc))
+				return nil
+			}
+			// If it's a raw internal fileData, rebuild explicitly as Document
+			if f, ok := v.(*fileData); ok {
+				// Prefer constructing a Document directly to avoid misclassification (e.g., octet-stream)
+				rebuilt, err := NewDocumentFromBytes(f.raw, f.contentType, f.filename)
+				if err != nil {
+					return err
+				}
+				// rebuilt is *documentData which implements format.Document
+				field.Set(reflect.ValueOf(rebuilt))
+				return nil
+			}
+			// If it's any File implementation, rebuild from its bytes and content type
+			if f, ok := v.(format.File); ok {
+				ba, err := f.Binary()
+				if err != nil {
+					return err
+				}
+				rebuilt, err := NewDocumentFromBytes(ba.ByteArray(), f.ContentType().String(), f.Filename().String())
+				if err != nil {
+					return err
+				}
+				// rebuilt is *documentData which implements format.Document
+				field.Set(reflect.ValueOf(rebuilt))
+				return nil
+			}
+			return fmt.Errorf("cannot unmarshal %T into %v (expected Document)", v, field.Type())
+		}
+
+		// Fallback: if v is our internal fileData, rebuild to the proper specific type
 		if f, ok := v.(*fileData); ok {
 			file, err := NewBinaryFromBytes(f.raw, f.contentType, f.filename)
 			if err != nil {
@@ -499,11 +537,15 @@ func (u *Unmarshaler) unmarshalInterface(v format.Value, field reflect.Value, st
 			}
 			field.Set(reflect.ValueOf(file))
 			return nil
-		} else {
-			field.Set(reflect.ValueOf(v))
 		}
 
-		return nil
+		// If value is assignable to field type, set directly; otherwise error to avoid panic
+		val := reflect.ValueOf(v)
+		if val.Type().AssignableTo(field.Type()) {
+			field.Set(val)
+			return nil
+		}
+		return fmt.Errorf("cannot unmarshal %T into %v", v, field.Type())
 	}
 	return fmt.Errorf("cannot unmarshal %T into %v", v, field.Type())
 }

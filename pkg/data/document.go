@@ -28,6 +28,7 @@ const TEXT = "text"
 const MARKDOWN = "text/markdown"
 const CSV = "text/csv"
 const PDF = "application/pdf"
+const OLE = "application/x-ole-storage"
 
 var documentGetters = map[string]func(*documentData) (format.Value, error){
 	"text":   func(d *documentData) (format.Value, error) { return d.Text() },
@@ -50,6 +51,31 @@ func NewDocumentFromURL(ctx context.Context, binaryFetcher external.BinaryFetche
 }
 
 func createDocumentData(b []byte, contentType, filename string) (*documentData, error) {
+	// Normalize provided content type
+	if contentType != "" {
+		contentType = strings.ToLower(strings.TrimSpace(strings.Split(contentType, ";")[0]))
+	}
+	// If upstream reports generic/legacy Office container types, infer from filename
+	if contentType == OLE || contentType == OCTETSTREAM {
+		lf := strings.ToLower(filename)
+		switch {
+		case strings.HasSuffix(lf, ".doc"):
+			contentType = DOC
+		case strings.HasSuffix(lf, ".docx"):
+			contentType = DOCX
+		case strings.HasSuffix(lf, ".ppt"):
+			contentType = PPT
+		case strings.HasSuffix(lf, ".pptx"):
+			contentType = PPTX
+		case strings.HasSuffix(lf, ".xls"):
+			contentType = XLS
+		case strings.HasSuffix(lf, ".xlsx"):
+			contentType = XLSX
+		default:
+			// Fallback: assume legacy DOC if we cannot infer by extension
+			contentType = DOC
+		}
+	}
 	f, err := NewFileFromBytes(b, contentType, filename)
 	if err != nil {
 		return nil, err
