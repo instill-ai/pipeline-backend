@@ -37,7 +37,6 @@ func NewBinaryFetcher() BinaryFetcher {
 
 // FetchFromURL fetches binary data from a URL.
 func (f *binaryFetcher) FetchFromURL(ctx context.Context, url string) (body []byte, contentType string, filename string, err error) {
-
 	if strings.HasPrefix(url, "data:") {
 		return f.convertDataURIToBytes(url)
 	}
@@ -168,28 +167,67 @@ func (f *artifactBinaryFetcher) fetchFromBlobStorage(ctx context.Context, urlUID
 	return b, contentType, objectRes.Object.Name, nil
 }
 
-func (f *binaryFetcher) convertDataURIToBytes(url string) (b []byte, contentType string, filename string, err error) {
-	slices := strings.Split(url, ",")
+func (f *binaryFetcher) convertDataURIToBytes(dataURI string) (b []byte, contentType string, filename string, err error) {
+	slices := strings.Split(dataURI, ",")
 	if len(slices) == 1 {
-		b, err = base64.StdEncoding.DecodeString(url)
+		b, err = base64.StdEncoding.DecodeString(dataURI)
 		if err != nil {
 			return
 		}
 		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
 	} else {
-		mime := strings.Split(slices[0], ":")
-		tags := ""
-		contentType, tags, _ = strings.Cut(mime[1], ";")
-		b, err = base64.StdEncoding.DecodeString(slices[1])
-		if err != nil {
-			return
+		// Parse the header part (before the comma)
+		header := slices[0]
+		if !strings.HasPrefix(header, "data:") {
+			return nil, "", "", fmt.Errorf("invalid data URI format")
 		}
-		for _, tag := range strings.Split(tags, ";") {
-			key, value, _ := strings.Cut(tag, "=")
-			if key == "filename" || key == "fileName" || key == "file-name" {
-				filename = value
+
+		// Remove "data:" prefix
+		header = strings.TrimPrefix(header, "data:")
+
+		// Split by semicolon to get content type and parameters
+		parts := strings.Split(header, ";")
+		if len(parts) == 0 {
+			return nil, "", "", fmt.Errorf("invalid data URI header")
+		}
+
+		// First part is the content type
+		contentType = parts[0]
+
+		// Parse parameters (skip the first part which is content type)
+		for i := 1; i < len(parts); i++ {
+			part := strings.TrimSpace(parts[i])
+			if part == "" {
+				continue
+			}
+
+			// Check if this is the base64 parameter
+			if part == "base64" {
+				continue
+			}
+
+			// Parse key=value pairs
+			if strings.Contains(part, "=") {
+				key, value, _ := strings.Cut(part, "=")
+				key = strings.TrimSpace(key)
+				value = strings.TrimSpace(value)
+				if key == "filename" || key == "fileName" || key == "file-name" {
+					// URL decode the filename to handle %20 and other encoded characters
+					if decodedValue, err := url.QueryUnescape(value); err == nil {
+						filename = decodedValue
+					} else {
+						filename = value // fallback to original value if decoding fails
+					}
+				}
 			}
 		}
+
+		// Decode the base64 data
+		b, err = base64.StdEncoding.DecodeString(slices[1])
+		if err != nil {
+			return nil, "", "", err
+		}
 	}
+
 	return b, contentType, filename, nil
 }
