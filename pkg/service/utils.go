@@ -159,7 +159,7 @@ func (s *service) convertComponentRunToPB(run datamodel.ComponentRun) (*pipeline
 	}
 
 	if run.CompletedTime.Valid {
-		totalDuration := int32(run.CompletedTime.Time.Sub(run.StartedTime))
+		totalDuration := int32(run.CompletedTime.Time.Sub(run.StartedTime).Milliseconds())
 
 		result.CompleteTime = timestamppb.New(run.CompletedTime.Time)
 		result.TotalDuration = &totalDuration
