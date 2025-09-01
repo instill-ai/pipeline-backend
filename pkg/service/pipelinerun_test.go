@@ -24,12 +24,13 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/constant"
+	"github.com/instill-ai/x/minio"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
-	miniomock "github.com/instill-ai/x/mock"
+	miniomock "github.com/instill-ai/x/mock/minio"
 )
 
 var db *gorm.DB
@@ -50,7 +51,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 	mc := minimock.NewController(t)
 
 	mockUIDs := make([]uuid.UUID, 4)
-	for i := range len(mockUIDs) {
+	for i := range mockUIDs {
 		mockUIDs[i] = uuid.Must(uuid.NewV4())
 	}
 	ownerUID := mockUIDs[0]
@@ -141,7 +142,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			viewer:             user2,
 			viewNamespace:      namespace1,
 			canView:            true,
-			canViewInputOutput: true,
+			canViewInputOutput: false,
 		},
 		{
 			description:        "can view logs when view ns is resource owner ns",
@@ -150,7 +151,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			viewer:             ownerUID,
 			viewNamespace:      ownerUID,
 			canView:            true,
-			canViewInputOutput: true,
+			canViewInputOutput: false,
 		},
 		{
 			description:        "cannot view logs when view ns is neither resource owner ns nor requester",
@@ -177,7 +178,11 @@ func TestService_ListPipelineRuns(t *testing.T) {
 	}, nil)
 
 	mockMinio := miniomock.NewClientMock(mc)
-	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some errors"))
+	mockMinio.WithLoggerMock.Return(mockMinio)
+	mockMinio.GetFilesByPathsMock.Return([]minio.FileContent{
+		{Name: "test-input-ref", Content: []byte(`[{"key": "input-value"}]`)},
+		{Name: "test-output-ref", Content: []byte(`[{"key": "output-value"}]`)},
+	}, nil)
 
 	for i, testCase := range testCases {
 		c.Run(fmt.Sprintf("get pipeline run with permissions test case %d %s", i+1, testCase.description), func(c *qt.C) {
@@ -221,6 +226,12 @@ func TestService_ListPipelineRuns(t *testing.T) {
 				RunnerUID:          testCase.runner,
 				RequesterUID:       testCase.runNamespace,
 				StartedTime:        time.Now(),
+				Inputs: datamodel.JSONB{
+					{Name: "test-input-ref", Type: "application/json", Size: 100, URL: "test-input-url"},
+				},
+				Outputs: datamodel.JSONB{
+					{Name: "test-output-ref", Type: "application/json", Size: 200, URL: "test-output-url"},
+				},
 			}
 
 			err = repo.UpsertPipelineRun(ctx, pipelineRun)
@@ -261,7 +272,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 	mc := minimock.NewController(t)
 
 	mockUIDs := make([]uuid.UUID, 6)
-	for i := range len(mockUIDs) {
+	for i := range mockUIDs {
 		mockUIDs[i] = uuid.Must(uuid.NewV4())
 	}
 	orgUID := mockUIDs[0]
@@ -395,7 +406,11 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 	}, nil)
 
 	mockMinio := miniomock.NewClientMock(mc)
-	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some error happens"))
+	mockMinio.WithLoggerMock.Return(mockMinio)
+	mockMinio.GetFilesByPathsMock.Return([]minio.FileContent{
+		{Name: "test-input-ref", Content: []byte(`[{"key": "input-value"}]`)},
+		{Name: "test-output-ref", Content: []byte(`[{"key": "output-value"}]`)},
+	}, nil)
 
 	for i, testCase := range testCases {
 		c.Run(fmt.Sprintf("get pipeline run with permissions test case %d %s", i+1, testCase.description), func(c *qt.C) {
