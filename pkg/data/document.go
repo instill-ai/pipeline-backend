@@ -16,19 +16,22 @@ type documentData struct {
 	fileData
 }
 
-const DOC = "application/msword"
-const DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-const PPT = "application/vnd.ms-powerpoint"
-const PPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-const XLS = "application/vnd.ms-excel"
-const XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-const HTML = "text/html"
-const PLAIN = "text/plain"
-const TEXT = "text"
-const MARKDOWN = "text/markdown"
-const CSV = "text/csv"
-const PDF = "application/pdf"
-const OLE = "application/x-ole-storage"
+// Document types
+const (
+	DOC      = "application/msword"
+	DOCX     = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+	PPT      = "application/vnd.ms-powerpoint"
+	PPTX     = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+	XLS      = "application/vnd.ms-excel"
+	XLSX     = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+	HTML     = "text/html"
+	PLAIN    = "text/plain"
+	TEXT     = "text"
+	MARKDOWN = "text/markdown"
+	CSV      = "text/csv"
+	PDF      = "application/pdf"
+	OLE      = "application/x-ole-storage"
+)
 
 var documentGetters = map[string]func(*documentData) (format.Value, error){
 	"text":   func(d *documentData) (format.Value, error) { return d.Text() },
