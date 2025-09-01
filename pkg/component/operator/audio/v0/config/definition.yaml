@@ -1,7 +1,7 @@
 availableTasks:
   - TASK_DETECT_ACTIVITY
   - TASK_SEGMENT
-documentationUrl: https://instill-ai.dev/docs/component/operator/audio
+documentationUrl: https://docs.instill-ai.com/docs/audio
 icon: assets/audio.svg
 id: audio
 public: true

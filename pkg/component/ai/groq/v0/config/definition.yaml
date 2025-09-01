@@ -1,6 +1,6 @@
 availableTasks:
   - TASK_TEXT_GENERATION_CHAT
-documentationUrl: https://instill-ai.dev/docs/component/ai/groq
+documentationUrl: https://docs.instill-ai.com/docs/groq
 icon: assets/groq.svg
 id: groq
 public: true

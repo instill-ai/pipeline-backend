@@ -8,7 +8,7 @@ availableTasks:
   - TASK_SEND_LOCATION_MESSAGE
   - TASK_SEND_CONTACT_MESSAGE
   - TASK_SEND_INTERACTIVE_CALL_TO_ACTION_URL_BUTTON_MESSAGE
-documentationUrl: https://instill-ai.dev/docs/component/application/whatsapp
+documentationUrl: https://docs.instill-ai.com/docs/whatsapp
 icon: assets/whatsapp.svg
 id: whatsapp
 public: true

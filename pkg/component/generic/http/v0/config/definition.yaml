@@ -7,9 +7,9 @@ availableTasks:
   - TASK_HEAD
   - TASK_OPTIONS
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/generic/http
+documentationUrl: https://docs.instill-ai.com/docs/http
 icon: assets/http.svg
-iconUrl: ''
+iconUrl: ""
 id: http
 public: true
 title: HTTP

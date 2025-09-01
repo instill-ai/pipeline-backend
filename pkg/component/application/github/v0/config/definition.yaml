@@ -12,7 +12,7 @@ availableTasks:
   - TASK_CREATE_WEBHOOK
 availableEvents:
   - EVENT_STAR_CREATED
-documentationUrl: https://instill-ai.dev/docs/component/application/github
+documentationUrl: https://docs.instill-ai.com/docs/github
 icon: assets/github.svg
 id: github
 public: true

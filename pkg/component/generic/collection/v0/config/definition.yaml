@@ -8,9 +8,9 @@ availableTasks:
   - TASK_SYMMETRIC_DIFFERENCE
   - TASK_UNION
 custom: false
-documentationUrl: https://instill-ai.dev/docs/component/generic/collection
+documentationUrl: https://docs.instill-ai.com/docs/collection
 icon: assets/collection.svg
-iconUrl: ''
+iconUrl: ""
 id: collection
 public: true
 spec: {}

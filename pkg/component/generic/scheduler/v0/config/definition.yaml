@@ -1,7 +1,7 @@
 availableTasks: []
 availableEvents:
   - EVENT_CRON_JOB_TRIGGERED
-documentationUrl: https://instill-ai.dev/docs/component/generic/scheduler
+documentationUrl: https://docs.instill-ai.com/docs/scheduler
 icon: assets/scheduler.svg
 id: scheduler
 public: true

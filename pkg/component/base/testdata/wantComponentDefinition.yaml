@@ -2,7 +2,7 @@ name: component-definitions/openai
 uid: 9fb6a2cb-bff5-4c69-bc6d-4538dd8e3362
 id: openai
 title: OpenAI
-documentationUrl: https://instill-ai.dev/docs/component/ai/openai
+documentationUrl: https://docs.instill-ai.com/docs/openai
 icon: OpenAI/openai.svg
 spec:
   componentSpecification:
@@ -50,7 +50,7 @@ spec:
     properties:
       setup:
         additionalProperties: true
-        instillShortDescription: ''
+        instillShortDescription: ""
         properties:
           api-key:
             description: Fill in your OpenAI API key. To find your keys, visit your OpenAI's API Keys page.
