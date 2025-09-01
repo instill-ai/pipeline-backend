@@ -107,9 +107,9 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 			for _, output := range pipelineRun.Outputs {
 				referenceIDs = append(referenceIDs, output.Name)
 			}
-			for _, reference := range pipelineRun.RecipeSnapshot {
-				referenceIDs = append(referenceIDs, reference.Name)
-			}
+		}
+		for _, reference := range pipelineRun.RecipeSnapshot {
+			referenceIDs = append(referenceIDs, reference.Name)
 		}
 	}
 
@@ -171,13 +171,13 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 				}
 			}
 
-			if len(run.RecipeSnapshot) == 1 {
-				key := run.RecipeSnapshot[0].Name
-				pbRun.RecipeSnapshot, pbRun.DataSpecification, err = parseRecipeMetadata(ctx, metadataMap, s.converter, key)
-				if err != nil {
-					s.log.Error("Failed to load recipe snapshot", zap.Error(err), zap.String("pipelineUID", run.PipelineUID.String()),
-						zap.String("recipeReferenceID", key))
-				}
+		}
+		if len(run.RecipeSnapshot) == 1 {
+			key := run.RecipeSnapshot[0].Name
+			pbRun.RecipeSnapshot, pbRun.DataSpecification, err = parseRecipeMetadata(ctx, metadataMap, s.converter, key)
+			if err != nil {
+				s.log.Error("Failed to load recipe snapshot", zap.Error(err), zap.String("pipelineUID", run.PipelineUID.String()),
+					zap.String("recipeReferenceID", key))
 			}
 		}
 

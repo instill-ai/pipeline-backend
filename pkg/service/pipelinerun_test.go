@@ -63,92 +63,103 @@ func TestService_ListPipelineRuns(t *testing.T) {
 	pipelineID := "pipelineID-test"
 
 	testCases := []struct {
-		description   string
-		runner        uuid.UUID
-		runNamespace  uuid.UUID
-		viewer        uuid.UUID
-		viewNamespace uuid.UUID
-		canView       bool
+		description        string
+		runner             uuid.UUID
+		runNamespace       uuid.UUID
+		viewer             uuid.UUID
+		viewNamespace      uuid.UUID
+		canView            bool
+		canViewInputOutput bool
 	}{
 		{
-			description:   "can view logs when view ns is resource owner ns or requester ns",
-			runner:        ownerUID,
-			runNamespace:  ownerUID,
-			viewer:        ownerUID,
-			viewNamespace: ownerUID,
-			canView:       true,
+			description:        "can view logs when view ns is resource owner ns or requester ns",
+			runner:             ownerUID,
+			runNamespace:       ownerUID,
+			viewer:             ownerUID,
+			viewNamespace:      ownerUID,
+			canView:            true,
+			canViewInputOutput: true,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
-			runner:        ownerUID,
-			runNamespace:  ownerUID,
-			viewer:        ownerUID,
-			viewNamespace: namespace1,
-			canView:       false,
+			description:        "cannot view logs when view ns is neither resource owner ns nor requester",
+			runner:             ownerUID,
+			runNamespace:       ownerUID,
+			viewer:             ownerUID,
+			viewNamespace:      namespace1,
+			canView:            false,
+			canViewInputOutput: false,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
-			runner:        ownerUID,
-			runNamespace:  ownerUID,
-			viewer:        user2,
-			viewNamespace: user2,
-			canView:       false,
+			description:        "cannot view logs when view ns is neither resource owner ns nor requester",
+			runner:             ownerUID,
+			runNamespace:       ownerUID,
+			viewer:             user2,
+			viewNamespace:      user2,
+			canView:            false,
+			canViewInputOutput: false,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
-			runner:        ownerUID,
-			runNamespace:  ownerUID,
-			viewer:        user2,
-			viewNamespace: namespace1,
-			canView:       false,
+			description:        "cannot view logs when view ns is neither resource owner ns nor requester",
+			runner:             ownerUID,
+			runNamespace:       ownerUID,
+			viewer:             user2,
+			viewNamespace:      namespace1,
+			canView:            false,
+			canViewInputOutput: false,
 		},
 		{
-			description:   "can view logs when view ns is resource owner ns",
-			runner:        ownerUID,
-			runNamespace:  namespace1,
-			viewer:        ownerUID,
-			viewNamespace: ownerUID,
-			canView:       true,
+			description:        "can view logs when view ns is resource owner ns",
+			runner:             ownerUID,
+			runNamespace:       namespace1,
+			viewer:             ownerUID,
+			viewNamespace:      ownerUID,
+			canView:            true,
+			canViewInputOutput: true,
 		},
 		{
-			description:   "can view logs when view ns is requester",
-			runner:        ownerUID,
-			runNamespace:  namespace1,
-			viewer:        ownerUID,
-			viewNamespace: namespace1,
-			canView:       true,
+			description:        "can view logs when view ns is requester",
+			runner:             ownerUID,
+			runNamespace:       namespace1,
+			viewer:             ownerUID,
+			viewNamespace:      namespace1,
+			canView:            true,
+			canViewInputOutput: true,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
-			runner:        ownerUID,
-			runNamespace:  namespace1,
-			viewer:        user2,
-			viewNamespace: user2,
-			canView:       false,
+			description:        "cannot view logs when view ns is neither resource owner ns nor requester",
+			runner:             ownerUID,
+			runNamespace:       namespace1,
+			viewer:             user2,
+			viewNamespace:      user2,
+			canView:            false,
+			canViewInputOutput: false,
 		},
 		{
-			description:   "can view logs when view ns is requester",
-			runner:        ownerUID,
-			runNamespace:  namespace1,
-			viewer:        user2,
-			viewNamespace: namespace1,
-			canView:       true,
+			description:        "can view logs when view ns is requester",
+			runner:             ownerUID,
+			runNamespace:       namespace1,
+			viewer:             user2,
+			viewNamespace:      namespace1,
+			canView:            true,
+			canViewInputOutput: true,
 		},
 		{
-			description:   "can view logs when view ns is resource owner ns",
-			runner:        user2,
-			runNamespace:  user2,
-			viewer:        ownerUID,
-			viewNamespace: ownerUID,
-			canView:       true,
+			description:        "can view logs when view ns is resource owner ns",
+			runner:             user2,
+			runNamespace:       user2,
+			viewer:             ownerUID,
+			viewNamespace:      ownerUID,
+			canView:            true,
+			canViewInputOutput: true,
 		},
 		{
-			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
-			runner:        user2,
-			runNamespace:  user2,
-			viewer:        ownerUID,
-			viewNamespace: namespace1,
-			canView:       false,
+			description:        "cannot view logs when view ns is neither resource owner ns nor requester",
+			runner:             user2,
+			runNamespace:       user2,
+			viewer:             ownerUID,
+			viewNamespace:      namespace1,
+			canView:            false,
+			canViewInputOutput: false,
 		},
 	}
 
@@ -231,6 +242,13 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			if testCase.canView {
 				c.Check(runs.PipelineRuns, qt.HasLen, 1)
 				c.Check(runs.PipelineRuns[0].RequesterId, qt.Equals, "test-user")
+				if testCase.canViewInputOutput {
+					c.Check(runs.PipelineRuns[0].Inputs, qt.HasLen, 1)
+					c.Check(runs.PipelineRuns[0].Outputs, qt.HasLen, 1)
+				} else {
+					c.Check(runs.PipelineRuns[0].Inputs, qt.HasLen, 0)
+					c.Check(runs.PipelineRuns[0].Outputs, qt.HasLen, 0)
+				}
 			} else {
 				c.Check(runs.PipelineRuns, qt.HasLen, 0)
 			}
