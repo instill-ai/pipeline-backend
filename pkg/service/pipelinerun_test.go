@@ -24,7 +24,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/constant"
-	"github.com/instill-ai/x/minio"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
@@ -51,7 +50,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 	mc := minimock.NewController(t)
 
 	mockUIDs := make([]uuid.UUID, 4)
-	for i := range mockUIDs {
+	for i := range len(mockUIDs) {
 		mockUIDs[i] = uuid.Must(uuid.NewV4())
 	}
 	ownerUID := mockUIDs[0]
@@ -64,103 +63,92 @@ func TestService_ListPipelineRuns(t *testing.T) {
 	pipelineID := "pipelineID-test"
 
 	testCases := []struct {
-		description        string
-		runner             uuid.UUID
-		runNamespace       uuid.UUID
-		viewer             uuid.UUID
-		viewNamespace      uuid.UUID
-		canView            bool
-		canViewInputOutput bool
+		description   string
+		runner        uuid.UUID
+		runNamespace  uuid.UUID
+		viewer        uuid.UUID
+		viewNamespace uuid.UUID
+		canView       bool
 	}{
 		{
-			description:        "can view logs when view ns is resource owner ns or requester ns",
-			runner:             ownerUID,
-			runNamespace:       ownerUID,
-			viewer:             ownerUID,
-			viewNamespace:      ownerUID,
-			canView:            true,
-			canViewInputOutput: true,
+			description:   "can view logs when view ns is resource owner ns or requester ns",
+			runner:        ownerUID,
+			runNamespace:  ownerUID,
+			viewer:        ownerUID,
+			viewNamespace: ownerUID,
+			canView:       true,
 		},
 		{
-			description:        "cannot view logs when view ns is neither resource owner ns nor requester",
-			runner:             ownerUID,
-			runNamespace:       ownerUID,
-			viewer:             ownerUID,
-			viewNamespace:      namespace1,
-			canView:            false,
-			canViewInputOutput: false,
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
+			runner:        ownerUID,
+			runNamespace:  ownerUID,
+			viewer:        ownerUID,
+			viewNamespace: namespace1,
+			canView:       false,
 		},
 		{
-			description:        "cannot view logs when view ns is neither resource owner ns nor requester",
-			runner:             ownerUID,
-			runNamespace:       ownerUID,
-			viewer:             user2,
-			viewNamespace:      user2,
-			canView:            false,
-			canViewInputOutput: false,
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
+			runner:        ownerUID,
+			runNamespace:  ownerUID,
+			viewer:        user2,
+			viewNamespace: user2,
+			canView:       false,
 		},
 		{
-			description:        "cannot view logs when view ns is neither resource owner ns nor requester",
-			runner:             ownerUID,
-			runNamespace:       ownerUID,
-			viewer:             user2,
-			viewNamespace:      namespace1,
-			canView:            false,
-			canViewInputOutput: false,
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
+			runner:        ownerUID,
+			runNamespace:  ownerUID,
+			viewer:        user2,
+			viewNamespace: namespace1,
+			canView:       false,
 		},
 		{
-			description:        "can view logs when view ns is resource owner ns",
-			runner:             ownerUID,
-			runNamespace:       namespace1,
-			viewer:             ownerUID,
-			viewNamespace:      ownerUID,
-			canView:            true,
-			canViewInputOutput: true,
+			description:   "can view logs when view ns is resource owner ns",
+			runner:        ownerUID,
+			runNamespace:  namespace1,
+			viewer:        ownerUID,
+			viewNamespace: ownerUID,
+			canView:       true,
 		},
 		{
-			description:        "can view logs when view ns is requester",
-			runner:             ownerUID,
-			runNamespace:       namespace1,
-			viewer:             ownerUID,
-			viewNamespace:      namespace1,
-			canView:            true,
-			canViewInputOutput: true,
+			description:   "can view logs when view ns is requester",
+			runner:        ownerUID,
+			runNamespace:  namespace1,
+			viewer:        ownerUID,
+			viewNamespace: namespace1,
+			canView:       true,
 		},
 		{
-			description:        "cannot view logs when view ns is neither resource owner ns nor requester",
-			runner:             ownerUID,
-			runNamespace:       namespace1,
-			viewer:             user2,
-			viewNamespace:      user2,
-			canView:            false,
-			canViewInputOutput: false,
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
+			runner:        ownerUID,
+			runNamespace:  namespace1,
+			viewer:        user2,
+			viewNamespace: user2,
+			canView:       false,
 		},
 		{
-			description:        "can view logs when view ns is requester",
-			runner:             ownerUID,
-			runNamespace:       namespace1,
-			viewer:             user2,
-			viewNamespace:      namespace1,
-			canView:            true,
-			canViewInputOutput: false,
+			description:   "can view logs when view ns is requester",
+			runner:        ownerUID,
+			runNamespace:  namespace1,
+			viewer:        user2,
+			viewNamespace: namespace1,
+			canView:       true,
 		},
 		{
-			description:        "can view logs when view ns is resource owner ns",
-			runner:             user2,
-			runNamespace:       user2,
-			viewer:             ownerUID,
-			viewNamespace:      ownerUID,
-			canView:            true,
-			canViewInputOutput: false,
+			description:   "can view logs when view ns is resource owner ns",
+			runner:        user2,
+			runNamespace:  user2,
+			viewer:        ownerUID,
+			viewNamespace: ownerUID,
+			canView:       true,
 		},
 		{
-			description:        "cannot view logs when view ns is neither resource owner ns nor requester",
-			runner:             user2,
-			runNamespace:       user2,
-			viewer:             ownerUID,
-			viewNamespace:      namespace1,
-			canView:            false,
-			canViewInputOutput: false,
+			description:   "cannot view logs when view ns is neither resource owner ns nor requester",
+			runner:        user2,
+			runNamespace:  user2,
+			viewer:        ownerUID,
+			viewNamespace: namespace1,
+			canView:       false,
 		},
 	}
 
@@ -179,10 +167,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 
 	mockMinio := miniomock.NewClientMock(mc)
 	mockMinio.WithLoggerMock.Return(mockMinio)
-	mockMinio.GetFilesByPathsMock.Return([]minio.FileContent{
-		{Name: "test-input-ref", Content: []byte(`[{"key": "input-value"}]`)},
-		{Name: "test-output-ref", Content: []byte(`[{"key": "output-value"}]`)},
-	}, nil)
+	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some errors"))
 
 	for i, testCase := range testCases {
 		c.Run(fmt.Sprintf("get pipeline run with permissions test case %d %s", i+1, testCase.description), func(c *qt.C) {
@@ -226,12 +211,6 @@ func TestService_ListPipelineRuns(t *testing.T) {
 				RunnerUID:          testCase.runner,
 				RequesterUID:       testCase.runNamespace,
 				StartedTime:        time.Now(),
-				Inputs: datamodel.JSONB{
-					{Name: "test-input-ref", Type: "application/json", Size: 100, URL: "test-input-url"},
-				},
-				Outputs: datamodel.JSONB{
-					{Name: "test-output-ref", Type: "application/json", Size: 200, URL: "test-output-url"},
-				},
 			}
 
 			err = repo.UpsertPipelineRun(ctx, pipelineRun)
@@ -253,13 +232,6 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			if testCase.canView {
 				c.Check(runs.PipelineRuns, qt.HasLen, 1)
 				c.Check(runs.PipelineRuns[0].RequesterId, qt.Equals, "test-user")
-				if testCase.canViewInputOutput {
-					c.Check(runs.PipelineRuns[0].Inputs, qt.HasLen, 1)
-					c.Check(runs.PipelineRuns[0].Outputs, qt.HasLen, 1)
-				} else {
-					c.Check(runs.PipelineRuns[0].Inputs, qt.HasLen, 0)
-					c.Check(runs.PipelineRuns[0].Outputs, qt.HasLen, 0)
-				}
 			} else {
 				c.Check(runs.PipelineRuns, qt.HasLen, 0)
 			}
@@ -272,7 +244,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 	mc := minimock.NewController(t)
 
 	mockUIDs := make([]uuid.UUID, 6)
-	for i := range mockUIDs {
+	for i := range len(mockUIDs) {
 		mockUIDs[i] = uuid.Must(uuid.NewV4())
 	}
 	orgUID := mockUIDs[0]
@@ -407,10 +379,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 
 	mockMinio := miniomock.NewClientMock(mc)
 	mockMinio.WithLoggerMock.Return(mockMinio)
-	mockMinio.GetFilesByPathsMock.Return([]minio.FileContent{
-		{Name: "test-input-ref", Content: []byte(`[{"key": "input-value"}]`)},
-		{Name: "test-output-ref", Content: []byte(`[{"key": "output-value"}]`)},
-	}, nil)
+	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some error happens"))
 
 	for i, testCase := range testCases {
 		c.Run(fmt.Sprintf("get pipeline run with permissions test case %d %s", i+1, testCase.description), func(c *qt.C) {
