@@ -100,7 +100,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 
 	var referenceIDs []string
 	for _, pipelineRun := range pipelineRuns {
-		if canViewPrivateData(pipelineRun.RequesterUID, requesterUID) {
+		if canViewPrivateData(pipelineRun.RunnerUID, userUID) {
 			for _, input := range pipelineRun.Inputs {
 				referenceIDs = append(referenceIDs, input.Name)
 			}
@@ -152,7 +152,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 			pbRun.RequesterId = *requesterID
 		}
 
-		if canViewPrivateData(run.RequesterUID, requesterUID) {
+		if canViewPrivateData(run.RunnerUID, userUID) {
 			if len(run.Inputs) == 1 {
 				key := run.Inputs[0].Name
 				pbRun.Inputs, err = parseMetadataToStructArray(metadataMap, key)
@@ -224,7 +224,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 
 	var referenceIDs []string
 	for _, pipelineRun := range componentRuns {
-		if canViewPrivateData(dbPipelineRun.RequesterUID, requesterUID) {
+		if canViewPrivateData(dbPipelineRun.RunnerUID, userUID) {
 			for _, input := range pipelineRun.Inputs {
 				referenceIDs = append(referenceIDs, input.Name)
 			}
@@ -254,7 +254,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 			return nil, fmt.Errorf("failed to convert component run: %w", err)
 		}
 
-		if canViewPrivateData(dbPipelineRun.RequesterUID, requesterUID) {
+		if canViewPrivateData(dbPipelineRun.RunnerUID, userUID) {
 			if len(run.Inputs) == 1 {
 				key := run.Inputs[0].Name
 				pbRun.Inputs, err = parseMetadataToStructArray(metadataMap, key)
