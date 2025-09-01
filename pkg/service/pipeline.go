@@ -1119,7 +1119,7 @@ func (s *service) preTriggerPipeline(
 				}
 			case "image", "image/*":
 				if v == nil {
-					variable[k], err = data.NewImageFromURL(ctx, s.binaryFetcher, defaultValueMap[k].(string))
+					variable[k], err = data.NewImageFromURL(ctx, s.binaryFetcher, defaultValueMap[k].(string), false)
 					if err != nil {
 						return err
 					}
@@ -1128,7 +1128,7 @@ func (s *service) preTriggerPipeline(
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
 						return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, v)
 					}
-					variable[k], err = data.NewImageFromURL(ctx, s.binaryFetcher, v.GetStringValue())
+					variable[k], err = data.NewImageFromURL(ctx, s.binaryFetcher, v.GetStringValue(), false)
 					if err != nil {
 						return err
 					}
@@ -1139,7 +1139,7 @@ func (s *service) preTriggerPipeline(
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					arrayWithURL := make([]any, len(defaultValueMap[k].([]any)))
 					for i, val := range defaultValueMap[k].([]any) {
-						array[i], err = data.NewImageFromURL(ctx, s.binaryFetcher, val.(string))
+						array[i], err = data.NewImageFromURL(ctx, s.binaryFetcher, val.(string), false)
 						if err != nil {
 							return err
 						}
@@ -1154,7 +1154,7 @@ func (s *service) preTriggerPipeline(
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
 							return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, val)
 						}
-						array[i], err = data.NewImageFromURL(ctx, s.binaryFetcher, val.GetStringValue())
+						array[i], err = data.NewImageFromURL(ctx, s.binaryFetcher, val.GetStringValue(), false)
 						if err != nil {
 							return err
 						}
@@ -1165,7 +1165,7 @@ func (s *service) preTriggerPipeline(
 				}
 			case "audio", "audio/*":
 				if v == nil {
-					variable[k], err = data.NewAudioFromURL(ctx, s.binaryFetcher, defaultValueMap[k].(string))
+					variable[k], err = data.NewAudioFromURL(ctx, s.binaryFetcher, defaultValueMap[k].(string), false)
 					if err != nil {
 						return err
 					}
@@ -1174,7 +1174,7 @@ func (s *service) preTriggerPipeline(
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
 						return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, v)
 					}
-					variable[k], err = data.NewAudioFromURL(ctx, s.binaryFetcher, v.GetStringValue())
+					variable[k], err = data.NewAudioFromURL(ctx, s.binaryFetcher, v.GetStringValue(), false)
 					if err != nil {
 						return err
 					}
@@ -1185,7 +1185,7 @@ func (s *service) preTriggerPipeline(
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					arrayWithURL := make([]any, len(defaultValueMap[k].([]any)))
 					for i, val := range defaultValueMap[k].([]any) {
-						array[i], err = data.NewAudioFromURL(ctx, s.binaryFetcher, val.(string))
+						array[i], err = data.NewAudioFromURL(ctx, s.binaryFetcher, val.(string), false)
 						if err != nil {
 							return err
 						}
@@ -1200,7 +1200,7 @@ func (s *service) preTriggerPipeline(
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
 							return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, val)
 						}
-						array[i], err = data.NewAudioFromURL(ctx, s.binaryFetcher, val.GetStringValue())
+						array[i], err = data.NewAudioFromURL(ctx, s.binaryFetcher, val.GetStringValue(), false)
 						if err != nil {
 							return err
 						}
@@ -1211,7 +1211,7 @@ func (s *service) preTriggerPipeline(
 				}
 			case "video", "video/*":
 				if v == nil {
-					variable[k], err = data.NewVideoFromURL(ctx, s.binaryFetcher, defaultValueMap[k].(string))
+					variable[k], err = data.NewVideoFromURL(ctx, s.binaryFetcher, defaultValueMap[k].(string), false)
 					if err != nil {
 						return err
 					}
@@ -1220,7 +1220,7 @@ func (s *service) preTriggerPipeline(
 					if _, ok := v.Kind.(*structpb.Value_StringValue); !ok {
 						return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, v)
 					}
-					variable[k], err = data.NewVideoFromURL(ctx, s.binaryFetcher, v.GetStringValue())
+					variable[k], err = data.NewVideoFromURL(ctx, s.binaryFetcher, v.GetStringValue(), false)
 					if err != nil {
 						return err
 					}
@@ -1231,7 +1231,7 @@ func (s *service) preTriggerPipeline(
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					arrayWithURL := make([]any, len(defaultValueMap[k].([]any)))
 					for i, val := range defaultValueMap[k].([]any) {
-						array[i], err = data.NewVideoFromURL(ctx, s.binaryFetcher, val.(string))
+						array[i], err = data.NewVideoFromURL(ctx, s.binaryFetcher, val.(string), false)
 						if err != nil {
 							return err
 						}
@@ -1246,7 +1246,7 @@ func (s *service) preTriggerPipeline(
 						if _, ok := val.Kind.(*structpb.Value_StringValue); !ok {
 							return fmt.Errorf("%w: invalid string value: %v", errorsx.ErrInvalidArgument, val)
 						}
-						array[i], err = data.NewVideoFromURL(ctx, s.binaryFetcher, val.GetStringValue())
+						array[i], err = data.NewVideoFromURL(ctx, s.binaryFetcher, val.GetStringValue(), false)
 						if err != nil {
 							return err
 						}

@@ -48,7 +48,7 @@ func TestComponent_ExecuteImageFromText(t *testing.T) {
 	bc := base.Component{}
 	cmp := Init(bc).WithInstillCredentials(map[string]any{"apikey": instillSecret})
 
-	img, err := data.NewImageFromBytes(dog, "image/png", "")
+	img, err := data.NewImageFromBytes(dog, "image/png", "", true)
 	c.Assert(err, qt.IsNil)
 
 	okResp := fmt.Sprintf(`
@@ -194,7 +194,7 @@ func TestComponent_ExecuteImageFromImage(t *testing.T) {
 	bc := base.Component{}
 	cmp := Init(bc).WithInstillCredentials(map[string]any{"apikey": instillSecret})
 
-	img, err := data.NewImageFromBytes(dog, "image/png", "")
+	img, err := data.NewImageFromBytes(dog, "image/png", "", true)
 	c.Assert(err, qt.IsNil)
 
 	okResp := fmt.Sprintf(`

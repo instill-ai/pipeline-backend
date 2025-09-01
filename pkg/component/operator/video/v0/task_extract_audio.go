@@ -53,7 +53,7 @@ func extractAudio(ctx context.Context, job *base.Job) error {
 		return fmt.Errorf("reading audio file: %w", err)
 	}
 
-	audioData, err := data.NewAudioFromBytes(audioBytes, "audio/ogg", fmt.Sprintf("audio-%s.ogg", uuid.New().String()))
+	audioData, err := data.NewAudioFromBytes(audioBytes, data.OGG, fmt.Sprintf("audio-%s.ogg", uuid.New().String()), true)
 	if err != nil {
 		return fmt.Errorf("creating audio data: %w", err)
 	}

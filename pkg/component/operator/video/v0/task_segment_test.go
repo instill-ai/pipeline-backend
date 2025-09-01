@@ -60,7 +60,7 @@ func TestSegment(t *testing.T) {
 					if err != nil {
 						return err
 					}
-					video, err := data.NewVideoFromBytes(videoBytes, "video/mp4", tc.videoFile)
+					video, err := data.NewVideoFromBytes(videoBytes, data.MP4, tc.videoFile, true)
 					if err != nil {
 						return err
 					}
@@ -95,7 +95,7 @@ func TestSegment(t *testing.T) {
 						expectedFile := fmt.Sprintf("testdata/video-segment-%d.mp4", i)
 						expectedBytes, err := os.ReadFile(expectedFile)
 						c.Assert(err, qt.IsNil)
-						expectedVideo, err := data.NewVideoFromBytes(expectedBytes, "video/mp4", expectedFile)
+						expectedVideo, err := data.NewVideoFromBytes(expectedBytes, data.MP4, expectedFile, true)
 						c.Assert(err, qt.IsNil)
 						compareVideo(c, actualOutput.VideoSegments[i], expectedVideo)
 					}

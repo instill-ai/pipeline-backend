@@ -39,7 +39,7 @@ func segment(ctx context.Context, job *base.Job) error {
 		if err != nil {
 			return err
 		}
-		ad, err := data.NewAudioFromBytes(encSeg, "audio/wav", fmt.Sprintf("audio-segment-%d.wav", i))
+		ad, err := data.NewAudioFromBytes(encSeg, "audio/wav", fmt.Sprintf("audio-segment-%d.wav", i), true)
 		if err != nil {
 			return err
 		}

@@ -35,7 +35,7 @@ func createTestImage(c *qt.C, width, height int, color color.Color) format.Image
 	if err != nil {
 		c.Assert(err, qt.IsNil)
 	}
-	imgData, err := data.NewImageFromBytes(buf.Bytes(), "image/png", fmt.Sprintf("image-%s.png", uuid.New().String()))
+	imgData, err := data.NewImageFromBytes(buf.Bytes(), data.PNG, fmt.Sprintf("image-%s.png", uuid.New().String()), true)
 	if err != nil {
 		c.Assert(err, qt.IsNil)
 	}
@@ -48,7 +48,7 @@ func compareTestImage(c *qt.C, img format.Image, name string) {
 	expectedImageBytes, err := testdata.ReadFile(filename)
 	c.Assert(err, qt.IsNil)
 
-	expectedImage, err := data.NewImageFromBytes(expectedImageBytes, "image/jpeg", filename)
+	expectedImage, err := data.NewImageFromBytes(expectedImageBytes, data.PNG, filename, true)
 	c.Assert(err, qt.IsNil)
 	converted, err := img.Convert("image/jpeg")
 	c.Assert(err, qt.IsNil)

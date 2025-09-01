@@ -473,7 +473,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			return
 		}
 
-		audio, err := data.NewAudioFromBytes(resp.Body(), "audio/wav", "")
+		audio, err := data.NewAudioFromBytes(resp.Body(), "audio/wav", "", true)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
@@ -521,7 +521,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 				job.Error.Error(ctx, err)
 				return
 			}
-			img, err := data.NewImageFromBytes(b, data.PNG, "")
+			img, err := data.NewImageFromBytes(b, data.PNG, "", true)
 			if err != nil {
 				job.Error.Error(ctx, err)
 				return

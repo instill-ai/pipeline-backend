@@ -54,7 +54,7 @@ func TestExtractAudio(t *testing.T) {
 					if err != nil {
 						return err
 					}
-					video, err := data.NewVideoFromBytes(videoBytes, "video/mp4", tc.videoFile)
+					video, err := data.NewVideoFromBytes(videoBytes, data.MP4, tc.videoFile, true)
 					if err != nil {
 						return err
 					}
@@ -74,7 +74,7 @@ func TestExtractAudio(t *testing.T) {
 				if err != nil {
 					return err
 				}
-				expectedAudio, err := data.NewAudioFromBytes(expectedAudioBytes, "audio/ogg", tc.wantAudio)
+				expectedAudio, err := data.NewAudioFromBytes(expectedAudioBytes, data.OGG, tc.wantAudio, true)
 				if err != nil {
 					return err
 				}

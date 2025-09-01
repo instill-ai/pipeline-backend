@@ -165,7 +165,7 @@ func extractFramesWithFFmpeg(video format.Video) ([]format.Image, error) {
 			return nil, fmt.Errorf("reading frame file: %w", err)
 		}
 
-		frame, err := data.NewImageFromBytes(frameBytes, "image/png", file.Name())
+		frame, err := data.NewImageFromBytes(frameBytes, data.PNG, file.Name(), true)
 		if err != nil {
 			return nil, fmt.Errorf("creating image data: %w", err)
 		}
