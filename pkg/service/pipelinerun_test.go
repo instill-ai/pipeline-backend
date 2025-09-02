@@ -29,7 +29,7 @@ import (
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
-	miniomock "github.com/instill-ai/x/mock"
+	miniomock "github.com/instill-ai/x/mock/minio"
 )
 
 var db *gorm.DB
@@ -166,6 +166,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 	}, nil)
 
 	mockMinio := miniomock.NewClientMock(mc)
+	mockMinio.WithLoggerMock.Return(mockMinio)
 	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some errors"))
 
 	for i, testCase := range testCases {
@@ -377,6 +378,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 	}, nil)
 
 	mockMinio := miniomock.NewClientMock(mc)
+	mockMinio.WithLoggerMock.Return(mockMinio)
 	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some error happens"))
 
 	for i, testCase := range testCases {
