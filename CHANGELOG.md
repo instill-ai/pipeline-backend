@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.59.1](https://github.com/instill-ai/pipeline-backend/compare/v0.59.0...v0.59.1) (2025-09-02)
+
+
+### Bug Fixes
+
+* **log:** fix permission check for run logs ([#1076](https://github.com/instill-ai/pipeline-backend/issues/1076)) ([0757c79](https://github.com/instill-ai/pipeline-backend/commit/0757c7986d03ed6eed18b85b9b7b09a6c19cf64f))
+* **type,document:** fix .doc OLE format ([#1075](https://github.com/instill-ai/pipeline-backend/issues/1075)) ([f541948](https://github.com/instill-ai/pipeline-backend/commit/f541948e2f58eee22e8a25e71080041e7ade832b))
+
+
+### Documentation
+
+* **component:** fix broken links ([#1074](https://github.com/instill-ai/pipeline-backend/issues/1074)) ([0dafd56](https://github.com/instill-ai/pipeline-backend/commit/0dafd56ccb5be7a31e1659c824a1b561bb00302f))
+
 ## [0.59.0](https://github.com/instill-ai/pipeline-backend/compare/v0.58.4...v0.59.0) (2025-08-26)
 
 
