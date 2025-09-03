@@ -48,29 +48,34 @@ var audioGetter = map[string]func(*audioData) (format.Value, error){
 	"aiff":        func(a *audioData) (format.Value, error) { return a.Convert(AIFF) },
 }
 
-func NewAudioFromBytes(b []byte, contentType, filename string) (*audioData, error) {
-	return createAudioData(b, contentType, filename)
+func NewAudioFromBytes(b []byte, contentType, filename string, isUnified bool) (*audioData, error) {
+	return createAudioData(b, contentType, filename, isUnified)
 }
 
-func NewAudioFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string) (video *audioData, err error) {
+func NewAudioFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string, isUnified bool) (video *audioData, err error) {
 	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, url)
 	if err != nil {
 		return nil, err
 	}
-	return createAudioData(b, contentType, filename)
+	return createAudioData(b, contentType, filename, isUnified)
 }
 
-func createAudioData(b []byte, contentType, filename string) (*audioData, error) {
-	if contentType != OGG {
-		var err error
-		b, err = convertAudio(b, contentType, OGG)
-		if err != nil {
-			return nil, err
+func createAudioData(b []byte, contentType, filename string, isUnified bool) (*audioData, error) {
+	finalContentType := contentType
+
+	// If the audio should be unified, convert it to OGG (the internal unified audio format)
+	if isUnified {
+		if contentType != OGG {
+			var err error
+			b, err = convertAudio(b, contentType, OGG)
+			if err != nil {
+				return nil, err
+			}
+			finalContentType = OGG
 		}
-		contentType = OGG
 	}
 
-	f, err := NewFileFromBytes(b, contentType, filename)
+	f, err := NewFileFromBytes(b, finalContentType, filename)
 	if err != nil {
 		return nil, err
 	}

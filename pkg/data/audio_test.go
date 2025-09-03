@@ -40,7 +40,7 @@ func TestNewAudioFromBytes(t *testing.T) {
 				c.Assert(err, qt.IsNil)
 			}
 
-			audio, err := NewAudioFromBytes(audioBytes, tc.contentType, tc.filename)
+			audio, err := NewAudioFromBytes(audioBytes, tc.contentType, tc.filename, true)
 
 			if tc.contentType == "" {
 				c.Assert(err, qt.Not(qt.IsNil))
@@ -71,7 +71,7 @@ func TestNewAudioFromURL(t *testing.T) {
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *qt.C) {
-			audio, err := NewAudioFromURL(ctx, binaryFetcher, tc.url)
+			audio, err := NewAudioFromURL(ctx, binaryFetcher, tc.url, true)
 
 			if tc.name == "Valid audio URL" {
 				c.Assert(err, qt.IsNil)
@@ -104,7 +104,7 @@ func TestAudioProperties(t *testing.T) {
 			audioBytes, err := os.ReadFile("testdata/" + tc.filename)
 			c.Assert(err, qt.IsNil)
 
-			audio, err := NewAudioFromBytes(audioBytes, tc.contentType, tc.filename)
+			audio, err := NewAudioFromBytes(audioBytes, tc.contentType, tc.filename, true)
 			c.Assert(err, qt.IsNil)
 
 			c.Assert(audio.ContentType().String(), qt.Equals, "audio/ogg")
@@ -134,7 +134,7 @@ func TestAudioConvert(t *testing.T) {
 			audioBytes, err := os.ReadFile("testdata/" + tc.filename)
 			c.Assert(err, qt.IsNil)
 
-			audio, err := NewAudioFromBytes(audioBytes, tc.contentType, tc.filename)
+			audio, err := NewAudioFromBytes(audioBytes, tc.contentType, tc.filename, true)
 			c.Assert(err, qt.IsNil)
 
 			convertedAudio, err := audio.Convert(tc.expectedFormat)
@@ -154,10 +154,68 @@ func TestAudioConvert(t *testing.T) {
 		audioBytes, err := os.ReadFile("testdata/sample1.wav")
 		c.Assert(err, qt.IsNil)
 
-		audio, err := NewAudioFromBytes(audioBytes, "audio/wav", "sample1.wav")
+		audio, err := NewAudioFromBytes(audioBytes, "audio/wav", "sample1.wav", true)
 		c.Assert(err, qt.IsNil)
 
 		_, err = audio.Convert("invalid_format")
 		c.Assert(err, qt.Not(qt.IsNil))
+	})
+}
+
+func TestNewAudioFromBytesUnified(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	testCases := []struct {
+		name        string
+		filename    string
+		contentType string
+		duration    float64
+	}{
+		{"WAV as unified", "sample1.wav", "audio/wav", 122.093},
+		{"MP3 as unified", "sample1.mp3", "audio/mpeg", 122.093},
+		{"OGG as unified", "sample1.ogg", "audio/ogg", 122.093},
+	}
+
+	for _, tc := range testCases {
+		c.Run(tc.name, func(c *qt.C) {
+			audioBytes, err := os.ReadFile("testdata/" + tc.filename)
+			c.Assert(err, qt.IsNil)
+
+			// Test as unified (should convert to OGG)
+			audio, err := NewAudioFromBytes(audioBytes, tc.contentType, tc.filename, true)
+			c.Assert(err, qt.IsNil)
+			c.Assert(audio.ContentType().String(), qt.Equals, "audio/ogg")
+			c.Assert(audio.Duration().Float64(), qt.CmpEquals(cmpopts.EquateApprox(0, 0.1)), tc.duration)
+
+			// Test as non-unified (should preserve original format)
+			audioOriginal, err := NewAudioFromBytes(audioBytes, tc.contentType, tc.filename, false)
+			c.Assert(err, qt.IsNil)
+			c.Assert(audioOriginal.ContentType().String(), qt.Equals, tc.contentType)
+			c.Assert(audioOriginal.Duration().Float64(), qt.CmpEquals(cmpopts.EquateApprox(0, 0.1)), tc.duration)
+		})
+	}
+}
+
+func TestNewAudioFromURLUnified(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	ctx := context.Background()
+	binaryFetcher := external.NewBinaryFetcher()
+	validURL := "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample1.wav"
+
+	c.Run("Unified converts to OGG", func(c *qt.C) {
+		audio, err := NewAudioFromURL(ctx, binaryFetcher, validURL, true)
+		c.Assert(err, qt.IsNil)
+		// Should convert to OGG (internal unified format)
+		c.Assert(audio.ContentType().String(), qt.Equals, "audio/ogg")
+	})
+
+	c.Run("Non-unified preserves original format", func(c *qt.C) {
+		audio, err := NewAudioFromURL(ctx, binaryFetcher, validURL, false)
+		c.Assert(err, qt.IsNil)
+		// Should preserve original format (WAV in this case)
+		c.Assert(audio.ContentType().String(), qt.Equals, "audio/wav")
 	})
 }

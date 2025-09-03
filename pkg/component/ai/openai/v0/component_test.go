@@ -127,7 +127,7 @@ func TestComponent_Execute(t *testing.T) {
 				// Set up the input based on the task
 				switch tc.task {
 				case SpeechRecognitionTask:
-					input.(*taskSpeechRecognitionInput).Audio, err = data.NewAudioFromBytes(sample1Wav, "audio/wav", "sample1.wav")
+					input.(*taskSpeechRecognitionInput).Audio, err = data.NewAudioFromBytes(sample1Wav, "audio/wav", "sample1.wav", true)
 					c.Assert(err, qt.IsNil)
 				}
 				return nil

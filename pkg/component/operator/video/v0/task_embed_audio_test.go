@@ -56,7 +56,7 @@ func TestEmbedAudio(t *testing.T) {
 					if err != nil {
 						return err
 					}
-					video, err := data.NewVideoFromBytes(videoBytes, "video/mp4", tc.videoFile)
+					video, err := data.NewVideoFromBytes(videoBytes, data.MP4, tc.videoFile, true)
 					if err != nil {
 						return err
 					}
@@ -64,7 +64,7 @@ func TestEmbedAudio(t *testing.T) {
 					if err != nil {
 						return err
 					}
-					audio, err := data.NewAudioFromBytes(audioBytes, "audio/ogg", tc.audioFile)
+					audio, err := data.NewAudioFromBytes(audioBytes, data.OGG, tc.audioFile, true)
 					if err != nil {
 						return err
 					}
@@ -85,7 +85,7 @@ func TestEmbedAudio(t *testing.T) {
 				if err != nil {
 					return err
 				}
-				expectedVideo, err := data.NewVideoFromBytes(expectedVideoBytes, "video/mp4", tc.wantVideo)
+				expectedVideo, err := data.NewVideoFromBytes(expectedVideoBytes, data.MP4, tc.wantVideo, true)
 				if err != nil {
 					return err
 				}

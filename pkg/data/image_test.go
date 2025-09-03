@@ -38,7 +38,7 @@ func TestNewImageFromBytes(t *testing.T) {
 				c.Assert(err, qt.IsNil)
 			}
 
-			image, err := NewImageFromBytes(imageBytes, tc.contentType, tc.filename)
+			image, err := NewImageFromBytes(imageBytes, tc.contentType, tc.filename, true)
 
 			if tc.contentType == "" {
 				c.Assert(err, qt.Not(qt.IsNil))
@@ -49,6 +49,44 @@ func TestNewImageFromBytes(t *testing.T) {
 			c.Assert(image.ContentType().String(), qt.Equals, "image/png")
 			c.Assert(image.Width().Integer(), qt.Equals, tc.width)
 			c.Assert(image.Height().Integer(), qt.Equals, tc.height)
+		})
+	}
+}
+
+func TestNewImageFromBytesUnified(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	testCases := []struct {
+		name        string
+		filename    string
+		contentType string
+		width       int
+		height      int
+	}{
+		{"PNG as unified", "sample_640_426.png", "image/png", 640, 426},
+		{"JPEG as unified", "sample_640_426.jpeg", "image/jpeg", 640, 426},
+		{"TIFF as unified", "sample_640_426.tiff", "image/tiff", 640, 426},
+	}
+
+	for _, tc := range testCases {
+		c.Run(tc.name, func(c *qt.C) {
+			imageBytes, err := os.ReadFile("testdata/" + tc.filename)
+			c.Assert(err, qt.IsNil)
+
+			// Test as unified (should convert to PNG)
+			image, err := NewImageFromBytes(imageBytes, tc.contentType, tc.filename, true)
+			c.Assert(err, qt.IsNil)
+			c.Assert(image.ContentType().String(), qt.Equals, "image/png")
+			c.Assert(image.Width().Integer(), qt.Equals, tc.width)
+			c.Assert(image.Height().Integer(), qt.Equals, tc.height)
+
+			// Test as non-unified (should preserve original format)
+			imageOriginal, err := NewImageFromBytes(imageBytes, tc.contentType, tc.filename, false)
+			c.Assert(err, qt.IsNil)
+			c.Assert(imageOriginal.ContentType().String(), qt.Equals, tc.contentType)
+			c.Assert(imageOriginal.Width().Integer(), qt.Equals, tc.width)
+			c.Assert(imageOriginal.Height().Integer(), qt.Equals, tc.height)
 		})
 	}
 }
@@ -70,7 +108,7 @@ func TestNewImageFromURL(t *testing.T) {
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *qt.C) {
-			image, err := NewImageFromURL(ctx, binaryFetcher, tc.url)
+			image, err := NewImageFromURL(ctx, binaryFetcher, tc.url, true)
 
 			if tc.name == "Valid image URL" {
 				c.Assert(err, qt.IsNil)
@@ -82,6 +120,33 @@ func TestNewImageFromURL(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNewImageFromURLUnified(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	ctx := context.Background()
+	binaryFetcher := external.NewBinaryFetcher()
+	validURL := "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample_640_426.png"
+
+	c.Run("Unified converts to PNG", func(c *qt.C) {
+		image, err := NewImageFromURL(ctx, binaryFetcher, validURL, true)
+		c.Assert(err, qt.IsNil)
+		// Should convert to PNG (internal unified format)
+		c.Assert(image.ContentType().String(), qt.Equals, "image/png")
+		c.Assert(image.Width().Integer(), qt.Equals, 640)
+		c.Assert(image.Height().Integer(), qt.Equals, 426)
+	})
+
+	c.Run("Non-unified preserves original format", func(c *qt.C) {
+		image, err := NewImageFromURL(ctx, binaryFetcher, validURL, false)
+		c.Assert(err, qt.IsNil)
+		// Should preserve original format (PNG in this case)
+		c.Assert(image.ContentType().String(), qt.Equals, "image/png")
+		c.Assert(image.Width().Integer(), qt.Equals, 640)
+		c.Assert(image.Height().Integer(), qt.Equals, 426)
+	})
 }
 
 func TestImageProperties(t *testing.T) {
@@ -105,7 +170,7 @@ func TestImageProperties(t *testing.T) {
 			imageBytes, err := os.ReadFile("testdata/" + tc.filename)
 			c.Assert(err, qt.IsNil)
 
-			image, err := NewImageFromBytes(imageBytes, tc.contentType, tc.filename)
+			image, err := NewImageFromBytes(imageBytes, tc.contentType, tc.filename, true)
 			c.Assert(err, qt.IsNil)
 
 			c.Assert(image.ContentType().String(), qt.Equals, "image/png")
@@ -135,7 +200,7 @@ func TestImageConvert(t *testing.T) {
 			imageBytes, err := os.ReadFile("testdata/" + tc.filename)
 			c.Assert(err, qt.IsNil)
 
-			image, err := NewImageFromBytes(imageBytes, tc.contentType, tc.filename)
+			image, err := NewImageFromBytes(imageBytes, tc.contentType, tc.filename, true)
 			c.Assert(err, qt.IsNil)
 
 			convertedImage, err := image.Convert(tc.expectedFormat)
@@ -156,7 +221,7 @@ func TestImageConvert(t *testing.T) {
 		imageBytes, err := os.ReadFile("testdata/sample_640_426.png")
 		c.Assert(err, qt.IsNil)
 
-		image, err := NewImageFromBytes(imageBytes, "image/png", "sample_640_426.png")
+		image, err := NewImageFromBytes(imageBytes, "image/png", "sample_640_426.png", true)
 		c.Assert(err, qt.IsNil)
 
 		_, err = image.Convert("invalid_format")

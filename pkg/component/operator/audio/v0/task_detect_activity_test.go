@@ -79,7 +79,7 @@ func TestDetectActivity(t *testing.T) {
 			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
 				switch input := input.(type) {
 				case *detectActivityInput:
-					audio, err := data.NewAudioFromBytes(audioData, "audio/wav", "input.wav")
+					audio, err := data.NewAudioFromBytes(audioData, data.WAV, "input.wav", true)
 					c.Assert(err, qt.IsNil)
 					*input = detectActivityInput{
 						Audio:              audio,

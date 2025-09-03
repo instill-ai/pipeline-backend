@@ -161,7 +161,7 @@ func TestUnmarshal(t *testing.T) {
 
 		// Create a new Image from bytes and verify format tag handling
 		// The input is JPEG but NewImageFromBytes will auto convert to PNG.
-		img, err := NewImageFromBytes(imageBytes, "image/jpeg", "sample_640_426.jpeg")
+		img, err := NewImageFromBytes(imageBytes, "image/jpeg", "sample_640_426.jpeg", true)
 		c.Assert(err, qt.IsNil)
 
 		input := Map{
@@ -541,7 +541,7 @@ func TestMarshal(t *testing.T) {
 		imageBytes, err := os.ReadFile("testdata/sample_640_426.jpeg")
 		c.Assert(err, qt.IsNil)
 
-		img, err := NewImageFromBytes(imageBytes, "image/jpeg", "sample_640_426.jpeg")
+		img, err := NewImageFromBytes(imageBytes, "image/jpeg", "sample_640_426.jpeg", true)
 		c.Assert(err, qt.IsNil)
 
 		input := struct {

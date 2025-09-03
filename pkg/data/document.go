@@ -16,19 +16,22 @@ type documentData struct {
 	fileData
 }
 
-const DOC = "application/msword"
-const DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-const PPT = "application/vnd.ms-powerpoint"
-const PPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-const XLS = "application/vnd.ms-excel"
-const XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-const HTML = "text/html"
-const PLAIN = "text/plain"
-const TEXT = "text"
-const MARKDOWN = "text/markdown"
-const CSV = "text/csv"
-const PDF = "application/pdf"
-const OLE = "application/x-ole-storage"
+// Document types
+const (
+	DOC      = "application/msword"
+	DOCX     = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+	PPT      = "application/vnd.ms-powerpoint"
+	PPTX     = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+	XLS      = "application/vnd.ms-excel"
+	XLSX     = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+	HTML     = "text/html"
+	PLAIN    = "text/plain"
+	TEXT     = "text"
+	MARKDOWN = "text/markdown"
+	CSV      = "text/csv"
+	PDF      = "application/pdf"
+	OLE      = "application/x-ole-storage"
+)
 
 var documentGetters = map[string]func(*documentData) (format.Value, error){
 	"text":   func(d *documentData) (format.Value, error) { return d.Text() },
@@ -38,10 +41,12 @@ var documentGetters = map[string]func(*documentData) (format.Value, error){
 
 func (documentData) IsValue() {}
 
+// NewDocumentFromBytes creates a new documentData from a byte slice
 func NewDocumentFromBytes(b []byte, contentType, filename string) (*documentData, error) {
 	return createDocumentData(b, contentType, filename)
 }
 
+// NewDocumentFromURL creates a new documentData from a URL
 func NewDocumentFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string) (*documentData, error) {
 	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, url)
 	if err != nil {
@@ -204,7 +209,7 @@ func (d *documentData) Images() (mp Array, err error) {
 		if err != nil {
 			return nil, err
 		}
-		images[idx], err = NewImageFromBytes(b, PNG, d.filename)
+		images[idx], err = NewImageFromBytes(b, PNG, d.filename, false)
 		if err != nil {
 			return nil, fmt.Errorf("NewImageFromBytes: %w", err)
 		}

@@ -293,11 +293,11 @@ func (u *Unmarshaler) unmarshalString(ctx context.Context, v format.String, fiel
 func (u *Unmarshaler) createFileFromURL(ctx context.Context, t reflect.Type, url string) (format.Value, error) {
 	switch t {
 	case reflect.TypeOf((*format.Image)(nil)).Elem():
-		return NewImageFromURL(ctx, u.binaryFetcher, url)
+		return NewImageFromURL(ctx, u.binaryFetcher, url, true)
 	case reflect.TypeOf((*format.Audio)(nil)).Elem():
-		return NewAudioFromURL(ctx, u.binaryFetcher, url)
+		return NewAudioFromURL(ctx, u.binaryFetcher, url, true)
 	case reflect.TypeOf((*format.Video)(nil)).Elem():
-		return NewVideoFromURL(ctx, u.binaryFetcher, url)
+		return NewVideoFromURL(ctx, u.binaryFetcher, url, true)
 	case reflect.TypeOf((*format.Document)(nil)).Elem():
 		return NewDocumentFromURL(ctx, u.binaryFetcher, url)
 	case reflect.TypeOf((*format.File)(nil)).Elem():

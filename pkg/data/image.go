@@ -49,27 +49,37 @@ var imageGetters = map[string]func(*imageData) (format.Value, error){
 }
 
 // NewImageFromBytes creates a new imageData from byte slice
-func NewImageFromBytes(b []byte, contentType, filename string) (*imageData, error) {
-	return createImageData(b, contentType, filename)
+func NewImageFromBytes(b []byte, contentType, filename string, isUnified bool) (*imageData, error) {
+	return createImageData(b, contentType, filename, isUnified)
 }
 
 // NewImageFromURL creates a new imageData from a URL
-func NewImageFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string) (*imageData, error) {
+func NewImageFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string, isUnified bool) (*imageData, error) {
 	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, url)
 	if err != nil {
 		return nil, err
 	}
-	return createImageData(b, contentType, filename)
+	return createImageData(b, contentType, filename, isUnified)
 }
 
 // createImageData is a helper function to create imageData
-func createImageData(b []byte, contentType, filename string) (*imageData, error) {
-	b, err := convertImage(b, contentType, PNG)
-	if err != nil {
-		return nil, err
+func createImageData(b []byte, contentType, filename string, isUnified bool) (*imageData, error) {
+
+	var err error
+	finalContentType := contentType
+
+	// If the image should be unified, convert it to PNG (the internal unified image format)
+	if isUnified {
+		if contentType != PNG {
+			b, err = convertImage(b, contentType, PNG)
+			if err != nil {
+				return nil, err
+			}
+			finalContentType = PNG
+		}
 	}
 
-	f, err := NewFileFromBytes(b, PNG, filename)
+	f, err := NewFileFromBytes(b, finalContentType, filename)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +213,7 @@ func (i *imageData) Resize(width, height int) (format.Image, error) {
 	}
 
 	// Create new image data from encoded bytes
-	return NewImageFromBytes(buf.Bytes(), PNG, "")
+	return NewImageFromBytes(buf.Bytes(), PNG, "", false)
 }
 
 // imageData has unexported fields, which cannot be accessed by the regular

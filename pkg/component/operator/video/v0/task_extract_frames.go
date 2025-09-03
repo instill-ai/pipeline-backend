@@ -106,7 +106,7 @@ func extractFramesAtInterval(inputFile string, interval float64) ([]format.Image
 			return nil, fmt.Errorf("reading frame file: %w", err)
 		}
 
-		frame, err := data.NewImageFromBytes(frameBytes, "image/png", file.Name())
+		frame, err := data.NewImageFromBytes(frameBytes, data.PNG, file.Name(), true)
 		if err != nil {
 			return nil, fmt.Errorf("creating image data: %w", err)
 		}
@@ -143,7 +143,7 @@ func extractFramesAtTimestamps(inputFile string, timestamps []float64) ([]format
 			return nil, fmt.Errorf("reading frame file: %w", err)
 		}
 
-		frame, err := data.NewImageFromBytes(frameBytes, "image/png", fmt.Sprintf("frame-%04d.png", i))
+		frame, err := data.NewImageFromBytes(frameBytes, data.PNG, fmt.Sprintf("frame-%04d.png", i), true)
 		if err != nil {
 			return nil, fmt.Errorf("creating image data: %w", err)
 		}

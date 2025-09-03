@@ -65,7 +65,7 @@ func (e *execution) parseImages(strImages []string) []format.Image {
 		if err != nil {
 			e.logger.Error("Failed to decode image from document", zap.Error(err))
 		}
-		images[i], err = data.NewImageFromBytes(b, data.PNG, "")
+		images[i], err = data.NewImageFromBytes(b, data.PNG, "", true)
 		if err != nil {
 			e.logger.Error("Failed to create image data from document", zap.Error(err))
 		}

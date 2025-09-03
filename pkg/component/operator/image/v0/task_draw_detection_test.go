@@ -54,7 +54,7 @@ func TestDrawDetection(t *testing.T) {
 			name:          "Invalid Image",
 			inputJPEG:     []byte("invalid image data"),
 			inputJSON:     detCOCO1JSON,
-			expectedError: "convert image: failed to decode source image: invalid JPEG format: missing SOI marker",
+			expectedError: "error decoding image: image: unknown format",
 		},
 	}
 
@@ -74,7 +74,7 @@ func TestDrawDetection(t *testing.T) {
 			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
 				switch input := input.(type) {
 				case *drawDetectionInput:
-					img, err := data.NewImageFromBytes(tc.inputJPEG, "image/jpeg", "test")
+					img, err := data.NewImageFromBytes(tc.inputJPEG, data.PNG, "test", true)
 					if err != nil {
 						return err
 					}

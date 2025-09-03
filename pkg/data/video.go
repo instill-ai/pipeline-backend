@@ -50,28 +50,34 @@ var videoGetters = map[string]func(*videoData) (format.Value, error){
 	"webm":       func(v *videoData) (format.Value, error) { return v.Convert(WEBM) },
 }
 
-func NewVideoFromBytes(b []byte, contentType, filename string) (video *videoData, err error) {
-	return createVideoData(b, contentType, filename)
+func NewVideoFromBytes(b []byte, contentType, filename string, isUnified bool) (video *videoData, err error) {
+	return createVideoData(b, contentType, filename, isUnified)
 }
 
-func NewVideoFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string) (video *videoData, err error) {
+func NewVideoFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string, isUnified bool) (video *videoData, err error) {
 	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, url)
 	if err != nil {
 		return nil, err
 	}
-	return createVideoData(b, contentType, filename)
+	return createVideoData(b, contentType, filename, isUnified)
 }
 
-func createVideoData(b []byte, contentType, filename string) (*videoData, error) {
-	if contentType != MP4 {
-		var err error
-		b, err = convertVideo(b, contentType, MP4)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert video to MP4: %w", err)
+func createVideoData(b []byte, contentType, filename string, isUnified bool) (*videoData, error) {
+	finalContentType := contentType
+
+	// If the video should be unified, convert it to MP4 (the internal unified video format)
+	if isUnified {
+		if contentType != MP4 {
+			var err error
+			b, err = convertVideo(b, contentType, MP4)
+			if err != nil {
+				return nil, fmt.Errorf("failed to convert video to MP4: %w", err)
+			}
+			finalContentType = MP4
 		}
-		contentType = MP4
 	}
-	f, err := NewFileFromBytes(b, contentType, filename)
+
+	f, err := NewFileFromBytes(b, finalContentType, filename)
 	if err != nil {
 		return nil, err
 	}

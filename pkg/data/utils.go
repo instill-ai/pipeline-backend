@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/gabriel-vasile/mimetype"
@@ -32,6 +33,7 @@ func StandardizePath(path string) (newPath string, err error) {
 	}
 	return newPath, err
 }
+
 func NewBinaryFromBytes(b []byte, contentType, filename string) (format.Value, error) {
 	if contentType == "" {
 		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
@@ -42,11 +44,11 @@ func NewBinaryFromBytes(b []byte, contentType, filename string) (format.Value, e
 
 	switch {
 	case isImageContentType(contentType):
-		return NewImageFromBytes(b, contentType, filename)
+		return NewImageFromBytes(b, contentType, filename, true)
 	case isAudioContentType(contentType):
-		return NewAudioFromBytes(b, contentType, filename)
+		return NewAudioFromBytes(b, contentType, filename, true)
 	case isVideoContentType(contentType):
-		return NewVideoFromBytes(b, contentType, filename)
+		return NewVideoFromBytes(b, contentType, filename, true)
 	case isDocumentContentType(contentType):
 		return NewDocumentFromBytes(b, contentType, filename)
 	default:
@@ -54,10 +56,26 @@ func NewBinaryFromBytes(b []byte, contentType, filename string) (format.Value, e
 	}
 }
 
-func NewBinaryFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string) (format.Value, error) {
-	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, url)
+func NewBinaryFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, urlStr string) (format.Value, error) {
+	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, urlStr)
 	if err != nil {
 		return nil, err
+	}
+
+	// If no filename was extracted, try to get it from the URL
+	if filename == "" {
+		if parsedURL, err := url.Parse(urlStr); err == nil {
+			if path := parsedURL.Path; path != "" {
+				// Extract filename from URL path
+				if lastSlash := strings.LastIndex(path, "/"); lastSlash != -1 && lastSlash < len(path)-1 {
+					filename = path[lastSlash+1:]
+					// Remove query parameters if present
+					if questionMark := strings.Index(filename, "?"); questionMark != -1 {
+						filename = filename[:questionMark]
+					}
+				}
+			}
+		}
 	}
 
 	if contentType == "" {
@@ -69,11 +87,11 @@ func NewBinaryFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher,
 
 	switch {
 	case isImageContentType(contentType):
-		return NewImageFromBytes(b, contentType, filename)
+		return NewImageFromBytes(b, contentType, filename, false)
 	case isAudioContentType(contentType):
-		return NewAudioFromBytes(b, contentType, filename)
+		return NewAudioFromBytes(b, contentType, filename, true)
 	case isVideoContentType(contentType):
-		return NewVideoFromBytes(b, contentType, filename)
+		return NewVideoFromBytes(b, contentType, filename, true)
 	case isDocumentContentType(contentType):
 		return NewDocumentFromBytes(b, contentType, filename)
 	default:

@@ -75,7 +75,7 @@ func TestExtractFrames(t *testing.T) {
 					if err != nil {
 						return err
 					}
-					video, err := data.NewVideoFromBytes(videoBytes, "video/mp4", tc.videoFile)
+					video, err := data.NewVideoFromBytes(videoBytes, data.MP4, tc.videoFile, true)
 					if err != nil {
 						return err
 					}
@@ -99,7 +99,7 @@ func TestExtractFrames(t *testing.T) {
 					if err != nil {
 						return err
 					}
-					expectedFrame, err := data.NewImageFromBytes(expectedFrameBytes, "image/png", wantFrame)
+					expectedFrame, err := data.NewImageFromBytes(expectedFrameBytes, data.PNG, wantFrame, true)
 					if err != nil {
 						return err
 					}

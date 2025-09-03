@@ -18,6 +18,7 @@ import (
 )
 
 const (
+	// OCTETSTREAM is a MIME type for binary data.
 	OCTETSTREAM = "application/octet-stream"
 )
 
@@ -40,6 +41,9 @@ type fileData struct {
 
 func (fileData) IsValue() {}
 
+// NewFileFromBytes creates a new fileData from a byte slice.
+// If the contentType is not provided, it will be detected from the byte slice.
+// If the filename is not provided, it will be generated from the byte slice.
 func NewFileFromBytes(b []byte, contentType, filename string) (bin *fileData, err error) {
 	if contentType == "" {
 		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
@@ -59,11 +63,16 @@ func NewFileFromBytes(b []byte, contentType, filename string) (bin *fileData, er
 	return f, nil
 }
 
+// NewFileFromURL creates a new fileData from a URL.
+// The binaryFetcher is used to fetch the binary data from the URL.
+// If the contentType is not provided, it will be detected from the byte slice.
+// If the filename is not provided, it will be generated from the byte slice.
 func NewFileFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string) (bin *fileData, err error) {
 	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, url)
 	if err != nil {
 		return nil, err
 	}
+
 	bin, err = NewFileFromBytes(b, contentType, filename)
 	if err != nil {
 		return nil, err

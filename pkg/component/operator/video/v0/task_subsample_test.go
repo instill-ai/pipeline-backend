@@ -77,7 +77,7 @@ func TestSubsample(t *testing.T) {
 					if err != nil {
 						return err
 					}
-					video, err := data.NewVideoFromBytes(videoBytes, "video/mp4", "testdata/video.mp4")
+					video, err := data.NewVideoFromBytes(videoBytes, data.MP4, "testdata/video.mp4", true)
 					if err != nil {
 						return err
 					}
@@ -115,7 +115,7 @@ func TestSubsample(t *testing.T) {
 				// Read expected file
 				expectedBytes, err := os.ReadFile(tc.expectedFile)
 				c.Assert(err, qt.IsNil)
-				expectedVideo, err := data.NewVideoFromBytes(expectedBytes, "video/mp4", tc.expectedFile)
+				expectedVideo, err := data.NewVideoFromBytes(expectedBytes, data.MP4, tc.expectedFile, true)
 				c.Assert(err, qt.IsNil)
 
 				// Compare videos with approximate matching

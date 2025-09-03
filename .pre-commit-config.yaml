@@ -17,8 +17,8 @@ repos:
       #    - Linux: Follow https://github.com/streamer45/silero-vad-go
       # 2. For Mac OS with Homebrew:
       #    a. Get install path and version:
-      #       ONNX_VERSION=$(brew list onnxruntime --versions | awk '{print $2}')
-      #       ONNX_PATH=$(brew --prefix onnxruntime)
+      #       export ONNX_VERSION=$(brew list onnxruntime --versions | awk '{print $2}')
+      #       export ONNX_PATH=$(brew --prefix onnxruntime)
       #    b. Set environment variables:
       #       export LIBRARY_PATH=$ONNX_PATH/lib
       #       export C_INCLUDE_PATH=$ONNX_PATH/include/onnxruntime

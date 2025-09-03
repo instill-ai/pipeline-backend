@@ -32,21 +32,21 @@ func TestEncodeDecode(t *testing.T) {
 	variable["file"], err = NewFileFromBytes([]byte(img), "", "")
 	c.Assert(err, qt.IsNil)
 
-	variable["img"], err = NewImageFromBytes([]byte(img), JPEG, filename)
+	variable["img"], err = NewImageFromBytes([]byte(img), JPEG, filename, true)
 	c.Assert(err, qt.IsNil)
 
 	filename = "sample1.mp3"
 	audio, err := os.ReadFile("testdata/" + filename)
 	c.Assert(err, qt.IsNil)
 
-	variable["audio"], err = NewAudioFromBytes([]byte(audio), MP3, filename)
+	variable["audio"], err = NewAudioFromBytes([]byte(audio), MP3, filename, true)
 	c.Assert(err, qt.IsNil)
 
 	filename = "sample_640_360.mp4"
 	vid, err := os.ReadFile("testdata/" + filename)
 	c.Assert(err, qt.IsNil)
 
-	variable["video"], err = NewVideoFromBytes([]byte(vid), MP4, filename)
+	variable["video"], err = NewVideoFromBytes([]byte(vid), MP4, filename, true)
 	c.Assert(err, qt.IsNil)
 
 	data[0] = variable

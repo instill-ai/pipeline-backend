@@ -76,7 +76,7 @@ func TestSegment(t *testing.T) {
 			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
 				switch input := input.(type) {
 				case *segmentInput:
-					audio, err := data.NewAudioFromBytes(audioData, "audio/wav", "input.wav")
+					audio, err := data.NewAudioFromBytes(audioData, data.WAV, "input.wav", true)
 					c.Assert(err, qt.IsNil)
 					*input = segmentInput{
 						Audio:    audio,
@@ -110,7 +110,7 @@ func TestSegment(t *testing.T) {
 
 				for i, segment := range capturedOutput.AudioSegments {
 					c.Assert(segment, qt.Not(qt.IsNil), qt.Commentf("Segment %d is nil", i))
-					c.Assert(segment.ContentType().String(), qt.Equals, "audio/ogg", qt.Commentf("Segment %d has incorrect MIME type", i))
+					c.Assert(segment.ContentType().String(), qt.Equals, data.OGG, qt.Commentf("Segment %d has incorrect MIME type", i))
 				}
 			}
 		})

@@ -196,7 +196,7 @@ func imageToImageOutput(from ImageTaskRes) (*taskOutput, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to decode base64 image: %w", err)
 		}
-		img, err := data.NewImageFromBytes(imgBytes, "image/png", "")
+		img, err := data.NewImageFromBytes(imgBytes, data.PNG, "", true)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create image from bytes: %w", err)
 		}
