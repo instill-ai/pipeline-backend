@@ -182,7 +182,7 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 		return err
 	}
 
-	objectName := fmt.Sprintf("component-runs/%s/input/%s.json", param.ID, pipelineTriggerID)
+	objectName := fmt.Sprintf("component-runs/%s/input/%s.json", pipelineTriggerID, param.ID)
 
 	url, objectInfo, err := w.minioClient.WithLogger(log).UploadFile(
 		ctx,
