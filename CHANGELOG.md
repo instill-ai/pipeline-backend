@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.59.2](https://github.com/instill-ai/pipeline-backend/compare/v0.59.1...v0.59.2) (2025-09-09)
+
+
+### Miscellaneous
+
+* **component-run:** make input and output blob paths consistent ([#1079](https://github.com/instill-ai/pipeline-backend/issues/1079)) ([58a01dc](https://github.com/instill-ai/pipeline-backend/commit/58a01dcbc0bdae4ba8c09386a7b0f3d0111b7635))
+* **x:** update x to v0.10.0-alpha ([#1081](https://github.com/instill-ai/pipeline-backend/issues/1081)) ([6fae5fa](https://github.com/instill-ai/pipeline-backend/commit/6fae5fab187759553d6c4d19b1f761a4ea987ea2))
+
 ## [0.59.1](https://github.com/instill-ai/pipeline-backend/compare/v0.59.0...v0.59.1) (2025-09-02)
 
 
