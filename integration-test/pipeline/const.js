@@ -17,16 +17,6 @@ if (__ENV.API_GATEWAY_PROTOCOL) {
   proto = "http"
 }
 
-if (__ENV.API_GATEWAY_PROTOCOL) {
-  if (__ENV.API_GATEWAY_PROTOCOL !== "http" && __ENV.API_GATEWAY_PROTOCOL != "https") {
-    fail("only allow `http` or `https` for API_GATEWAY_PROTOCOL")
-  }
-  proto = __ENV.API_GATEWAY_PROTOCOL
-} else {
-  proto = "http"
-}
-
-
 export const pipelinePrivateHost = `http://pipeline-backend:3081`;
 export const pipelinePublicHost = apiGatewayMode ? `${proto}://${__ENV.API_GATEWAY_URL}` : `http://api-gateway:8080`
 export const mgmtPublicHost = apiGatewayMode ? `${proto}://${__ENV.API_GATEWAY_URL}` : `http://api-gateway:8080`
@@ -81,8 +71,6 @@ export const paramsHTTPWithJwt = {
   },
 };
 
-
-
 const yamlRecipe = `
 version: v1beta
 variable:
@@ -106,9 +94,6 @@ component:
 export const simplePipelineWithYAMLRecipe = {
   rawRecipe: yamlRecipe,
 };
-
-
-
 
 export const simplePayload = {
   data: [
