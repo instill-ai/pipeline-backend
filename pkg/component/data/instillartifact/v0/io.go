@@ -178,6 +178,18 @@ type SearchChunksOutput struct {
 	Chunks []SimilarityChunk `json:"chunks"`
 }
 
+// FilePosition is a location in a file, in a given unit.
+type FilePosition struct {
+	Unit        string   `json:"unit"`
+	Coordinates []uint32 `json:"coordinates"`
+}
+
+// ChunkReference positions a chunk in a file
+type ChunkReference struct {
+	Start FilePosition `json:"start"`
+	End   FilePosition `json:"end"`
+}
+
 // SimilarityChunk is the output for a similarity chunk
 type SimilarityChunk struct {
 	// Chunk UID
@@ -192,6 +204,8 @@ type SimilarityChunk struct {
 	SourceFileName string `json:"source-file-name"`
 	// Content type
 	ContentType string `json:"content-type"`
+	// Reference
+	Reference *ChunkReference `json:"reference"`
 }
 
 // QueryInput is the input for querying

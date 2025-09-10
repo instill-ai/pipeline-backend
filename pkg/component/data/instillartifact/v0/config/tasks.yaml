@@ -79,6 +79,10 @@ $defs:
         uiOrder: 4
         title: Source File Name
         type: string
+      reference:
+        description: Reference to the position of the chunk within the original file.
+        uiOrder: 5
+        $ref: '#/$defs/chunk-reference'
     required:
       - chunk-uid
       - similarity-score
@@ -166,6 +170,47 @@ $defs:
       title: Third Party File
       type: object
     title: Third Party Files
+  chunk-reference:
+    title: Chunk Reference
+    description: Position of a chunk within a file.
+    type: object
+    properties:
+      start:
+        $ref: '#/$defs/file-position'
+      end:
+        $ref: '#/$defs/file-position'
+    required:
+      - start
+      - end
+    uiOrder: 0
+  file-position:
+    title: File Position
+    description: >-
+      Position within a file as coordinates ina specific unit. The number of
+      dimensions of the coordinates depends on the unit type.
+    type: object
+    properties:
+      unit:
+        title: Unit
+        description: Unit of measurement for a position within a file.
+        type: string
+        enum:
+          - UNIT_CHARACTER
+          - UNIT_PAGE
+          - UNIT_TIME_MS
+          - UNIT_PIXEL
+        uiOrder: 0
+      coordinates:
+        title: Coordinates
+        description: Position value.
+        type: array
+        items:
+          type: integer
+        uiOrder: 1
+    required:
+      - unit
+      - coordinates
+    uiOrder: 0
 TASK_UPLOAD_FILE:
   shortDescription: Upload and process the files into chunks into Catalog.
   input:

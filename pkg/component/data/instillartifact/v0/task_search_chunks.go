@@ -3,6 +3,7 @@ package instillartifact
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc/metadata"
@@ -92,14 +93,30 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 	}
 
 	for _, chunkPB := range searchRes.GetSimilarChunks() {
-		output.Chunks = append(output.Chunks, SimilarityChunk{
+		chunk := SimilarityChunk{
 			ChunkUID:        chunkPB.GetChunkUid(),
 			SimilarityScore: chunkPB.GetSimilarityScore(),
 			TextContent:     chunkPB.GetTextContent(),
 			SourceFileName:  chunkPB.GetSourceFile(),
 			SourceFileUID:   chunkPB.GetChunkMetadata().GetOriginalFileUid(),
 			ContentType:     chunkPB.GetChunkMetadata().GetContentType().String(),
-		})
+		}
+
+		ref := chunkPB.GetChunkMetadata().GetReference()
+		if ref != nil {
+			chunk.Reference = &ChunkReference{
+				Start: FilePosition{
+					Unit:        strings.TrimPrefix(ref.GetStart().GetUnit().String(), "UNIT_"),
+					Coordinates: ref.GetStart().GetCoordinates(),
+				},
+				End: FilePosition{
+					Unit:        strings.TrimPrefix(ref.GetEnd().GetUnit().String(), "UNIT_"),
+					Coordinates: ref.GetEnd().GetCoordinates(),
+				},
+			}
+		}
+
+		output.Chunks = append(output.Chunks, chunk)
 	}
 
 	return base.ConvertToStructpb(output)
