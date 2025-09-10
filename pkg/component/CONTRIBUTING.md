@@ -77,7 +77,7 @@ id: hello
 uid: e05d3d71-779c-45f8-904d-e90a050ca3b2
 title: Hello
 type: COMPONENT_TYPE_OPERATOR
-description: "'Hello, world' operator used as a template for adding components"
+description: `Hello, world` operator used as a template for adding components.
 spec: {}
 availableTasks:
   - TASK_GREET
@@ -246,7 +246,7 @@ override the following methods:
 - `CreateExecution(ComponentExecution)
   (IExecution, error)` will return an implementation of the `IExecution`
   interface. A base execution implementation is passed in order to define only
-  the behaviour of the `Execute` method.
+  the behavior of the `Execute` method.
 - `Execute(context.Context []*structpb.Struct) ([]*structpb.Struct, error)` is
   the most important function in the component. All the data manipulation will
   take place here.

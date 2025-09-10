@@ -1,8 +1,22 @@
 repos:
+  - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+    rev: 0.2.3
+    hooks:
+      - id: yamlfmt
+        args:
+          - --mapping
+          - "2"
+          - --sequence
+          - "4"
+          - --offset
+          - "2"
+          - --preserve-quotes
+          - --implicit_start
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
       - id: check-yaml
+      - id: double-quote-string-fixer
       - id: end-of-file-fixer
         exclude: (?i).*testdata/
         exclude_types: [svg, mdx]
@@ -38,16 +52,3 @@ repos:
         entry: bash -c 'make gen-component-doc'
         language: system
         files: ^pkg/component/.*\.(json|mdx)$
-  - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
-    rev: 0.2.3
-    hooks:
-      - id: yamlfmt
-        args:
-          - --mapping
-          - "2"
-          - --sequence
-          - "4"
-          - --offset
-          - "2"
-          - --preserve-quotes
-          - --implicit_start

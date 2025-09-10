@@ -114,12 +114,14 @@ $defs:
           title: Content
           type: string
         created-time:
-          description: 'Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ`.'
+          description: >-
+            Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ`.
           uiOrder: 3
           title: Created time
           type: string
         modified-time:
-          description: 'Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ`. It will be used to check if the file has been updated.'
+          description: >-
+            Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ`. It will be used to check if the file has been updated.
           uiOrder: 4
           title: Modified time
           type: string
@@ -144,7 +146,8 @@ $defs:
           title: Version
           type: integer
         web-view-link:
-          description: Link for opening the file in a relevant third-party data storage editor or viewer in a browser. It will be used to check the source
+          description: >-
+            Link for opening the file in a relevant third-party data storage editor or viewer in a browser. It will be used to check the source
             of the file.
           uiOrder: 9
           title: Web View Link
@@ -188,14 +191,14 @@ TASK_UPLOAD_FILE:
                 uiOrder: 0
                 type: string
               namespace:
-                $ref: '#/$defs/namespace'
+                $ref: "#/$defs/namespace"
               catalog-id:
                 description: Catalog ID that you input in the Catalog.
                 uiOrder: 1
                 type: string
                 title: Catalog ID
               file:
-                $ref: '#/$defs/file'
+                $ref: "#/$defs/file"
               file-name:
                 description: Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.
                 uiOrder: 2
@@ -217,14 +220,14 @@ TASK_UPLOAD_FILE:
                 uiOrder: 0
                 type: string
               namespace:
-                $ref: '#/$defs/namespace'
+                $ref: "#/$defs/namespace"
               catalog-id:
                 description: Catalog ID for new catalog you want to create.
                 uiOrder: 1
                 type: string
                 title: Catalog ID
               file:
-                $ref: '#/$defs/file'
+                $ref: "#/$defs/file"
               file-name:
                 description: Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.
                 uiOrder: 3
@@ -262,7 +265,7 @@ TASK_UPLOAD_FILE:
         description: Result of uploading file into catalog.
         uiOrder: 0
         properties:
-          $ref: '#/$defs/file-item/properties'
+          $ref: "#/$defs/file-item/properties"
         required:
           - file-uid
           - file-name
@@ -305,14 +308,14 @@ TASK_UPLOAD_FILES:
                 uiOrder: 0
                 type: string
               namespace:
-                $ref: '#/$defs/namespace'
+                $ref: "#/$defs/namespace"
               catalog-id:
                 description: Catalog ID that you input in the Catalog.
                 uiOrder: 1
                 type: string
                 title: Catalog ID
               files:
-                $ref: '#/$defs/files'
+                $ref: "#/$defs/files"
               file-names:
                 description: Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.
                 uiOrder: 2
@@ -336,14 +339,14 @@ TASK_UPLOAD_FILES:
                 uiOrder: 0
                 type: string
               namespace:
-                $ref: '#/$defs/namespace'
+                $ref: "#/$defs/namespace"
               catalog-id:
                 description: Catalog ID for new catalog you want to create.
                 uiOrder: 1
                 type: string
                 title: Catalog ID
               files:
-                $ref: '#/$defs/files'
+                $ref: "#/$defs/files"
               file-names:
                 description: Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.
                 uiOrder: 3
@@ -383,7 +386,7 @@ TASK_UPLOAD_FILES:
         description: Files metadata in catalog.
         uiOrder: 0
         items:
-          $ref: '#/$defs/file-item'
+          $ref: "#/$defs/file-item"
         title: Files
         type: array
       status:
@@ -402,7 +405,7 @@ TASK_GET_FILES_METADATA:
     uiOrder: 0
     properties:
       namespace:
-        $ref: '#/$defs/namespace'
+        $ref: "#/$defs/namespace"
       catalog-id:
         description: Catalog ID that you input to search files in the Catalog.
         uiOrder: 1
@@ -421,7 +424,7 @@ TASK_GET_FILES_METADATA:
         description: Files metadata in catalog.
         uiOrder: 0
         items:
-          $ref: '#/$defs/file-item'
+          $ref: "#/$defs/file-item"
         title: Files
         type: array
     required:
@@ -434,7 +437,7 @@ TASK_GET_CHUNKS_METADATA:
     uiOrder: 0
     properties:
       namespace:
-        $ref: '#/$defs/namespace'
+        $ref: "#/$defs/namespace"
       catalog-id:
         description: Catalog ID that you input to search files in the Catalog.
         uiOrder: 0
@@ -517,7 +520,7 @@ TASK_GET_FILE_IN_MARKDOWN:
     uiOrder: 0
     properties:
       namespace:
-        $ref: '#/$defs/namespace'
+        $ref: "#/$defs/namespace"
       catalog-id:
         description: Catalog ID that you input to search files in the Catalog.
         uiOrder: 0
@@ -571,7 +574,7 @@ TASK_RETRIEVE:
     uiOrder: 0
     properties:
       namespace:
-        $ref: '#/$defs/namespace'
+        $ref: "#/$defs/namespace"
       catalog-id:
         description: Catalog ID that you input to search files in the Catalog.
         uiOrder: 0
@@ -629,7 +632,7 @@ TASK_RETRIEVE:
         description: Chunks data from smart search.
         uiOrder: 0
         items:
-          $ref: '#/$defs/chunk-item'
+          $ref: "#/$defs/chunk-item"
         title: Chunks
         type: array
     required:
@@ -642,7 +645,7 @@ TASK_ASK:
     uiOrder: 0
     properties:
       namespace:
-        $ref: '#/$defs/namespace'
+        $ref: "#/$defs/namespace"
       catalog-id:
         description: Catalog ID that you input to search files in the Catalog.
         uiOrder: 0
@@ -686,7 +689,7 @@ TASK_ASK:
         description: Chunks data to answer question.
         uiOrder: 1
         items:
-          $ref: '#/$defs/chunk-item'
+          $ref: "#/$defs/chunk-item"
         title: Chunks
         type: array
     required:
@@ -699,7 +702,7 @@ TASK_MATCH_FILE_STATUS:
     uiOrder: 0
     properties:
       namespace:
-        $ref: '#/$defs/namespace'
+        $ref: "#/$defs/namespace"
       catalog-id:
         description: Catalog ID that you input to check files' processing status in the Catalog.
         uiOrder: 0
@@ -729,21 +732,22 @@ TASK_MATCH_FILE_STATUS:
     title: Output
     type: object
 TASK_SYNC_FILES:
-  shortDescription: This task synchronizes files from third-party storage to Instill Catalog. New files are uploaded, and updated files are overwritten
+  shortDescription: >-
+    This task synchronizes files from third-party storage to Instill Catalog. New files are uploaded, and updated files are overwritten
     based on third-party metadata. Files added through other channels, like the Artifact API or additional storage services, will not be removed. Currently,
     only Google Drive is supported as a third-party storage service.
   input:
     uiOrder: 0
     properties:
       namespace:
-        $ref: '#/$defs/namespace'
+        $ref: "#/$defs/namespace"
       catalog-id:
         description: Catalog ID that you input to synchronize files from third-party data storage to catalog.
         uiOrder: 1
         type: string
         title: Catalog ID
       third-party-files:
-        $ref: '#/$defs/third-party-files'
+        $ref: "#/$defs/third-party-files"
     required:
       - namespace
       - catalog-id
@@ -757,21 +761,21 @@ TASK_SYNC_FILES:
         description: Files metadata in catalog. The metadata here is from Instill Artifact rather than third-party storage.
         uiOrder: 0
         items:
-          $ref: '#/$defs/file-item'
+          $ref: "#/$defs/file-item"
         title: Uploaded Files
         type: array
       updated_files:
         description: Files that were updated. The metadata here is from Instill Artifact rather than third-party storage.
         uiOrder: 1
         items:
-          $ref: '#/$defs/file-item'
+          $ref: "#/$defs/file-item"
         title: Updated Files
         type: array
       failure-files:
         description: Files that failed to upload or overwrite. The metadata here is from third-party storage.
         uiOrder: 2
         items:
-          $ref: '#/$defs/third-party-files/items'
+          $ref: "#/$defs/third-party-files/items"
         title: Failure Files
         type: array
       error-messages:

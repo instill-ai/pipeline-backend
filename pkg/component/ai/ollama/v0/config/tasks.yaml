@@ -35,7 +35,7 @@ $defs:
   chat-message:
     properties:
       content:
-        $ref: '#/$defs/multi-modal-content'
+        $ref: "#/$defs/multi-modal-content"
         description: The message content.
         uiOrder: 1
         title: Content
@@ -51,22 +51,24 @@ $defs:
     type: object
 TASK_TEXT_GENERATION_CHAT:
   shortDescription: Provide text outputs in response to text/image inputs.
-  description: 'Open-source large language models (OSS LLMs) are artificial intelligence models with publicly accessible code and architecture, allowing
+  description: >-
+    Open-source large language models (OSS LLMs) are artificial intelligence models with publicly accessible code and architecture, allowing
     for free use, modification, and distribution. These models can provide performance comparable to proprietary alternatives. Ollama is a tool that enables
-    you to run and interact with OSS LLMs using limited computational resources. You can install Ollama from: [here](https://ollama.com).'
+    you to run and interact with OSS LLMs using limited computational resources. You can install Ollama from: [here](https://ollama.com).
   input:
     description: Input.
     uiOrder: 0
     properties:
       chat-history:
-        description: 'Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be
+        description: >-
+          Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be
           ignored and will not have any effect when this field is populated. Each message should adhere to the format: {"role": "The message role, i.e.
-          ''system'', ''user'' or ''assistant''", "content": "message content"}.'
+          `system`, `user` or `assistant`", "content": "message content"}.
         type: array
         shortDescription: Incorporate external chat history, specifically previous messages within the conversation.
         uiOrder: 4
         items:
-          $ref: '#/$defs/chat-message'
+          $ref: "#/$defs/chat-message"
         title: Chat history
       max-new-tokens:
         default: 50
@@ -99,8 +101,9 @@ TASK_TEXT_GENERATION_CHAT:
         title: Seed
       system-message:
         default: You are a helpful assistant.
-        description: The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
-          specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message
+        description: >-
+          The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
+          specific instructions about how it should behave throughout the conversation. By default, the model's behavior is set using a generic message
           as "You are a helpful assistant.".
         type: string
         shortDescription: The system message helps set the behavior of the assistant

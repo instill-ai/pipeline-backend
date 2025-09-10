@@ -16,7 +16,8 @@ $defs:
     title: Page Information
     type: object
 TASK_CRAWL_SITE:
-  shortDescription: This task involves systematically navigating through a website, starting from a designated page (typically the homepage), and following
+  shortDescription: >-
+    This task involves systematically navigating through a website, starting from a designated page (typically the homepage), and following
     internal links to discover and retrieve page titles and URLs. The process is limited to 120 seconds and only collects links and titles from multiple
     pages; it does not extract the content of the pages themselves. If you need to collect specific content from individual pages, please use the Scrape
     Page task instead.
@@ -37,7 +38,8 @@ TASK_CRAWL_SITE:
         title: Allowed Domains
       max-k:
         default: 10
-        description: Max-K sets a limit on the number of pages to fetch. If Max-K is set to 0, all available pages will be fetched within the time limit
+        description: >-
+          Max-K sets a limit on the number of pages to fetch. If Max-K is set to 0, all available pages will be fetched within the time limit
           of 120 seconds. If Max-K is a positive number, the fetch will return up to that many pages, but no more.
         type: integer
         uiOrder: 2
@@ -45,7 +47,8 @@ TASK_CRAWL_SITE:
         title: Max Number of Pages
       timeout:
         default: 1000
-        description: The time to wait for a page to load in milliseconds. Min 0, Max 60000. Please notice the timeout here is set for each page rather than
+        description: >-
+          The time to wait for a page to load in milliseconds. Min 0, Max 60000. Please notice the timeout here is set for each page rather than
           the whole crawl task.
         type: integer
         uiOrder: 3
@@ -54,7 +57,8 @@ TASK_CRAWL_SITE:
         title: Timeout
       max-depth:
         default: 0
-        description: Max Depth specifies how deep the crawler will navigate from the root URL. If max depth is set to 1, the crawler will only scrape the
+        description: >-
+          Max Depth specifies how deep the crawler will navigate from the root URL. If max depth is set to 1, the crawler will only scrape the
           root URL and will not follow any links to other pages. If max depth is set to 0, the crawler will scrape all reachable pages until the total number
           of scraped pages reaches max-k. If both max-k and max depth are defined, the crawler will prioritize the max-k setting when determining how many
           pages to scrape.
@@ -63,7 +67,8 @@ TASK_CRAWL_SITE:
         minimum: 0
         title: Max Depth
       filter:
-        description: Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). The URL
+        description: >-
+          Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). The URL
           will be crawled if it matches either include-pattern or not match exclude-pattern. When both include-pattern and exclude-pattern are empty, all
           URLs will be crawled. It will process exclude-pattern first, then include-pattern. When exclude-pattern is not empty, only URLs that do not match
           exclude-pattern will be crawled. When include-pattern is not empty, only URLs that match include-pattern will be crawled.
@@ -94,7 +99,7 @@ TASK_CRAWL_SITE:
         description: The link and title of webpages crawled by the crawler.
         uiOrder: 0
         items:
-          $ref: '#/$defs/page-info'
+          $ref: "#/$defs/page-info"
           title: Page
         title: Pages
         type: array
@@ -103,9 +108,10 @@ TASK_CRAWL_SITE:
     title: Output
     type: object
 TASK_SCRAPE_SITEMAP:
-  shortDescription: This task extracts data directly from a website’s sitemap. A sitemap is typically an XML file that lists all URLs and other relevant
-    metadata, providing a structured overview of the site’s pages. This method efficiently gathers key information from the sitemap without navigating through
-    the site’s internal pages.
+  shortDescription: >-
+    This task extracts data directly from a website's sitemap. A sitemap is typically an XML file that lists all URLs and other relevant
+    metadata, providing a structured overview of the site's pages. This method efficiently gathers key information from the sitemap without navigating through
+    the site's internal pages.
   input:
     description: The URL contains sitemap.
     uiOrder: 0
@@ -159,7 +165,8 @@ TASK_SCRAPE_SITEMAP:
     title: Output
     type: object
 TASK_SCRAPE_PAGES:
-  shortDescription: This task focuses on extracting specific data from targeted webpages by parsing its HTML structure. Unlike crawling, which navigates
+  shortDescription: >-
+    This task focuses on extracting specific data from targeted webpages by parsing its HTML structure. Unlike crawling, which navigates
     across multiple pages, scraping retrieves content only from the specified page. After scraping, the data can be further processed using a defined [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp)
     in a specified sequence. The sequence of jQuery filtering data will be executed in the order of `only-main-content`, `remove-tags`, and `only-include-tags`.
     Refer to the [jQuery Syntax Examples](#jquery-syntax-examples) for more details on how to filter and manipulate the data. To avoid a single URL failure
@@ -175,7 +182,8 @@ TASK_SCRAPE_PAGES:
         uiOrder: 0
         title: URLs
       scrape-method:
-        description: Defines the method used for web scraping. Available options include 'http' for standard HTTP-based scraping and 'chrome-simulator'
+        description: >-
+          Defines the method used for web scraping. Available options include `http` for standard HTTP-based scraping and `chrome-simulator`
           for scraping through a simulated Chrome browser environment.
         type: string
         enum:
@@ -195,16 +203,18 @@ TASK_SCRAPE_PAGES:
         uiOrder: 3
         title: Only Main Content
       remove-tags:
-        description: 'A list of tags, classes, and ids to remove from the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp)
-          to remove data. If empty, no tags will be removed. Example: ''script, .ad, #footer''. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).'
+        description: >-
+          A list of tags, classes, and ids to remove from the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp)
+          to remove data. If empty, no tags will be removed. Example: `script, .ad, #footer`. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).
         type: array
         uiOrder: 4
         items:
           type: string
         title: Remove Tags
       only-include-tags:
-        description: 'A list of tags, classes, and ids to include in the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp)
-          to include data. If empty, all tags will be included. Example: ''script, .ad, #footer''. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).'
+        description: >-
+          A list of tags, classes, and ids to include in the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp)
+          to include data. If empty, all tags will be included. Example: `script, .ad, #footer`. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).
         type: array
         uiOrder: 5
         items:
@@ -212,7 +222,8 @@ TASK_SCRAPE_PAGES:
         title: Only Include Tags
       timeout:
         default: 1000
-        description: This parameter specifies the time to wait for a page to load, measured in milliseconds. The minimum value is 0, and the maximum value
+        description: >-
+          This parameter specifies the time to wait for a page to load, measured in milliseconds. The minimum value is 0, and the maximum value
           is 60,000. Please note that if you set a short timeout, the page may not fully load. Conversely, setting a long timeout could significantly increase
           the time it takes for the task to complete. This timeout setting applies only to the Chrome simulator.
         type: integer

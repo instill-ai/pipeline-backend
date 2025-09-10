@@ -9,25 +9,29 @@ $defs:
         title: ID
         type: string
       name:
-        description: Name of the file. The file extension will be added automatically based on the exported MIME type. For example, Google Sheets will be
+        description: >-
+          Name of the file. The file extension will be added automatically based on the exported MIME type. For example, Google Sheets will be
           exported as CSV, Google Docs as PDF, and Google Slides as PDF. If the file is a Google Sheet and the name is `MySheet`, the exported file will
           be `MySheet.csv`. If the file is not a Google file, the name will be used as is.
         uiOrder: 1
         title: Name
         type: string
       content:
-        description: Base64 encoded content of the binary file without the `data:[MIME_TYPE];base64,` prefix. Google Sheets will be exported as CSV, Google
+        description: >-
+          Base64 encoded content of the binary file without the `data:[MIME_TYPE];base64,` prefix. Google Sheets will be exported as CSV, Google
           Docs as PDF, and Google Slides as PDF. If the file is not a Google file, the content will be the same as the original file.
         uiOrder: 2
         title: Content
         type: string
       created-time:
-        description: 'Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ`.'
+        description: >-
+          Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ`.
         uiOrder: 3
         title: Created time
         type: string
       modified-time:
-        description: 'Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ`.'
+        description: >-
+          Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ`.
         uiOrder: 4
         title: Modified time
         type: string
@@ -73,7 +77,8 @@ $defs:
     title: File
     type: object
   shared-link:
-    description: Shared link of the file. You can get the shared link by right-clicking on the file and selecting `Copy link`.
+    description: >-
+      Shared link of the file. You can get the shared link by right-clicking on the file and selecting `Copy link`.
     uiOrder: 0
     title: File ID
     type: string
@@ -84,7 +89,7 @@ TASK_READ_FILE:
     uiOrder: 0
     properties:
       shared-link:
-        $ref: '#/$defs/shared-link'
+        $ref: "#/$defs/shared-link"
     required:
       - shared-link
     title: Input
@@ -93,7 +98,7 @@ TASK_READ_FILE:
     uiOrder: 1
     properties:
       file:
-        $ref: '#/$defs/file'
+        $ref: "#/$defs/file"
     required:
       - file
     title: Output
@@ -105,7 +110,7 @@ TASK_READ_FOLDER:
     uiOrder: 0
     properties:
       shared-link:
-        $ref: '#/$defs/shared-link'
+        $ref: "#/$defs/shared-link"
       read-content:
         description: Whether to read the content of the files under the folder.
         uiOrder: 1
@@ -123,7 +128,7 @@ TASK_READ_FOLDER:
         description: List of files under the specified folder.
         uiOrder: 0
         items:
-          $ref: '#/$defs/file'
+          $ref: "#/$defs/file"
         required: []
         title: Files
         type: array

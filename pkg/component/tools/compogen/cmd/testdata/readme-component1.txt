@@ -151,7 +151,7 @@ TASK_DUMMY:
           - setting
         type: object
       dummy-string:
-        description: '{{dummy_string}}'
+        description: "{{dummy_string}}"
         uiOrder: 0
         title: Dummy String
         type: string

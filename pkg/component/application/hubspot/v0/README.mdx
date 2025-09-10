@@ -488,7 +488,7 @@ Insert message into a thread (only support email thread)
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT_MESSAGE` |
 | Thread ID (required) | `thread-id` | string | Input thread ID. |
-| Sender Actor ID (required) | `sender-actor-id` | string | Input sender actor id. Example: A-12345678. To obtain this, it is recommended to use and copy the 'Get Thread task' sender output. For [more information](https://developers.hubspot.com/beta-docs/guides/api/conversations/inbox-and-messages#get-actors) about actor id. |
+| Sender Actor ID (required) | `sender-actor-id` | string | Input sender actor id. Example: A-12345678. To obtain this, it is recommended to use and copy the `Get Thread task` sender output. For [more information](https://developers.hubspot.com/beta-docs/guides/api/conversations/inbox-and-messages#get-actors) about actor id. |
 | Recipients (required) | `recipients` | array[string] | Recipients of the message. |
 | Channel Account ID (required) | `channel-account-id` | string | The ID of an account that is part of the channel-id channel. On an existing thread, it is recommended to copy channel-account-id of the most recent message on the thread. |
 | Subject (required) | `subject` | string | The subject of the message. |
@@ -518,7 +518,7 @@ Get the object IDs associated with contact ID (contact->objects). If you are try
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_RETRIEVE_ASSOCIATION` |
 | Contact ID (required) | `contact-id` | string | Input contact ID. |
-| Object Type (required) | `object-type` | string | Input object type (CRM objects or 'Threads'). Note: CRM objects include 'Deals', 'Companies', 'Tickets', etc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Deals`</li><li>`Companies`</li><li>`Tickets`</li><li>`Threads`</li></ul></details>  |
+| Object Type (required) | `object-type` | string | Input object type (CRM objects or `Threads`). Note: CRM objects include `Deals`, `Companies`, `Tickets`, etc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Deals`</li><li>`Companies`</li><li>`Tickets`</li><li>`Threads`</li></ul></details>  |
 </div>
 
 

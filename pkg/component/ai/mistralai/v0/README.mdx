@@ -51,7 +51,7 @@ ${connection.<my-connection-id>}`.
 
 ### Text Generation Chat
 
-Mistral AI's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as "prompts". Designing a prompt is essentially how you “program” a large language model model, usually by providing instructions or some examples of how to successfully complete a task.
+Mistral AI's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as "prompts". Designing a prompt is essentially how you "program" a large language model model, usually by providing instructions or some examples of how to successfully complete a task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -60,9 +60,9 @@ Mistral AI's text generation models (often called generative pre-trained transfo
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
 | Model Name (required) | `model-name` | string | The Mistral model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open-mixtral-8x22b`</li><li>`open-mixtral-8x7b`</li><li>`open-mistral-7b`</li><li>`mistral-large-latest`</li><li>`mistral-small-latest`</li><li>`codestral-latest`</li></ul></details>  |
 | Prompt (required) | `prompt` | string | The prompt text. |
-| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message as "You are a helpful assistant.". |
+| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model's behavior is set using a generic message as "You are a helpful assistant.". |
 | Prompt Images | `prompt-images` | array[string] | The prompt images (Note: The Mistral models are not trained to process images, thus images will be omitted). |
-| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
+| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}. |
 | Seed | `seed` | integer | The seed. |
 | Temperature | `temperature` | number | The temperature for sampling. |
 | Top K | `top-k` | integer | Integer to define the top tokens considered within the sample operation to create new text (Note: The Mistral models does not support top-k sampling). |
@@ -77,7 +77,7 @@ Mistral AI's text generation models (often called generative pre-trained transfo
 
 <h4 id="text-generation-chat-chat-history">Chat History</h4>
 
-Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}.
+Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 

@@ -6,7 +6,8 @@ $defs:
   options:
     properties:
       use-cache:
-        description: There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models
+        description: >-
+          There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models
           are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent
           the caching mechanism from being used resulting in a real new query.
         type: boolean
@@ -14,7 +15,8 @@ $defs:
         uiOrder: 1
         title: Use Cache
       wait-for-model:
-        description: If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done.
+        description: >-
+          If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done.
           It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.
         type: boolean
         shortDescription: Wait for model ready
@@ -31,7 +33,8 @@ $defs:
     title: String Input
 TASK_AUDIO_CLASSIFICATION:
   shortDescription: Audio classification is the task of assigning a label or class to a given audio.
-  description: Audio classification is the task of assigning a label or class to a given audio. It can be used for recognizing which command a user is giving
+  description: >-
+    Audio classification is the task of assigning a label or class to a given audio. It can be used for recognizing which command a user is giving
     or the emotion of a statement, as well as identifying a speaker.
   input:
     uiOrder: 0
@@ -42,7 +45,7 @@ TASK_AUDIO_CLASSIFICATION:
         uiOrder: 1
         title: Audio
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
     required:
       - audio
@@ -80,9 +83,11 @@ TASK_AUDIO_CLASSIFICATION:
     title: Output
     type: object
 TASK_CONVERSATIONAL:
-  shortDescription: Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgable given a
+  shortDescription:
+    Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgeable given a
     prompt.
-  description: Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgable given a prompt.
+  description: >-
+    Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgeable given a prompt.
     These models have applications in chatbots, and as a part of voice assistants.
   input:
     uiOrder: 0
@@ -118,10 +123,10 @@ TASK_CONVERSATIONAL:
         title: Inputs
         type: object
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
       options:
-        $ref: '#/$defs/options'
+        $ref: "#/$defs/options"
         uiOrder: 3
       parameters:
         uiOrder: 2
@@ -153,7 +158,8 @@ TASK_CONVERSATIONAL:
             title: Repetition Penalty
           temperature:
             default: 1.0
-            description: The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer
+            description: >-
+              The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer
               to uniform probability.
             type: number
             shortDescription: The temperature of the sampling operation.
@@ -167,7 +173,8 @@ TASK_CONVERSATIONAL:
             uiOrder: 5
             title: Top K
           top-p:
-            description: Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable
+            description: >-
+              Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable
               to least probable until the sum of the probabilities is greater than top-p.
             type: number
             shortDescription: Float to define the tokens that are within the sample operation of text generation.
@@ -223,20 +230,21 @@ TASK_CONVERSATIONAL:
     type: object
 TASK_FILL_MASK:
   shortDescription: Masked language modeling is the task of masking some of the words in a sentence and predicting which words should replace those masks.
-  description: Masked language modeling is the task of masking some of the words in a sentence and predicting which words should replace those masks. These
+  description: >-
+    Masked language modeling is the task of masking some of the words in a sentence and predicting which words should replace those masks. These
     models are useful when we want to get a statistical understanding of the language in which the model is trained in.
   input:
     uiOrder: 0
     properties:
       inputs:
-        $ref: '#/$defs/string-input'
+        $ref: "#/$defs/string-input"
         description: a string to be filled from, must contain the [MASK] token (check model card for exact name of the mask).
         uiOrder: 1
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
       options:
-        $ref: '#/$defs/options'
+        $ref: "#/$defs/options"
         uiOrder: 2
     required:
       - inputs
@@ -283,7 +291,8 @@ TASK_FILL_MASK:
     type: object
 TASK_IMAGE_CLASSIFICATION:
   shortDescription: Image classification is the task of assigning a label or class to an entire image.
-  description: Image classification is the task of assigning a label or class to an entire image. Images are expected to have only one class for each image.
+  description: >-
+    Image classification is the task of assigning a label or class to an entire image. Images are expected to have only one class for each image.
     Image classification models take an image as input and return a prediction about which class the image belongs to.
   input:
     uiOrder: 0
@@ -294,7 +303,7 @@ TASK_IMAGE_CLASSIFICATION:
         uiOrder: 1
         title: Image
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
     required:
       - image
@@ -333,7 +342,8 @@ TASK_IMAGE_CLASSIFICATION:
     type: object
 TASK_IMAGE_SEGMENTATION:
   shortDescription: Image Segmentation divides an image into segments where each pixel in the image is mapped to an object.
-  description: Image Segmentation divides an image into segments where each pixel in the image is mapped to an object. This task has multiple variants such
+  description: >-
+    Image Segmentation divides an image into segments where each pixel in the image is mapped to an object. This task has multiple variants such
     as instance segmentation, panoptic segmentation and semantic segmentation.
   input:
     uiOrder: 0
@@ -344,7 +354,7 @@ TASK_IMAGE_SEGMENTATION:
         uiOrder: 1
         title: Image
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
     required:
       - image
@@ -389,7 +399,8 @@ TASK_IMAGE_SEGMENTATION:
     type: object
 TASK_IMAGE_TO_TEXT:
   shortDescription: Image to text models output a text from a given image.
-  description: Image to text models output a text from a given image. Image captioning or optical character recognition can be considered as the most common
+  description: >-
+    Image to text models output a text from a given image. Image captioning or optical character recognition can be considered as the most common
     applications of image to text.
   input:
     uiOrder: 0
@@ -400,7 +411,7 @@ TASK_IMAGE_TO_TEXT:
         uiOrder: 1
         title: Image
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
     required:
       - image
@@ -421,7 +432,8 @@ TASK_IMAGE_TO_TEXT:
     type: object
 TASK_OBJECT_DETECTION:
   shortDescription: Object Detection models allow users to identify objects of certain defined classes.
-  description: Object Detection models allow users to identify objects of certain defined classes. Object detection models receive an image as input and
+  description: >-
+    Object Detection models allow users to identify objects of certain defined classes. Object detection models receive an image as input and
     output the images with bounding boxes and labels on detected objects.
   input:
     uiOrder: 0
@@ -432,7 +444,7 @@ TASK_OBJECT_DETECTION:
         uiOrder: 1
         title: Image
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
     required:
       - image
@@ -502,9 +514,11 @@ TASK_OBJECT_DETECTION:
     title: Output
     type: object
 TASK_QUESTION_ANSWERING:
-  shortDescription: Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a
+  shortDescription:
+    Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a
     document.
-  description: Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a document.
+  description: >-
+    Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a document.
     Some question answering models can generate answers without context!.
   input:
     uiOrder: 0
@@ -529,10 +543,10 @@ TASK_QUESTION_ANSWERING:
         title: Inputs
         type: object
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
       options:
-        $ref: '#/$defs/options'
+        $ref: "#/$defs/options"
         uiOrder: 2
     required:
       - inputs
@@ -568,7 +582,8 @@ TASK_QUESTION_ANSWERING:
     type: object
 TASK_SENTENCE_SIMILARITY:
   shortDescription: Sentence Similarity is the task of determining how similar two texts are.
-  description: Sentence Similarity is the task of determining how similar two texts are. Sentence similarity models convert input texts into vectors (embeddings)
+  description: >-
+    Sentence Similarity is the task of determining how similar two texts are. Sentence similarity models convert input texts into vectors (embeddings)
     that capture semantic information and calculate how close (similar) they are between them. This task is particularly useful for information retrieval
     and clustering/grouping.
   input:
@@ -586,7 +601,8 @@ TASK_SENTENCE_SIMILARITY:
               type: string
             title: Sentences
           source-sentence:
-            description: The string that you wish to compare the other strings with. This can be a phrase, sentence, or longer passage, depending on the
+            description: >-
+              The string that you wish to compare the other strings with. This can be a phrase, sentence, or longer passage, depending on the
               model being used.
             type: string
             shortDescription: The string that you wish to compare the other strings with.
@@ -599,10 +615,10 @@ TASK_SENTENCE_SIMILARITY:
         title: Inputs
         type: object
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
       options:
-        $ref: '#/$defs/options'
+        $ref: "#/$defs/options"
         uiOrder: 2
     required:
       - inputs
@@ -627,7 +643,8 @@ TASK_SENTENCE_SIMILARITY:
     type: object
 TASK_SPEECH_RECOGNITION:
   shortDescription: Automatic Speech Recognition (ASR), also known as Speech to Text (STT), is the task of transcribing a given audio to text.
-  description: Automatic Speech Recognition (ASR), also known as Speech to Text (STT), is the task of transcribing a given audio to text. It has many applications,
+  description: >-
+    Automatic Speech Recognition (ASR), also known as Speech to Text (STT), is the task of transcribing a given audio to text. It has many applications,
     such as voice user interfaces.
   input:
     uiOrder: 0
@@ -638,7 +655,7 @@ TASK_SPEECH_RECOGNITION:
         uiOrder: 1
         title: Audio
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
     required:
       - audio
@@ -659,19 +676,20 @@ TASK_SPEECH_RECOGNITION:
     type: object
 TASK_SUMMARIZATION:
   shortDescription: Summarization is the task of producing a shorter version of a document while preserving its important information.
-  description: Summarization is the task of producing a shorter version of a document while preserving its important information. Some models can extract
+  description:
+    Summarization is the task of producing a shorter version of a document while preserving its important information. Some models can extract
     text from the original input, while other models can generate entirely new text.
   input:
     uiOrder: 0
     properties:
       inputs:
-        $ref: '#/$defs/string-input'
+        $ref: "#/$defs/string-input"
         uiOrder: 1
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
       options:
-        $ref: '#/$defs/options'
+        $ref: "#/$defs/options"
         uiOrder: 3
       parameters:
         uiOrder: 2
@@ -702,7 +720,8 @@ TASK_SUMMARIZATION:
             title: Repetition Penalty
           temperature:
             default: 1.0
-            description: The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer
+            description: >-
+              The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer
               to uniform probability.
             type: number
             shortDescription: The temperature of the sampling operation.
@@ -716,7 +735,8 @@ TASK_SUMMARIZATION:
             uiOrder: 5
             title: Top K
           top-p:
-            description: Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable
+            description: >-
+              Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable
               to least probable until the sum of the probabilities is greater than top-p.
             type: number
             shortDescription: Float to define the tokens that are within the sample operation of text generation.
@@ -757,7 +777,8 @@ TASK_TABLE_QUESTION_ANSWERING:
             uiOrder: 0
             title: Query
           table:
-            description: A table of data represented as a dict of list where entries are headers and the lists are all the values, all lists must have the
+            description: >-
+              A table of data represented as a dict of list where entries are headers and the lists are all the values, all lists must have the
               same size.
             type: object
             uiOrder: 1
@@ -770,10 +791,10 @@ TASK_TABLE_QUESTION_ANSWERING:
         title: Inputs
         type: object
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
       options:
-        $ref: '#/$defs/options'
+        $ref: "#/$defs/options"
         uiOrder: 2
     required:
       - inputs
@@ -819,19 +840,20 @@ TASK_TABLE_QUESTION_ANSWERING:
     type: object
 TASK_TEXT_CLASSIFICATION:
   shortDescription: Text Classification is the task of assigning a label or class to a given text.
-  description: Text Classification is the task of assigning a label or class to a given text. Some use cases are sentiment analysis, natural language inference,
+  description:
+    Text Classification is the task of assigning a label or class to a given text. Some use cases are sentiment analysis, natural language inference,
     and assessing grammatical correctness.
   input:
     uiOrder: 0
     properties:
       inputs:
-        $ref: '#/$defs/string-input'
+        $ref: "#/$defs/string-input"
         uiOrder: 1
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
       options:
-        $ref: '#/$defs/options'
+        $ref: "#/$defs/options"
         uiOrder: 2
     required:
       - inputs
@@ -870,18 +892,19 @@ TASK_TEXT_CLASSIFICATION:
     type: object
 TASK_TEXT_GENERATION:
   shortDescription: Generating text is the task of producing new text. These models can, for example, fill in incomplete text or paraphrase.
-  description: Generating text is the task of producing new text. These models can, for example, fill in incomplete text or paraphrase.
+  description: >-
+    Generating text is the task of producing new text. These models can, for example, fill in incomplete text or paraphrase.
   input:
     uiOrder: 0
     properties:
       inputs:
-        $ref: '#/$defs/string-input'
+        $ref: "#/$defs/string-input"
         uiOrder: 1
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
       options:
-        $ref: '#/$defs/options'
+        $ref: "#/$defs/options"
         uiOrder: 3
       parameters:
         uiOrder: 2
@@ -892,14 +915,16 @@ TASK_TEXT_GENERATION:
             uiOrder: 0
             title: Do Sample
           max-new-tokens:
-            description: The amount of new tokens to be generated, this does not include the input length it is a estimate of the size of generated text
+            description: >-
+              The amount of new tokens to be generated, this does not include the input length it is a estimate of the size of generated text
               you want. Each new tokens slows down the request, so look for balance between response times and length of text generated.
             type: integer
             shortDescription: The amount of new tokens to be generated.
             uiOrder: 1
             title: Max New Tokens
           max-time:
-            description: The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit. Use
+            description: >-
+              The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit. Use
               that in combination with max-new-tokens for best results.
             type: number
             shortDescription: The amount of time in seconds that the query should take maximum.
@@ -911,7 +936,8 @@ TASK_TEXT_GENERATION:
             uiOrder: 3
             title: Num Return Sequences
           repetition-penalty:
-            description: The more a token is used within generation the more it is penalized to not be picked in successive generation passes.
+            description: >-
+              The more a token is used within generation the more it is penalized to not be picked in successive generation passes.
             type: number
             uiOrder: 4
             title: Repetition Penalty
@@ -921,7 +947,8 @@ TASK_TEXT_GENERATION:
             uiOrder: 5
             title: Return Full Text
           temperature:
-            description: The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer
+            description: >-
+              The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer
               to uniform probability.
             type: number
             shortDescription: The temperature of the sampling operation.
@@ -933,7 +960,8 @@ TASK_TEXT_GENERATION:
             uiOrder: 7
             title: Top K
           top-p:
-            description: Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable
+            description: >-
+              Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable
               to least probable until the sum of the probabilities is greater than top-p.
             type: number
             shortDescription: Float to define the tokens that are within the sample operation of text generation.
@@ -967,13 +995,13 @@ TASK_TEXT_TO_IMAGE:
     uiOrder: 0
     properties:
       inputs:
-        $ref: '#/$defs/string-input'
+        $ref: "#/$defs/string-input"
         uiOrder: 1
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
       options:
-        $ref: '#/$defs/options'
+        $ref: "#/$defs/options"
         uiOrder: 3
       parameters:
         uiOrder: 2
@@ -1026,26 +1054,28 @@ TASK_TEXT_TO_IMAGE:
     type: object
 TASK_TOKEN_CLASSIFICATION:
   shortDescription: Token classification is a natural language understanding task in which a label is assigned to some tokens in a text.
-  description: Token classification is a natural language understanding task in which a label is assigned to some tokens in a text. Some popular token classification
+  description: >-
+    Token classification is a natural language understanding task in which a label is assigned to some tokens in a text. Some popular token classification
     subtasks are Named Entity Recognition (NER) and Part-of-Speech (PoS) tagging. NER models could be trained to identify specific entities in a text, such
     as dates, individuals and places; and PoS tagging would identify, for example, which words in a text are verbs, nouns, and punctuation marks.
   input:
     uiOrder: 0
     properties:
       inputs:
-        $ref: '#/$defs/string-input'
+        $ref: "#/$defs/string-input"
         uiOrder: 1
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
       options:
-        $ref: '#/$defs/options'
+        $ref: "#/$defs/options"
         uiOrder: 3
       parameters:
         uiOrder: 2
         properties:
           aggregation-strategy:
-            description: 'There are several aggregation strategies:
+            description: |-
+              There are several aggregation strategies:
 
               none: Every token gets classified without further aggregation.
 
@@ -1057,9 +1087,10 @@ TASK_TOKEN_CLASSIFICATION:
               average: Same as the simple strategy except words cannot end up with different tags. Scores are averaged across tokens and then the maximum
               label is applied.
 
-              max: Same as the simple strategy except words cannot end up with different tags. Word entity will be the token with the maximum score.'
+              max: Same as the simple strategy except words cannot end up with different tags. Word entity will be the token with the maximum score.
             type: string
-            shortDescription: 'There are several aggregation strategies: none, simple, first, average, and max.'
+            shortDescription: >-
+              There are several aggregation strategies: none, simple, first, average, and max.
             uiOrder: 0
             title: Aggregation Strategy
         required: []
@@ -1079,7 +1110,7 @@ TASK_TOKEN_CLASSIFICATION:
         items:
           properties:
             end:
-              description: The offset stringwise where the answer is located. Useful to disambiguate if word occurs multiple times.
+              description: The offset string-wise where the answer is located. Useful to disambiguate if word occurs multiple times.
               uiOrder: 0
               title: End
               type: integer
@@ -1094,7 +1125,7 @@ TASK_TOKEN_CLASSIFICATION:
               title: Score
               type: number
             start:
-              description: The offset stringwise where the answer is located. Useful to disambiguate if word occurs multiple times.
+              description: The offset string-wise where the answer is located. Useful to disambiguate if word occurs multiple times.
               uiOrder: 3
               title: Start
               type: integer
@@ -1119,13 +1150,13 @@ TASK_TRANSLATION:
     uiOrder: 0
     properties:
       inputs:
-        $ref: '#/$defs/string-input'
+        $ref: "#/$defs/string-input"
         uiOrder: 1
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
       options:
-        $ref: '#/$defs/options'
+        $ref: "#/$defs/options"
         uiOrder: 2
     required:
       - inputs
@@ -1145,28 +1176,30 @@ TASK_TRANSLATION:
     title: Output
     type: object
 TASK_ZERO_SHOT_CLASSIFICATION:
-  shortDescription: Zero-shot text classification is a task in natural language processing where a model is trained on a set of labeled examples but is
+  shortDescription:
+    Zero-shot text classification is a task in natural language processing where a model is trained on a set of labeled examples but is
     then able to classify new examples from previously unseen classes.
   input:
     uiOrder: 0
     properties:
       inputs:
-        $ref: '#/$defs/string-input'
+        $ref: "#/$defs/string-input"
         uiOrder: 1
       model:
-        $ref: '#/$defs/model'
+        $ref: "#/$defs/model"
         uiOrder: 0
       options:
-        $ref: '#/$defs/options'
+        $ref: "#/$defs/options"
         uiOrder: 3
       parameters:
         uiOrder: 2
         properties:
           candidate-labels:
-            description: a list of strings that are potential classes for inputs. (max 10 candidate-labels, for more, simply run multiple requests, results
+            description: >-
+              A list of strings that are potential classes for inputs. (max 10 candidate-labels, for more, simply run multiple requests, results
               are going to be misleading if using too many candidate-labels anyway. If you want to keep the exact same, you can simply run multi-label=True
-              and do the scaling on your end. ).
-            shortDescription: a list of strings that are potential classes for inputs.
+              and do the scaling on your end.).
+            shortDescription: A list of strings that are potential classes for inputs.
             uiOrder: 0
             items:
               description: a string that are potential class for inputs.
@@ -1202,10 +1235,10 @@ TASK_ZERO_SHOT_CLASSIFICATION:
         title: Labels
         type: array
       scores:
-        description: a list of floats that correspond the the probability of label, in the same order as labels.
+        description: A list of floats that correspond the the probability of label, in the same order as labels.
         uiOrder: 0
         items:
-          description: float that correspond the the probability of label.
+          description: Float number that correspond the the probability of label.
           title: Score
           type: number
         title: Scores

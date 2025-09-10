@@ -5,15 +5,17 @@ TASK_APPEND:
     uiOrder: 0
     properties:
       data:
-        description: The input data. If it's an array, the value will be appended. If it's an object, the key-value pairs from value will be added. If it's
+        description: >-
+          The input data. If it's an array, the value will be appended. If it's an object, the key-value pairs from value will be added. If it's
           a primitive type (string, number, boolean), it will be converted to a single-element array before appending.
-        type: '*'
+        type: "*"
         uiOrder: 0
         title: Data
       value:
-        description: 'The value to append. For arrays: the value will be appended as a new element. For objects: if value is an object, its key-value pairs
-          will be added to the input object. For primitives: value will be appended to create/extend an array.'
-        type: '*'
+        description: >-
+          The value to append. For arrays: the value will be appended as a new element. For objects: if value is an object, its key-value pairs
+          will be added to the input object. For primitives: value will be appended to create/extend an array.
+        type: "*"
         uiOrder: 1
         title: Value
     required:
@@ -26,12 +28,13 @@ TASK_APPEND:
     uiOrder: 0
     properties:
       data:
-        description: 'The resulting data structure after the append operation. Will be either an array (if input was array or primitive) or an object (if
-          input was object). Examples: [1,2,3], {''name'':''John'', ''age'':25}, or [''hello'',''world''].'
+        description: >-
+          The resulting data structure after the append operation. Will be either an array (if input was array or primitive) or an object (if
+          input was object). Examples: [1,2,3], {"name": "John", "age": 25}, or ["hello","world"].
         uiOrder: 0
         required: []
         title: Data
-        type: '*'
+        type: "*"
     required:
       - data
     title: Output
@@ -44,18 +47,20 @@ TASK_ASSIGN:
     properties:
       data:
         description: The input data structure to modify. Can be an array, object, or primitive value.
-        type: '*'
+        type: "*"
         uiOrder: 0
         title: Data
       path:
-        description: 'The path where to assign the value. Use dot notation for nested objects and [n] for array indices. Examples: ''users.[0].name'', ''.[0].key'',
-          ''metadata.tags.[2]''.'
+        description: >-
+          The path where to assign the value. Use dot notation for nested objects and [n] for array indices. Examples: `users.[0].name`, `.[0].key`,
+          `metadata.tags.[2]`.
         type: string
         uiOrder: 1
         title: Path
       value:
-        description: The value to assign at the specified path. Can be any type (string, number, boolean, array, or object).
-        type: '*'
+        description: >-
+          The value to assign at the specified path. Can be any type (string, number, boolean, array, or object).
+        type: "*"
         uiOrder: 2
         title: Value
     required:
@@ -69,10 +74,11 @@ TASK_ASSIGN:
     uiOrder: 0
     properties:
       data:
-        description: The resulting data structure after the assign operation.
+        description: >-
+          The resulting data structure after the assign operation.
         uiOrder: 0
         title: Data
-        type: '*'
+        type: "*"
     required:
       - data
     title: Output
@@ -84,12 +90,13 @@ TASK_CONCAT:
     uiOrder: 0
     properties:
       data:
-        description: 'An array of arrays or objects to be concatenated/merged. For arrays: [[1, 2], [3, 4]] becomes [1, 2, 3, 4]. For objects: [{''a'':
-          1}, {''b'': 2}] becomes {''a'': 1, ''b'': 2}. Later values override earlier ones for objects.'
+        description: >-
+          An array of arrays or objects to be concatenated/merged. For arrays: `[[1, 2], [3, 4]]` becomes `[1, 2, 3, 4]`. For objects: `[{"a":
+          1}, {"b": 2}]` becomes `{"a": 1, "b": 2}`. Later values override earlier ones for objects.
         type: array
         uiOrder: 0
         items:
-          type: '*'
+          type: "*"
         title: Data
     required:
       - data
@@ -100,10 +107,11 @@ TASK_CONCAT:
     uiOrder: 0
     properties:
       data:
-        description: The resulting array or object after concat operation.
+        description: >-
+          The resulting array or object after concat operation.
         uiOrder: 0
         title: Data
-        type: '*'
+        type: "*"
     required:
       - data
     title: Output
@@ -114,13 +122,14 @@ TASK_DIFFERENCE:
     description: Input parameters for difference operation. Can handle both arrays and objects.
     properties:
       data:
-        description: 'An array of arrays or objects to find the difference. The first element is compared against all subsequent elements. For example,
-          given arrays [[1, 2, 3], [2, 3, 4], [3, 4, 5]], the result will be [1]. For objects, given [{''a'': 1, ''b'': 2}, {''b'': 2, ''c'': 3}], the result
-          will be {''a'': 1}.'
+        description: >-
+          An array of arrays or objects to find the difference. The first element is compared against all subsequent elements. For example,
+          given arrays `[[1, 2, 3], [2, 3, 4], [3, 4, 5]]`, the result will be `[1]`. For objects, given `[{"a": 1, "b": 2}, {"b": 2, "c": 3}]`, the result
+          will be `{"a": 1}`.
         type: array
         uiOrder: 0
         items:
-          type: '*'
+          type: "*"
         required: []
         title: Data
     required:
@@ -132,10 +141,11 @@ TASK_DIFFERENCE:
     uiOrder: 0
     properties:
       data:
-        description: The resulting array or object after the difference operation.
+        description: >-
+          The resulting array or object after the difference operation.
         uiOrder: 0
         title: Data
-        type: '*'
+        type: "*"
     required:
       - data
     title: Output
@@ -147,12 +157,13 @@ TASK_INTERSECTION:
     uiOrder: 0
     properties:
       data:
-        description: 'An array of arrays or objects to find common elements. For arrays: given [[1, 2, 3], [2, 3, 4]], the result will be [2, 3]. For objects:
-          given [{''a'': 1, ''b'': 2}, {''b'': 2, ''c'': 3}], the result will be {''b'': 2}.'
+        description: >-
+          An array of arrays or objects to find common elements. For arrays: given `[[1, 2, 3], [2, 3, 4]]`, the result will be `[2, 3]`. For objects:
+          given `[{"a": 1, "b": 2}, {"b": 2, "c": 3}]`, the result will be `{"b": 2}`.
         type: array
         uiOrder: 0
         items:
-          type: '*'
+          type: "*"
         title: Data
     required:
       - data
@@ -163,10 +174,11 @@ TASK_INTERSECTION:
     uiOrder: 0
     properties:
       data:
-        description: The resulting array or object after the intersection operation.
+        description: >-
+          The resulting array or object after the intersection operation.
         uiOrder: 0
         title: Data
-        type: '*'
+        type: "*"
     required:
       - data
     title: Output
@@ -178,9 +190,10 @@ TASK_SPLIT:
     uiOrder: 0
     properties:
       data:
-        description: 'The source data to be split. Can be: 1) An array to split into groups 2) An object to split by property count (keys are sorted alphabetically
-          for consistent ordering)'
-        type: '*'
+        description: >-
+          The source data to be split. Can be: 1) An array to split into groups 2) An object to split by property count (keys are sorted alphabetically
+          for consistent ordering).
+        type: "*"
         uiOrder: 0
         title: Data
       size:
@@ -198,11 +211,12 @@ TASK_SPLIT:
     uiOrder: 1
     properties:
       data:
-        description: 'The resulting array after splitting. For arrays: array of subarrays. For objects: array of smaller objects with alphabetically ordered
-          keys'
+        description: >-
+          The resulting array after splitting. For arrays input: the array of sub-arrays. For objects input: array of smaller objects with alphabetically ordered
+          keys.
         uiOrder: 0
         items:
-          type: '*'
+          type: "*"
         title: Data
         type: array
     required:
@@ -216,12 +230,13 @@ TASK_SYMMETRIC_DIFFERENCE:
     uiOrder: 0
     properties:
       data:
-        description: 'An array of arrays or objects to find symmetric difference. For arrays: given [[1, 2], [2, 3]], the result will be [1, 3]. For objects:
-          given [{''a'': 1, ''b'': 2}, {''b'': 2, ''c'': 3}], the result will be {''a'': 1, ''c'': 3}.'
+        description: >-
+          An array of arrays or objects to find symmetric difference. For arrays: given `[[1, 2], [2, 3]]`, the result will be `[1, 3]`. For objects:
+          given `[{"a": 1, "b": 2}, {"b": 2, "c": 3}]`, the result will be `{"a": 1, "c": 3}`.
         type: array
         uiOrder: 0
         items:
-          type: '*'
+          type: "*"
         title: Data
     required:
       - data
@@ -235,7 +250,7 @@ TASK_SYMMETRIC_DIFFERENCE:
         description: The resulting array or object after the symmetric difference operation.
         uiOrder: 0
         title: Data
-        type: '*'
+        type: "*"
     required:
       - data
     title: Output
@@ -247,12 +262,13 @@ TASK_UNION:
     uiOrder: 0
     properties:
       data:
-        description: 'An array of arrays or objects to find unique elements. For arrays: given [[1, 2], [2, 3]], the result will be [1, 2, 3]. For objects:
-          given [{''a'': 1, ''b'': 2}, {''b'': 2, ''c'': 3}], the result will be {''a'': 1, ''b'': 2, ''c'': 3}.'
+        description: >-
+          An array of arrays or objects to find unique elements. For arrays: given `[[1, 2], [2, 3]]`, the result will be `[1, 2, 3]`. For objects:
+          given `[{"a": 1, "b": 2}, {"b": 2, "c": 3}]`, the result will be `{"a": 1, "b": 2, "c": 3}`.
         type: array
         uiOrder: 0
         items:
-          type: '*'
+          type: "*"
         title: Data
     required:
       - data
@@ -266,7 +282,7 @@ TASK_UNION:
         description: The resulting array or object after the union operation.
         uiOrder: 0
         title: Data
-        type: '*'
+        type: "*"
     required:
       - data
     title: Output

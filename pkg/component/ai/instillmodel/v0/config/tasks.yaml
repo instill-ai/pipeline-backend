@@ -38,7 +38,7 @@ $defs:
 TASK_CLASSIFICATION:
   shortDescription: Classify images into predefined categories.
   input:
-    $ref: '#/$defs/common'
+    $ref: "#/$defs/common"
     type: object
   output:
     $ref: schema.yaml#/$defs/instill-types/classification
@@ -49,7 +49,7 @@ TASK_CLASSIFICATION:
 TASK_DETECTION:
   shortDescription: Detect and localize multiple objects in images.
   input:
-    $ref: '#/$defs/common'
+    $ref: "#/$defs/common"
     type: object
   output:
     $ref: schema.yaml#/$defs/instill-types/detection
@@ -60,7 +60,7 @@ TASK_DETECTION:
 TASK_INSTANCE_SEGMENTATION:
   shortDescription: Detect, localize and delineate multiple objects in images.
   input:
-    $ref: '#/$defs/common'
+    $ref: "#/$defs/common"
     type: object
   output:
     $ref: schema.yaml#/$defs/instill-types/instance-segmentation
@@ -71,7 +71,7 @@ TASK_INSTANCE_SEGMENTATION:
 TASK_KEYPOINT:
   shortDescription: Detect and localize multiple keypoints of objects in images.
   input:
-    $ref: '#/$defs/common'
+    $ref: "#/$defs/common"
     type: object
   output:
     $ref: schema.yaml#/$defs/instill-types/keypoint
@@ -82,7 +82,7 @@ TASK_KEYPOINT:
 TASK_OCR:
   shortDescription: Detect and recognize text in images.
   input:
-    $ref: '#/$defs/common'
+    $ref: "#/$defs/common"
     type: object
   output:
     $ref: schema.yaml#/$defs/instill-types/ocr
@@ -93,7 +93,7 @@ TASK_OCR:
 TASK_SEMANTIC_SEGMENTATION:
   shortDescription: Classify image pixels into predefined categories.
   input:
-    $ref: '#/$defs/common'
+    $ref: "#/$defs/common"
     type: object
   output:
     $ref: schema.yaml#/$defs/instill-types/semantic-segmentation
@@ -130,8 +130,9 @@ TASK_TEXT_GENERATION:
         title: Seed
       system-message:
         default: You are a helpful assistant.
-        description: The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
-          specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You
+        description:
+          The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
+          specific instructions about how it should behave throughout the conversation. By default, the model's behavior is using a generic message as "You
           are a helpful assistant.".
         type: string
         shortDescription: The system message helps set the behavior of the assistant
@@ -168,16 +169,18 @@ TASK_TEXT_GENERATION_CHAT:
     uiOrder: 0
     properties:
       chat-history:
-        description: 'Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be
+        description: >-
+          Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be
           ignored and will not have any effect when this field is populated. Each message should adhere to the format: {"role": "The message role, i.e.
-          ''system'', ''user'' or ''assistant''", "content": "message content"}.'
+          `system`, `user` or `assistant`", "content": "message content"}.
         type: array
-        shortDescription: 'Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will
+        shortDescription: >-
+          Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will
           be ignored and will not have any effect when this field is populated. Each message should adhere to the format: {"role": "The message role, i.e.
-          ''system'', ''user'' or ''assistant''", "content": "message content"}.'
+          `system`, `user` or `assistant`", "content": "message content"}.
         uiOrder: 4
         items:
-          $ref: '#/$defs/chat-message'
+          $ref: "#/$defs/chat-message"
         title: Chat history
       max-new-tokens:
         default: 50
@@ -209,8 +212,9 @@ TASK_TEXT_GENERATION_CHAT:
         title: Seed
       system-message:
         default: You are a helpful assistant.
-        description: The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
-          specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You
+        description: >-
+          The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
+          specific instructions about how it should behave throughout the conversation. By default, the model's behavior is using a generic message as "You
           are a helpful assistant.".
         type: string
         shortDescription: The system message helps set the behavior of the assistant
@@ -278,17 +282,17 @@ TASK_TEXT_TO_IMAGE:
         shortDescription: Controls the aspect ratio of the generated image. Defaults to 1:1.
         type: string
         uiOrder: 8
-        default: '1:1'
+        default: "1:1"
         enum:
-          - '16:9'
-          - '1:1'
-          - '21:9'
-          - '2:3'
-          - '3:2'
-          - '4:5'
-          - '5:4'
-          - '9:16'
-          - '9:21'
+          - "16:9"
+          - "1:1"
+          - "21:9"
+          - "2:3"
+          - "3:2"
+          - "4:5"
+          - "5:4"
+          - "9:16"
+          - "9:21"
     required:
       - prompt
       - model-name
@@ -312,13 +316,14 @@ TASK_TEXT_TO_IMAGE:
     type: object
 TASK_VISUAL_QUESTION_ANSWERING:
   shortDescription: Answer questions based on a prompt and an image.
-  $ref: '#/TASK_TEXT_GENERATION_CHAT'
+  $ref: "#/TASK_TEXT_GENERATION_CHAT"
 TASK_CHAT:
   shortDescription: Generate texts from input text prompts and chat history.
-  $ref: '#/TASK_TEXT_GENERATION_CHAT'
+  $ref: "#/TASK_TEXT_GENERATION_CHAT"
 TASK_EMBEDDING:
   title: Embedding
-  shortDescription: This task refers to the process of generating vector embeddings from input data, which can be text or images. This transformation converts
+  shortDescription: >-
+    This task refers to the process of generating vector embeddings from input data, which can be text or images. This transformation converts
     the data into a dense, fixed-length numerical representation that captures the essential features of the original input. These embeddings are typically
     used in machine learning tasks to represent complex data in a more structured, simplified form.
   input:
@@ -331,7 +336,8 @@ TASK_EMBEDDING:
         shortDescription: Input data.
         properties:
           model:
-            description: The model to be used for generating embeddings. It should be `namespace/model-name/version`. i.e. `abrc/yolov7-stomata/v0.1.0`.
+            description: >-
+              The model to be used for generating embeddings. It should be `namespace/model-name/version`. i.e. `abrc/yolov7-stomata/v0.1.0`.
               You can see the version from the Versions tab of Model page.
             shortDescription: The model to be used.
             type: string
@@ -344,7 +350,8 @@ TASK_EMBEDDING:
                 - properties:
                     text:
                       title: Text Content
-                      description: When the input is text, the raw text is tokenized and processed into a dense, fixed-length vector that captures semantic
+                      description:
+                        When the input is text, the raw text is tokenized and processed into a dense, fixed-length vector that captures semantic
                         information such as word meanings and relationships. These text embeddings enable tasks like sentiment analysis, search, or classification.
                       shortDescription: Text content.
                       type: string
@@ -364,7 +371,8 @@ TASK_EMBEDDING:
                 - properties:
                     image-url:
                       title: Image URL
-                      description: When the input is an image from a URL, the image is first fetched from the URL and then decoded into its original format.
+                      description: >-
+                        When the input is an image from a URL, the image is first fetched from the URL and then decoded into its original format.
                         It is then processed into a fixed-length vector representing essential visual features like shapes and colors. These image embeddings
                         are useful for tasks like image classification or similarity search, providing structured numerical data for complex visual inputs.
                       shortDescription: Image content URL.
@@ -385,7 +393,8 @@ TASK_EMBEDDING:
                 - properties:
                     image-base64:
                       title: Image File
-                      description: When the input is an image in base64 format, the base64-encoded data is first decoded into its original image form. The
+                      description: >-
+                        When the input is an image in base64 format, the base64-encoded data is first decoded into its original image form. The
                         image is then processed and transformed into a dense, fixed-length numerical vector, capturing key visual features like shapes,
                         colors, or textures.
                       shortDescription: Image file input.

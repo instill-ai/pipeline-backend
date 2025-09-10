@@ -33,7 +33,8 @@ TASK_CREATE_CAMPAIGN:
     type: object
 TASK_SETUP_CAMPAIGN:
   title: Setup Campaign
-  shortDescription: Setup a campaign. You can update campaign settings to this campaign. For Smartlead campaign, you will need to setup the schedule settings
+  shortDescription:
+    Setup a campaign. You can update campaign settings to this campaign. For Smartlead campaign, you will need to setup the schedule settings
     and general settings.
   input:
     title: Input
@@ -51,7 +52,8 @@ TASK_SETUP_CAMPAIGN:
         uiOrder: 1
       days-of-the-week:
         title: Days of the Week
-        description: Days of the week when the campaign will run. A number value ranging from 0 to 6; i.e [0,1,2,3,4,5,6]. 0 is Sunday, 1 is Monday, and
+        description:
+          Days of the week when the campaign will run. A number value ranging from 0 to 6; i.e [0,1,2,3,4,5,6]. 0 is Sunday, 1 is Monday, and
           so on.
         items:
           type: number
@@ -147,7 +149,8 @@ TASK_SETUP_CAMPAIGN:
     type: object
 TASK_SAVE_SEQUENCES:
   title: Save Sequences
-  shortDescription: Save sequences to a campaign. A Smartlead sequence is a series of automated emails sent to potential customers based on specific actions,
+  shortDescription:
+    Save sequences to a campaign. A Smartlead sequence is a series of automated emails sent to potential customers based on specific actions,
     or triggers.
   input:
     title: Input
@@ -166,7 +169,8 @@ TASK_SAVE_SEQUENCES:
           properties:
             seq-number:
               title: Sequence Number
-              description: Sequence number means the order of the sequence. If you don't specify this, it will be automatically assigned by the order of
+              description:
+                Sequence number means the order of the sequence. If you don't specify this, it will be automatically assigned by the order of
                 the sequences.
               type: number
               uiOrder: 0
@@ -178,13 +182,15 @@ TASK_SAVE_SEQUENCES:
               default: 1
             subject:
               title: Subject
-              description: Subject of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be
+              description:
+                Subject of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be
                 replaced by the actual value from the lead.
               type: string
               uiOrder: 2
             email-body:
               title: Email Body
-              description: Body of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be replaced
+              description:
+                Body of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be replaced
                 by the actual value from the lead.
               type: string
               uiOrder: 3
@@ -209,7 +215,8 @@ TASK_SAVE_SEQUENCES:
     type: object
 TASK_GET_SEQUENCES:
   title: Get Sequences
-  shortDescription: Get sequences of a campaign. If you want to add more sequences to the campaign, you can get the existing sequences and add new sequences
+  shortDescription: >-
+    Get sequences of a campaign. If you want to add more sequences to the campaign, you can get the existing sequences and add new sequences
     to them. And, you can execute `TASK_SAVE_SEQUENCES` to save the sequences.
   input:
     title: Input
@@ -309,7 +316,8 @@ TASK_ADD_LEADS:
               uiOrder: 4
             custom-fields:
               title: Custom Fields
-              description: Custom fields of the lead. You can use custom fields to store additional information about the lead, which can be used in the
+              description: >-
+                Custom fields of the lead. You can use custom fields to store additional information about the lead, which can be used in the
                 variable in the sequence email template.
               items:
                 properties:
@@ -339,26 +347,30 @@ TASK_ADD_LEADS:
         properties:
           ignore-global-block-list:
             title: Ignore Global Block List
-            description: Ignore the global block list and add the lead. If true, uploaded leads will BYPASS the global block list and be uploaded to the
+            description: >-
+              Ignore the global block list and add the lead. If true, uploaded leads will BYPASS the global block list and be uploaded to the
               campaign.
             type: boolean
             uiOrder: 0
           ignore-unsubscribe-list:
             title: Ignore Unsubscribe List
-            description: Ignore the unsubscribe list and add the lead. If true, leads will BYPASS the comparison with unsubscribed leads and be uploaded
+            description: >-
+              Ignore the unsubscribe list and add the lead. If true, leads will BYPASS the comparison with unsubscribed leads and be uploaded
               to the campaign.
             type: boolean
             uiOrder: 1
           ignore-community-bounce-list:
             title: Ignore Community Bounce List
-            description: Ignore the community bounce list and add the lead. If true, uploaded leads will BYPASS any leads that bounced across Smartlead
+            description: >-
+              Ignore the community bounce list and add the lead. If true, uploaded leads will BYPASS any leads that bounced across Smartlead
               entire user base and be uploaded to the campaign.
             type: boolean
             uiOrder: 2
           ignore-duplicate-leads-in-other-campaign:
             title: Ignore Duplicate Leads in Other Campaign
-            description: 'Ignore duplicate leads in other campaigns and add the lead. If true, leads will NOT BYPASS the comparison with other campaigns
-              and NOT be added to the campaign if they are part of any other campaign. '
+            description: >-
+              Ignore duplicate leads in other campaigns and add the lead. If true, leads will NOT BYPASS the comparison with other campaigns
+              and NOT be added to the campaign if they are part of any other campaign.
             type: boolean
             uiOrder: 3
         uiOrder: 2
@@ -418,7 +430,8 @@ TASK_ADD_SENDER_EMAIL:
         uiOrder: 0
       sender-email:
         title: Sender Email
-        description: Email address of the sender. You need to configure the sender email in [Smartlead console](https://app.smartlead.ai/app/email-accounts)
+        description:
+          Email address of the sender. You need to configure the sender email in [Smartlead console](https://app.smartlead.ai/app/email-accounts)
           before adding it to the campaign.
         type: string
         uiOrder: 1
@@ -543,7 +556,7 @@ TASK_GET_CAMPAIGN_METRIC:
     type: object
 TASK_LIST_LEADS_STATUS:
   title: List Leads Status
-  shortDescription: List the status of leads in a campaign. You can get the status of leads like 'STARTED', 'INPROGRESS', 'COMPLETED', 'PAUSED', 'STOPPED'.
+  shortDescription: List the status of leads in a campaign. You can get the status of leads like `STARTED`, `INPROGRESS`, `COMPLETED`, `PAUSED`, `STOPPED`.
   input:
     title: Input
     description: Input parameters for listing the status of leads.

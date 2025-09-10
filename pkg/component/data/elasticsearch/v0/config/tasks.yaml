@@ -102,7 +102,8 @@ TASK_UPDATE:
         uiOrder: 1
         title: ID
       query:
-        description: Full text search query for update task, query will be prioritised over filter if both are provided, if both query and filter are not
+        description:
+          Full text search query for update task, query will be prioritised over filter if both are provided, if both query and filter are not
           provided, all documents will be selected.
         type: string
         shortDescription: Full text search query, (empty for all documents)
@@ -160,7 +161,8 @@ TASK_SEARCH:
         uiOrder: 2
         title: ID
       query:
-        description: Full text search query for search task, query will be prioritised over filter if both are provided, if both query and filter are not
+        description:
+          Full text search query for search task, query will be prioritised over filter if both are provided, if both query and filter are not
           provided, all documents will be selected.
         type: string
         shortDescription: Full text search query, (empty for all documents)
@@ -274,7 +276,6 @@ TASK_VECTOR_SEARCH:
       query-vector:
         description: Query vector to search for similar vectors.
         type: array
-        shortDescription: ''
         uiOrder: 3
         items:
           description: A dimension of the vector.
@@ -408,7 +409,8 @@ TASK_DELETE:
         uiOrder: 1
         title: ID
       query:
-        description: Full text search query for delete task, query will be prioritised over filter if both are provided, if both query and filter are not
+        description:
+          Full text search query for delete task, query will be prioritised over filter if both are provided, if both query and filter are not
           provided, all documents will be selected.
         type: string
         shortDescription: Full text search query, (empty for all documents)
@@ -455,7 +457,8 @@ TASK_CREATE_INDEX:
         uiOrder: 0
         title: Index Name
       mappings:
-        description: Index mappings which starts with {"mappings":{"properties"}} field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html)
+        description:
+          Index mappings which starts with {"mappings":{"properties"}} field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html)
           for vector search and [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html) for other mappings.
         type: object
         uiOrder: 1
