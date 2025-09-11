@@ -386,10 +386,41 @@ search the chunks in the catalog.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
+| [Chunk Reference](#retrieve-chunk-reference) | `reference` | object | Reference to the position of the chunk within the original file. |
 | Similarity | `similarity-score` | number | The similarity score of the chunk. |
 | Source File Name | `source-file-name` | string | The name of the source file. |
 | Source File UID | `source-file-uid` | string | The UID of the source file. |
 | Text Content | `text-content` | string | The text content of the chunk. |
+</div>
+
+<h4 id="retrieve-chunk-reference">Chunk Reference</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [File Position](#retrieve-file-position) | `end` | object | Position within a file as coordinates ina specific unit. The number of dimensions of the coordinates depends on the unit type. |
+| [File Position](#retrieve-file-position) | `start` | object | Position within a file as coordinates ina specific unit. The number of dimensions of the coordinates depends on the unit type. |
+</div>
+
+<h4 id="retrieve-file-position">File Position</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Coordinates | `coordinates` | array | Position value. |
+| Unit | `unit` | string | Unit of measurement for a position within a file. |
+</div>
+
+<h4 id="retrieve-file-position">File Position</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Coordinates | `coordinates` | array | Position value. |
+| Unit | `unit` | string | Unit of measurement for a position within a file. |
 </div>
 </details>
 
@@ -433,10 +464,41 @@ Reply the questions based on the files in the catalog.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
+| [Chunk Reference](#ask-chunk-reference) | `reference` | object | Reference to the position of the chunk within the original file. |
 | Similarity | `similarity-score` | number | The similarity score of the chunk. |
 | Source File Name | `source-file-name` | string | The name of the source file. |
 | Source File UID | `source-file-uid` | string | The UID of the source file. |
 | Text Content | `text-content` | string | The text content of the chunk. |
+</div>
+
+<h4 id="ask-chunk-reference">Chunk Reference</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [File Position](#ask-file-position) | `end` | object | Position within a file as coordinates ina specific unit. The number of dimensions of the coordinates depends on the unit type. |
+| [File Position](#ask-file-position) | `start` | object | Position within a file as coordinates ina specific unit. The number of dimensions of the coordinates depends on the unit type. |
+</div>
+
+<h4 id="ask-file-position">File Position</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Coordinates | `coordinates` | array | Position value. |
+| Unit | `unit` | string | Unit of measurement for a position within a file. |
+</div>
+
+<h4 id="ask-file-position">File Position</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Coordinates | `coordinates` | array | Position value. |
+| Unit | `unit` | string | Unit of measurement for a position within a file. |
 </div>
 </details>
 

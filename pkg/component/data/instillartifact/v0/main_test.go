@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/frankban/quicktest"
+	"github.com/gofrs/uuid"
 	"github.com/gojuno/minimock/v3"
 
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -267,6 +268,12 @@ func Test_searchChunks(t *testing.T) {
 
 		clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
+		fileUID := uuid.Must(uuid.NewV4())
+		pageTwo := &artifactpb.File_Position{
+			Unit:        artifactpb.File_Position_UNIT_PAGE,
+			Coordinates: []uint32{2},
+		}
+
 		clientMock.SimilarityChunksSearchMock.
 			Expect(minimock.AnyContext, &artifactpb.SimilarityChunksSearchRequest{
 				NamespaceId: "fakeNs",
@@ -282,6 +289,13 @@ func Test_searchChunks(t *testing.T) {
 						SimilarityScore: float32(1),
 						TextContent:     "fakeContent",
 						SourceFile:      "fakeFile",
+						ChunkMetadata: &artifactpb.Chunk{
+							OriginalFileUid: fileUID.String(),
+							Reference: &artifactpb.Chunk_Reference{
+								Start: pageTwo,
+								End:   pageTwo,
+							},
+						},
 					},
 				},
 			}, nil)
@@ -304,6 +318,10 @@ func Test_searchChunks(t *testing.T) {
 		c.Assert(outputStruct.Chunks[0].SimilarityScore, quicktest.Equals, float32(1))
 		c.Assert(outputStruct.Chunks[0].TextContent, quicktest.Equals, "fakeContent")
 		c.Assert(outputStruct.Chunks[0].SourceFileName, quicktest.Equals, "fakeFile")
+		c.Assert(outputStruct.Chunks[0].Reference.Start.Unit, quicktest.Equals, "PAGE")
+		c.Assert(outputStruct.Chunks[0].Reference.Start.Coordinates, quicktest.ContentEquals, pageTwo.Coordinates)
+		c.Assert(outputStruct.Chunks[0].Reference.End.Unit, quicktest.Equals, "PAGE")
+		c.Assert(outputStruct.Chunks[0].Reference.End.Coordinates, quicktest.ContentEquals, pageTwo.Coordinates)
 	})
 }
 
