@@ -2,7 +2,8 @@ $defs:
   common-query-params:
     start-at:
       default: 0
-      description: 'The starting index of the returned boards. Base index: 0. Default is 0.'
+      description: >-
+        The starting index of the returned boards. Base index: 0. Default is 0.
       uiOrder: 3
       title: Start At
       type: integer
@@ -42,7 +43,8 @@ $defs:
         required: []
         type: json
       issue-type:
-        description: 'The type of the issue, can be: `Task`, `Epic`.'
+        description: >-
+          The type of the issue, can be: `Task`, `Epic`.
         uiOrder: 4
         title: Issue Type
         type: string
@@ -57,7 +59,8 @@ $defs:
         title: Description
         type: string
       status:
-        description: 'The status of the issue, can be: `To Do`, `In Progress`, `Done`.'
+        description: >-
+          The status of the issue, can be: `To Do`, `In Progress`, `Done`.
         uiOrder: 7
         title: Status
         type: string
@@ -82,7 +85,8 @@ $defs:
         type: string
       state:
         title: State
-        description: 'The state of the sprint, can be: `active`, `closed`, `future`.'
+        description: >-
+          The state of the sprint, can be: `active`, `closed`, `future`.
         uiOrder: 2
         type: string
       name:
@@ -92,19 +96,22 @@ $defs:
         type: string
       start-date:
         title: Start Date
-        description: The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+        description: >-
+          The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         uiOrder: 4
         type: string
       end-date:
         title: End Date
-        description: The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+        description: >-
+          The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         uiOrder: 5
         type: string
       complete-date:
         title: Complete Date
-        description: The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+        description: >-
+          The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         uiOrder: 6
         type: string
@@ -138,7 +145,8 @@ TASK_CREATE_ISSUE:
         type: string
       issue-type:
         title: Issue Type
-        description: 'The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc.'
+        description: >-
+          The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc.
         uiOrder: 1
         additionalProperties: true
         required:
@@ -199,7 +207,8 @@ TASK_CREATE_ISSUE:
                 type: string
               custom-issue-type:
                 title: Issue Type
-                description: 'The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc.'
+                description: >-
+                  The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc.
                 shortDescription: The type of the issue
                 uiOrder: 1
                 type: string
@@ -231,7 +240,7 @@ TASK_CREATE_ISSUE:
   output:
     description: Create an issue in Jira.
     uiOrder: 0
-    $ref: '#/$defs/issue'
+    $ref: "#/$defs/issue"
     title: Output
     type: object
   type: object
@@ -262,14 +271,16 @@ TASK_CREATE_SPRINT:
         type: string
       start-date:
         title: Start Date
-        description: The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+        description: >-
+          The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         shortDescription: The start date of the sprint
         uiOrder: 3
         type: string
       end-date:
         title: End Date
-        description: The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+        description: >-
+          The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         shortDescription: The end date of the sprint
         uiOrder: 4
@@ -285,12 +296,13 @@ TASK_CREATE_SPRINT:
   output:
     description: Create a sprint in Jira.
     uiOrder: 0
-    $ref: '#/$defs/sprint'
+    $ref: "#/$defs/sprint"
     title: Output
     type: object
   type: object
 TASK_GET_ISSUE:
-  description: Get an issue in Jira. The issue will only be returned if the user has permission to view it. Issues returned from this resource include Agile
+  description: >-
+    Get an issue in Jira. The issue will only be returned if the user has permission to view it. Issues returned from this resource include Agile
     fields, like sprint, closedSprints, flagged, and epic.
   shortDescription: Get an issue in Jira
   input:
@@ -304,7 +316,7 @@ TASK_GET_ISSUE:
         uiOrder: 0
         type: string
       update-history:
-        $ref: '#/$defs/common-query-params/update-history'
+        $ref: "#/$defs/common-query-params/update-history"
         uiOrder: 1
     required:
       - issue-key
@@ -313,12 +325,13 @@ TASK_GET_ISSUE:
   output:
     description: Get an issue in Jira.
     uiOrder: 0
-    $ref: '#/$defs/issue'
+    $ref: "#/$defs/issue"
     title: Output
     type: object
   type: object
 TASK_GET_SPRINT:
-  description: Get a sprint in Jira. The sprint will only be returned if the user can view the board that the sprint was created on, or view at least one
+  description: >-
+    Get a sprint in Jira. The sprint will only be returned if the user can view the board that the sprint was created on, or view at least one
     of the issues in the sprint.
   shortDescription: Get a sprint in Jira
   input:
@@ -327,7 +340,8 @@ TASK_GET_SPRINT:
     properties:
       sprint-id:
         title: Sprint ID
-        description: The ID of the sprint. The sprint will only be returned if you can view the board that the sprint was created on, or view at least one
+        description:
+          The ID of the sprint. The sprint will only be returned if you can view the board that the sprint was created on, or view at least one
           of the issues in the sprint.
         shortDescription: The ID of the sprint
         uiOrder: 0
@@ -339,7 +353,7 @@ TASK_GET_SPRINT:
   output:
     description: Get an sprint in Jira.
     uiOrder: 0
-    $ref: '#/$defs/sprint'
+    $ref: "#/$defs/sprint"
     required: []
     title: Output
     type: object
@@ -351,16 +365,18 @@ TASK_LIST_BOARDS:
     uiOrder: 0
     properties:
       project-key-or-id:
-        default: ''
+        default: ""
         title: Project Key or ID
-        description: This filters results to boards that are relevant to a project. Relevance meaning that the JQL filter defined in board contains a reference
+        description: >-
+          This filters results to boards that are relevant to a project. Relevance meaning that the JQL filter defined in board contains a reference
           to a project.
         shortDescription: The project key or ID, e.g. `INS`. Default is empty
         uiOrder: 0
         type: string
       board-type:
         default: simple
-        description: 'The type of board, can be: scrum, kanban, simple. Default is simple.'
+        description: >-
+          The type of board, can be: scrum, kanban, simple. Default is simple.
         uiOrder: 1
         enum:
           - scrum
@@ -369,16 +385,16 @@ TASK_LIST_BOARDS:
         title: Board Type
         type: string
       name:
-        default: ''
+        default: ""
         description: Name filters results to boards that match or partially match the specified name. Default is empty.
         uiOrder: 2
         title: Name
         type: string
       start-at:
-        $ref: '#/$defs/common-query-params/start-at'
+        $ref: "#/$defs/common-query-params/start-at"
         uiOrder: 3
       max-results:
-        $ref: '#/$defs/common-query-params/max-results'
+        $ref: "#/$defs/common-query-params/max-results"
         uiOrder: 4
     required: []
     title: Input
@@ -421,7 +437,8 @@ TASK_LIST_BOARDS:
           type: object
         type: array
       start-at:
-        description: 'The starting index of the returned boards. Base index: 0.'
+        description: >-
+          The starting index of the returned boards. Base index: 0.
         uiOrder: 2
         title: Start At
         type: integer
@@ -583,7 +600,8 @@ TASK_LIST_ISSUES:
                 type: string
               jql:
                 title: JQL
-                description: The JQL query. For example, `type = "Task" AND status = "Done"`. For more information, see <a href="https://support.atlassian.com/jira-software-cloud/docs/what-is-advanced-search-in-jira-cloud/">Advanced
+                description: >-
+                  The JQL query. For example, `type = "Task" AND status = "Done"`. For more information, see <a href="https://support.atlassian.com/jira-software-cloud/docs/what-is-advanced-search-in-jira-cloud/">Advanced
                   searching</a>.
                 shortDescription: The JQL query
                 uiOrder: 10
@@ -597,10 +615,10 @@ TASK_LIST_ISSUES:
             type: object
         type: object
       start-at:
-        $ref: '#/$defs/common-query-params/start-at'
+        $ref: "#/$defs/common-query-params/start-at"
         uiOrder: 3
       max-results:
-        $ref: '#/$defs/common-query-params/max-results'
+        $ref: "#/$defs/common-query-params/max-results"
         uiOrder: 4
     required:
       - board-name
@@ -615,10 +633,11 @@ TASK_LIST_ISSUES:
         uiOrder: 1
         title: Issues
         items:
-          $ref: '#/$defs/issue'
+          $ref: "#/$defs/issue"
         type: array
       start-at:
-        description: 'The starting index of the returned boards. Base index: 0.'
+        description: >-
+          The starting index of the returned boards. Base index: 0.
         uiOrder: 2
         title: Start At
         type: integer
@@ -653,10 +672,10 @@ TASK_LIST_SPRINTS:
         uiOrder: 0
         type: integer
       start-at:
-        $ref: '#/$defs/common-query-params/start-at'
+        $ref: "#/$defs/common-query-params/start-at"
         uiOrder: 1
       max-results:
-        $ref: '#/$defs/common-query-params/max-results'
+        $ref: "#/$defs/common-query-params/max-results"
         uiOrder: 2
     required:
       - board-id
@@ -671,10 +690,11 @@ TASK_LIST_SPRINTS:
         uiOrder: 1
         title: Sprints
         items:
-          $ref: '#/$defs/sprint'
+          $ref: "#/$defs/sprint"
         type: array
       start-at:
-        description: 'The starting index of the returned boards. Base index: 0.'
+        description: >-
+          The starting index of the returned boards. Base index: 0.
         uiOrder: 2
         title: Start At
         type: integer
@@ -703,7 +723,7 @@ TASK_UPDATE_ISSUE:
     uiOrder: 0
     properties:
       issue-key:
-        $ref: '#/$defs/issue/properties/key'
+        $ref: "#/$defs/issue/properties/key"
         title: Issue Key
         uiOrder: 0
       notify-users:
@@ -733,7 +753,8 @@ TASK_UPDATE_ISSUE:
                 items:
                   properties:
                     action:
-                      description: 'The action to perform, can be: `add`, `copy`, `edit`, `remove`, `set`.'
+                      description: >-
+                        The action to perform, can be: `add`, `copy`, `edit`, `remove`, `set`.
                       enum:
                         - add
                         - copy
@@ -793,7 +814,7 @@ TASK_UPDATE_ISSUE:
   output:
     description: Update an issue in Jira.
     uiOrder: 0
-    $ref: '#/$defs/issue'
+    $ref: "#/$defs/issue"
     title: Output
     type: object
   type: object
@@ -824,21 +845,24 @@ TASK_UPDATE_SPRINT:
         type: string
       start-date:
         title: Start Date
-        description: The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+        description: >-
+          The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         shortDescription: The start date of the sprint
         uiOrder: 3
         type: string
       end-date:
         title: End Date
-        description: The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
+        description: >-
+          The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339
           format like `2018-03-05T09:00:00Z0000`.
         shortDescription: The end date of the sprint
         uiOrder: 4
         type: string
       current-state:
         title: Current State
-        description: 'The current state of the sprint, can be: `future`, `active`, `closed`.'
+        description: >-
+          The current state of the sprint, can be: `future`, `active`, `closed`.
         shortDescription: The current state of the sprint
         uiOrder: 5
         type: string
@@ -859,7 +883,7 @@ TASK_UPDATE_SPRINT:
   output:
     description: Update a sprint in Jira.
     uiOrder: 0
-    $ref: '#/$defs/sprint'
+    $ref: "#/$defs/sprint"
     title: Output
     type: object
   type: object

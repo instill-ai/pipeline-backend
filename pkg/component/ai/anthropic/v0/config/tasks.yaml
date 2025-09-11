@@ -35,7 +35,7 @@ $defs:
   chat-message:
     properties:
       content:
-        $ref: '#/$defs/multi-modal-content'
+        $ref: "#/$defs/multi-modal-content"
         description: The message content.
         uiOrder: 1
         title: Content
@@ -70,7 +70,8 @@ $defs:
     type: object
 TASK_TEXT_GENERATION_CHAT:
   shortDescription: Provide text outputs in response to text inputs.
-  description: Anthropic's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand
+  description:
+    Anthropic's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand
     natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as
     "prompts". Designing a prompt is essentially how you “program” a large language model model, usually by providing instructions or some examples of how
     to successfully complete a task.
@@ -79,15 +80,16 @@ TASK_TEXT_GENERATION_CHAT:
     uiOrder: 0
     properties:
       chat-history:
-        description: 'Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be
+        description: >-
+          Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be
           ignored and will not have any effect when this field is populated. Each message should adhere to the format: {"role": "The message role, i.e.
-          ''system'', ''user'' or ''assistant''", "content": "message content"}.'
+          `system`, `user` or `assistant`", "content": "message content"}.
         type: array
-        shortDescription: 'Incorporate external chat history, specifically previous messages within the conversation. (Note: Anthropic doesn''t support
-          sending images via image-url, use the ''prompt-images'' field instead)'
+        shortDescription: >-
+          Incorporate external chat history, specifically previous messages within the conversation. (Note: Anthropic doesn't support sending images via image-url, use the 'prompt-images' field instead)"
         uiOrder: 4
         items:
-          $ref: '#/$defs/chat-message'
+          $ref: "#/$defs/chat-message"
         title: Chat history
       max-new-tokens:
         default: 50
@@ -124,22 +126,24 @@ TASK_TEXT_GENERATION_CHAT:
         uiOrder: 2
         title: Prompt
       prompt-images:
-        description: 'The prompt images (Note: The prompt images will be injected in the order they are provided to the ''prompt'' message. Anthropic doesn''t
-          support sending images via image-url, use this field instead).'
+        description: >-
+          The prompt images (Note: The prompt images will be injected in the order they are provided to the 'prompt' message. Anthropic doesn't support sending images via image-url, use this field instead).
         type: array
         uiOrder: 3
         items:
           type: string
         title: Prompt Images
       seed:
-        description: 'The seed (Note: Not supported by Anthropic Models).'
+        description: >-
+          The seed (Note: Not supported by Anthropic Models).
         type: integer
         uiOrder: 4
         title: Seed
       system-message:
         default: You are a helpful assistant.
-        description: The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
-          specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message
+        description: >-
+          The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
+          specific instructions about how it should behave throughout the conversation. By default, the model's behavior is set using a generic message
           as "You are a helpful assistant.".
         type: string
         shortDescription: The system message helps set the behavior of the assistant
@@ -172,7 +176,7 @@ TASK_TEXT_GENERATION_CHAT:
         title: Text
         type: string
       usage:
-        $ref: '#/$defs/usage'
+        $ref: "#/$defs/usage"
     required:
       - text
     title: Output

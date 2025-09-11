@@ -22,25 +22,22 @@ TASK_SPEECH_RECOGNITION:
     uiOrder: 0
     properties:
       audio:
-        description: 'The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm.
-
-          .'
+        description: >-
+          The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm.
         type: audio/*
         uiOrder: 1
         title: Audio
       language:
-        description: 'The language of the input audio. Supplying the input language in <a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO-639-1</a>
+        description: >-
+          The language of the input audio. Supplying the input language in <a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO-639-1</a>
           format will improve accuracy and latency.
-
-          .'
         type: string
         shortDescription: The language of the input audio.
         uiOrder: 3
         title: Language
       model:
-        description: 'ID of the model to use. Only `whisper-1` is currently available.
-
-          .'
+        description: >-
+          ID of the model to use. Only `whisper-1` is currently available.
         enum:
           - whisper-1
         example: whisper-1
@@ -54,20 +51,18 @@ TASK_SPEECH_RECOGNITION:
             - setup.api-key
         title: Model
       prompt:
-        description: 'An optional text to guide the model''s style or continue a previous audio segment. The prompt should match the audio language.
-
-          .'
+        description: >-
+          An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.
         type: string
         shortDescription: An optional text to guide the model's style or continue a previous audio segment.
         uiOrder: 2
         title: Prompt
       temperature:
         default: 0
-        description: 'The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will
+        description: >-
+          The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will
           make it more focused and deterministic. If set to 0, the model will use <a href="https://en.wikipedia.org/wiki/Log_probability">log probability</a>
           to automatically increase the temperature until certain thresholds are hit.
-
-          .'
         type: number
         shortDescription: The sampling temperature, between 0 and 1.
         uiOrder: 4
@@ -140,24 +135,27 @@ TASK_TEXT_EMBEDDINGS:
     type: object
 TASK_TEXT_GENERATION:
   shortDescription: Provide text outputs in response to their inputs.
-  description: OpenAI's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand
+  description: >-
+    OpenAI's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand
     natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as
-    "prompts". Designing a prompt is essentially how you “program” a large language model model, usually by providing instructions or some examples of how
+    "prompts". Designing a prompt is essentially how you "program" a large language model model, usually by providing instructions or some examples of how
     to successfully complete a task.
   input:
     uiOrder: 0
     properties:
       chat-history:
-        description: 'Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be
+        description: >-
+          Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be
           ignored and will not have any effect when this field is populated. Each message should adhere to the format {"role": "The message role, i.e. ''system'',
-          ''user'' or ''assistant''", "content": "message content"}.'
+          ''user'' or ''assistant''", "content": "message content"}.
         type: array
-        shortDescription: 'Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will
-          be ignored and will not have any effect when this field is populated. Each message should be an ojbect adhere to the format: {"role": "The message
-          role, i.e. ''system'', ''user'' or ''assistant''", "content": "message content"}.'
+        shortdescription: >-
+          Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and
+          will not have any effect when this field is populated. Each message should be an object adhere to the format: {"role": "The message role, i.e.
+          ''system'', ''user'' or ''assistant''", "content": "message content"}.
         uiOrder: 4
         items:
-          $ref: '#/$defs/chat-message'
+          $ref: "#/$defs/chat-message"
         title: Chat history
       frequency-penalty:
         default: 0
@@ -178,10 +176,8 @@ TASK_TEXT_GENERATION:
           type: string
         title: Image
       max-tokens:
-        description: 'The maximum number of tokens that can be generated in the chat completion.
-
-
-          The total length of input tokens and generated tokens is limited by the model''s context length.'
+        description: The maximum number of tokens that can be generated in the chat completion. The total length of input tokens and generated tokens is
+          limited by the model's context length.
         nullable: true
         type: integer
         shortDescription: The maximum number of tokens to generate in the chat completion.
@@ -315,7 +311,7 @@ TASK_TEXT_GENERATION:
       system-message:
         default: You are a helpful assistant.
         description: The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
-          specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You
+          specific instructions about how it should behave throughout the conversation. By default, the model's behavior is using a generic message as "You
           are a helpful assistant.".
         type: string
         shortDescription: The system message helps set the behavior of the assistant
@@ -323,13 +319,8 @@ TASK_TEXT_GENERATION:
         title: System Message
       temperature:
         default: 1
-        description: 'What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like
-          0.2 will make it more focused and deterministic.
-
-
-          We generally recommend altering this or `top-p` but not both.
-
-          .'
+        description: What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like
+          0.2 will make it more focused and deterministic. We generally recommend altering this or `top-p` but not both.
         example: 1
         maximum: 2
         minimum: 0
@@ -340,13 +331,9 @@ TASK_TEXT_GENERATION:
         title: Temperature
       top-p:
         default: 1
-        description: 'An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p
-          probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
-
-
-          We generally recommend altering this or `temperature` but not both.
-
-          .'
+        description: An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p
+          probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered. We generally recommend altering this or
+          `temperature` but not both."
         example: 1
         maximum: 1
         minimum: 0
@@ -704,9 +691,8 @@ TASK_TEXT_TO_SPEECH:
     uiOrder: 0
     properties:
       model:
-        description: 'One of the available TTS models: `tts-1` or `tts-1-hd`
-
-          .'
+        description: >-
+          One of the available TTS models: `tts-1` or `tts-1-hd`.
         default: tts-1
         enum:
           - tts-1
@@ -723,7 +709,8 @@ TASK_TEXT_TO_SPEECH:
         title: Model
       response-type:
         default: mp3
-        description: The format to audio in. Supported formats are `mp3`, `opus`, `aac`, and `flac`.
+        description: >-
+          The format to audio in. Supported formats are `mp3`, `opus`, `aac`, and `flac`.
         enum:
           - mp3
           - opus
@@ -735,7 +722,8 @@ TASK_TEXT_TO_SPEECH:
         title: Response Format
       speed:
         default: 1
-        description: The speed of the generated audio. Select a value from `0.25` to `4.0`. `1.0` is the default.
+        description: >-
+          The speed of the generated audio. Select a value from `0.25` to `4.0`. `1.0` is the default.
         maximum: 4
         minimum: 0.25
         type: number
@@ -743,14 +731,16 @@ TASK_TEXT_TO_SPEECH:
         uiOrder: 4
         title: Speed
       text:
-        description: The text to generate audio for. The maximum length is 4096 characters.
+        description: >-
+          The text to generate audio for. The maximum length is 4096 characters.
         maxLength: 4096
         type: string
         shortDescription: The text to generate audio for
         uiOrder: 1
         title: Text
       voice:
-        description: The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`.
+        description: >-
+          The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`.
         enum:
           - alloy
           - echo
@@ -773,7 +763,8 @@ TASK_TEXT_TO_SPEECH:
     uiOrder: 0
     properties:
       audio:
-        description: AI generated audio.
+        description: >-
+          AI generated audio.
         uiOrder: 0
         title: Audio
         type: audio/wav

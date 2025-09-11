@@ -54,7 +54,8 @@ $defs:
       title: Last Name
       type: string
     phone-number:
-      description: 'Phone number. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example: +886xxxxxxxxx.'
+      description: >-
+        Phone number. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example: +886xxxxxxxxx.
       uiOrder: 4
       title: Phone Number
       type: string
@@ -69,14 +70,16 @@ $defs:
       title: Job Title
       type: string
     lifecycle-stage:
-      description: 'Lifecycle stages are used to track how contacts or companies move forward in your process. Default format is in small letters, all words
-        are combined. Example: salesqualifiedlead. However, remember to check internal value for custom fields.'
+      description: >-
+        Lifecycle stages are used to track how contacts or companies move forward in your process. Default format is in small letters, all words
+        are combined. Example: salesqualifiedlead. However, remember to check internal value for custom fields.
       uiOrder: 7
       title: Lifecycle Stage
       type: string
     lead-status:
-      description: 'The contact''s sales, prospecting or outreach status. Default format is in capital letters, with _ as space. Example: IN_PROGRESS. However,
-        remember to check internal value for custom fields.'
+      description: >-
+        The contact's sales, prospecting or outreach status. Default format is in capital letters, with _ as space. Example: IN_PROGRESS. However,
+        remember to check internal value for custom fields.
       uiOrder: 8
       title: Lead Status
       type: string
@@ -87,14 +90,16 @@ $defs:
       title: Deal Name
       type: string
     pipeline:
-      description: A pipeline is the place where you document and manage how your prospects move through the steps of your sales process. HubSpot uses interval
+      description: >-
+        A pipeline is the place where you document and manage how your prospects move through the steps of your sales process. HubSpot uses interval
         value rather than the name displayed in the view.
       uiOrder: 2
       title: Pipeline
       type: string
     deal-stage:
-      description: 'Deal stages allow you to categorize and track the progress of the deals that you are working on. Default format is in small letters,
-        all words are combined. Example: qualifiedtobuy. However, remember to check internal value for custom fields.'
+      description: >-
+        Deal stages allow you to categorize and track the progress of the deals that you are working on. Default format is in small letters,
+        all words are combined. Example: qualifiedtobuy. However, remember to check internal value for custom fields.
       uiOrder: 3
       title: Deal Stage
       type: string
@@ -104,18 +109,21 @@ $defs:
       title: Amount
       type: number
     deal-type:
-      description: 'The type of deal. Default format is in small letters, all words are combined. Example: newbusiness. However, remember to check internal
-        value for custom fields.'
+      description: >-
+        The type of deal. Default format is in small letters, all words are combined. Example: newbusiness. However, remember to check internal
+        value for custom fields.
       uiOrder: 5
       title: Deal Type
       type: string
     close-date:
-      description: 'Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.'
+      description: >-
+        Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.
       uiOrder: 6
       title: Close Date
       type: string
     create-date:
-      description: 'Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.'
+      description: >-
+        Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.
       uiOrder: 7
       title: Create Date
       type: string
@@ -136,18 +144,21 @@ $defs:
       title: Description
       type: string
     phone-number:
-      description: 'Phone number of the company. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example:
-        +886xxxxxxxxx.'
+      description: >-
+        Phone number of the company. If you plan to use the number formatting feature in HubSpot, use country code + phone number. Example:
+        +886xxxxxxxxx.
       uiOrder: 4
       title: Phone Number
       type: string
     industry:
-      description: 'The industry the company belongs to. Default format is in capital letters, with _ as space. Example: BROADCAST_MEDIA.'
+      description: >-
+        The industry the company belongs to. Default format is in capital letters, with _ as space. Example: BROADCAST_MEDIA.
       uiOrder: 5
       title: Industry
       type: string
     company-type:
-      description: 'Type of company. Default format is capital letter. Example: RESELLER.'
+      description: >-
+        Type of company. Default format is capital letter. Example: RESELLER.
       uiOrder: 6
       title: Company Type
       type: string
@@ -198,31 +209,36 @@ $defs:
       title: Ticket Name
       type: string
     ticket-status:
-      description: 'The pipeline stage that contains this ticket. Default format is number. Example: 1. However, remember to check internal value for custom
-        fields. Note: In Instill AI, ticket-status is displayed as string because of the possible custom internal value.'
+      description: >-
+        The pipeline stage that contains this ticket. Default format is number. Example: 1. However, remember to check internal value for custom
+        fields. Note: In Instill AI, ticket-status is displayed as string because of the possible custom internal value.
       uiOrder: 2
       title: Ticket Status
       type: string
     pipeline:
-      description: A pipeline organizes and tracks the progression of tickets through various stages of resolution within your support process. HubSpot
+      description: >-
+        A pipeline organizes and tracks the progression of tickets through various stages of resolution within your support process. HubSpot
         uses interval value rather than the name displayed in the view.
       uiOrder: 3
       title: Pipeline
       type: string
     categories:
-      description: 'The main reason customer reached out for help. Default format is in capital letters. Example: BILLING_ISSUE. However, remember to check
-        internal value for custom fields.'
+      description: >-
+        The main reason customer reached out for help. Default format is in capital letters. Example: BILLING_ISSUE. However, remember to check
+        internal value for custom fields.
       uiOrder: 4
       title: Categories
       type: array
     priority:
-      description: 'The level of attention needed on the ticket. Default format is in capital letters. Example: MEDIUM. However, remember to check internal
-        value for custom fields.'
+      description: >-
+        The level of attention needed on the ticket. Default format is in capital letters. Example: MEDIUM. However, remember to check internal
+        value for custom fields.
       uiOrder: 5
       title: Priority
       type: string
     source:
-      description: 'Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL.'
+      description: >-
+        Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL.
       uiOrder: 6
       title: Source
       type: string
@@ -232,12 +248,14 @@ $defs:
       title: Record Source
       type: string
     create-date:
-      description: 'Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.'
+      description: >-
+        Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.
       uiOrder: 8
       title: Create Date
       type: string
     last-modified-date:
-      description: 'Last modified date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.'
+      description: >-
+        Last modified date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.
       uiOrder: 9
       title: Last Modified Date
       type: string
@@ -261,39 +279,39 @@ TASK_GET_CONTACT:
     uiOrder: 0
     properties:
       owner-id:
-        $ref: '#/$defs/common/owner-id'
+        $ref: "#/$defs/common/owner-id"
         required: []
         type: string
       email:
-        $ref: '#/$defs/contact/email'
+        $ref: "#/$defs/contact/email"
         required: []
         type: string
       first-name:
-        $ref: '#/$defs/contact/first-name'
+        $ref: "#/$defs/contact/first-name"
         required: []
         type: string
       last-name:
-        $ref: '#/$defs/contact/last-name'
+        $ref: "#/$defs/contact/last-name"
         required: []
         type: string
       phone-number:
-        $ref: '#/$defs/contact/phone-number'
+        $ref: "#/$defs/contact/phone-number"
         required: []
         type: string
       company:
-        $ref: '#/$defs/contact/company'
+        $ref: "#/$defs/contact/company"
         required: []
         type: string
       job-title:
-        $ref: '#/$defs/contact/job-title'
+        $ref: "#/$defs/contact/job-title"
         required: []
         type: string
       lifecycle-stage:
-        $ref: '#/$defs/contact/lifecycle-stage'
+        $ref: "#/$defs/contact/lifecycle-stage"
         required: []
         type: string
       lead-status:
-        $ref: '#/$defs/contact/lead-status'
+        $ref: "#/$defs/contact/lead-status"
         required: []
         type: string
       contact-id:
@@ -313,40 +331,40 @@ TASK_CREATE_CONTACT:
     uiOrder: 0
     properties:
       owner-id:
-        $ref: '#/$defs/common/owner-id'
+        $ref: "#/$defs/common/owner-id"
         type: string
       email:
-        $ref: '#/$defs/contact/email'
+        $ref: "#/$defs/contact/email"
         type: string
       first-name:
-        $ref: '#/$defs/contact/first-name'
+        $ref: "#/$defs/contact/first-name"
         type: string
       last-name:
-        $ref: '#/$defs/contact/last-name'
+        $ref: "#/$defs/contact/last-name"
         type: string
       phone-number:
-        $ref: '#/$defs/contact/phone-number'
+        $ref: "#/$defs/contact/phone-number"
         type: string
       company:
-        $ref: '#/$defs/contact/company'
+        $ref: "#/$defs/contact/company"
         type: string
       job-title:
-        $ref: '#/$defs/contact/job-title'
+        $ref: "#/$defs/contact/job-title"
         type: string
       lifecycle-stage:
-        $ref: '#/$defs/contact/lifecycle-stage'
+        $ref: "#/$defs/contact/lifecycle-stage"
         type: string
       lead-status:
-        $ref: '#/$defs/contact/lead-status'
+        $ref: "#/$defs/contact/lead-status"
         type: string
       create-deals-association:
-        $ref: '#/$defs/common/create-deals-association'
+        $ref: "#/$defs/common/create-deals-association"
         uiOrder: 9
       create-companies-association:
-        $ref: '#/$defs/common/create-companies-association'
+        $ref: "#/$defs/common/create-companies-association"
         uiOrder: 10
       create-tickets-association:
-        $ref: '#/$defs/common/create-tickets-association'
+        $ref: "#/$defs/common/create-tickets-association"
         uiOrder: 11
     required:
       - email
@@ -386,39 +404,39 @@ TASK_GET_DEAL:
     uiOrder: 0
     properties:
       owner-id:
-        $ref: '#/$defs/common/owner-id'
+        $ref: "#/$defs/common/owner-id"
         required: []
         type: string
       deal-name:
-        $ref: '#/$defs/deal/deal-name'
+        $ref: "#/$defs/deal/deal-name"
         required: []
         type: string
       pipeline:
-        $ref: '#/$defs/deal/pipeline'
+        $ref: "#/$defs/deal/pipeline"
         required: []
         type: string
       deal-stage:
-        $ref: '#/$defs/deal/deal-stage'
+        $ref: "#/$defs/deal/deal-stage"
         required: []
         type: string
       amount:
-        $ref: '#/$defs/deal/amount'
+        $ref: "#/$defs/deal/amount"
         required: []
         type: number
       deal-type:
-        $ref: '#/$defs/deal/deal-type'
+        $ref: "#/$defs/deal/deal-type"
         required: []
         type: string
       create-date:
-        $ref: '#/$defs/deal/create-date'
+        $ref: "#/$defs/deal/create-date"
         required: []
         type: string
       close-date:
-        $ref: '#/$defs/deal/close-date'
+        $ref: "#/$defs/deal/close-date"
         required: []
         type: string
       associated-contact-ids:
-        $ref: '#/$defs/common/associated-contact-ids'
+        $ref: "#/$defs/common/associated-contact-ids"
         uiOrder: 8
     required:
       - deal-name
@@ -433,28 +451,28 @@ TASK_CREATE_DEAL:
     uiOrder: 0
     properties:
       owner-id:
-        $ref: '#/$defs/common/owner-id'
+        $ref: "#/$defs/common/owner-id"
         type: string
       deal-name:
-        $ref: '#/$defs/deal/deal-name'
+        $ref: "#/$defs/deal/deal-name"
         type: string
       pipeline:
-        $ref: '#/$defs/deal/pipeline'
+        $ref: "#/$defs/deal/pipeline"
         type: string
       deal-stage:
-        $ref: '#/$defs/deal/deal-stage'
+        $ref: "#/$defs/deal/deal-stage"
         type: string
       amount:
-        $ref: '#/$defs/deal/amount'
+        $ref: "#/$defs/deal/amount"
         type: number
       deal-type:
-        $ref: '#/$defs/deal/deal-type'
+        $ref: "#/$defs/deal/deal-type"
         type: string
       close-date:
-        $ref: '#/$defs/deal/close-date'
+        $ref: "#/$defs/deal/close-date"
         type: string
       create-contacts-association:
-        $ref: '#/$defs/common/create-contacts-association'
+        $ref: "#/$defs/common/create-contacts-association"
         uiOrder: 7
     required:
       - deal-name
@@ -488,28 +506,28 @@ TASK_UPDATE_DEAL:
         uiOrder: 0
         title: Deal ID
       owner-id:
-        $ref: '#/$defs/common/owner-id'
+        $ref: "#/$defs/common/owner-id"
         type: string
       deal-name:
-        $ref: '#/$defs/deal/deal-name'
+        $ref: "#/$defs/deal/deal-name"
         type: string
       pipeline:
-        $ref: '#/$defs/deal/pipeline'
+        $ref: "#/$defs/deal/pipeline"
         type: string
       deal-stage:
-        $ref: '#/$defs/deal/deal-stage'
+        $ref: "#/$defs/deal/deal-stage"
         type: string
       amount:
-        $ref: '#/$defs/deal/amount'
+        $ref: "#/$defs/deal/amount"
         type: number
       deal-type:
-        $ref: '#/$defs/deal/deal-type'
+        $ref: "#/$defs/deal/deal-type"
         type: string
       close-date:
-        $ref: '#/$defs/deal/close-date'
+        $ref: "#/$defs/deal/close-date"
         type: string
       create-contacts-association:
-        $ref: '#/$defs/common/create-contacts-association'
+        $ref: "#/$defs/common/create-contacts-association"
         uiOrder: 7
     required:
       - deal-id
@@ -556,67 +574,67 @@ TASK_GET_COMPANY:
     uiOrder: 0
     properties:
       owner-id:
-        $ref: '#/$defs/common/owner-id'
+        $ref: "#/$defs/common/owner-id"
         required: []
         type: string
       company-name:
-        $ref: '#/$defs/company/company-name'
+        $ref: "#/$defs/company/company-name"
         required: []
         type: string
       company-domain:
-        $ref: '#/$defs/company/company-domain'
+        $ref: "#/$defs/company/company-domain"
         required: []
         type: string
       description:
-        $ref: '#/$defs/company/description'
+        $ref: "#/$defs/company/description"
         required: []
         type: string
       phone-number:
-        $ref: '#/$defs/company/phone-number'
+        $ref: "#/$defs/company/phone-number"
         required: []
         type: string
       industry:
-        $ref: '#/$defs/company/industry'
+        $ref: "#/$defs/company/industry"
         required: []
         type: string
       company-type:
-        $ref: '#/$defs/company/company-type'
+        $ref: "#/$defs/company/company-type"
         required: []
         type: string
       city:
-        $ref: '#/$defs/company/city'
+        $ref: "#/$defs/company/city"
         required: []
         type: string
       state:
-        $ref: '#/$defs/company/state'
+        $ref: "#/$defs/company/state"
         required: []
         type: string
       country:
-        $ref: '#/$defs/company/country'
+        $ref: "#/$defs/company/country"
         required: []
         type: string
       postal-code,:
-        $ref: '#/$defs/company/postal-code'
+        $ref: "#/$defs/company/postal-code"
         required: []
         type: string
       time-zone:
-        $ref: '#/$defs/company/time-zone'
+        $ref: "#/$defs/company/time-zone"
         required: []
         type: string
       annual-revenue:
-        $ref: '#/$defs/company/annual-revenue'
+        $ref: "#/$defs/company/annual-revenue"
         required: []
         type: number
       total-revenue:
-        $ref: '#/$defs/company/total-revenue'
+        $ref: "#/$defs/company/total-revenue"
         required: []
         type: number
       linkedin-page:
-        $ref: '#/$defs/company/linkedin-page'
+        $ref: "#/$defs/company/linkedin-page"
         required: []
         type: string
       associated-contact-ids:
-        $ref: '#/$defs/common/associated-contact-ids'
+        $ref: "#/$defs/common/associated-contact-ids"
         uiOrder: 15
     required: []
     title: Output
@@ -628,49 +646,49 @@ TASK_CREATE_COMPANY:
     uiOrder: 0
     properties:
       owner-id:
-        $ref: '#/$defs/common/owner-id'
+        $ref: "#/$defs/common/owner-id"
         type: string
       company-name:
-        $ref: '#/$defs/company/company-name'
+        $ref: "#/$defs/company/company-name"
         type: string
       company-domain:
-        $ref: '#/$defs/company/company-domain'
+        $ref: "#/$defs/company/company-domain"
         type: string
       description:
-        $ref: '#/$defs/company/description'
+        $ref: "#/$defs/company/description"
         type: string
       phone-number:
-        $ref: '#/$defs/company/phone-number'
+        $ref: "#/$defs/company/phone-number"
         type: string
       industry:
-        $ref: '#/$defs/company/industry'
+        $ref: "#/$defs/company/industry"
         type: string
       company-type:
-        $ref: '#/$defs/company/company-type'
+        $ref: "#/$defs/company/company-type"
         type: string
       city:
-        $ref: '#/$defs/company/city'
+        $ref: "#/$defs/company/city"
         type: string
       state:
-        $ref: '#/$defs/company/state'
+        $ref: "#/$defs/company/state"
         type: string
       country:
-        $ref: '#/$defs/company/country'
+        $ref: "#/$defs/company/country"
         type: string
       postal-code,:
-        $ref: '#/$defs/company/postal-code'
+        $ref: "#/$defs/company/postal-code"
         type: string
       time-zone:
-        $ref: '#/$defs/company/time-zone'
+        $ref: "#/$defs/company/time-zone"
         type: string
       annual-revenue:
-        $ref: '#/$defs/company/annual-revenue'
+        $ref: "#/$defs/company/annual-revenue"
         type: number
       linkedin-page:
-        $ref: '#/$defs/company/linkedin-page'
+        $ref: "#/$defs/company/linkedin-page"
         type: string
       create-contacts-association:
-        $ref: '#/$defs/common/create-contacts-association'
+        $ref: "#/$defs/common/create-contacts-association"
         uiOrder: 15
     required:
       - company-domain
@@ -710,50 +728,50 @@ TASK_GET_TICKET:
     uiOrder: 0
     properties:
       owner-id:
-        $ref: '#/$defs/common/owner-id'
+        $ref: "#/$defs/common/owner-id"
         required: []
         type: string
       ticket-name:
-        $ref: '#/$defs/ticket/ticket-name'
+        $ref: "#/$defs/ticket/ticket-name"
         required: []
         type: string
       ticket-status:
-        $ref: '#/$defs/ticket/ticket-status'
+        $ref: "#/$defs/ticket/ticket-status"
         required: []
         type: string
       pipeline:
-        $ref: '#/$defs/ticket/pipeline'
+        $ref: "#/$defs/ticket/pipeline"
         required: []
         type: string
       categories:
-        $ref: '#/$defs/ticket/categories'
+        $ref: "#/$defs/ticket/categories"
         items:
           title: Category Value
           description: Category value.
           type: string
         type: array
       priority:
-        $ref: '#/$defs/ticket/priority'
+        $ref: "#/$defs/ticket/priority"
         required: []
         type: string
       source:
-        $ref: '#/$defs/ticket/source'
+        $ref: "#/$defs/ticket/source"
         required: []
         type: string
       record-source:
-        $ref: '#/$defs/ticket/record-source'
+        $ref: "#/$defs/ticket/record-source"
         required: []
         type: string
       create-date:
-        $ref: '#/$defs/ticket/create-date'
+        $ref: "#/$defs/ticket/create-date"
         required: []
         type: string
       last-modified-date:
-        $ref: '#/$defs/ticket/last-modified-date'
+        $ref: "#/$defs/ticket/last-modified-date"
         required: []
         type: string
       associated-contact-ids:
-        $ref: '#/$defs/common/associated-contact-ids'
+        $ref: "#/$defs/common/associated-contact-ids"
         uiOrder: 10
     required:
       - ticket-name
@@ -768,30 +786,30 @@ TASK_CREATE_TICKET:
     uiOrder: 0
     properties:
       owner-id:
-        $ref: '#/$defs/common/owner-id'
+        $ref: "#/$defs/common/owner-id"
         type: string
       ticket-name:
-        $ref: '#/$defs/ticket/ticket-name'
+        $ref: "#/$defs/ticket/ticket-name"
         type: string
       ticket-status:
-        $ref: '#/$defs/ticket/ticket-status'
+        $ref: "#/$defs/ticket/ticket-status"
         type: string
       pipeline:
-        $ref: '#/$defs/ticket/pipeline'
+        $ref: "#/$defs/ticket/pipeline"
         type: string
       categories:
-        $ref: '#/$defs/ticket/categories'
+        $ref: "#/$defs/ticket/categories"
         type: array
         items:
           type: string
       priority:
-        $ref: '#/$defs/ticket/priority'
+        $ref: "#/$defs/ticket/priority"
         type: string
       source:
-        $ref: '#/$defs/ticket/source'
+        $ref: "#/$defs/ticket/source"
         type: string
       create-contacts-association:
-        $ref: '#/$defs/common/create-contacts-association'
+        $ref: "#/$defs/common/create-contacts-association"
         uiOrder: 7
     required:
       - ticket-name
@@ -825,30 +843,30 @@ TASK_UPDATE_TICKET:
         uiOrder: 0
         title: Ticket ID
       owner-id:
-        $ref: '#/$defs/common/owner-id'
+        $ref: "#/$defs/common/owner-id"
         type: string
       ticket-name:
-        $ref: '#/$defs/ticket/ticket-name'
+        $ref: "#/$defs/ticket/ticket-name"
         type: string
       ticket-status:
-        $ref: '#/$defs/ticket/ticket-status'
+        $ref: "#/$defs/ticket/ticket-status"
         type: string
       pipeline:
-        $ref: '#/$defs/ticket/pipeline'
+        $ref: "#/$defs/ticket/pipeline"
         type: string
       categories:
-        $ref: '#/$defs/ticket/categories'
+        $ref: "#/$defs/ticket/categories"
         type: array
         items:
           type: string
       priority:
-        $ref: '#/$defs/ticket/priority'
+        $ref: "#/$defs/ticket/priority"
         type: string
       source:
-        $ref: '#/$defs/ticket/source'
+        $ref: "#/$defs/ticket/source"
         type: string
       create-contacts-association:
-        $ref: '#/$defs/common/create-contacts-association'
+        $ref: "#/$defs/common/create-contacts-association"
         uiOrder: 7
     required:
       - ticket-id
@@ -869,8 +887,9 @@ TASK_UPDATE_TICKET:
     title: Output
     type: object
 TASK_GET_THREAD:
-  shortDescription: 'Retrieve all the messages inside a thread (conversation inbox). The messages will be sorted from most recent to least recent. Note:
-    This task uses Conversation API from HubSpot, which is still in BETA.'
+  shortDescription: >-
+    Retrieve all the messages inside a thread (conversation inbox). The messages will be sorted from most recent to least recent. Note:
+    This task uses Conversation API from HubSpot, which is still in BETA.
   input:
     description: Input thread ID.
     uiOrder: 0
@@ -916,7 +935,8 @@ TASK_GET_THREAD:
                   title: Type
                   type: string
                 sender-value:
-                  description: 'Contains the actual sender information (e.g.: email address).'
+                  description: >-
+                    Contains the actual sender information (e.g.: email address).
                   uiOrder: 2
                   title: Value
                   type: string
@@ -941,7 +961,8 @@ TASK_GET_THREAD:
                     title: Name
                     type: string
                   value:
-                    description: 'Contains the actual recipient information (e.g.: email address).'
+                    description: >-
+                      Contains the actual recipient information (e.g.: email address).
                     uiOrder: 2
                     title: Value
                     type: string
@@ -966,7 +987,8 @@ TASK_GET_THREAD:
               title: Subject
               type: string
             channel-id:
-              description: The ID of a generic channel returned from the channels endpoint, like 1000 for live chat, 1001 for Facebook Messenger, 1002 for
+              description: >-
+                The ID of a generic channel returned from the channels endpoint, like 1000 for live chat, 1001 for Facebook Messenger, 1002 for
                 email, etc.
               uiOrder: 5
               required: []
@@ -1008,8 +1030,9 @@ TASK_INSERT_MESSAGE:
         uiOrder: 0
         title: Thread ID
       sender-actor-id:
-        description: 'Input sender actor id. Example: A-12345678. To obtain this, it is recommended to use and copy the ''Get Thread task'' sender output.
-          For [more information](https://developers.hubspot.com/beta-docs/guides/api/conversations/inbox-and-messages#get-actors) about actor id.'
+        description: >-
+          Input sender actor id. Example: A-12345678. To obtain this, it is recommended to use and copy the `Get Thread task` sender output.
+          For [more information](https://developers.hubspot.com/beta-docs/guides/api/conversations/inbox-and-messages#get-actors) about actor id.
         type: string
         uiOrder: 1
         title: Sender Actor ID
@@ -1021,7 +1044,8 @@ TASK_INSERT_MESSAGE:
         items:
           type: string
       channel-account-id:
-        description: The ID of an account that is part of the channel-id channel. On an existing thread, it is recommended to copy channel-account-id of
+        description: >-
+          The ID of an account that is part of the channel-id channel. On an existing thread, it is recommended to copy channel-account-id of
           the most recent message on the thread.
         type: string
         uiOrder: 3
@@ -1060,9 +1084,10 @@ TASK_INSERT_MESSAGE:
     title: Output
     type: object
 TASK_RETRIEVE_ASSOCIATION:
-  shortDescription: 'Get the object IDs associated with contact ID (contact->objects). If you are trying to do the opposite (object->contacts), it is possible
+  shortDescription: >-
+    Get the object IDs associated with contact ID (contact->objects). If you are trying to do the opposite (object->contacts), it is possible
     using the other tasks. Example: Go to get deal task to obtain deal->contacts. Remember to check that the contact ID you input exists, because there
-    won''t be an error message if the contact ID doesn''t exist.'
+    won't be an error message if the contact ID doesn't exist.
   input:
     description: Contact ID and object type (CRM objects or Thread).
     uiOrder: 0
@@ -1079,7 +1104,8 @@ TASK_RETRIEVE_ASSOCIATION:
           - Tickets
           - Threads
         example: Deals
-        description: 'Input object type (CRM objects or ''Threads''). Note: CRM objects include ''Deals'', ''Companies'', ''Tickets'', etc.'
+        description: >-
+          Input object type (CRM objects or `Threads`). Note: CRM objects include `Deals`, `Companies`, `Tickets`, etc.
         type: string
         uiOrder: 1
         title: Object Type
@@ -1095,7 +1121,7 @@ TASK_RETRIEVE_ASSOCIATION:
       object-ids:
         description: An array of object ID associated with the contact.
         uiOrder: 0
-        title: 'Object ID Array '
+        title: Object ID Array
         items:
           title: Object ID
           description: The object ID associated with the contact.
@@ -1258,7 +1284,7 @@ TASK_GET_ALL:
       object-ids:
         description: An array of object ID.
         uiOrder: 0
-        title: 'Object ID Array '
+        title: Object ID Array
         items:
           title: Object ID
           description: Object ID.

@@ -35,7 +35,7 @@ $defs:
   chat-message:
     properties:
       content:
-        $ref: '#/$defs/multi-modal-content'
+        $ref: "#/$defs/multi-modal-content"
         description: The message content.
         uiOrder: 1
         title: Content
@@ -138,23 +138,26 @@ $defs:
     type: object
 TASK_TEXT_GENERATION_CHAT:
   shortDescription: Provide text outputs in response to text inputs.
-  description: Cohere's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand
+  description: >-
+    Cohere's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand
     natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as
-    "prompts". Designing a prompt is essentially how you “program” a large language model model, usually by providing instructions or some examples of how
+    "prompts". Designing a prompt is essentially how you "program" a large language model model, usually by providing instructions or some examples of how
     to successfully complete a task.
   input:
     description: Input.
     uiOrder: 0
     properties:
       chat-history:
-        description: 'Incorporate external chat history, specifically previous messages within the conversation. Each message should adhere to the format:
-          : {"role": "The message role, i.e. ''USER'' or ''CHATBOT''", "content": "message content"}.'
+        description: >-
+          Incorporate external chat history, specifically previous messages within the conversation. Each message should adhere to the format:
+          : {"role": "The message role, i.e. `USER` or `CHATBOT`", "content": "message content"}.
         type: array
-        shortDescription: 'Incorporate external chat history, specifically previous messages within the conversation. (Note: As for 2024-06-24 Cohere models
-          are not multimodal, so images will be ignored.)'
+        shortdescription: >-
+          Incorporate external chat history, specifically previous messages within the conversation. (Note: As for 2024-06-24 Cohere models
+          are not multimodal, so images will be ignored.)
         uiOrder: 4
         items:
-          $ref: '#/$defs/chat-message'
+          $ref: "#/$defs/chat-message"
         title: Chat history
       max-new-tokens:
         default: 50
@@ -189,7 +192,8 @@ TASK_TEXT_GENERATION_CHAT:
         uiOrder: 2
         title: Prompt
       prompt-images:
-        description: 'The prompt images (Note: As for 2024-06-24 Cohere models are not multimodal, so images will be ignored.).'
+        description: >-
+          The prompt images (Note: As for 2024-06-24 Cohere models are not multimodal, so images will be ignored.).
         type: array
         uiOrder: 3
         items:
@@ -203,8 +207,9 @@ TASK_TEXT_GENERATION_CHAT:
         title: Seed
       system-message:
         default: You are a helpful assistant.
-        description: The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
-          specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You
+        description: >-
+          The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
+          specific instructions about how it should behave throughout the conversation. By default, the model's behavior is using a generic message as "You
           are a helpful assistant.".
         type: string
         shortDescription: The system message helps set the behavior of the assistant
@@ -249,9 +254,9 @@ TASK_TEXT_GENERATION_CHAT:
         type: array
         title: Citations
         items:
-          $ref: '#/$defs/citation'
+          $ref: "#/$defs/citation"
       usage:
-        $ref: '#/$defs/command-usage'
+        $ref: "#/$defs/command-usage"
         uiOrder: 2
     required:
       - text
@@ -306,7 +311,8 @@ TASK_TEXT_EMBEDDINGS:
           - binary
           - ubinary
         example: float
-        description: Specifies the return type of embedding, Note that 'binary'/'ubinary' options means the component will return packed unsigned binary
+        description:
+          Specifies the return type of embedding, Note that 'binary'/'ubinary' options means the component will return packed unsigned binary
           embeddings. The length of each binary embedding is 1/8 the length of the float embeddings of the provided model.
         type: string
         uiOrder: 0
@@ -330,14 +336,15 @@ TASK_TEXT_EMBEDDINGS:
         title: Embedding
         type: array
       usage:
-        $ref: '#/$defs/embed-usage'
+        $ref: "#/$defs/embed-usage"
     required:
       - embedding
     title: Output
     type: object
 TASK_TEXT_RERANKING:
   shortDescription: Sort text inputs by semantic relevance to a specified query.
-  description: Rerank models sort text inputs by semantic relevance to a specified query. They are often used to sort search results returned from an existing
+  description:
+    Rerank models sort text inputs by semantic relevance to a specified query. They are often used to sort search results returned from an existing
     search solution.
   input:
     uiOrder: 0
@@ -399,7 +406,7 @@ TASK_TEXT_RERANKING:
         title: Reranked documents
         type: array
       usage:
-        $ref: '#/$defs/rerank-usage'
+        $ref: "#/$defs/rerank-usage"
       relevance:
         items:
           title: Relevance

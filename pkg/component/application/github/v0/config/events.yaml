@@ -20,7 +20,8 @@ EVENT_STAR_CREATED:
         type: string
       starred-at:
         type: string
-        description: "The time the star was created. This is a timestamp in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. Will be `null` for the `deleted` action."
+        description: >-
+          The time the star was created. This is a timestamp in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. Will be `null` for the `deleted` action.
       repository:
         $schema: http://json-schema.org/draft-07/schema
         description: A git repository

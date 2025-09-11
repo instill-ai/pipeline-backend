@@ -111,7 +111,8 @@ TASK_QUERY:
     type: object
 TASK_UPSERT:
   shortDescription: Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value.
-  description: Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value. This task will
+  description:
+    Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value. This task will
     be soon replaced by `TASK_BATCH_UPSERT`, which extends its functionality.
   input:
     uiOrder: 0
@@ -177,8 +178,9 @@ TASK_BATCH_UPSERT:
               type: string
               title: ID
             metadata:
-              description: 'The vector metadata. This is a set of key-value pairs that can be used to store additional information about the vector. The
-                values can have the following types: string, number, boolean, or array of strings.'
+              description: >-
+                The vector metadata. This is a set of key-value pairs that can be used to store additional information about the vector. The
+                values can have the following types: string, number, boolean, or array of strings.
               uiOrder: 1
               type: object
               shortDescription: The vector metadata
@@ -224,7 +226,8 @@ TASK_BATCH_UPSERT:
     type: object
 TASK_RERANK:
   shortDescription: Rerank documents, such as text passages, according to their relevance to a query.
-  description: Rerank documents, such as text passages, according to their relevance to a query. The input is a list of documents and a query. The output
+  description: >-
+    Rerank documents, such as text passages, according to their relevance to a query. The input is a list of documents and a query. The output
     is a list of documents, sorted by relevance to the query.
   input:
     uiOrder: 0

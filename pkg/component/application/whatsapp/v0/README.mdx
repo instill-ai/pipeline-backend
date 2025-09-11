@@ -71,7 +71,7 @@ Send text-based template message. This task support header(text), body and butto
 | Language Code (required) | `language-code` | string | The code of the language in which the template is used. [Supported languages](https://developers.facebook.com/docs/whatsapp/api/messages/message-templates#supported-languages). |
 | Header Parameters | `header-parameters` | array[string] | Specify the parameters for the header section of the template. Leave this blank if there is no parameter. |
 | Body Parameters | `body-parameters` | array[string] | Specify the parameters for the body section of the template. Leave this blank if there is no parameter. |
-| Button Parameters | `button-parameters` | array[string] | Specify the parameters for button(s). Leave this blank if there is no parameter. Follow this format or it won't work: button_index;button_type;value_of_the_parameter. The seperator is a semicolon. button_index starts at 0. Example: 0;quick_reply;randomvalue. Note: This button parameter only support three types 'quick_reply', 'url' and 'copy_code'. |
+| Button Parameters | `button-parameters` | array[string] | Specify the parameters for button(s). Leave this blank if there is no parameter. Follow this format or it won't work: button_index;button_type;value_of_the_parameter. The separator is a semicolon. button_index starts at 0. Example: 0;quick_reply;randomvalue. Note: This button parameter only support three types `quick_reply`, `url` and `copy_code`." |
 </div>
 
 
@@ -103,10 +103,10 @@ Send media-based template message. This task support header(image, document & vi
 | Template Name (required) | `name` | string | Name of the template. |
 | Language Code (required) | `language-code` | string | The code of the language in which the template is used. [Supported languages](https://developers.facebook.com/docs/whatsapp/api/messages/message-templates#supported-languages). |
 | Header Type (required) | `media-type` | string | Specify the header(media) type for the header section of the template. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`image`</li><li>`video`</li><li>`document`</li></ul></details>  |
-| ID or Link (Header Parameter) (required) | `id-or-link` | string | Input either ID or link of the media. If the input has 'http', it will be considered as a link. |
+| ID or Link (Header Parameter) (required) | `id-or-link` | string | Input either ID or link of the media. If the input has `http`, it will be considered as a link. |
 | Filename (Header Parameter) | `filename` | string | The filename of the document. Only document can use this property. This property will specify what format the document is displayed as in WhatsApp. If other media type tried to use this property, it will be ignored. |
 | Body Parameters | `body-parameters` | array[string] | Specify the parameters for the body section of the template. Leave this blank if there is no parameter. |
-| Button Parameters | `button-parameters` | array[string] | Specify the parameters for button(s). Leave this blank if there is no parameter. Follow this format or it won't work: button_index;button_type;value_of_the_parameter. The seperator is a semicolon. button_index starts at 0. Example: 0;quick_reply;randomvalue. Note: This button parameter only support three types 'quick_reply', 'url' and 'copy_code'. |
+| Button Parameters | `button-parameters` | array[string] | Specify the parameters for button(s). Leave this blank if there is no parameter. Follow this format or it won't work: button_index;button_type;value_of_the_parameter. The separator is a semicolon. button_index starts at 0. Example: 0;quick_reply;randomvalue. Note: This button parameter only support three types `quick_reply`, `url` and `copy_code`." |
 </div>
 
 
@@ -142,7 +142,7 @@ Send location-based template message. This task support header(location), body a
 | Location Name (Header Parameter) (required) | `location-name` | string | Name of the location. |
 | Location Address (Header Parameter) (required) | `address` | string | Address of the location. |
 | Body Parameters | `body-parameters` | array[string] | Specify the parameters for the body section of the template. Leave this blank if there is no parameter. |
-| Button Parameters | `button-parameters` | array[string] | Specify the parameters for button(s). Leave this blank if there is no parameter. Follow this format or it won't work: button_index;button_type;value_of_the_parameter. The seperator is a semicolon. button_index starts at 0. Example: 0;quick_reply;randomvalue. Note: This button parameter only support three types 'quick_reply', 'url' and 'copy_code'. |
+| Button Parameters | `button-parameters` | array[string] | Specify the parameters for button(s). Leave this blank if there is no parameter. Follow this format or it won't work: button_index;button_type;value_of_the_parameter. The separator is a semicolon. button_index starts at 0. Example: 0;quick_reply;randomvalue. Note: This button parameter only support three types `quick_reply`, `url` and `copy_code`." |
 </div>
 
 
@@ -222,7 +222,7 @@ Send text message. Note: Message can only be sent when the 24-hour customer serv
 
 ### Send Media Message
 
-Send media message. Media supported: video, audio, document, image. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)
+Send media message. Media supported: video, audio, document, image. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows).
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -232,7 +232,7 @@ Send media message. Media supported: video, audio, document, image. Note: Messag
 | Phone Number ID (required) | `phone-number-id` | string | Phone Number ID. Obtainable through the app dashboard. Note: This is for sender. |
 | Recipient Phone Number (required) | `to` | string | The number of the recipient you are sending the message to. |
 | Media Type (required) | `media-type` | string | Specify what media to send. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`image`</li><li>`audio`</li><li>`document`</li><li>`video`</li></ul></details>  |
-| ID or Link (required) | `id-or-link` | string | Input either ID or link of the media. If the input has 'http', it will be considered as a link. |
+| ID or Link (required) | `id-or-link` | string | Input either ID or link of the media. If the input has `http`, it will be considered as a link. |
 | Caption | `caption` | string | Media asset caption. Description of the media. This property cannot be used when the media type is audio. If audio tried to use this property, it will be ignored. |
 | Filename | `filename` | string | The filename of the document. Only document can use this property. This property will specify what format the document is displayed as in WhatsApp. If other media type tried to use this property, it will be ignored. |
 </div>
@@ -284,7 +284,7 @@ Send location message. Note: Message can only be sent when the 24-hour customer 
 
 ### Send Contact Message
 
-Send contact message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)
+Send contact message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows).
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -300,7 +300,7 @@ Send contact message. Note: Message can only be sent when the 24-hour customer s
 | Phone Number Type | `phone-number-type` | string | Phone number type of the contact. If there is no phone number, pick none. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`none`</li><li>`CELL`</li><li>`MAIN`</li><li>`PHONE`</li><li>`HOME`</li><li>`WORK`</li></ul></details>  |
 | Email | `email` | string | Email of the contact. |
 | Email Type | `email-type` | string | Email type of the contact. If there is no email, pick none. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`none`</li><li>`HOME`</li><li>`WORK`</li></ul></details>  |
-| Birthday | `birthday` | string | Birthday of the contact. Format is in 'YYYY-MM-DD'. |
+| Birthday | `birthday` | string | Birthday of the contact. Format is in `YYYY-MM-DD`. |
 </div>
 
 

@@ -104,7 +104,8 @@ TASK_CHAT:
             uiOrder: 0
           temperature:
             title: Temperature
-            description: The amount of randomness in the response, valued between 0 inclusive and 2 exclusive. Higher values are more random, and lower
+            description: >-
+              The amount of randomness in the response, valued between 0 inclusive and 2 exclusive. Higher values are more random, and lower
               values are more deterministic.
             shortDescription: The temperature for sampling.
             type: number
@@ -112,7 +113,8 @@ TASK_CHAT:
             uiOrder: 1
           top-p:
             title: Top P
-            description: The nucleus sampling threshold, valued between 0 and 1 inclusive. For each subsequent token, the model considers the results of
+            description: >-
+              The nucleus sampling threshold, valued between 0 and 1 inclusive. For each subsequent token, the model considers the results of
               the tokens with top_p probability mass. We recommend either altering top_k or top_p, but not both.
             shortDescription: Nucleus sampling.
             type: number
@@ -120,14 +122,16 @@ TASK_CHAT:
             uiOrder: 2
           stream:
             title: Stream
-            description: If set, partial message deltas will be sent. Tokens will be sent as data-only server-sent events as they become available.
+            description: >-
+              If set, partial message deltas will be sent. Tokens will be sent as data-only server-sent events as they become available.
             shortDescription: If set, partial message deltas will be sent.
             type: boolean
             default: false
             uiOrder: 3
           search-mode:
             title: Search Mode
-            description: Controls the search mode used for the request. When set to 'academic', results will prioritize scholarly sources like peer-reviewed
+            description: >-
+              Controls the search mode used for the request. When set to 'academic', results will prioritize scholarly sources like peer-reviewed
               papers and academic journals. When set to 'sec', results will prioritize financial and legal sources.
             shortDescription: Controls the search mode used for the request.
             type: string
@@ -139,7 +143,8 @@ TASK_CHAT:
             uiOrder: 4
           search-domain-filter:
             title: Search Domain Filter
-            description: Given a list of domains, limit the citations used by the online model to URLs from the specified domains. Currently limited to
+            description: >-
+              Given a list of domains, limit the citations used by the online model to URLs from the specified domains. Currently limited to
               only 3 domains for whitelisting and blacklisting. For blacklisting add a `-` to the beginning of the domain string.
             type: string
             uiOrder: 5
@@ -182,9 +187,10 @@ TASK_CHAT:
             properties:
               search-context-size:
                 title: Search Context Size
-                description: "Determines how much search context is retrieved for the model. Options are: low (minimizes context for cost savings but less\
-                  \ comprehensive answers), medium (balanced approach suitable for most queries), and high (maximizes context for comprehensive answers\
-                  \ but at higher cost)."
+                description: >-
+                  Determines how much search context is retrieved for the model. Options are: low (minimizes context for cost savings but less
+                  comprehensive answers), medium (balanced approach suitable for most queries), and high (maximizes context for comprehensive answers
+                  but at higher cost).
                 shortDescription: Determines how much search context is retrieved for the model.
                 type: string
                 enum:
@@ -223,21 +229,24 @@ TASK_CHAT:
             type: object
           top-k:
             title: Top K
-            description: The number of tokens to keep for highest top-k filtering, specified as an integer between 0 and 2048 inclusive. If set to 0, top-k
+            description: >-
+              The number of tokens to keep for highest top-k filtering, specified as an integer between 0 and 2048 inclusive. If set to 0, top-k
               filtering is disabled. We recommend either altering top_k or top_p, but not both.
             type: number
             default: 0
             uiOrder: 11
           presence-penalty:
             title: Presence Penalty
-            description: A value between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the
+            description: >-
+              A value between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the
               model's likelihood to talk about new topics. Incompatible with `frequency_penalty`.
             type: number
             default: 0
             uiOrder: 12
           frequency-penalty:
             title: Frequency Penalty
-            description: A multiplicative penalty greater than 0. Values greater than 1.0 penalize new tokens based on their existing frequency in the text
+            description: >-
+              A multiplicative penalty greater than 0. Values greater than 1.0 penalize new tokens based on their existing frequency in the text
               so far, decreasing the model's likelihood to repeat the same line verbatim. A value of 1.0 means no penalty. Incompatible with `presence_penalty`.
             type: number
             default: 1
@@ -305,7 +314,7 @@ TASK_CHAT:
                   type: object
                 created:
                   title: Created
-                  description: 'The timestamp of when the chat completion was created. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z.'
+                  description: "The timestamp of when the chat completion was created. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z."
                   shortDescription: The Unix timestamp (in seconds) of when the chat completion was created.
                   uiOrder: 3
                   type: integer

@@ -653,7 +653,8 @@ $defs:
         type: string
       line:
         shortDescription: The last line of the range that your comment applies to. Your comment will be placed under this line.
-        description: The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that
+        description:
+          The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that
           your comment applies to.
         uiOrder: 6
         title: Comment end line
@@ -664,9 +665,11 @@ $defs:
         title: Comment start line
         type: integer
       side:
-        shortDescription: "Side of the end line, can be one of: LEFT, RIGHT, side. Default is side."
-        description: "Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the\
-          \ diff (addition), and side is the comment on the PR as a whole. Default is side."
+        shortDescription: >-
+          Side of the end line, can be one of: LEFT, RIGHT, side. Default is side.
+        description: >-
+          Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the
+          diff (addition), and side is the comment on the PR as a whole. Default is side.
         default: side
         enum:
           - LEFT
@@ -676,9 +679,11 @@ $defs:
         title: Comment end side
         type: string
       start-side:
-        shortDescription: "Side of the start line, can be one of: LEFT, RIGHT, side. Default is side."
-        description: "Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of\
-          \ the diff (addition), and side is the comment on the PR as a whole. Default is side."
+        shortDescription: >-
+          Side of the start line, can be one of: LEFT, RIGHT, side. Default is side.
+        description: >-
+          Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of
+          the diff (addition), and side is the comment on the PR as a whole. Default is side.
         default: side
         enum:
           - LEFT
@@ -688,7 +693,8 @@ $defs:
         title: Comment start side
         type: string
       subject-type:
-        description: "Subject type of the comment, can be one of: line, file. Default is line."
+        description: >-
+          Subject type of the comment, can be one of: line, file. Default is line.
         uiOrder: 10
         title: Comment type
         default: line
@@ -788,7 +794,8 @@ $defs:
             type: string # type: string
             title: Following URL
             description: The URL to the user's following list
-            examples: ["https://api.github.com/users/octocat/following{/other_user}"]
+            examples:
+              ["https://api.github.com/users/octocat/following{/other_user}"]
             uiOrder: 9
           gists_url:
             type: string # type: string
@@ -800,7 +807,8 @@ $defs:
             type: string # type: string
             title: Starred URL
             description: The URL to the user's starred repositories
-            examples: ["https://api.github.com/users/octocat/starred{/owner}{/repo}"]
+            examples:
+              ["https://api.github.com/users/octocat/starred{/owner}{/repo}"]
             uiOrder: 11
           subscriptions_url:
             type: string # type: string, format: uri
@@ -1361,7 +1369,8 @@ TASK_CREATE_ISSUE:
     type: object
 TASK_CREATE_REVIEW_COMMENT:
   shortDescription: Create a review comment in pull request.
-  description: Create a review comment in a pull request. The comment can be a general comment or a review comment. The comment can be on a specific line
+  description:
+    Create a review comment in a pull request. The comment can be a general comment or a review comment. The comment can be on a specific line
     or on the PR as a whole.
   input:
     description: Please input the repository name and owner, and the PR number.
@@ -1436,7 +1445,8 @@ TASK_CREATE_WEBHOOK:
         uiOrder: 3
       events:
         title: Events
-        description: Events to trigger the webhook. Please see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads">the github document</a>
+        description:
+          Events to trigger the webhook. Please see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads">the github document</a>
           for more information.
         type: array
         uiOrder: 4
@@ -1451,7 +1461,8 @@ TASK_CREATE_WEBHOOK:
       content-type:
         default: json
         title: Content Type
-        description: "Content type of the webhook, can be one of: json, form. Default is json."
+        description: >-
+          Content type of the webhook, can be one of: json, form. Default is json.
         enum:
           - json
           - form
@@ -1459,7 +1470,8 @@ TASK_CREATE_WEBHOOK:
         uiOrder: 6
       hook-secret:
         title: Hook Secret
-        description: If provided, the secret will be used as the key to generate the HMAC hex digest value for delivery signature headers. (see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#delivery-headers">the
+        description:
+          If provided, the secret will be used as the key to generate the HMAC hex digest value for delivery signature headers. (see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#delivery-headers">the
           document</a>).
         instillSecret: true
         type: string
@@ -1667,7 +1679,8 @@ TASK_LIST_ISSUES:
       state:
         default: open
         title: State
-        description: "State of the issues, can be one of: open, closed, all. Default is open."
+        description: >-
+          State of the issues, can be one of: open, closed, all. Default is open.
         enum:
           - open
           - closed
@@ -1677,7 +1690,8 @@ TASK_LIST_ISSUES:
       sort:
         default: created
         title: Sort
-        description: Sort the issues by created, updated, popularity, or long-running. Default is created.
+        description: >-
+          Sort the issues by created, updated, popularity, or long-running. Default is created.
         enum:
           - created
           - updated
@@ -1688,7 +1702,8 @@ TASK_LIST_ISSUES:
       direction:
         default: desc
         title: Direction
-        description: "Direction of the sort, can be one of: asc, desc. Default is desc."
+        description: >-
+          Direction of the sort, can be one of: asc, desc. Default is desc.
         enum:
           - asc
           - desc
@@ -1697,12 +1712,14 @@ TASK_LIST_ISSUES:
       since:
         default: "2021-01-01"
         title: Since
-        description: Date (in `YYYY-MM-DD` format) from which issues will start to be fetched. The date will be in the UTC timezone.
+        description: >-
+          Date (in `YYYY-MM-DD` format) from which issues will start to be fetched. The date will be in the UTC timezone.
         type: string
         uiOrder: 13
       no-pull-request:
         title: No Pull Request
-        description: Whether to `not` include pull requests in the response. Since issue and pr use the same indexing system in GitHub, the API returns
+        description: >-
+          Whether to `not` include pull requests in the response. Since issue and pr use the same indexing system in GitHub, the API returns
           all relevant objects (issues and pr). Default is false.
         type: boolean
         uiOrder: 14
@@ -1742,7 +1759,8 @@ TASK_LIST_ISSUES:
     type: object
 TASK_LIST_PULL_REQUESTS:
   shortDescription: Get the list of all pull requests in a repository
-  description: Get the list of all pull requests in a repository. Detailed information about each commit in a PR is omitted, please use the `Get Commit`
+  description: >-
+    Get the list of all pull requests in a repository. Detailed information about each commit in a PR is omitted, please use the `Get Commit`
     task or the `Get Pull Request` task to get the details of a commit.
   input:
     description: Please input the repository name and owner.

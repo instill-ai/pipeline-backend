@@ -19,7 +19,7 @@ availableTasks:
 custom: false
 documentationUrl: https://docs.instill-ai.com/docs/hugging-face
 icon: assets/hugging-face.svg
-iconUrl: ''
+iconUrl: ""
 id: hugging-face
 public: true
 title: Hugging Face

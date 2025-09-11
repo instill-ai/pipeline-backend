@@ -324,10 +324,17 @@ Parameters.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Aggregation Strategy | `aggregation-strategy` | string | There are several aggregation strategies:
+
 none: Every token gets classified without further aggregation.
+
 simple: Entities are grouped according to the default schema (B-, I- tags get merged when the tag is similar).
-first: Same as the simple strategy except words cannot end up with different tags. Words will use the tag of the first token when there is ambiguity.
-average: Same as the simple strategy except words cannot end up with different tags. Scores are averaged across tokens and then the maximum label is applied.
+
+first: Same as the simple strategy except words cannot end up with different tags. Words will use the tag of the first token when there is
+ambiguity.
+
+average: Same as the simple strategy except words cannot end up with different tags. Scores are averaged across tokens and then the maximum
+label is applied.
+
 max: Same as the simple strategy except words cannot end up with different tags. Word entity will be the token with the maximum score.  |
 </div>
 <h4 id="token-classification-options">Options</h4>
@@ -361,10 +368,10 @@ Options for the model.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| End | `end` | integer | The offset stringwise where the answer is located. Useful to disambiguate if word occurs multiple times. |
+| End | `end` | integer | The offset string-wise where the answer is located. Useful to disambiguate if word occurs multiple times. |
 | Entity Group | `entity-group` | string | The type for the entity being recognized (model specific). |
 | Score | `score` | number | How likely the entity was recognized. |
-| Start | `start` | integer | The offset stringwise where the answer is located. Useful to disambiguate if word occurs multiple times. |
+| Start | `start` | integer | The offset string-wise where the answer is located. Useful to disambiguate if word occurs multiple times. |
 | Word | `word` | string | The string that was captured. |
 </div>
 </details>
@@ -438,7 +445,7 @@ Parameters.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Candidate Labels | `candidate-labels` | array | a list of strings that are potential classes for inputs. (max 10 candidate-labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate-labels anyway. If you want to keep the exact same, you can simply run multi-label=True and do the scaling on your end. ).  |
+| Candidate Labels | `candidate-labels` | array | A list of strings that are potential classes for inputs. (max 10 candidate-labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate-labels anyway. If you want to keep the exact same, you can simply run multi-label=True and do the scaling on your end.).  |
 | Multi Label | `multi-label` | boolean | Boolean that is set to True if classes can overlap.  |
 </div>
 <h4 id="zero-shot-classification-options">Options</h4>
@@ -460,7 +467,7 @@ Options for the model.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Scores | `scores` | array[number] | a list of floats that correspond the the probability of label, in the same order as labels. |
+| Scores | `scores` | array[number] | A list of floats that correspond the the probability of label, in the same order as labels. |
 | Labels | `labels` | array[string] | The list of strings for labels that you sent (in order). |
 | Sequence (optional) | `sequence` | string | The string sent as an input. |
 </div>
@@ -630,7 +637,7 @@ Options for the model.
 
 ### Conversational
 
-Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgable given a prompt. These models have applications in chatbots, and as a part of voice assistants.
+Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgeable given a prompt. These models have applications in chatbots, and as a part of voice assistants.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 

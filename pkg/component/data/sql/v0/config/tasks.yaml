@@ -230,9 +230,11 @@ TASK_CREATE_TABLE:
         uiOrder: 0
         title: Table Name
       columns-structure:
-        description: 'The columns structure to be created in the table, json with value string, e.g {"name": "VARCHAR(255)", "age": "INT not null"}.'
+        description: >-
+          The columns structure to be created in the table, json with value string, e.g {"name": "VARCHAR(255)", "age": "INT not null"}.
         type: object
-        shortDescription: 'Columns Structure, e.g {"name": "VARCHAR(255)", "age": "INT not null"}'
+        shortDescription: >-
+          Columns Structure, e.g {"name": "VARCHAR(255)", "age": "INT not null"}
         uiOrder: 1
         title: Columns
         required: []

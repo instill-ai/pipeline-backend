@@ -58,7 +58,7 @@ Append values to create or extend an array, or add key-value pairs to an object.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Data | `data` | any | The resulting data structure after the append operation. Will be either an array (if input was array or primitive) or an object (if input was object). Examples: [1,2,3], \{'name':'John', 'age':25\}, or ['hello','world']. |
+| Data | `data` | any | The resulting data structure after the append operation. Will be either an array (if input was array or primitive) or an object (if input was object). Examples: [1,2,3], \{"name": "John", "age": 25\}, or ["hello","world"]. |
 </div>
 
 
@@ -72,7 +72,7 @@ Assign a value to a specific path in a data structure.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_ASSIGN` |
 | Data (required) | `data` | any | The input data structure to modify. Can be an array, object, or primitive value. |
-| Path (required) | `path` | string | The path where to assign the value. Use dot notation for nested objects and [n] for array indices. Examples: 'users.[0].name', '.[0].key', 'metadata.tags.[2]'. |
+| Path (required) | `path` | string | The path where to assign the value. Use dot notation for nested objects and [n] for array indices. Examples: `users.[0].name`, `.[0].key`, `metadata.tags.[2]`. |
 | Value (required) | `value` | any | The value to assign at the specified path. Can be any type (string, number, boolean, array, or object). |
 </div>
 
@@ -98,7 +98,7 @@ Concatenate multiple arrays or merge multiple objects into a single collection.
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONCAT` |
-| Data (required) | `data` | array[any] | An array of arrays or objects to be concatenated/merged. For arrays: [[1, 2], [3, 4]] becomes [1, 2, 3, 4]. For objects: [\{'a': 1\}, \{'b': 2\}] becomes \{'a': 1, 'b': 2\}. Later values override earlier ones for objects. |
+| Data (required) | `data` | array[any] | An array of arrays or objects to be concatenated/merged. For arrays: `[[1, 2], [3, 4]]` becomes `[1, 2, 3, 4]`. For objects: `[\{"a": 1\}, \{"b": 2\}]` becomes `\{"a": 1, "b": 2\}`. Later values override earlier ones for objects. |
 </div>
 
 
@@ -123,7 +123,7 @@ Find elements that exist in the first array or object but not in any of the othe
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DIFFERENCE` |
-| Data (required) | `data` | array[any] | An array of arrays or objects to find the difference. The first element is compared against all subsequent elements. For example, given arrays [[1, 2, 3], [2, 3, 4], [3, 4, 5]], the result will be [1]. For objects, given [\{'a': 1, 'b': 2\}, \{'b': 2, 'c': 3\}], the result will be \{'a': 1\}. |
+| Data (required) | `data` | array[any] | An array of arrays or objects to find the difference. The first element is compared against all subsequent elements. For example, given arrays `[[1, 2, 3], [2, 3, 4], [3, 4, 5]]`, the result will be `[1]`. For objects, given `[\{"a": 1, "b": 2\}, \{"b": 2, "c": 3\}]`, the result will be `\{"a": 1\}`. |
 </div>
 
 
@@ -148,7 +148,7 @@ Find common elements that exist in all input arrays or objects.
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INTERSECTION` |
-| Data (required) | `data` | array[any] | An array of arrays or objects to find common elements. For arrays: given [[1, 2, 3], [2, 3, 4]], the result will be [2, 3]. For objects: given [\{'a': 1, 'b': 2\}, \{'b': 2, 'c': 3\}], the result will be \{'b': 2\}. |
+| Data (required) | `data` | array[any] | An array of arrays or objects to find common elements. For arrays: given `[[1, 2, 3], [2, 3, 4]]`, the result will be `[2, 3]`. For objects: given `[\{"a": 1, "b": 2\}, \{"b": 2, "c": 3\}]`, the result will be `\{"b": 2\}`. |
 </div>
 
 
@@ -173,7 +173,7 @@ Split arrays or objects into smaller chunks.
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SPLIT` |
-| Data (required) | `data` | any | The source data to be split. Can be: 1) An array to split into groups 2) An object to split by property count (keys are sorted alphabetically for consistent ordering) |
+| Data (required) | `data` | any | The source data to be split. Can be: 1) An array to split into groups 2) An object to split by property count (keys are sorted alphabetically for consistent ordering). |
 | Size (required) | `size` | integer | Number of elements per group |
 </div>
 
@@ -186,7 +186,7 @@ Split arrays or objects into smaller chunks.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Data | `data` | array[any] | The resulting array after splitting. For arrays: array of subarrays. For objects: array of smaller objects with alphabetically ordered keys |
+| Data | `data` | array[any] | The resulting array after splitting. For arrays input: the array of sub-arrays. For objects input: array of smaller objects with alphabetically ordered keys. |
 </div>
 
 
@@ -199,7 +199,7 @@ Find elements that exist in exactly one of the input arrays or objects, but not 
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SYMMETRIC_DIFFERENCE` |
-| Data (required) | `data` | array[any] | An array of arrays or objects to find symmetric difference. For arrays: given [[1, 2], [2, 3]], the result will be [1, 3]. For objects: given [\{'a': 1, 'b': 2\}, \{'b': 2, 'c': 3\}], the result will be \{'a': 1, 'c': 3\}. |
+| Data (required) | `data` | array[any] | An array of arrays or objects to find symmetric difference. For arrays: given `[[1, 2], [2, 3]]`, the result will be `[1, 3]`. For objects: given `[\{"a": 1, "b": 2\}, \{"b": 2, "c": 3\}]`, the result will be `\{"a": 1, "c": 3\}`. |
 </div>
 
 
@@ -224,7 +224,7 @@ Find unique elements that exist in any of the input arrays or objects.
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UNION` |
-| Data (required) | `data` | array[any] | An array of arrays or objects to find unique elements. For arrays: given [[1, 2], [2, 3]], the result will be [1, 2, 3]. For objects: given [\{'a': 1, 'b': 2\}, \{'b': 2, 'c': 3\}], the result will be \{'a': 1, 'b': 2, 'c': 3\}. |
+| Data (required) | `data` | array[any] | An array of arrays or objects to find unique elements. For arrays: given `[[1, 2], [2, 3]]`, the result will be `[1, 2, 3]`. For objects: given `[\{"a": 1, "b": 2\}, \{"b": 2, "c": 3\}]`, the result will be `\{"a": 1, "b": 2, "c": 3\}`. |
 </div>
 
 

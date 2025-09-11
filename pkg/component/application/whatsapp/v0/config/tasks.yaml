@@ -1,7 +1,8 @@
 $defs:
   def-input:
     phone-number-id:
-      description: 'Phone Number ID. Obtainable through the app dashboard. Note: This is for sender.'
+      description: >-
+        Phone Number ID. Obtainable through the app dashboard. Note: This is for sender.
       type: string
       uiOrder: 0
       title: Phone Number ID
@@ -28,9 +29,10 @@ $defs:
           type: string
         type: array
       button-parameters:
-        description: 'Specify the parameters for button(s). Leave this blank if there is no parameter. Follow this format or it won''t work: button_index;button_type;value_of_the_parameter.
-          The seperator is a semicolon. button_index starts at 0. Example: 0;quick_reply;randomvalue. Note: This button parameter only support three types
-          ''quick_reply'', ''url'' and ''copy_code''.'
+        description: >-
+          Specify the parameters for button(s). Leave this blank if there is no parameter. Follow this format or it won't work: button_index;button_type;value_of_the_parameter.
+          The separator is a semicolon. button_index starts at 0. Example: 0;quick_reply;randomvalue. Note: This button parameter only support three types
+          `quick_reply`, `url` and `copy_code`."
         title: Button Parameters
         items:
           title: Button Parameter
@@ -39,14 +41,16 @@ $defs:
         type: array
     media:
       id-or-link:
-        description: Input either ID or link of the media. If the input has 'http', it will be considered as a link.
+        description: Input either ID or link of the media. If the input has `http`, it will be considered as a link.
         type: string
       caption:
-        description: Media asset caption. Description of the media. This property cannot be used when the media type is audio. If audio tried to use this
+        description: >-
+          Media asset caption. Description of the media. This property cannot be used when the media type is audio. If audio tried to use this
           property, it will be ignored.
         type: string
       filename:
-        description: The filename of the document. Only document can use this property. This property will specify what format the document is displayed
+        description: >-
+          The filename of the document. Only document can use this property. This property will specify what format the document is displayed
           as in WhatsApp. If other media type tried to use this property, it will be ignored.
         type: string
     location:
@@ -85,14 +89,14 @@ TASK_SEND_TEXT_BASED_TEMPLATE_MESSAGE:
     uiOrder: 0
     properties:
       phone-number-id:
-        $ref: '#/$defs/def-input/phone-number-id'
+        $ref: "#/$defs/def-input/phone-number-id"
       to:
-        $ref: '#/$defs/def-input/to'
+        $ref: "#/$defs/def-input/to"
       name:
-        $ref: '#/$defs/def-input/template/name'
+        $ref: "#/$defs/def-input/template/name"
         uiOrder: 2
       language-code:
-        $ref: '#/$defs/def-input/template/language-code'
+        $ref: "#/$defs/def-input/template/language-code"
         uiOrder: 3
       header-parameters:
         description: Specify the parameters for the header section of the template. Leave this blank if there is no parameter.
@@ -104,10 +108,10 @@ TASK_SEND_TEXT_BASED_TEMPLATE_MESSAGE:
           type: string
         type: array
       body-parameters:
-        $ref: '#/$defs/def-input/template/body-parameters'
+        $ref: "#/$defs/def-input/template/body-parameters"
         uiOrder: 5
       button-parameters:
-        $ref: '#/$defs/def-input/template/button-parameters'
+        $ref: "#/$defs/def-input/template/button-parameters"
         uiOrder: 6
     required:
       - phone-number-id
@@ -121,11 +125,11 @@ TASK_SEND_TEXT_BASED_TEMPLATE_MESSAGE:
     uiOrder: 0
     properties:
       recipient-wa-id:
-        $ref: '#/$defs/def-output/recipient-wa-id'
+        $ref: "#/$defs/def-output/recipient-wa-id"
       message-id:
-        $ref: '#/$defs/def-output/message-id'
+        $ref: "#/$defs/def-output/message-id"
       message-status:
-        $ref: '#/$defs/def-output/message-status'
+        $ref: "#/$defs/def-output/message-status"
     required:
       - recipient-wa-id
       - message-id
@@ -139,14 +143,14 @@ TASK_SEND_MEDIA_BASED_TEMPLATE_MESSAGE:
     uiOrder: 0
     properties:
       phone-number-id:
-        $ref: '#/$defs/def-input/phone-number-id'
+        $ref: "#/$defs/def-input/phone-number-id"
       to:
-        $ref: '#/$defs/def-input/to'
+        $ref: "#/$defs/def-input/to"
       name:
-        $ref: '#/$defs/def-input/template/name'
+        $ref: "#/$defs/def-input/template/name"
         uiOrder: 2
       language-code:
-        $ref: '#/$defs/def-input/template/language-code'
+        $ref: "#/$defs/def-input/template/language-code"
         uiOrder: 3
       media-type:
         enum:
@@ -160,17 +164,17 @@ TASK_SEND_MEDIA_BASED_TEMPLATE_MESSAGE:
         title: Header Type
       id-or-link:
         title: ID Or Link (Header Parameter)
-        $ref: '#/$defs/def-input/media/id-or-link'
+        $ref: "#/$defs/def-input/media/id-or-link"
         uiOrder: 5
       filename:
         title: Filename (Header Parameter)
-        $ref: '#/$defs/def-input/media/filename'
+        $ref: "#/$defs/def-input/media/filename"
         uiOrder: 6
       body-parameters:
-        $ref: '#/$defs/def-input/template/body-parameters'
+        $ref: "#/$defs/def-input/template/body-parameters"
         uiOrder: 7
       button-parameters:
-        $ref: '#/$defs/def-input/template/button-parameters'
+        $ref: "#/$defs/def-input/template/button-parameters"
         uiOrder: 8
     required:
       - phone-number-id
@@ -186,11 +190,11 @@ TASK_SEND_MEDIA_BASED_TEMPLATE_MESSAGE:
     uiOrder: 0
     properties:
       recipient-wa-id:
-        $ref: '#/$defs/def-output/recipient-wa-id'
+        $ref: "#/$defs/def-output/recipient-wa-id"
       message-id:
-        $ref: '#/$defs/def-output/message-id'
+        $ref: "#/$defs/def-output/message-id"
       message-status:
-        $ref: '#/$defs/def-output/message-status'
+        $ref: "#/$defs/def-output/message-status"
     required:
       - recipient-wa-id
       - message-id
@@ -204,36 +208,36 @@ TASK_SEND_LOCATION_BASED_TEMPLATE_MESSAGE:
     uiOrder: 0
     properties:
       phone-number-id:
-        $ref: '#/$defs/def-input/phone-number-id'
+        $ref: "#/$defs/def-input/phone-number-id"
       to:
-        $ref: '#/$defs/def-input/to'
+        $ref: "#/$defs/def-input/to"
       name:
-        $ref: '#/$defs/def-input/template/name'
+        $ref: "#/$defs/def-input/template/name"
         uiOrder: 2
       language-code:
-        $ref: '#/$defs/def-input/template/language-code'
+        $ref: "#/$defs/def-input/template/language-code"
         uiOrder: 3
       latitude:
         title: Latitude (Header Parameter)
-        $ref: '#/$defs/def-input/location/latitude'
+        $ref: "#/$defs/def-input/location/latitude"
         uiOrder: 4
       longitude:
         title: Longitude (Header Parameter)
-        $ref: '#/$defs/def-input/location/longitude'
+        $ref: "#/$defs/def-input/location/longitude"
         uiOrder: 5
       location-name:
         title: Location Name (Header Parameter)
-        $ref: '#/$defs/def-input/location/location-name'
+        $ref: "#/$defs/def-input/location/location-name"
         uiOrder: 6
       address:
         title: Location Address (Header Parameter)
-        $ref: '#/$defs/def-input/location/address'
+        $ref: "#/$defs/def-input/location/address"
         uiOrder: 7
       body-parameters:
-        $ref: '#/$defs/def-input/template/body-parameters'
+        $ref: "#/$defs/def-input/template/body-parameters"
         uiOrder: 8
       button-parameters:
-        $ref: '#/$defs/def-input/template/button-parameters'
+        $ref: "#/$defs/def-input/template/button-parameters"
         uiOrder: 9
     required:
       - phone-number-id
@@ -251,11 +255,11 @@ TASK_SEND_LOCATION_BASED_TEMPLATE_MESSAGE:
     uiOrder: 0
     properties:
       recipient-wa-id:
-        $ref: '#/$defs/def-output/recipient-wa-id'
+        $ref: "#/$defs/def-output/recipient-wa-id"
       message-id:
-        $ref: '#/$defs/def-output/message-id'
+        $ref: "#/$defs/def-output/message-id"
       message-status:
-        $ref: '#/$defs/def-output/message-status'
+        $ref: "#/$defs/def-output/message-status"
     required:
       - recipient-wa-id
       - message-id
@@ -263,21 +267,22 @@ TASK_SEND_LOCATION_BASED_TEMPLATE_MESSAGE:
     title: Output
     type: object
 TASK_SEND_AUTHENTICATION_TEMPLATE_MESSAGE:
-  shortDescription: Send authentication template message with one-time password button (The button is used to copy the password to clipboard). Authentication
+  shortDescription:
+    Send authentication template message with one-time password button (The button is used to copy the password to clipboard). Authentication
     template has no header parameters.
   input:
     description: Template information.
     uiOrder: 0
     properties:
       phone-number-id:
-        $ref: '#/$defs/def-input/phone-number-id'
+        $ref: "#/$defs/def-input/phone-number-id"
       to:
-        $ref: '#/$defs/def-input/to'
+        $ref: "#/$defs/def-input/to"
       name:
-        $ref: '#/$defs/def-input/template/name'
+        $ref: "#/$defs/def-input/template/name"
         uiOrder: 2
       language-code:
-        $ref: '#/$defs/def-input/template/language-code'
+        $ref: "#/$defs/def-input/template/language-code"
         uiOrder: 3
       one-time-password:
         description: One-time password to be sent to the recipient. Maximum 15 characters.
@@ -297,11 +302,11 @@ TASK_SEND_AUTHENTICATION_TEMPLATE_MESSAGE:
     uiOrder: 0
     properties:
       recipient-wa-id:
-        $ref: '#/$defs/def-output/recipient-wa-id'
+        $ref: "#/$defs/def-output/recipient-wa-id"
       message-id:
-        $ref: '#/$defs/def-output/message-id'
+        $ref: "#/$defs/def-output/message-id"
       message-status:
-        $ref: '#/$defs/def-output/message-status'
+        $ref: "#/$defs/def-output/message-status"
     required:
       - recipient-wa-id
       - message-id
@@ -309,16 +314,17 @@ TASK_SEND_AUTHENTICATION_TEMPLATE_MESSAGE:
     title: Output
     type: object
 TASK_SEND_TEXT_MESSAGE:
-  shortDescription: 'Send text message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please visit
-    [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)'
+  shortDescription: >-
+    Send text message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please visit
+    [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)
   input:
     description: Text input.
     uiOrder: 0
     properties:
       phone-number-id:
-        $ref: '#/$defs/def-input/phone-number-id'
+        $ref: "#/$defs/def-input/phone-number-id"
       to:
-        $ref: '#/$defs/def-input/to'
+        $ref: "#/$defs/def-input/to"
       body:
         description: Body of the message.
         type: string
@@ -326,9 +332,9 @@ TASK_SEND_TEXT_MESSAGE:
         title: Text
       preview-url:
         enum:
-          - 'false'
-          - 'true'
-        example: 'false'
+          - "false"
+          - "true"
+        example: "false"
         description: Specify whether URL should be previewed or not. This will have no affect if the message does not contain any URL.
         type: string
         uiOrder: 3
@@ -345,25 +351,26 @@ TASK_SEND_TEXT_MESSAGE:
     uiOrder: 0
     properties:
       recipient-wa-id:
-        $ref: '#/$defs/def-output/recipient-wa-id'
+        $ref: "#/$defs/def-output/recipient-wa-id"
       message-id:
-        $ref: '#/$defs/def-output/message-id'
+        $ref: "#/$defs/def-output/message-id"
     required:
       - recipient-wa-id
       - message-id
     title: Output
     type: object
 TASK_SEND_MEDIA_MESSAGE:
-  shortDescription: 'Send media message. Media supported: video, audio, document, image. Note: Message can only be sent when the 24-hour customer service
-    window is open. For more information, please visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)'
+  shortDescription: >-
+    Send media message. Media supported: video, audio, document, image. Note: Message can only be sent when the 24-hour customer service
+    window is open. For more information, please visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows).
   input:
     description: Media input.
     uiOrder: 0
     properties:
       phone-number-id:
-        $ref: '#/$defs/def-input/phone-number-id'
+        $ref: "#/$defs/def-input/phone-number-id"
       to:
-        $ref: '#/$defs/def-input/to'
+        $ref: "#/$defs/def-input/to"
       media-type:
         enum:
           - image
@@ -377,15 +384,15 @@ TASK_SEND_MEDIA_MESSAGE:
         title: Media Type
       id-or-link:
         title: ID Or Link
-        $ref: '#/$defs/def-input/media/id-or-link'
+        $ref: "#/$defs/def-input/media/id-or-link"
         uiOrder: 3
       caption:
         title: Caption
-        $ref: '#/$defs/def-input/media/caption'
+        $ref: "#/$defs/def-input/media/caption"
         uiOrder: 4
       filename:
         title: Filename
-        $ref: '#/$defs/def-input/media/filename'
+        $ref: "#/$defs/def-input/media/filename"
         uiOrder: 5
     required:
       - phone-number-id
@@ -399,40 +406,41 @@ TASK_SEND_MEDIA_MESSAGE:
     uiOrder: 0
     properties:
       recipient-wa-id:
-        $ref: '#/$defs/def-output/recipient-wa-id'
+        $ref: "#/$defs/def-output/recipient-wa-id"
       message-id:
-        $ref: '#/$defs/def-output/message-id'
+        $ref: "#/$defs/def-output/message-id"
     required:
       - recipient-wa-id
       - message-id
     title: Output
     type: object
 TASK_SEND_LOCATION_MESSAGE:
-  shortDescription: 'Send location message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please
-    visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)'
+  shortDescription:
+    "Send location message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please
+    visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)"
   input:
     description: Location input.
     uiOrder: 0
     properties:
       phone-number-id:
-        $ref: '#/$defs/def-input/phone-number-id'
+        $ref: "#/$defs/def-input/phone-number-id"
       to:
-        $ref: '#/$defs/def-input/to'
+        $ref: "#/$defs/def-input/to"
       latitude:
         title: Latitude
-        $ref: '#/$defs/def-input/location/latitude'
+        $ref: "#/$defs/def-input/location/latitude"
         uiOrder: 2
       longitude:
         title: Longitude
-        $ref: '#/$defs/def-input/location/longitude'
+        $ref: "#/$defs/def-input/location/longitude"
         uiOrder: 3
       location-name:
         title: Location Name
-        $ref: '#/$defs/def-input/location/location-name'
+        $ref: "#/$defs/def-input/location/location-name"
         uiOrder: 4
       address:
         title: Location Address
-        $ref: '#/$defs/def-input/location/address'
+        $ref: "#/$defs/def-input/location/address"
         uiOrder: 5
     required:
       - phone-number-id
@@ -448,25 +456,26 @@ TASK_SEND_LOCATION_MESSAGE:
     uiOrder: 0
     properties:
       recipient-wa-id:
-        $ref: '#/$defs/def-output/recipient-wa-id'
+        $ref: "#/$defs/def-output/recipient-wa-id"
       message-id:
-        $ref: '#/$defs/def-output/message-id'
+        $ref: "#/$defs/def-output/message-id"
     required:
       - recipient-wa-id
       - message-id
     title: Output
     type: object
 TASK_SEND_CONTACT_MESSAGE:
-  shortDescription: 'Send contact message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please
-    visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)'
+  shortDescription: >-
+    Send contact message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please
+    visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows).
   input:
     description: Contact input.
     uiOrder: 0
     properties:
       phone-number-id:
-        $ref: '#/$defs/def-input/phone-number-id'
+        $ref: "#/$defs/def-input/phone-number-id"
       to:
-        $ref: '#/$defs/def-input/to'
+        $ref: "#/$defs/def-input/to"
       first-name:
         description: First name of the contact.
         type: string
@@ -516,7 +525,7 @@ TASK_SEND_CONTACT_MESSAGE:
         uiOrder: 8
         title: Email Type
       birthday:
-        description: Birthday of the contact. Format is in 'YYYY-MM-DD'.
+        description: Birthday of the contact. Format is in `YYYY-MM-DD`.
         type: string
         uiOrder: 9
         title: Birthday
@@ -531,25 +540,26 @@ TASK_SEND_CONTACT_MESSAGE:
     uiOrder: 0
     properties:
       recipient-wa-id:
-        $ref: '#/$defs/def-output/recipient-wa-id'
+        $ref: "#/$defs/def-output/recipient-wa-id"
       message-id:
-        $ref: '#/$defs/def-output/message-id'
+        $ref: "#/$defs/def-output/message-id"
     required:
       - recipient-wa-id
       - message-id
     title: Output
     type: object
 TASK_SEND_INTERACTIVE_CALL_TO_ACTION_URL_BUTTON_MESSAGE:
-  shortDescription: 'Send interactive Call-To-Action URL button message. Note: Message can only be sent when the 24-hour customer service window is open.
-    For more information, please visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows).'
+  shortDescription: >-
+    Send interactive Call-To-Action URL button message. Note: Message can only be sent when the 24-hour customer service window is open.
+    For more information, please visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows).
   input:
     description: Interactive CTA URL button input.
     uiOrder: 0
     properties:
       phone-number-id:
-        $ref: '#/$defs/def-input/phone-number-id'
+        $ref: "#/$defs/def-input/phone-number-id"
       to:
-        $ref: '#/$defs/def-input/to'
+        $ref: "#/$defs/def-input/to"
       header-text:
         description: Message header text.
         type: string
@@ -588,9 +598,9 @@ TASK_SEND_INTERACTIVE_CALL_TO_ACTION_URL_BUTTON_MESSAGE:
     uiOrder: 0
     properties:
       recipient-wa-id:
-        $ref: '#/$defs/def-output/recipient-wa-id'
+        $ref: "#/$defs/def-output/recipient-wa-id"
       message-id:
-        $ref: '#/$defs/def-output/message-id'
+        $ref: "#/$defs/def-output/message-id"
     required:
       - recipient-wa-id
       - message-id

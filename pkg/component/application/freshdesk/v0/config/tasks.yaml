@@ -211,15 +211,18 @@ $defs:
       title: Description Text
       type: string
     source:
-      description: 'Source of the ticket. Eg: Email.'
+      description: >-
+        Source of the ticket. Eg: Email.
       title: Source
       type: string
     status:
-      description: 'Status of the ticket. Eg: Pending.'
+      description: >-
+        Status of the ticket. Eg: Pending.
       title: Status
       type: string
     priority:
-      description: 'Priority of the ticket. Eg: Medium.'
+      description: >-
+        Priority of the ticket. Eg: Medium.
       title: Priority
       type: string
     ticket-type:
@@ -239,11 +242,11 @@ $defs:
       title: Tags
       type: array
     cc-emails:
-      description: Email addresses added in the 'cc' field of the incoming ticket email.
+      description: Email addresses added in the `cc` field of the incoming ticket email.
       title: CC Emails
       type: array
     bcc-emails:
-      description: Email addresses added in the 'bcc' field of the incoming ticket email.
+      description: Email addresses added in the `bcc` field of the incoming ticket email.
       title: BCC Emails
       type: array
     forward-emails:
@@ -453,13 +456,15 @@ $defs:
       title: Domains
       type: array
     health-score:
-      description: 'The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin ->
-        Customer Fields. Default values: "At risk", "Doing okay", "Happy".'
+      description: >-
+        The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin ->
+        Customer Fields. Default values: "At risk", "Doing okay", "Happy".
       title: Health Score
       type: string
     account-tier:
-      description: 'Classification based on how much value the company brings to your business. To look at all the possible values or create custom values,
-        please go to Admin -> Customer Fields. Default values: "Basic", "Premium", "Enterprise".'
+      description: >-
+        Classification based on how much value the company brings to your business. To look at all the possible values or create custom values,
+        please go to Admin -> Customer Fields. Default values: "Basic", "Premium", "Enterprise".
       title: Account Tier
       type: string
     renewal-date:
@@ -467,16 +472,19 @@ $defs:
       title: Renewal Date
       type: string
     industry:
-      description: The industry in which the company operates. To look at all the possible values or create custom values, please go to Admin -> Customer
+      description: >-
+        The industry in which the company operates. To look at all the possible values or create custom values, please go to Admin -> Customer
         Fields.
       title: Industry
       type: string
     created-at:
-      description: Timestamp that denotes when the company was created. In UTC format.
+      description: >-
+        Timestamp that denotes when the company was created. In UTC format.
       title: Created At
       type: string
     updated-at:
-      description: Timestamp that denotes when the company was last updated. In UTC format.
+      description: >-
+        Timestamp that denotes when the company was last updated. In UTC format.
       title: Updated At
       type: string
     custom-fields:
@@ -490,7 +498,7 @@ TASK_GET_TICKET:
     uiOrder: 0
     properties:
       ticket-id:
-        $ref: '#/$defs/ticket/ticket-id'
+        $ref: "#/$defs/ticket/ticket-id"
         type: integer
         uiOrder: 0
     required:
@@ -502,35 +510,35 @@ TASK_GET_TICKET:
     uiOrder: 0
     properties:
       subject:
-        $ref: '#/$defs/ticket/subject'
+        $ref: "#/$defs/ticket/subject"
         uiOrder: 0
         type: string
       description-text:
-        $ref: '#/$defs/ticket/description-text'
+        $ref: "#/$defs/ticket/description-text"
         uiOrder: 1
         type: string
       source:
-        $ref: '#/$defs/ticket/source'
+        $ref: "#/$defs/ticket/source"
         uiOrder: 2
         type: string
       status:
-        $ref: '#/$defs/ticket/status'
+        $ref: "#/$defs/ticket/status"
         uiOrder: 3
         type: string
       priority:
-        $ref: '#/$defs/ticket/priority'
+        $ref: "#/$defs/ticket/priority"
         uiOrder: 4
         type: string
       ticket-type:
-        $ref: '#/$defs/ticket/ticket-type'
+        $ref: "#/$defs/ticket/ticket-type"
         uiOrder: 5
         type: string
       association-type:
-        $ref: '#/$defs/ticket/association-type'
+        $ref: "#/$defs/ticket/association-type"
         uiOrder: 6
         type: string
       associated-ticket-list:
-        $ref: '#/$defs/ticket/associated-ticket-list'
+        $ref: "#/$defs/ticket/associated-ticket-list"
         items:
           title: Associated Ticket
           description: The ID of the ticket associated with the current ticket.
@@ -538,7 +546,7 @@ TASK_GET_TICKET:
         uiOrder: 7
         type: array
       tags:
-        $ref: '#/$defs/ticket/tags'
+        $ref: "#/$defs/ticket/tags"
         items:
           title: Tag
           description: Tag associated with the ticket.
@@ -546,15 +554,15 @@ TASK_GET_TICKET:
         uiOrder: 8
         type: array
       cc-emails:
-        $ref: '#/$defs/ticket/cc-emails'
+        $ref: "#/$defs/ticket/cc-emails"
         items:
           title: CC Email
-          description: One of the email address added in the 'cc' field of the incoming ticket email.
+          description: One of the email address added in the `cc` field of the incoming ticket email.
           type: string
         uiOrder: 9
         type: array
       forward-emails:
-        $ref: '#/$defs/ticket/forward-emails'
+        $ref: "#/$defs/ticket/forward-emails"
         items:
           title: Forward Email
           description: One of the email address added while forwarding a ticket.
@@ -562,7 +570,7 @@ TASK_GET_TICKET:
         uiOrder: 10
         type: array
       reply-cc-emails:
-        $ref: '#/$defs/ticket/reply-cc-emails'
+        $ref: "#/$defs/ticket/reply-cc-emails"
         items:
           title: Reply CC Email
           description: One of the email address added while replying to a ticket.
@@ -570,31 +578,31 @@ TASK_GET_TICKET:
         uiOrder: 11
         type: array
       requester-id:
-        $ref: '#/$defs/ticket/requester-id'
+        $ref: "#/$defs/ticket/requester-id"
         uiOrder: 12
         type: integer
       responder-id:
-        $ref: '#/$defs/ticket/responder-id'
+        $ref: "#/$defs/ticket/responder-id"
         uiOrder: 13
         type: integer
       company-id:
-        $ref: '#/$defs/ticket/company-id'
+        $ref: "#/$defs/ticket/company-id"
         uiOrder: 14
         type: integer
       group-id:
-        $ref: '#/$defs/ticket/group-id'
+        $ref: "#/$defs/ticket/group-id"
         uiOrder: 15
         type: integer
       product-id:
-        $ref: '#/$defs/ticket/product-id'
+        $ref: "#/$defs/ticket/product-id"
         uiOrder: 16
         type: integer
       support-email:
-        $ref: '#/$defs/ticket/support-email'
+        $ref: "#/$defs/ticket/support-email"
         uiOrder: 17
         type: string
       to-emails:
-        $ref: '#/$defs/ticket/to-emails'
+        $ref: "#/$defs/ticket/to-emails"
         items:
           title: To Email
           description: One of the email address to which the ticket was originally sent.
@@ -602,43 +610,43 @@ TASK_GET_TICKET:
         uiOrder: 18
         type: array
       spam:
-        $ref: '#/$defs/ticket/spam'
+        $ref: "#/$defs/ticket/spam"
         uiOrder: 19
         type: boolean
       due-by:
-        $ref: '#/$defs/ticket/due-by'
+        $ref: "#/$defs/ticket/due-by"
         uiOrder: 20
         type: string
       is-escalated:
-        $ref: '#/$defs/ticket/is-escalated'
+        $ref: "#/$defs/ticket/is-escalated"
         uiOrder: 21
         type: boolean
       first-response-due-by:
-        $ref: '#/$defs/ticket/first-response-due-by'
+        $ref: "#/$defs/ticket/first-response-due-by"
         uiOrder: 22
         type: string
       first-response-escalated:
-        $ref: '#/$defs/ticket/first-response-escalated'
+        $ref: "#/$defs/ticket/first-response-escalated"
         uiOrder: 23
         type: boolean
       next-response-due-by:
-        $ref: '#/$defs/ticket/next-response-due-by'
+        $ref: "#/$defs/ticket/next-response-due-by"
         uiOrder: 24
         type: string
       next-response-escalated:
-        $ref: '#/$defs/ticket/next-response-escalated'
+        $ref: "#/$defs/ticket/next-response-escalated"
         uiOrder: 25
         type: boolean
       created-at:
-        $ref: '#/$defs/ticket/created-at'
+        $ref: "#/$defs/ticket/created-at"
         uiOrder: 26
         type: string
       updated-at:
-        $ref: '#/$defs/ticket/updated-at'
+        $ref: "#/$defs/ticket/updated-at"
         uiOrder: 27
         type: string
       attachments:
-        $ref: '#/$defs/ticket/attachments'
+        $ref: "#/$defs/ticket/attachments"
         items:
           title: Attachment
           properties:
@@ -665,15 +673,15 @@ TASK_GET_TICKET:
         uiOrder: 28
         type: array
       sentiment-score:
-        $ref: '#/$defs/ticket/sentiment-score'
+        $ref: "#/$defs/ticket/sentiment-score"
         uiOrder: 29
         type: integer
       initial-sentiment-score:
-        $ref: '#/$defs/ticket/initial-sentiment-score'
+        $ref: "#/$defs/ticket/initial-sentiment-score"
         uiOrder: 30
         type: integer
       custom-fields:
-        $ref: '#/$defs/ticket/custom-fields'
+        $ref: "#/$defs/ticket/custom-fields"
         required: []
         uiOrder: 31
         type: json
@@ -695,19 +703,21 @@ TASK_CREATE_TICKET:
     uiOrder: 0
     properties:
       requester-id:
-        description: ID of the requester. Must be an existing contact. If you fill in this field, you don't need to fill in the email field. Only one of
+        description: >-
+          ID of the requester. Must be an existing contact. If you fill in this field, you don't need to fill in the email field. Only one of
           the two fields is required.
         title: Requester ID
         uiOrder: 0
         type: integer
       email:
-        description: Email address of the requester. If you fill in the Requester ID above, it will be ignored. Only one of the two fields is required.
+        description: >-
+          Email address of the requester. If you fill in the Requester ID above, it will be ignored. Only one of the two fields is required.
           If no contact exists with this email address in Freshdesk, it will be added as a new contact.
         title: Email
         uiOrder: 1
         type: string
       subject:
-        $ref: '#/$defs/ticket/subject'
+        $ref: "#/$defs/ticket/subject"
         uiOrder: 2
         type: string
       description:
@@ -716,7 +726,7 @@ TASK_CREATE_TICKET:
         uiOrder: 3
         type: string
       source:
-        $ref: '#/$defs/ticket/source'
+        $ref: "#/$defs/ticket/source"
         enum:
           - Email
           - Portal
@@ -731,7 +741,7 @@ TASK_CREATE_TICKET:
         uiOrder: 4
         type: string
       status:
-        $ref: '#/$defs/ticket/status'
+        $ref: "#/$defs/ticket/status"
         enum:
           - Open
           - Pending
@@ -743,7 +753,7 @@ TASK_CREATE_TICKET:
         uiOrder: 5
         type: string
       priority:
-        $ref: '#/$defs/ticket/priority'
+        $ref: "#/$defs/ticket/priority"
         enum:
           - Low
           - Medium
@@ -753,33 +763,33 @@ TASK_CREATE_TICKET:
         uiOrder: 6
         type: string
       ticket-type:
-        $ref: '#/$defs/ticket/ticket-type'
+        $ref: "#/$defs/ticket/ticket-type"
         uiOrder: 7
         type: string
       company-id:
-        $ref: '#/$defs/ticket/company-id'
+        $ref: "#/$defs/ticket/company-id"
         uiOrder: 8
         type: integer
       product-id:
-        $ref: '#/$defs/ticket/product-id'
+        $ref: "#/$defs/ticket/product-id"
         uiOrder: 9
         type: integer
       group-id:
-        $ref: '#/$defs/ticket/group-id'
+        $ref: "#/$defs/ticket/group-id"
         uiOrder: 10
         type: integer
       responder-id:
-        $ref: '#/$defs/ticket/responder-id'
+        $ref: "#/$defs/ticket/responder-id"
         uiOrder: 11
         type: integer
       tags:
-        $ref: '#/$defs/ticket/tags'
+        $ref: "#/$defs/ticket/tags"
         uiOrder: 12
         type: array
         items:
           type: string
       cc-emails:
-        $ref: '#/$defs/ticket/cc-emails'
+        $ref: "#/$defs/ticket/cc-emails"
         uiOrder: 13
         type: array
         items:
@@ -809,11 +819,11 @@ TASK_CREATE_TICKET:
     uiOrder: 0
     properties:
       ticket-id:
-        $ref: '#/$defs/ticket/ticket-id'
+        $ref: "#/$defs/ticket/ticket-id"
         uiOrder: 0
         type: integer
       created-at:
-        $ref: '#/$defs/ticket/created-at'
+        $ref: "#/$defs/ticket/created-at"
         uiOrder: 1
         type: string
     required:
@@ -828,7 +838,7 @@ TASK_REPLY_TO_TICKET:
     uiOrder: 0
     properties:
       ticket-id:
-        $ref: '#/$defs/ticket/ticket-id'
+        $ref: "#/$defs/ticket/ticket-id"
         uiOrder: 0
         type: integer
       body:
@@ -837,7 +847,8 @@ TASK_REPLY_TO_TICKET:
         uiOrder: 0
         type: string
       from-email:
-        description: Email address that is replying to the ticket. You need to have this email address registered in Freshdesk by going to Admin -> Emails.
+        description: >-
+          Email address that is replying to the ticket. You need to have this email address registered in Freshdesk by going to Admin -> Emails.
           If you leave this field empty, the global support email will be used.
         title: From Email
         uiOrder: 1
@@ -848,14 +859,14 @@ TASK_REPLY_TO_TICKET:
         uiOrder: 2
         type: integer
       cc-emails:
-        description: Email addresses added in the 'cc' field of the outgoing ticket email.
+        description: Email addresses added in the `cc` field of the outgoing ticket email.
         title: CC Emails
         uiOrder: 3
         type: array
         items:
           type: string
       bcc-emails:
-        description: Email addresses added in the 'bcc' field of the outgoing ticket email.
+        description: Email addresses added in the `bcc` field of the outgoing ticket email.
         title: BCC Emails
         uiOrder: 4
         type: array
@@ -871,11 +882,11 @@ TASK_REPLY_TO_TICKET:
     uiOrder: 0
     properties:
       conversation-id:
-        $ref: '#/$defs/ticket/conversation-id'
+        $ref: "#/$defs/ticket/conversation-id"
         uiOrder: 0
         type: integer
       created-at:
-        $ref: '#/$defs/ticket/created-at'
+        $ref: "#/$defs/ticket/created-at"
         uiOrder: 1
         type: string
     required:
@@ -890,7 +901,7 @@ TASK_CREATE_TICKET_NOTE:
     uiOrder: 0
     properties:
       ticket-id:
-        $ref: '#/$defs/ticket/ticket-id'
+        $ref: "#/$defs/ticket/ticket-id"
         uiOrder: 0
         type: integer
       body:
@@ -899,7 +910,8 @@ TASK_CREATE_TICKET_NOTE:
         uiOrder: 1
         type: string
       notify-emails:
-        description: Email addresses of agents/users who need to be notified about this note. The emails need to exist in Freshdesk agent. Agent list can
+        description: >-
+          Email addresses of agents/users who need to be notified about this note. The emails need to exist in Freshdesk agent. Agent list can
           be seen in Admin -> Agents.
         title: Notify Emails
         uiOrder: 2
@@ -931,11 +943,11 @@ TASK_CREATE_TICKET_NOTE:
     uiOrder: 0
     properties:
       conversation-id:
-        $ref: '#/$defs/ticket/conversation-id'
+        $ref: "#/$defs/ticket/conversation-id"
         uiOrder: 0
         type: integer
       created-at:
-        $ref: '#/$defs/ticket/created-at'
+        $ref: "#/$defs/ticket/created-at"
         uiOrder: 1
         type: string
     required:
@@ -975,11 +987,11 @@ TASK_GET_ALL_CONVERSATIONS:
               uiOrder: 0
               type: string
             conversation-id:
-              $ref: '#/$defs/ticket/conversation-id'
+              $ref: "#/$defs/ticket/conversation-id"
               uiOrder: 1
               type: integer
             support-email:
-              $ref: '#/$defs/ticket/support-email'
+              $ref: "#/$defs/ticket/support-email"
               uiOrder: 2
               type: string
             to-emails:
@@ -997,19 +1009,19 @@ TASK_GET_ALL_CONVERSATIONS:
               uiOrder: 4
               type: string
             cc-emails:
-              $ref: '#/$defs/ticket/cc-emails'
+              $ref: "#/$defs/ticket/cc-emails"
               uiOrder: 5
               items:
                 title: CC Email
-                description: One of the email address added in the 'cc' field of the incoming ticket email.
+                description: One of the email address added in the `cc` field of the incoming ticket email.
                 type: string
               type: array
             bcc-emails:
-              $ref: '#/$defs/ticket/bcc-emails'
+              $ref: "#/$defs/ticket/bcc-emails"
               uiOrder: 6
               items:
                 title: BCC Email
-                description: One of the email address added in the 'bcc' field of the incoming ticket email.
+                description: One of the email address added in the `bcc` field of the incoming ticket email.
                 type: string
               type: array
             incoming:
@@ -1028,7 +1040,7 @@ TASK_GET_ALL_CONVERSATIONS:
               uiOrder: 9
               type: integer
             created-at:
-              $ref: '#/$defs/ticket/created-at'
+              $ref: "#/$defs/ticket/created-at"
               uiOrder: 10
               type: string
           required:
@@ -1053,7 +1065,7 @@ TASK_GET_CONTACT:
     uiOrder: 0
     properties:
       contact-id:
-        $ref: '#/$defs/contact/contact-id'
+        $ref: "#/$defs/contact/contact-id"
         type: integer
         uiOrder: 0
     required:
@@ -1065,35 +1077,35 @@ TASK_GET_CONTACT:
     uiOrder: 0
     properties:
       name:
-        $ref: '#/$defs/contact/name'
+        $ref: "#/$defs/contact/name"
         uiOrder: 0
         type: string
       email:
-        $ref: '#/$defs/contact/email'
+        $ref: "#/$defs/contact/email"
         uiOrder: 1
         type: string
       phone:
-        $ref: '#/$defs/contact/phone'
+        $ref: "#/$defs/contact/phone"
         uiOrder: 2
         type: string
       mobile:
-        $ref: '#/$defs/contact/mobile'
+        $ref: "#/$defs/contact/mobile"
         uiOrder: 3
         type: string
       description:
-        $ref: '#/$defs/contact/description'
+        $ref: "#/$defs/contact/description"
         uiOrder: 4
         type: string
       address:
-        $ref: '#/$defs/contact/address'
+        $ref: "#/$defs/contact/address"
         uiOrder: 5
         type: string
       job-title:
-        $ref: '#/$defs/contact/job-title'
+        $ref: "#/$defs/contact/job-title"
         uiOrder: 6
         type: string
       tags:
-        $ref: '#/$defs/contact/tags'
+        $ref: "#/$defs/contact/tags"
         items:
           title: Tag
           description: Tag associated with the contact.
@@ -1101,39 +1113,39 @@ TASK_GET_CONTACT:
         uiOrder: 7
         type: array
       language:
-        $ref: '#/$defs/contact/language'
+        $ref: "#/$defs/contact/language"
         uiOrder: 8
         type: string
       time-zone:
-        $ref: '#/$defs/contact/time-zone'
+        $ref: "#/$defs/contact/time-zone"
         uiOrder: 9
         type: string
       company-id:
-        $ref: '#/$defs/contact/company-id'
+        $ref: "#/$defs/contact/company-id"
         uiOrder: 10
         type: integer
       unique-external-id:
-        $ref: '#/$defs/contact/unique-external-id'
+        $ref: "#/$defs/contact/unique-external-id"
         uiOrder: 11
         type: string
       twitter-id:
-        $ref: '#/$defs/contact/twitter-id'
+        $ref: "#/$defs/contact/twitter-id"
         uiOrder: 12
         type: string
       view-all-tickets:
-        $ref: '#/$defs/contact/view-all-tickets'
+        $ref: "#/$defs/contact/view-all-tickets"
         uiOrder: 13
         type: boolean
       deleted:
-        $ref: '#/$defs/contact/deleted'
+        $ref: "#/$defs/contact/deleted"
         uiOrder: 14
         type: boolean
       active:
-        $ref: '#/$defs/contact/active'
+        $ref: "#/$defs/contact/active"
         uiOrder: 15
         type: boolean
       other-emails:
-        $ref: '#/$defs/contact/other-emails'
+        $ref: "#/$defs/contact/other-emails"
         items:
           title: Other Email
           description: The other email addresses of the contact.
@@ -1141,7 +1153,7 @@ TASK_GET_CONTACT:
         uiOrder: 16
         type: array
       other-companies:
-        $ref: '#/$defs/contact/other-companies'
+        $ref: "#/$defs/contact/other-companies"
         items:
           title: Company
           properties:
@@ -1162,7 +1174,7 @@ TASK_GET_CONTACT:
         uiOrder: 17
         type: array
       other-phone-numbers:
-        $ref: '#/$defs/contact/other-phone-numbers'
+        $ref: "#/$defs/contact/other-phone-numbers"
         items:
           title: Other Phone Number
           description: The other phone number of the contact.
@@ -1170,15 +1182,15 @@ TASK_GET_CONTACT:
         uiOrder: 18
         type: array
       created-at:
-        $ref: '#/$defs/contact/created-at'
+        $ref: "#/$defs/contact/created-at"
         uiOrder: 19
         type: string
       updated-at:
-        $ref: '#/$defs/contact/updated-at'
+        $ref: "#/$defs/contact/updated-at"
         uiOrder: 20
         type: string
       custom-fields:
-        $ref: '#/$defs/contact/custom-fields'
+        $ref: "#/$defs/contact/custom-fields"
         required: []
         uiOrder: 21
         type: json
@@ -1193,35 +1205,35 @@ TASK_CREATE_CONTACT:
     uiOrder: 0
     properties:
       name:
-        $ref: '#/$defs/contact/name'
+        $ref: "#/$defs/contact/name"
         uiOrder: 0
         type: string
       email:
-        $ref: '#/$defs/contact/email'
+        $ref: "#/$defs/contact/email"
         uiOrder: 1
         type: string
       phone:
-        $ref: '#/$defs/contact/phone'
+        $ref: "#/$defs/contact/phone"
         uiOrder: 2
         type: string
       mobile:
-        $ref: '#/$defs/contact/mobile'
+        $ref: "#/$defs/contact/mobile"
         uiOrder: 3
         type: string
       description:
-        $ref: '#/$defs/contact/description'
+        $ref: "#/$defs/contact/description"
         uiOrder: 4
         type: string
       address:
-        $ref: '#/$defs/contact/address'
+        $ref: "#/$defs/contact/address"
         uiOrder: 5
         type: string
       job-title:
-        $ref: '#/$defs/contact/job-title'
+        $ref: "#/$defs/contact/job-title"
         uiOrder: 6
         type: string
       tags:
-        $ref: '#/$defs/contact/tags'
+        $ref: "#/$defs/contact/tags"
         uiOrder: 7
         type: array
         items:
@@ -1229,49 +1241,51 @@ TASK_CREATE_CONTACT:
       language:
         description: Language of the contact.
         title: Language
-        $ref: '#/$defs/language'
+        $ref: "#/$defs/language"
         uiOrder: 8
         type: string
       time-zone:
         description: Time zone of the contact.
         title: Time Zone
-        $ref: '#/$defs/time-zone'
+        $ref: "#/$defs/time-zone"
         uiOrder: 9
         type: string
       company-id:
-        $ref: '#/$defs/contact/company-id'
+        $ref: "#/$defs/contact/company-id"
         uiOrder: 10
         type: integer
       unique-external-id:
-        $ref: '#/$defs/contact/unique-external-id'
+        $ref: "#/$defs/contact/unique-external-id"
         uiOrder: 11
         type: string
       twitter-id:
-        $ref: '#/$defs/contact/twitter-id'
+        $ref: "#/$defs/contact/twitter-id"
         uiOrder: 12
         type: string
       view-all-tickets:
-        description: 'Used to determine if the contact can see all the tickets that are associated with the primary company. Note: this property will be
-          ignored if the Company ID is not provided.'
+        description:
+          "Used to determine if the contact can see all the tickets that are associated with the primary company. Note: this property will be
+          ignored if the Company ID is not provided."
         title: View All Tickets
         uiOrder: 13
         type: boolean
       other-emails:
-        $ref: '#/$defs/contact/other-emails'
+        $ref: "#/$defs/contact/other-emails"
         uiOrder: 14
         type: array
         items:
           type: string
       other-companies:
         title: Other Companies
-        description: 'List of other companies to which the contact belongs. Each company should be in the format of company-id;view-all-tickets(boolean
-          "true"/"false") Example: 123;true.'
+        description: >-
+          List of other companies to which the contact belongs. Each company should be in the format of company-id;view-all-tickets(boolean
+          `true`/`false``) Example: `123;true`.
         items:
           type: string
         uiOrder: 15
         type: array
       other-phone-numbers:
-        $ref: '#/$defs/contact/other-phone-numbers'
+        $ref: "#/$defs/contact/other-phone-numbers"
         uiOrder: 16
         type: array
         items:
@@ -1285,11 +1299,11 @@ TASK_CREATE_CONTACT:
     uiOrder: 0
     properties:
       contact-id:
-        $ref: '#/$defs/contact/contact-id'
+        $ref: "#/$defs/contact/contact-id"
         uiOrder: 0
         type: integer
       created-at:
-        $ref: '#/$defs/contact/created-at'
+        $ref: "#/$defs/contact/created-at"
         uiOrder: 1
         type: string
     required:
@@ -1304,7 +1318,7 @@ TASK_GET_COMPANY:
     uiOrder: 0
     properties:
       company-id:
-        $ref: '#/$defs/contact/company-id'
+        $ref: "#/$defs/contact/company-id"
         type: integer
         uiOrder: 0
     required:
@@ -1316,19 +1330,19 @@ TASK_GET_COMPANY:
     uiOrder: 0
     properties:
       name:
-        $ref: '#/$defs/company/name'
+        $ref: "#/$defs/company/name"
         uiOrder: 0
         type: string
       description:
-        $ref: '#/$defs/company/description'
+        $ref: "#/$defs/company/description"
         uiOrder: 1
         type: string
       note:
-        $ref: '#/$defs/company/note'
+        $ref: "#/$defs/company/note"
         uiOrder: 2
         type: string
       domains:
-        $ref: '#/$defs/company/domains'
+        $ref: "#/$defs/company/domains"
         items:
           title: Domain
           description: Domain of the company.
@@ -1336,31 +1350,31 @@ TASK_GET_COMPANY:
         uiOrder: 3
         type: array
       health-score:
-        $ref: '#/$defs/company/health-score'
+        $ref: "#/$defs/company/health-score"
         uiOrder: 4
         type: string
       account-tier:
-        $ref: '#/$defs/company/account-tier'
+        $ref: "#/$defs/company/account-tier"
         uiOrder: 5
         type: string
       renewal-date:
-        $ref: '#/$defs/company/renewal-date'
+        $ref: "#/$defs/company/renewal-date"
         uiOrder: 6
         type: string
       industry:
-        $ref: '#/$defs/company/industry'
+        $ref: "#/$defs/company/industry"
         uiOrder: 7
         type: string
       created-at:
-        $ref: '#/$defs/company/created-at'
+        $ref: "#/$defs/company/created-at"
         uiOrder: 8
         type: string
       updated-at:
-        $ref: '#/$defs/company/updated-at'
+        $ref: "#/$defs/company/updated-at"
         uiOrder: 9
         type: string
       custom-fields:
-        $ref: '#/$defs/company/custom-fields'
+        $ref: "#/$defs/company/custom-fields"
         required: []
         uiOrder: 10
         type: json
@@ -1377,29 +1391,29 @@ TASK_CREATE_COMPANY:
     uiOrder: 0
     properties:
       name:
-        $ref: '#/$defs/company/name'
+        $ref: "#/$defs/company/name"
         uiOrder: 0
         type: string
       description:
-        $ref: '#/$defs/company/description'
+        $ref: "#/$defs/company/description"
         uiOrder: 1
         type: string
       note:
-        $ref: '#/$defs/company/note'
+        $ref: "#/$defs/company/note"
         uiOrder: 2
         type: string
       domains:
-        $ref: '#/$defs/company/domains'
+        $ref: "#/$defs/company/domains"
         uiOrder: 3
         type: array
         items:
           type: string
       health-score:
-        $ref: '#/$defs/company/health-score'
+        $ref: "#/$defs/company/health-score"
         uiOrder: 4
         type: string
       account-tier:
-        $ref: '#/$defs/company/account-tier'
+        $ref: "#/$defs/company/account-tier"
         uiOrder: 5
         type: string
       renewal-date:
@@ -1408,7 +1422,7 @@ TASK_CREATE_COMPANY:
         uiOrder: 6
         type: string
       industry:
-        $ref: '#/$defs/company/industry'
+        $ref: "#/$defs/company/industry"
         uiOrder: 7
         type: string
     required:
@@ -1420,11 +1434,11 @@ TASK_CREATE_COMPANY:
     uiOrder: 0
     properties:
       company-id:
-        $ref: '#/$defs/company/company-id'
+        $ref: "#/$defs/company/company-id"
         uiOrder: 0
         type: integer
       created-at:
-        $ref: '#/$defs/company/created-at'
+        $ref: "#/$defs/company/created-at"
         uiOrder: 1
         type: string
     required:
@@ -1433,8 +1447,9 @@ TASK_CREATE_COMPANY:
     title: Output
     type: object
 TASK_GET_ALL:
-  shortDescription: 'Task to get all the IDs of existing contacts, companies, tickets, products, agents, roles, or skills. Note: products, agents, roles,
-    and skills require admin privileges. Some of these might not work, depending on the plan you are on.'
+  shortDescription:
+    "Task to get all the IDs of existing contacts, companies, tickets, products, agents, roles, or skills. Note: products, agents, roles,
+    and skills require admin privileges. Some of these might not work, depending on the plan you are on."
   input:
     description: Object type.
     uiOrder: 0
@@ -1822,7 +1837,8 @@ TASK_GET_GROUP:
     title: Output
     type: object
 TASK_GET_SKILL:
-  shortDescription: Get skill using ID. This task will only work if you have admin privileges. Agents can be assigned skills, and it is possible for tickets
+  shortDescription:
+    Get skill using ID. This task will only work if you have admin privileges. Agents can be assigned skills, and it is possible for tickets
     to be automatically assigned to agents based on the skills they have.
   input:
     description: Skill ID.

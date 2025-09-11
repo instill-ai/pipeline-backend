@@ -100,7 +100,8 @@ TASK_DUMMIER_THAN_DUMMY:
         required: []
         title: Meta
       atem:
-        description: 'This object should comply witht he format {"tortor": "something", "arcu": "something else"}'
+        description: >-
+          This object should comply witht he format {"tortor": "something", "arcu": "something else"}
         uiOrder: 1
         title: Atem
         type: object

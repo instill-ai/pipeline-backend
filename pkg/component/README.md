@@ -3,6 +3,7 @@
 A **Component** serves as an essential building block within a **Pipeline**.
 
 ## Component Types
+
 Components are organized under the following
 categories:
 
