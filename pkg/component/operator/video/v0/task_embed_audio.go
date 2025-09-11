@@ -71,7 +71,7 @@ func embedAudio(ctx context.Context, job *base.Job) error {
 		return fmt.Errorf("reading output video file: %w", err)
 	}
 
-	outputVideoData, err := data.NewVideoFromBytes(outputVideoBytes, "video/mp4", fmt.Sprintf("video-%s.mp4", uuid.New().String()))
+	outputVideoData, err := data.NewVideoFromBytes(outputVideoBytes, data.MP4, fmt.Sprintf("video-%s.mp4", uuid.New().String()), true)
 	if err != nil {
 		return fmt.Errorf("creating output video data: %w", err)
 	}

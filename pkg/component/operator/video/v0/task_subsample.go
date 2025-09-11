@@ -85,7 +85,7 @@ func subsample(ctx context.Context, job *base.Job) error {
 		return fmt.Errorf("reading output file: %w", err)
 	}
 
-	videoData, err := data.NewVideoFromBytes(outputBytes, "video/mp4", "subsampled.mp4")
+	videoData, err := data.NewVideoFromBytes(outputBytes, data.MP4, "subsampled.mp4", true)
 	if err != nil {
 		return fmt.Errorf("creating video data: %w", err)
 	}

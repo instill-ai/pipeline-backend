@@ -60,7 +60,7 @@ func segment(ctx context.Context, job *base.Job) error {
 			return fmt.Errorf("reading segment file %d: %w", i, err)
 		}
 
-		videoData, err := data.NewVideoFromBytes(segmentBytes, "video/mp4", fmt.Sprintf("segment-%d.mp4", i))
+		videoData, err := data.NewVideoFromBytes(segmentBytes, data.MP4, fmt.Sprintf("segment-%d.mp4", i), true)
 		if err != nil {
 			return fmt.Errorf("creating video data for segment %d: %w", i, err)
 		}

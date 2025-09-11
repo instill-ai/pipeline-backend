@@ -33,7 +33,7 @@ func encodeImage(img image.Image) (format.Image, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error encoding image: %v", err)
 	}
-	imgData, err := data.NewImageFromBytes(buf.Bytes(), "image/png", fmt.Sprintf("image-%s.png", uuid.New().String()))
+	imgData, err := data.NewImageFromBytes(buf.Bytes(), data.PNG, fmt.Sprintf("image-%s.png", uuid.New().String()), true)
 	if err != nil {
 		return nil, fmt.Errorf("error creating image data: %v", err)
 	}

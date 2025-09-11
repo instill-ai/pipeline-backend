@@ -34,7 +34,7 @@ func TestNewVideoFromBytes(t *testing.T) {
 			videoBytes, err := os.ReadFile(filepath.Join("testdata", tc.filename))
 			c.Assert(err, qt.IsNil)
 
-			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.filename)
+			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.filename, true)
 
 			if tc.expectError {
 				c.Assert(err, qt.IsNotNil)
@@ -52,7 +52,7 @@ func TestNewVideoFromBytes(t *testing.T) {
 		contentType := "invalid/type"
 		filename := "invalid.txt"
 
-		_, err := NewVideoFromBytes(invalidBytes, contentType, filename)
+		_, err := NewVideoFromBytes(invalidBytes, contentType, filename, true)
 		c.Assert(err, qt.IsNotNil)
 	})
 
@@ -61,7 +61,7 @@ func TestNewVideoFromBytes(t *testing.T) {
 		contentType := "video/mp4"
 		filename := "empty.mp4"
 
-		_, err := NewVideoFromBytes(emptyBytes, contentType, filename)
+		_, err := NewVideoFromBytes(emptyBytes, contentType, filename, true)
 		c.Assert(err, qt.IsNotNil)
 	})
 }
@@ -76,7 +76,7 @@ func TestNewVideoFromURL(t *testing.T) {
 		c.Parallel()
 
 		url := "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample_640_360.mp4"
-		video, err := NewVideoFromURL(ctx, binaryFetcher, url)
+		video, err := NewVideoFromURL(ctx, binaryFetcher, url, true)
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(video, qt.IsNotNil)
@@ -87,7 +87,7 @@ func TestNewVideoFromURL(t *testing.T) {
 		c.Parallel()
 
 		invalidURL := "not-a-url"
-		_, err := NewVideoFromURL(ctx, binaryFetcher, invalidURL)
+		_, err := NewVideoFromURL(ctx, binaryFetcher, invalidURL, true)
 		c.Assert(err, qt.IsNotNil)
 	})
 
@@ -95,7 +95,7 @@ func TestNewVideoFromURL(t *testing.T) {
 		c.Parallel()
 
 		nonExistentURL := "https://filesamples.com/non-existent-video.mp4"
-		_, err := NewVideoFromURL(ctx, binaryFetcher, nonExistentURL)
+		_, err := NewVideoFromURL(ctx, binaryFetcher, nonExistentURL, true)
 		c.Assert(err, qt.IsNotNil)
 	})
 }
@@ -123,7 +123,7 @@ func TestVideoProperties(t *testing.T) {
 			videoBytes, err := os.ReadFile(filepath.Join("testdata", tc.filename))
 			c.Assert(err, qt.IsNil)
 
-			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.filename)
+			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.filename, true)
 			c.Assert(err, qt.IsNil)
 			qt.CmpEquals()
 			c.Assert(video.ContentType().String(), qt.Equals, "video/mp4")
@@ -157,7 +157,7 @@ func TestVideoConvert(t *testing.T) {
 			videoBytes, err := os.ReadFile(filepath.Join("testdata", tc.filename))
 			c.Assert(err, qt.IsNil)
 
-			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.filename)
+			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.filename, true)
 			c.Assert(err, qt.IsNil)
 
 			convertedVideo, err := video.Convert(tc.expectedFormat)
@@ -180,10 +180,81 @@ func TestVideoConvert(t *testing.T) {
 		videoBytes, err := os.ReadFile(filepath.Join("testdata", "sample_640_360.mp4"))
 		c.Assert(err, qt.IsNil)
 
-		video, err := NewVideoFromBytes(videoBytes, "video/mp4", "sample_640_360.mp4")
+		video, err := NewVideoFromBytes(videoBytes, "video/mp4", "sample_640_360.mp4", true)
 		c.Assert(err, qt.IsNil)
 
 		_, err = video.Convert("invalid_format")
 		c.Assert(err, qt.IsNotNil)
+	})
+}
+
+func TestNewVideoFromBytesUnified(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	testCases := []struct {
+		name        string
+		filename    string
+		contentType string
+		width       int
+		height      int
+		duration    float64
+		frameRate   float64
+	}{
+		{"MP4 as unified", "sample_640_360.mp4", "video/mp4", 640, 360, 13.346, 30.0},
+		{"MOV as unified", "sample_640_360.mov", "video/quicktime", 640, 360, 13.346, 30.0},
+		{"WMV as unified", "sample_640_360.wmv", "video/x-ms-wmv", 640, 360, 13.346, 30.0},
+	}
+
+	for _, tc := range testCases {
+		c.Run(tc.name, func(c *qt.C) {
+			videoBytes, err := os.ReadFile(filepath.Join("testdata", tc.filename))
+			c.Assert(err, qt.IsNil)
+
+			// Test as unified (should convert to MP4)
+			video, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.filename, true)
+			c.Assert(err, qt.IsNil)
+			c.Assert(video.ContentType().String(), qt.Equals, "video/mp4")
+			c.Assert(video.Width().Integer(), qt.Equals, tc.width)
+			c.Assert(video.Height().Integer(), qt.Equals, tc.height)
+			c.Assert(video.Duration().Float64(), qt.CmpEquals(cmpopts.EquateApprox(0, 0.001)), tc.duration)
+			c.Assert(video.FrameRate().Float64(), qt.CmpEquals(cmpopts.EquateApprox(0, 0.1)), tc.frameRate)
+
+			// Test as non-unified (should preserve original format)
+			videoOriginal, err := NewVideoFromBytes(videoBytes, tc.contentType, tc.filename, false)
+			c.Assert(err, qt.IsNil)
+			c.Assert(videoOriginal.ContentType().String(), qt.Equals, tc.contentType)
+			c.Assert(videoOriginal.Width().Integer(), qt.Equals, tc.width)
+			c.Assert(videoOriginal.Height().Integer(), qt.Equals, tc.height)
+			c.Assert(videoOriginal.Duration().Float64(), qt.CmpEquals(cmpopts.EquateApprox(0, 0.001)), tc.duration)
+			c.Assert(videoOriginal.FrameRate().Float64(), qt.CmpEquals(cmpopts.EquateApprox(0, 0.1)), tc.frameRate)
+		})
+	}
+}
+
+func TestNewVideoFromURLUnified(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	ctx := context.Background()
+	binaryFetcher := external.NewBinaryFetcher()
+	validURL := "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample_640_360.mp4"
+
+	c.Run("Unified converts to MP4", func(c *qt.C) {
+		video, err := NewVideoFromURL(ctx, binaryFetcher, validURL, true)
+		c.Assert(err, qt.IsNil)
+		// Should convert to MP4 (internal unified format)
+		c.Assert(video.ContentType().String(), qt.Equals, "video/mp4")
+		c.Assert(video.Width().Integer(), qt.Equals, 640)
+		c.Assert(video.Height().Integer(), qt.Equals, 360)
+	})
+
+	c.Run("Non-unified preserves original format", func(c *qt.C) {
+		video, err := NewVideoFromURL(ctx, binaryFetcher, validURL, false)
+		c.Assert(err, qt.IsNil)
+		// Should preserve original format (MP4 in this case)
+		c.Assert(video.ContentType().String(), qt.Equals, "video/mp4")
+		c.Assert(video.Width().Integer(), qt.Equals, 640)
+		c.Assert(video.Height().Integer(), qt.Equals, 360)
 	})
 }
