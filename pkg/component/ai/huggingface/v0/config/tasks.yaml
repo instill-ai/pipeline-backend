@@ -83,7 +83,7 @@ TASK_AUDIO_CLASSIFICATION:
     title: Output
     type: object
 TASK_CONVERSATIONAL:
-  shortDescription:
+  shortDescription: >-
     Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgeable given a
     prompt.
   description: >-
@@ -514,7 +514,7 @@ TASK_OBJECT_DETECTION:
     title: Output
     type: object
 TASK_QUESTION_ANSWERING:
-  shortDescription:
+  shortDescription: >-
     Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a
     document.
   description: >-
@@ -676,7 +676,7 @@ TASK_SPEECH_RECOGNITION:
     type: object
 TASK_SUMMARIZATION:
   shortDescription: Summarization is the task of producing a shorter version of a document while preserving its important information.
-  description:
+  description: >-
     Summarization is the task of producing a shorter version of a document while preserving its important information. Some models can extract
     text from the original input, while other models can generate entirely new text.
   input:
@@ -840,7 +840,7 @@ TASK_TABLE_QUESTION_ANSWERING:
     type: object
 TASK_TEXT_CLASSIFICATION:
   shortDescription: Text Classification is the task of assigning a label or class to a given text.
-  description:
+  description: >-
     Text Classification is the task of assigning a label or class to a given text. Some use cases are sentiment analysis, natural language inference,
     and assessing grammatical correctness.
   input:
@@ -1176,7 +1176,7 @@ TASK_TRANSLATION:
     title: Output
     type: object
 TASK_ZERO_SHOT_CLASSIFICATION:
-  shortDescription:
+  shortDescription: >-
     Zero-shot text classification is a task in natural language processing where a model is trained on a set of labeled examples but is
     then able to classify new examples from previously unseen classes.
   input:

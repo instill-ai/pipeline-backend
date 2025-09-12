@@ -212,7 +212,8 @@ TASK_SPLIT:
     properties:
       data:
         description: >-
-          The resulting array after splitting. For arrays input: the array of sub-arrays. For objects input: array of smaller objects with alphabetically ordered
+          The resulting array after splitting. For arrays input: the array of sub-arrays. For objects input: array of smaller objects with alphabetically
+          ordered
           keys.
         uiOrder: 0
         items:

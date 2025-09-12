@@ -18,6 +18,7 @@ type RerankInput struct {
 
 type RerankOutput struct {
 	Ranking   []string    `json:"ranking"`
+	Indexes   []int       `json:"indexes"`
 	Usage     rerankUsage `json:"usage"`
 	Relevance []float64   `json:"relevance"`
 }
@@ -57,14 +58,17 @@ func (e *execution) taskRerank(in *structpb.Struct) (*structpb.Struct, error) {
 	}
 	newRanking := []string{}
 	relevance := []float64{}
+	indexes := []int{}
 	for _, rankResult := range resp.Results {
 		relevance = append(relevance, rankResult.RelevanceScore)
 		newRanking = append(newRanking, rankResult.Document.Text)
+		indexes = append(indexes, rankResult.Index)
 	}
 	bills := resp.Meta.BilledUnits
 
 	outputStruct := RerankOutput{
 		Ranking:   newRanking,
+		Indexes:   indexes,
 		Usage:     rerankUsage{Search: int(*bills.SearchUnits)},
 		Relevance: relevance,
 	}

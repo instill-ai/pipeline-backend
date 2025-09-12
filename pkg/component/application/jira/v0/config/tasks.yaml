@@ -340,7 +340,7 @@ TASK_GET_SPRINT:
     properties:
       sprint-id:
         title: Sprint ID
-        description:
+        description: >-
           The ID of the sprint. The sprint will only be returned if you can view the board that the sprint was created on, or view at least one
           of the issues in the sprint.
         shortDescription: The ID of the sprint

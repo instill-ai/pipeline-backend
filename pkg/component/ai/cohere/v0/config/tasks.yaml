@@ -311,7 +311,7 @@ TASK_TEXT_EMBEDDINGS:
           - binary
           - ubinary
         example: float
-        description:
+        description: >-
           Specifies the return type of embedding, Note that 'binary'/'ubinary' options means the component will return packed unsigned binary
           embeddings. The length of each binary embedding is 1/8 the length of the float embeddings of the provided model.
         type: string
@@ -343,7 +343,7 @@ TASK_TEXT_EMBEDDINGS:
     type: object
 TASK_TEXT_RERANKING:
   shortDescription: Sort text inputs by semantic relevance to a specified query.
-  description:
+  description: >-
     Rerank models sort text inputs by semantic relevance to a specified query. They are often used to sort search results returned from an existing
     search solution.
   input:
@@ -405,17 +405,28 @@ TASK_TEXT_RERANKING:
         uiOrder: 0
         title: Reranked documents
         type: array
-      usage:
-        $ref: "#/$defs/rerank-usage"
+      indexes:
+        items:
+          title: Index
+          type: integer
+        description: The index of the reranked documents.
+        uiOrder: 1
+        title: Reranked documents index
+        type: array
       relevance:
         items:
           title: Relevance
           type: number
         description: The relevance scores of the reranked documents.
-        uiOrder: 0
+        uiOrder: 2
         title: Reranked documents relevance
         type: array
+      usage:
+        $ref: "#/$defs/rerank-usage"
+        uiOrder: 3
     required:
       - ranking
+      - indexes
+      - relevance
     title: Output
     type: object

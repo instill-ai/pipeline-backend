@@ -33,7 +33,7 @@ TASK_CREATE_CAMPAIGN:
     type: object
 TASK_SETUP_CAMPAIGN:
   title: Setup Campaign
-  shortDescription:
+  shortDescription: >-
     Setup a campaign. You can update campaign settings to this campaign. For Smartlead campaign, you will need to setup the schedule settings
     and general settings.
   input:
@@ -52,9 +52,9 @@ TASK_SETUP_CAMPAIGN:
         uiOrder: 1
       days-of-the-week:
         title: Days of the Week
-        description:
+        description: >-
           Days of the week when the campaign will run. A number value ranging from 0 to 6; i.e [0,1,2,3,4,5,6]. 0 is Sunday, 1 is Monday, and
-          so on.
+           so on.
         items:
           type: number
         uiOrder: 2
@@ -149,7 +149,7 @@ TASK_SETUP_CAMPAIGN:
     type: object
 TASK_SAVE_SEQUENCES:
   title: Save Sequences
-  shortDescription:
+  shortDescription: >-
     Save sequences to a campaign. A Smartlead sequence is a series of automated emails sent to potential customers based on specific actions,
     or triggers.
   input:
@@ -169,8 +169,7 @@ TASK_SAVE_SEQUENCES:
           properties:
             seq-number:
               title: Sequence Number
-              description:
-                Sequence number means the order of the sequence. If you don't specify this, it will be automatically assigned by the order of
+              description: Sequence number means the order of the sequence. If you don't specify this, it will be automatically assigned by the order of
                 the sequences.
               type: number
               uiOrder: 0
@@ -182,14 +181,14 @@ TASK_SAVE_SEQUENCES:
               default: 1
             subject:
               title: Subject
-              description:
+              description: >-
                 Subject of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be
                 replaced by the actual value from the lead.
               type: string
               uiOrder: 2
             email-body:
               title: Email Body
-              description:
+              description: >-
                 Body of the email. If you want to set the variable according to different leads, you can use {{variable_name}}. It will be replaced
                 by the actual value from the lead.
               type: string
@@ -430,7 +429,7 @@ TASK_ADD_SENDER_EMAIL:
         uiOrder: 0
       sender-email:
         title: Sender Email
-        description:
+        description: >-
           Email address of the sender. You need to configure the sender email in [Smartlead console](https://app.smartlead.ai/app/email-accounts)
           before adding it to the campaign.
         type: string
