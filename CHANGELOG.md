@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.59.3](https://github.com/instill-ai/pipeline-backend/compare/v0.59.2...v0.59.3) (2025-09-12)
+
+
+### Features
+
+* **artifact:** expose chunk file reference in search task ([#1085](https://github.com/instill-ai/pipeline-backend/issues/1085)) ([39bbe95](https://github.com/instill-ai/pipeline-backend/commit/39bbe958ffd792ceed1c8443c14d2e0c7bfd6b71))
+* **component,cohere:** add rerank indexes in the response ([#1087](https://github.com/instill-ai/pipeline-backend/issues/1087)) ([fe6366a](https://github.com/instill-ai/pipeline-backend/commit/fe6366a14a079920753b7888773198435fea7916))
+
+
+### Miscellaneous
+
+* **data:** improve unified Instill Type data presentation ([#1078](https://github.com/instill-ai/pipeline-backend/issues/1078)) ([abcccd6](https://github.com/instill-ai/pipeline-backend/commit/abcccd6ed0629d9a9b8c0fa16ba53ed3aea0d866))
+
+
+### Documentation
+
+* **component:** update description format ([#1084](https://github.com/instill-ai/pipeline-backend/issues/1084)) ([faaaed0](https://github.com/instill-ai/pipeline-backend/commit/faaaed0773a20914e43894903da8501449456ee6))
+
+
+### Tests
+
+* **integration:** tinker script ([#1083](https://github.com/instill-ai/pipeline-backend/issues/1083)) ([1712bb6](https://github.com/instill-ai/pipeline-backend/commit/1712bb6cb06f607b1079af258c9313afbd068535))
+
 ## [0.59.2](https://github.com/instill-ai/pipeline-backend/compare/v0.59.1...v0.59.2) (2025-09-09)
 
 
