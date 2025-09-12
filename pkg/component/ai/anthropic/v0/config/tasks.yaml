@@ -70,8 +70,7 @@ $defs:
     type: object
 TASK_TEXT_GENERATION_CHAT:
   shortDescription: Provide text outputs in response to text inputs.
-  description:
-    Anthropic's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand
+  description: Anthropic's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand
     natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as
     "prompts". Designing a prompt is essentially how you “program” a large language model model, usually by providing instructions or some examples of how
     to successfully complete a task.
@@ -86,7 +85,8 @@ TASK_TEXT_GENERATION_CHAT:
           `system`, `user` or `assistant`", "content": "message content"}.
         type: array
         shortDescription: >-
-          Incorporate external chat history, specifically previous messages within the conversation. (Note: Anthropic doesn't support sending images via image-url, use the 'prompt-images' field instead)"
+          Incorporate external chat history, specifically previous messages within the conversation. (Note: Anthropic doesn't support sending images via
+          image-url, use the 'prompt-images' field instead)"
         uiOrder: 4
         items:
           $ref: "#/$defs/chat-message"
@@ -127,7 +127,8 @@ TASK_TEXT_GENERATION_CHAT:
         title: Prompt
       prompt-images:
         description: >-
-          The prompt images (Note: The prompt images will be injected in the order they are provided to the 'prompt' message. Anthropic doesn't support sending images via image-url, use this field instead).
+          The prompt images (Note: The prompt images will be injected in the order they are provided to the 'prompt' message. Anthropic doesn't support
+          sending images via image-url, use this field instead).
         type: array
         uiOrder: 3
         items:

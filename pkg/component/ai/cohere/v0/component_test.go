@@ -190,7 +190,7 @@ func TestComponent_Tasks(t *testing.T) {
 		wantResp RerankOutput
 	}{
 		input:    map[string]any{"documents": []string{"a", "b", "c", "d"}},
-		wantResp: RerankOutput{Ranking: []string{"d", "c", "b", "a"}, Usage: rerankUsage{Search: 5}, Relevance: []float64{10, 9, 8, 7}},
+		wantResp: RerankOutput{Ranking: []string{"d", "c", "b", "a"}, Usage: rerankUsage{Search: 5}, Relevance: []float64{10, 9, 8, 7}, Indexes: []int{3, 2, 1, 0}},
 	}
 	c.Run("ok - task rerank", func(c *qt.C) {
 		setup, err := structpb.NewStruct(map[string]any{
@@ -306,10 +306,10 @@ func (m *MockCohereClient) generateRerank(request cohereSDK.RerankRequest) (cohe
 		{Text: request.Documents[0].String},
 	}
 	result := []*cohereSDK.RerankResponseResultsItem{
-		{Document: &documents[0], RelevanceScore: 10},
-		{Document: &documents[1], RelevanceScore: 9},
-		{Document: &documents[2], RelevanceScore: 8},
-		{Document: &documents[3], RelevanceScore: 7},
+		{Document: &documents[0], RelevanceScore: 10, Index: 3},
+		{Document: &documents[1], RelevanceScore: 9, Index: 2},
+		{Document: &documents[2], RelevanceScore: 8, Index: 1},
+		{Document: &documents[3], RelevanceScore: 7, Index: 0},
 	}
 	searchCnt := float64(5)
 	bill := cohereSDK.ApiMetaBilledUnits{SearchUnits: &searchCnt}

@@ -267,7 +267,7 @@ TASK_SEND_LOCATION_BASED_TEMPLATE_MESSAGE:
     title: Output
     type: object
 TASK_SEND_AUTHENTICATION_TEMPLATE_MESSAGE:
-  shortDescription:
+  shortDescription: >-
     Send authentication template message with one-time password button (The button is used to copy the password to clipboard). Authentication
     template has no header parameters.
   input:
@@ -415,9 +415,9 @@ TASK_SEND_MEDIA_MESSAGE:
     title: Output
     type: object
 TASK_SEND_LOCATION_MESSAGE:
-  shortDescription:
-    "Send location message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please
-    visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)"
+  shortDescription: >-
+    Send location message. Note: Message can only be sent when the 24-hour customer service window is open. For more information, please
+    visit [here](https://developers.facebook.com/docs/whatsapp/cloud-api/guides/send-messages#customer-service-windows)
   input:
     description: Location input.
     uiOrder: 0

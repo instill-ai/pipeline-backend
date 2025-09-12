@@ -99,7 +99,8 @@ TASK_TEXT_GENERATION_CHAT:
           `system`, `user` or `assistant`", "content": "message content"}.
         type: array
         shortDescription: >-
-          Incorporate external chat history, specifically previous messages within the conversation. (Note: The Mistral models are not trained to process images, thus images will be omitted)
+          Incorporate external chat history, specifically previous messages within the conversation. (Note: The Mistral models are not trained to process
+          images, thus images will be omitted)
         uiOrder: 4
         items:
           $ref: "#/$defs/chat-message"

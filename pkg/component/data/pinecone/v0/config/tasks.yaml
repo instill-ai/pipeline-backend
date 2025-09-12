@@ -111,7 +111,7 @@ TASK_QUERY:
     type: object
 TASK_UPSERT:
   shortDescription: Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value.
-  description:
+  description: >-
     Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value. This task will
     be soon replaced by `TASK_BATCH_UPSERT`, which extends its functionality.
   input:

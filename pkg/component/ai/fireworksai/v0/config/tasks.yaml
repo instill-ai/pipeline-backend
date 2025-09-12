@@ -195,7 +195,7 @@ TASK_TEXT_GENERATION_CHAT:
         title: Top K
       top-p:
         default: 0.5
-        description:
+        description: >-
           Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least
           probable until the sum of the probabilities is greater than top-p (default=0.5).
         type: number

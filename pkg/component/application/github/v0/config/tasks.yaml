@@ -653,7 +653,7 @@ $defs:
         type: string
       line:
         shortDescription: The last line of the range that your comment applies to. Your comment will be placed under this line.
-        description:
+        description: >-
           The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that
           your comment applies to.
         uiOrder: 6
@@ -794,8 +794,7 @@ $defs:
             type: string # type: string
             title: Following URL
             description: The URL to the user's following list
-            examples:
-              ["https://api.github.com/users/octocat/following{/other_user}"]
+            examples: ["https://api.github.com/users/octocat/following{/other_user}"]
             uiOrder: 9
           gists_url:
             type: string # type: string
@@ -807,8 +806,7 @@ $defs:
             type: string # type: string
             title: Starred URL
             description: The URL to the user's starred repositories
-            examples:
-              ["https://api.github.com/users/octocat/starred{/owner}{/repo}"]
+            examples: ["https://api.github.com/users/octocat/starred{/owner}{/repo}"]
             uiOrder: 11
           subscriptions_url:
             type: string # type: string, format: uri
@@ -1369,7 +1367,7 @@ TASK_CREATE_ISSUE:
     type: object
 TASK_CREATE_REVIEW_COMMENT:
   shortDescription: Create a review comment in pull request.
-  description:
+  description: >-
     Create a review comment in a pull request. The comment can be a general comment or a review comment. The comment can be on a specific line
     or on the PR as a whole.
   input:
@@ -1445,7 +1443,7 @@ TASK_CREATE_WEBHOOK:
         uiOrder: 3
       events:
         title: Events
-        description:
+        description: >-
           Events to trigger the webhook. Please see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads">the github document</a>
           for more information.
         type: array
@@ -1470,7 +1468,7 @@ TASK_CREATE_WEBHOOK:
         uiOrder: 6
       hook-secret:
         title: Hook Secret
-        description:
+        description: >-
           If provided, the secret will be used as the key to generate the HMAC hex digest value for delivery signature headers. (see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#delivery-headers">the
           document</a>).
         instillSecret: true

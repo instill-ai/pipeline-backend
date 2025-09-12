@@ -130,7 +130,7 @@ TASK_TEXT_GENERATION:
         title: Seed
       system-message:
         default: You are a helpful assistant.
-        description:
+        description: >-
           The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide
           specific instructions about how it should behave throughout the conversation. By default, the model's behavior is using a generic message as "You
           are a helpful assistant.".
@@ -350,7 +350,7 @@ TASK_EMBEDDING:
                 - properties:
                     text:
                       title: Text Content
-                      description:
+                      description: >-
                         When the input is text, the raw text is tokenized and processed into a dense, fixed-length vector that captures semantic
                         information such as word meanings and relationships. These text embeddings enable tasks like sentiment analysis, search, or classification.
                       shortDescription: Text content.

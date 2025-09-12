@@ -1263,9 +1263,9 @@ TASK_CREATE_CONTACT:
         uiOrder: 12
         type: string
       view-all-tickets:
-        description:
-          "Used to determine if the contact can see all the tickets that are associated with the primary company. Note: this property will be
-          ignored if the Company ID is not provided."
+        description: >-
+          Used to determine if the contact can see all the tickets that are associated with the primary company. Note: this property will be
+          ignored if the Company ID is not provided.
         title: View All Tickets
         uiOrder: 13
         type: boolean
@@ -1447,9 +1447,9 @@ TASK_CREATE_COMPANY:
     title: Output
     type: object
 TASK_GET_ALL:
-  shortDescription:
-    "Task to get all the IDs of existing contacts, companies, tickets, products, agents, roles, or skills. Note: products, agents, roles,
-    and skills require admin privileges. Some of these might not work, depending on the plan you are on."
+  shortDescription: >-
+    Task to get all the IDs of existing contacts, companies, tickets, products, agents, roles, or skills. Note: products, agents, roles, and skills require
+    admin privileges. Some of these might not work, depending on the plan you are on."
   input:
     description: Object type.
     uiOrder: 0
@@ -1837,7 +1837,7 @@ TASK_GET_GROUP:
     title: Output
     type: object
 TASK_GET_SKILL:
-  shortDescription:
+  shortDescription: >-
     Get skill using ID. This task will only work if you have admin privileges. Agents can be assigned skills, and it is possible for tickets
     to be automatically assigned to agents based on the skills they have.
   input:
