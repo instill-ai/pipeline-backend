@@ -1,0 +1,1332 @@
+$defs:
+  modality:
+    title: Modality
+    description: >-
+      Content Part modality. Indicates the media type of a content part.
+      The value is one of the following:
+        `MODALITY_UNSPECIFIED`:	Unspecified modality.
+        `TEXT`:	Plain text.
+        `IMAGE`:	Image.
+        `VIDEO`:	Video.
+        `AUDIO`:	Audio.
+        `DOCUMENT`:	Document, e.g. PDF.
+    type: string
+    enum:
+      - MODALITY_UNSPECIFIED
+      - TEXT
+      - IMAGE
+      - VIDEO
+      - AUDIO
+      - DOCUMENT
+  harm-category:
+    title: Harm Category
+    description: >-
+      The category of a rating for safety.
+      The value is one of the following:
+        `HARM_CATEGORY_UNSPECIFIED`: Category is unspecified.
+        `HARM_CATEGORY_DEROGATORY`: PaLM - Negative or harmful comments targeting identity and/or protected attribute.
+        `HARM_CATEGORY_TOXICITY`: PaLM - Content that is rude, disrespectful, or profane.
+        `HARM_CATEGORY_VIOLENCE`: PaLM - Describes scenarios depicting violence against an individual or group, or general descriptions of gore.
+        `HARM_CATEGORY_SEXUAL`: PaLM - Contains references to sexual acts or other lewd content.
+        `HARM_CATEGORY_MEDICAL`: PaLM - Promotes unchecked medical advice.
+        `HARM_CATEGORY_DANGEROUS`: PaLM - Dangerous content that promotes, facilitates, or encourages harmful acts.
+        `HARM_CATEGORY_HARASSMENT`: Gemini - Harassment content.
+        `HARM_CATEGORY_HATE_SPEECH`: Gemini - Hate speech and content.
+        `HARM_CATEGORY_SEXUALLY_EXPLICIT`: Gemini - Sexually explicit content.
+        `HARM_CATEGORY_DANGEROUS_CONTENT`: Gemini - Dangerous content.
+        `HARM_CATEGORY_CIVIC_INTEGRITY`: Gemini - Content that may be used to harm civic integrity. DEPRECATED: use enableEnhancedCivicAnswers instead.
+    type: string
+    enum:
+      - HARM_CATEGORY_UNSPECIFIED
+      - HARM_CATEGORY_DEROGATORY
+      - HARM_CATEGORY_TOXICITY
+      - HARM_CATEGORY_VIOLENCE
+      - HARM_CATEGORY_SEXUAL
+      - HARM_CATEGORY_MEDICAL
+      - HARM_CATEGORY_DANGEROUS
+      - HARM_CATEGORY_HARASSMENT
+      - HARM_CATEGORY_HATE_SPEECH
+      - HARM_CATEGORY_SEXUALLY_EXPLICIT
+      - HARM_CATEGORY_DANGEROUS_CONTENT
+  harm-block-threshold:
+    title: Harm Block Threshold
+    description: >-
+      Block at and beyond a specified harm probability.
+      The value is one of the following:
+        `HARM_BLOCK_THRESHOLD_UNSPECIFIED`: Threshold is unspecified.
+        `BLOCK_LOW_AND_ABOVE`: Content with NEGLIGIBLE will be allowed.
+        `BLOCK_MEDIUM_AND_ABOVE`: Content with NEGLIGIBLE and LOW will be allowed.
+        `BLOCK_ONLY_HIGH`: Content with NEGLIGIBLE, LOW, and MEDIUM will be allowed.
+        `BLOCK_NONE`: All content will be allowed.
+        `OFF`: Turn off the safety filter.
+    type: string
+    enum:
+      - HARM_BLOCK_THRESHOLD_UNSPECIFIED
+      - BLOCK_LOW_AND_ABOVE
+      - BLOCK_MEDIUM_AND_ABOVE
+      - BLOCK_ONLY_HIGH
+      - BLOCK_NONE
+      - OFF
+  block-reason:
+    title: Block Reason
+    description: >-
+      Specifies the reason why the prompt was blocked.
+      The value is one of the following:
+        `BLOCK_REASON_UNSPECIFIED`: Default value. This value is unused.
+        `SAFETY`: Prompt was blocked due to safety reasons. Inspect safetyRatings to understand which safety category blocked it.
+        `OTHER`: Prompt was blocked due to unknown reasons.
+        `BLOCKLIST`: Prompt was blocked due to the terms which are included from the terminology blocklist.
+        `PROHIBITED_CONTENT`: Prompt was blocked due to prohibited content.
+        `IMAGE_SAFETY`: Candidates blocked due to unsafe image generation content.
+    type: string
+    enum:
+      - BLOCK_REASON_UNSPECIFIED
+      - SAFETY
+      - OTHER
+      - BLOCKLIST
+      - PROHIBITED_CONTENT
+      - IMAGE_SAFETY
+  safety-rating:
+    title: Safety Rating
+    description: Safety rating for a piece of content, including harm category and probability.
+    type: object
+    required: [category, probability]
+    properties:
+      category:
+        title: Harm Category
+        description: Harm category.
+        type: string
+      probability:
+        title: Probability
+        description: Probability level of harm.
+        type: string
+      blocked:
+        title: Blocked
+        description: Whether the content was blocked by this rating.
+        type: boolean
+  citation-source:
+    title: Citation Source
+    description: Source of a citation including where the content was derived.
+    type: object
+    additionalProperties: true
+    properties:
+      uri:
+        title: URI
+        type: string
+      title:
+        title: Title
+        type: string
+      start-index:
+        title: Start Index
+        type: integer
+      end-index:
+        title: End Index
+        type: integer
+  citation-metadata:
+    title: Citation Metadata
+    description: Citation metadata for generated content, listing sources.
+    type: object
+    properties:
+      citations:
+        title: Citations
+        type: array
+        items:
+          $ref: "#/$defs/citation-source"
+  logprobs-top-candidate:
+    title: Logprobs Top Candidate
+    description: Token candidate with its log probability.
+    type: object
+    required: [token, logprob]
+    properties:
+      token:
+        title: Token
+        type: string
+      logprob:
+        title: Log Probability
+        type: number
+  logprobs-result:
+    title: Logprobs Result
+    description: Log probabilities for generated tokens.
+    type: object
+    properties:
+      top-candidates:
+        title: Top Candidates
+        type: array
+        items:
+          $ref: "#/$defs/logprobs-top-candidate"
+  finish-reason:
+    title: Finish Reason
+    description: >-
+      Reason why the model stopped generating for a candidate.
+      The value is one of the following:
+        `FINISH_REASON_UNSPECIFIED`:	Default value. This value is unused.
+        `STOP`:	Natural stop point of the model or provided stop sequence.
+        `MAX_TOKENS`:	The maximum number of tokens as specified in the request was reached.
+        `SAFETY`:	The response candidate content was flagged for safety reasons.
+        `RECITATION`:	The response candidate content was flagged for recitation reasons.
+        `LANGUAGE`:	The response candidate content was flagged for using an unsupported language.
+        `OTHER`:	Unknown reason.
+        `BLOCKLIST`:	Token generation stopped because the content contains forbidden terms.
+        `PROHIBITED_CONTENT`:	Token generation stopped for potentially containing prohibited content.
+        `SPII`:	Token generation stopped because the content potentially contains Sensitive Personally IDentifiable Information (SPII).
+        `MALFORMED_FUNCTION_CALL`:	The function call generated by the model is invalid.
+        `IMAGE_SAFETY`:	Token generation stopped because generated images contain safety violations.
+        `UNEXPECTED_TOOL_CALL`:	Model generated a tool call but no tools were enabled in the request.
+        `TOO_MANY_TOOL_CALLS`:	Model called too many tools consecutively, thus the system exited execution.
+    type: string
+    enum:
+      - FINISH_REASON_UNSPECIFIED
+      - STOP
+      - MAX_TOKENS
+      - SAFETY
+      - RECITATION
+      - LANGUAGE
+      - OTHER
+      - BLOCKLIST
+      - PROHIBITED_CONTENT
+      - SPII
+      - MALFORMED_FUNCTION_CALL
+      - IMAGE_SAFETY
+      - UNEXPECTED_TOOL_CALL
+      - TOO_MANY_TOOL_CALLS
+  modality-token-count:
+    title: Modality Token Count
+    description: Token counting info for a single modality.
+    type: object
+    required: [modality, token-count]
+    properties:
+      modality:
+        $ref: "#/$defs/modality"
+      token-count:
+        title: Token Count
+        description: Number of tokens.
+        type: integer
+  usage-metadata:
+    title: Usage Metadata
+    description: Metadata on the generation request's token usage.
+    type: object
+    properties:
+      prompt-token-count:
+        type: integer
+        title: Prompt Token Count
+        description: Number of tokens in the prompt. When cachedContent is set, this is still the total effective prompt size meaning this includes the
+          number of tokens in the cached content.
+      cached-content-token-count:
+        type: integer
+        title: Cached Content Token Count
+        description: Number of tokens in the cached part of the prompt (the cached content)
+      candidates-token-count:
+        type: integer
+        title: Candidates Token Count
+        description: Total number of tokens across all the generated response candidates.
+      tool-use-prompt-token-count:
+        type: integer
+        title: Tool-use Prompt Token Count
+        description: Number of tokens present in tool-use prompt(s).
+      thoughts-token-count:
+        type: integer
+        title: Thoughts Token Count
+        description: Number of tokens of thoughts for thinking models.
+      total-token-count:
+        type: integer
+        title: Total Token Count
+        description: Total token count for the generation request (prompt + response candidates).
+      prompt-tokens-details:
+        type: array
+        title: Prompt Tokens Details
+        description: List of modalities that were processed in the request input.
+        items:
+          $ref: "#/$defs/modality-token-count"
+      cache-tokens-details:
+        type: array
+        title: Cache Tokens Details
+        description: Output only. List of modalities of the cached content in the request input.
+        items:
+          $ref: "#/$defs/modality-token-count"
+      candidates-tokens-details:
+        type: array
+        title: Candidates Tokens Details
+        description: List of modalities that were returned in the response.
+        items:
+          $ref: "#/$defs/modality-token-count"
+      tool-use-prompt-tokens-details:
+        type: array
+        title: Tool-use Prompt Tokens Details
+        description: List of modalities that were processed for tool-use request inputs.
+        items:
+          $ref: "#/$defs/modality-token-count"
+  prompt-feedback:
+    title: Prompt Feedback
+    description: Feedback on the prompt including any safety blocking information.
+    type: object
+    properties:
+      block-reason:
+        $ref: "#/$defs/block-reason"
+      safety-ratings:
+        title: Safety Ratings
+        type: array
+        description: >-
+          Safety rating for a piece of content. The safety rating contains the category of harm and the  harm probability level in that category for a piece
+          of content. Content is classified for safety  across a number of harm categories and the probability of the harm classification is included here.
+        items:
+          $ref: "#/$defs/safety-rating"
+  blob:
+    title: Blob
+    description: Raw media bytes. Text should use the 'text' field instead.
+    type: object
+    required: [mimeType, data]
+    properties:
+      mimeType:
+        description: IANA MIME type of the source data (e.g., image/png, image/jpeg).
+        type: string
+        title: MIME Type
+      data:
+        description: Base64-encoded raw bytes for media formats.
+        type: string
+        title: Data (base64)
+  function-call:
+    title: Function Call
+    description: Predicted function call with name and arguments.
+    type: object
+    required: [name]
+    properties:
+      id:
+        title: ID
+        description: Optional unique id of the function call.
+        type: string
+      name:
+        title: Name
+        description: Required function name.
+        type: string
+      args:
+        title: Args
+        description: Optional function parameters/values as a JSON object.
+        type: object
+        additionalProperties: true
+  function-response:
+    title: Function Response
+    description: Result of a function call with name and structured response.
+    type: object
+    required: [name, response]
+    properties:
+      id:
+        title: ID
+        description: Optional id of the function call this response is for.
+        type: string
+      name:
+        title: Name
+        description: Required function name.
+        type: string
+      response:
+        title: Response
+        description: Required function response as a JSON object.
+        type: object
+        additionalProperties: true
+      willContinue:
+        title: Will Continue
+        description: Whether the function call continues (generator style).
+        type: boolean
+      scheduling:
+        title: Scheduling
+        description: >-
+          How the response should be scheduled (only for non-blocking calls).           The value is one of the following:
+            `SCHEDULING_UNSPECIFIED`:	This value is unused.
+            `SILENT`:	Only add the result to the conversation context, do not interrupt or trigger generation.
+            `WHEN_IDLE`:	Add the result to the conversation context, and prompt to generate output without interrupting ongoing generation.
+            `INTERRUPT`:	Add the result to the conversation context, interrupt ongoing generation and prompt to generate output.
+        type: string
+        enum:
+          - SCHEDULING_UNSPECIFIED
+          - WHEN_IDLE
+          - INTERRUPT
+          - SILENT
+  file-data:
+    title: File Data
+    description: URI-based data reference with MIME type.
+    type: object
+    required: [mimeType, uri]
+    properties:
+      mimeType:
+        description: IANA MIME type of the referenced data.
+        type: string
+        title: MIME Type
+      uri:
+        description: URI of the file stored via Files API or external URL.
+        type: string
+        title: URI
+  executable-code:
+    title: Executable Code
+    description: Code generated by the model that is meant to be executed.
+    type: object
+    required: [language, code]
+    properties:
+      language:
+        description: >-
+          Programming language of the code.
+          The value is one of the following:
+            `LANGUAGE_UNSPECIFIED`:	Unspecified language. This value should not be used.
+            `PYTHON`:	Python >= 3.10, with numpy and simpy available.
+        type: string
+        enum:
+          - LANGUAGE_UNSPECIFIED
+          - PYTHON
+        title: Language
+      code:
+        description: The code to be executed.
+        type: string
+        title: Code
+  code-execution-result:
+    title: Code Execution Result
+    description: Result of executing the ExecutableCode.
+    type: object
+    required: [outcome]
+    properties:
+      outcome:
+        description: >-
+          Outcome of the code execution.
+          The value is one of the following:
+            `OUTCOME_UNSPECIFIED`:	Unspecified status. This value should not be used.
+            `OUTCOME_OK`:	Code execution completed successfully.
+            `OUTCOME_FAILED`:	Code execution finished but with a failure. stderr should contain the reason.
+            `OUTCOME_DEADLINE_EXCEEDED`:	Code execution ran for too long, and was cancelled. There may or may not be a partial output present.
+        type: string
+        enum:
+          - OUTCOME_UNSPECIFIED
+          - OUTCOME_OK
+          - OUTCOME_FAILED
+          - OUTCOME_DEADLINE_EXCEEDED
+        title: Outcome
+      output:
+        description: Stdout if success, stderr or description otherwise.
+        type: string
+        title: Output
+  video-metadata:
+    title: Video Metadata
+    description: Metadata describing the input video content.
+    type: object
+    required: [startOffset, endOffset, fps]
+    properties:
+      start-offset:
+        description: The start offset of the video (duration string, e.g. "3.5s").
+        type: string
+        title: Start Offset
+      end-offset:
+        description: The end offset of the video (duration string, e.g. "3.5s").
+        type: string
+        title: End Offset
+      fps:
+        description: Frame rate of the video sent to the model. Range (0.0, 24.0].
+        type: number
+        title: FPS
+  part:
+    title: Part
+    description: A part of the content, such as text or media, or tool call/response.
+    type: object
+    properties:
+      thought:
+        title: Thought
+        description: Indicates if the part is a thought from the model.
+        type: boolean
+      thought-signature:
+        title: Thought Signature
+        description: Opaque signature for the thought (base64-encoded bytes).
+        type: string
+      video-metadata:
+        title: Video Metadata
+        description: Optional video metadata (only with blob or fileData video content).
+        $ref: "#/$defs/video-metadata"
+    oneOf:
+      - properties:
+          text:
+            title: Text
+            description: Inline text content.
+            type: string
+      - properties:
+          blob:
+            $ref: "#/$defs/blob"
+      - properties:
+          function-call:
+            $ref: "#/$defs/function-call"
+      - properties:
+          function-response:
+            $ref: "#/$defs/function-response"
+      - properties:
+          file-data:
+            $ref: "#/$defs/file-data"
+      - properties:
+          executable-code:
+            $ref: "#/$defs/executable-code"
+      - properties:
+          code-execution-result:
+            $ref: "#/$defs/code-execution-result"
+  content:
+    title: Content
+    description: Base structured datatype with producer role and ordered parts.
+    type: object
+    required: [parts]
+    properties:
+      role:
+        title: Role
+        description: >-
+          The producer of the content. Must be either 'user' or 'model'.
+          Useful to set for multi-turn conversations, otherwise can be left blank or unset. Optional.
+          The value is one of the following:
+            `USER`: User content.
+            `MODEL`: Model content.
+        type: string
+        enum:
+          - USER
+          - MODEL
+      parts:
+        title: Parts
+        type: array
+        description: Parts of the content.
+        items:
+          $ref: "#/$defs/part"
+  grounding-attribution:
+    title: Grounding Attribution
+    description: Attribution for a source that contributed to an answer.
+    type: object
+    properties:
+      source-id:
+        title: Source ID
+        description: Identifier for the source contributing to this attribution.
+        $ref: "#/$defs/attribution-source-id"
+      content:
+        description: Grounding source content that makes up this attribution.
+        $ref: "#/$defs/content"
+  attribution-source-id:
+    title: Attribution Source ID
+    description: Identifier for the source contributing to this attribution.
+    type: object
+    properties:
+      grounding-passage:
+        title: Grounding Passage ID
+        description: Identifier for an inline passage.
+        type: object
+        required: [passage-id, part-index]
+        properties:
+          passage-id:
+            title: Passage ID
+            description: ID of the passage matching the request's GroundingPassage.id
+            type: string
+          part-index:
+            title: Part Index
+            description: Index of the part within the GroundingPassage.content
+            type: integer
+      semantic-retriever-chunk:
+        title: Semantic Retriever Chunk
+        description: Identifier for a Chunk fetched via Semantic Retriever
+        type: object
+        required: [source, chunk]
+        properties:
+          source:
+            title: Source
+            description: Name of the Semantic Retriever source (e.g. corpora/123)
+            type: string
+          chunk:
+            title: Chunk
+            description: Name of the Chunk containing the attributed text
+            type: string
+  segment:
+    title: Segment
+    description: Segment of the content
+    type: object
+    properties:
+      part-index:
+        title: Part Index
+        description: Index of the Part in its parent Content
+        type: integer
+      start-index:
+        title: Start Index
+        description: Start byte offset in the Part (inclusive)
+        type: integer
+      end-index:
+        title: End Index
+        description: End byte offset in the Part (exclusive)
+        type: integer
+      text:
+        title: Text
+        description: Text of the segment
+        type: string
+    required: [part-index, start-index, end-index]
+  web:
+    title: Web
+    description: Chunk from the web
+    type: object
+    required: [uri]
+    properties:
+      uri:
+        title: URI
+        description: URI reference of the chunk
+        type: string
+      title:
+        title: Title
+        description: Title of the chunk
+        type: string
+  grounding-chunk:
+    title: Grounding Chunk
+    description: Grounding chunk
+    type: object
+    properties:
+      web:
+        $ref: "#/$defs/web"
+        description: Web grounding chunk
+  grounding-support:
+    title: Grounding Support
+    description: Grounding support
+    type: object
+    properties:
+      grounding-chunk-indices:
+        title: Grounding Chunk Indices
+        description: Indices into groundingChunks that support the claim
+        type: array
+        items:
+          type: integer
+      confidence-scores:
+        title: Confidence Scores
+        description: Confidence scores aligned with groundingChunkIndices
+        type: array
+        items:
+          type: number
+      segment:
+        $ref: "#/$defs/segment"
+    required: [grounding-chunk-indices]
+  retrieval-metadata:
+    title: Retrieval Metadata
+    description: Retrieval metadata for grounding flow
+    type: object
+    properties:
+      google-search-dynamic-retrieval-score:
+        title: Google Search Dynamic Retrieval Score
+        description: Likelihood [0,1] that Google Search could help answer the prompt
+        type: number
+  search-entry-point:
+    title: Search Entry Point
+    description: Google search entry for follow-up web searches
+    type: object
+    properties:
+      rendered-content:
+        title: Rendered Content
+        description: Web content snippet suitable for embedding
+        type: string
+      sdk-blob:
+        title: SDK Blob
+        description: Base64-encoded JSON of `&lt;search term, search url&gt;` tuples
+        type: string
+        format: byte
+  grounding-metadata:
+    title: Grounding Metadata
+    description: Metadata returned to client when grounding is enabled.
+    type: object
+    properties:
+      grounding-chunks:
+        title: Grounding Chunks
+        description: Supporting references retrieved from grounding source
+        type: array
+        items:
+          $ref: "#/$defs/grounding-chunk"
+      grounding-supports:
+        title: Grounding Supports
+        description: List of grounding support
+        type: array
+        items:
+          $ref: "#/$defs/grounding-support"
+      web-search-queries:
+        title: Web Search Queries
+        description: Web search queries for follow-up search
+        type: array
+        items:
+          type: string
+      search-entry-point:
+        $ref: "#/$defs/search-entry-point"
+      retrieval-metadata:
+        $ref: "#/$defs/retrieval-metadata"
+  safety-setting:
+    title: Safety Setting
+    description: Safety setting for a harm category and block threshold.
+    type: object
+    required: [category, threshold]
+    properties:
+      category:
+        $ref: "#/$defs/harm-category"
+      threshold:
+        $ref: "#/$defs/harm-block-threshold"
+  tool:
+    title: Tool
+    description: Tool available to the model (functions or code execution).
+    type: object
+    properties:
+      function-declarations:
+        title: Function Declarations
+        description: Functions the model may call.
+        type: array
+        items:
+          $ref: "#/$defs/function-declaration"
+      google-search-retrieval:
+        $ref: "#/$defs/google-search-retrieval"
+      code-execution:
+        $ref: "#/$defs/code-execution"
+      google-search:
+        $ref: "#/$defs/google-search"
+      url-context:
+        $ref: "#/$defs/url-context"
+  tool-config:
+    title: Tool Config
+    description: Configuration for tool usage and function calling.
+    type: object
+    properties:
+      function-calling-config:
+        title: Function Calling Config
+        description: Configuration for specifying function calling behavior.
+        type: object
+        properties:
+          mode:
+            title: Mode
+            description: >-
+              Specifies the mode in which function calling should execute. If unspecified, the default value will be set to `AUTO`.
+              The value is one of the following:
+                `MODE_UNSPECIFIED`: Unspecified function calling mode. This value should not be used.
+                `AUTO`: Default model behavior, model decides to predict either a function call or a natural language response.
+                `ANY`: Model is constrained to always predicting a function call only. If "allowedFunctionNames" are set, the predicted function call will
+              be limited to any one of "allowedFunctionNames", else the predicted function call will be any one of the provided "functionDeclarations".
+                `NONE`: Model will not predict any function call. Model behavior is same as when not passing any function declarations.
+                `VALIDATED`: Model decides to predict either a function call or a natural language response, but will validate function calls with constrained
+              decoding. If "allowedFunctionNames" are set, the predicted function call will be limited to any one of "allowedFunctionNames", else the predicted
+              function call will be any one of the provided "functionDeclarations".
+            type: string
+            enum:
+              - MODE_UNSPECIFIED
+              - AUTO
+              - ANY
+              - NONE
+          allowed-function-names:
+            title: Allowed Function Names
+            description: >-
+              A set of function names that, when provided, limits the functions the model will call.
+              This should only be set when the Mode is ANY or VALIDATED. Function names should match  `[FunctionDeclaration.name]`. When set, model will
+              predict a function call from only allowed function names.
+            type: array
+            items:
+              type: string
+  url-retrieval-status:
+    title: URL Retrieval Status
+    description: >-
+      Retrieval status for URL-based context.
+      The value is one of the following:
+        `URL_RETRIEVAL_STATUS_UNSPECIFIED`:	Default value. This value is unused.
+        `URL_RETRIEVAL_STATUS_SUCCESS`:	URL retrieval is successful.
+        `URL_RETRIEVAL_STATUS_ERROR`:	URL retrieval is failed due to error.
+        `URL_RETRIEVAL_STATUS_PAYWALL`:	URL retrieval is failed because the content is behind paywall.
+        `URL_RETRIEVAL_STATUS_UNSAFE`:	URL retrieval is failed because the content is unsafe.
+    type: string
+    enum:
+      - URL_RETRIEVAL_STATUS_UNSPECIFIED
+      - URL_RETRIEVAL_STATUS_SUCCESS
+      - URL_RETRIEVAL_STATUS_ERROR
+      - URL_RETRIEVAL_STATUS_PAYWALL
+      - URL_RETRIEVAL_STATUS_UNSAFE
+  url-metadata:
+    title: URL Metadata
+    description: Context of a single URL retrieval.
+    type: object
+    properties:
+      retrieved-url:
+        title: Retrieved URL
+        description: Retrieved url by the tool.
+        type: string
+      url-retrieval-status:
+        $ref: "#/$defs/url-retrieval-status"
+    required: [retrieved-url, url-retrieval-status]
+  url-context-metadata:
+    title: URL Context Metadata
+    description: Metadata related to URL context retrieval tool.
+    type: object
+    properties:
+      url-metadata:
+        title: URL Metadata
+        description: List of url context.
+        type: array
+        items:
+          $ref: "#/$defs/url-metadata"
+  media-resolution:
+    description: >-
+      Media resolution for multimodal generation. Controls how many tokens are budgeted
+      for media understanding and reframing.
+      The value is one of the following:
+        `MEDIA_RESOLUTION_UNSPECIFIED`: Media resolution has not been set.
+        `MEDIA_RESOLUTION_LOW`: Media resolution set to low (64 tokens).
+        `MEDIA_RESOLUTION_MEDIUM`: Media resolution set to medium (256 tokens).
+        `MEDIA_RESOLUTION_HIGH`: Media resolution set to high (zoomed reframing with 256 tokens).
+    type: string
+    enum:
+      - MEDIA_RESOLUTION_UNSPECIFIED
+      - MEDIA_RESOLUTION_LOW
+      - MEDIA_RESOLUTION_MEDIUM
+      - MEDIA_RESOLUTION_HIGH
+    title: Media Resolution
+  generation-config:
+    description: Generation configuration for the request.
+    title: Generation Config
+    type: object
+    properties:
+      max-output-tokens:
+        title: Max Output Tokens
+        description: The maximum number of tokens to generate in the response.
+        type: integer
+        uiOrder: 0
+      temperature:
+        title: Temperature
+        description: Sampling temperature, controls randomness.
+        type: number
+        uiOrder: 1
+      top-p:
+        title: Top P
+        description: Nucleus sampling probability mass.
+        type: number
+        uiOrder: 2
+      top-k:
+        title: Top K
+        description: Top-k sampling cutoff.
+        type: number
+        uiOrder: 3
+      stop-sequences:
+        title: Stop Sequences
+        description: List of sequences that will stop further token generation.
+        type: array
+        items:
+          type: string
+        uiOrder: 4
+      candidate-count:
+        title: Candidate Count
+        description: Number of candidates to generate.
+        type: integer
+        uiOrder: 5
+      response-mime-type:
+        title: Response MIME Type
+        description: Desired response MIME type (e.g., application/json for JSON mode).
+        type: string
+        uiOrder: 6
+      response-schema:
+        title: Response Schema
+        description: JSON Schema to constrain the response when using JSON mode.
+        $ref: "#/$defs/schema"
+        uiOrder: 7
+      media-resolution:
+        $ref: "#/$defs/media-resolution"
+        uiOrder: 8
+      response-modalities:
+        title: Response Modalities
+        description: Requested modalities of the response. Empty means text only.
+        type: array
+        uiOrder: 9
+        items:
+          $ref: "#/$defs/modality"
+      seed:
+        title: Seed
+        description: Seed used in decoding.
+        type: integer
+        uiOrder: 10
+      presence-penalty:
+        title: Presence Penalty
+        description: Presence penalty applied to next-token logprobs if token already seen.
+        type: number
+        uiOrder: 11
+      frequency-penalty:
+        title: Frequency Penalty
+        description: Frequency penalty applied proportional to the number of times a token has been seen.
+        type: number
+        uiOrder: 12
+      response-logprobs:
+        title: Response Logprobs
+        description: If true, export the logprobs results in response.
+        type: boolean
+        uiOrder: 13
+      logprobs:
+        title: Logprobs
+        description: Number of top logprobs to return at each decoding step (1-5). Only valid if response-logprobs is true.
+        type: integer
+        uiOrder: 14
+      enable-enhanced-civic-answers:
+        title: Enable Enhanced Civic Answers
+        description: Enables enhanced civic answers.
+        type: boolean
+        uiOrder: 15
+      speech-config:
+        $ref: "#/$defs/speech-config"
+        uiOrder: 16
+      thinking-config:
+        $ref: "#/$defs/thinking-config"
+        uiOrder: 17
+  schema-type:
+    title: Schema Type
+    description: >-
+      Schema data type.
+      The value is one of the following:
+        `TYPE_UNSPECIFIED`: Not specified, should not be used.
+        `STRING`: String type.
+        `NUMBER`: Number type.
+        `INTEGER`: Integer type.
+        `BOOLEAN`: Boolean type.
+        `ARRAY`: Array type.
+        `OBJECT`: Object type.
+        `NULL`: Null type.
+    type: string
+    enum:
+      - TYPE_UNSPECIFIED
+      - STRING
+      - NUMBER
+      - INTEGER
+      - BOOLEAN
+      - ARRAY
+      - OBJECT
+  schema:
+    title: Schema
+    description: >-
+      Schema object that defines input/output data types (subset of OpenAPI 3.0 schema).
+      Supports primitives, arrays, and objects with nested schemas.
+    type: object
+    required: [type]
+    properties:
+      type:
+        title: Type
+        description: Required data type of the schema.
+        $ref: "#/$defs/schema-type"
+      format:
+        title: Format
+        description: Optional format of the data.
+        type: string
+      title:
+        title: Title
+        description: Optional title of the schema.
+        type: string
+      description:
+        title: Description
+        description: Optional description of the schema.
+        type: string
+      nullable:
+        title: Nullable
+        description: Indicates if the value may be null.
+        type: boolean
+      enum:
+        title: Enum
+        description: Enum values for STRING with enum format.
+        type: array
+        items:
+          type: string
+      max-items:
+        title: Max Items
+        description: Maximum number of elements for ARRAY type.
+        type: integer
+      min-items:
+        title: Min Items
+        description: Minimum number of elements for ARRAY type.
+        type: integer
+      properties:
+        title: Properties
+        description: Properties for OBJECT type.
+        type: object
+        additionalProperties: true
+      required:
+        title: Required
+        description: Required properties for OBJECT type.
+        type: array
+        items:
+          type: string
+      min-properties:
+        title: Min Properties
+        description: Minimum number of properties for OBJECT type.
+        type: integer
+      max-properties:
+        title: Max Properties
+        description: Maximum number of properties for OBJECT type.
+        type: integer
+      min-length:
+        title: Min Length
+        description: Minimum length for STRING type.
+        type: integer
+      max-length:
+        title: Max Length
+        description: Maximum length for STRING type.
+        type: integer
+      pattern:
+        title: Pattern
+        description: Regex pattern constraint for STRING type.
+        type: string
+      anyOf:
+        title: Any Of
+        description: Value must satisfy any of the sub-schemas.
+        type: array
+        items:
+          type: object
+          additionalProperties: true
+      property-ordering:
+        title: Property Ordering
+        description: Order of properties for OBJECT type (non-standard).
+        type: array
+        items:
+          type: string
+      default:
+        title: Default
+        description: Default value for the field (ignored for validation).
+        type: object
+        additionalProperties: true
+      items:
+        title: Items
+        description: Schema of elements for ARRAY type.
+        type: object
+        additionalProperties: true
+      minimum:
+        title: Minimum
+        description: Minimum value for INTEGER/NUMBER types.
+        type: number
+      maximum:
+        title: Maximum
+        description: Maximum value for INTEGER/NUMBER types.
+        type: number
+  prebuilt-voice-config:
+    title: Prebuilt Voice Config
+    required: [voice-name]
+    description: The configuration for the prebuilt speaker to use.
+    type: object
+    properties:
+      voice-name:
+        description: The name of the preset voice to use.
+        type: string
+        title: Voice Name
+  voice-config:
+    title: Voice Config
+    description: Configuration for the voice to use. Union type.
+    oneOf:
+      - title: Prebuilt Voice
+        type: object
+        properties:
+          prebuilt-voice-config:
+            $ref: "#/$defs/prebuilt-voice-config"
+        required:
+          - prebuilt-voice-config
+  speaker-voice-config:
+    title: Speaker Voice Config
+    description: The configuration for a single speaker in a multi speaker setup.
+    type: object
+    required: [speaker, voice-config]
+    properties:
+      speaker:
+        description: The name of the speaker to use. Should match the name used in the prompt.
+        type: string
+        title: Speaker
+      voice-config:
+        $ref: "#/$defs/voice-config"
+  multi-speaker-voice-config:
+    title: Multi Speaker Voice Config
+    description: Configuration for the multi-speaker setup. Mutually exclusive with voice-config.
+    type: object
+    required: [speaker-voice-configs]
+    properties:
+      speaker-voice-configs:
+        title: Speaker Voice Configs
+        description: All the enabled speaker voices.
+        type: array
+        items:
+          $ref: "#/$defs/speaker-voice-config"
+  speech-config:
+    title: Speech Config
+    description: Speech generation configuration.
+    type: object
+    properties:
+      voice-config:
+        $ref: "#/$defs/voice-config"
+      multi-speaker-voice-config:
+        $ref: "#/$defs/multi-speaker-voice-config"
+      language-code:
+        title: Language Code
+        description: Language code (BCP 47) for speech synthesis.
+        type: string
+        enum:
+          - de-DE
+          - en-AU
+          - en-GB
+          - en-IN
+          - en-US
+          - es-US
+          - fr-FR
+          - hi-IN
+          - pt-BR
+          - ar-XA
+          - es-ES
+          - fr-CA
+          - id-ID
+          - it-IT
+          - ja-JP
+          - tr-TR
+          - vi-VN
+          - bn-IN
+          - gu-IN
+          - kn-IN
+          - ml-IN
+          - mr-IN
+          - ta-IN
+          - te-IN
+          - nl-NL
+          - ko-KR
+          - cmn-CN
+          - pl-PL
+          - ru-RU
+          - th-TH
+  thinking-config:
+    title: Thinking Config
+    description: Config for thinking features.
+    type: object
+    properties:
+      include-thoughts:
+        title: Include Thoughts
+        description: Whether to include thoughts in the response when available.
+        type: boolean
+      thinking-budget:
+        title: Thinking Budget
+        description: The number of thought tokens the model should generate.
+        type: integer
+  candidate:
+    title: Candidate
+    description: Model output candidate containing content and annotations.
+    type: object
+    required: [content]
+    properties:
+      index:
+        title: Index
+        description: Position of the candidate in the returned list.
+        type: integer
+      content:
+        description: Generated content for this candidate.
+        $ref: "#/$defs/content"
+      safety-ratings:
+        title: Safety Ratings
+        description: Safety ratings applied to this candidate.
+        type: array
+        items:
+          $ref: "#/$defs/safety-rating"
+      finish-reason:
+        $ref: "#/$defs/finish-reason"
+      citation-metadata:
+        $ref: "#/$defs/citation-metadata"
+      token-count:
+        title: Token Count
+        description: Token count for this candidate.
+        type: integer
+      grounding-attributions:
+        title: Grounding Attributions
+        description: Attribution information for sources that contributed to a grounded answer.
+        type: array
+        items:
+          $ref: "#/$defs/grounding-attribution"
+      logprobs-result:
+        $ref: "#/$defs/logprobs-result"
+      avg-logprobs:
+        title: Average Logprobs
+        description: Average log probability score of the candidate.
+        type: number
+      url-context-metadata:
+        $ref: "#/$defs/url-context-metadata"
+      grounding-metadata:
+        $ref: "#/$defs/grounding-metadata"
+  function-declaration:
+    title: Function Declaration
+    description: A function declaration available to the model for function calling.
+    type: object
+    properties:
+      name:
+        title: Name
+        description: The name of the function to call.
+        type: string
+      description:
+        title: Description
+        description: A brief description of the function.
+        type: string
+      parameters:
+        title: Parameters
+        description: >-
+          Describes the parameters to this function. Reflects the Open API 3.03 Parameter Object string Key: the name of the parameter.  Parameter names
+          are case sensitive. Schema Value: the Schema defining the type used for the parameter.
+        $ref: "#/$defs/schema"
+    required: [name]
+  dynamic-retrieval-config:
+    title: Dynamic Retrieval Config
+    description: Specifies the dynamic retrieval configuration for the given source.
+    type: object
+    properties:
+      mode:
+        title: Mode
+        description: >-
+          The mode of the predictor to be used in dynamic retrieval.
+          The value is one of the following:
+            `MODE_UNSPECIFIED`: Always trigger retrieval.
+            `MODE_DYNAMIC`: Run retrieval only when system decides it is necessary.
+        type: string
+        enum:
+          - MODE_UNSPECIFIED
+          - MODE_DYNAMIC
+      dynamic-threshold:
+        title: Dynamic Threshold
+        description: The threshold to be used in dynamic retrieval. If not set, a system default value is used.
+        type: number
+  google-search-retrieval:
+    title: Google Search Retrieval
+    description: Tool to retrieve public web data for grounding, powered by Google.
+    type: object
+    properties:
+      dynamic-retrieval-config:
+        $ref: "#/$defs/dynamic-retrieval-config"
+  interval:
+    title: Interval
+    description: >-
+      Represents a time interval, encoded as a Timestamp start (inclusive) and a Timestamp end (exclusive).
+      The start must be less than or equal to the end. When the start equals the end, the interval is empty (matches no time). When both start and end are
+      unspecified, the interval matches any time.
+    type: object
+    properties:
+      start-time:
+        title: Start Time
+        description: >-
+          Inclusive start of the interval.
+          If specified, a Timestamp matching this interval will have to be the same or after the start.
+          Uses RFC 3339, where generated output will always be Z-normalized and use 0, 3, 6 or 9 fractional digits. Offsets other than "Z" are also accepted.
+          Examples: "2014-10-02T15:01:23Z", "2014-10-02T15:01:23.045123456Z" or "2014-10-02T15:01:23+05:30".
+        type: string
+        format: date-time
+      end-time:
+        title: End Time
+        description: >-
+          Exclusive end of the interval.
+          If specified, a Timestamp matching this interval will have to be before the end.
+          Uses RFC 3339, where generated output will always be Z-normalized and use 0, 3, 6 or 9 fractional digits. Offsets other than "Z" are also accepted.
+          Examples: "2014-10-02T15:01:23Z", "2014-10-02T15:01:23.045123456Z" or "2014-10-02T15:01:23+05:30".
+        type: string
+        format: date-time
+  google-search:
+    title: Google Search
+    description: GoogleSearch tool type. Tool to support Google Search in Model. Powered by Google.
+    type: object
+    properties:
+      time-range-filter:
+        title: Time Range Filter
+        description: Filter search results to a specific time range. If customers set a start time, they must set an end time (and vice versa).
+        $ref: "#/$defs/interval"
+  url-context:
+    title: URL Context
+    description: Tool to support URL context retrieval.
+    type: object
+  code-execution:
+    title: Code Execution
+    description: Tool that executes code generated by the model, and automatically returns the result to the model.
+    type: object
+TASK_CHAT:
+  shortDescription: Provide text outputs in response to text and image inputs.
+  description: >-
+    Gemini's multimodal models understand text and images. They generate text outputs in response to prompts that can include text and images. The
+    inputs to these models are also referred to as "prompts". Designing a prompt is how you guide the model, usually by providing instructions or examples
+    to successfully complete a task.
+  input:
+    uiOrder: 0
+    title: Input
+    description: Input schema of the chat task.
+    type: object
+    required:
+      - input
+      - model
+    allOf:
+      - $ref: chat-schema.yaml#/$defs/instill-types/input
+      - properties:
+          model:
+            uiOrder: 0
+            title: Model
+            description: >-
+              ID of the model to use.
+              The value is one of the following:
+                `gemini-2.5-pro`: Optimized for enhanced thinking and reasoning, multimodal understanding, advanced coding, and more.
+                `gemini-2.5-flash`: Optimized for Adaptive thinking, cost efficiency.
+                `gemini-2.0-flash-lite`: Optimized for Most cost-efficient model supporting high throughput.
+            shortDescription: ID of the model to use.
+            enum:
+              - gemini-2.5-pro
+              - gemini-2.5-flash
+              - gemini-2.0-flash-lite
+            default: gemini-2.5-flash
+            type: string
+            instillCredentialMap:
+              values:
+                - gemini-2.5-pro
+                - gemini-2.5-flash
+                - gemini-2.0-flash-lite
+              targets:
+                - setup.api-key
+          contents:
+            uiOrder: 2
+            title: Contents
+            description: The input contents to the model. Each item represents a user or model turn composed of parts (text or images).
+            type: array
+            items:
+              $ref: "#/$defs/content"
+          tools:
+            uiOrder: 3
+            title: Tools
+            description: Tools available to the model, e.g., function declarations.
+            type: array
+            items:
+              $ref: "#/$defs/tool"
+          tool-config:
+            uiOrder: 4
+            $ref: "#/$defs/tool-config"
+          safety-settings:
+            uiOrder: 5
+            title: Safety Settings
+            description: Safety settings for content filtering.
+            type: array
+            items:
+              $ref: "#/$defs/safety-setting"
+          system-instruction:
+            uiOrder: 6
+            title: System Instruction
+            description: A system instruction to guide the model behavior.
+            $ref: "#/$defs/content"
+          generation-config:
+            uiOrder: 7
+            $ref: "#/$defs/generation-config"
+          cached-content:
+            title: Cached Content
+            description: "The name of a cached content to use as context. Format: cachedContents/{cachedContent}."
+            type: string
+            uiOrder: 8
+  output:
+    uiOrder: 0
+    title: Output
+    description: Output schema of the chat task.
+    type: object
+    required:
+      - output
+      - candidates
+    allOf:
+      - $ref: chat-schema.yaml#/$defs/instill-types/output
+      - properties:
+          candidates:
+            uiOrder: 1
+            title: Candidates
+            description: Generated candidates from the model.
+            type: array
+            items:
+              $ref: "#/$defs/candidate"
+          usage-metadata:
+            uiOrder: 2
+            $ref: "#/$defs/usage-metadata"
+          prompt-feedback:
+            uiOrder: 3
+            $ref: "#/$defs/prompt-feedback"
+          model-version:
+            uiOrder: 4
+            title: Model Version
+            description: The model version used to generate the response.
+            type: string
+          response-id:
+            uiOrder: 5
+            title: Response ID
+            description: Identifier for this response.
+            type: string

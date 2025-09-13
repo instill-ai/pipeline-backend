@@ -39,7 +39,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key | `api-key` | string | Fill in your Fireworks AI API key. To find your keys, visit the Fireworks AI API Keys page.  |
+| API Key | `api-key` | string | Fill in your Fireworks AI API key. To find your keys, visit the Fireworks AI API Keys page. |
 
 </div>
 
@@ -53,16 +53,17 @@ ${connection.<my-connection-id>}`.
 
 Fireworks AI's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as "prompts". Designing a prompt is essentially how you "program" a large language model model, usually by providing instructions or some examples of how to successfully complete a task.
 
+<h4 id="text-generation-chat-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
-| Model Name (required) | `model` | string | The OSS model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`llama-v3p1-405b-instruct`</li><li>`llama-v3p1-70b-instruct`</li><li>`llama-v3p1-8b-instruct`</li><li>`llama-v3-70b-instruct`</li><li>`llama-v3-8b-instruct`</li><li>`firellava-13b`</li><li>`firefunction-v2`</li><li>`deepseek-coder-v2-instruct`</li><li>`deepseek-coder-v2-lite-instruct`</li><li>`starcoder-16b`</li><li>`starcoder-7b`</li><li>`phi-3-vision-128k-instruct`</li><li>`qwen2-72b-instruct`</li><li>`mythomax-l2-13b`</li><li>`yi-large`</li></ul></details>  |
+| Model Name (required) | `model` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`llama-v3p1-405b-instruct`</li><li>`llama-v3p1-70b-instruct`</li><li>`llama-v3p1-8b-instruct`</li><li>`llama-v3-70b-instruct`</li><li>`llama-v3-8b-instruct`</li><li>`firellava-13b`</li><li>`firefunction-v2`</li><li>`deepseek-coder-v2-instruct`</li><li>`deepseek-coder-v2-lite-instruct`</li><li>`starcoder-16b`</li><li>`starcoder-7b`</li><li>`phi-3-vision-128k-instruct`</li><li>`qwen2-72b-instruct`</li><li>`mythomax-l2-13b`</li><li>`yi-large`</li></ul></details></small></small> | The OSS model to be used. |
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model's behavior is set using a generic message as "You are a helpful assistant.". |
 | Prompt Images | `prompt-images` | array[string] | The prompt images (Note: According to Fireworks AI documentation on 2024-07-24, the total number of images included in a single API request should not exceed 30, and all the images should be smaller than 5MB in size). |
-| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | 'Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}.' |
+| Chat History | `chat-history` | array[object ([chat-message](#text-generation-chat-chat-message))] | 'Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}.' |
 | Seed | `seed` | integer | The seed. |
 | Temperature | `temperature` | number | The temperature for sampling. |
 | Top K | `top-k` | integer | Integer to define the top tokens considered within the sample operation to create new text. |
@@ -70,11 +71,18 @@ Fireworks AI's text generation models (often called generative pre-trained trans
 | Top P | `top-p` | number | Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top-p (default=0.5). |
 </div>
 
+<h4 id="text-generation-chat-output">Output</h4>
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Text | `text` | string | Model Output. |
+| Usage (optional) | `usage` | object ([chat-usage](#text-generation-chat-usage)) | Token usage on the Fireworks AI platform text generation models. |
+</div>
 
 <details>
-<summary> Input Objects in Text Generation Chat</summary>
-
-<h4 id="text-generation-chat-chat-history">Chat History</h4>
+<summary> Referenced Objects</summary>
+<h4 id="text-generation-chat-chat-message">Chat Message <sup><small><small>Referenced in <a href="#text-generation-chat-input">Input</a></small></small></sup></h4>
 
 'Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}.'
 
@@ -82,10 +90,11 @@ Fireworks AI's text generation models (often called generative pre-trained trans
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#text-generation-chat-content) | `content` | array | The message content.  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'. |
+| Content | `content` | array[object ([multi-modal-content](#text-generation-chat-multi-modal-content))] | The message content. |
 </div>
-<h4 id="text-generation-chat-content">Content</h4>
+
+<h4 id="text-generation-chat-content">Content <sup><small><small>Referenced in <a href="#text-generation-chat-chat-message">Chat Message</a></small></small></sup></h4>
 
 The message content.
 
@@ -93,11 +102,12 @@ The message content.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL.  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details>  |
+| Image URL | `image-url` | object ([chat-message](#text-generation-chat-chat-message)) | The image URL. |
+| Text | `text` | string | The text content. |
+| Type | `type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`text`</li><li>`image_url`</li></ul></details></small></small> | The type of the content part. |
 </div>
-<h4 id="text-generation-chat-image-url">Image URL</h4>
+
+<h4 id="text-generation-chat-image-url">Image URL <sup><small><small>Referenced in <a href="#text-generation-chat-content">Content</a></small></small></sup></h4>
 
 The image URL.
 
@@ -105,24 +115,15 @@ The image URL.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
-</div>
-</details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Text | `text` | string | Model Output. |
-| [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Token usage on the Fireworks AI platform text generation models. |
+| URL | `url` | string | Either a URL of the image or the base64 encoded image data. |
 </div>
 
-<details>
-<summary> Output Objects in Text Generation Chat</summary>
+<h4 id="text-generation-chat-multi-modal-content">Multi Modal Content</h4>
 
-<h4 id="text-generation-chat-usage">Usage</h4>
+
+<h4 id="text-generation-chat-chat-usage">Chat Usage <sup><small><small>Referenced in <a href="#text-generation-chat-output">Output</a></small></small></sup></h4>
+
+Token usage on the Fireworks AI platform text generation models.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -131,6 +132,7 @@ The image URL.
 | Input Tokens | `input-tokens` | number | The input tokens used by Fireworks AI models. |
 | Output Tokens | `output-tokens` | number | The output tokens generated by Fireworks AI models. |
 </div>
+
 </details>
 
 
@@ -138,32 +140,30 @@ The image URL.
 
 An embedding is a list of floating point numbers that captures semantic information about the text that it represents.
 
+<h4 id="text-embeddings-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
-| Model Name (required) | `model` | string | The OSS embedding model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`nomic-ai/nomic-embed-text-v1.5`</li><li>`nomic-ai/nomic-embed-text-v1`</li><li>`WhereIsAI/UAE-Large-V1`</li><li>`thenlper/gte-large`</li><li>`thenlper/gte-base`</li></ul></details>  |
+| Model Name (required) | `model` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`nomic-ai/nomic-embed-text-v1.5`</li><li>`nomic-ai/nomic-embed-text-v1`</li><li>`WhereIsAI/UAE-Large-V1`</li><li>`thenlper/gte-large`</li><li>`thenlper/gte-base`</li></ul></details></small></small> | The OSS embedding model to be used. |
 | Text (required) | `text` | string | The text. |
 </div>
 
-
-
-
-
-
+<h4 id="text-embeddings-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Embedding | `embedding` | array[number] | Embedding of the input text. |
-| [Usage](#text-embeddings-usage) (optional) | `usage` | object | Token usage on the Fireworks AI platform embedding models. |
+| Usage (optional) | `usage` | object ([embedding-usage](#text-embeddings-usage)) | Token usage on the Fireworks AI platform embedding models. |
 </div>
 
 <details>
-<summary> Output Objects in Text Embeddings</summary>
+<summary> Referenced Objects</summary>
+<h4 id="text-embeddings-usage">Usage <sup><small><small>Referenced in <a href="#text-embeddings-output">Output</a></small></small></sup></h4>
 
-<h4 id="text-embeddings-usage">Usage</h4>
+Token usage on the Fireworks AI platform embedding models.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -171,6 +171,21 @@ An embedding is a list of floating point numbers that captures semantic informat
 | :--- | :--- | :--- | :--- |
 | Token Count | `tokens` | number | The token count used by Fireworks AI models. |
 </div>
+
+<h4 id="text-embeddings-multi-modal-content">Multi Modal Content</h4>
+
+
+<h4 id="text-embeddings-embedding-usage">Embedding Usage <sup><small><small>Referenced in <a href="#text-embeddings-output">Output</a></small></small></sup></h4>
+
+Token usage on the Fireworks AI platform embedding models.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Token Count | `tokens` | number | The token count used by Fireworks AI models. |
+</div>
+
 </details>
 
 

@@ -48,7 +48,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Token (required) | `token` | string | Fill in your GitHub access token for advanced usages. For more information about how to create tokens, please refer to the <a href="https://github.com/settings/tokens">github settings</a>.  |
+| Token (required) | `token` | string | Fill in your GitHub access token for advanced usages. For more information about how to create tokens, please refer to the <a href="https://github.com/settings/tokens">github settings</a>. |
 
 </div>
 
@@ -62,90 +62,95 @@ ${connection.<my-connection-id>}`.
 
 Get the list of all pull requests in a repository. Detailed information about each commit in a PR is omitted, please use the `Get Commit` task or the `Get Pull Request` task to get the details of a commit.
 
+<h4 id="list-pull-requests-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_PULL_REQUESTS` |
 | Owner (required) | `owner` | string | Owner of the repository. |
 | Repository (required) | `repository` | string | Repository name. |
-| State | `state` | string | State of the PRs, including open, closed, all. Default is open. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open`</li><li>`closed`</li><li>`all`</li></ul></details>  |
-| Sort | `sort` | string | Sort the PRs by created, updated, popularity, or long-running. Default is created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`created`</li><li>`updated`</li><li>`popularity`</li><li>`long-running`</li></ul></details>  |
-| Direction | `direction` | string | Direction of the sort, including asc or desc. Default is desc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details>  |
+| State | `state` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`open`</li><li>`closed`</li><li>`all`</li></ul></details></small></small> | State of the PRs, including open, closed, all. Default is open. |
+| Sort | `sort` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`created`</li><li>`updated`</li><li>`popularity`</li><li>`long-running`</li></ul></details></small></small> | Sort the PRs by created, updated, popularity, or long-running. Default is created. |
+| Direction | `direction` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`asc`</li><li>`desc`</li></ul></details></small></small> | Direction of the sort, including asc or desc. Default is desc. |
 | Page | `page` | integer | Page number of the results to fetch. Default is 1. |
 | Per Page | `per-page` | integer | Number of results to fetch per page. Default is 30. |
 </div>
 
-
-
-
-
-
+<h4 id="list-pull-requests-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Pull Requests](#list-pull-requests-pull-requests) | `pull-requests` | array[object] | An array of PRs. |
+| Pull Requests | `pull-requests` | array[object ([pull-requests](#list-pull-requests-pull-request))] | An array of PRs. |
 </div>
 
 <details>
-<summary> Output Objects in List Pull Requests</summary>
+<summary> Referenced Objects</summary>
+<h4 id="list-pull-requests-commit">Commit <sup><small><small>Referenced in <a href="#list-pull-requests-pull-request">Pull Request</a></small></small></sup></h4>
 
-<h4 id="list-pull-requests-pull-requests">Pull Requests</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| PR base | `base` | string | Base commit of the PR (in SHA value). |
-| PR body | `body` | string | Body of the PR. |
-| Number of PR comments | `comments-num` | integer | Number of comments on the PR. |
-| [Commits](#list-pull-requests-commits) | `commits` | array | Commits in the PR. |
-| Number of PR commits | `commits-num` | integer | Number of commits in the PR. |
-| PR diff url | `diff-url` | string | URL to the diff of the PR. |
-| PR head | `head` | string | Head commit of the PR (in SHA value). |
-| PR id | `id` | integer | ID of the PR. |
-| PR number | `number` | integer | Number of the PR. |
-| Number of PR review comments | `review-comments-num` | integer | Number of review comments in the PR. |
-| PR state | `state` | string | State of the PR. |
-| PR Title | `title` | string | Title of the PR. |
-</div>
-
-<h4 id="list-pull-requests-commits">Commits</h4>
+A commit in the PR.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Files](#list-pull-requests-files) | `files` | array | Files in the commit. |
-| Commit message | `message` | string | Message of the commit. |
 | Commit SHA | `sha` | string | SHA of the commit. |
-| [Commit stats](#list-pull-requests-commit-stats) | `stats` | object | Stats of changes. |
+| Commit message | `message` | string | Message of the commit. |
+| Commit stats | `stats` | object ([commitStats](#list-pull-requests-commit-stats)) | Stats of changes. |
+| Files | `files` | array[object ([commitFile](#list-pull-requests-commitfile))] | Files in the commit. |
 </div>
 
-<h4 id="list-pull-requests-commit-stats">Commit Stats</h4>
+<h4 id="list-pull-requests-commit-file">Commit File <sup><small><small>Referenced in <a href="#list-pull-requests-commit">Commit</a></small></small></sup></h4>
+
+A file in the commit.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Additions | `additions` | integer | Number of additions in the commit. |
-| Total changes | `changes` | integer | Total number of changes in the commit. |
-| Deletions | `deletions` | integer | Number of deletions in the commit. |
-</div>
-
-<h4 id="list-pull-requests-files">Files</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Additions | `additions` | integer | Number of additions in the commit. |
-| Total changes | `changes` | integer | Total number of changes in the commit. |
-| Deletions | `deletions` | integer | Number of deletions in the commit. |
 | File name | `filename` | string | Name of the file. |
+| Deletions | `deletions` | integer | Number of deletions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit. |
 | Patch | `patch` | string | Patch of the file. |
 </div>
+
+<h4 id="list-pull-requests-pull-request">Pull Request <sup><small><small>Referenced in <a href="#list-pull-requests-output">Output</a></small></small></sup></h4>
+
+A pull request in GitHub.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| PR id | `id` | integer | ID of the PR. |
+| PR number | `number` | integer | Number of the PR. |
+| PR state | `state` | string | State of the PR. |
+| PR Title | `title` | string | Title of the PR. |
+| PR body | `body` | string | Body of the PR. |
+| PR diff url | `diff-url` | string | URL to the diff of the PR. |
+| PR head | `head` | string | Head commit of the PR (in SHA value). |
+| PR base | `base` | string | Base commit of the PR (in SHA value). |
+| Number of PR comments | `comments-num` | integer | Number of comments on the PR. |
+| Number of PR commits | `commits-num` | integer | Number of commits in the PR. |
+| Number of PR review comments | `review-comments-num` | integer | Number of review comments in the PR. |
+| Commits | `commits` | array[object ([commit](#list-pull-requests-commit))] | Commits in the PR. |
+</div>
+
+<h4 id="list-pull-requests-commit-stats">Commit stats <sup><small><small>Referenced in <a href="#list-pull-requests-commit">Commit</a></small></small></sup></h4>
+
+Stats of changes.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Deletions | `deletions` | integer | Number of deletions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit. |
+</div>
+
 </details>
 
 
@@ -153,9 +158,10 @@ Get the list of all pull requests in a repository. Detailed information about ea
 
 Get a pull request from a repository, given the PR number. This will default to the latest PR if no PR number is provided.
 
+<h4 id="get-pull-request-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_PULL_REQUEST` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -163,14 +169,10 @@ Get a pull request from a repository, given the PR number. This will default to 
 | PR Number | `pr-number` | integer | Number of the PR. `0` for the latest PR. |
 </div>
 
-
-
-
-
-
+<h4 id="get-pull-request-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | PR ID (optional) | `id` | integer | ID of the PR. |
 | PR Number (optional) | `number` | integer | Number of the PR. |
@@ -183,47 +185,53 @@ Get a pull request from a repository, given the PR number. This will default to 
 | Number of PR Comments (optional) | `comments-num` | integer | Number of comments on the PR. |
 | Number of PR Commits (optional) | `commits-num` | integer | Number of commits in the PR. |
 | Number of PR Review Comments (optional) | `review-comments-num` | integer | Number of review comments in the PR. |
-| [Commits](#get-pull-request-commits) (optional) | `commits` | array[object] | Commits in the PR. |
+| Commits (optional) | `commits` | array[object ([commit](#get-pull-request-commit))] | Commits in the PR. |
 </div>
 
 <details>
-<summary> Output Objects in Get Pull Request</summary>
+<summary> Referenced Objects</summary>
+<h4 id="get-pull-request-commit">Commit <sup><small><small>Referenced in <a href="#get-pull-request-output">Output</a></small></small></sup></h4>
 
-<h4 id="get-pull-request-commits">Commits</h4>
+A commit in the PR.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Files](#get-pull-request-files) | `files` | array | Files in the commit. |
-| Commit message | `message` | string | Message of the commit. |
 | Commit SHA | `sha` | string | SHA of the commit. |
-| [Commit stats](#get-pull-request-commit-stats) | `stats` | object | Stats of changes. |
+| Commit message | `message` | string | Message of the commit. |
+| Commit stats | `stats` | object ([commitStats](#get-pull-request-commit-stats)) | Stats of changes. |
+| Files | `files` | array[object ([commitFile](#get-pull-request-commitfile))] | Files in the commit. |
 </div>
 
-<h4 id="get-pull-request-commit-stats">Commit Stats</h4>
+<h4 id="get-pull-request-commit-file">Commit File <sup><small><small>Referenced in <a href="#get-pull-request-commit">Commit</a></small></small></sup></h4>
+
+A file in the commit.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Additions | `additions` | integer | Number of additions in the commit. |
-| Total changes | `changes` | integer | Total number of changes in the commit. |
-| Deletions | `deletions` | integer | Number of deletions in the commit. |
-</div>
-
-<h4 id="get-pull-request-files">Files</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Additions | `additions` | integer | Number of additions in the commit. |
-| Total changes | `changes` | integer | Total number of changes in the commit. |
-| Deletions | `deletions` | integer | Number of deletions in the commit. |
 | File name | `filename` | string | Name of the file. |
+| Deletions | `deletions` | integer | Number of deletions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit. |
 | Patch | `patch` | string | Patch of the file. |
 </div>
+
+<h4 id="get-pull-request-commit-stats">Commit stats <sup><small><small>Referenced in <a href="#get-pull-request-commit">Commit</a></small></small></sup></h4>
+
+Stats of changes.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Deletions | `deletions` | integer | Number of deletions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit. |
+</div>
+
 </details>
 
 
@@ -231,9 +239,10 @@ Get a pull request from a repository, given the PR number. This will default to 
 
 Get a commit from a repository, given the commit SHA
 
+<h4 id="get-commit-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_COMMIT` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -241,47 +250,61 @@ Get a commit from a repository, given the commit SHA
 | Commit SHA (required) | `sha` | string | SHA of the commit. |
 </div>
 
-
-
-
-
-
+<h4 id="get-commit-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Commit SHA (optional) | `sha` | string | SHA of the commit. |
 | Commit Message (optional) | `message` | string | Message of the commit. |
-| [Commit Stats](#get-commit-commit-stats) (optional) | `stats` | object | Stats of changes. |
-| [Files](#get-commit-files) (optional) | `files` | array[object] | Files in the commit. |
+| Commit Stats (optional) | `stats` | object ([commitStats](#get-commit-commit-stats)) | Stats of changes. |
+| Files (optional) | `files` | array[object ([commitFile](#get-commit-commitfile))] | Files in the commit. |
 </div>
 
 <details>
-<summary> Output Objects in Get Commit</summary>
+<summary> Referenced Objects</summary>
+<h4 id="get-commit-commit">Commit</h4>
 
-<h4 id="get-commit-commit-stats">Commit Stats</h4>
+A commit object.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Additions | `additions` | integer | Number of additions in the commit. |
-| Total changes | `changes` | integer | Total number of changes in the commit. |
-| Deletions | `deletions` | integer | Number of deletions in the commit. |
+| Commit SHA | `sha` | string | SHA of the commit. |
+| Commit message | `message` | string | Message of the commit. |
+| Stats | `stats` | object ([commitStats](#get-commit-commit-stats)) |  |
+| Files | `files` | array[object ([commitFile](#get-commit-commitfile))] | Files in the commit. |
 </div>
 
-<h4 id="get-commit-files">Files</h4>
+<h4 id="get-commit-commitfile">Commitfile <sup><small><small>Referenced in <a href="#get-commit-output">Output</a></small></small></sup></h4>
+
+A file in the commit.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Additions | `additions` | integer | Number of additions in the commit. |
-| Total changes | `changes` | integer | Total number of changes in the commit. |
-| Deletions | `deletions` | integer | Number of deletions in the commit. |
 | File name | `filename` | string | Name of the file. |
+| Deletions | `deletions` | integer | Number of deletions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit. |
 | Patch | `patch` | string | Patch of the file. |
 </div>
+
+<h4 id="get-commit-commitstats">Commitstats <sup><small><small>Referenced in <a href="#get-commit-commit">Commit</a>, <a href="#get-commit-output">Output</a></small></small></sup></h4>
+
+Stats of changes.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Deletions | `deletions` | integer | Number of deletions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit. |
+</div>
+
 </details>
 
 
@@ -289,58 +312,85 @@ Get a commit from a repository, given the commit SHA
 
 Get the review comments in a pull request. The comments can be on a specific line or on the PR as a whole.
 
+<h4 id="list-review-comments-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_REVIEW_COMMENTS` |
 | Owner (required) | `owner` | string | Owner of the repository. |
 | Repository (required) | `repository` | string | Repository name. |
 | PR Number | `pr-number` | integer | Number of the PR. Default is `0`, which retrieves all comments on all PRs in the repository. |
-| Sort | `sort` | string | Sort the comments by created, updated. Default is created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`created`</li><li>`updated`</li></ul></details>  |
-| Direction | `direction` | string | Direction of the sort, including asc or desc. Default is desc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details>  |
+| Sort | `sort` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`created`</li><li>`updated`</li></ul></details></small></small> | Sort the comments by created, updated. Default is created. |
+| Direction | `direction` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`asc`</li><li>`desc`</li></ul></details></small></small> | Direction of the sort, including asc or desc. Default is desc. |
 | Since | `since` | string | Date (in `YYYY-MM-DD` format) from which comments will start to be fetched. The date will be in the UTC timezone. |
 | Page | `page` | integer | Page number of the results to fetch. Default is 1. |
 | Per Page | `per-page` | integer | Number of results to fetch per page. Default is 30. |
 </div>
 
-
-
-
-
-
+<h4 id="list-review-comments-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Comments](#list-review-comments-comments) | `comments` | array[object] | An array of comments. |
+| Comments | `comments` | array[object ([reviewComments](#list-review-comments-reviewcomments))] | An array of comments. |
 </div>
 
 <details>
-<summary> Output Objects in List Review Comments</summary>
+<summary> Referenced Objects</summary>
+<h4 id="list-review-comments-review-comment">Review Comment <sup><small><small>Referenced in <a href="#list-review-comments-output">Output</a></small></small></sup></h4>
 
-<h4 id="list-review-comments-comments">Comments</h4>
+Comments in the PR.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Comment body | `body` | string | Body of the comment. |
-| Commit SHA | `commit-id` | string | SHA of the commit on which you want to comment. |
-| Comment created at | `created-at` | string | Time the comment was created. |
 | Comment id | `id` | integer | ID of the comment. |
 | In Reply To | `in-reply-to-id` | integer | ID of the comment this comment is in reply to. |
-| Comment end line | `line` | integer | The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that your comment applies to. |
+| Commit SHA | `commit-id` | string | SHA of the commit on which you want to comment. |
+| Comment body | `body` | string | Body of the comment. |
 | Comment path | `path` | string | Path of the file the comment is on. |
-| Comment end side | `side` | string | Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. |
+| Comment end line | `line` | integer | The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that your comment applies to. |
 | Comment start line | `start-line` | integer | The first line in the pull request diff that your multi-line comment applies to. Only multi-line comment needs to fill this field. |
-| Comment start side | `start-side` | string | Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. |
-| Comment type | `subject-type` | string | Subject type of the comment, can be one of: line, file. Default is line. |
+| Comment end side | `side` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`LEFT`</li><li>`RIGHT`</li><li>`side`</li></ul></details></small></small> | Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. |
+| Comment start side | `start-side` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`LEFT`</li><li>`RIGHT`</li><li>`side`</li></ul></details></small></small> | Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. |
+| Comment type | `subject-type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`line`</li><li>`file`</li></ul></details></small></small> | Subject type of the comment, can be one of: line, file. Default is line. |
+| Comment created at | `created-at` | string | Time the comment was created. |
 | Comment updated at | `updated-at` | string | Time the comment was updated. |
-| [User](#list-review-comments-user) | `user` | object | User who created the comment. |
+| User | `user` | object ([user](#list-review-comments-user)) | User who created the comment. |
 </div>
 
-<h4 id="list-review-comments-user">User</h4>
+<h4 id="list-review-comments-commit">Commit</h4>
+
+A commit object.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Commit SHA | `sha` | string | SHA of the commit. |
+| Commit message | `message` | string | Message of the commit. |
+| Stats | `stats` | object ([commitStats](#list-review-comments-commit-stats)) |  |
+| Files | `files` | array[object ([commitFile](#list-review-comments-commitfile))] | Files in the commit. |
+</div>
+
+<h4 id="list-review-comments-commit-stats">Commit stats <sup><small><small>Referenced in <a href="#list-review-comments-commit">Commit</a></small></small></sup></h4>
+
+Stats of changes.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Deletions | `deletions` | integer | Number of deletions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit. |
+</div>
+
+<h4 id="list-review-comments-user">User <sup><small><small>Referenced in <a href="#list-review-comments-review-comment">Review Comment</a></small></small></sup></h4>
+
+User who created the comment.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -349,6 +399,7 @@ Get the review comments in a pull request. The comments can be on a specific lin
 | User id | `id` | integer | ID of the user. |
 | User URL | `url` | string | URL of the user. |
 </div>
+
 </details>
 
 
@@ -356,45 +407,22 @@ Get the review comments in a pull request. The comments can be on a specific lin
 
 Create a review comment in a pull request. The comment can be a general comment or a review comment. The comment can be on a specific line or on the PR as a whole.
 
+<h4 id="create-review-comment-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_REVIEW_COMMENT` |
 | Owner (required) | `owner` | string | Owner of the repository. |
 | Repository (required) | `repository` | string | Repository name. |
 | PR Number (required) | `pr-number` | integer | Number of the PR. |
-| [Comment](#create-review-comment-comment) (required) | `comment` | object | The comment to be added. |
+| Comment (required) | `comment` | object ([comment](#create-review-comment-comment)) | The comment to be added. |
 </div>
 
-
-<details>
-<summary> Input Objects in Create Review Comment</summary>
-
-<h4 id="create-review-comment-comment">Comment</h4>
-
-The comment to be added.
-
+<h4 id="create-review-comment-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Comment body | `body` | string | Body of the comment.  |
-| Commit SHA | `commit-id` | string | SHA of the commit on which you want to comment.  |
-| Comment end line | `line` | integer | The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that your comment applies to.  |
-| Comment path | `path` | string | Path of the file the comment is on.  |
-| Comment end side | `side` | string | Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`LEFT`</li><li>`RIGHT`</li><li>`side`</li></ul></details>  |
-| Comment start line | `start-line` | integer | The first line in the pull request diff that your multi-line comment applies to. Only multi-line comment needs to fill this field.  |
-| Comment start side | `start-side` | string | Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`LEFT`</li><li>`RIGHT`</li><li>`side`</li></ul></details>  |
-| Comment type | `subject-type` | string | Subject type of the comment, can be one of: line, file. Default is line.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`line`</li><li>`file`</li></ul></details>  |
-</div>
-</details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Comment ID (optional) | `id` | integer | ID of the comment. |
 | In Reply To (optional) | `in-reply-to-id` | integer | ID of the comment this comment is in reply to. |
@@ -408,13 +436,59 @@ The comment to be added.
 | Comment Type (optional) | `subject-type` | string | Subject type of the comment, can be one of: line, file. Default is line. |
 | Comment Created At (optional) | `created-at` | string | Time the comment was created. |
 | Comment Updated At (optional) | `updated-at` | string | Time the comment was updated. |
-| [User](#create-review-comment-user) (optional) | `user` | object | User who created the comment. |
+| User (optional) | `user` | object ([user](#create-review-comment-user)) | User who created the comment. |
 </div>
 
 <details>
-<summary> Output Objects in Create Review Comment</summary>
+<summary> Referenced Objects</summary>
+<h4 id="create-review-comment-comment">Comment <sup><small><small>Referenced in <a href="#create-review-comment-input">Input</a></small></small></sup></h4>
 
-<h4 id="create-review-comment-user">User</h4>
+The comment to be added.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Commit SHA | `commit-id` | string | SHA of the commit on which you want to comment. |
+| Comment body | `body` | string | Body of the comment. |
+| Comment path | `path` | string | Path of the file the comment is on. |
+| Comment start line | `start-line` | integer | The first line in the pull request diff that your multi-line comment applies to. Only multi-line comment needs to fill this field. |
+| Comment end line | `line` | integer | The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that your comment applies to. |
+| Comment start side | `start-side` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`LEFT`</li><li>`RIGHT`</li><li>`side`</li></ul></details></small></small> | Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. |
+| Comment end side | `side` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`LEFT`</li><li>`RIGHT`</li><li>`side`</li></ul></details></small></small> | Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. |
+| Comment type | `subject-type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`line`</li><li>`file`</li></ul></details></small></small> | Subject type of the comment, can be one of: line, file. Default is line. |
+</div>
+
+<h4 id="create-review-comment-commit">Commit</h4>
+
+A commit object.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Commit SHA | `sha` | string | SHA of the commit. |
+| Commit message | `message` | string | Message of the commit. |
+| Stats | `stats` | object ([commitStats](#create-review-comment-commit-stats)) |  |
+| Files | `files` | array[object ([commitFile](#create-review-comment-commitfile))] | Files in the commit. |
+</div>
+
+<h4 id="create-review-comment-commit-stats">Commit stats <sup><small><small>Referenced in <a href="#create-review-comment-commit">Commit</a></small></small></sup></h4>
+
+Stats of changes.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Deletions | `deletions` | integer | Number of deletions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit. |
+</div>
+
+<h4 id="create-review-comment-user">User <sup><small><small>Referenced in <a href="#create-review-comment-output">Output</a></small></small></sup></h4>
+
+User who created the comment.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -423,6 +497,7 @@ The comment to be added.
 | User id | `id` | integer | ID of the user. |
 | User URL | `url` | string | URL of the user. |
 </div>
+
 </details>
 
 
@@ -430,52 +505,78 @@ The comment to be added.
 
 Get the list of all issues in a repository,This can be a pull request or a general issue, and you can tell by the `is-pull-request` field.
 
+<h4 id="list-issues-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_ISSUES` |
 | Owner (required) | `owner` | string | Owner of the repository. |
 | Repository (required) | `repository` | string | Repository name. |
-| State | `state` | string | State of the issues, can be one of: open, closed, all. Default is open. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open`</li><li>`closed`</li><li>`all`</li></ul></details>  |
-| Sort | `sort` | string | Sort the issues by created, updated, popularity, or long-running. Default is created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`created`</li><li>`updated`</li><li>`popularity`</li><li>`long-running`</li></ul></details>  |
-| Direction | `direction` | string | Direction of the sort, can be one of: asc, desc. Default is desc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details>  |
+| State | `state` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`open`</li><li>`closed`</li><li>`all`</li></ul></details></small></small> | State of the issues, can be one of: open, closed, all. Default is open. |
+| Sort | `sort` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`created`</li><li>`updated`</li><li>`popularity`</li><li>`long-running`</li></ul></details></small></small> | Sort the issues by created, updated, popularity, or long-running. Default is created. |
+| Direction | `direction` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`asc`</li><li>`desc`</li></ul></details></small></small> | Direction of the sort, can be one of: asc, desc. Default is desc. |
 | Since | `since` | string | Date (in `YYYY-MM-DD` format) from which issues will start to be fetched. The date will be in the UTC timezone. |
 | No Pull Request | `no-pull-request` | boolean | Whether to `not` include pull requests in the response. Since issue and pr use the same indexing system in GitHub, the API returns all relevant objects (issues and pr). Default is false. |
 | Page | `page` | integer | Page number of the results to fetch. Default is 1. |
 | Per Page | `per-page` | integer | Number of results to fetch per page. Default is 30. |
 </div>
 
-
-
-
-
-
+<h4 id="list-issues-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Issues](#list-issues-issues) | `issues` | array[object] | An array of issues. |
+| Issues | `issues` | array[object ([issue](#list-issues-issue))] | An array of issues. |
 </div>
 
 <details>
-<summary> Output Objects in List Issues</summary>
+<summary> Referenced Objects</summary>
+<h4 id="list-issues-commit">Commit</h4>
 
-<h4 id="list-issues-issues">Issues</h4>
+A commit object.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Assignee | `assignee` | string | Assignee of the issue. |
-| Assignees | `assignees` | array | Assignees of the issue. |
-| Issue body | `body` | string | Body of the issue. |
-| Is Pull Request | `is-pull-request` | boolean | Whether the issue is a pull request. |
-| Labels | `labels` | array | Labels of the issue. |
+| Commit SHA | `sha` | string | SHA of the commit. |
+| Commit message | `message` | string | Message of the commit. |
+| Stats | `stats` | object ([commitStats](#list-issues-commit-stats)) |  |
+| Files | `files` | array[object ([commitFile](#list-issues-commitfile))] | Files in the commit. |
+</div>
+
+<h4 id="list-issues-commit-stats">Commit stats <sup><small><small>Referenced in <a href="#list-issues-commit">Commit</a></small></small></sup></h4>
+
+Stats of changes.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Deletions | `deletions` | integer | Number of deletions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit. |
+</div>
+
+<h4 id="list-issues-issue">Issue <sup><small><small>Referenced in <a href="#list-issues-output">Output</a></small></small></sup></h4>
+
+An issue in GitHub.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
 | Issue Number | `number` | integer | Number of the issue. |
 | Issue state | `state` | string | State of the issue. |
 | Issue title | `title` | string | Title of the issue. |
+| Issue body | `body` | string | Body of the issue. |
+| Assignee | `assignee` | string | Assignee of the issue. |
+| Assignees | `assignees` | array[string] | Assignees of the issue. |
+| Labels | `labels` | array[string] | Labels of the issue. |
+| Is Pull Request | `is-pull-request` | boolean | Whether the issue is a pull request. |
 </div>
+
 </details>
 
 
@@ -483,9 +584,10 @@ Get the list of all issues in a repository,This can be a pull request or a gener
 
 Get an issue. This can be a pull request or a general issue, and you can tell by the `is-pull-request` field.
 
+<h4 id="get-issue-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ISSUE` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -493,14 +595,10 @@ Get an issue. This can be a pull request or a general issue, and you can tell by
 | Issue Number (required) | `issue-number` | integer | Number of the issue. |
 </div>
 
-
-
-
-
-
+<h4 id="get-issue-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Issue Number (optional) | `number` | integer | Number of the issue. |
 | Issue State (optional) | `state` | string | State of the issue. |
@@ -517,23 +615,20 @@ Get an issue. This can be a pull request or a general issue, and you can tell by
 
 Get a user by name or ID.
 
+<h4 id="get-user-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_USER` |
 | Name | `name` | string | The GitHub username of the user. |
 | ID | `id` | integer | The GitHub user ID. If both `name` and `id` are provided, `id` takes precedence. |
 </div>
 
-
-
-
-
-
+<h4 id="get-user-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | User (optional) | `user` | any | The GitHub user information. |
 </div>
@@ -543,108 +638,136 @@ Get a user by name or ID.
 
 Get an organization by name or ID.
 
+<h4 id="get-organization-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ORGANIZATION` |
 | Name | `name` | string | The GitHub organization name. |
 | ID | `id` | integer | The GitHub organization ID. If both `name` and `id` are provided, `id` takes precedence. |
 </div>
 
-
-
-
-
-
+<h4 id="get-organization-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Organization Full](#get-organization-organization-full) (optional) | `organization` | object | Organization Full |
+| Organization Full (optional) | `organization` | object ([organization](#get-organization-organization-full)) | Organization Full |
 </div>
 
 <details>
-<summary> Output Objects in Get Organization</summary>
+<summary> Referenced Objects</summary>
+<h4 id="get-organization-commit">Commit</h4>
 
-<h4 id="get-organization-organization-full">Organization Full</h4>
+A commit object.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Advanced Security Enabled For New Repositories | `advanced-security-enabled-for-new-repositories` | boolean | Whether GitHub Advanced Security is enabled for new repositories. |
-| Archived At | `archived-at` | string | The timestamp when the organization was archived, if applicable. |
+| Commit SHA | `sha` | string | SHA of the commit. |
+| Commit message | `message` | string | Message of the commit. |
+| Stats | `stats` | object ([commitStats](#get-organization-commit-stats)) |  |
+| Files | `files` | array[object ([commitFile](#get-organization-commitfile))] | Files in the commit. |
+</div>
+
+<h4 id="get-organization-commit-stats">Commit stats <sup><small><small>Referenced in <a href="#get-organization-commit">Commit</a></small></small></sup></h4>
+
+Stats of changes.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Deletions | `deletions` | integer | Number of deletions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit. |
+</div>
+
+<h4 id="get-organization-organization-full">Organization Full <sup><small><small>Referenced in <a href="#get-organization-output">Output</a></small></small></sup></h4>
+
+Organization Full
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Login | `login` | string | The organization's username. |
+| ID | `id` | integer | The unique identifier of the organization. |
+| Node ID | `node-id` | string | The GraphQL node ID of the organization. |
+| URL | `url` | string | The URL of the organization's API endpoint. |
+| Repositories URL | `repos-url` | string | The URL of the organization's repositories API endpoint. |
+| Events URL | `events-url` | string | The URL of the organization's events API endpoint. |
+| Hooks URL | `hooks-url` | string | The URL of the organization's webhooks API endpoint. |
+| Issues URL | `issues-url` | string | The URL of the organization's issues API endpoint. |
+| Members URL | `members-url` | string | The URL of the organization's members API endpoint. |
+| Public Members URL | `public-members-url` | string | The URL of the organization's public members API endpoint. |
 | Avatar URL | `avatar-url` | string | The URL of the organization's avatar image. |
-| Billing Email | `billing-email` | string | The billing email address for the organization. |
-| Blog | `blog` | string | The blog URL of the organization. |
-| Collaborators | `collaborators` | integer | The number of collaborators on private repositories. |
+| Description | `description` | string | The description of the organization. |
+| Name | `name` | string | The display name of the organization. |
 | Company | `company` | string | The company name associated with the organization. |
-| Created At | `created-at` | string | The timestamp when the organization was created. |
+| Blog | `blog` | string | The blog URL of the organization. |
+| Location | `location` | string | The location of the organization. |
+| Email | `email` | string | The public email address of the organization. |
+| Twitter Username | `twitter-username` | string | The Twitter username of the organization. |
+| Is Verified | `is-verified` | boolean | Whether the organization is verified by GitHub. |
+| Has Organization Projects | `has-organization-projects` | boolean | Whether organization projects are enabled. |
+| Has Repository Projects | `has-repository-projects` | boolean | Whether repository projects are enabled. |
+| Public Repositories | `public-repos` | integer | The number of public repositories. |
+| Public Gists | `public-gists` | integer | The number of public gists. |
+| Followers | `followers` | integer | The number of followers. |
+| Following | `following` | integer | The number of users the organization is following. |
+| HTML URL | `html-url` | string | The URL of the organization's GitHub homepage. |
+| Type | `type` | string | The type of the account. |
+| Total Private Repositories | `total-private-repos` | integer | The total number of private repositories. |
+| Owned Private Repositories | `owned-private-repos` | integer | The number of private repositories owned by the organization. |
+| Private Gists | `private-gists` | integer | The number of private gists. |
+| Disk Usage | `disk-usage` | integer | The amount of disk space used by the organization. |
+| Collaborators | `collaborators` | integer | The number of collaborators on private repositories. |
+| Billing Email | `billing-email` | string | The billing email address for the organization. |
+| Plan | `plan` | object ([plan](#get-organization-plan)) | The organization's plan details. |
 | Default Repository Permission | `default-repository-permission` | string | The default repository permission level for organization members. |
+| Members Can Create Repositories | `members-can-create-repositories` | boolean | Whether organization members can create repositories. |
+| Two Factor Requirement Enabled | `two-factor-requirement-enabled` | boolean | Whether two-factor authentication is required for all members. |
+| Members Allowed Repository Creation Type | `members-allowed-repository-creation-type` | string | The type of repositories members are allowed to create. |
+| Members Can Create Public Repositories | `members-can-create-public-repositories` | boolean | Whether members can create public repositories. |
+| Members Can Create Private Repositories | `members-can-create-private-repositories` | boolean | Whether members can create private repositories. |
+| Members Can Create Internal Repositories | `members-can-create-internal-repositories` | boolean | Whether members can create internal repositories. |
+| Members Can Create Pages | `members-can-create-pages` | boolean | Whether members can create GitHub Pages sites. |
+| Members Can Create Public Pages | `members-can-create-public-pages` | boolean | Whether members can create public GitHub Pages sites. |
+| Members Can Create Private Pages | `members-can-create-private-pages` | boolean | Whether members can create private GitHub Pages sites. |
+| Members Can Fork Private Repositories | `members-can-fork-private-repositories` | boolean | Whether members can fork private repositories. |
+| Web Commit Signoff Required | `web-commit-signoff-required` | boolean | Whether web commit sign-off is required. |
+| Advanced Security Enabled For New Repositories | `advanced-security-enabled-for-new-repositories` | boolean | Whether GitHub Advanced Security is enabled for new repositories. |
 | Dependabot Alerts Enabled For New Repositories | `dependabot-alerts-enabled-for-new-repositories` | boolean | Whether Dependabot alerts are enabled for new repositories. |
 | Dependabot Security Updates Enabled For New Repositories | `dependabot-security-updates-enabled-for-new-repositories` | boolean | Whether Dependabot security updates are enabled for new repositories. |
 | Dependency Graph Enabled For New Repositories | `dependency-graph-enabled-for-new-repositories` | boolean | Whether dependency graph is enabled for new repositories. |
-| Deploy Keys Enabled For Repositories | `deploy-keys-enabled-for-repositories` | boolean | Controls whether or not deploy keys may be added and used for repositories in the organization. |
-| Description | `description` | string | The description of the organization. |
-| Disk Usage | `disk-usage` | integer | The amount of disk space used by the organization. |
-| Email | `email` | string | The public email address of the organization. |
-| Events URL | `events-url` | string | The URL of the organization's events API endpoint. |
-| Followers | `followers` | integer | The number of followers. |
-| Following | `following` | integer | The number of users the organization is following. |
-| Has Organization Projects | `has-organization-projects` | boolean | Whether organization projects are enabled. |
-| Has Repository Projects | `has-repository-projects` | boolean | Whether repository projects are enabled. |
-| Hooks URL | `hooks-url` | string | The URL of the organization's webhooks API endpoint. |
-| HTML URL | `html-url` | string | The URL of the organization's GitHub homepage. |
-| ID | `id` | integer | The unique identifier of the organization. |
-| Is Verified | `is-verified` | boolean | Whether the organization is verified by GitHub. |
-| Issues URL | `issues-url` | string | The URL of the organization's issues API endpoint. |
-| Location | `location` | string | The location of the organization. |
-| Login | `login` | string | The organization's username. |
-| Members Allowed Repository Creation Type | `members-allowed-repository-creation-type` | string | The type of repositories members are allowed to create. |
-| Members Can Create Internal Repositories | `members-can-create-internal-repositories` | boolean | Whether members can create internal repositories. |
-| Members Can Create Pages | `members-can-create-pages` | boolean | Whether members can create GitHub Pages sites. |
-| Members Can Create Private Pages | `members-can-create-private-pages` | boolean | Whether members can create private GitHub Pages sites. |
-| Members Can Create Private Repositories | `members-can-create-private-repositories` | boolean | Whether members can create private repositories. |
-| Members Can Create Public Pages | `members-can-create-public-pages` | boolean | Whether members can create public GitHub Pages sites. |
-| Members Can Create Public Repositories | `members-can-create-public-repositories` | boolean | Whether members can create public repositories. |
-| Members Can Create Repositories | `members-can-create-repositories` | boolean | Whether organization members can create repositories. |
-| Members Can Fork Private Repositories | `members-can-fork-private-repositories` | boolean | Whether members can fork private repositories. |
-| Members URL | `members-url` | string | The URL of the organization's members API endpoint. |
-| Name | `name` | string | The display name of the organization. |
-| Node ID | `node-id` | string | The GraphQL node ID of the organization. |
-| Owned Private Repositories | `owned-private-repos` | integer | The number of private repositories owned by the organization. |
-| [Plan](#get-organization-plan) | `plan` | object | The organization's plan details. |
-| Private Gists | `private-gists` | integer | The number of private gists. |
-| Public Gists | `public-gists` | integer | The number of public gists. |
-| Public Members URL | `public-members-url` | string | The URL of the organization's public members API endpoint. |
-| Public Repositories | `public-repos` | integer | The number of public repositories. |
-| Repositories URL | `repos-url` | string | The URL of the organization's repositories API endpoint. |
 | Secret Scanning Enabled For New Repositories | `secret-scanning-enabled-for-new-repositories` | boolean | Whether secret scanning is enabled for new repositories. |
-| Secret Scanning Push Protection Custom Link | `secret-scanning-push-protection-custom-link` | string | An optional URL string to display to contributors who are blocked from pushing a secret. |
-| Secret Scanning Push Protection Custom Link Enabled | `secret-scanning-push-protection-custom-link-enabled` | boolean | Whether a custom link is shown to contributors who are blocked from pushing a secret by push protection. |
 | Secret Scanning Push Protection Enabled For New Repositories | `secret-scanning-push-protection-enabled-for-new-repositories` | boolean | Whether secret scanning push protection is enabled for new repositories. |
-| Total Private Repositories | `total-private-repos` | integer | The total number of private repositories. |
-| Twitter Username | `twitter-username` | string | The Twitter username of the organization. |
-| Two Factor Requirement Enabled | `two-factor-requirement-enabled` | boolean | Whether two-factor authentication is required for all members. |
-| Type | `type` | string | The type of the account. |
+| Secret Scanning Push Protection Custom Link Enabled | `secret-scanning-push-protection-custom-link-enabled` | boolean | Whether a custom link is shown to contributors who are blocked from pushing a secret by push protection. |
+| Secret Scanning Push Protection Custom Link | `secret-scanning-push-protection-custom-link` | string | An optional URL string to display to contributors who are blocked from pushing a secret. |
+| Created At | `created-at` | string | The timestamp when the organization was created. |
 | Updated At | `updated-at` | string | The timestamp when the organization was last updated. |
-| URL | `url` | string | The URL of the organization's API endpoint. |
-| Web Commit Signoff Required | `web-commit-signoff-required` | boolean | Whether web commit sign-off is required. |
+| Archived At | `archived-at` | string | The timestamp when the organization was archived, if applicable. |
+| Deploy Keys Enabled For Repositories | `deploy-keys-enabled-for-repositories` | boolean | Controls whether or not deploy keys may be added and used for repositories in the organization. |
 </div>
 
-<h4 id="get-organization-plan">Plan</h4>
+<h4 id="get-organization-plan">Plan <sup><small><small>Referenced in <a href="#get-organization-organization-full">Organization Full</a></small></small></sup></h4>
+
+The organization's plan details.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Filled Seats | `filled-seats` | integer | The number of filled seats in the plan. |
 | Name | `name` | string | The name of the plan. |
-| Private Repositories | `private-repos` | integer | The number of private repositories included in the plan. |
-| Seats | `seats` | integer | The total number of seats in the plan. |
 | Space | `space` | integer | The amount of disk space included in the plan. |
+| Private Repositories | `private-repos` | integer | The number of private repositories included in the plan. |
+| Filled Seats | `filled-seats` | integer | The number of filled seats in the plan. |
+| Seats | `seats` | integer | The total number of seats in the plan. |
 </div>
+
 </details>
 
 
@@ -652,9 +775,10 @@ Get an organization by name or ID.
 
 Create an issue.
 
+<h4 id="create-issue-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_ISSUE` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -665,14 +789,10 @@ Create an issue.
 | Labels | `labels` | array[string] | Labels of the issue. |
 </div>
 
-
-
-
-
-
+<h4 id="create-issue-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Issue Number (optional) | `number` | integer | Number of the issue. |
 | Issue State (optional) | `state` | string | State of the issue. |
@@ -689,9 +809,10 @@ Create an issue.
 
 Create a webhook for a repository.
 
+<h4 id="create-webhook-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_WEBHOOK` |
 | Owner (required) | `owner` | string | Owner of the repository. |
@@ -699,39 +820,64 @@ Create a webhook for a repository.
 | Webhook URL (required) | `hook-url` | string | URL to send the payload to. |
 | Events (required) | `events` | array[string] | Events to trigger the webhook. Please see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads">the github document</a> for more information. |
 | Active | `active` | boolean | Whether the webhook is active. Default is false. |
-| Content Type | `content-type` | string | Content type of the webhook, can be one of: json, form. Default is json. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`json`</li><li>`form`</li></ul></details>  |
+| Content Type | `content-type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`json`</li><li>`form`</li></ul></details></small></small> | Content type of the webhook, can be one of: json, form. Default is json. |
 | Hook Secret | `hook-secret` | string | If provided, the secret will be used as the key to generate the HMAC hex digest value for delivery signature headers. (see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#delivery-headers">the document</a>). |
 </div>
 
-
-
-
-
-
+<h4 id="create-webhook-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Webhook ID (optional) | `id` | integer | ID of the webhook. |
 | Webhook URL (optional) | `url` | string | URL of the webhook. |
 | Ping URL (optional) | `ping-url` | string | URL to ping the webhook. |
 | Test URL (optional) | `test-url` | string | URL to test the webhook. |
-| [Config](#create-webhook-config) (optional) | `config` | object | Configuration of the webhook. |
+| Config (optional) | `config` | object ([config](#create-webhook-config)) | Configuration of the webhook. |
 </div>
 
 <details>
-<summary> Output Objects in Create Webhook</summary>
+<summary> Referenced Objects</summary>
+<h4 id="create-webhook-commit">Commit</h4>
 
-<h4 id="create-webhook-config">Config</h4>
+A commit object.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
+| Commit SHA | `sha` | string | SHA of the commit. |
+| Commit message | `message` | string | Message of the commit. |
+| Stats | `stats` | object ([commitStats](#create-webhook-commit-stats)) |  |
+| Files | `files` | array[object ([commitFile](#create-webhook-commitfile))] | Files in the commit. |
+</div>
+
+<h4 id="create-webhook-commit-stats">Commit stats <sup><small><small>Referenced in <a href="#create-webhook-commit">Commit</a></small></small></sup></h4>
+
+Stats of changes.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Deletions | `deletions` | integer | Number of deletions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit. |
+</div>
+
+<h4 id="create-webhook-config">Config <sup><small><small>Referenced in <a href="#create-webhook-output">Output</a></small></small></sup></h4>
+
+Configuration of the webhook.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Webhook URL | `url` | string | URL of the webhook. |
 | Content Type | `content-type` | string | Content type of the webhook. |
 | Insecure SSL | `insecure-ssl` | string | Whether the webhook is insecure. |
-| Webhook URL | `url` | string | URL of the webhook. |
 </div>
+
 </details>
 
 

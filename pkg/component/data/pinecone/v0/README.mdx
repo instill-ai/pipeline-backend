@@ -41,8 +41,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | Fill in your Pinecone AI API key. You can create an api key in Pinecone Console.  |
-| Pinecone Index URL | `url` | string | Fill in your Pinecone index URL. It is in the form.  |
+| API Key (required) | `api-key` | string | Fill in your Pinecone AI API key. You can create an api key in Pinecone Console. |
+| Pinecone Index URL | `url` | string | Fill in your Pinecone index URL. It is in the form. |
 
 </div>
 
@@ -56,9 +56,10 @@ ${connection.<my-connection-id>}`.
 
 Retrieve the ids of the most similar items in a namespace, along with their similarity scores.
 
+<h4 id="query-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_QUERY` |
 | ID | `id` | string | The unique ID of the vector to be used as a query vector. If present, the vector parameter will be ignored. |
@@ -71,33 +72,31 @@ Retrieve the ids of the most similar items in a namespace, along with their simi
 | Include Values | `include-values` | boolean | Indicates whether vector values are included in the response. |
 </div>
 
-
-
-
-
-
+<h4 id="query-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Namespace | `namespace` | string | The namespace of the query. |
-| [Matches](#query-matches) | `matches` | array[object] | The matches returned for the query. |
+| Matches | `matches` | array[object ([matches](#query-match))] | The matches returned for the query. |
 </div>
 
 <details>
-<summary> Output Objects in Query</summary>
+<summary> Referenced Objects</summary>
+<h4 id="query-match">Match <sup><small><small>Referenced in <a href="#query-output">Output</a></small></small></sup></h4>
 
-<h4 id="query-matches">Matches</h4>
+The matches returned for the query.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | string | The ID of the matched vector. |
-| Metadata | `metadata` | json | Metadata. |
 | Score | `score` | number | A measure of similarity between this vector and the query vector. The higher the score, the more similar they are. |
-| Values | `values` | array | Vector data values. |
+| Values | `values` | array[number] | Vector data values. |
+| Metadata | `metadata` | json | Metadata. |
 </div>
+
 </details>
 
 
@@ -105,9 +104,10 @@ Retrieve the ids of the most similar items in a namespace, along with their simi
 
 Writes vectors into a namespace. If a new value is upserted for an existing vector id, it will overwrite the previous value. This task will be soon replaced by `TASK_BATCH_UPSERT`, which extends its functionality.
 
+<h4 id="upsert-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPSERT` |
 | ID (required) | `id` | string | This is the vector's unique id. |
@@ -116,14 +116,10 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 | Metadata | `metadata` | object | The vector metadata. |
 </div>
 
-
-
-
-
-
+<h4 id="upsert-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Upserted Count | `upserted-count` | integer | Number of records modified or added. |
 </div>
@@ -133,20 +129,27 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 
 Writes vectors into a namespace. If a new value is upserted for an existing vector ID, it will overwrite the previous value.
 
+<h4 id="batch-upsert-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
-| [Vectors](#batch-upsert-vectors) (required) | `vectors` | array[object] | Array of vectors to upsert |
+| Vectors (required) | `vectors` | array[object ([vectors](#batch-upsert-vectors))] | Array of vectors to upsert |
 | Namespace | `namespace` | string | The namespace to query. |
 </div>
 
+<h4 id="batch-upsert-output">Output</h4>
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Upserted Count | `upserted-count` | integer | Number of records modified or added. |
+</div>
 
 <details>
-<summary> Input Objects in Batch Upsert</summary>
-
-<h4 id="batch-upsert-vectors">Vectors</h4>
+<summary> Referenced Objects</summary>
+<h4 id="batch-upsert-vectors">Vectors <sup><small><small>Referenced in <a href="#batch-upsert-input">Input</a></small></small></sup></h4>
 
 Array of vectors to upsert
 
@@ -154,29 +157,22 @@ Array of vectors to upsert
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| ID | `id` | string | The unique ID of the vector.  |
-| Metadata | `metadata` | object | The vector metadata. This is a set of key-value pairs that can be used to store additional information about the vector. The values can have the following types: string, number, boolean, or array of strings.  |
-| Values | `values` | array | An array of dimensions for the vector to be saved.  |
+| ID | `id` | string | The unique ID of the vector. |
+| Metadata | `metadata` | object | The vector metadata. This is a set of key-value pairs that can be used to store additional information about the vector. The values can have the following types: string, number, boolean, or array of strings. |
+| Values | `values` | array[number] | An array of dimensions for the vector to be saved. |
 </div>
+
 </details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Upserted Count | `upserted-count` | integer | Number of records modified or added. |
-</div>
 
 
 ### Rerank
 
 Rerank documents, such as text passages, according to their relevance to a query. The input is a list of documents and a query. The output is a list of documents, sorted by relevance to the query.
 
+<h4 id="rerank-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_RERANK` |
 | Query (required) | `query` | string | The query to rerank the documents. |
@@ -184,14 +180,10 @@ Rerank documents, such as text passages, according to their relevance to a query
 | Top N | `top-n` | integer | The number of results to return sorted by relevance. Defaults to the number of inputs. |
 </div>
 
-
-
-
-
-
+<h4 id="rerank-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Reranked Documents. | `documents` | array[string] | Reranked documents. |
 | Scores | `scores` | array[number] | The relevance score of the documents normalized between 0 and 1. |

@@ -38,8 +38,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | API Key for the Google Custom Search API. You can create one <a href="https://developers.google.com/custom-search/v1/overview#api-key">here</a>.  |
-| Search Engine ID (required) | `cse-id` | string | ID of the Search Engine to use. Before using the Custom Search JSON API you will first need to create and configure your Programmable Search Engine. If you have not already created a Programmable Search Engine, you can start by visiting [the Programmable Search Engine control panel](https://programmablesearchengine.google.com/controlpanel/all). You can find this in the URL of your Search Engine. For example, if the URL of your search engine is `https://cse.google.com/cse.js?cx=012345678910`, the ID value is: `012345678910`.  |
+| API Key (required) | `api-key` | string | API Key for the Google Custom Search API. You can create one <a href="https://developers.google.com/custom-search/v1/overview#api-key">here</a>. |
+| Search Engine ID (required) | `cse-id` | string | ID of the Search Engine to use. Before using the Custom Search JSON API you will first need to create and configure your Programmable Search Engine. If you have not already created a Programmable Search Engine, you can start by visiting [the Programmable Search Engine control panel](https://programmablesearchengine.google.com/controlpanel/all). You can find this in the URL of your Search Engine. For example, if the URL of your search engine is `https://cse.google.com/cse.js?cx=012345678910`, the ID value is: `012345678910`. |
 
 </div>
 
@@ -53,9 +53,10 @@ ${connection.<my-connection-id>}`.
 
 Search data via Google Search Engine.
 
+<h4 id="search-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEARCH` |
 | Query (required) | `query` | string | The search query for Google. |
@@ -64,33 +65,31 @@ Search data via Google Search Engine.
 | Include Link HTML | `include-link-html` | boolean | Indicate whether to scrape the link and include the raw HTML of the link associated with this search result in the 'link-html' field. |
 </div>
 
-
-
-
-
-
+<h4 id="search-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Results](#search-results) | `results` | array[object] | The returned search results from Google. |
+| Results | `results` | array[object ([result](#search-result))] | The returned search results from Google. |
 </div>
 
 <details>
-<summary> Output Objects in Search</summary>
+<summary> Referenced Objects</summary>
+<h4 id="search-result">Result <sup><small><small>Referenced in <a href="#search-output">Output</a></small></small></sup></h4>
 
-<h4 id="search-results">Results</h4>
+The returned search results from Google.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Link | `link` | string | The full URL to which the search result is pointing, e.g., http://www.example.com/foo/bar. |
-| Link HTML | `link-html` | string | The scraped raw html of the link associated with this search result. |
-| Link Text | `link-text` | string | The scraped text of the link associated with this search result, in plain text. |
-| Snippet | `snippet` | string | The snippet from the page associated with this search result, in plain text. |
 | Title | `title` | string | The title of a search result, in plain text. |
+| Link | `link` | string | The full URL to which the search result is pointing, e.g., http://www.example.com/foo/bar. |
+| Snippet | `snippet` | string | The snippet from the page associated with this search result, in plain text. |
+| Link Text | `link-text` | string | The scraped text of the link associated with this search result, in plain text. |
+| Link HTML | `link-html` | string | The scraped raw html of the link associated with this search result. |
 </div>
+
 </details>
 
 

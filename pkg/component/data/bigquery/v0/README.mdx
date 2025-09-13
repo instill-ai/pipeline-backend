@@ -39,10 +39,10 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| JSON Key File Contents (required) | `json-key` | string | Contents of the JSON key file with access to the bucket.  |
-| BigQuery Project ID (required) | `project-id` | string | Fill in your BigQuery Project ID.  |
-| BigQuery Dataset ID (required) | `dataset-id` | string | Fill in your BigQuery Dataset ID.  |
-| BigQuery Table Name (required) | `table-name` | string | Fill in your BigQuery Table Name.  |
+| JSON Key File Contents (required) | `json-key` | string | Contents of the JSON key file with access to the bucket. |
+| BigQuery Project ID (required) | `project-id` | string | Fill in your BigQuery Project ID. |
+| BigQuery Dataset ID (required) | `dataset-id` | string | Fill in your BigQuery Dataset ID. |
+| BigQuery Table Name (required) | `table-name` | string | Fill in your BigQuery Table Name. |
 
 </div>
 
@@ -56,22 +56,19 @@ ${connection.<my-connection-id>}`.
 
 Insert data to BigQuery.
 
+<h4 id="insert-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT` |
 | Data | `data` | object | The data to be inserted to BigQuery. |
 </div>
 
-
-
-
-
-
+<h4 id="insert-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Status of the upload operation. |
 </div>
@@ -81,24 +78,21 @@ Insert data to BigQuery.
 
 Read data from BigQuery.
 
+<h4 id="read-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ` |
 | Filtering | `filtering` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
 </div>
 
-
-
-
-
-
+<h4 id="read-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Data](#read-data) | `data` | array[object] | The data to be read from BigQuery. |
+| Data | `data` | array[object] | The data to be read from BigQuery. |
 </div>
 
 

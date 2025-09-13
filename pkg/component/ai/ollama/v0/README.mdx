@@ -39,8 +39,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Endpoint (required) | `endpoint` | string | Fill in your Ollama hosting endpoint. ### WARNING ###: As of 2024-07-26, the Ollama component does not support authentication methods. To prevent unauthorized access to your Ollama serving resources, please implement additional security measures such as IP whitelisting.  |
-| Model Auto-Pull (required) | `auto-pull` | boolean | Automatically pull the requested models from the Ollama server if the model is not found in the local cache.  |
+| Endpoint (required) | `endpoint` | string | Fill in your Ollama hosting endpoint. ### WARNING ###: As of 2024-07-26, the Ollama component does not support authentication methods. To prevent unauthorized access to your Ollama serving resources, please implement additional security measures such as IP whitelisting. |
+| Model Auto-Pull (required) | `auto-pull` | boolean | Automatically pull the requested models from the Ollama server if the model is not found in the local cache. |
 
 </div>
 
@@ -54,27 +54,34 @@ ${connection.<my-connection-id>}`.
 
 Open-source large language models (OSS LLMs) are artificial intelligence models with publicly accessible code and architecture, allowing for free use, modification, and distribution. These models can provide performance comparable to proprietary alternatives. Ollama is a tool that enables you to run and interact with OSS LLMs using limited computational resources. You can install Ollama from: [here](https://ollama.com).
 
+<h4 id="text-generation-chat-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
 | Model Name (required) | `model` | string | The OSS model to be used, check [here](https://ollama.com/library) for list of models available. |
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model's behavior is set using a generic message as "You are a helpful assistant.". |
 | Prompt Images | `prompt-images` | array[string] | The prompt images. |
-| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}. |
+| Chat History | `chat-history` | array[object ([chat-message](#text-generation-chat-chat-message))] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}. |
 | Seed | `seed` | integer | The seed. |
 | Temperature | `temperature` | number | The temperature for sampling. |
 | Top K | `top-k` | integer | Top k for sampling. |
 | Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate. |
 </div>
 
+<h4 id="text-generation-chat-output">Output</h4>
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Text | `text` | string | Model Output. |
+</div>
 
 <details>
-<summary> Input Objects in Text Generation Chat</summary>
-
-<h4 id="text-generation-chat-chat-history">Chat History</h4>
+<summary> Referenced Objects</summary>
+<h4 id="text-generation-chat-chat-message">Chat Message <sup><small><small>Referenced in <a href="#text-generation-chat-input">Input</a></small></small></sup></h4>
 
 Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}.
 
@@ -82,10 +89,11 @@ Incorporate external chat history, specifically previous messages within the con
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#text-generation-chat-content) | `content` | array | The message content.  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'. |
+| Content | `content` | array[object ([multi-modal-content](#text-generation-chat-multi-modal-content))] | The message content. |
 </div>
-<h4 id="text-generation-chat-content">Content</h4>
+
+<h4 id="text-generation-chat-content">Content <sup><small><small>Referenced in <a href="#text-generation-chat-chat-message">Chat Message</a></small></small></sup></h4>
 
 The message content.
 
@@ -93,11 +101,12 @@ The message content.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL.  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details>  |
+| Image URL | `image-url` | object ([chat-message](#text-generation-chat-chat-message)) | The image URL. |
+| Text | `text` | string | The text content. |
+| Type | `type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`text`</li><li>`image_url`</li></ul></details></small></small> | The type of the content part. |
 </div>
-<h4 id="text-generation-chat-image-url">Image URL</h4>
+
+<h4 id="text-generation-chat-image-url">Image URL <sup><small><small>Referenced in <a href="#text-generation-chat-content">Content</a></small></small></sup></h4>
 
 The image URL.
 
@@ -105,18 +114,13 @@ The image URL.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
+| URL | `url` | string | Either a URL of the image or the base64 encoded image data. |
 </div>
+
+<h4 id="text-generation-chat-multi-modal-content">Multi Modal Content</h4>
+
+
 </details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Text | `text` | string | Model Output. |
-</div>
 
 #### Local Ollama Instance
 
@@ -136,23 +140,20 @@ To set up an Ollama instance on your local machine, follow the instructions belo
 
 An embedding is a list of floating point numbers that captures semantic information about the text that it represents.
 
+<h4 id="text-embeddings-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
 | Model Name (required) | `model` | string | The OSS model to be used, check [here](https://ollama.com/library) for list of models available. |
 | Text (required) | `text` | string | The text. |
 </div>
 
-
-
-
-
-
+<h4 id="text-embeddings-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Embedding | `embedding` | array[number] | Embedding of the input text. |
 </div>

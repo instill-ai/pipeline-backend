@@ -46,9 +46,9 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Token (required) | `token` | string | Fill in your Jira API token. You can generate one from your Jira account "settings > security > API tokens".  |
-| Base URL (required) | `base-url` | string | Fill in your Jira base URL. For example, if your Jira URL is "https://mycompany.atlassian.net/...", then your base URL is https://mycompany.atlassian.net.  |
-| Email (required) | `email` | string | Fill in your Jira email address.  |
+| Token (required) | `token` | string | Fill in your Jira API token. You can generate one from your Jira account "settings > security > API tokens". |
+| Base URL (required) | `base-url` | string | Fill in your Jira base URL. For example, if your Jira URL is "https://mycompany.atlassian.net/...", then your base URL is https://mycompany.atlassian.net. |
+| Email (required) | `email` | string | Fill in your Jira email address. |
 
 </div>
 
@@ -62,77 +62,22 @@ ${connection.<my-connection-id>}`.
 
 Create an issue in Jira.
 
+<h4 id="create-issue-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_ISSUE` |
 | Project Key (required) | `project-key` | string | The key of the project, e.g. `INS`. |
-| [Issue Type](#create-issue-issue-type) (required) | `issue-type` | object | The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc. |
+| Issue Type (required) | `issue-type` | object | The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc. |
 | Summary | `summary` | string | The summary of the issue. |
 | Description | `description` | string | The description of the issue. |
 </div>
 
-
-
-
-<details>
-<summary>The <code>issue-type</code> Object </summary>
-
-<h4 id="create-issue-issue-type">Issue Type</h4>
-
-`issue-type` must fulfill one of the following schemas:
-
-<h5 id="create-issue-epic"><code>Epic</code></h5>
-
-Epic.
-
+<h4 id="create-issue-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Issue Type | `issue-type` | string |  Must be `"Epic"`   |
-</div>
-
-<h5 id="create-issue-task"><code>Task</code></h5>
-
-Task.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Issue Type | `issue-type` | string |  Must be `"Task"`   |
-</div>
-
-<h5 id="create-issue-subtask"><code>Subtask</code></h5>
-
-Subtask.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Issue Type | `issue-type` | string |  Must be `"Subtask"`   |
-| Parent Key | `parent-key` | string |  The key of the parent issue, e.g. `JRA-1330`.  |
-</div>
-
-<h5 id="create-issue-other"><code>Other</code></h5>
-
-Other.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Issue Type | `custom-issue-type` | string |  The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc.  |
-| Issue Type | `issue-type` | string |  Must be `"Other"`   |
-</div>
-</details>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | string | The ID of the issue. |
 | Key | `key` | string | The key of the issue, e.g. `JRA-1330`. |
@@ -149,9 +94,10 @@ Other.
 
 Create a sprint in Jira.
 
+<h4 id="create-sprint-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_SPRINT` |
 | Board Name (required) | `board-name` | string | The name of the board. |
@@ -161,14 +107,10 @@ Create a sprint in Jira.
 | End Date (required) | `end-date` | string | The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
 </div>
 
-
-
-
-
-
+<h4 id="create-sprint-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | integer | The ID of the sprint. |
 | Self | `self` | string | The URL of the sprint. |
@@ -186,23 +128,20 @@ Create a sprint in Jira.
 
 Get an issue in Jira. The issue will only be returned if the user has permission to view it. Issues returned from this resource include Agile fields, like sprint, closedSprints, flagged, and epic.
 
+<h4 id="get-issue-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ISSUE` |
 | Issue Key (required) | `issue-key` | string | The key of the issue, e.g. `JRA-1330`. |
-| Update History | `update-history` | boolean | Whether the action taken is added to the user's Recent history, as shown under `Your Work` in Jira. |
+| Update History | `update-history` | object ([common-query-params/update-history](#get-issue-common-query-params-update-history)) | Whether the action taken is added to the user's Recent history, as shown under `Your Work` in Jira. |
 </div>
 
-
-
-
-
-
+<h4 id="get-issue-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | string | The ID of the issue. |
 | Key | `key` | string | The key of the issue, e.g. `JRA-1330`. |
@@ -219,22 +158,19 @@ Get an issue in Jira. The issue will only be returned if the user has permission
 
 Get a sprint in Jira. The sprint will only be returned if the user can view the board that the sprint was created on, or view at least one of the issues in the sprint.
 
+<h4 id="get-sprint-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_SPRINT` |
 | Sprint ID (required) | `sprint-id` | integer | The ID of the sprint. The sprint will only be returned if you can view the board that the sprint was created on, or view at least one of the issues in the sprint. |
 </div>
 
-
-
-
-
-
+<h4 id="get-sprint-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | ID (optional) | `id` | integer | The ID of the sprint. |
 | Self (optional) | `self` | string | The URL of the sprint. |
@@ -252,28 +188,25 @@ Get a sprint in Jira. The sprint will only be returned if the user can view the 
 
 List all boards in Jira
 
+<h4 id="list-boards-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_BOARDS` |
 | Project Key or ID | `project-key-or-id` | string | This filters results to boards that are relevant to a project. Relevance meaning that the JQL filter defined in board contains a reference to a project. |
-| Board Type | `board-type` | string | The type of board, can be: scrum, kanban, simple. Default is simple. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`scrum`</li><li>`kanban`</li><li>`simple`</li></ul></details>  |
+| Board Type | `board-type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`scrum`</li><li>`kanban`</li><li>`simple`</li></ul></details></small></small> | The type of board, can be: scrum, kanban, simple. Default is simple. |
 | Name | `name` | string | Name filters results to boards that match or partially match the specified name. Default is empty. |
-| Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. Default is 0. |
-| Max Results | `max-results` | integer | The maximum number of boards to return. Default is 50. |
+| Start At | `start-at` | object ([common-query-params/start-at](#list-boards-common-query-params-start-at)) | The starting index of the returned boards. Base index: 0. Default is 0. |
+| Max Results | `max-results` | object ([common-query-params/max-results](#list-boards-common-query-params-max-results)) | The maximum number of boards to return. Default is 50. |
 </div>
 
-
-
-
-
-
+<h4 id="list-boards-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Boards](#list-boards-boards) (optional) | `boards` | array[object] | A array of boards in Jira. |
+| Boards (optional) | `boards` | array[object ([boards](#list-boards-boards))] | A array of boards in Jira. |
 | Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. |
 | Max Results | `max-results` | integer | The maximum number of boards. |
 | Total | `total` | integer | The total number of boards. |
@@ -281,9 +214,10 @@ List all boards in Jira
 </div>
 
 <details>
-<summary> Output Objects in List Boards</summary>
+<summary> Referenced Objects</summary>
+<h4 id="list-boards-boards">Boards <sup><small><small>Referenced in <a href="#list-boards-output">Output</a></small></small></sup></h4>
 
-<h4 id="list-boards-boards">Boards</h4>
+A array of boards in Jira.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -291,9 +225,10 @@ List all boards in Jira
 | :--- | :--- | :--- | :--- |
 | ID | `id` | integer | The ID of the board. |
 | Name | `name` | string | The name of the board. |
-| Self | `self` | string | The URL of the board. |
 | Type | `type` | string | The type of the board. |
+| Self | `self` | string | The URL of the board. |
 </div>
+
 </details>
 
 
@@ -301,147 +236,49 @@ List all boards in Jira
 
 List issues in Jira.
 
+<h4 id="list-issues-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_ISSUES` |
 | Board Name (required) | `board-name` | string | The name of the board. |
-| [Range](#list-issues-range) | `range` | object | Choose the range of issues to return. Default is `all`. |
-| Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. Default is 0. |
-| Max Results | `max-results` | integer | The maximum number of boards to return. Default is 50. |
+| Range | `range` | object | Choose the range of issues to return. Default is `all`. |
+| Start At | `start-at` | object ([common-query-params/start-at](#list-issues-common-query-params-start-at)) | The starting index of the returned boards. Base index: 0. Default is 0. |
+| Max Results | `max-results` | object ([common-query-params/max-results](#list-issues-common-query-params-max-results)) | The maximum number of boards to return. Default is 50. |
 </div>
 
-
-
-
-<details>
-<summary>The <code>range</code> Object </summary>
-
-<h4 id="list-issues-range">Range</h4>
-
-`range` must fulfill one of the following schemas:
-
-<h5 id="list-issues-all"><code>All</code></h5>
-
-All issues.
-
+<h4 id="list-issues-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Range | `range` | string |  Must be `"All"`   |
-</div>
-
-<h5 id="list-issues-standard-issues"><code>Standard Issues</code></h5>
-
-Standard issues.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Range | `range` | string |  Must be `"Standard Issues"`   |
-</div>
-
-<h5 id="list-issues-epics-only"><code>Epics only</code></h5>
-
-Epics only.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Range | `range` | string |  Must be `"Epics only"`   |
-</div>
-
-<h5 id="list-issues-in-backlog-only"><code>In Backlog Only</code></h5>
-
-In backlog only.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Range | `range` | string |  Must be `"In backlog only"`   |
-</div>
-
-<h5 id="list-issues-issues-of-an-epic"><code>Issues of an Epic</code></h5>
-
-Issues of an epic.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Epic Key | `epic-key` | string |  The Key of the epic, e.g. `JRA-1330`.  |
-| Range | `range` | string |  Must be `"Issues of an epic"`   |
-</div>
-
-<h5 id="list-issues-issues-of-a-sprint"><code>Issues of a Sprint</code></h5>
-
-Issues of a sprint.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Range | `range` | string |  Must be `"Issues of a sprint"`   |
-| Sprint Name | `sprint-name` | string |  The name of the sprint.  |
-</div>
-
-<h5 id="list-issues-issues-without-epic-assigned"><code>Issues without Epic Assigned</code></h5>
-
-Issues without Epic Assigned.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Range | `range` | string |  Must be `"Issues without epic assigned"`   |
-</div>
-
-<h5 id="list-issues-jql-query"><code>JQL Query</code></h5>
-
-JQL query.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| JQL | `jql` | string |  The JQL query. For example, `type = "Task" AND status = "Done"`. For more information, see <a href="https://support.atlassian.com/jira-software-cloud/docs/what-is-advanced-search-in-jira-cloud/">Advanced searching</a>.  |
-| Range | `range` | string |  Must be `"JQL query"`   |
-</div>
-</details>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| [Issues](#list-issues-issues) (optional) | `issues` | array[object] | A array of issues in Jira. |
+| Issues (optional) | `issues` | array[object ([issue](#list-issues-issue))] | A array of issues in Jira. |
 | Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. |
 | Max Results | `max-results` | integer | The maximum number of boards. |
 | Total | `total` | integer | The total number of boards. |
 </div>
 
 <details>
-<summary> Output Objects in List Issues</summary>
+<summary> Referenced Objects</summary>
+<h4 id="list-issues-issue">Issue <sup><small><small>Referenced in <a href="#list-issues-output">Output</a></small></small></sup></h4>
 
-<h4 id="list-issues-issues">Issues</h4>
+A array of issues in Jira.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Description | `description` | string | The description of the issue. |
-| Fields | `fields` | json | The fields of the issue. All navigable and Agile fields are returned. |
 | ID | `id` | string | The ID of the issue. |
-| Issue Type | `issue-type` | string | The type of the issue, can be: `Task`, `Epic`. |
 | Key | `key` | string | The key of the issue, e.g. `JRA-1330`. |
 | Self | `self` | string | The URL of the issue. |
-| Status | `status` | string | The status of the issue, can be: `To Do`, `In Progress`, `Done`. |
+| Fields | `fields` | json | The fields of the issue. All navigable and Agile fields are returned. |
+| Issue Type | `issue-type` | string | The type of the issue, can be: `Task`, `Epic`. |
 | Summary | `summary` | string | The summary of the issue. |
+| Description | `description` | string | The description of the issue. |
+| Status | `status` | string | The status of the issue, can be: `To Do`, `In Progress`, `Done`. |
 </div>
+
 </details>
 
 
@@ -449,50 +286,49 @@ JQL query.
 
 List sprints in Jira.
 
+<h4 id="list-sprints-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_SPRINTS` |
 | Board ID (required) | `board-id` | integer | The ID of the board. |
-| Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. Default is 0. |
-| Max Results | `max-results` | integer | The maximum number of boards to return. Default is 50. |
+| Start At | `start-at` | object ([common-query-params/start-at](#list-sprints-common-query-params-start-at)) | The starting index of the returned boards. Base index: 0. Default is 0. |
+| Max Results | `max-results` | object ([common-query-params/max-results](#list-sprints-common-query-params-max-results)) | The maximum number of boards to return. Default is 50. |
 </div>
 
-
-
-
-
-
+<h4 id="list-sprints-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Sprints](#list-sprints-sprints) (optional) | `sprints` | array[object] | A array of sprints in Jira. |
+| Sprints (optional) | `sprints` | array[object ([sprint](#list-sprints-sprint))] | A array of sprints in Jira. |
 | Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. |
 | Max Results | `max-results` | integer | The maximum number of boards. |
 | Total | `total` | integer | The total number of boards. |
 </div>
 
 <details>
-<summary> Output Objects in List Sprints</summary>
+<summary> Referenced Objects</summary>
+<h4 id="list-sprints-sprint">Sprint <sup><small><small>Referenced in <a href="#list-sprints-output">Output</a></small></small></sup></h4>
 
-<h4 id="list-sprints-sprints">Sprints</h4>
+A array of sprints in Jira.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Complete Date | `complete-date` | string | The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
-| End Date | `end-date` | string | The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
-| Goal | `goal` | string | The Goal of the sprint. |
 | ID | `id` | integer | The ID of the sprint. |
-| Name | `name` | string | The name of the sprint. |
-| Origin Board ID | `origin-board-id` | integer | The ID of the origin board. |
 | Self | `self` | string | The URL of the sprint. |
-| Start Date | `start-date` | string | The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
 | State | `state` | string | The state of the sprint, can be: `active`, `closed`, `future`. |
+| Name | `name` | string | The name of the sprint. |
+| Start Date | `start-date` | string | The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
+| End Date | `end-date` | string | The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
+| Complete Date | `complete-date` | string | The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
+| Origin Board ID | `origin-board-id` | integer | The ID of the origin board. |
+| Goal | `goal` | string | The Goal of the sprint. |
 </div>
+
 </details>
 
 
@@ -500,54 +336,21 @@ List sprints in Jira.
 
 Update an issue in Jira.
 
+<h4 id="update-issue-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE_ISSUE` |
-| Issue Key (required) | `issue-key` | string | The key of the issue, e.g. `JRA-1330`. |
+| Issue Key (required) | `issue-key` | object ([issue/properties/key](#update-issue-issue-properties-key)) | The key of the issue, e.g. `JRA-1330`. |
 | Notify Users | `notify-users` | boolean | Whether to notify users. |
-| [Update](#update-issue-update) | `update` | object | Update an issue in Jira. |
+| Update | `update` | object | Update an issue in Jira. |
 </div>
 
-
-
-
-<details>
-<summary>The <code>update</code> Object </summary>
-
-<h4 id="update-issue-update">Update</h4>
-
-`update` must fulfill one of the following schemas:
-
-<h5 id="update-issue-custom-update"><code>Custom Update</code></h5>
-
-Custom update.
-
+<h4 id="update-issue-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Update | `update` | string |  Must be `"Custom Update"`   |
-| Update Fields | `update-fields` | array |  The fields to update.  |
-</div>
-
-<h5 id="update-issue-move-issue-to-epic"><code>Move Issue to Epic</code></h5>
-
-Move issue to epic.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Epic Key | `epic-key` | string |  The key of the epic, e.g. `JRA-1330`.  |
-| Update | `update` | string |  Must be `"Move Issue to Epic"`   |
-</div>
-</details>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | string | The ID of the issue. |
 | Key | `key` | string | The key of the issue, e.g. `JRA-1330`. |
@@ -564,9 +367,10 @@ Move issue to epic.
 
 Update a sprint in Jira.
 
+<h4 id="update-sprint-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE_SPRINT` |
 | Sprint ID (required) | `sprint-id` | integer | The ID of the sprint. |
@@ -578,14 +382,10 @@ Update a sprint in Jira.
 | Enter Next State | `enter-next-state` | boolean | Whether to enter the next state. If `true`, the sprint will enter the next state, i.e., `future` -> `active` -> `closed`. |
 </div>
 
-
-
-
-
-
+<h4 id="update-sprint-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | ID | `id` | integer | The ID of the sprint. |
 | Self | `self` | string | The URL of the sprint. |

@@ -3,25 +3,30 @@ package data
 import (
 	"fmt"
 
+	"google.golang.org/protobuf/types/known/structpb"
+
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type booleanData struct {
 	Raw bool
 }
 
+// NewBoolean creates a new boolean data with the given value.
 func NewBoolean(b bool) *booleanData {
 	return &booleanData{Raw: b}
 }
 
+// IsValue implements the Value interface.
 func (booleanData) IsValue() {}
 
+// Boolean returns the boolean value.
 func (b *booleanData) Boolean() bool {
 	return b.Raw
 }
 
+// String returns the string value.
 func (b *booleanData) String() (val string) {
 	if b.Raw {
 		return "true"
@@ -30,6 +35,7 @@ func (b *booleanData) String() (val string) {
 	}
 }
 
+// Get returns the value at the given path.
 func (b *booleanData) Get(p *path.Path) (v format.Value, err error) {
 	if p == nil || p.IsEmpty() {
 		return b, nil

@@ -40,8 +40,9 @@ func TestExecutionWrapper_GetComponent(t *testing.T) {
 		componentTasksYAML,
 		nil,
 		map[string][]byte{
-			"additional.yaml": componentAdditionalYAML,
-			"schema.yaml":     schemas.SchemaYAML,
+			"additional.yaml":  componentAdditionalYAML,
+			"schema.yaml":      schemas.SchemaYAML,
+			"chat-schema.yaml": schemas.ChatSchemaYAML,
 		})
 	c.Assert(err, qt.IsNil)
 

@@ -10,12 +10,17 @@ type property struct {
 	Order       *int   `json:"uiOrder" validate:"required"`
 
 	Type string `json:"type"`
+	Ref  string `json:"$ref,omitempty"`
 
 	// If Type is array, Items defines the element format.
 	Items struct {
-		Type       string              `json:"type"`
-		Properties map[string]property `json:"properties" validate:"omitempty,dive"`
-		OneOf      []objectSchema      `json:"oneOf" validate:"dive"`
+		Type        string              `json:"type"`
+		Title       string              `json:"title"`
+		Description string              `json:"description"`
+		Ref         string              `json:"$ref,omitempty"`
+		Properties  map[string]property `json:"properties" validate:"omitempty,dive"`
+		OneOf       []objectSchema      `json:"oneOf" validate:"dive"`
+		Enum        []string            `json:"enum,omitempty"`
 	} `json:"items"`
 
 	Properties map[string]property `json:"properties" validate:"omitempty,dive"`
@@ -33,6 +38,8 @@ type objectSchema struct {
 	Properties  map[string]property `json:"properties" validate:"dive"`
 	Title       string              `json:"title" validate:"required"`
 	Required    []string            `json:"required"`
+	AllOf       []objectSchema      `json:"allOf"`
+	OneOf       []objectSchema      `json:"oneOf" validate:"dive"`
 }
 
 func (t *objectSchema) MarshalJSON() ([]byte, error) {

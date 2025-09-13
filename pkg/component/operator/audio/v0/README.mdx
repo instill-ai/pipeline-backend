@@ -34,9 +34,10 @@ The component definition and tasks are defined in the [definition.yaml](https://
 
 Detect speech segments in audio data using Voice Activity Detection (VAD). This task processes the input audio to 16kHz mono format, identifies periods of human speech, and outputs time segments for each detected speech activity.
 
+<h4 id="detect-activity-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DETECT_ACTIVITY` |
 | Audio (required) | `audio` | string | Audio file to analyze for speech activity. |
@@ -44,30 +45,28 @@ Detect speech segments in audio data using Voice Activity Detection (VAD). This 
 | Speech Pad | `speech-pad` | integer | Additional padding (in milliseconds) added to the start and end of each detected speech segment to prevent cutting off speech. |
 </div>
 
-
-
-
-
-
+<h4 id="detect-activity-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Segments](#detect-activity-segments) | `segments` | array[object] | Array of time segments representing detected speech activity. Each segment contains start and end times in seconds. |
+| Segments | `segments` | array[object ([segment](#detect-activity-segment))] | Array of time segments representing detected speech activity. Each segment contains start and end times in seconds. |
 </div>
 
 <details>
-<summary> Output Objects in Detect Activity</summary>
+<summary> Referenced Objects</summary>
+<h4 id="detect-activity-segment">Segment <sup><small><small>Referenced in <a href="#detect-activity-output">Output</a></small></small></sup></h4>
 
-<h4 id="detect-activity-segments">Segments</h4>
+A time segment of audio data, defined by its start and end times in seconds.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| End Time | `end-time` | number | The number of seconds from the beginning of the audio file to the end of this segment. |
 | Start Time | `start-time` | number | The number of seconds from the beginning of the audio file to the start of this segment. |
+| End Time | `end-time` | number | The number of seconds from the beginning of the audio file to the end of this segment. |
 </div>
+
 </details>
 
 
@@ -75,40 +74,39 @@ Detect speech segments in audio data using Voice Activity Detection (VAD). This 
 
 Segment audio data into pieces based on the provided time segments.
 
+<h4 id="segment-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEGMENT` |
 | Audio (required) | `audio` | string | Audio data to segment. |
-| [Segments](#segment-segments) (required) | `segments` | array[object] | A list of time segments of audio data. |
+| Segments (required) | `segments` | array[object ([segment](#segment-segment))] | A list of time segments of audio data. |
 </div>
 
+<h4 id="segment-output">Output</h4>
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Audios | `audio-segments` | array[audio] | A list of segmented audio data. |
+</div>
 
 <details>
-<summary> Input Objects in Segment</summary>
+<summary> Referenced Objects</summary>
+<h4 id="segment-segment">Segment <sup><small><small>Referenced in <a href="#segment-input">Input</a></small></small></sup></h4>
 
-<h4 id="segment-segments">Segments</h4>
-
-A list of time segments of audio data.
+A time segment of audio data, defined by its start and end times in seconds.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| End Time | `end-time` | number | The number of seconds from the beginning of the audio file to the end of this segment.  |
-| Start Time | `start-time` | number | The number of seconds from the beginning of the audio file to the start of this segment.  |
+| Start Time | `start-time` | number | The number of seconds from the beginning of the audio file to the start of this segment. |
+| End Time | `end-time` | number | The number of seconds from the beginning of the audio file to the end of this segment. |
 </div>
+
 </details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Audios | `audio-segments` | array[audio] | A list of segmented audio data. |
-</div>
 
 
 

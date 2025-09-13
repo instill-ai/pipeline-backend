@@ -45,8 +45,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Cloud ID (required) | `cloud-id` | string | Fill in the Cloud ID for the Elasticsearch instance.  |
-| API Key (required) | `api-key` | string | Fill in the API key for the Elasticsearch instance (please use encoded one).  |
+| Cloud ID (required) | `cloud-id` | string | Fill in the Cloud ID for the Elasticsearch instance. |
+| API Key (required) | `api-key` | string | Fill in the API key for the Elasticsearch instance (please use encoded one). |
 
 </div>
 
@@ -60,9 +60,10 @@ ${connection.<my-connection-id>}`.
 
 Search for documents in Elasticsearch, support full text search
 
+<h4 id="search-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEARCH` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
@@ -75,32 +76,30 @@ Search for documents in Elasticsearch, support full text search
 | Minimum Score | `min-score` | number | Minimum score to consider for search results. If empty then no minimum score will be considered. |
 </div>
 
-
-
-
-
-
+<h4 id="search-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Search operation status. |
-| [Result](#search-result) | `result` | object | Result of the search operation. |
+| Result | `result` | object ([result](#search-result)) | Result of the search operation. |
 </div>
 
 <details>
-<summary> Output Objects in Search</summary>
+<summary> Referenced Objects</summary>
+<h4 id="search-result">Result <sup><small><small>Referenced in <a href="#search-output">Output</a></small></small></sup></h4>
 
-<h4 id="search-result">Result</h4>
+Result of the search operation.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Data](#search-data) | `data` | array | The data returned from the search operation. |
-| [Documents](#search-documents) | `documents` | array | The documents returned from the search operation. |
-| IDs | `ids` | array | The ids returned from the search operation. |
+| IDs | `ids` | array[string] | The ids returned from the search operation. |
+| Documents | `documents` | array[object] | The documents returned from the search operation. |
+| Data | `data` | array[object] | The data returned from the search operation. |
 </div>
+
 </details>
 
 
@@ -108,9 +107,10 @@ Search for documents in Elasticsearch, support full text search
 
 Search for vector similarity search in Elasticsearch
 
+<h4 id="vector-search-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
@@ -124,33 +124,31 @@ Search for vector similarity search in Elasticsearch
 | Minimum Score | `min-score` | number | Minimum score to consider for search results. If empty then no minimum score will be considered. |
 </div>
 
-
-
-
-
-
+<h4 id="vector-search-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Search operation status. |
-| [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
+| Result | `result` | object ([result](#vector-search-result)) | Result of the vector search operation. |
 </div>
 
 <details>
-<summary> Output Objects in Vector Search</summary>
+<summary> Referenced Objects</summary>
+<h4 id="vector-search-result">Result <sup><small><small>Referenced in <a href="#vector-search-output">Output</a></small></small></sup></h4>
 
-<h4 id="vector-search-result">Result</h4>
+Result of the vector search operation.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Documents](#vector-search-documents) | `documents` | array | The documents returned from the vector search operation. |
-| IDs | `ids` | array | The ids returned from the vector search operation. |
-| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
-| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
+| IDs | `ids` | array[string] | The ids returned from the vector search operation. |
+| Documents | `documents` | array[object] | The documents returned from the vector search operation. |
+| Vectors | `vectors` | array[array] | The vectors returned from the vector search operation. |
+| Metadata | `metadata` | array[object] | The metadata returned from the vector search operation. |
 </div>
+
 </details>
 
 
@@ -158,9 +156,10 @@ Search for vector similarity search in Elasticsearch
 
 Index a document into Elasticsearch
 
+<h4 id="index-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INDEX` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
@@ -168,14 +167,10 @@ Index a document into Elasticsearch
 | Data (required) | `data` | object | Data to be indexed. |
 </div>
 
-
-
-
-
-
+<h4 id="index-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Index operation status. |
 </div>
@@ -185,24 +180,21 @@ Index a document into Elasticsearch
 
 Index multiple documents into Elasticsearch with bulk API
 
+<h4 id="multi-index-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_MULTI_INDEX` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
 | Array ID | `array-id` | array[string] | The array of id. |
-| [Array Data](#multi-index-array-data) (required) | `array-data` | array[object] | Array data to be indexed. |
+| Array Data (required) | `array-data` | array[object] | Array data to be indexed. |
 </div>
 
-
-
-
-
-
+<h4 id="multi-index-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Index operation status. |
 </div>
@@ -212,9 +204,10 @@ Index multiple documents into Elasticsearch with bulk API
 
 Update a document in Elasticsearch
 
+<h4 id="update-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
@@ -225,14 +218,10 @@ Update a document in Elasticsearch
 | Update (required) | `update-data` | object | Update data. |
 </div>
 
-
-
-
-
-
+<h4 id="update-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Update operation status. |
 </div>
@@ -242,9 +231,10 @@ Update a document in Elasticsearch
 
 Delete documents from Elasticsearch
 
+<h4 id="delete-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
@@ -254,14 +244,10 @@ Delete documents from Elasticsearch
 | Filter SQL | `filter-sql` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for no filter. |
 </div>
 
-
-
-
-
-
+<h4 id="delete-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete operation status. |
 </div>
@@ -271,23 +257,20 @@ Delete documents from Elasticsearch
 
 Create an index in Elasticsearch
 
+<h4 id="create-index-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_INDEX` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
 | Mappings | `mappings` | object | Index mappings which starts with \{"mappings":\{"properties"\}\} field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html) for vector search and [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html) for other mappings. |
 </div>
 
-
-
-
-
-
+<h4 id="create-index-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create index operation status. |
 </div>
@@ -297,22 +280,19 @@ Create an index in Elasticsearch
 
 Delete an index in Elasticsearch
 
+<h4 id="delete-index-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE_INDEX` |
 | Index Name (required) | `index-name` | string | Name of the Elasticsearch index. |
 </div>
 
-
-
-
-
-
+<h4 id="delete-index-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete index operation status. |
 </div>

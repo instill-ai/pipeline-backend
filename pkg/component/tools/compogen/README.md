@@ -43,7 +43,7 @@ following fields must be present and comply with the following guidelines:
 - `sourceUrl` - Must be a valid URL. It must not end with a slash, as the
   definitions path will be appended.
 
-Certain optional fields modify the document behaviour:
+Certain optional fields modify the document behavior:
 
 - `public`, when `true`, will set the `draft` property to `false`.
 - The content of `prerequisites` will be displayed in

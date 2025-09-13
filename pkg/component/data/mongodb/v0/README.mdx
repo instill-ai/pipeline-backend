@@ -47,7 +47,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| URI (required) | `uri` | string | Fill in your MongoDB URI.  |
+| URI (required) | `uri` | string | Fill in your MongoDB URI. |
 
 </div>
 
@@ -61,9 +61,10 @@ ${connection.<my-connection-id>}`.
 
 Perform an insert operation
 
+<h4 id="insert-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT` |
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
@@ -72,14 +73,10 @@ Perform an insert operation
 | Data (required) | `data` | object | The data to be inserted. |
 </div>
 
-
-
-
-
-
+<h4 id="insert-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Insert status. |
 </div>
@@ -89,25 +86,22 @@ Perform an insert operation
 
 Perform an insert many operation
 
+<h4 id="insert-many-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT_MANY` |
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
 | Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
 | Array ID | `array-id` | array[string] | The array of id. |
-| [Data](#insert-many-data) (required) | `array-data` | array[object] | The array data to be inserted. |
+| Data (required) | `array-data` | array[object] | The array data to be inserted. |
 </div>
 
-
-
-
-
-
+<h4 id="insert-many-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Insert many status. |
 </div>
@@ -117,9 +111,10 @@ Perform an insert many operation
 
 Perform a find operation
 
+<h4 id="find-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_FIND` |
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
@@ -130,32 +125,30 @@ Perform a find operation
 | Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned. |
 </div>
 
-
-
-
-
-
+<h4 id="find-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Result](#find-result) | `result` | object | Result of the find operation. |
+| Result | `result` | object ([result](#find-result)) | Result of the find operation. |
 | Status | `status` | string | Find status. |
 </div>
 
 <details>
-<summary> Output Objects in Find</summary>
+<summary> Referenced Objects</summary>
+<h4 id="find-result">Result <sup><small><small>Referenced in <a href="#find-output">Output</a></small></small></sup></h4>
 
-<h4 id="find-result">Result</h4>
+Result of the find operation.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Metadata](#find-metadata) | `data` | array | The data returned from the find operation. |
-| [Documents](#find-documents) | `documents` | array | The documents returned from the find operation. |
-| IDs | `ids` | array | The ids returned from the find operation. |
+| IDs | `ids` | array[string] | The ids returned from the find operation. |
+| Documents | `documents` | array[object] | The documents returned from the find operation. |
+| Metadata | `data` | array[object] | The data returned from the find operation. |
 </div>
+
 </details>
 
 
@@ -163,9 +156,10 @@ Perform a find operation
 
 Perform an update operation
 
+<h4 id="update-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE` |
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
@@ -175,14 +169,10 @@ Perform an update operation
 | Update (required) | `update-data` | object | The updated data to be applied to the documents. |
 </div>
 
-
-
-
-
-
+<h4 id="update-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Update status. |
 </div>
@@ -192,9 +182,10 @@ Perform an update operation
 
 Perform a delete operation
 
+<h4 id="delete-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
@@ -203,14 +194,10 @@ Perform a delete operation
 | Filter | `filter` | object | The filter to delete documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned. |
 </div>
 
-
-
-
-
-
+<h4 id="delete-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete status. |
 </div>
@@ -220,23 +207,20 @@ Perform a delete operation
 
 Delete the collection
 
+<h4 id="drop-collection-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_COLLECTION` |
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
 | Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
 </div>
 
-
-
-
-
-
+<h4 id="drop-collection-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete collection status. |
 </div>
@@ -246,22 +230,19 @@ Delete the collection
 
 Delete the database
 
+<h4 id="drop-database-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_DATABASE` |
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
 </div>
 
-
-
-
-
-
+<h4 id="drop-database-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete database status. |
 </div>
@@ -271,26 +252,23 @@ Delete the database
 
 Create a search index, only works for M10 or larger clusters
 
+<h4 id="create-search-index-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_SEARCH_INDEX` |
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
 | Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
 | Index Name (required) | `index-name` | string | The name of the index to be created. |
-| Index Type (required) | `index-type` | string | The type of the index to be created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`search`</li><li>`vectorSearch`</li></ul></details>  |
+| Index Type (required) | `index-type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`search`</li><li>`vectorSearch`</li></ul></details></small></small> | The type of the index to be created. |
 | Syntax (required) | `syntax` | object | The syntax structure of the search index, please refer to the MongoDB documentation for more information. search [here](https://www.mongodb.com/docs/atlas/atlas-search/create-index/). vectorSearch [here](https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-type/). |
 </div>
 
-
-
-
-
-
+<h4 id="create-search-index-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create index status. |
 </div>
@@ -300,9 +278,10 @@ Create a search index, only works for M10 or larger clusters
 
 Drop a search index, only works for M10 or larger clusters
 
+<h4 id="drop-search-index-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_SEARCH_INDEX` |
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
@@ -310,14 +289,10 @@ Drop a search index, only works for M10 or larger clusters
 | Index Name (required) | `index-name` | string | The name of the index to be dropped. |
 </div>
 
-
-
-
-
-
+<h4 id="drop-search-index-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete index status. |
 </div>
@@ -327,9 +302,10 @@ Drop a search index, only works for M10 or larger clusters
 
 Perform a vector search operation
 
+<h4 id="vector-search-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
@@ -344,33 +320,31 @@ Perform a vector search operation
 | Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned. |
 </div>
 
-
-
-
-
-
+<h4 id="vector-search-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
+| Result | `result` | object ([result](#vector-search-result)) | Result of the vector search operation. |
 | Status | `status` | string | Vector search status. |
 </div>
 
 <details>
-<summary> Output Objects in Vector Search</summary>
+<summary> Referenced Objects</summary>
+<h4 id="vector-search-result">Result <sup><small><small>Referenced in <a href="#vector-search-output">Output</a></small></small></sup></h4>
 
-<h4 id="vector-search-result">Result</h4>
+Result of the vector search operation.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Documents](#vector-search-documents) | `documents` | array | The documents returned from the vector search operation. |
-| IDs | `ids` | array | The ids returned from the vector search operation. |
-| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
-| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
+| IDs | `ids` | array[string] | The ids returned from the vector search operation. |
+| Documents | `documents` | array[object] | The documents returned from the vector search operation. |
+| Vectors | `vectors` | array[array] | The vectors returned from the vector search operation. |
+| Metadata | `metadata` | array[object] | The metadata returned from the vector search operation. |
 </div>
+
 </details>
 
 

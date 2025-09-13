@@ -36,9 +36,10 @@ The component definition and tasks are defined in the [definition.yaml](https://
 
 Convert document to text in Markdown format.
 
+<h4 id="convert-to-markdown-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONVERT_TO_MARKDOWN` |
 | Document (required) | `document` | string | Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML/XLSX/XLS/CSV to be converted to text in Markdown format. |
@@ -46,17 +47,13 @@ Convert document to text in Markdown format.
 | Display Image Tag | `display-image-tag` | boolean | Whether to display image tag in the markdown text. Default is 'false'. It is only applicable for convert-2024-08-28 converter. And, it is only applicable for the type of PPTX/PPT/DOCX/DOC/PDF. |
 | Display All Page Image | `display-all-page-image` | boolean | Whether to respond the whole page as the images if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF. |
 | Resolution | `resolution` | number | Desired number pixels per inch. Defaults to 300. Minimum is 72. |
-| Converter | `converter` | string | The conversion engine used in the transformation. For now, it only applies to PDF to Markdown conversions. `pdfplumber` is quicker than Docling, but it typically produces less accurate results.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`pdfplumber`</li><li>`docling`</li></ul></details>  |
+| Converter | `converter` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`pdfplumber`</li><li>`docling`</li></ul></details></small></small> | The conversion engine used in the transformation. For now, it only applies to PDF to Markdown conversions. `pdfplumber` is quicker than Docling, but it typically produces less accurate results. |
 </div>
 
-
-
-
-
-
+<h4 id="convert-to-markdown-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Body | `body` | string | Markdown text converted from the PDF document. |
 | Filename (optional) | `filename` | string | The name of the file. |
@@ -71,23 +68,20 @@ Convert document to text in Markdown format.
 
 Convert document to text.
 
+<h4 id="convert-to-text-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONVERT_TO_TEXT` |
 | Document (required) | `document` | string | Base64 encoded PDF/DOC/DOCX/XML/HTML/RTF/MD/PPTX/ODT/TIF/CSV/TXT/PNG document to be converted to plain text. |
 | Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'. |
 </div>
 
-
-
-
-
-
+<h4 id="convert-to-text-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Body | `body` | string | Plain text converted from the document. |
 | Filename (optional) | `filename` | string | The name of the file. |
@@ -101,9 +95,10 @@ Convert document to text.
 
 Convert Document to images.
 
+<h4 id="convert-to-images-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONVERT_TO_IMAGES` |
 | PDF (required) | `document` | string | Base64 encoded PDF/DOCX/DOC/PPT/PPTX to be converted to images. |
@@ -111,14 +106,10 @@ Convert Document to images.
 | Resolution | `resolution` | number | Desired number pixels per inch. Defaults to 300. Minimum is 72. |
 </div>
 
-
-
-
-
-
+<h4 id="convert-to-images-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Images | `images` | array[string] | Images converted from the document. |
 | Filenames (optional) | `filenames` | array[string] | The filenames of the images. The filenames will be appended with the page number. e.g. 'example-1.jpg'. |
@@ -129,23 +120,20 @@ Convert Document to images.
 
 Divide a document in batches of N pages.
 
+<h4 id="split-in-pages-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SPLIT_IN_PAGES` |
 | Document (required) | `document` | string | Document encoded in Base64. For now, only PDF documents are accepted. |
 | Batch Size | `batch-size` | number | Pages in each batch. |
 </div>
 
-
-
-
-
-
+<h4 id="split-in-pages-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Batches (optional) | `pages` | array[string] | An ordered list of Base64-encoded documents, each one containing N pages of the input document. Page order in the input document is preserved both in the batch array elements and in the pages within each batch. |
 </div>

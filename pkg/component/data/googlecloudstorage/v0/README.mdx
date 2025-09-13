@@ -40,7 +40,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| JSON Key File Contents (required) | `json-key` | string | Contents of the JSON key file with access to the bucket.  |
+| JSON Key File Contents (required) | `json-key` | string | Contents of the JSON key file with access to the bucket. |
 
 </div>
 
@@ -54,9 +54,10 @@ ${connection.<my-connection-id>}`.
 
 Upload data to Google Cloud Storage.
 
+<h4 id="upload-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPLOAD` |
 | Bucket Name (required) | `bucket-name` | string | Name of the bucket to be used for object storage. |
@@ -64,14 +65,10 @@ Upload data to Google Cloud Storage.
 | Data (required) | `data` | string | The data to be saved in the object. |
 </div>
 
-
-
-
-
-
+<h4 id="upload-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Authenticated URL (optional) | `authenticated-url` | string | Only users granted permission can access the object with this link. |
 | Gsutil URI (optional) | `gsutil-uri` | string | File path to this resource in Cloud Storage. |
@@ -85,9 +82,10 @@ Upload data to Google Cloud Storage.
 
 Read objects from Google Cloud Storage.
 
+<h4 id="read-objects-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_OBJECTS` |
 | Bucket Name (required) | `bucket-name` | string | Name of the bucket to be used for object storage. |
@@ -101,164 +99,64 @@ Read objects from Google Cloud Storage.
 | Include Folders As Prefixes | `include-folders-as-prefixes` | boolean | Whether to include folders as prefixes. |
 </div>
 
-
-
-
-
-
+<h4 id="read-objects-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Text Objects](#read-objects-text-objects) (optional) | `text-objects` | array[object] | The text objects in the bucket. |
-| [Image Objects](#read-objects-image-objects) (optional) | `image-objects` | array[object] | The image objects in the bucket. |
-| [Document Objects](#read-objects-document-objects) (optional) | `document-objects` | array[object] | The document objects in the bucket. |
-| [Audio Objects](#read-objects-audio-objects) (optional) | `audio-objects` | array[object] | The audio objects in the bucket. |
-| [Video Objects](#read-objects-video-objects) (optional) | `video-objects` | array[object] | The video objects in the bucket. |
+| Text Objects (optional) | `text-objects` | array[object ([text-objects](#read-objects-text-objects))] | The text objects in the bucket. |
+| Image Objects (optional) | `image-objects` | array[object ([image-objects](#read-objects-image-objects))] | The image objects in the bucket. |
+| Document Objects (optional) | `document-objects` | array[object ([document-objects](#read-objects-object))] | The document objects in the bucket. |
+| Audio Objects (optional) | `audio-objects` | array[object ([audio-objects](#read-objects-object))] | The audio objects in the bucket. |
+| Video Objects (optional) | `video-objects` | array[object ([video-objects](#read-objects-object))] | The video objects in the bucket. |
 </div>
 
 <details>
-<summary> Output Objects in Read Objects</summary>
+<summary> Referenced Objects</summary>
+<h4 id="read-objects-attributes">Attributes <sup><small><small>Referenced in <a href="#read-objects-object">Object</a>, <a href="#read-objects-text-objects">Text Objects</a></small></small></sup></h4>
 
-<h4 id="read-objects-text-objects">Text Objects</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
-| Data | `data` | string | The data of the object. |
-</div>
-
-<h4 id="read-objects-attributes">Attributes</h4>
+The attributes of the object.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Content Disposition | `content-disposition` | string | The content disposition of the object. |
-| Content Encoding | `content-encoding` | string | The content encoding of the object. |
-| Content Language | `content-language` | string | The content language of the object. |
-| Content Type | `content-type` | string | The content type of the object. |
-| Media Link | `media-link` | string | The media link of the object. |
-| Metadata | `metadata` | object | The object metadata. |
 | Object Name | `name` | string | The name of the object. |
+| Content Type | `content-type` | string | The content type of the object. |
+| Content Language | `content-language` | string | The content language of the object. |
 | Owner | `owner` | string | The owner of the object. |
 | Size | `size` | integer | The size of the object. |
+| Content Encoding | `content-encoding` | string | The content encoding of the object. |
+| Content Disposition | `content-disposition` | string | The content disposition of the object. |
+| Media Link | `media-link` | string | The media link of the object. |
+| Metadata | `metadata` | object | The object metadata. |
 | Storage Class | `storage-class` | string | The storage class of the object. |
 </div>
 
-<h4 id="read-objects-image-objects">Image Objects</h4>
+<h4 id="read-objects-object">Object <sup><small><small>Referenced in <a href="#read-objects-output">Output</a></small></small></sup></h4>
+
+The document objects in the bucket.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
 | Data | `data` | string | The data of the object. |
+| Attributes | `attributes` | object ([attributes](#read-objects-attributes)) | The attributes of the object. |
 </div>
 
-<h4 id="read-objects-attributes">Attributes</h4>
+<h4 id="read-objects-text-objects">Text Objects <sup><small><small>Referenced in <a href="#read-objects-output">Output</a></small></small></sup></h4>
+
+The text objects in the bucket.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Content Disposition | `content-disposition` | string | The content disposition of the object. |
-| Content Encoding | `content-encoding` | string | The content encoding of the object. |
-| Content Language | `content-language` | string | The content language of the object. |
-| Content Type | `content-type` | string | The content type of the object. |
-| Media Link | `media-link` | string | The media link of the object. |
-| Metadata | `metadata` | object | The object metadata. |
-| Object Name | `name` | string | The name of the object. |
-| Owner | `owner` | string | The owner of the object. |
-| Size | `size` | integer | The size of the object. |
-| Storage Class | `storage-class` | string | The storage class of the object. |
-</div>
-
-<h4 id="read-objects-document-objects">Document Objects</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
 | Data | `data` | string | The data of the object. |
+| Attributes | `attributes` | object ([attributes](#read-objects-attributes)) | The attributes of the object. |
 </div>
 
-<h4 id="read-objects-attributes">Attributes</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Content Disposition | `content-disposition` | string | The content disposition of the object. |
-| Content Encoding | `content-encoding` | string | The content encoding of the object. |
-| Content Language | `content-language` | string | The content language of the object. |
-| Content Type | `content-type` | string | The content type of the object. |
-| Media Link | `media-link` | string | The media link of the object. |
-| Metadata | `metadata` | object | The object metadata. |
-| Object Name | `name` | string | The name of the object. |
-| Owner | `owner` | string | The owner of the object. |
-| Size | `size` | integer | The size of the object. |
-| Storage Class | `storage-class` | string | The storage class of the object. |
-</div>
-
-<h4 id="read-objects-audio-objects">Audio Objects</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
-| Data | `data` | string | The data of the object. |
-</div>
-
-<h4 id="read-objects-attributes">Attributes</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Content Disposition | `content-disposition` | string | The content disposition of the object. |
-| Content Encoding | `content-encoding` | string | The content encoding of the object. |
-| Content Language | `content-language` | string | The content language of the object. |
-| Content Type | `content-type` | string | The content type of the object. |
-| Media Link | `media-link` | string | The media link of the object. |
-| Metadata | `metadata` | object | The object metadata. |
-| Object Name | `name` | string | The name of the object. |
-| Owner | `owner` | string | The owner of the object. |
-| Size | `size` | integer | The size of the object. |
-| Storage Class | `storage-class` | string | The storage class of the object. |
-</div>
-
-<h4 id="read-objects-video-objects">Video Objects</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
-| Data | `data` | string | The data of the object. |
-</div>
-
-<h4 id="read-objects-attributes">Attributes</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Content Disposition | `content-disposition` | string | The content disposition of the object. |
-| Content Encoding | `content-encoding` | string | The content encoding of the object. |
-| Content Language | `content-language` | string | The content language of the object. |
-| Content Type | `content-type` | string | The content type of the object. |
-| Media Link | `media-link` | string | The media link of the object. |
-| Metadata | `metadata` | object | The object metadata. |
-| Object Name | `name` | string | The name of the object. |
-| Owner | `owner` | string | The owner of the object. |
-| Size | `size` | integer | The size of the object. |
-| Storage Class | `storage-class` | string | The storage class of the object. |
-</div>
 </details>
 
 
@@ -266,9 +164,10 @@ Read objects from Google Cloud Storage.
 
 Read objects from Google Cloud Storage.
 
+<h4 id="create-bucket-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_BUCKET` |
 | Bucket Name (required) | `bucket-name` | string | Name of the bucket to be used for object storage. |
@@ -276,14 +175,10 @@ Read objects from Google Cloud Storage.
 | Location | `location` | string | The location to create the bucket in. |
 </div>
 
-
-
-
-
-
+<h4 id="create-bucket-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Result (optional) | `result` | string | The result of the operation. |
 | Bucket Name (optional) | `name` | string | The name of the bucket. |

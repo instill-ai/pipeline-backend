@@ -39,7 +39,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key | `api-key` | string | Fill in your Mistral API key. To find your keys, visit the Mistral AI platform page.  |
+| API Key | `api-key` | string | Fill in your Mistral API key. To find your keys, visit the Mistral AI platform page. |
 
 </div>
 
@@ -53,16 +53,17 @@ ${connection.<my-connection-id>}`.
 
 Mistral AI's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as "prompts". Designing a prompt is essentially how you "program" a large language model model, usually by providing instructions or some examples of how to successfully complete a task.
 
+<h4 id="text-generation-chat-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
-| Model Name (required) | `model-name` | string | The Mistral model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open-mixtral-8x22b`</li><li>`open-mixtral-8x7b`</li><li>`open-mistral-7b`</li><li>`mistral-large-latest`</li><li>`mistral-small-latest`</li><li>`codestral-latest`</li></ul></details>  |
+| Model Name (required) | `model-name` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`open-mixtral-8x22b`</li><li>`open-mixtral-8x7b`</li><li>`open-mistral-7b`</li><li>`mistral-large-latest`</li><li>`mistral-small-latest`</li><li>`codestral-latest`</li></ul></details></small></small> | The Mistral model to be used. |
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model's behavior is set using a generic message as "You are a helpful assistant.". |
 | Prompt Images | `prompt-images` | array[string] | The prompt images (Note: The Mistral models are not trained to process images, thus images will be omitted). |
-| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}. |
+| Chat History | `chat-history` | array[object ([chat-message](#text-generation-chat-chat-message))] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}. |
 | Seed | `seed` | integer | The seed. |
 | Temperature | `temperature` | number | The temperature for sampling. |
 | Top K | `top-k` | integer | Integer to define the top tokens considered within the sample operation to create new text (Note: The Mistral models does not support top-k sampling). |
@@ -71,11 +72,18 @@ Mistral AI's text generation models (often called generative pre-trained transfo
 | Safe | `safe` | boolean | Safe generation mode. |
 </div>
 
+<h4 id="text-generation-chat-output">Output</h4>
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Text | `text` | string | Model Output. |
+| Usage (optional) | `usage` | object ([chat-usage](#text-generation-chat-usage)) | Token usage on the Mistral platform text generation models. |
+</div>
 
 <details>
-<summary> Input Objects in Text Generation Chat</summary>
-
-<h4 id="text-generation-chat-chat-history">Chat History</h4>
+<summary> Referenced Objects</summary>
+<h4 id="text-generation-chat-chat-message">Chat Message <sup><small><small>Referenced in <a href="#text-generation-chat-input">Input</a></small></small></sup></h4>
 
 Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}.
 
@@ -83,10 +91,11 @@ Incorporate external chat history, specifically previous messages within the con
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#text-generation-chat-content) | `content` | array | The message content.  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'. |
+| Content | `content` | array[object ([multi-modal-content](#text-generation-chat-multi-modal-content))] | The message content. |
 </div>
-<h4 id="text-generation-chat-content">Content</h4>
+
+<h4 id="text-generation-chat-content">Content <sup><small><small>Referenced in <a href="#text-generation-chat-chat-message">Chat Message</a></small></small></sup></h4>
 
 The message content.
 
@@ -94,11 +103,12 @@ The message content.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL.  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details>  |
+| Image URL | `image-url` | object ([chat-message](#text-generation-chat-chat-message)) | The image URL. |
+| Text | `text` | string | The text content. |
+| Type | `type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`text`</li><li>`image_url`</li></ul></details></small></small> | The type of the content part. |
 </div>
-<h4 id="text-generation-chat-image-url">Image URL</h4>
+
+<h4 id="text-generation-chat-image-url">Image URL <sup><small><small>Referenced in <a href="#text-generation-chat-content">Content</a></small></small></sup></h4>
 
 The image URL.
 
@@ -106,24 +116,15 @@ The image URL.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
-</div>
-</details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Text | `text` | string | Model Output. |
-| [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Token usage on the Mistral platform text generation models. |
+| URL | `url` | string | Either a URL of the image or the base64 encoded image data. |
 </div>
 
-<details>
-<summary> Output Objects in Text Generation Chat</summary>
+<h4 id="text-generation-chat-multi-modal-content">Multi Modal Content</h4>
 
-<h4 id="text-generation-chat-usage">Usage</h4>
+
+<h4 id="text-generation-chat-chat-usage">Chat Usage <sup><small><small>Referenced in <a href="#text-generation-chat-output">Output</a></small></small></sup></h4>
+
+Token usage on the Mistral platform text generation models.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -132,6 +133,7 @@ The image URL.
 | Input Tokens | `input-tokens` | number | The input tokens used by Mistral models. |
 | Output Tokens | `output-tokens` | number | The output tokens generated by Mistral models. |
 </div>
+
 </details>
 
 
@@ -139,32 +141,30 @@ The image URL.
 
 An embedding is a list of floating point numbers that captures semantic information about the text that it represents.
 
+<h4 id="text-embeddings-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
-| Model Name (required) | `model-name` | string | The Mistral embed model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`mistral-embed`</li></ul></details>  |
+| Model Name (required) | `model-name` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`mistral-embed`</li></ul></details></small></small> | The Mistral embed model to be used. |
 | Text (required) | `text` | string | The text. |
 </div>
 
-
-
-
-
-
+<h4 id="text-embeddings-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Embedding | `embedding` | array[number] | Embedding of the input text. |
-| [Usage](#text-embeddings-usage) (optional) | `usage` | object | Token usage on the Mistral platform embedding models. |
+| Usage (optional) | `usage` | object ([embedding-usage](#text-embeddings-usage)) | Token usage on the Mistral platform embedding models. |
 </div>
 
 <details>
-<summary> Output Objects in Text Embeddings</summary>
+<summary> Referenced Objects</summary>
+<h4 id="text-embeddings-usage">Usage <sup><small><small>Referenced in <a href="#text-embeddings-output">Output</a></small></small></sup></h4>
 
-<h4 id="text-embeddings-usage">Usage</h4>
+Token usage on the Mistral platform embedding models.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -172,6 +172,21 @@ An embedding is a list of floating point numbers that captures semantic informat
 | :--- | :--- | :--- | :--- |
 | Token Count | `tokens` | number | The token count used by Mistral models. |
 </div>
+
+<h4 id="text-embeddings-multi-modal-content">Multi Modal Content</h4>
+
+
+<h4 id="text-embeddings-embedding-usage">Embedding Usage <sup><small><small>Referenced in <a href="#text-embeddings-output">Output</a></small></small></sup></h4>
+
+Token usage on the Mistral platform embedding models.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Token Count | `tokens` | number | The token count used by Mistral models. |
+</div>
+
 </details>
 
 

@@ -45,13 +45,13 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Engine (required) | `engine` | string | Choose the engine of your database.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MySQL`</li><li>`PostgreSQL`</li><li>`SQL Server`</li><li>`Oracle`</li><li>`MariaDB`</li><li>`Firebird`</li></ul></details>  |
-| Username (required) | `username` | string | Fill in your account username.  |
-| Password (required) | `password` | string | Fill in your account password.  |
-| Database Name (required) | `database-name` | string | Fill in the name of your database.  |
-| Host (required) | `host` | string | Fill in the host of your database.  |
-| Port (required) | `port` | number | Fill in the port of your database.  |
-| [SSL / TLS](#ssl-tls) (required) | `ssl-tls` | object | Enable SSL / TLS.  |
+| Engine (required) | `engine` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`MySQL`</li><li>`PostgreSQL`</li><li>`SQL Server`</li><li>`Oracle`</li><li>`MariaDB`</li><li>`Firebird`</li></ul></details></small></small> | Choose the engine of your database. |
+| Username (required) | `username` | string | Fill in your account username. |
+| Password (required) | `password` | string | Fill in your account password. |
+| Database Name (required) | `database-name` | string | Fill in the name of your database. |
+| Host (required) | `host` | string | Fill in the host of your database. |
+| Port (required) | `port` | number | Fill in the port of your database. |
+| [SSL / TLS](#ssl-tls) (required) | `ssl-tls` | object | Enable SSL / TLS. |
 
 </div>
 
@@ -69,7 +69,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| SSL / TLS Type | `ssl-tls-type` | string |  Must be `"NO TLS"`   |
+| SSL / TLS Type | `ssl-tls-type` | string |  Must be `"NO TLS"`  |
 </div>
 
 <h5 id="setup-tls"><code>TLS</code></h5>
@@ -78,8 +78,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file.  |
-| SSL / TLS Type | `ssl-tls-type` | string |  Must be `"TLS"`   |
+| CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file. |
+| SSL / TLS Type | `ssl-tls-type` | string |  Must be `"TLS"`  |
 </div>
 
 <h5 id="setup-mtls"><code>mTLS</code></h5>
@@ -88,10 +88,10 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file.  |
-| Client Certificate | `ssl-tls-cert` | string |  Base64 encoded client certificate file.  |
-| Client Key | `ssl-tls-key` | string |  Base64 encoded client key file.  |
-| SSL / TLS Type | `ssl-tls-type` | string |  Must be `"mTLS"`   |
+| CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file. |
+| Client Certificate | `ssl-tls-cert` | string |  Base64 encoded client certificate file. |
+| Client Key | `ssl-tls-key` | string |  Base64 encoded client key file. |
+| SSL / TLS Type | `ssl-tls-type` | string |  Must be `"mTLS"`  |
 </div>
 </details>
 
@@ -102,23 +102,20 @@ ${connection.<my-connection-id>}`.
 
 Perform insert operation
 
+<h4 id="insert-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT` |
 | Table Name (required) | `table-name` | string | The table name in the database to insert data into. |
 | Data (required) | `data` | object | The data to be inserted. |
 </div>
 
-
-
-
-
-
+<h4 id="insert-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Insert status. |
 </div>
@@ -128,23 +125,20 @@ Perform insert operation
 
 Perform insert operation with multiple rows
 
+<h4 id="insert-many-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT_MANY` |
 | Table Name (required) | `table-name` | string | The table name in the database to insert data into. |
-| [Data](#insert-many-data) (required) | `array-data` | array[object] | The array data to be inserted. |
+| Data (required) | `array-data` | array[object] | The array data to be inserted. |
 </div>
 
-
-
-
-
-
+<h4 id="insert-many-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Insert many status. |
 </div>
@@ -154,9 +148,10 @@ Perform insert operation with multiple rows
 
 Perform update operation
 
+<h4 id="update-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE` |
 | Table Name (required) | `table-name` | string | The table name in the database to update data into. |
@@ -164,14 +159,10 @@ Perform update operation
 | Update (required) | `update-data` | object | The new data to be updated to. |
 </div>
 
-
-
-
-
-
+<h4 id="update-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Update status. |
 </div>
@@ -181,9 +172,10 @@ Perform update operation
 
 Perform select operation
 
+<h4 id="select-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SELECT` |
 | Table Name (required) | `table-name` | string | The table name in the database to be selected. |
@@ -192,14 +184,10 @@ Perform select operation
 | Columns | `columns` | array[string] | The columns to return in the rows. If empty then all columns will be returned. |
 </div>
 
-
-
-
-
-
+<h4 id="select-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Rows | `rows` | array[json] | The rows returned from the select operation. |
 | Status | `status` | string | Select status. |
@@ -210,23 +198,20 @@ Perform select operation
 
 Perform delete operation
 
+<h4 id="delete-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
 | Table Name (required) | `table-name` | string | The table name in the database to be deleted. |
 | Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
 </div>
 
-
-
-
-
-
+<h4 id="delete-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete status. |
 </div>
@@ -236,23 +221,20 @@ Perform delete operation
 
 Create a table in the database
 
+<h4 id="create-table-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_TABLE` |
 | Table Name (required) | `table-name` | string | The table name in the database to be created. |
 | Columns (required) | `columns-structure` | object | The columns structure to be created in the table, json with value string, e.g \{"name": "VARCHAR(255)", "age": "INT not null"\}. |
 </div>
 
-
-
-
-
-
+<h4 id="create-table-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create table status. |
 </div>
@@ -262,22 +244,19 @@ Create a table in the database
 
 Drop a table in the database
 
+<h4 id="drop-table-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_TABLE` |
 | Table Name (required) | `table-name` | string | The table name in the database to be dropped. |
 </div>
 
-
-
-
-
-
+<h4 id="drop-table-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Drop table status. |
 </div>

@@ -45,7 +45,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Authentication](#authentication) (required) | `authentication` | object | Authentication method to use for the REST API.  |
+| [Authentication](#authentication) (required) | `authentication` | object | Authentication method to use for the REST API. |
 
 </div>
 
@@ -63,7 +63,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Auth Type | `auth-type` | string |  Must be `"NO_AUTH"`   |
+| Auth Type | `auth-type` | string |  Must be `"NO_AUTH"`  |
 </div>
 
 <h5 id="setup-basic-auth"><code>Basic Auth</code></h5>
@@ -72,9 +72,9 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Auth Type | `auth-type` | string |  Must be `"BASIC_AUTH"`   |
-| Password | `password` | string |  Password for Basic auth.  |
-| Username | `username` | string |  Username for Basic Auth.  |
+| Auth Type | `auth-type` | string |  Must be `"BASIC_AUTH"`  |
+| Password | `password` | string |  Password for Basic auth. |
+| Username | `username` | string |  Username for Basic Auth. |
 </div>
 
 <h5 id="setup-api-key"><code>API Key</code></h5>
@@ -83,10 +83,10 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Auth Location | `auth-location` | string |  Add the API key to the header or query params.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`header`</li><li>`query`</li></ul></details>  |
-| Auth Type | `auth-type` | string |  Must be `"API_KEY"`   |
-| Key Name | `key` | string |  Key name for API key authentication.  |
-| Key Value | `value` | string |  Key value for API key authentication.  |
+| Auth Location | `auth-location` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`header`</li><li>`query`</li></ul></details></small></small> |  Add the API key to the header or query params. |
+| Auth Type | `auth-type` | string |  Must be `"API_KEY"`  |
+| Key Name | `key` | string |  Key name for API key authentication. |
+| Key Value | `value` | string |  Key value for API key authentication. |
 </div>
 
 <h5 id="setup-bearer-token"><code>Bearer Token</code></h5>
@@ -95,8 +95,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Auth Type | `auth-type` | string |  Must be `"BEARER_TOKEN"`   |
-| Token | `token` | string |  Bearer token.  |
+| Auth Type | `auth-type` | string |  Must be `"BEARER_TOKEN"`  |
+| Token | `token` | string |  Bearer token. |
 </div>
 </details>
 
@@ -107,9 +107,10 @@ ${connection.<my-connection-id>}`.
 
 Send a HTTP GET request.
 
+<h4 id="get-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
@@ -117,14 +118,10 @@ Send a HTTP GET request.
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
 </div>
 
-
-
-
-
-
+<h4 id="get-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
@@ -136,9 +133,10 @@ Send a HTTP GET request.
 
 Send a HTTP POST request.
 
+<h4 id="post-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_POST` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
@@ -147,14 +145,10 @@ Send a HTTP POST request.
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
 </div>
 
-
-
-
-
-
+<h4 id="post-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
@@ -166,9 +160,10 @@ Send a HTTP POST request.
 
 Send a HTTP PATCH request.
 
+<h4 id="patch-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_PATCH` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
@@ -177,14 +172,10 @@ Send a HTTP PATCH request.
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
 </div>
 
-
-
-
-
-
+<h4 id="patch-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
@@ -196,9 +187,10 @@ Send a HTTP PATCH request.
 
 Send a HTTP PUT request.
 
+<h4 id="put-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_PUT` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
@@ -207,14 +199,10 @@ Send a HTTP PUT request.
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
 </div>
 
-
-
-
-
-
+<h4 id="put-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
@@ -226,9 +214,10 @@ Send a HTTP PUT request.
 
 Send a HTTP DELETE request.
 
+<h4 id="delete-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
@@ -237,14 +226,10 @@ Send a HTTP DELETE request.
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
 </div>
 
-
-
-
-
-
+<h4 id="delete-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
@@ -256,9 +241,10 @@ Send a HTTP DELETE request.
 
 Send a HTTP HEAD request.
 
+<h4 id="head-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_HEAD` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
@@ -266,14 +252,10 @@ Send a HTTP HEAD request.
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
 </div>
 
-
-
-
-
-
+<h4 id="head-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
@@ -285,9 +267,10 @@ Send a HTTP HEAD request.
 
 Send a HTTP OPTIONS request.
 
+<h4 id="options-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_OPTIONS` |
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
@@ -296,14 +279,10 @@ Send a HTTP OPTIONS request.
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
 </div>
 
-
-
-
-
-
+<h4 id="options-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |

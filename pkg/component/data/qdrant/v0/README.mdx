@@ -43,8 +43,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | Fill in your Qdrant API key. Please refer to clusters in Qdrant data access control.  |
-| Qdrant URL Endpoint (required) | `url` | string | Fill in your Qdrant URL endpoint. Please refer to clusters in Qdrant cluster details.  |
+| API Key (required) | `api-key` | string | Fill in your Qdrant API key. Please refer to clusters in Qdrant data access control. |
+| Qdrant URL Endpoint (required) | `url` | string | Fill in your Qdrant URL endpoint. Please refer to clusters in Qdrant cluster details. |
 
 </div>
 
@@ -58,9 +58,10 @@ ${connection.<my-connection-id>}`.
 
 Perform a vector search on a collection
 
+<h4 id="vector-search-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to perform vector similarity search on. |
@@ -72,33 +73,31 @@ Perform a vector search on a collection
 | Min Score | `min-score` | number | The minimum score of the points to be returned. |
 </div>
 
-
-
-
-
-
+<h4 id="vector-search-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
+| Result | `result` | object ([result](#vector-search-result)) | Result of the vector search operation. |
 | Status | `status` | string | Vector search status. |
 </div>
 
 <details>
-<summary> Output Objects in Vector Search</summary>
+<summary> Referenced Objects</summary>
+<h4 id="vector-search-result">Result <sup><small><small>Referenced in <a href="#vector-search-output">Output</a></small></small></sup></h4>
 
-<h4 id="vector-search-result">Result</h4>
+Result of the vector search operation.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| IDs | `ids` | array | The ids returned from the vector search operation. |
-| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
-| [Points](#vector-search-points) | `points` | array | The points returned from the vector search operation. |
-| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
+| IDs | `ids` | array[string] | The ids returned from the vector search operation. |
+| Points | `points` | array[object] | The points returned from the vector search operation. |
+| Vectors | `vectors` | array[array] | The vectors returned from the vector search operation. |
+| Metadata | `metadata` | array[object] | The metadata returned from the vector search operation. |
 </div>
+
 </details>
 
 
@@ -106,26 +105,23 @@ Perform a vector search on a collection
 
 Insert multiple vector points into a collection
 
+<h4 id="batch-upsert-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to upsert the point into. |
 | Array ID (required) | `array-id` | array[string] | The array of id. |
-| [Array Metadata](#batch-upsert-array-metadata) | `array-metadata` | array[object] | The array of vector metadata payload. |
+| Array Metadata | `array-metadata` | array[object] | The array of vector metadata payload. |
 | Array Vector (required) | `array-vector` | array[array] | The array of vector values. |
-| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details>  |
+| Ordering | `ordering` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details></small></small> | The ordering guarantees of the batch upsert. |
 </div>
 
-
-
-
-
-
+<h4 id="batch-upsert-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Batch upsert status. |
 </div>
@@ -135,26 +131,23 @@ Insert multiple vector points into a collection
 
 Upsert a vector point into a collection
 
+<h4 id="upsert-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPSERT` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to upsert the point into. |
 | ID (required) | `id` | string | The ID of the point. |
 | Metadata | `metadata` | object | The vector metadata payload. |
 | Vector (required) | `vector` | array[number] | An array of dimensions for the vector value. |
-| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details>  |
+| Ordering | `ordering` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details></small></small> | The ordering guarantees of the batch upsert. |
 </div>
 
-
-
-
-
-
+<h4 id="upsert-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Upsert status. |
 </div>
@@ -164,25 +157,22 @@ Upsert a vector point into a collection
 
 Delete vector points from a collection
 
+<h4 id="delete-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to delete the object from. |
 | ID | `id` | string | The ID of the point. |
 | Filter | `filter` | object | The properties filter to be applied to the data with Qdrant filter, please refer to [filter section](https://api.qdrant.tech/api-reference/points/delete-points). |
-| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details>  |
+| Ordering | `ordering` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details></small></small> | The ordering guarantees of the batch upsert. |
 </div>
 
-
-
-
-
-
+<h4 id="delete-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete status. |
 </div>
@@ -192,23 +182,20 @@ Delete vector points from a collection
 
 Create a collection
 
+<h4 id="create-collection-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_COLLECTION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to create. |
 | Config (required) | `config` | object | The configuration of the collection. Please refer to [here](https://api.qdrant.tech/api-reference/collections/create-collection). |
 </div>
 
-
-
-
-
-
+<h4 id="create-collection-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create collection status. |
 </div>
@@ -218,22 +205,19 @@ Create a collection
 
 Delete a collection
 
+<h4 id="delete-collection-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE_COLLECTION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to delete. |
 </div>
 
-
-
-
-
-
+<h4 id="delete-collection-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete collection status. |
 </div>

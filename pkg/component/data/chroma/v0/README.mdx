@@ -43,8 +43,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | Fill in your Chroma API key.  |
-| Chroma URL Endpoint (required) | `url` | string | Fill in your Chroma hosted public URL endpoint with port, e.g http://1.2.3:8000.  |
+| API Key (required) | `api-key` | string | Fill in your Chroma API key. |
+| Chroma URL Endpoint (required) | `url` | string | Fill in your Chroma hosted public URL endpoint with port, e.g http://1.2.3:8000. |
 
 </div>
 
@@ -58,27 +58,24 @@ ${connection.<my-connection-id>}`.
 
 Upsert multiple vector items into a collection, existing items will be updated
 
+<h4 id="batch-upsert-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to upsert the item into. |
 | Array ID (required) | `array-id` | array[string] | The array of id. |
-| [Array Metadata](#batch-upsert-array-metadata) (required) | `array-metadata` | array[object] | The array of vector metadata. |
+| Array Metadata (required) | `array-metadata` | array[object] | The array of vector metadata. |
 | Array Vector (required) | `array-vector` | array[array] | The array of vector values. |
 | Array Document | `array-document` | array[string] | The array of document string values. |
 | Array URI | `array-uri` | array[string] | The array of uri. |
 </div>
 
-
-
-
-
-
+<h4 id="batch-upsert-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Batch add status. |
 </div>
@@ -88,9 +85,10 @@ Upsert multiple vector items into a collection, existing items will be updated
 
 Upsert a vector item into a collection, existing item will be updated
 
+<h4 id="upsert-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPSERT` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to upsert the item into. |
@@ -101,14 +99,10 @@ Upsert a vector item into a collection, existing item will be updated
 | URI | `uri` | string | The uri of the item. |
 </div>
 
-
-
-
-
-
+<h4 id="upsert-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Add status. |
 </div>
@@ -118,9 +112,10 @@ Upsert a vector item into a collection, existing item will be updated
 
 Perform a vector search on a collection
 
+<h4 id="query-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_QUERY` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to perform vector similarity search on. |
@@ -131,33 +126,31 @@ Perform a vector search on a collection
 | Fields | `fields` | array[string] | The fields to be returned from the vector search operation. |
 </div>
 
-
-
-
-
-
+<h4 id="query-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Result](#query-result) | `result` | object | Result of the vector search operation. |
+| Result | `result` | object ([result](#query-result)) | Result of the vector search operation. |
 | Status | `status` | string | Vector search status. |
 </div>
 
 <details>
-<summary> Output Objects in Query</summary>
+<summary> Referenced Objects</summary>
+<h4 id="query-result">Result <sup><small><small>Referenced in <a href="#query-output">Output</a></small></small></sup></h4>
 
-<h4 id="query-result">Result</h4>
+Result of the vector search operation.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| IDs | `ids` | array | The ids returned from the vector search operation. |
-| [Items](#query-items) | `items` | array | The items returned from the vector search operation. |
-| [Metadata](#query-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
-| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
+| IDs | `ids` | array[string] | The ids returned from the vector search operation. |
+| Items | `items` | array[object] | The items returned from the vector search operation. |
+| Vectors | `vectors` | array[array] | The vectors returned from the vector search operation. |
+| Metadata | `metadata` | array[object] | The metadata returned from the vector search operation. |
 </div>
+
 </details>
 
 
@@ -165,9 +158,10 @@ Perform a vector search on a collection
 
 Delete vector items from a collection
 
+<h4 id="delete-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to delete the object from. |
@@ -176,14 +170,10 @@ Delete vector items from a collection
 | Filter Document | `filter-document` | string | The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents). |
 </div>
 
-
-
-
-
-
+<h4 id="delete-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete status. |
 </div>
@@ -193,9 +183,10 @@ Delete vector items from a collection
 
 Create a collection
 
+<h4 id="create-collection-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_COLLECTION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to create. |
@@ -204,14 +195,10 @@ Create a collection
 | Get or Create | `get-or-create` | boolean | If true, the collection will be created if it does not exist. |
 </div>
 
-
-
-
-
-
+<h4 id="create-collection-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create collection status. |
 </div>
@@ -221,22 +208,19 @@ Create a collection
 
 Delete a collection
 
+<h4 id="delete-collection-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE_COLLECTION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to delete. |
 </div>
 
-
-
-
-
-
+<h4 id="delete-collection-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete collection status. |
 </div>

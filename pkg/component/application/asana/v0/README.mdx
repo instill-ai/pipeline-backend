@@ -41,7 +41,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Token (required) | `token` | string | Fill in your Asana Personal Access Token (PAT). You can generate one from <a href="https://app.asana.com/0/my-apps">developer console</a>.  |
+| Token (required) | `token` | string | Fill in your Asana Personal Access Token (PAT). You can generate one from <a href="https://app.asana.com/0/my-apps">developer console</a>. |
 
 </div>
 
@@ -55,105 +55,49 @@ ${connection.<my-connection-id>}`.
 
 Create, Update, Delete, Read and Duplicate goal in Asana.
 
+<h4 id="crud-goal-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRUD_GOAL` |
-| [Action](#crud-goal-action) | `action` | object | action. |
+| Action | `action` | object | action. |
 </div>
 
-
-
-
-<details>
-<summary>The <code>action</code> Object </summary>
-
-<h4 id="crud-goal-action">Action</h4>
-
-`action` must fulfill one of the following schemas:
-
-<h5 id="crud-goal-get"><code>Get</code></h5>
-
-Get Goal.
-
+<h4 id="crud-goal-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"get"`   |
-| Goal ID | `goal-gid` | string |  Globally unique identifier (GID) for the goal. You can find the GID of a goal from the URL of the goal in Asana. For example, if the URL of the goal is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.  |
-</div>
-
-<h5 id="crud-goal-update"><code>Update</code></h5>
-
-Update Goal.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"update"`   |
-| Due Date | `due-on` | string |  The date on which the goal is due. In the format YYYY-MM-DD.  |
-| Goal ID | `goal-gid` | string |  Globally unique identifier (GID) for the goal. You can find the GID of a goal from the URL of the goal in Asana. For example, if the URL of the goal is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.  |
-| Liked | `liked` | boolean |  Whether the goal is liked by the user.  |
-| Goal Name | `name` | string |  The name of the goal.  |
-| Goal Note | `notes` | string |  The notes of the goal.  |
-| Start Date | `start-on` | string |  The date on which the goal starts. In the format YYYY-MM-DD.  |
-| Status | `status` | string |  The current status of this goal. When the goal is open, its status can be green, yellow, and red to reflect "On Track", "At Risk", and "Off Track", respectively. When the goal is closed, the value can be missed, achieved, partial, or dropped.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`green`</li><li>`yellow`</li><li>`red`</li><li>`missed`</li><li>`achieved`</li><li>`partial`</li><li>`dropped`</li></ul></details>  |
-</div>
-
-<h5 id="crud-goal-delete"><code>Delete</code></h5>
-
-Delete Goal.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"delete"`   |
-| Goal ID | `goal-gid` | string |  Globally unique identifier (GID) for the goal. You can find the GID of a goal from the URL of the goal in Asana. For example, if the URL of the goal is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.  |
-</div>
-
-<h5 id="crud-goal-create"><code>Create</code></h5>
-
-Create Goal.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"create"`   |
-| Due Date | `due-on` | string |  The date on which the goal is due. In the format YYYY-MM-DD.  |
-| Liked | `liked` | boolean |  Whether the goal is liked by the user.  |
-| Goal Name | `name` | string |  The name of the goal.  |
-| Goal Note | `notes` | string |  The notes of the goal.  |
-| Owner | `owner` | string |  User GID of the Owner. You can find one by filling the workspace id in the <a href="https://developers.asana.com/reference/getusers">Asana API Playground</a>.  |
-| Start Date | `start-on` | string |  The date on which the goal starts. In the format YYYY-MM-DD.  |
-| Time Period | `time-period` | string |  GID of the time period. You can find one by filling the workspace id in the <a href="https://developers.asana.com/reference/gettimeperiods">Asana API Playground</a>.  |
-| Workspace | `workspace` | string |  GID of the workspace.  You can find one by filling the access token in the <a href="https://developers.asana.com/reference/getworkspaces">Asana API Playground</a>.  |
-</div>
-</details>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Goal ID (optional) | `gid` | string | Globally unique identifier (GID) for the goal. |
 | Goal Name (optional) | `name` | string | The name of the goal. |
-| [Owner](#crud-goal-owner) (optional) | `owner` | object | The owner of the goal. |
+| Owner (optional) | `owner` | object ([owner](#crud-goal-owner)) | The owner of the goal. |
 | Goal Note (optional) | `notes` | string | The notes of the goal. |
 | Goal HTML Note (optional) | `html-notes` | string | The notes of the goal in HTML format. |
 | Due Date (optional) | `due-on` | string | The date on which the goal is due. In the format YYYY-MM-DD. |
 | Start Date (optional) | `start-on` | string | The date on which the goal starts. In the format YYYY-MM-DD. |
 | Liked (optional) | `liked` | boolean | Whether the goal is liked by the user. |
-| [Likes](#crud-goal-likes) (optional) | `likes` | array[object] | The users who likes the goal. |
+| Likes (optional) | `likes` | array[object ([likes](#crud-goal-likes))] | The users who likes the goal. |
 </div>
 
 <details>
-<summary> Output Objects in Crud Goal</summary>
+<summary> Referenced Objects</summary>
+<h4 id="crud-goal-likes">Likes <sup><small><small>Referenced in <a href="#crud-goal-output">Output</a></small></small></sup></h4>
 
-<h4 id="crud-goal-owner">Owner</h4>
+The users who likes the goal.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Like ID | `like-gid` | string | Globally unique identifier (GID) for the like. |
+| User ID | `user-gid` | string | Globally unique identifier (GID) for the user. |
+| User Name | `name` | string | The name of the user. |
+</div>
+
+<h4 id="crud-goal-owner">Owner <sup><small><small>Referenced in <a href="#crud-goal-output">Output</a></small></small></sup></h4>
+
+The owner of the goal.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -163,16 +107,6 @@ Create Goal.
 | Owner Name | `name` | string | The name of the owner. |
 </div>
 
-<h4 id="crud-goal-likes">Likes</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Like ID | `like-gid` | string | Globally unique identifier (GID) for the like. |
-| User Name | `name` | string | The name of the user. |
-| User ID | `user-gid` | string | Globally unique identifier (GID) for the user. |
-</div>
 </details>
 
 
@@ -180,172 +114,29 @@ Create Goal.
 
 Create, Update, Delete, Read and Duplicate Task in Asana.
 
+<h4 id="crud-task-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRUD_TASK` |
-| [Action](#crud-task-action) | `action` | object | Action. |
+| Action | `action` | object | Action. |
 </div>
 
-
-
-
-<details>
-<summary>The <code>action</code> Object </summary>
-
-<h4 id="crud-task-action">Action</h4>
-
-`action` must fulfill one of the following schemas:
-
-<h5 id="crud-task-get"><code>Get</code></h5>
-
-Get Task.
-
+<h4 id="crud-task-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"get"`   |
-| Task ID | `task-gid` | string |  Globally unique identifier (GID) for the task.  |
-</div>
-
-<h5 id="crud-task-update"><code>Update</code></h5>
-
-Update Task.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"update"`   |
-| Approval Status | `approval-status` | string |  The approval status of the task. If you set completed to true, this field will be set to approved.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`pending`</li><li>`approved`</li><li>`rejected`</li><li>`changes_requested`</li></ul></details>  |
-| Assignee | `assignee` | string |  GID of the assignee.  |
-| Completed | `completed` | boolean |  Whether the task is currently marked complete.  |
-| Liked | `liked` | boolean |  Whether the task is liked by the user.  |
-| Name of the task | `name` | string |  Name of the task. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.  |
-| Notes of the task | `notes` | string |  Free-form textual information associated with the task (i.e. its description).  |
-| Parent Task | `parent` | string |  GID of the parent task.  |
-| Resource Subtype | `resource-subtype` | string |  The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`default_task`</li><li>`milestone`</li><li>`section`</li><li>`approval`</li><li>`custom`</li></ul></details>  |
-| Task ID | `task-gid` | string |  Globally unique identifier (GID) for the task.  |
-</div>
-
-<h5 id="crud-task-delete"><code>Delete</code></h5>
-
-Delete Task.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"delete"`   |
-| Task ID | `task-gid` | string |  Globally unique identifier (GID) for the task.  |
-</div>
-
-<h5 id="crud-task-create"><code>Create</code></h5>
-
-Create Task.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"create"`   |
-| Approval Status | `approval-status` | string |  The approval status of the task. If you set completed to true, this field will be set to approved.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`pending`</li><li>`approved`</li><li>`rejected`</li><li>`changes_requested`</li></ul></details>  |
-| Assignee | `assignee` | string |  GID of the assignee.  |
-| Completed | `completed` | boolean |  Whether the task is currently marked complete.  |
-| Due Date & Time | `due-at` | string |  Date and time on which work begins for the task, or null if the task has no start time. This takes an ISO 8601 date string in UTC.  |
-| Liked | `liked` | boolean |  Whether the task is liked by the user.  |
-| Task Name | `name` | string |  The name of the task.  |
-| Task Notes | `notes` | string |  The notes of the task.  |
-| Parent Task | `parent` | string |  GID of the parent task.  |
-| Resource Subtype | `resource-subtype` | string |  The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`default_task`</li><li>`milestone`</li><li>`section`</li><li>`approval`</li><li>`custom`</li></ul></details>  |
-| Start Date & Time | `start-at` | string |  The UTC date and time on which this task is due, or null if the task has no due time. This takes an ISO 8601 date string in UTC.  |
-| Workspace | `workspace` | string |  GID of the workspace.  You can find one by filling the access token in the <a href="https://developers.asana.com/reference/getworkspaces">Asana API Playground</a>.  |
-</div>
-
-<h5 id="crud-task-duplicate"><code>Duplicate</code></h5>
-
-Duplicate Task.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"duplicate"`   |
-| Name | `name` | string |  Name of the new task. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.  |
-| Task ID | `task-gid` | string |  Globally unique identifier (GID) for the task.  |
-</div>
-
-<h5 id="crud-task-set-parent"><code>Set Parent</code></h5>
-
-Set Parent Task.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"set parent"`   |
-| Parent Task | `parent` | string |  GID of the parent task.  |
-| Task ID | `task-gid` | string |  Globally unique identifier (GID) for the task.  |
-</div>
-
-<h5 id="crud-task-edit-tag"><code>Edit Tag</code></h5>
-
-Edit Tag.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"edit tag"`   |
-| Edit option | `edit-option` | string |  Edit option. You can choose to add or remove the tag.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`add`</li><li>`remove`</li></ul></details>  |
-| Tag ID | `tag-gid` | string |  Globally unique identifier (GID) for the tag.  |
-| Task ID | `task-gid` | string |  Globally unique identifier (GID) for the task.  |
-</div>
-
-<h5 id="crud-task-edit-follower"><code>Edit Follower</code></h5>
-
-Edit Follower.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"edit follower"`   |
-| Edit option | `edit-option` | string |  Edit option. You can choose to add or remove the follower.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`add`</li><li>`remove`</li></ul></details>  |
-| Followers | `followers` | string |  This can either be the string "me", an email, or the gid of a user. For multiple followers, separate them with commas.  |
-| Task ID | `task-gid` | string |  Globally unique identifier (GID) for the task.  |
-</div>
-
-<h5 id="crud-task-edit-project"><code>Edit Project</code></h5>
-
-Edit Project.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"edit project"`   |
-| Edit option | `edit-option` | string |  Edit option. You can choose to add or remove the project.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`add`</li><li>`remove`</li></ul></details>  |
-| Project ID | `project-gid` | string |  Globally unique identifier (GID) for the project.  |
-| Task ID | `task-gid` | string |  Globally unique identifier (GID) for the task.  |
-</div>
-</details>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (optional) | `gid` | string | Globally unique identifier (GID) for the task. |
 | Task Name (optional) | `name` | string | The name of the task. |
 | Task Notes (optional) | `notes` | string | The notes of the task. |
 | Task Notes in HTML Format (optional) | `html-notes` | string | The notes of the task in HTML format. |
 | Due Date (optional) | `due-on` | string | The date on which the task is due. In the format YYYY-MM-DD. |
-| [Projects](#crud-task-projects) (optional) | `projects` | array[object] | The projects of the task. |
+| Projects (optional) | `projects` | array[object ([projects](#crud-task-projects))] | The projects of the task. |
 | Start Date (optional) | `start-on` | string | The date on which the task starts. In the format YYYY-MM-DD. |
 | Liked (optional) | `liked` | boolean | Whether the task is liked by the user. |
-| [Likes](#crud-task-likes) (optional) | `likes` | array[object] | The users who likes the task. |
+| Likes (optional) | `likes` | array[object ([likes](#crud-task-likes))] | The users who likes the task. |
 | Approval Status (optional) | `approval-status` | string | The approval status of the task. If you set completed to true, this field will be set to approved. |
 | Resource Subtype (optional) | `resource-subtype` | string | The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning. |
 | Completed (optional) | `completed` | boolean | Whether the task is currently marked complete. |
@@ -354,9 +145,23 @@ Edit Project.
 </div>
 
 <details>
-<summary> Output Objects in Crud Task</summary>
+<summary> Referenced Objects</summary>
+<h4 id="crud-task-likes">Likes <sup><small><small>Referenced in <a href="#crud-task-output">Output</a></small></small></sup></h4>
 
-<h4 id="crud-task-projects">Projects</h4>
+The users who likes the task.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Like ID | `like-gid` | string | Globally unique identifier (GID) for the like. |
+| User ID | `user-gid` | string | Globally unique identifier (GID) for the user. |
+| User Name | `name` | string | The name of the user. |
+</div>
+
+<h4 id="crud-task-projects">Projects <sup><small><small>Referenced in <a href="#crud-task-output">Output</a></small></small></sup></h4>
+
+The projects of the task.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -366,16 +171,6 @@ Edit Project.
 | Project Name | `name` | string | The name of the project. |
 </div>
 
-<h4 id="crud-task-likes">Likes</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Like ID | `like-gid` | string | Globally unique identifier (GID) for the like. |
-| User Name | `name` | string | The name of the user. |
-| User ID | `user-gid` | string | Globally unique identifier (GID) for the user. |
-</div>
 </details>
 
 
@@ -383,111 +178,23 @@ Edit Project.
 
 Create, Update, Delete, Read and Duplicate project in Asana.
 
+<h4 id="crud-project-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRUD_PROJECT` |
-| [Action](#crud-project-action) | `action` | object | action. |
+| Action | `action` | object | action. |
 </div>
 
-
-
-
-<details>
-<summary>The <code>action</code> Object </summary>
-
-<h4 id="crud-project-action">Action</h4>
-
-`action` must fulfill one of the following schemas:
-
-<h5 id="crud-project-get"><code>Get</code></h5>
-
-Get Project.
-
+<h4 id="crud-project-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"get"`   |
-| Project ID | `project-gid` | string |  Globally unique identifier (GID) for the project.  |
-</div>
-
-<h5 id="crud-project-update"><code>Update</code></h5>
-
-Update Project.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"update"`   |
-| Archived | `archived` | boolean |  Whether the project is archived.  |
-| Update Color | `color` | string |  The color of the project.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`dark-pink`</li><li>`dark-green`</li><li>`dark-blue`</li><li>`dark-red`</li><li>`dark-teal`</li><li>`dark-brown`</li><li>`dark-orange`</li><li>`dark-purple`</li><li>`dark-warm-gray`</li><li>`light-pink`</li><li>`light-green`</li><li>`light-blue`</li><li>`light-red`</li><li>`light-teal`</li><li>`light-brown`</li><li>`light-orange`</li><li>`light-purple`</li><li>`light-warm-gray`</li><li>`none`</li><li>`null`</li></ul></details>  |
-| Due Date | `due-on` | string |  The date on which the project is due. In the format YYYY-MM-DD.  |
-| Project Name | `name` | string |  The name of the project.  |
-| Project Note | `notes` | string |  The notes of the project.  |
-| Update Privacy Setting | `privacy-setting` | string |  The privacy setting of the project.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`public to workspace`</li><li>`private to team`</li><li>`private`</li></ul></details>  |
-| Project ID | `project-gid` | string |  Globally unique identifier (GID) for the project.  |
-| Start Date | `start-on` | string |  The date on which the project starts. In the format YYYY-MM-DD.  |
-</div>
-
-<h5 id="crud-project-delete"><code>Delete</code></h5>
-
-Delete Project.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"delete"`   |
-| Project ID | `project-gid` | string |  Globally unique identifier (GID) for the project.  |
-</div>
-
-<h5 id="crud-project-create"><code>Create</code></h5>
-
-Create Project.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"create"`   |
-| Update Color | `color` | string |  The color of the project.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`dark-pink`</li><li>`dark-green`</li><li>`dark-blue`</li><li>`dark-red`</li><li>`dark-teal`</li><li>`dark-brown`</li><li>`dark-orange`</li><li>`dark-purple`</li><li>`dark-warm-gray`</li><li>`light-pink`</li><li>`light-green`</li><li>`light-blue`</li><li>`light-red`</li><li>`light-teal`</li><li>`light-brown`</li><li>`light-orange`</li><li>`light-purple`</li><li>`light-warm-gray`</li><li>`none`</li><li>`null`</li></ul></details>  |
-| Due Date | `due-on` | string |  The date on which the project is due. In the format YYYY-MM-DD.  |
-| Project Name | `name` | string |  The name of the project.  |
-| Project Note | `notes` | string |  The notes of the project.  |
-| Update Privacy Setting | `privacy-setting` | string |  The privacy setting of the project.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`public to workspace`</li><li>`private to team`</li><li>`private`</li></ul></details>  |
-| Start Date | `start-on` | string |  The date on which the project starts. In the format YYYY-MM-DD.  |
-| Team ID | `team` | string |  Globally unique identifier (GID) for the team of the new project.  |
-| Workspace ID | `workspace` | string |  Globally unique identifier (GID) for the workspace. You can find one by filling the access token in the <a href="https://developers.asana.com/reference/getworkspaces">Asana API Playground</a>.  |
-</div>
-
-<h5 id="crud-project-duplicate"><code>Duplicate</code></h5>
-
-Duplicate Project.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"duplicate"`   |
-| Due Date | `due-on` | string |  Sets the last due date in the duplicated project to the given date. The rest of the due dates will be offset by the same amount as the due dates in the original project. In the format YYYY-MM-DD.  |
-| New Project Name | `name` | string |  The name of the new project.  |
-| Project ID | `project-gid` | string |  Globally unique identifier (GID) for the project. You can find the GID of a goal from the URL of the project in Asana. For example, if the URL of the project is https://app.asana.com/0/goal/1234567890, then the GID is 1234567890.  |
-| Should Skip Weekends (For auto-shifted dates) | `should-skip-weekends` | boolean |  Determines if the auto-shifted dates should skip weekends.  |
-| Start Date | `start-on` | string |  Sets the first start date in the duplicated project to the given date. The rest of the start dates will be offset by the same amount as the start dates in the original project. In the format YYYY-MM-DD.  |
-| Team ID | `team` | string |  Globally unique identifier (GID) for the team of the new project. If team is not defined, the new project will be in the same team as the the original project.  |
-</div>
-</details>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Project ID (optional) | `gid` | string | Globally unique identifier (GID) for the project. |
 | Project Name (optional) | `name` | string | The name of the project. |
-| [Owner](#crud-project-owner) (optional) | `owner` | object | The owner of the project. |
+| Owner (optional) | `owner` | object ([owner](#crud-project-owner)) | The owner of the project. |
 | Project Note (optional) | `notes` | string | The notes of the project. |
 | Project HTML Note (optional) | `html-notes` | string | The notes of the project in HTML format. |
 | Due Date (optional) | `due-on` | string | The date on which the project is due. In the format YYYY-MM-DD. |
@@ -496,17 +203,30 @@ Duplicate Project.
 | Color (optional) | `color` | string | The color of the project. |
 | Privacy Setting (optional) | `privacy-setting` | string | The privacy setting of the project. |
 | Archived (optional) | `archived` | boolean | Whether the project is archived. |
-| [Completed By](#crud-project-completed-by) (optional) | `completed-by` | object | The user who completed the project. |
-| Current Status (optional) | `current-status` | array[json] | The current status of the project. |
-| Custom Fields (optional) | `custom-fields` | array[json] | The custom fields of the project. |
-| Custom Field Settings (optional) | `custom-field-settings` | array[json] | The custom field settings of the project. |
+| Completed By (optional) | `completed-by` | object ([completed-by](#crud-project-completed-by)) | The user who completed the project. |
+| Current Status (optional) | `current-status` | array[object] | The current status of the project. |
+| Custom Fields (optional) | `custom-fields` | array[object] | The custom fields of the project. |
+| Custom Field Settings (optional) | `custom-field-settings` | array[object] | The custom field settings of the project. |
 | Modified At (optional) | `modified-at` | string | The time at which the project was last modified. |
 </div>
 
 <details>
-<summary> Output Objects in Crud Project</summary>
+<summary> Referenced Objects</summary>
+<h4 id="crud-project-completed-by">Completed By <sup><small><small>Referenced in <a href="#crud-project-output">Output</a></small></small></sup></h4>
 
-<h4 id="crud-project-owner">Owner</h4>
+The user who completed the project.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| User ID | `gid` | string | Globally unique identifier (GID) for the user. |
+| User Name | `name` | string | The name of the user. |
+</div>
+
+<h4 id="crud-project-owner">Owner <sup><small><small>Referenced in <a href="#crud-project-output">Output</a></small></small></sup></h4>
+
+The owner of the project.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -516,15 +236,6 @@ Duplicate Project.
 | Owner Name | `name` | string | The name of the owner. |
 </div>
 
-<h4 id="crud-project-completed-by">Completed By</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| User ID | `gid` | string | Globally unique identifier (GID) for the user. |
-| User Name | `name` | string | The name of the user. |
-</div>
 </details>
 
 
@@ -532,101 +243,50 @@ Duplicate Project.
 
 Create, Update, Delete and Read portfolio in Asana.
 
+<h4 id="crud-portfolio-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRUD_PORTFOLIO` |
-| [Action](#crud-portfolio-action) | `action` | object | action. |
+| Action | `action` | object | action. |
 </div>
 
-
-
-
-<details>
-<summary>The <code>action</code> Object </summary>
-
-<h4 id="crud-portfolio-action">Action</h4>
-
-`action` must fulfill one of the following schemas:
-
-<h5 id="crud-portfolio-get"><code>Get</code></h5>
-
-Get Portfolio.
-
+<h4 id="crud-portfolio-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"get"`   |
-| Portfolio ID | `portfolio-gid` | string |  Globally unique identifier (GID) for the portfolio.  |
-</div>
-
-<h5 id="crud-portfolio-update"><code>Update</code></h5>
-
-Update Portfolio.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"update"`   |
-| Update Color | `color` | string |  The color of the portfolio.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`dark-pink`</li><li>`dark-green`</li><li>`dark-blue`</li><li>`dark-red`</li><li>`dark-teal`</li><li>`dark-brown`</li><li>`dark-orange`</li><li>`dark-purple`</li><li>`dark-warm-gray`</li><li>`light-pink`</li><li>`light-green`</li><li>`light-blue`</li><li>`light-red`</li><li>`light-teal`</li><li>`light-brown`</li><li>`light-orange`</li><li>`light-purple`</li><li>`light-warm-gray`</li><li>`none`</li><li>`null`</li></ul></details>  |
-| Portfolio Name | `name` | string |  The name of the portfolio.  |
-| Portfolio ID | `portfolio-gid` | string |  Globally unique identifier (GID) for the portfolio.  |
-| Public | `public` | boolean |  Whether the portfolio is public.  |
-| Workspace | `workspace` | string |  The workspace of the portfolio. Please fill in the Globally unique identifier (GID) for the workspace.  |
-</div>
-
-<h5 id="crud-portfolio-delete"><code>Delete</code></h5>
-
-Delete Portfolio.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"delete"`   |
-| Portfolio ID | `portfolio-gid` | string |  Globally unique identifier (GID) for the portfolio.  |
-</div>
-
-<h5 id="crud-portfolio-create"><code>Create</code></h5>
-
-Create Portfolio.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Action | `action` | string |  Must be `"create"`   |
-| Color | `color` | string |  The color of the portfolio.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`dark-pink`</li><li>`dark-green`</li><li>`dark-blue`</li><li>`dark-red`</li><li>`dark-teal`</li><li>`dark-brown`</li><li>`dark-orange`</li><li>`dark-purple`</li><li>`dark-warm-gray`</li><li>`light-pink`</li><li>`light-green`</li><li>`light-blue`</li><li>`light-red`</li><li>`light-teal`</li><li>`light-brown`</li><li>`light-orange`</li><li>`light-purple`</li><li>`light-warm-gray`</li><li>`none`</li><li>`null`</li></ul></details>  |
-| Portfolio Name | `name` | string |  The name of the portfolio.  |
-| Public | `public` | boolean |  Whether the portfolio is public.  |
-| Workspace | `workspace` | string |  The workspace of the portfolio. Please fill in the Globally unique identifier (GID) for the workspace.  |
-</div>
-</details>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Portfolio ID (optional) | `gid` | string | Globally unique identifier (GID) for the portfolio. |
 | Portfolio Name (optional) | `name` | string | The name of the portfolio. |
-| [Owner](#crud-portfolio-owner) (optional) | `owner` | object | The owner of the portfolio. |
+| Owner (optional) | `owner` | object ([owner](#crud-portfolio-owner)) | The owner of the portfolio. |
 | Due Date (optional) | `due-on` | string | The date on which the portfolio is due. In the format YYYY-MM-DD. |
 | Start Date (optional) | `start-on` | string | The date on which the portfolio starts. In the format YYYY-MM-DD. |
 | Color (optional) | `color` | string | The color of the portfolio. |
 | Public (optional) | `public` | boolean | Whether the portfolio is public. |
-| [Created By](#crud-portfolio-created-by) (optional) | `created-by` | object | The user who created the portfolio. |
-| Current Status (optional) | `current-status` | array[json] | The current status of the portfolio. |
-| Custom Fields (optional) | `custom-fields` | array[json] | The custom fields of the portfolio. |
-| Custom Field Settings (optional) | `custom-field-settings` | array[json] | The custom field settings of the portfolio. |
+| Created By (optional) | `created-by` | object ([created-by](#crud-portfolio-created-by)) | The user who created the portfolio. |
+| Current Status (optional) | `current-status` | array[object] | The current status of the portfolio. |
+| Custom Fields (optional) | `custom-fields` | array[object] | The custom fields of the portfolio. |
+| Custom Field Settings (optional) | `custom-field-settings` | array[object] | The custom field settings of the portfolio. |
 </div>
 
 <details>
-<summary> Output Objects in Crud Portfolio</summary>
+<summary> Referenced Objects</summary>
+<h4 id="crud-portfolio-created-by">Created By <sup><small><small>Referenced in <a href="#crud-portfolio-output">Output</a></small></small></sup></h4>
 
-<h4 id="crud-portfolio-owner">Owner</h4>
+The user who created the portfolio.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| User ID | `gid` | string | Globally unique identifier (GID) for the user. |
+| User Name | `name` | string | The name of the user. |
+</div>
+
+<h4 id="crud-portfolio-owner">Owner <sup><small><small>Referenced in <a href="#crud-portfolio-output">Output</a></small></small></sup></h4>
+
+The owner of the portfolio.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -636,15 +296,6 @@ Create Portfolio.
 | Owner Name | `name` | string | The name of the owner. |
 </div>
 
-<h4 id="crud-portfolio-created-by">Created By</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| User ID | `gid` | string | Globally unique identifier (GID) for the user. |
-| User Name | `name` | string | The name of the user. |
-</div>
 </details>
 
 

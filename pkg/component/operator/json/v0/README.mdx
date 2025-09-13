@@ -36,22 +36,19 @@ The component definition and tasks are defined in the [definition.yaml](https://
 
 Convert JSON to a string
 
+<h4 id="marshal-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_MARSHAL` |
 | JSON (required) | `json` | object | JSON entity to be marshaled. It can be any valid JSON datatype (e.g. number, string, hash, array). |
 </div>
 
-
-
-
-
-
+<h4 id="marshal-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | JSON String | `string` | string | String representation of the JSON input. |
 </div>
@@ -61,22 +58,19 @@ Convert JSON to a string
 
 Convert a string to JSON
 
+<h4 id="unmarshal-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UNMARSHAL` |
 | String (required) | `string` | string | JSON string to be unmarshaled. It can represent any valid JSON datatype (e.g. number, string, hash, array). |
 </div>
 
-
-
-
-
-
+<h4 id="unmarshal-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | JSON | `json` | json | JSON entity extracted from the string input. |
 </div>
@@ -86,23 +80,20 @@ Convert a string to JSON
 
 Process JSON through a `jq` command
 
+<h4 id="jq-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_JQ` |
 | JSON Value | `json-value` | object | JSON entity to be processed by the filter. It can be any valid JSON datatype (e.g. number, string, hash, array). |
 | Filter (required) | `jq-filter` | string | Filter, in `jq` syntax, that will be applied to the JSON input. |
 </div>
 
-
-
-
-
-
+<h4 id="jq-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Results | `results` | array[json] | The `jq` command results. |
 </div>
@@ -135,41 +126,40 @@ to access such fields in a `jq` filter is by wrapping the key in double quotes:
 
 Rename fields in a JSON object with a conflict resolution strategy. If the new field already exists, it will be overwritten by default.
 
+<h4 id="rename-fields-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_RENAME_FIELDS` |
 | JSON (required) | `json` | object | JSON object to be edited. It can be any valid JSON datatype (e.g. number, string, hash, array). |
-| [Fields](#rename-fields-fields) (required) | `fields` | array[object] | An array of objects specifying the fields to be renamed. |
-| Conflict Resolution | `conflict-resolution` | string | Defines how conflicts are handled when the new field already exists in the data. If the new field already exists, it will be overwritten by default. If the new field does not exist, it will be created. When set to 'error', the component will throw an error if the new field already exists. When set to 'skip', the new field will be skipped if it already exists. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`overwrite`</li><li>`skip`</li><li>`error`</li></ul></details>  |
+| Fields (required) | `fields` | array[object ([fields](#rename-fields-field))] | An array of objects specifying the fields to be renamed. |
+| Conflict Resolution | `conflict-resolution` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`overwrite`</li><li>`skip`</li><li>`error`</li></ul></details></small></small> | Defines how conflicts are handled when the new field already exists in the data. If the new field already exists, it will be overwritten by default. If the new field does not exist, it will be created. When set to 'error', the component will throw an error if the new field already exists. When set to 'skip', the new field will be skipped if it already exists. |
 </div>
 
+<h4 id="rename-fields-output">Output</h4>
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| JSON | `json` | json | JSON object with the renamed fields. |
+</div>
 
 <details>
-<summary> Input Objects in Rename Fields</summary>
+<summary> Referenced Objects</summary>
+<h4 id="rename-fields-field">Field <sup><small><small>Referenced in <a href="#rename-fields-input">Input</a></small></small></sup></h4>
 
-<h4 id="rename-fields-fields">Fields</h4>
-
-An array of objects specifying the fields to be renamed.
+Field to be renamed.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| From | `from` | string | The field in the original data that needs to be renamed.  |
-| To | `to` | string | The new name for the field.  |
+| From | `from` | string | The field in the original data that needs to be renamed. |
+| To | `to` | string | The new name for the field. |
 </div>
+
 </details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| JSON | `json` | json | JSON object with the renamed fields. |
-</div>
 
 
 

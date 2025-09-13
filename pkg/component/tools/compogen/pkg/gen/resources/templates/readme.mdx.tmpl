@@ -44,7 +44,7 @@ ${connection.<my-connection-id>}`.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 {{- range . }}
-| {{ anchorSetup . }}{{ if .Required }} (required){{- end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+| {{ anchorSetup . }}{{ if .Required }} (required){{- end }} | `{{ .ID }}` | {{ if .Enum }}{{ .Type }}{{ enumValues .Enum }}{{ else }}{{ .Type }}{{ end }} | {{ .Description }} |
 {{- end }}
 {{- end }}
 
@@ -69,7 +69,7 @@ ${connection.<my-connection-id>}`.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 {{- range $propKey, $prop := $option.Properties }}
-| {{ anchorSetup $prop }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ if $prop.Const }} Must be `"{{ $prop.Const }}"` {{ else }} {{ $prop.Description }}  {{- end }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+| {{ anchorSetup $prop }} | `{{ $propKey }}` | {{ if $prop.Enum }}{{ $prop.Type }}{{ enumValues $prop.Enum }}{{ else }}{{ $prop.Type }}{{ end }} | {{ if $prop.Const }} Must be `"{{ $prop.Const }}"` {{ else }} {{ $prop.Description }}  {{- end }} |
 {{- end }}
 </div>
 {{- end }}
@@ -86,100 +86,40 @@ ${connection.<my-connection-id>}`.
 {{ . }}
 {{- end }}
 {{ if $task.Input }}
+<h4 id="{{ asAnchor $task.Title }}-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `{{ $task.ID }}` |
 {{- range $task.Input }}
-| {{ anchorTaskObject . $task }}{{ if .Required }} (required){{ end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} {{- if .Enum }} {{ enumValues .Enum }} {{ end }} |
+| {{ anchorTaskObject . $task }}{{ if .Required }} (required){{ end }} | `{{ .ID }}` | {{ typeWithEnum . $task }} | {{ .Description }} |
 {{- end }}
 </div>
-{{- end }}
-
-
-{{ if $task.InputObjects -}}
-<details>
-<summary> Input Objects in {{ $task.Title }}</summary>
-{{ range $idx, $objectSchemaMap := $task.InputObjects }}
-{{- range $key, $schema := $objectSchemaMap }}
-{{- if $schema.Properties }}
-{{ insertHeaderByObjectKey $key $task }}
-{{ with $schema.Description }}
-{{ . }}
-{{ end }}
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-{{- range $propKey, $prop := $schema.Properties }}
-| {{ anchorTaskObject $prop $task }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ $prop.Description }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
-{{- end }}
-</div>
-{{- end }}
-{{- end }}
-{{- end }}
-</details>
-{{- end }}
-
-{{ if $task.OneOfs -}}
-{{ range $idx, $oneOf := $task.OneOfs -}}
-{{ range $key, $options := $oneOf -}}
-<details>
-<summary>The <code>{{ $key }}</code> Object </summary>
-
-{{ insertHeaderByObjectKey $key $task }}
-
-`{{ $key }}` must fulfill one of the following schemas:
-{{- range $idx, $option := $options }}
-{{ if $option.Properties }}
-{{ insertHeaderByConstValue $option $task }}
-{{ with $option.Description }}
-{{ . }}
-{{ end }}
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-{{- range $propKey, $prop := $option.Properties }}
-| {{ $prop.Title }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ if $prop.Const }} Must be `"{{ $prop.Const }}"` {{ else }} {{ $prop.Description }} {{- end }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
-{{- end }}
-</div>
-{{- end }}
-{{- end }}
-</details>
-{{- end }}
-{{- end }}
 {{- end }}
 
 {{ if $task.Output -}}
+<h4 id="{{ asAnchor $task.Title }}-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 {{- range $task.Output }}
-| {{ anchorTaskObject . $task }}{{ if not .Required }} (optional){{- end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} |
+| {{ anchorTaskObject . $task }}{{ if not .Required }} (optional){{- end }} | `{{ .ID }}` | {{ typeWithRef . $task }} | {{ .Description }} |
 {{- end }}
 </div>
 {{- end }}
-{{ if $task.OutputObjects }}
+{{ if $task.AllObjects }}
 <details>
-<summary> Output Objects in {{ $task.Title }}</summary>
-{{- range $idx, $objectSchemaMap := $task.OutputObjects }}
-{{- range $key, $schema := $objectSchemaMap }}
-{{- if $schema.Properties }}
-
-{{ insertHeaderByObjectKey $key $task }}
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-{{- range $propKey, $prop := $schema.Properties }}
-| {{ anchorTaskObject $prop $task }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ $prop.Description }} |
-{{- end }}
-</div>
-{{- end }}
+<summary> Referenced Objects</summary>
+{{- range $idx, $objectSchemaMap := $task.AllObjects }}
+{{- range $key := sortedKeys $objectSchemaMap $task }}
+{{- $schema := index $objectSchemaMap $key }}
+{{ insertHeaderWithParents $key (getParents $key $task "") $task }}
+{{ with $schema.Description }}
+{{ . }}
+{{ end }}
+{{ renderObjectDetailsWithKey $key $schema $task }}
 {{- end }}
 {{- end }}
 </details>

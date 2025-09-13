@@ -40,7 +40,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key | `api-key` | string | Fill in your Cohere API key. To find your keys, visit the Cohere dashboard page.  |
+| API Key | `api-key` | string | Fill in your Cohere API key. To find your keys, visit the Cohere dashboard page. |
 
 </div>
 
@@ -54,28 +54,37 @@ ${connection.<my-connection-id>}`.
 
 Cohere's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as "prompts". Designing a prompt is essentially how you "program" a large language model model, usually by providing instructions or some examples of how to successfully complete a task.
 
+<h4 id="text-generation-chat-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
-| Model Name (required) | `model-name` | string | The Cohere command model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`command-r-plus`</li><li>`command-r`</li><li>`command`</li><li>`command-nightly`</li><li>`command-light`</li><li>`command-light-nightly`</li></ul></details>  |
+| Model Name (required) | `model-name` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`command-r-plus`</li><li>`command-r`</li><li>`command`</li><li>`command-nightly`</li><li>`command-light`</li><li>`command-light-nightly`</li></ul></details></small></small> | The Cohere command model to be used. |
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model's behavior is using a generic message as "You are a helpful assistant.". |
 | Documents | `documents` | array[string] | The documents to be used for the model, for optimal performance, the length of each document should be less than 300 words. |
 | Prompt Images | `prompt-images` | array[string] | The prompt images (Note: As for 2024-06-24 Cohere models are not multimodal, so images will be ignored.). |
-| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Each message should adhere to the format: : \{"role": "The message role, i.e. `USER` or `CHATBOT`", "content": "message content"\}. |
+| Chat History | `chat-history` | array[object ([chat-message](#text-generation-chat-chat-message))] | Incorporate external chat history, specifically previous messages within the conversation. Each message should adhere to the format: : \{"role": "The message role, i.e. `USER` or `CHATBOT`", "content": "message content"\}. |
 | Seed | `seed` | integer | The seed (default=42). |
 | Temperature | `temperature` | number | The temperature for sampling (default=0.7). |
 | Top K | `top-k` | integer | Top k for sampling (default=10). |
 | Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate (default=50). |
 </div>
 
+<h4 id="text-generation-chat-output">Output</h4>
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Text | `text` | string | Model Output. |
+| Citations (optional) | `citations` | array[object ([citation](#text-generation-chat-citation))] | Citations. |
+| Usage (optional) | `usage` | object ([command-usage](#text-generation-chat-usage)) | Token Usage on the Cohere Platform Command Models. |
+</div>
 
 <details>
-<summary> Input Objects in Text Generation Chat</summary>
-
-<h4 id="text-generation-chat-chat-history">Chat History</h4>
+<summary> Referenced Objects</summary>
+<h4 id="text-generation-chat-chat-message">Chat Message <sup><small><small>Referenced in <a href="#text-generation-chat-input">Input</a></small></small></sup></h4>
 
 Incorporate external chat history, specifically previous messages within the conversation. Each message should adhere to the format: : \{"role": "The message role, i.e. `USER` or `CHATBOT`", "content": "message content"\}.
 
@@ -83,10 +92,24 @@ Incorporate external chat history, specifically previous messages within the con
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#text-generation-chat-content) | `content` | array | The message content.  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'. |
+| Content | `content` | array[object ([multi-modal-content](#text-generation-chat-multi-modal-content))] | The message content. |
 </div>
-<h4 id="text-generation-chat-content">Content</h4>
+
+<h4 id="text-generation-chat-citation">Citation <sup><small><small>Referenced in <a href="#text-generation-chat-output">Output</a></small></small></sup></h4>
+
+Citations.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Start | `start` | integer | The start position of the citation. |
+| End | `end` | integer | The end position of the citation. |
+| Text | `text` | string | The text body of the citation. |
+</div>
+
+<h4 id="text-generation-chat-content">Content <sup><small><small>Referenced in <a href="#text-generation-chat-chat-message">Chat Message</a></small></small></sup></h4>
 
 The message content.
 
@@ -94,11 +117,12 @@ The message content.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL.  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details>  |
+| Image URL | `image-url` | object ([chat-message](#text-generation-chat-chat-message)) | The image URL. |
+| Text | `text` | string | The text content. |
+| Type | `type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`text`</li><li>`image_url`</li></ul></details></small></small> | The type of the content part. |
 </div>
-<h4 id="text-generation-chat-image-url">Image URL</h4>
+
+<h4 id="text-generation-chat-image-url">Image URL <sup><small><small>Referenced in <a href="#text-generation-chat-content">Content</a></small></small></sup></h4>
 
 The image URL.
 
@@ -106,36 +130,15 @@ The image URL.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
-</div>
-</details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Text | `text` | string | Model Output. |
-| [Citations](#text-generation-chat-citations) (optional) | `citations` | array[object] | Citations. |
-| [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Token Usage on the Cohere Platform Command Models. |
+| URL | `url` | string | Either a URL of the image or the base64 encoded image data. |
 </div>
 
-<details>
-<summary> Output Objects in Text Generation Chat</summary>
+<h4 id="text-generation-chat-multi-modal-content">Multi Modal Content</h4>
 
-<h4 id="text-generation-chat-citations">Citations</h4>
 
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+<h4 id="text-generation-chat-command-usage">Command Usage <sup><small><small>Referenced in <a href="#text-generation-chat-output">Output</a></small></small></sup></h4>
 
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| End | `end` | integer | The end position of the citation. |
-| Start | `start` | integer | The start position of the citation. |
-| Text | `text` | string | The text body of the citation. |
-</div>
-
-<h4 id="text-generation-chat-usage">Usage</h4>
+Token Usage on the Cohere Platform Command Models.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -144,6 +147,7 @@ The image URL.
 | Input Tokens | `input-tokens` | number | The input tokens used by Cohere Models. |
 | Output Tokens | `output-tokens` | number | The output tokens generated by Cohere Models. |
 </div>
+
 </details>
 
 
@@ -151,34 +155,32 @@ The image URL.
 
 An embedding is a list of floating point numbers that captures semantic information about the text that it represents.
 
+<h4 id="text-embeddings-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
-| Embedding Type (required) | `embedding-type` | string | Specifies the return type of embedding, Note that 'binary'/'ubinary' options means the component will return packed unsigned binary embeddings. The length of each binary embedding is 1/8 the length of the float embeddings of the provided model. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`float`</li><li>`int8`</li><li>`uint8`</li><li>`binary`</li><li>`ubinary`</li></ul></details>  |
-| Input Type (required) | `input-type` | string | Specifies the type of input passed to the model. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`search_document`</li><li>`search_query`</li><li>`classification`</li><li>`clustering`</li></ul></details>  |
-| Model Name (required) | `model-name` | string | The Cohere embed model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`embed-english-v3.0`</li><li>`embed-multilingual-v3.0`</li><li>`embed-english-light-v3.0`</li><li>`embed-multilingual-light-v3.0`</li></ul></details>  |
+| Embedding Type (required) | `embedding-type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`float`</li><li>`int8`</li><li>`uint8`</li><li>`binary`</li><li>`ubinary`</li></ul></details></small></small> | Specifies the return type of embedding, Note that 'binary'/'ubinary' options means the component will return packed unsigned binary embeddings. The length of each binary embedding is 1/8 the length of the float embeddings of the provided model. |
+| Input Type (required) | `input-type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`search_document`</li><li>`search_query`</li><li>`classification`</li><li>`clustering`</li></ul></details></small></small> | Specifies the type of input passed to the model. |
+| Model Name (required) | `model-name` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`embed-english-v3.0`</li><li>`embed-multilingual-v3.0`</li><li>`embed-english-light-v3.0`</li><li>`embed-multilingual-light-v3.0`</li></ul></details></small></small> | The Cohere embed model to be used. |
 | Text (required) | `text` | string | The text. |
 </div>
 
-
-
-
-
-
+<h4 id="text-embeddings-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Embedding | `embedding` | array[number] | Embedding of the input text. |
-| [Usage](#text-embeddings-usage) (optional) | `usage` | object | Token usage on the Cohere platform embed models. |
+| Usage (optional) | `usage` | object ([embed-usage](#text-embeddings-usage)) | Token usage on the Cohere platform embed models. |
 </div>
 
 <details>
-<summary> Output Objects in Text Embeddings</summary>
+<summary> Referenced Objects</summary>
+<h4 id="text-embeddings-usage">Usage <sup><small><small>Referenced in <a href="#text-embeddings-output">Output</a></small></small></sup></h4>
 
-<h4 id="text-embeddings-usage">Usage</h4>
+Token usage on the Cohere platform embed models.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -186,6 +188,21 @@ An embedding is a list of floating point numbers that captures semantic informat
 | :--- | :--- | :--- | :--- |
 | Token Count | `tokens` | number | The token count used by Cohere Models. |
 </div>
+
+<h4 id="text-embeddings-multi-modal-content">Multi Modal Content</h4>
+
+
+<h4 id="text-embeddings-embed-usage">Embed Usage <sup><small><small>Referenced in <a href="#text-embeddings-output">Output</a></small></small></sup></h4>
+
+Token usage on the Cohere platform embed models.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Token Count | `tokens` | number | The token count used by Cohere Models. |
+</div>
+
 </details>
 
 
@@ -193,36 +210,37 @@ An embedding is a list of floating point numbers that captures semantic informat
 
 Rerank models sort text inputs by semantic relevance to a specified query. They are often used to sort search results returned from an existing search solution.
 
+<h4 id="text-reranking-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_RERANKING` |
-| Model Name (required) | `model-name` | string | The Cohere rerank model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`rerank-english-v3.0`</li><li>`rerank-multilingual-v3.0`</li></ul></details>  |
+| Model Name (required) | `model-name` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`rerank-english-v3.0`</li><li>`rerank-multilingual-v3.0`</li></ul></details></small></small> | The Cohere rerank model to be used. |
 | Query (required) | `query` | string | The query. |
 | Documents (required) | `documents` | array[string] | The documents to be used for reranking. |
 | Top N | `top-n` | integer | The number of most relevant documents or indices to return. Defaults to the length of the documents (default=3). |
 | Maximum Number of Chunks per Document | `max-chunks-per-doc` | integer | The maximum number of chunks to produce internally from a document (default=10). |
 </div>
 
-
-
-
-
-
+<h4 id="text-reranking-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Reranked Documents | `ranking` | array[string] | Reranked documents. |
 | Reranked Documents Relevance (optional) | `relevance` | array[number] | The relevance scores of the reranked documents. |
-| [Usage](#text-reranking-usage) (optional) | `usage` | object | Search Usage on the Cohere Platform Rerank Models. |
+| Usage (optional) | `usage` | object ([rerank-usage](#text-reranking-usage)) | Search Usage on the Cohere Platform Rerank Models. |
 </div>
 
 <details>
-<summary> Output Objects in Text Reranking</summary>
+<summary> Referenced Objects</summary>
+<h4 id="text-reranking-multi-modal-content">Multi Modal Content</h4>
 
-<h4 id="text-reranking-usage">Usage</h4>
+
+<h4 id="text-reranking-usage">Usage <sup><small><small>Referenced in <a href="#text-reranking-output">Output</a></small></small></sup></h4>
+
+Search Usage on the Cohere Platform Rerank Models.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -230,6 +248,18 @@ Rerank models sort text inputs by semantic relevance to a specified query. They 
 | :--- | :--- | :--- | :--- |
 | Search Counts | `search-counts` | number | The search count used by Cohere Models. |
 </div>
+
+<h4 id="text-reranking-rerank-usage">Rerank Usage <sup><small><small>Referenced in <a href="#text-reranking-output">Output</a></small></small></sup></h4>
+
+Search Usage on the Cohere Platform Rerank Models.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Search Counts | `search-counts` | number | The search count used by Cohere Models. |
+</div>
+
 </details>
 
 

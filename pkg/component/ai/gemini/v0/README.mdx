@@ -1,0 +1,714 @@
+---
+title: "Gemini"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a Gemini component https://github.com/instill-ai/instill-core"
+---
+
+The Gemini component is an AI component that allows users to connect to Google's Gemini multimodal AI models.
+It can carry out the following tasks:
+- [Chat](#chat)
+
+
+
+## Release Stage
+
+`Alpha`
+
+
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/gemini/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/gemini/v0/config/tasks.yaml) files respectively.
+
+
+
+
+## Setup
+
+
+In order to communicate with Google, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://docs.instill-ai.com/docs/set-up-component)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| API Key | `api-key` | string | Fill in your Gemini API key. To find your keys, visit your Gemini's API Keys page. |
+
+</div>
+
+
+
+
+
+## Supported Tasks
+
+### Chat
+
+Gemini's multimodal models understand text and images. They generate text outputs in response to prompts that can include text and images. The inputs to these models are also referred to as "prompts". Designing a prompt is how you guide the model, usually by providing instructions or examples to successfully complete a task.
+
+<h4 id="chat-input">Input</h4>
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CHAT` |
+| Stream | `stream` | boolean | Whether to incrementally stream the response using server-sent events (SSE). |
+| Prompt (required) | `prompt` | string | The main text instruction or query for the model. |
+| Images | `images` | array[string] | URI references or base64 content of input images. |
+| Documents | `documents` | array[string] | URI references or base64 content of input documents. Different vendors might have different constraints on the document format. For example, Gemini supports only PDF. |
+| System Message | `system-message` | string | Instruction to set the assistant's behavior, tone, or persona. Different vendors might name this field differently. |
+| Chat History | `chat-history` | array[object ([chat-history](#chat-content))] | Conversation history, each message includes a role and content. |
+| Max Output Token | `max-output-tokens` | integer | The maximum number of tokens to generate in the model output. |
+| Temperature | `temperature` | number | A parameter that controls the randomness and creativity of a large language model's output by adjusting the probability of the next word it chooses. A low temperature (e.g., near 0) produces more deterministic, focused, and consistent text, while a high temperature (e.g., near 1) leads to more creative, random, and varied output. |
+| Top-K | `top-k` | integer | A text generation parameter that limits the selection of the next token to the K most probable tokens, discarding the rest to control randomness and maintain coherence. By specifying a fixed number of top tokens, `top-k` acts as a "safety net," preventing nonsensical choices, but a small K can also stifle creativity and lead to repetitive outputs. It is often used in conjunction with other parameters like temperature and `top-p` to fine-tune the LLM's output. Note that OpenAI and Mistral models don't have the `top-k` exposed. |
+| Top-P | `top-p` | number | A parameter, also known as nucleus sampling, that controls the randomness and creativity of the generated text by selecting a dynamic subset of tokens. It works by sorting all possible next tokens by their probability, and then summing their probabilities from highest to lowest until the cumulative sum reaches the specified `top-p` value (a number between 0 and 1). The model then randomly selects the next token only from this "nucleus" of high-probability tokens. A higher `top-p` value creates a larger, more diverse set of possible words, leading to more creative and potentially unpredictable output, while a lower `top-p` value restricts the choice to a smaller, more focused set of highly probable words, resulting in more factual and conservative output. |
+| Seed | `seed` | integer | A random seed used to control the stochasticity of text generation to produce repeatable outputs |
+| Model (required) | `model` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`gemini-2.5-pro`</li><li>`gemini-2.5-flash`</li><li>`gemini-2.0-flash-lite`</li></ul></details></small></small> | ID of the model to use. The value is one of the following: `gemini-2.5-pro`: Optimized for enhanced thinking and reasoning, multimodal understanding, advanced coding, and more. `gemini-2.5-flash`: Optimized for Adaptive thinking, cost efficiency. `gemini-2.0-flash-lite`: Optimized for Most cost-efficient model supporting high throughput. |
+| Contents | `contents` | array[object ([content](#chat-content))] | The input contents to the model. Each item represents a user or model turn composed of parts (text or images). |
+| Tools | `tools` | array[object ([tool](#chat-tool))] | Tools available to the model, e.g., function declarations. |
+| Tool Config | `tool-config` | object ([tool-config](#chat-tool-config)) | Configuration for tool usage and function calling. |
+| Safety Settings | `safety-settings` | array[object ([safety-setting](#chat-safety-setting))] | Safety settings for content filtering. |
+| System Instruction | `system-instruction` | object ([content](#chat-content)) | A system instruction to guide the model behavior. |
+| Generation Config | `generation-config` | object ([generation-config](#chat-generation-config)) | Generation configuration for the request. |
+| Cached Content | `cached-content` | string | The name of a cached content to use as context. Format: cachedContents/\{cachedContent\}. |
+</div>
+
+<h4 id="chat-output">Output</h4>
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Candidates | `candidates` | array[object ([candidate](#chat-candidate))] | Generated candidates from the model. |
+| Usage Metadata (optional) | `usage-metadata` | object ([usage-metadata](#chat-usage-metadata)) | Metadata on the generation request's token usage. |
+| Prompt Feedback (optional) | `prompt-feedback` | object ([prompt-feedback](#chat-prompt-feedback)) | Feedback on the prompt including any safety blocking information. |
+| Model Version (optional) | `model-version` | string | The model version used to generate the response. |
+| Response ID (optional) | `response-id` | string | Identifier for this response. |
+| Texts (optional) | `texts` | array[string] | The array of texts generated by the model. |
+| Usage | `usage` | object | Token usage statistics: prompt tokens, completion tokens, total tokens, etc. |
+</div>
+
+<details>
+<summary> Referenced Objects</summary>
+<h4 id="chat-modality-token-count">Modality Token Count <sup><small><small>Referenced in <a href="#chat-usage-metadata">Usage Metadata</a></small></small></sup></h4>
+
+Token counting info for a single modality.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Modality | `modality` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`MODALITY_UNSPECIFIED`</li><li>`TEXT`</li><li>`IMAGE`</li><li>`VIDEO`</li><li>`AUDIO`</li><li>`DOCUMENT`</li></ul></details></small></small> | Content Part modality. Indicates the media type of a content part. The value is one of the following: `MODALITY_UNSPECIFIED`: Unspecified modality. `TEXT`: Plain text. `IMAGE`: Image. `VIDEO`: Video. `AUDIO`: Audio. `DOCUMENT`: Document, e.g. PDF. |
+| Token Count | `token-count` | integer | Number of tokens. |
+</div>
+
+<h4 id="chat-candidate">Candidate <sup><small><small>Referenced in <a href="#chat-output">Output</a></small></small></sup></h4>
+
+Model output candidate containing content and annotations.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Average Logprobs | `avg-logprobs` | number | Average log probability score of the candidate. |
+| Citation Metadata | `citation-metadata` | object ([citation-metadata](#chat-citation-metadata)) | Citation metadata for generated content, listing sources. |
+| Content | `content` | object ([content](#chat-content)) | Generated content for this candidate. |
+| Finish Reason | `finish-reason` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`FINISH_REASON_UNSPECIFIED`</li><li>`STOP`</li><li>`MAX_TOKENS`</li><li>`SAFETY`</li><li>`RECITATION`</li><li>`LANGUAGE`</li><li>`OTHER`</li><li>`BLOCKLIST`</li><li>`PROHIBITED_CONTENT`</li><li>`SPII`</li><li>`MALFORMED_FUNCTION_CALL`</li><li>`IMAGE_SAFETY`</li><li>`UNEXPECTED_TOOL_CALL`</li><li>`TOO_MANY_TOOL_CALLS`</li></ul></details></small></small> | Reason why the model stopped generating for a candidate. The value is one of the following: `FINISH_REASON_UNSPECIFIED`: Default value. This value is unused. `STOP`: Natural stop point of the model or provided stop sequence. `MAX_TOKENS`: The maximum number of tokens as specified in the request was reached. `SAFETY`: The response candidate content was flagged for safety reasons. `RECITATION`: The response candidate content was flagged for recitation reasons. `LANGUAGE`: The response candidate content was flagged for using an unsupported language. `OTHER`: Unknown reason. `BLOCKLIST`: Token generation stopped because the content contains forbidden terms. `PROHIBITED_CONTENT`: Token generation stopped for potentially containing prohibited content. `SPII`: Token generation stopped because the content potentially contains Sensitive Personally IDentifiable Information (SPII). `MALFORMED_FUNCTION_CALL`: The function call generated by the model is invalid. `IMAGE_SAFETY`: Token generation stopped because generated images contain safety violations. `UNEXPECTED_TOOL_CALL`: Model generated a tool call but no tools were enabled in the request. `TOO_MANY_TOOL_CALLS`: Model called too many tools consecutively, thus the system exited execution. |
+| Grounding Attributions | `grounding-attributions` | array[object ([grounding-attribution](#chat-grounding-attribution))] | Attribution information for sources that contributed to a grounded answer. |
+| Grounding Metadata | `grounding-metadata` | object ([grounding-metadata](#chat-grounding-metadata)) | Metadata returned to client when grounding is enabled. |
+| Index | `index` | integer | Position of the candidate in the returned list. |
+| Logprobs Result | `logprobs-result` | object ([logprobs-result](#chat-logprobs-result)) | Log probabilities for generated tokens. |
+| Safety Ratings | `safety-ratings` | array[object ([safety-rating](#chat-safety-rating))] | Safety ratings applied to this candidate. |
+| Token Count | `token-count` | integer | Token count for this candidate. |
+| URL Context Metadata | `url-context-metadata` | object ([url-context-metadata](#chat-url-context-metadata)) | Metadata related to URL context retrieval tool. |
+</div>
+
+<h4 id="chat-content">Content <sup><small><small>Referenced in <a href="#chat-candidate">Candidate</a>, <a href="#chat-grounding-attribution">Grounding Attribution</a>, <a href="#chat-input">Input</a></small></small></sup></h4>
+
+Base structured datatype with producer role and ordered parts.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Parts | `parts` | array[object ([part](#chat-part))] | Parts of the content. |
+| Role | `role` | string | The producer of the content. Useful to set for multi-turn conversations, otherwise can be left blank or unset. |
+</div>
+
+<h4 id="chat-citation-metadata">Citation Metadata <sup><small><small>Referenced in <a href="#chat-candidate">Candidate</a></small></small></sup></h4>
+
+Citation metadata for generated content, listing sources.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Citations | `citations` | array[object ([citation-source](#chat-citation-source))] |  |
+</div>
+
+<h4 id="chat-citation-source">Citation Source <sup><small><small>Referenced in <a href="#chat-citation-metadata">Citation Metadata</a></small></small></sup></h4>
+
+Source of a citation including where the content was derived.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| End Index | `end-index` | integer |  |
+| Start Index | `start-index` | integer |  |
+| Title | `title` | string |  |
+| URI | `uri` | string |  |
+</div>
+
+<h4 id="chat-dynamic-retrieval-config">Dynamic Retrieval Config <sup><small><small>Referenced in <a href="#chat-google-search-retrieval">Google Search Retrieval</a></small></small></sup></h4>
+
+Specifies the dynamic retrieval configuration for the given source.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Dynamic Threshold | `dynamic-threshold` | number | The threshold to be used in dynamic retrieval. If not set, a system default value is used. |
+| Mode | `mode` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`MODE_UNSPECIFIED`</li><li>`MODE_DYNAMIC`</li></ul></details></small></small> | The mode of the predictor to be used in dynamic retrieval. The value is one of the following: `MODE_UNSPECIFIED`: Always trigger retrieval. `MODE_DYNAMIC`: Run retrieval only when system decides it is necessary. |
+</div>
+
+<h4 id="chat-function-calling-config">Function Calling Config <sup><small><small>Referenced in <a href="#chat-tool-config">Tool Config</a></small></small></sup></h4>
+
+Configuration for specifying function calling behavior.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Allowed Function Names | `allowed-function-names` | array[string] | A set of function names that, when provided, limits the functions the model will call. This should only be set when the Mode is ANY or VALIDATED. Function names should match `[FunctionDeclaration.name]`. When set, model will predict a function call from only allowed function names. |
+| Mode | `mode` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`MODE_UNSPECIFIED`</li><li>`AUTO`</li><li>`ANY`</li><li>`NONE`</li></ul></details></small></small> | Specifies the mode in which function calling should execute. If unspecified, the default value will be set to `AUTO`. The value is one of the following: `MODE_UNSPECIFIED`: Unspecified function calling mode. This value should not be used. `AUTO`: Default model behavior, model decides to predict either a function call or a natural language response. `ANY`: Model is constrained to always predicting a function call only. If "allowedFunctionNames" are set, the predicted function call will be limited to any one of "allowedFunctionNames", else the predicted function call will be any one of the provided "functionDeclarations". `NONE`: Model will not predict any function call. Model behavior is same as when not passing any function declarations. `VALIDATED`: Model decides to predict either a function call or a natural language response, but will validate function calls with constrained decoding. If "allowedFunctionNames" are set, the predicted function call will be limited to any one of "allowedFunctionNames", else the predicted function call will be any one of the provided "functionDeclarations". |
+</div>
+
+<h4 id="chat-function-declaration">Function Declaration <sup><small><small>Referenced in <a href="#chat-tool">Tool</a></small></small></sup></h4>
+
+A function declaration available to the model for function calling.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Description | `description` | string | A brief description of the function. |
+| Name | `name` | string | The name of the function to call. |
+| Parameters | `parameters` | object ([schema](#chat-schema)) | Describes the parameters to this function. Reflects the Open API 3.03 Parameter Object string Key: the name of the parameter. Parameter names are case sensitive. Schema Value: the Schema defining the type used for the parameter. |
+</div>
+
+<h4 id="chat-generation-config">Generation Config <sup><small><small>Referenced in <a href="#chat-input">Input</a></small></small></sup></h4>
+
+Generation configuration for the request.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Max Output Tokens | `max-output-tokens` | integer | The maximum number of tokens to generate in the response. |
+| Temperature | `temperature` | number | Sampling temperature, controls randomness. |
+| Top P | `top-p` | number | Nucleus sampling probability mass. |
+| Top K | `top-k` | number | Top-k sampling cutoff. |
+| Stop Sequences | `stop-sequences` | array[string] | List of sequences that will stop further token generation. |
+| Candidate Count | `candidate-count` | integer | Number of candidates to generate. |
+| Response MIME Type | `response-mime-type` | string | Desired response MIME type (e.g., application/json for JSON mode). |
+| Response Schema | `response-schema` | object ([schema](#chat-schema)) | JSON Schema to constrain the response when using JSON mode. |
+| Media Resolution | `media-resolution` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`MEDIA_RESOLUTION_UNSPECIFIED`</li><li>`MEDIA_RESOLUTION_LOW`</li><li>`MEDIA_RESOLUTION_MEDIUM`</li><li>`MEDIA_RESOLUTION_HIGH`</li></ul></details></small></small> | Media resolution for multimodal generation. Controls how many tokens are budgeted for media understanding and reframing. The value is one of the following: `MEDIA_RESOLUTION_UNSPECIFIED`: Media resolution has not been set. `MEDIA_RESOLUTION_LOW`: Media resolution set to low (64 tokens). `MEDIA_RESOLUTION_MEDIUM`: Media resolution set to medium (256 tokens). `MEDIA_RESOLUTION_HIGH`: Media resolution set to high (zoomed reframing with 256 tokens). |
+| Response Modalities | `response-modalities` | array[string]<br/><small><small><details><summary>Enum values</summary><ul><li>`MODALITY_UNSPECIFIED`</li><li>`TEXT`</li><li>`IMAGE`</li><li>`VIDEO`</li><li>`AUDIO`</li><li>`DOCUMENT`</li></ul></details></small></small> | Requested modalities of the response. Empty means text only. |
+| Seed | `seed` | integer | Seed used in decoding. |
+| Presence Penalty | `presence-penalty` | number | Presence penalty applied to next-token logprobs if token already seen. |
+| Frequency Penalty | `frequency-penalty` | number | Frequency penalty applied proportional to the number of times a token has been seen. |
+| Response Logprobs | `response-logprobs` | boolean | If true, export the logprobs results in response. |
+| Logprobs | `logprobs` | integer | Number of top logprobs to return at each decoding step (1-5). Only valid if response-logprobs is true. |
+| Enable Enhanced Civic Answers | `enable-enhanced-civic-answers` | boolean | Enables enhanced civic answers. |
+| Speech Config | `speech-config` | object ([speech-config](#chat-speech-config)) | Speech generation configuration. |
+| Thinking Config | `thinking-config` | object ([thinking-config](#chat-thinking-config)) | Config for thinking features. |
+</div>
+
+<h4 id="chat-speech-config">Speech Config <sup><small><small>Referenced in <a href="#chat-generation-config">Generation Config</a></small></small></sup></h4>
+
+Speech generation configuration.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Language Code | `language-code` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`de-DE`</li><li>`en-AU`</li><li>`en-GB`</li><li>`en-IN`</li><li>`en-US`</li><li>`es-US`</li><li>`fr-FR`</li><li>`hi-IN`</li><li>`pt-BR`</li><li>`ar-XA`</li><li>`es-ES`</li><li>`fr-CA`</li><li>`id-ID`</li><li>`it-IT`</li><li>`ja-JP`</li><li>`tr-TR`</li><li>`vi-VN`</li><li>`bn-IN`</li><li>`gu-IN`</li><li>`kn-IN`</li><li>`ml-IN`</li><li>`mr-IN`</li><li>`ta-IN`</li><li>`te-IN`</li><li>`nl-NL`</li><li>`ko-KR`</li><li>`cmn-CN`</li><li>`pl-PL`</li><li>`ru-RU`</li><li>`th-TH`</li></ul></details></small></small> | Language code (BCP 47) for speech synthesis. |
+| Multi Speaker Voice Config | `multi-speaker-voice-config` | object ([multi-speaker-voice-config](#chat-multi-speaker-voice-config)) | Configuration for the multi-speaker setup. Mutually exclusive with voice-config. |
+| Voice Config | `voice-config` | object ([voice-config](#chat-voice-config)) | Configuration for the voice to use. Union type. |
+</div>
+
+<h4 id="chat-multi-speaker-voice-config">Multi Speaker Voice Config <sup><small><small>Referenced in <a href="#chat-speech-config">Speech Config</a></small></small></sup></h4>
+
+Configuration for the multi-speaker setup. Mutually exclusive with voice-config.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Speaker Voice Configs | `speaker-voice-configs` | array[object ([speaker-voice-config](#chat-speaker-voice-config))] | All the enabled speaker voices. |
+</div>
+
+<h4 id="chat-voice-config">Voice Config <sup><small><small>Referenced in <a href="#chat-speaker-voice-config">Speaker Voice Config</a>, <a href="#chat-speech-config">Speech Config</a></small></small></sup></h4>
+
+Configuration for the voice to use. Union type.
+
+
+also including one of the fields:
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Prebuilt-Voice-Config | `prebuilt-voice-config` | object ([prebuilt-voice-config](#chat-prebuilt-voice-config)) |  |
+</div>
+
+<h4 id="chat-thinking-config">Thinking Config <sup><small><small>Referenced in <a href="#chat-generation-config">Generation Config</a></small></small></sup></h4>
+
+Config for thinking features.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Include Thoughts | `include-thoughts` | boolean | Whether to include thoughts in the response when available. |
+| Thinking Budget | `thinking-budget` | integer | The number of thought tokens the model should generate. |
+</div>
+
+<h4 id="chat-google-search">Google Search <sup><small><small>Referenced in <a href="#chat-tool">Tool</a></small></small></sup></h4>
+
+GoogleSearch tool type. Tool to support Google Search in Model. Powered by Google.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Time Range Filter | `time-range-filter` | object ([interval](#chat-interval)) | Filter search results to a specific time range. If customers set a start time, they must set an end time (and vice versa). |
+</div>
+
+<h4 id="chat-google-search-retrieval">Google Search Retrieval <sup><small><small>Referenced in <a href="#chat-tool">Tool</a></small></small></sup></h4>
+
+Tool to retrieve public web data for grounding, powered by Google.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Dynamic Retrieval Config | `dynamic-retrieval-config` | object ([dynamic-retrieval-config](#chat-dynamic-retrieval-config)) | Specifies the dynamic retrieval configuration for the given source. |
+</div>
+
+<h4 id="chat-grounding-attribution">Grounding Attribution <sup><small><small>Referenced in <a href="#chat-candidate">Candidate</a></small></small></sup></h4>
+
+Attribution for a source that contributed to an answer.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | object ([content](#chat-content)) | Grounding source content that makes up this attribution. |
+| Source ID | `source-id` | object ([attribution-source-id](#chat-attribution-source-id)) | Identifier for the source contributing to this attribution. |
+</div>
+
+<h4 id="chat-grounding-chunk">Grounding Chunk <sup><small><small>Referenced in <a href="#chat-grounding-metadata">Grounding Metadata</a></small></small></sup></h4>
+
+Grounding chunk
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Web | `web` | object ([web](#chat-web)) | Web grounding chunk |
+</div>
+
+<h4 id="chat-grounding-metadata">Grounding Metadata <sup><small><small>Referenced in <a href="#chat-candidate">Candidate</a></small></small></sup></h4>
+
+Metadata returned to client when grounding is enabled.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Grounding Chunks | `grounding-chunks` | array[object ([grounding-chunk](#chat-grounding-chunk))] | Supporting references retrieved from grounding source |
+| Grounding Supports | `grounding-supports` | array[object ([grounding-support](#chat-grounding-support))] | List of grounding support |
+| Retrieval Metadata | `retrieval-metadata` | object ([retrieval-metadata](#chat-retrieval-metadata)) | Retrieval metadata for grounding flow |
+| Search Entry Point | `search-entry-point` | object ([search-entry-point](#chat-search-entry-point)) | Google search entry for follow-up web searches |
+| Web Search Queries | `web-search-queries` | array[string] | Web search queries for follow-up search |
+</div>
+
+<h4 id="chat-retrieval-metadata">Retrieval Metadata <sup><small><small>Referenced in <a href="#chat-grounding-metadata">Grounding Metadata</a></small></small></sup></h4>
+
+Retrieval metadata for grounding flow
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Google Search Dynamic Retrieval Score | `google-search-dynamic-retrieval-score` | number | Likelihood [0,1] that Google Search could help answer the prompt |
+</div>
+
+<h4 id="chat-search-entry-point">Search Entry Point <sup><small><small>Referenced in <a href="#chat-grounding-metadata">Grounding Metadata</a></small></small></sup></h4>
+
+Google search entry for follow-up web searches
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Rendered Content | `rendered-content` | string | Web content snippet suitable for embedding |
+| SDK Blob | `sdk-blob` | string | Base64-encoded JSON of `&lt;search term, search url&gt;` tuples |
+</div>
+
+<h4 id="chat-grounding-passage-id">Grounding Passage ID <sup><small><small>Referenced in <a href="#chat-attribution-source-id">Attribution Source ID</a></small></small></sup></h4>
+
+Identifier for an inline passage.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Part Index | `part-index` | integer | Index of the part within the GroundingPassage.content |
+| Passage ID | `passage-id` | string | ID of the passage matching the request's GroundingPassage.id |
+</div>
+
+<h4 id="chat-grounding-support">Grounding Support <sup><small><small>Referenced in <a href="#chat-grounding-metadata">Grounding Metadata</a></small></small></sup></h4>
+
+Grounding support
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Confidence Scores | `confidence-scores` | array[number] | Confidence scores aligned with groundingChunkIndices |
+| Grounding Chunk Indices | `grounding-chunk-indices` | array[integer] | Indices into groundingChunks that support the claim |
+| Segment | `segment` | object ([segment](#chat-segment)) | Segment of the content |
+</div>
+
+<h4 id="chat-logprobs-result">Logprobs Result <sup><small><small>Referenced in <a href="#chat-candidate">Candidate</a></small></small></sup></h4>
+
+Log probabilities for generated tokens.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Top Candidates | `top-candidates` | array[object ([logprobs-top-candidate](#chat-logprobs-top-candidate))] |  |
+</div>
+
+<h4 id="chat-schema">Schema <sup><small><small>Referenced in <a href="#chat-function-declaration">Function Declaration</a>, <a href="#chat-generation-config">Generation Config</a></small></small></sup></h4>
+
+Describes the parameters to this function. Reflects the Open API 3.03 Parameter Object string Key: the name of the parameter. Parameter names are case sensitive. Schema Value: the Schema defining the type used for the parameter.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Any Of | `anyOf` | array[object] | Value must satisfy any of the sub-schemas. |
+| Default | `default` | object | Default value for the field (ignored for validation). |
+| Description | `description` | string | Optional description of the schema. |
+| Enum | `enum` | array[string] | Enum values for STRING with enum format. |
+| Format | `format` | string | Optional format of the data. |
+| Items | `items` | object | Schema of elements for ARRAY type. |
+| Max Items | `max-items` | integer | Maximum number of elements for ARRAY type. |
+| Max Length | `max-length` | integer | Maximum length for STRING type. |
+| Max Properties | `max-properties` | integer | Maximum number of properties for OBJECT type. |
+| Maximum | `maximum` | number | Maximum value for INTEGER/NUMBER types. |
+| Min Items | `min-items` | integer | Minimum number of elements for ARRAY type. |
+| Min Length | `min-length` | integer | Minimum length for STRING type. |
+| Min Properties | `min-properties` | integer | Minimum number of properties for OBJECT type. |
+| Minimum | `minimum` | number | Minimum value for INTEGER/NUMBER types. |
+| Nullable | `nullable` | boolean | Indicates if the value may be null. |
+| Pattern | `pattern` | string | Regex pattern constraint for STRING type. |
+| Properties | `properties` | object | Properties for OBJECT type. |
+| Property Ordering | `property-ordering` | array[string] | Order of properties for OBJECT type (non-standard). |
+| Required | `required` | array[string] | Required properties for OBJECT type. |
+| Title | `title` | string | Optional title of the schema. |
+| Type | `type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`TYPE_UNSPECIFIED`</li><li>`STRING`</li><li>`NUMBER`</li><li>`INTEGER`</li><li>`BOOLEAN`</li><li>`ARRAY`</li><li>`OBJECT`</li></ul></details></small></small> | Required data type of the schema. |
+</div>
+
+<h4 id="chat-part">Part <sup><small><small>Referenced in <a href="#chat-content">Content</a></small></small></sup></h4>
+
+A part of the content, such as text or media, or tool call/response.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Thought | `thought` | boolean | Indicates if the part is a thought from the model. |
+| Thought Signature | `thought-signature` | string | Opaque signature for the thought (base64-encoded bytes). |
+| Video Metadata | `video-metadata` | object | Optional video metadata (only with blob or fileData video content). |
+</div>
+
+<h4 id="chat-prompt-feedback">Prompt Feedback <sup><small><small>Referenced in <a href="#chat-output">Output</a></small></small></sup></h4>
+
+Feedback on the prompt including any safety blocking information.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Block Reason | `block-reason` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`BLOCK_REASON_UNSPECIFIED`</li><li>`SAFETY`</li><li>`OTHER`</li><li>`BLOCKLIST`</li><li>`PROHIBITED_CONTENT`</li><li>`IMAGE_SAFETY`</li></ul></details></small></small> | Specifies the reason why the prompt was blocked. The value is one of the following: `BLOCK_REASON_UNSPECIFIED`: Default value. This value is unused. `SAFETY`: Prompt was blocked due to safety reasons. Inspect safetyRatings to understand which safety category blocked it. `OTHER`: Prompt was blocked due to unknown reasons. `BLOCKLIST`: Prompt was blocked due to the terms which are included from the terminology blocklist. `PROHIBITED_CONTENT`: Prompt was blocked due to prohibited content. `IMAGE_SAFETY`: Candidates blocked due to unsafe image generation content. |
+| Safety Ratings | `safety-ratings` | array[object ([safety-rating](#chat-safety-rating))] | Safety rating for a piece of content. The safety rating contains the category of harm and the harm probability level in that category for a piece of content. Content is classified for safety across a number of harm categories and the probability of the harm classification is included here. |
+</div>
+
+<h4 id="chat-safety-rating">Safety Rating <sup><small><small>Referenced in <a href="#chat-candidate">Candidate</a>, <a href="#chat-prompt-feedback">Prompt Feedback</a></small></small></sup></h4>
+
+Safety rating for a piece of content, including harm category and probability.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Blocked | `blocked` | boolean | Whether the content was blocked by this rating. |
+| Harm Category | `category` | string | Harm category. |
+| Probability | `probability` | string | Probability level of harm. |
+</div>
+
+<h4 id="chat-safety-setting">Safety Setting <sup><small><small>Referenced in <a href="#chat-input">Input</a></small></small></sup></h4>
+
+Safety setting for a harm category and block threshold.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Harm Category | `category` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`HARM_CATEGORY_UNSPECIFIED`</li><li>`HARM_CATEGORY_DEROGATORY`</li><li>`HARM_CATEGORY_TOXICITY`</li><li>`HARM_CATEGORY_VIOLENCE`</li><li>`HARM_CATEGORY_SEXUAL`</li><li>`HARM_CATEGORY_MEDICAL`</li><li>`HARM_CATEGORY_DANGEROUS`</li><li>`HARM_CATEGORY_HARASSMENT`</li><li>`HARM_CATEGORY_HATE_SPEECH`</li><li>`HARM_CATEGORY_SEXUALLY_EXPLICIT`</li><li>`HARM_CATEGORY_DANGEROUS_CONTENT`</li></ul></details></small></small> | The category of a rating for safety. The value is one of the following: `HARM_CATEGORY_UNSPECIFIED`: Category is unspecified. `HARM_CATEGORY_DEROGATORY`: PaLM - Negative or harmful comments targeting identity and/or protected attribute. `HARM_CATEGORY_TOXICITY`: PaLM - Content that is rude, disrespectful, or profane. `HARM_CATEGORY_VIOLENCE`: PaLM - Describes scenarios depicting violence against an individual or group, or general descriptions of gore. `HARM_CATEGORY_SEXUAL`: PaLM - Contains references to sexual acts or other lewd content. `HARM_CATEGORY_MEDICAL`: PaLM - Promotes unchecked medical advice. `HARM_CATEGORY_DANGEROUS`: PaLM - Dangerous content that promotes, facilitates, or encourages harmful acts. `HARM_CATEGORY_HARASSMENT`: Gemini - Harassment content. `HARM_CATEGORY_HATE_SPEECH`: Gemini - Hate speech and content. `HARM_CATEGORY_SEXUALLY_EXPLICIT`: Gemini - Sexually explicit content. `HARM_CATEGORY_DANGEROUS_CONTENT`: Gemini - Dangerous content. `HARM_CATEGORY_CIVIC_INTEGRITY`: Gemini - Content that may be used to harm civic integrity. DEPRECATED: use enableEnhancedCivicAnswers instead. |
+| Harm Block Threshold | `threshold` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`HARM_BLOCK_THRESHOLD_UNSPECIFIED`</li><li>`BLOCK_LOW_AND_ABOVE`</li><li>`BLOCK_MEDIUM_AND_ABOVE`</li><li>`BLOCK_ONLY_HIGH`</li><li>`BLOCK_NONE`</li><li>`OFF`</li></ul></details></small></small> | Block at and beyond a specified harm probability. The value is one of the following: `HARM_BLOCK_THRESHOLD_UNSPECIFIED`: Threshold is unspecified. `BLOCK_LOW_AND_ABOVE`: Content with NEGLIGIBLE will be allowed. `BLOCK_MEDIUM_AND_ABOVE`: Content with NEGLIGIBLE and LOW will be allowed. `BLOCK_ONLY_HIGH`: Content with NEGLIGIBLE, LOW, and MEDIUM will be allowed. `BLOCK_NONE`: All content will be allowed. `OFF`: Turn off the safety filter. |
+</div>
+
+<h4 id="chat-segment">Segment <sup><small><small>Referenced in <a href="#chat-grounding-support">Grounding Support</a></small></small></sup></h4>
+
+Segment of the content
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| End Index | `end-index` | integer | End byte offset in the Part (exclusive) |
+| Part Index | `part-index` | integer | Index of the Part in its parent Content |
+| Start Index | `start-index` | integer | Start byte offset in the Part (inclusive) |
+| Text | `text` | string | Text of the segment |
+</div>
+
+<h4 id="chat-semantic-retriever-chunk">Semantic Retriever Chunk <sup><small><small>Referenced in <a href="#chat-attribution-source-id">Attribution Source ID</a></small></small></sup></h4>
+
+Identifier for a Chunk fetched via Semantic Retriever
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Chunk | `chunk` | string | Name of the Chunk containing the attributed text |
+| Source | `source` | string | Name of the Semantic Retriever source (e.g. corpora/123) |
+</div>
+
+<h4 id="chat-attribution-source-id">Attribution Source ID <sup><small><small>Referenced in <a href="#chat-grounding-attribution">Grounding Attribution</a></small></small></sup></h4>
+
+Identifier for the source contributing to this attribution.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Grounding Passage ID | `grounding-passage` | object ([grounding-passage](#chat-grounding-passage-id)) | Identifier for an inline passage. |
+| Semantic Retriever Chunk | `semantic-retriever-chunk` | object ([blob](#chat-blob)) | Identifier for a Chunk fetched via Semantic Retriever |
+</div>
+
+<h4 id="chat-speaker-voice-config">Speaker Voice Config <sup><small><small>Referenced in <a href="#chat-multi-speaker-voice-config">Multi Speaker Voice Config</a></small></small></sup></h4>
+
+The configuration for a single speaker in a multi speaker setup.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Speaker | `speaker` | string | The name of the speaker to use. Should match the name used in the prompt. |
+| Voice Config | `voice-config` | object ([voice-config](#chat-voice-config)) | Configuration for the voice to use. Union type. |
+</div>
+
+<h4 id="chat-interval">Interval <sup><small><small>Referenced in <a href="#chat-google-search">Google Search</a></small></small></sup></h4>
+
+Filter search results to a specific time range. If customers set a start time, they must set an end time (and vice versa).
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| End Time | `end-time` | string | Exclusive end of the interval. If specified, a Timestamp matching this interval will have to be before the end. Uses RFC 3339, where generated output will always be Z-normalized and use 0, 3, 6 or 9 fractional digits. Offsets other than "Z" are also accepted. Examples: "2014-10-02T15:01:23Z", "2014-10-02T15:01:23.045123456Z" or "2014-10-02T15:01:23+05:30". |
+| Start Time | `start-time` | string | Inclusive start of the interval. If specified, a Timestamp matching this interval will have to be the same or after the start. Uses RFC 3339, where generated output will always be Z-normalized and use 0, 3, 6 or 9 fractional digits. Offsets other than "Z" are also accepted. Examples: "2014-10-02T15:01:23Z", "2014-10-02T15:01:23.045123456Z" or "2014-10-02T15:01:23+05:30". |
+</div>
+
+<h4 id="chat-tool-config">Tool Config <sup><small><small>Referenced in <a href="#chat-input">Input</a></small></small></sup></h4>
+
+Configuration for tool usage and function calling.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Function Calling Config | `function-calling-config` | object ([function-calling-config](#chat-function-calling-config)) | Configuration for specifying function calling behavior. |
+</div>
+
+<h4 id="chat-tool">Tool <sup><small><small>Referenced in <a href="#chat-input">Input</a></small></small></sup></h4>
+
+Tool available to the model (functions or code execution).
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Code Execution | `code-execution` | object | Tool that executes code generated by the model, and automatically returns the result to the model. |
+| Function Declarations | `function-declarations` | array[object ([function-declaration](#chat-function-declaration))] | Functions the model may call. |
+| Google Search | `google-search` | object ([google-search](#chat-google-search)) | GoogleSearch tool type. Tool to support Google Search in Model. Powered by Google. |
+| Google Search Retrieval | `google-search-retrieval` | object ([google-search-retrieval](#chat-google-search-retrieval)) | Tool to retrieve public web data for grounding, powered by Google. |
+| URL Context | `url-context` | object | Tool to support URL context retrieval. |
+</div>
+
+<h4 id="chat-logprobs-top-candidate">Logprobs Top Candidate <sup><small><small>Referenced in <a href="#chat-logprobs-result">Logprobs Result</a></small></small></sup></h4>
+
+Token candidate with its log probability.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Log Probability | `logprob` | number |  |
+| Token | `token` | string |  |
+</div>
+
+<h4 id="chat-url-context-metadata">URL Context Metadata <sup><small><small>Referenced in <a href="#chat-candidate">Candidate</a></small></small></sup></h4>
+
+Metadata related to URL context retrieval tool.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| URL Metadata | `url-metadata` | array[object ([url-metadata](#chat-url-metadata))] | List of url context. |
+</div>
+
+<h4 id="chat-url-metadata">URL Metadata <sup><small><small>Referenced in <a href="#chat-url-context-metadata">URL Context Metadata</a></small></small></sup></h4>
+
+Context of a single URL retrieval.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Retrieved URL | `retrieved-url` | string | Retrieved url by the tool. |
+| URL Retrieval Status | `url-retrieval-status` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`URL_RETRIEVAL_STATUS_UNSPECIFIED`</li><li>`URL_RETRIEVAL_STATUS_SUCCESS`</li><li>`URL_RETRIEVAL_STATUS_ERROR`</li><li>`URL_RETRIEVAL_STATUS_PAYWALL`</li><li>`URL_RETRIEVAL_STATUS_UNSAFE`</li></ul></details></small></small> | Retrieval status for URL-based context. The value is one of the following: `URL_RETRIEVAL_STATUS_UNSPECIFIED`: Default value. This value is unused. `URL_RETRIEVAL_STATUS_SUCCESS`: URL retrieval is successful. `URL_RETRIEVAL_STATUS_ERROR`: URL retrieval is failed due to error. `URL_RETRIEVAL_STATUS_PAYWALL`: URL retrieval is failed because the content is behind paywall. `URL_RETRIEVAL_STATUS_UNSAFE`: URL retrieval is failed because the content is unsafe. |
+</div>
+
+<h4 id="chat-usage-metadata">Usage Metadata <sup><small><small>Referenced in <a href="#chat-output">Output</a></small></small></sup></h4>
+
+Metadata on the generation request's token usage.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Cache Tokens Details | `cache-tokens-details` | array[object ([modality-token-count](#chat-modality-token-count))] | Output only. List of modalities of the cached content in the request input. |
+| Cached Content Token Count | `cached-content-token-count` | integer | Number of tokens in the cached part of the prompt (the cached content) |
+| Candidates Token Count | `candidates-token-count` | integer | Total number of tokens across all the generated response candidates. |
+| Candidates Tokens Details | `candidates-tokens-details` | array[object ([modality-token-count](#chat-modality-token-count))] | List of modalities that were returned in the response. |
+| Prompt Token Count | `prompt-token-count` | integer | Number of tokens in the prompt. When cachedContent is set, this is still the total effective prompt size meaning this includes the number of tokens in the cached content. |
+| Prompt Tokens Details | `prompt-tokens-details` | array[object ([modality-token-count](#chat-modality-token-count))] | List of modalities that were processed in the request input. |
+| Thoughts Token Count | `thoughts-token-count` | integer | Number of tokens of thoughts for thinking models. |
+| Tool-use Prompt Token Count | `tool-use-prompt-token-count` | integer | Number of tokens present in tool-use prompt(s). |
+| Tool-use Prompt Tokens Details | `tool-use-prompt-tokens-details` | array[object ([modality-token-count](#chat-modality-token-count))] | List of modalities that were processed for tool-use request inputs. |
+| Total Token Count | `total-token-count` | integer | Total token count for the generation request (prompt + response candidates). |
+</div>
+
+<h4 id="chat-video-metadata">Video Metadata <sup><small><small>Referenced in <a href="#chat-part">Part</a></small></small></sup></h4>
+
+Optional video metadata (only with blob or fileData video content).
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| End Offset | `end-offset` | string | The end offset of the video (duration string, e.g. "3.5s"). |
+| FPS | `fps` | number | Frame rate of the video sent to the model. Range (0.0, 24.0]. |
+| Start Offset | `start-offset` | string | The start offset of the video (duration string, e.g. "3.5s"). |
+</div>
+
+<h4 id="chat-web">Web <sup><small><small>Referenced in <a href="#chat-grounding-chunk">Grounding Chunk</a></small></small></sup></h4>
+
+Web grounding chunk
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Title | `title` | string | Title of the chunk |
+| URI | `uri` | string | URI reference of the chunk |
+</div>
+
+</details>
+
+
+
+## Example Recipes
+
+```yaml
+version: v1beta
+component:
+  gemini:
+    type: gemini
+    task: TASK_CHAT
+    input:
+      model: gemini-2.5-pro
+      stream: ${variable.stream}
+      prompt: ${variable.prompt}
+      images:
+        - ${variable.image:base64}
+      documents:
+        - ${variable.document:base64}
+      system-message: You are a helpful assistant.
+      temperature: 1
+      top-p: 1
+    setup: ${connection.gemini}
+variable:
+  prompt:
+    title: Prompt
+    description: Prompt to instruct the model
+    type: string
+  document:
+    title: Document
+    description: Document to convert to Markdown
+    type: document
+  image:
+    title: image
+    description: Image to take a look
+    type: image
+  stream:
+    title: Enable Stream
+    description: whether to enable streaming
+    type: boolean
+output:
+  texts:
+    title: texts[0]
+    value: ${gemini.output.texts[0]}
+  usage:
+    title: usage
+    value: ${gemini.output.usage}
+  candidates:
+    title: candidates
+    value: ${gemini.output.candidates}
+  usage-metadata:
+    title: usage-metadata
+    value: ${gemini.output.usage-metadata}
+  prompt-feedback:
+    title: prompt-feedback
+    value: ${gemini.output.prompt-feedback}
+  model-version:
+    title: model-version
+    value: ${gemini.output.model-version}
+  response-id:
+    title: response-id
+    value: ${gemini.output.response-id}
+```

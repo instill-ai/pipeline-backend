@@ -38,7 +38,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key | `api-key` | string | Fill in your GroqCloud API key. To find your keys, visit the GroqCloud API Keys page.  |
+| API Key | `api-key` | string | Fill in your GroqCloud API key. To find your keys, visit the GroqCloud API Keys page. |
 
 </div>
 
@@ -52,16 +52,17 @@ ${connection.<my-connection-id>}`.
 
 Groq serves open source text generation models (often called generative pre-trained transformers or large language models) have been trained to understand natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as "prompts". Designing a prompt is essentially how you "program" a large language model model, usually by providing instructions or some examples of how to successfully complete a task.
 
+<h4 id="text-generation-chat-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
-| Model (required) | `model` | string | The OSS model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`llama-3.1-405b-reasoning`</li><li>`llama-3.1-70b-versatile`</li><li>`llama-3.1-8b-instant`</li><li>`llama3-groq-70b-8192-tool-use-preview`</li><li>`llama3-groq-8b-8192-tool-use-preview`</li><li>`llama3-70b-8192`</li><li>`llama-guard-3-8b`</li><li>`llama3-8b-8192`</li><li>`mixtral-8x7b-32768`</li><li>`gemma2-9b-it`</li><li>`gemma-7b-it`</li></ul></details>  |
+| Model (required) | `model` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`llama-3.1-405b-reasoning`</li><li>`llama-3.1-70b-versatile`</li><li>`llama-3.1-8b-instant`</li><li>`llama3-groq-70b-8192-tool-use-preview`</li><li>`llama3-groq-8b-8192-tool-use-preview`</li><li>`llama3-70b-8192`</li><li>`llama-guard-3-8b`</li><li>`llama3-8b-8192`</li><li>`mixtral-8x7b-32768`</li><li>`gemma2-9b-it`</li><li>`gemma-7b-it`</li></ul></details></small></small> | The OSS model to be used. |
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model's behavior is set using a generic message as "You are a helpful assistant.". |
 | Prompt Images | `prompt-images` | array[string] | The prompt images (Note: Only a subset of OSS models support image inputs). |
-| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}. |
+| Chat History | `chat-history` | array[object ([chat-message](#text-generation-chat-chat-message))] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}. |
 | Seed | `seed` | integer | The seed. |
 | Temperature | `temperature` | number | The temperature for sampling. |
 | Top K | `top-k` | integer | Integer to define the top tokens considered within the sample operation to create new text. |
@@ -70,11 +71,18 @@ Groq serves open source text generation models (often called generative pre-trai
 | User | `user` | string | The user name passed to GroqPlatform. |
 </div>
 
+<h4 id="text-generation-chat-output">Output</h4>
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Text | `text` | string | Model Output. |
+| Usage (optional) | `usage` | object ([chat-usage](#text-generation-chat-usage)) | Token usage on the GroqCloud platform text generation models. |
+</div>
 
 <details>
-<summary> Input Objects in Text Generation Chat</summary>
-
-<h4 id="text-generation-chat-chat-history">Chat History</h4>
+<summary> Referenced Objects</summary>
+<h4 id="text-generation-chat-chat-message">Chat Message <sup><small><small>Referenced in <a href="#text-generation-chat-input">Input</a></small></small></sup></h4>
 
 Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: \{"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"\}.
 
@@ -82,10 +90,11 @@ Incorporate external chat history, specifically previous messages within the con
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#text-generation-chat-content) | `content` | array | The message content.  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'. |
+| Content | `content` | array[object ([multi-modal-content](#text-generation-chat-multi-modal-content))] | The message content. |
 </div>
-<h4 id="text-generation-chat-content">Content</h4>
+
+<h4 id="text-generation-chat-content">Content <sup><small><small>Referenced in <a href="#text-generation-chat-chat-message">Chat Message</a></small></small></sup></h4>
 
 The message content.
 
@@ -93,11 +102,12 @@ The message content.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL.  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details>  |
+| Image URL | `image-url` | object ([chat-message](#text-generation-chat-chat-message)) | The image URL. |
+| Text | `text` | string | The text content. |
+| Type | `type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`text`</li><li>`image_url`</li></ul></details></small></small> | The type of the content part. |
 </div>
-<h4 id="text-generation-chat-image-url">Image URL</h4>
+
+<h4 id="text-generation-chat-image-url">Image URL <sup><small><small>Referenced in <a href="#text-generation-chat-content">Content</a></small></small></sup></h4>
 
 The image URL.
 
@@ -105,24 +115,15 @@ The image URL.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
-</div>
-</details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Text | `text` | string | Model Output. |
-| [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Token usage on the GroqCloud platform text generation models. |
+| URL | `url` | string | Either a URL of the image or the base64 encoded image data. |
 </div>
 
-<details>
-<summary> Output Objects in Text Generation Chat</summary>
+<h4 id="text-generation-chat-multi-modal-content">Multi Modal Content</h4>
 
-<h4 id="text-generation-chat-usage">Usage</h4>
+
+<h4 id="text-generation-chat-chat-usage">Chat Usage <sup><small><small>Referenced in <a href="#text-generation-chat-output">Output</a></small></small></sup></h4>
+
+Token usage on the GroqCloud platform text generation models.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -131,6 +132,7 @@ The image URL.
 | Input Tokens | `input-tokens` | number | The input tokens used by GroqCloud OSS models. |
 | Output Tokens | `output-tokens` | number | The output tokens generated by GroqCloud OSS models. |
 </div>
+
 </details>
 
 

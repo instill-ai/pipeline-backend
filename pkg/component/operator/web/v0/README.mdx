@@ -35,9 +35,10 @@ The component definition and tasks are defined in the [definition.yaml](https://
 
 This task involves systematically navigating through a website, starting from a designated page (typically the homepage), and following internal links to discover and retrieve page titles and URLs. The process is limited to 120 seconds and only collects links and titles from multiple pages; it does not extract the content of the pages themselves. If you need to collect specific content from individual pages, please use the Scrape Page task instead.
 
+<h4 id="crawl-site-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRAWL_SITE` |
 | URL (required) | `url` | string | The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on. |
@@ -45,14 +46,20 @@ This task involves systematically navigating through a website, starting from a 
 | Max Number of Pages (required) | `max-k` | integer | Max-K sets a limit on the number of pages to fetch. If Max-K is set to 0, all available pages will be fetched within the time limit of 120 seconds. If Max-K is a positive number, the fetch will return up to that many pages, but no more. |
 | Timeout | `timeout` | integer | The time to wait for a page to load in milliseconds. Min 0, Max 60000. Please notice the timeout here is set for each page rather than the whole crawl task. |
 | Max Depth | `max-depth` | integer | Max Depth specifies how deep the crawler will navigate from the root URL. If max depth is set to 1, the crawler will only scrape the root URL and will not follow any links to other pages. If max depth is set to 0, the crawler will scrape all reachable pages until the total number of scraped pages reaches max-k. If both max-k and max depth are defined, the crawler will prioritize the max-k setting when determining how many pages to scrape. |
-| [Filter](#crawl-site-filter) | `filter` | object | Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). The URL will be crawled if it matches either include-pattern or not match exclude-pattern. When both include-pattern and exclude-pattern are empty, all URLs will be crawled. It will process exclude-pattern first, then include-pattern. When exclude-pattern is not empty, only URLs that do not match exclude-pattern will be crawled. When include-pattern is not empty, only URLs that match include-pattern will be crawled. |
+| Filter | `filter` | object ([page-info](#crawl-site-page-information)) | Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). The URL will be crawled if it matches either include-pattern or not match exclude-pattern. When both include-pattern and exclude-pattern are empty, all URLs will be crawled. It will process exclude-pattern first, then include-pattern. When exclude-pattern is not empty, only URLs that do not match exclude-pattern will be crawled. When include-pattern is not empty, only URLs that match include-pattern will be crawled. |
 </div>
 
+<h4 id="crawl-site-output">Output</h4>
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Pages | `pages` | array[object ([page-info](#crawl-site-page-information))] | The link and title of webpages crawled by the crawler. |
+</div>
 
 <details>
-<summary> Input Objects in Crawl Site</summary>
-
-<h4 id="crawl-site-filter">Filter</h4>
+<summary> Referenced Objects</summary>
+<h4 id="crawl-site-filter">Filter <sup><small><small>Referenced in <a href="#crawl-site-input">Input</a></small></small></sup></h4>
 
 Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). The URL will be crawled if it matches either include-pattern or not match exclude-pattern. When both include-pattern and exclude-pattern are empty, all URLs will be crawled. It will process exclude-pattern first, then include-pattern. When exclude-pattern is not empty, only URLs that do not match exclude-pattern will be crawled. When include-pattern is not empty, only URLs that match include-pattern will be crawled.
 
@@ -60,24 +67,11 @@ Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Exclude Pattern | `exclude-pattern` | string | When the URL is matched, the URL will not be crawled.  |
-| Include Pattern | `include-pattern` | string | When the URL is matched, the URL will be crawled.  |
-</div>
-</details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| [Pages](#crawl-site-pages) | `pages` | array[object] | The link and title of webpages crawled by the crawler. |
+| Exclude Pattern | `exclude-pattern` | string | When the URL is matched, the URL will not be crawled. |
+| Include Pattern | `include-pattern` | string | When the URL is matched, the URL will be crawled. |
 </div>
 
-<details>
-<summary> Output Objects in Crawl Site</summary>
-
-<h4 id="crawl-site-pages">Pages</h4>
+<h4 id="crawl-site-page-information">Page Information <sup><small><small>Referenced in <a href="#crawl-site-output">Output</a></small></small></sup></h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -86,6 +80,19 @@ Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs
 | Link | `link` | string | The full URL to which the webpage link is pointing, e.g., http://www.example.com/foo/bar. |
 | Title | `title` | string | The title of a webpage link in plain text. |
 </div>
+
+<h4 id="crawl-site-page-info">Page Info <sup><small><small>Referenced in <a href="#crawl-site-output">Output</a></small></small></sup></h4>
+
+The link and title of webpages crawled by the crawler.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Link | `link` | string | The full URL to which the webpage link is pointing, e.g., http://www.example.com/foo/bar. |
+| Title | `title` | string | The title of a webpage link in plain text. |
+</div>
+
 </details>
 
 #### Regex Match Sample
@@ -143,13 +150,14 @@ Filtering based on [regular expression](https://developer.mozilla.org/en-US/docs
 
 This task focuses on extracting specific data from targeted webpages by parsing its HTML structure. Unlike crawling, which navigates across multiple pages, scraping retrieves content only from the specified page. After scraping, the data can be further processed using a defined [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of `only-main-content`, `remove-tags`, and `only-include-tags`. Refer to the [jQuery Syntax Examples](#jquery-syntax-examples) for more details on how to filter and manipulate the data. To avoid a single URL failure from affecting all requests, we will not return an error when an individual URL fails. Instead, we will return all contents that are successfully scraped.
 
+<h4 id="scrape-pages-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SCRAPE_PAGES` |
 | URLs (required) | `urls` | array[string] | The URLs to scrape the webpage contents. |
-| Scrape Method (required) | `scrape-method` | string | Defines the method used for web scraping. Available options include `http` for standard HTTP-based scraping and `chrome-simulator` for scraping through a simulated Chrome browser environment. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`http`</li><li>`chrome-simulator`</li></ul></details>  |
+| Scrape Method (required) | `scrape-method` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`http`</li><li>`chrome-simulator`</li></ul></details></small></small> | Defines the method used for web scraping. Available options include `http` for standard HTTP-based scraping and `chrome-simulator` for scraping through a simulated Chrome browser environment. |
 | Include HTML | `include-html` | boolean | Indicate whether to include the raw HTML of the webpage in the output. If you want to include the raw HTML, set this to true. |
 | Only Main Content | `only-main-content` | boolean | Only return the main content of the page by excluding the content of the tag of header, nav, footer. |
 | Remove Tags | `remove-tags` | array[string] | A list of tags, classes, and ids to remove from the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to remove data. If empty, no tags will be removed. Example: `script, .ad, #footer`. Please check the [jQuery Syntax Examples](#jquery-syntax-examples). |
@@ -157,44 +165,44 @@ This task focuses on extracting specific data from targeted webpages by parsing 
 | Timeout | `timeout` | integer | This parameter specifies the time to wait for a page to load, measured in milliseconds. The minimum value is 0, and the maximum value is 60,000. Please note that if you set a short timeout, the page may not fully load. Conversely, setting a long timeout could significantly increase the time it takes for the task to complete. This timeout setting applies only to the Chrome simulator. |
 </div>
 
-
-
-
-
-
+<h4 id="scrape-pages-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Pages](#scrape-pages-pages) | `pages` | array[object] | A list of page objects that have been scraped. |
+| Pages | `pages` | array[object ([pages](#scrape-pages-pages))] | A list of page objects that have been scraped. |
 </div>
 
 <details>
-<summary> Output Objects in Scrape Pages</summary>
+<summary> Referenced Objects</summary>
+<h4 id="scrape-pages-metadata">Metadata <sup><small><small>Referenced in <a href="#scrape-pages-pages">Pages</a></small></small></sup></h4>
 
-<h4 id="scrape-pages-pages">Pages</h4>
+The metadata of the webpage.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Title | `title` | string | The title of the webpage. |
+| Description | `description` | string | The description of the webpage. |
+| Source URL | `source-url` | string | The source URL of the webpage. |
+</div>
+
+<h4 id="scrape-pages-pages">Pages <sup><small><small>Referenced in <a href="#scrape-pages-output">Output</a></small></small></sup></h4>
+
+A list of page objects that have been scraped.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Content | `content` | string | The scraped plain content without html tags of the webpage. |
-| HTML | `html` | string | The scraped html of the webpage. |
-| Links on Page | `links-on-page` | array | The list of links on the webpage. |
 | Markdown | `markdown` | string | The scraped markdown of the webpage. |
-| [Metadata](#scrape-pages-metadata) | `metadata` | object | The metadata of the webpage. |
+| HTML | `html` | string | The scraped html of the webpage. |
+| Metadata | `metadata` | object ([metadata](#scrape-pages-metadata)) | The metadata of the webpage. |
+| Links on Page | `links-on-page` | array[string] | The list of links on the webpage. |
 </div>
 
-<h4 id="scrape-pages-metadata">Metadata</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Description | `description` | string | The description of the webpage. |
-| Source URL | `source-url` | string | The source URL of the webpage. |
-| Title | `title` | string | The title of the webpage. |
-</div>
 </details>
 
 
@@ -241,24 +249,21 @@ Future enhancements will include additional user interactions, such as:
 
 This task extracts data directly from a website's sitemap. A sitemap is typically an XML file that lists all URLs and other relevant metadata, providing a structured overview of the site's pages. This method efficiently gathers key information from the sitemap without navigating through the site's internal pages.
 
+<h4 id="scrape-sitemap-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SCRAPE_SITEMAP` |
 | URL (required) | `url` | string | The URL of the sitemap to scrape. |
 </div>
 
-
-
-
-
-
+<h4 id="scrape-sitemap-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| List | `list` | array[json] | The list of information in a sitemap. |
+| List | `list` | array[object] | The list of information in a sitemap. |
 </div>
 
 

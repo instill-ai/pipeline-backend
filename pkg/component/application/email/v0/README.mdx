@@ -42,10 +42,10 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Server Address (required) | `server-address` | string | The address of the email server.  |
-| Server Port (required) | `server-port` | integer | The port of the email server.  |
-| Email Address (required) | `email-address` | string | The email address of the user.  |
-| App Password (required) | `password` | string | The password of the App passwords in Gmail settings.  |
+| Server Address (required) | `server-address` | string | The address of the email server. |
+| Server Port (required) | `server-port` | integer | The port of the email server. |
+| Email Address (required) | `email-address` | string | The email address of the user. |
+| App Password (required) | `password` | string | The password of the App passwords in Gmail settings. |
 
 </div>
 
@@ -84,9 +84,10 @@ For App Password, please follow the steps below:
 
 Send an email to recipients
 
+<h4 id="send-email-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEND_EMAIL` |
 | Recipient (required) | `recipients` | array[string] | The email addresses of the recipients. |
@@ -96,14 +97,10 @@ Send an email to recipients
 | Message (required) | `message` | string | The message to be sent. |
 </div>
 
-
-
-
-
-
+<h4 id="send-email-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Result | `result` | string | The result of sending the email. |
 </div>
@@ -113,49 +110,28 @@ Send an email to recipients
 
 Read emails from a mailbox
 
+<h4 id="read-emails-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_EMAILS` |
-| [Search](#read-emails-search) | `search` | object | The search criteria for the emails. |
+| Search | `search` | object ([search](#read-emails-search)) | The search criteria for the emails. |
 </div>
 
-
-<details>
-<summary> Input Objects in Read Emails</summary>
-
-<h4 id="read-emails-search">Search</h4>
-
-The search criteria for the emails.
-
+<h4 id="read-emails-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Field | Field ID | Type | Note |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Search Date | `date` | string | Search for emails with the date the email was sent.  |
-| Limit | `limit` | integer | The maximum number of emails to search for.  |
-| Mailbox | `mailbox` | string | The mailbox to search for emails.  |
-| Search Message | `search-email-message` | string | Search for emails with a specific message.  |
-| Search From | `search-from` | string | Search for emails from a specific email address.  |
-| Search Subject | `search-subject` | string | Search for emails with a specific subject.  |
-| Search To | `search-to` | string | Search for emails to a specific email address.  |
-</div>
-</details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| [Emails](#read-emails-emails) | `emails` | array[object] | The emails that match the search criteria. |
+| Emails | `emails` | array[object ([emails](#read-emails-emails))] | The emails that match the search criteria. |
 </div>
 
 <details>
-<summary> Output Objects in Read Emails</summary>
+<summary> Referenced Objects</summary>
+<h4 id="read-emails-emails">Emails <sup><small><small>Referenced in <a href="#read-emails-output">Output</a></small></small></sup></h4>
 
-<h4 id="read-emails-emails">Emails</h4>
+The emails that match the search criteria.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -163,10 +139,28 @@ The search criteria for the emails.
 | :--- | :--- | :--- | :--- |
 | Date | `date` | string | The date the email was sent. |
 | From | `from` | string | The email address of the sender. |
-| Message | `message` | string | The message of the email. |
+| To | `to` | array[string] | The email addresses of the recipient. |
 | Subject | `subject` | string | The subject of the email. |
-| To | `to` | array | The email addresses of the recipient. |
+| Message | `message` | string | The message of the email. |
 </div>
+
+<h4 id="read-emails-search">Search <sup><small><small>Referenced in <a href="#read-emails-input">Input</a></small></small></sup></h4>
+
+The search criteria for the emails.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Mailbox | `mailbox` | string | The mailbox to search for emails. |
+| Search From | `search-from` | string | Search for emails from a specific email address. |
+| Search To | `search-to` | string | Search for emails to a specific email address. |
+| Search Subject | `search-subject` | string | Search for emails with a specific subject. |
+| Limit | `limit` | integer | The maximum number of emails to search for. |
+| Search Date | `date` | string | Search for emails with the date the email was sent. |
+| Search Message | `search-email-message` | string | Search for emails with a specific message. |
+</div>
+
 </details>
 
 #### Mailbox

@@ -38,7 +38,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | Fill in your LeadIQ Secret Base64 API key, you can find it in [API Key](https://account.leadiq.com/app/settings/api-keys).  |
+| API Key (required) | `api-key` | string | Fill in your LeadIQ Secret Base64 API key, you can find it in [API Key](https://account.leadiq.com/app/settings/api-keys). |
 
 </div>
 
@@ -52,21 +52,28 @@ ${connection.<my-connection-id>}`.
 
 Find prospects' contact information based on the company name you provide. And, it will filter out the prospects who are not relevant to your search.
 
+<h4 id="find-prospects-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_FIND_PROSPECTS` |
-| [Company](#find-prospects-company) (required) | `company` | object | Provide the company information for which you want to find prospects. |
+| Company (required) | `company` | object ([company](#find-prospects-company)) | Provide the company information for which you want to find prospects. |
 | Limit (required) | `limit` | integer | Provide the number of prospects you want to find. If you don't provide any value, it will return 10 prospects. The maximum limit is 60. The minimum limit is 1. |
-| [Filter By](#find-prospects-filter-by) | `filter-by` | object | Provide the information about the prospects you want to filter. You can filter the prospects based on job title, name, seniority, and function. When it matches, the prospect will be included in the output. If you don't provide any value, it will return all the prospects. |
+| Filter By | `filter-by` | object ([filter-by](#find-prospects-filter-by)) | Provide the information about the prospects you want to filter. You can filter the prospects based on job title, name, seniority, and function. When it matches, the prospect will be included in the output. If you don't provide any value, it will return all the prospects. |
 </div>
 
+<h4 id="find-prospects-output">Output</h4>
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Prospects (optional) | `prospects` | array[object ([prospects](#find-prospects-prospects))] | The list of prospects' contact information based on the company information you provide. |
+</div>
 
 <details>
-<summary> Input Objects in Find Prospects</summary>
-
-<h4 id="find-prospects-company">Company</h4>
+<summary> Referenced Objects</summary>
+<h4 id="find-prospects-company">Company <sup><small><small>Referenced in <a href="#find-prospects-input">Input</a></small></small></sup></h4>
 
 Provide the company information for which you want to find prospects.
 
@@ -74,27 +81,17 @@ Provide the company information for which you want to find prospects.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Cities | `cities` | array | Provide the cities of the company you want to find prospects. If you don't provide any value, it will return all the prospects.  |
-| Countries | `countries` | array | Provide the countries of the company you want to find prospects. If you don't provide any value, it will return all the prospects.  |
-| Descriptions | `descriptions` | array | Provide the descriptions of the company you want to find prospects. In LeadIQ, it will return the similar companies based on the descriptions.  |
-| Industries | `industries` | array | Provide the industries of the company you want to find prospects. If you don't provide any value, it will return all the prospects.  |
-| Names | `names` | array | Provide the company names for which you want to find prospects.  |
-| [Revenue Size](#find-prospects-revenue-size) | `revenue-size` | object | Provide the min or max revenue size of the company you want to find prospects. If you don't provide any value, it will return all the prospects. If you set the company names, the revenue size will be ignored.  |
-| States | `states` | array | Provide the states of the company you want to find prospects. If you don't provide any value, it will return all the prospects.  |
-| Technologies | `technologies` | array | Provide the technologies used by the company you want to find prospects. If you don't provide any value, it will return all the prospects.  |
+| Names | `names` | array | Provide the company names for which you want to find prospects. |
+| Revenue Size | `revenue-size` | object ([revenue-size](#find-prospects-revenue-size)) | Provide the min or max revenue size of the company you want to find prospects. If you don't provide any value, it will return all the prospects. If you set the company names, the revenue size will be ignored. |
+| Countries | `countries` | array | Provide the countries of the company you want to find prospects. If you don't provide any value, it will return all the prospects. |
+| States | `states` | array | Provide the states of the company you want to find prospects. If you don't provide any value, it will return all the prospects. |
+| Cities | `cities` | array | Provide the cities of the company you want to find prospects. If you don't provide any value, it will return all the prospects. |
+| Industries | `industries` | array | Provide the industries of the company you want to find prospects. If you don't provide any value, it will return all the prospects. |
+| Descriptions | `descriptions` | array | Provide the descriptions of the company you want to find prospects. In LeadIQ, it will return the similar companies based on the descriptions. |
+| Technologies | `technologies` | array | Provide the technologies used by the company you want to find prospects. If you don't provide any value, it will return all the prospects. |
 </div>
-<h4 id="find-prospects-revenue-size">Revenue Size</h4>
 
-Provide the min or max revenue size of the company you want to find prospects. If you don't provide any value, it will return all the prospects. If you set the company names, the revenue size will be ignored.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Max | `max` | integer | Provide the maximum revenue size of the company you want to find prospects.  |
-| Min | `min` | integer | Provide the minimum revenue size of the company you want to find prospects.  |
-</div>
-<h4 id="find-prospects-filter-by">Filter By</h4>
+<h4 id="find-prospects-filter-by">Filter By <sup><small><small>Referenced in <a href="#find-prospects-input">Input</a></small></small></sup></h4>
 
 Provide the information about the prospects you want to filter. You can filter the prospects based on job title, name, seniority, and function. When it matches, the prospect will be included in the output. If you don't provide any value, it will return all the prospects.
 
@@ -102,54 +99,46 @@ Provide the information about the prospects you want to filter. You can filter t
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Function | `function` | string | Provide the function of the prospects you want to filter with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions).  |
-| Job Title | `job-title` | string | Provide the job title of the prospects you want to filter with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions).  |
-| Seniorities | `seniorities` | array | Provide the seniorities of the prospects you want to filter.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Executive`</li><li>`Director`</li><li>`SeniorIndividualContributor`</li><li>`VP`</li><li>`Manager`</li><li>`Other`</li></ul></details>  |
-</div>
-</details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| [Prospects](#find-prospects-prospects) (optional) | `prospects` | array[object] | The list of prospects' contact information based on the company information you provide. |
+| Job Title | `job-title` | string | Provide the job title of the prospects you want to filter with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). |
+| Seniorities | `seniorities` | array | Provide the seniorities of the prospects you want to filter. |
+| Function | `function` | string | Provide the function of the prospects you want to filter with [regular expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions). |
 </div>
 
-<details>
-<summary> Output Objects in Find Prospects</summary>
+<h4 id="find-prospects-prospects">Prospects <sup><small><small>Referenced in <a href="#find-prospects-output">Output</a></small></small></sup></h4>
 
-<h4 id="find-prospects-prospects">Prospects</h4>
+The list of prospects' contact information based on the company information you provide.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Company Address | `company-address` | string | The address of the company from LeadIQ. It combines the city, state, and country. |
+| Name | `name` | string | The name of the prospect. |
+| Job Title | `job-title` | string | The job title of the prospect. |
+| Seniority | `seniority` | string | The seniority of the prospect. |
+| Email | `email` | string | The email address of the prospect. |
+| LinkedIn URL | `linkedin-url` | string | The LinkedIn URL of the prospect. |
+| Company Name | `company-name` | string | The company name of the prospect. |
 | Company Description | `company-description` | string | The description of the company from LeadIQ. |
 | Company Industry | `company-industry` | string | The industry of the company from LeadIQ. |
-| Company Name | `company-name` | string | The company name of the prospect. |
+| Company Address | `company-address` | string | The address of the company from LeadIQ. It combines the city, state, and country. |
 | Company Technologies | `company-technologies` | array | The technologies used by the company from LeadIQ. |
 | Company Technology Categories | `company-technology-categories` | array | The technology categories of the company from LeadIQ. |
-| Email | `email` | string | The email address of the prospect. |
-| Job Title | `job-title` | string | The job title of the prospect. |
-| LinkedIn URL | `linkedin-url` | string | The LinkedIn URL of the prospect. |
-| Name | `name` | string | The name of the prospect. |
-| [Revenue Size](#find-prospects-revenue-size) | `revenue-size` | object | The revenue size of the company from LeadIQ. |
-| Seniority | `seniority` | string | The seniority of the prospect. |
+| Revenue Size | `revenue-size` | object ([revenue-size](#find-prospects-revenue-size)) | The revenue size of the company from LeadIQ. |
 </div>
 
-<h4 id="find-prospects-revenue-size">Revenue Size</h4>
+<h4 id="find-prospects-revenue-size">Revenue Size <sup><small><small>Referenced in <a href="#find-prospects-company">Company</a>, <a href="#find-prospects-prospects">Prospects</a></small></small></sup></h4>
+
+The revenue size of the company from LeadIQ.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Description | `description` | string | The description of the revenue size of the company from LeadIQ. |
-| Max | `max` | integer | The maximum revenue size of the company from LeadIQ. |
 | Min | `min` | integer | The minimum revenue size of the company from LeadIQ. |
+| Max | `max` | integer | The maximum revenue size of the company from LeadIQ. |
+| Description | `description` | string | The description of the revenue size of the company from LeadIQ. |
 </div>
+
 </details>
 
 #### Regex Match Sample

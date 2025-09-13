@@ -52,8 +52,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | Fill in your Freshdesk API key. To find your key, go to profile settigs and on the right pane, you can get your key once you have completed the captcha verification.  |
-| Domain (required) | `domain` | string | Your Freshdesk domain. You can find this by going to Admin -> Search for "Portals" -> Portal URL. Your portal URL will look like "yourdomain.freshdesk.com". Please only input your domain and not the whole URL.  |
+| API Key (required) | `api-key` | string | Fill in your Freshdesk API key. To find your key, go to profile settigs and on the right pane, you can get your key once you have completed the captcha verification. |
+| Domain (required) | `domain` | string | Your Freshdesk domain. You can find this by going to Admin -> Search for "Portals" -> Portal URL. Your portal URL will look like "yourdomain.freshdesk.com". Please only input your domain and not the whole URL. |
 
 </div>
 
@@ -67,70 +67,69 @@ ${connection.<my-connection-id>}`.
 
 Get ticket using ID
 
+<h4 id="get-ticket-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_TICKET` |
-| Ticket ID (required) | `ticket-id` | integer | The ID of the ticket. |
+| Ticket ID (required) | `ticket-id` | object ([ticket/ticket-id](#get-ticket-ticket-ticket-id)) | The ID of the ticket. |
 </div>
 
-
-
-
-
-
+<h4 id="get-ticket-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Subject | `subject` | string | Subject of the ticket. |
-| Description Text | `description-text` | string | Content of the ticket. |
-| Source | `source` | string | Source of the ticket. Eg: Email. |
-| Status | `status` | string | Status of the ticket. Eg: Pending. |
-| Priority | `priority` | string | Priority of the ticket. Eg: Medium. |
-| Ticket Type (optional) | `ticket-type` | string | Used to categorize the ticket. To check the possible types a ticket can have, please go to Admin -> Ticket Fields. |
-| Association Type (optional) | `association-type` | string | Used to determine whether a ticket is a parent, child, tracker or related ticket. |
-| Associated Ticket List (optional) | `associated-ticket-list` | array[integer] | List of associated ticket IDs. |
-| Tags (optional) | `tags` | array[string] | Tags associated with the ticket. |
-| CC Emails (optional) | `cc-emails` | array[string] | Email addresses added in the `cc` field of the incoming ticket email. |
-| Forward Emails (optional) | `forward-emails` | array[string] | Email addresses added while forwarding a ticket. |
-| Reply CC Emails (optional) | `reply-cc-emails` | array[string] | Email addresses added while replying to a ticket. |
-| Requester ID | `requester-id` | integer | ID of the requester. |
-| Responder ID (optional) | `responder-id` | integer | ID of the agent to whom the ticket has been assigned. List of agents can be found in Admin -> Agents. |
-| Company ID (optional) | `company-id` | integer | ID of the company to which this ticket belongs. |
-| Group ID (optional) | `group-id` | integer | ID of the group to which the ticket has been assigned. List of groups can be found in Admin -> Groups. |
-| Product ID (optional) | `product-id` | integer | ID of the product to which the ticket is associated. List of products can be found in Admin -> Multiple Products. |
-| Support Email (optional) | `support-email` | string | Support email address. You can find it in Admin -> Email (under channel). |
-| To Emails (optional) | `to-emails` | array[string] | Email addresses to which the ticket was originally sent. |
-| Spam (optional) | `spam` | boolean | Set to true if the ticket is marked as spam. |
-| Due By (optional) | `due-by` | string | Timestamp that denotes when the ticket is due to be resolved. In UTC format. |
-| Is Escalated (optional) | `is-escalated` | boolean | Set to true if the ticket has been escalated. |
-| First Response Due By (optional) | `first-response-due-by` | string | Timestamp that denotes when the first response is due. In UTC format. You can adjust this by going to Admin -> SLA policy (under Workflows). |
-| First Response Escalated (optional) | `first-response-escalated` | boolean | Set to true if the ticket has been escalated as the result of first response time being breached. |
-| Next Response Due By (optional) | `next-response-due-by` | string | Timestamp that denotes when the next response is due. In UTC format. You can adjust this by going to Admin -> SLA policy (under Workflows). |
-| Next Response Escalated (optional) | `next-response-escalated` | boolean | Set to true if the ticket has been escalated as the result of next response time being breached. |
-| Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
-| Updated At | `updated-at` | string | Timestamp that denotes when the ticket was last updated. In UTC format. |
-| [Attachments](#get-ticket-attachments) (optional) | `attachments` | array[object] | Ticket attachments (cannot be more than 20MB). |
-| Sentiment Score (optional) | `sentiment-score` | integer | Freshdesk uses AI to assess the emotional tone and attitude expressed in customer interaction. |
-| Initial Sentiment Score (optional) | `initial-sentiment-score` | integer | The initial sentiment score of the ticket. |
-| Custom Fields (optional) | `custom-fields` | json | Custom fields that the ticket have. Custom fields can be created or modified in Admin -> Ticket Fields. |
+| Subject | `subject` | object ([ticket/subject](#get-ticket-ticket-subject)) | Subject of the ticket. |
+| Description Text | `description-text` | object ([ticket/description-text](#get-ticket-ticket-description-text)) | Content of the ticket. |
+| Source | `source` | object ([ticket/source](#get-ticket-ticket-source)) | Source of the ticket. Eg: Email. |
+| Status | `status` | object ([ticket/status](#get-ticket-ticket-status)) | Status of the ticket. Eg: Pending. |
+| Priority | `priority` | object ([ticket/priority](#get-ticket-ticket-priority)) | Priority of the ticket. Eg: Medium. |
+| Ticket Type (optional) | `ticket-type` | object ([ticket/ticket-type](#get-ticket-ticket-ticket-type)) | Used to categorize the ticket. To check the possible types a ticket can have, please go to Admin -> Ticket Fields. |
+| Association Type (optional) | `association-type` | object ([ticket/association-type](#get-ticket-ticket-association-type)) | Used to determine whether a ticket is a parent, child, tracker or related ticket. |
+| Associated Ticket List (optional) | `associated-ticket-list` | object ([ticket/associated-ticket-list](#get-ticket-ticket-associated-ticket-list)) | List of associated ticket IDs. |
+| Tags (optional) | `tags` | object ([ticket/tags](#get-ticket-ticket-tags)) | Tags associated with the ticket. |
+| CC Emails (optional) | `cc-emails` | object ([ticket/cc-emails](#get-ticket-ticket-cc-emails)) | Email addresses added in the `cc` field of the incoming ticket email. |
+| Forward Emails (optional) | `forward-emails` | object ([ticket/forward-emails](#get-ticket-ticket-forward-emails)) | Email addresses added while forwarding a ticket. |
+| Reply CC Emails (optional) | `reply-cc-emails` | object ([ticket/reply-cc-emails](#get-ticket-ticket-reply-cc-emails)) | Email addresses added while replying to a ticket. |
+| Requester ID | `requester-id` | object ([ticket/requester-id](#get-ticket-ticket-requester-id)) | ID of the requester. |
+| Responder ID (optional) | `responder-id` | object ([ticket/responder-id](#get-ticket-ticket-responder-id)) | ID of the agent to whom the ticket has been assigned. List of agents can be found in Admin -> Agents. |
+| Company ID (optional) | `company-id` | object ([ticket/company-id](#get-ticket-ticket-company-id)) | ID of the company to which this ticket belongs. |
+| Group ID (optional) | `group-id` | object ([ticket/group-id](#get-ticket-ticket-group-id)) | ID of the group to which the ticket has been assigned. List of groups can be found in Admin -> Groups. |
+| Product ID (optional) | `product-id` | object ([ticket/product-id](#get-ticket-ticket-product-id)) | ID of the product to which the ticket is associated. List of products can be found in Admin -> Multiple Products. |
+| Support Email (optional) | `support-email` | object ([ticket/support-email](#get-ticket-ticket-support-email)) | Support email address. You can find it in Admin -> Email (under channel). |
+| To Emails (optional) | `to-emails` | object ([ticket/to-emails](#get-ticket-ticket-to-emails)) | Email addresses to which the ticket was originally sent. |
+| Spam (optional) | `spam` | object ([ticket/spam](#get-ticket-ticket-spam)) | Set to true if the ticket is marked as spam. |
+| Due By (optional) | `due-by` | object ([ticket/due-by](#get-ticket-ticket-due-by)) | Timestamp that denotes when the ticket is due to be resolved. In UTC format. |
+| Is Escalated (optional) | `is-escalated` | object ([ticket/is-escalated](#get-ticket-ticket-is-escalated)) | Set to true if the ticket has been escalated. |
+| First Response Due By (optional) | `first-response-due-by` | object ([ticket/first-response-due-by](#get-ticket-ticket-first-response-due-by)) | Timestamp that denotes when the first response is due. In UTC format. You can adjust this by going to Admin -> SLA policy (under Workflows). |
+| First Response Escalated (optional) | `first-response-escalated` | object ([ticket/first-response-escalated](#get-ticket-ticket-first-response-escalated)) | Set to true if the ticket has been escalated as the result of first response time being breached. |
+| Next Response Due By (optional) | `next-response-due-by` | object ([ticket/next-response-due-by](#get-ticket-ticket-next-response-due-by)) | Timestamp that denotes when the next response is due. In UTC format. You can adjust this by going to Admin -> SLA policy (under Workflows). |
+| Next Response Escalated (optional) | `next-response-escalated` | object ([ticket/next-response-escalated](#get-ticket-ticket-next-response-escalated)) | Set to true if the ticket has been escalated as the result of next response time being breached. |
+| Created At | `created-at` | object ([ticket/created-at](#get-ticket-ticket-created-at)) | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
+| Updated At | `updated-at` | object ([ticket/updated-at](#get-ticket-ticket-updated-at)) | Timestamp that denotes when the ticket was last updated. In UTC format. |
+| Attachments (optional) | `attachments` | object ([ticket/attachments](#get-ticket-ticket-attachments)) | Ticket attachments (cannot be more than 20MB). |
+| Sentiment Score (optional) | `sentiment-score` | object ([ticket/sentiment-score](#get-ticket-ticket-sentiment-score)) | Freshdesk uses AI to assess the emotional tone and attitude expressed in customer interaction. |
+| Initial Sentiment Score (optional) | `initial-sentiment-score` | object ([ticket/initial-sentiment-score](#get-ticket-ticket-initial-sentiment-score)) | The initial sentiment score of the ticket. |
+| Custom Fields (optional) | `custom-fields` | object ([ticket/custom-fields](#get-ticket-ticket-custom-fields)) | Custom fields that the ticket have. Custom fields can be created or modified in Admin -> Ticket Fields. |
 </div>
 
 <details>
-<summary> Output Objects in Get Ticket</summary>
+<summary> Referenced Objects</summary>
+<h4 id="get-ticket-ticket-attachments">Ticket/Attachments <sup><small><small>Referenced in <a href="#get-ticket-output">Output</a></small></small></sup></h4>
 
-<h4 id="get-ticket-attachments">Attachments</h4>
+Ticket attachments (cannot be more than 20MB).
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Attachment Content Type | `content-type` | string | The type of the file. |
 | Attachment Name | `name` | string | The name of the file. |
+| Attachment Content Type | `content-type` | string | The type of the file. |
 | Attachment URL | `url` | string | The URL to the attachment. |
 </div>
+
 </details>
 
 
@@ -138,40 +137,37 @@ Get ticket using ID
 
 Create ticket
 
+<h4 id="create-ticket-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_TICKET` |
 | Requester ID | `requester-id` | integer | ID of the requester. Must be an existing contact. If you fill in this field, you don't need to fill in the email field. Only one of the two fields is required. |
 | Email | `email` | string | Email address of the requester. If you fill in the Requester ID above, it will be ignored. Only one of the two fields is required. If no contact exists with this email address in Freshdesk, it will be added as a new contact. |
-| Subject (required) | `subject` | string | Subject of the ticket. |
+| Subject (required) | `subject` | object ([ticket/subject](#create-ticket-ticket-subject)) | Subject of the ticket. |
 | Description (required) | `description` | string | Content of the ticket. You can use HTML tags in the content. |
-| Source (required) | `source` | string | Source of the ticket. Eg: Email. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Email`</li><li>`Portal`</li><li>`Phone`</li><li>`Twitter`</li><li>`Facebook`</li><li>`Chat`</li><li>`Feedback Widget`</li><li>`Outbound Email`</li><li>`Ecommerce`</li></ul></details>  |
-| Status (required) | `status` | string | Status of the ticket. Eg: Pending. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Open`</li><li>`Pending`</li><li>`Resolved`</li><li>`Closed`</li><li>`Waiting on Customer`</li><li>`Waiting on Third Party`</li></ul></details>  |
-| Priority (required) | `priority` | string | Priority of the ticket. Eg: Medium. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Low`</li><li>`Medium`</li><li>`High`</li><li>`Urgent`</li></ul></details>  |
-| Ticket Type | `ticket-type` | string | Used to categorize the ticket. To check the possible types a ticket can have, please go to Admin -> Ticket Fields. |
-| Company ID | `company-id` | integer | ID of the company to which this ticket belongs. |
-| Product ID | `product-id` | integer | ID of the product to which the ticket is associated. List of products can be found in Admin -> Multiple Products. |
-| Group ID | `group-id` | integer | ID of the group to which the ticket has been assigned. List of groups can be found in Admin -> Groups. |
-| Responder ID | `responder-id` | integer | ID of the agent to whom the ticket has been assigned. List of agents can be found in Admin -> Agents. |
-| Tags | `tags` | array[string] | Tags associated with the ticket. |
-| CC Emails | `cc-emails` | array[string] | Email addresses added in the `cc` field of the incoming ticket email. |
+| Source (required) | `source` | object ([ticket/source](#create-ticket-ticket-source)) | Source of the ticket. Eg: Email. |
+| Status (required) | `status` | object ([ticket/status](#create-ticket-ticket-status)) | Status of the ticket. Eg: Pending. |
+| Priority (required) | `priority` | object ([ticket/priority](#create-ticket-ticket-priority)) | Priority of the ticket. Eg: Medium. |
+| Ticket Type | `ticket-type` | object ([ticket/ticket-type](#create-ticket-ticket-ticket-type)) | Used to categorize the ticket. To check the possible types a ticket can have, please go to Admin -> Ticket Fields. |
+| Company ID | `company-id` | object ([ticket/company-id](#create-ticket-ticket-company-id)) | ID of the company to which this ticket belongs. |
+| Product ID | `product-id` | object ([ticket/product-id](#create-ticket-ticket-product-id)) | ID of the product to which the ticket is associated. List of products can be found in Admin -> Multiple Products. |
+| Group ID | `group-id` | object ([ticket/group-id](#create-ticket-ticket-group-id)) | ID of the group to which the ticket has been assigned. List of groups can be found in Admin -> Groups. |
+| Responder ID | `responder-id` | object ([ticket/responder-id](#create-ticket-ticket-responder-id)) | ID of the agent to whom the ticket has been assigned. List of agents can be found in Admin -> Agents. |
+| Tags | `tags` | object ([ticket/tags](#create-ticket-ticket-tags)) | Tags associated with the ticket. |
+| CC Emails | `cc-emails` | object ([ticket/cc-emails](#create-ticket-ticket-cc-emails)) | Email addresses added in the `cc` field of the incoming ticket email. |
 | Parent ID | `parent-id` | integer | ID of the parent ticket. Need to be filled out if you want to create a child ticket. |
 | Related Ticket IDs | `related-ticket-ids` | array[integer] | List of related ticket IDs. Need to be filled out if you want to create a tracker ticket. |
 </div>
 
-
-
-
-
-
+<h4 id="create-ticket-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Ticket ID | `ticket-id` | integer | The ID of the ticket. |
-| Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
+| Ticket ID | `ticket-id` | object ([ticket/ticket-id](#create-ticket-ticket-ticket-id)) | The ID of the ticket. |
+| Created At | `created-at` | object ([ticket/created-at](#create-ticket-ticket-created-at)) | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
 </div>
 
 
@@ -179,30 +175,27 @@ Create ticket
 
 Reply to a ticket thread.
 
+<h4 id="reply-to-ticket-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_REPLY_TO_TICKET` |
 | Body (required) | `body` | string | Content of the reply. Can be in HTML format. |
-| Ticket ID (required) | `ticket-id` | integer | The ID of the ticket. |
+| Ticket ID (required) | `ticket-id` | object ([ticket/ticket-id](#reply-to-ticket-ticket-ticket-id)) | The ID of the ticket. |
 | From Email | `from-email` | string | Email address that is replying to the ticket. You need to have this email address registered in Freshdesk by going to Admin -> Emails. If you leave this field empty, the global support email will be used. |
 | User ID | `user-id` | integer | ID of the agent/contact replying to the ticket. If you fill this field using a contact ID, there will be no email sent to the requester. |
 | CC Emails | `cc-emails` | array[string] | Email addresses added in the `cc` field of the outgoing ticket email. |
 | BCC Emails | `bcc-emails` | array[string] | Email addresses added in the `bcc` field of the outgoing ticket email. |
 </div>
 
-
-
-
-
-
+<h4 id="reply-to-ticket-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket. |
-| Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
+| Conversation ID | `conversation-id` | object ([ticket/conversation-id](#reply-to-ticket-ticket-conversation-id)) | The ID of the note or reply that is associated with the ticket. |
+| Created At | `created-at` | object ([ticket/created-at](#reply-to-ticket-ticket-created-at)) | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
 </div>
 
 
@@ -210,12 +203,13 @@ Reply to a ticket thread.
 
 Create a private/public note on a ticket thread.
 
+<h4 id="create-ticket-note-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_TICKET_NOTE` |
-| Ticket ID (required) | `ticket-id` | integer | The ID of the ticket. |
+| Ticket ID (required) | `ticket-id` | object ([ticket/ticket-id](#create-ticket-note-ticket-ticket-id)) | The ID of the ticket. |
 | Body (required) | `body` | string | Content of the note. Can be in HTML format. |
 | Notify Emails | `notify-emails` | array[string] | Email addresses of agents/users who need to be notified about this note. The emails need to exist in Freshdesk agent. Agent list can be seen in Admin -> Agents. |
 | User ID | `user-id` | integer | ID of the agent/contact who is adding the note. |
@@ -223,17 +217,13 @@ Create a private/public note on a ticket thread.
 | Incoming | `incoming` | boolean | Set to true if a particular note should appear as being created from outside (i.e., not through web portal). |
 </div>
 
-
-
-
-
-
+<h4 id="create-ticket-note-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket. |
-| Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
+| Conversation ID | `conversation-id` | object ([ticket/conversation-id](#create-ticket-note-ticket-conversation-id)) | The ID of the note or reply that is associated with the ticket. |
+| Created At | `created-at` | object ([ticket/created-at](#create-ticket-note-ticket-created-at)) | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
 </div>
 
 
@@ -241,48 +231,47 @@ Create a private/public note on a ticket thread.
 
 Get all the conversations in a ticket. (Conversations are replies and notes that are added to a ticket)
 
+<h4 id="get-all-conversations-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ALL_CONVERSATIONS` |
 | Ticket ID (required) | `ticket-id` | integer | Ticket ID. |
 </div>
 
-
-
-
-
-
+<h4 id="get-all-conversations-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Conversations](#get-all-conversations-conversations) | `conversations` | array[object] | An array of conversations. |
+| Conversations | `conversations` | array[object ([conversations](#get-all-conversations-conversation))] | An array of conversations. |
 | Conversations Length | `conversations-length` | integer | Number of conversations. |
 </div>
 
 <details>
-<summary> Output Objects in Get All Conversations</summary>
+<summary> Referenced Objects</summary>
+<h4 id="get-all-conversations-conversation">Conversation <sup><small><small>Referenced in <a href="#get-all-conversations-output">Output</a></small></small></sup></h4>
 
-<h4 id="get-all-conversations-conversations">Conversations</h4>
+An array of conversations.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| BCC Emails | `bcc-emails` | array | Email addresses added in the `bcc` field of the incoming ticket email. |
 | Body Text | `body-text` | string | Content of the conversation. |
-| CC Emails | `cc-emails` | array | Email addresses added in the `cc` field of the incoming ticket email. |
-| Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket. |
-| Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
+| Conversation ID | `conversation-id` | object ([ticket/conversation-id](#get-all-conversations-ticket-conversation-id)) | The ID of the note or reply that is associated with the ticket. |
+| Support Email | `support-email` | object ([ticket/support-email](#get-all-conversations-ticket-support-email)) | Support email address. You can find it in Admin -> Email (under channel). |
+| To Emails | `to-emails` | array[string] | Email addresses of agents/users who need to be notified about this conversation. |
 | From Email | `from-email` | string | Email address that is replying to the ticket or adding the note. |
+| CC Emails | `cc-emails` | object ([ticket/cc-emails](#get-all-conversations-ticket-cc-emails)) | Email addresses added in the `cc` field of the incoming ticket email. |
+| BCC Emails | `bcc-emails` | object ([ticket/bcc-emails](#get-all-conversations-ticket-bcc-emails)) | Email addresses added in the `bcc` field of the incoming ticket email. |
 | Incoming | `incoming` | boolean | Set to true if a particular conversation should appear as being created from outside. |
 | Incoming | `private` | boolean | Set to true if a note is private. Can be set only for notes. |
-| Support Email | `support-email` | string | Support email address. You can find it in Admin -> Email (under channel). |
-| To Emails | `to-emails` | array | Email addresses of agents/users who need to be notified about this conversation. |
 | Incoming | `user-id` | integer | ID of the agent/contact replying to the ticket. |
+| Created At | `created-at` | object ([ticket/created-at](#get-all-conversations-ticket-created-at)) | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
 </div>
+
 </details>
 
 
@@ -290,51 +279,49 @@ Get all the conversations in a ticket. (Conversations are replies and notes that
 
 Get contact using ID
 
+<h4 id="get-contact-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_CONTACT` |
-| Contact ID (required) | `contact-id` | integer | ID of the contact. |
+| Contact ID (required) | `contact-id` | object ([contact/contact-id](#get-contact-contact-contact-id)) | ID of the contact. |
 </div>
 
-
-
-
-
-
+<h4 id="get-contact-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Name | `name` | string | Name of the contact. |
-| Email (optional) | `email` | string | The primary email address of the contact. |
-| Phone (optional) | `phone` | string | Telephone number of the contact. |
-| Mobile (optional) | `mobile` | string | Mobile number of the contact. |
-| Description (optional) | `description` | string | Description of the contact. |
-| Address (optional) | `address` | string | Address of the contact. |
-| Job Title (optional) | `job-title` | string | Job title of the contact. |
-| Tags (optional) | `tags` | array[string] | Tags associated with the contact. |
-| Language (optional) | `language` | string | Language of the contact. |
-| Time Zone (optional) | `time-zone` | string | Time zone of the contact. |
-| Company ID (optional) | `company-id` | integer | ID of the primary company to which the contact belongs. |
-| Unique External ID (optional) | `unique-external-id` | string | Unique external ID of the contact which be assigned by the user(agent). |
-| Twitter ID (optional) | `twitter-id` | string | Twitter ID of the contact. |
-| View All Tickets (optional) | `view-all-tickets` | boolean | Set to true if the contact can see all the tickets that are associated with the primary company. |
-| Deleted (optional) | `deleted` | boolean | Set to true if the contact is deleted. |
-| Active (optional) | `active` | boolean | Set to true if the contact has been verified. |
-| Other Emails (optional) | `other-emails` | array[string] | List of other email addresses of the contact. |
-| [Other Companies](#get-contact-other-companies) (optional) | `other-companies` | array[object] | List of other companies to which the contact belongs. |
-| Other Phone Numbers (optional) | `other-phone-numbers` | array[string] | List of other phone numbers of the contact. |
-| Created At (optional) | `created-at` | string | Timestamp that denotes when the contact was created. In UTC format. |
-| Updated At (optional) | `updated-at` | string | Timestamp that denotes when the contact was last updated. In UTC format. |
-| Custom Fields (optional) | `custom-fields` | json | Custom fields that the contact have. Custom fields can be created or modified in Admin -> Customer Fields. |
+| Name | `name` | object ([contact/name](#get-contact-contact-name)) | Name of the contact. |
+| Email (optional) | `email` | object ([contact/email](#get-contact-contact-email)) | The primary email address of the contact. |
+| Phone (optional) | `phone` | object ([contact/phone](#get-contact-contact-phone)) | Telephone number of the contact. |
+| Mobile (optional) | `mobile` | object ([contact/mobile](#get-contact-contact-mobile)) | Mobile number of the contact. |
+| Description (optional) | `description` | object ([contact/description](#get-contact-contact-description)) | Description of the contact. |
+| Address (optional) | `address` | object ([contact/address](#get-contact-contact-address)) | Address of the contact. |
+| Job Title (optional) | `job-title` | object ([contact/job-title](#get-contact-contact-job-title)) | Job title of the contact. |
+| Tags (optional) | `tags` | object ([contact/tags](#get-contact-contact-tags)) | Tags associated with the contact. |
+| Language (optional) | `language` | object ([contact/language](#get-contact-contact-language)) | Language of the contact. |
+| Time Zone (optional) | `time-zone` | object ([contact/time-zone](#get-contact-contact-time-zone)) | Time zone of the contact. |
+| Company ID (optional) | `company-id` | object ([contact/company-id](#get-contact-contact-company-id)) | ID of the primary company to which the contact belongs. |
+| Unique External ID (optional) | `unique-external-id` | object ([contact/unique-external-id](#get-contact-contact-unique-external-id)) | Unique external ID of the contact which be assigned by the user(agent). |
+| Twitter ID (optional) | `twitter-id` | object ([contact/twitter-id](#get-contact-contact-twitter-id)) | Twitter ID of the contact. |
+| View All Tickets (optional) | `view-all-tickets` | object ([contact/view-all-tickets](#get-contact-contact-view-all-tickets)) | Set to true if the contact can see all the tickets that are associated with the primary company. |
+| Deleted (optional) | `deleted` | object ([contact/deleted](#get-contact-contact-deleted)) | Set to true if the contact is deleted. |
+| Active (optional) | `active` | object ([contact/active](#get-contact-contact-active)) | Set to true if the contact has been verified. |
+| Other Emails (optional) | `other-emails` | object ([contact/other-emails](#get-contact-contact-other-emails)) | List of other email addresses of the contact. |
+| Other Companies (optional) | `other-companies` | object ([contact/other-companies](#get-contact-contact-other-companies)) | List of other companies to which the contact belongs. |
+| Other Phone Numbers (optional) | `other-phone-numbers` | object ([contact/other-phone-numbers](#get-contact-contact-other-phone-numbers)) | List of other phone numbers of the contact. |
+| Created At (optional) | `created-at` | object ([contact/created-at](#get-contact-contact-created-at)) | Timestamp that denotes when the contact was created. In UTC format. |
+| Updated At (optional) | `updated-at` | object ([contact/updated-at](#get-contact-contact-updated-at)) | Timestamp that denotes when the contact was last updated. In UTC format. |
+| Custom Fields (optional) | `custom-fields` | object ([contact/custom-fields](#get-contact-contact-custom-fields)) | Custom fields that the contact have. Custom fields can be created or modified in Admin -> Customer Fields. |
 </div>
 
 <details>
-<summary> Output Objects in Get Contact</summary>
+<summary> Referenced Objects</summary>
+<h4 id="get-contact-contact-other-companies">Contact/Other Companies <sup><small><small>Referenced in <a href="#get-contact-output">Output</a></small></small></sup></h4>
 
-<h4 id="get-contact-other-companies">Other Companies</h4>
+List of other companies to which the contact belongs.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -343,6 +330,7 @@ Get contact using ID
 | Company ID | `company-id` | integer | ID of the company. |
 | View All Tickets | `view-all-tickets` | boolean | Set to true if the contact can see all the tickets that are associated with the company. |
 </div>
+
 </details>
 
 
@@ -350,41 +338,38 @@ Get contact using ID
 
 Create contact
 
+<h4 id="create-contact-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_CONTACT` |
-| Name (required) | `name` | string | Name of the contact. |
-| Email | `email` | string | The primary email address of the contact. |
-| Phone | `phone` | string | Telephone number of the contact. |
-| Mobile | `mobile` | string | Mobile number of the contact. |
-| Description | `description` | string | Description of the contact. |
-| Address | `address` | string | Address of the contact. |
-| Job Title | `job-title` | string | Job title of the contact. |
-| Tags | `tags` | array[string] | Tags associated with the contact. |
-| Language | `language` | string | Language of the contact. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Arabic`</li><li>`Bosnian`</li><li>`Bulgarian`</li><li>`Catalan`</li><li>`Chinese`</li><li>`Chinese (Traditional)`</li><li>`Croatian`</li><li>`Czech`</li><li>`Danish`</li><li>`Dutch`</li><li>`English`</li><li>`Estonian`</li><li>`Filipino`</li><li>`Finnish`</li><li>`French`</li><li>`German`</li><li>`Greek`</li><li>`Hebrew`</li><li>`Hungarian`</li><li>`Icelandic`</li><li>`Indonesian`</li><li>`Italian`</li><li>`Japanese`</li><li>`Korean`</li><li>`Latvian`</li><li>`Lithuanian`</li><li>`Malay`</li><li>`Norwegian`</li><li>`Polish`</li><li>`Portuguese (BR)`</li><li>`Portuguese/Portugal`</li><li>`Romanian`</li><li>`Russian`</li><li>`Serbian`</li><li>`Slovak`</li><li>`Slovenian`</li><li>`Spanish`</li><li>`Spanish (Latin America)`</li><li>`Swedish`</li><li>`Thai`</li><li>`Turkish`</li><li>`Ukrainian`</li><li>`Vietnamese`</li></ul></details>  |
-| Time Zone | `time-zone` | string | Time zone of the contact. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`American Samoa`</li><li>`International Date Line West`</li><li>`Midway Island`</li><li>`Hawaii`</li><li>`Alaska`</li><li>`Pacific Time (US & Canada)`</li><li>`Tijuana`</li><li>`Arizona`</li><li>`Mazatlan`</li><li>`Mountain Time (US & Canada)`</li><li>`Central America`</li><li>`Central Time (US & Canada)`</li><li>`Chihuahua`</li><li>`Guadalajara`</li><li>`Mexico City`</li><li>`Monterrey`</li><li>`Saskatchewan`</li><li>`Bogota`</li><li>`Eastern Time (US & Canada)`</li><li>`Indiana (East)`</li><li>`Lima`</li><li>`Quito`</li><li>`Atlantic Time (Canada)`</li><li>`Caracas`</li><li>`Georgetown`</li><li>`La Paz`</li><li>`Santiago`</li><li>`Newfoundland`</li><li>`Brasilia`</li><li>`Buenos Aires`</li><li>`Montevideo`</li><li>`Greenland`</li><li>`Mid-Atlantic`</li><li>`Azores`</li><li>`Cape Verde Is.`</li><li>`Casablanca`</li><li>`Dublin`</li><li>`Edinburgh`</li><li>`Lisbon`</li><li>`London`</li><li>`Monrovia`</li><li>`UTC`</li><li>`Amsterdam`</li><li>`Belgrade`</li><li>`Berlin`</li><li>`Bern`</li><li>`Bratislava`</li><li>`Brussels`</li><li>`Budapest`</li><li>`Copenhagen`</li><li>`Ljubljana`</li><li>`Madrid`</li><li>`Paris`</li><li>`Prague`</li><li>`Rome`</li><li>`Sarajevo`</li><li>`Skopje`</li><li>`Stockholm`</li><li>`Vienna`</li><li>`Warsaw`</li><li>`West Central Africa`</li><li>`Zagreb`</li><li>`Athens`</li><li>`Bucharest`</li><li>`Cairo`</li><li>`Harare`</li><li>`Helsinki`</li><li>`Jerusalem`</li><li>`Kaliningrad`</li><li>`Kyiv`</li><li>`Pretoria`</li><li>`Riga`</li><li>`Sofia`</li><li>`Tallinn`</li><li>`Vilnius`</li><li>`Baghdad`</li><li>`Istanbul`</li><li>`Kuwait`</li><li>`Minsk`</li><li>`Moscow`</li><li>`Nairobi`</li><li>`Riyadh`</li><li>`St. Petersburg`</li><li>`Volgograd`</li><li>`Tehran`</li><li>`Abu Dhabi`</li><li>`Baku`</li><li>`Muscat`</li><li>`Samara`</li><li>`Tbilisi`</li><li>`Yerevan`</li><li>`Kabul`</li><li>`Ekaterinburg`</li><li>`Islamabad`</li><li>`Karachi`</li><li>`Tashkent`</li><li>`Chennai`</li><li>`Kolkata`</li><li>`Mumbai`</li><li>`New Delhi`</li><li>`Sri Jayawardenepura`</li><li>`Kathmandu`</li><li>`Almaty`</li><li>`Astana`</li><li>`Dhaka`</li><li>`Urumqi`</li><li>`Rangoon`</li><li>`Bangkok`</li><li>`Hanoi`</li><li>`Jakarta`</li><li>`Krasnoyarsk`</li><li>`Novosibirsk`</li><li>`Beijing`</li><li>`Chongqing`</li><li>`Hong Kong`</li><li>`Irkutsk`</li><li>`Kuala Lumpur`</li><li>`Perth`</li><li>`Singapore`</li><li>`Taipei`</li><li>`Ulaanbaatar`</li><li>`Osaka`</li><li>`Sapporo`</li><li>`Seoul`</li><li>`Tokyo`</li><li>`Yakutsk`</li><li>`Adelaide`</li><li>`Darwin`</li><li>`Brisbane`</li><li>`Canberra`</li><li>`Guam`</li><li>`Hobart`</li><li>`Melbourne`</li><li>`Port Moresby`</li><li>`Sydney`</li><li>`Vladivostok`</li><li>`Magadan`</li><li>`New Caledonia`</li><li>`Solomon Is.`</li><li>`Srednekolymsk`</li><li>`Auckland`</li><li>`Fiji`</li><li>`Kamchatka`</li><li>`Marshall Is.`</li><li>`Wellington`</li><li>`Chatham Is.`</li><li>`Nuku'alofa`</li><li>`Samoa`</li><li>`Tokelau Is.`</li></ul></details>  |
-| Company ID | `company-id` | integer | ID of the primary company to which the contact belongs. |
-| Unique External ID | `unique-external-id` | string | Unique external ID of the contact which be assigned by the user(agent). |
-| Twitter ID | `twitter-id` | string | Twitter ID of the contact. |
+| Name (required) | `name` | object ([contact/name](#create-contact-contact-name)) | Name of the contact. |
+| Email | `email` | object ([contact/email](#create-contact-contact-email)) | The primary email address of the contact. |
+| Phone | `phone` | object ([contact/phone](#create-contact-contact-phone)) | Telephone number of the contact. |
+| Mobile | `mobile` | object ([contact/mobile](#create-contact-contact-mobile)) | Mobile number of the contact. |
+| Description | `description` | object ([contact/description](#create-contact-contact-description)) | Description of the contact. |
+| Address | `address` | object ([contact/address](#create-contact-contact-address)) | Address of the contact. |
+| Job Title | `job-title` | object ([contact/job-title](#create-contact-contact-job-title)) | Job title of the contact. |
+| Tags | `tags` | object ([contact/tags](#create-contact-contact-tags)) | Tags associated with the contact. |
+| Language | `language` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`Arabic`</li><li>`Bosnian`</li><li>`Bulgarian`</li><li>`Catalan`</li><li>`Chinese`</li><li>`Chinese (Traditional)`</li><li>`Croatian`</li><li>`Czech`</li><li>`Danish`</li><li>`Dutch`</li><li>`English`</li><li>`Estonian`</li><li>`Filipino`</li><li>`Finnish`</li><li>`French`</li><li>`German`</li><li>`Greek`</li><li>`Hebrew`</li><li>`Hungarian`</li><li>`Icelandic`</li><li>`Indonesian`</li><li>`Italian`</li><li>`Japanese`</li><li>`Korean`</li><li>`Latvian`</li><li>`Lithuanian`</li><li>`Malay`</li><li>`Norwegian`</li><li>`Polish`</li><li>`Portuguese (BR)`</li><li>`Portuguese/Portugal`</li><li>`Romanian`</li><li>`Russian`</li><li>`Serbian`</li><li>`Slovak`</li><li>`Slovenian`</li><li>`Spanish`</li><li>`Spanish (Latin America)`</li><li>`Swedish`</li><li>`Thai`</li><li>`Turkish`</li><li>`Ukrainian`</li><li>`Vietnamese`</li></ul></details></small></small> | Language of the contact. |
+| Time Zone | `time-zone` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`American Samoa`</li><li>`International Date Line West`</li><li>`Midway Island`</li><li>`Hawaii`</li><li>`Alaska`</li><li>`Pacific Time (US & Canada)`</li><li>`Tijuana`</li><li>`Arizona`</li><li>`Mazatlan`</li><li>`Mountain Time (US & Canada)`</li><li>`Central America`</li><li>`Central Time (US & Canada)`</li><li>`Chihuahua`</li><li>`Guadalajara`</li><li>`Mexico City`</li><li>`Monterrey`</li><li>`Saskatchewan`</li><li>`Bogota`</li><li>`Eastern Time (US & Canada)`</li><li>`Indiana (East)`</li><li>`Lima`</li><li>`Quito`</li><li>`Atlantic Time (Canada)`</li><li>`Caracas`</li><li>`Georgetown`</li><li>`La Paz`</li><li>`Santiago`</li><li>`Newfoundland`</li><li>`Brasilia`</li><li>`Buenos Aires`</li><li>`Montevideo`</li><li>`Greenland`</li><li>`Mid-Atlantic`</li><li>`Azores`</li><li>`Cape Verde Is.`</li><li>`Casablanca`</li><li>`Dublin`</li><li>`Edinburgh`</li><li>`Lisbon`</li><li>`London`</li><li>`Monrovia`</li><li>`UTC`</li><li>`Amsterdam`</li><li>`Belgrade`</li><li>`Berlin`</li><li>`Bern`</li><li>`Bratislava`</li><li>`Brussels`</li><li>`Budapest`</li><li>`Copenhagen`</li><li>`Ljubljana`</li><li>`Madrid`</li><li>`Paris`</li><li>`Prague`</li><li>`Rome`</li><li>`Sarajevo`</li><li>`Skopje`</li><li>`Stockholm`</li><li>`Vienna`</li><li>`Warsaw`</li><li>`West Central Africa`</li><li>`Zagreb`</li><li>`Athens`</li><li>`Bucharest`</li><li>`Cairo`</li><li>`Harare`</li><li>`Helsinki`</li><li>`Jerusalem`</li><li>`Kaliningrad`</li><li>`Kyiv`</li><li>`Pretoria`</li><li>`Riga`</li><li>`Sofia`</li><li>`Tallinn`</li><li>`Vilnius`</li><li>`Baghdad`</li><li>`Istanbul`</li><li>`Kuwait`</li><li>`Minsk`</li><li>`Moscow`</li><li>`Nairobi`</li><li>`Riyadh`</li><li>`St. Petersburg`</li><li>`Volgograd`</li><li>`Tehran`</li><li>`Abu Dhabi`</li><li>`Baku`</li><li>`Muscat`</li><li>`Samara`</li><li>`Tbilisi`</li><li>`Yerevan`</li><li>`Kabul`</li><li>`Ekaterinburg`</li><li>`Islamabad`</li><li>`Karachi`</li><li>`Tashkent`</li><li>`Chennai`</li><li>`Kolkata`</li><li>`Mumbai`</li><li>`New Delhi`</li><li>`Sri Jayawardenepura`</li><li>`Kathmandu`</li><li>`Almaty`</li><li>`Astana`</li><li>`Dhaka`</li><li>`Urumqi`</li><li>`Rangoon`</li><li>`Bangkok`</li><li>`Hanoi`</li><li>`Jakarta`</li><li>`Krasnoyarsk`</li><li>`Novosibirsk`</li><li>`Beijing`</li><li>`Chongqing`</li><li>`Hong Kong`</li><li>`Irkutsk`</li><li>`Kuala Lumpur`</li><li>`Perth`</li><li>`Singapore`</li><li>`Taipei`</li><li>`Ulaanbaatar`</li><li>`Osaka`</li><li>`Sapporo`</li><li>`Seoul`</li><li>`Tokyo`</li><li>`Yakutsk`</li><li>`Adelaide`</li><li>`Darwin`</li><li>`Brisbane`</li><li>`Canberra`</li><li>`Guam`</li><li>`Hobart`</li><li>`Melbourne`</li><li>`Port Moresby`</li><li>`Sydney`</li><li>`Vladivostok`</li><li>`Magadan`</li><li>`New Caledonia`</li><li>`Solomon Is.`</li><li>`Srednekolymsk`</li><li>`Auckland`</li><li>`Fiji`</li><li>`Kamchatka`</li><li>`Marshall Is.`</li><li>`Wellington`</li><li>`Chatham Is.`</li><li>`Nuku'alofa`</li><li>`Samoa`</li><li>`Tokelau Is.`</li></ul></details></small></small> | Time zone of the contact. |
+| Company ID | `company-id` | object ([contact/company-id](#create-contact-contact-company-id)) | ID of the primary company to which the contact belongs. |
+| Unique External ID | `unique-external-id` | object ([contact/unique-external-id](#create-contact-contact-unique-external-id)) | Unique external ID of the contact which be assigned by the user(agent). |
+| Twitter ID | `twitter-id` | object ([contact/twitter-id](#create-contact-contact-twitter-id)) | Twitter ID of the contact. |
 | View All Tickets | `view-all-tickets` | boolean | Used to determine if the contact can see all the tickets that are associated with the primary company. Note: this property will be ignored if the Company ID is not provided. |
-| Other Emails | `other-emails` | array[string] | List of other email addresses of the contact. |
+| Other Emails | `other-emails` | object ([contact/other-emails](#create-contact-contact-other-emails)) | List of other email addresses of the contact. |
 | Other Companies | `other-companies` | array[string] | List of other companies to which the contact belongs. Each company should be in the format of company-id;view-all-tickets(boolean `true`/`false``) Example: `123;true`. |
-| Other Phone Numbers | `other-phone-numbers` | array[string] | List of other phone numbers of the contact. |
+| Other Phone Numbers | `other-phone-numbers` | object ([contact/other-phone-numbers](#create-contact-contact-other-phone-numbers)) | List of other phone numbers of the contact. |
 </div>
 
-
-
-
-
-
+<h4 id="create-contact-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Contact ID | `contact-id` | integer | ID of the contact. |
-| Created At | `created-at` | string | Timestamp that denotes when the contact was created. In UTC format. |
+| Contact ID | `contact-id` | object ([contact/contact-id](#create-contact-contact-contact-id)) | ID of the contact. |
+| Created At | `created-at` | object ([contact/created-at](#create-contact-contact-created-at)) | Timestamp that denotes when the contact was created. In UTC format. |
 </div>
 
 
@@ -392,34 +377,31 @@ Create contact
 
 Get company using ID
 
+<h4 id="get-company-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_COMPANY` |
-| Company ID (required) | `company-id` | integer | ID of the primary company to which the contact belongs. |
+| Company ID (required) | `company-id` | object ([contact/company-id](#get-company-contact-company-id)) | ID of the primary company to which the contact belongs. |
 </div>
 
-
-
-
-
-
+<h4 id="get-company-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Name | `name` | string | Name of the company. |
-| Description (optional) | `description` | string | Description of the company. |
-| Note (optional) | `note` | string | Note about the company. |
-| Domains (optional) | `domains` | array[string] | Domains of the company. |
-| Health Score (optional) | `health-score` | string | The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "At risk", "Doing okay", "Happy". |
-| Account Tier (optional) | `account-tier` | string | Classification based on how much value the company brings to your business. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "Basic", "Premium", "Enterprise". |
-| Renewal Date (optional) | `renewal-date` | string | Date when your contract or relationship with the company is due for renewal. |
-| Industry (optional) | `industry` | string | The industry in which the company operates. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. |
-| Created At | `created-at` | string | Timestamp that denotes when the company was created. In UTC format. |
-| Updated At | `updated-at` | string | Timestamp that denotes when the company was last updated. In UTC format. |
-| Custom Fields (optional) | `custom-fields` | json | Custom fields that the company have. Custom fields can be created or modified in Admin -> Customer Fields. |
+| Name | `name` | object ([company/name](#get-company-company-name)) | Name of the company. |
+| Description (optional) | `description` | object ([company/description](#get-company-company-description)) | Description of the company. |
+| Note (optional) | `note` | object ([company/note](#get-company-company-note)) | Note about the company. |
+| Domains (optional) | `domains` | object ([company/domains](#get-company-company-domains)) | Domains of the company. |
+| Health Score (optional) | `health-score` | object ([company/health-score](#get-company-company-health-score)) | The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "At risk", "Doing okay", "Happy". |
+| Account Tier (optional) | `account-tier` | object ([company/account-tier](#get-company-company-account-tier)) | Classification based on how much value the company brings to your business. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "Basic", "Premium", "Enterprise". |
+| Renewal Date (optional) | `renewal-date` | object ([company/renewal-date](#get-company-company-renewal-date)) | Date when your contract or relationship with the company is due for renewal. |
+| Industry (optional) | `industry` | object ([company/industry](#get-company-company-industry)) | The industry in which the company operates. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. |
+| Created At | `created-at` | object ([company/created-at](#get-company-company-created-at)) | Timestamp that denotes when the company was created. In UTC format. |
+| Updated At | `updated-at` | object ([company/updated-at](#get-company-company-updated-at)) | Timestamp that denotes when the company was last updated. In UTC format. |
+| Custom Fields (optional) | `custom-fields` | object ([company/custom-fields](#get-company-company-custom-fields)) | Custom fields that the company have. Custom fields can be created or modified in Admin -> Customer Fields. |
 </div>
 
 
@@ -427,32 +409,29 @@ Get company using ID
 
 Create company
 
+<h4 id="create-company-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_COMPANY` |
-| Name (required) | `name` | string | Name of the company. |
-| Description | `description` | string | Description of the company. |
-| Note | `note` | string | Note about the company. |
-| Domains | `domains` | array[string] | Domains of the company. |
-| Health Score | `health-score` | string | The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "At risk", "Doing okay", "Happy". |
-| Account Tier | `account-tier` | string | Classification based on how much value the company brings to your business. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "Basic", "Premium", "Enterprise". |
+| Name (required) | `name` | object ([company/name](#create-company-company-name)) | Name of the company. |
+| Description | `description` | object ([company/description](#create-company-company-description)) | Description of the company. |
+| Note | `note` | object ([company/note](#create-company-company-note)) | Note about the company. |
+| Domains | `domains` | object ([company/domains](#create-company-company-domains)) | Domains of the company. |
+| Health Score | `health-score` | object ([company/health-score](#create-company-company-health-score)) | The strength of your relationship with the company. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "At risk", "Doing okay", "Happy". |
+| Account Tier | `account-tier` | object ([company/account-tier](#create-company-company-account-tier)) | Classification based on how much value the company brings to your business. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "Basic", "Premium", "Enterprise". |
 | Renewal Date | `renewal-date` | string | Date when your contract or relationship with the company is due for renewal. Enter in the format YYYY-MM-DD. |
-| Industry | `industry` | string | The industry in which the company operates. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. |
+| Industry | `industry` | object ([company/industry](#create-company-company-industry)) | The industry in which the company operates. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. |
 </div>
 
-
-
-
-
-
+<h4 id="create-company-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Company ID | `company-id` | integer | ID of the company. |
-| Created At | `created-at` | string | Timestamp that denotes when the company was created. In UTC format. |
+| Company ID | `company-id` | object ([company/company-id](#create-company-company-company-id)) | ID of the company. |
+| Created At | `created-at` | object ([company/created-at](#create-company-company-created-at)) | Timestamp that denotes when the company was created. In UTC format. |
 </div>
 
 
@@ -460,23 +439,20 @@ Create company
 
 Task to get all the IDs of existing contacts, companies, tickets, products, agents, roles, or skills. Note: products, agents, roles, and skills require admin privileges. Some of these might not work, depending on the plan you are on.
 
+<h4 id="get-all-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ALL` |
-| Object Type (required) | `object-type` | string | Type of object to get IDs for. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Contacts`</li><li>`Companies`</li><li>`Tickets`</li><li>`Products`</li><li>`Agents`</li><li>`Roles`</li><li>`Skills`</li></ul></details>  |
+| Object Type (required) | `object-type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`Contacts`</li><li>`Companies`</li><li>`Tickets`</li><li>`Products`</li><li>`Agents`</li><li>`Roles`</li><li>`Skills`</li></ul></details></small></small> | Type of object to get IDs for. |
 | Length (required) | `length` | integer | The maximum number of IDs allowed is 500. The most recent IDs will be retrieved. |
 </div>
 
-
-
-
-
-
+<h4 id="get-all-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | IDs | `ids` | array[integer] | List of IDs. |
 | ID Length | `id-length` | integer | Number of IDs. |
@@ -487,22 +463,19 @@ Task to get all the IDs of existing contacts, companies, tickets, products, agen
 
 Get product using ID. This task will only work if you have admin privileges.
 
+<h4 id="get-product-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_PRODUCT` |
 | Product ID (required) | `product-id` | integer | Product ID. |
 </div>
 
-
-
-
-
-
+<h4 id="get-product-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Name | `name` | string | Name of the product. |
 | Description | `description` | string | Description of the product. |
@@ -517,22 +490,19 @@ Get product using ID. This task will only work if you have admin privileges.
 
 Get agent using ID. This task will only work if you have admin privileges. Agents are those in your team who will login to Freshdesk.
 
+<h4 id="get-agent-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_AGENT` |
 | Agent ID (required) | `agent-id` | integer | Agent ID. |
 </div>
 
-
-
-
-
-
+<h4 id="get-agent-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Name (optional) | `name` | string | Name of the agent. |
 | Active (optional) | `active` | boolean | Set to true if the agent is verified. |
@@ -561,22 +531,19 @@ Get agent using ID. This task will only work if you have admin privileges. Agent
 
 Get role using ID. This task will only work if you have admin privileges. Roles allow agents/collaborators to have different privileges.
 
+<h4 id="get-role-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ROLE` |
 | Role ID (required) | `role-id` | integer | Role ID. |
 </div>
 
-
-
-
-
-
+<h4 id="get-role-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Name | `name` | string | Name of the role. |
 | Description | `description` | string | Description of the role. |
@@ -591,22 +558,19 @@ Get role using ID. This task will only work if you have admin privileges. Roles 
 
 Get group using ID. This task will only work if you have admin privileges. Agents can be classified into groups such as Customer Support.
 
+<h4 id="get-group-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_GROUP` |
 | Group ID (required) | `group-id` | integer | Group ID. |
 </div>
 
-
-
-
-
-
+<h4 id="get-group-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Name | `name` | string | Name of the group. |
 | Description | `description` | string | Description of the group. |
@@ -625,22 +589,19 @@ Get group using ID. This task will only work if you have admin privileges. Agent
 
 Get skill using ID. This task will only work if you have admin privileges. Agents can be assigned skills, and it is possible for tickets to be automatically assigned to agents based on the skills they have.
 
+<h4 id="get-skill-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_SKILL` |
 | Skill ID (required) | `skill-id` | integer | Skill ID. |
 </div>
 
-
-
-
-
-
+<h4 id="get-skill-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Name | `name` | string | Name of the skill. |
 | Rank | `rank` | integer | Rank of the skill. |

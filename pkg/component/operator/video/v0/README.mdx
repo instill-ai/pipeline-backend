@@ -37,49 +37,49 @@ The component definition and tasks are defined in the [definition.yaml](https://
 
 Split a video into multiple shorter clips based on user-defined time segments. This task takes a video input and an optional list of time ranges, then produces an array of video segments corresponding to those ranges. Each segment becomes a separate video clip, enabling precise extraction of specific portions from the original content for targeted use or analysis.
 
+<h4 id="segment-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SEGMENT` |
 | Video (required) | `video` | string | The source video file to be segmented. This video will be split into multiple clips based on the specified time segments. |
-| [Segments](#segment-segments) | `segments` | array[object] | An array of time segments defining the portions of the video to be extracted. Each segment specifies a start and end time, and the task will create separate video clips for each of these segments. If not provided, the entire video will be treated as a single segment. |
+| Segments | `segments` | array[object ([segment](#segment-segment))] | An array of time segments defining the portions of the video to be extracted. Each segment specifies a start and end time, and the task will create separate video clips for each of these segments. If not provided, the entire video will be treated as a single segment. |
 </div>
 
+<h4 id="segment-output">Output</h4>
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Videos | `video-segments` | array[string] | An array of video clips resulting from the segmentation process. Each element in this array corresponds to one of the input segments and contains the video data for that specific time range from the original video. |
+</div>
 
 <details>
-<summary> Input Objects in Segment</summary>
+<summary> Referenced Objects</summary>
+<h4 id="segment-segment">Segment <sup><small><small>Referenced in <a href="#segment-input">Input</a></small></small></sup></h4>
 
-<h4 id="segment-segments">Segments</h4>
-
-An array of time segments defining the portions of the video to be extracted. Each segment specifies a start and end time, and the task will create separate video clips for each of these segments. If not provided, the entire video will be treated as a single segment.
+A time segment of audio data, defined by its start and end times in seconds.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| End Time | `end-time` | number | The number of seconds from the beginning of the audio file to the end of this segment.  |
-| Start Time | `start-time` | number | The number of seconds from the beginning of the audio file to the start of this segment.  |
+| Start Time | `start-time` | number | The number of seconds from the beginning of the audio file to the start of this segment. |
+| End Time | `end-time` | number | The number of seconds from the beginning of the audio file to the end of this segment. |
 </div>
+
 </details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Videos | `video-segments` | array[string] | An array of video clips resulting from the segmentation process. Each element in this array corresponds to one of the input segments and contains the video data for that specific time range from the original video. |
-</div>
 
 
 ### Subsample
 
 Reduce video file size by adjusting frame rate, bitrate, and dimensions while maintaining visual content. This task optimizes storage and bandwidth requirements with minimal quality loss.
 
+<h4 id="subsample-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SUBSAMPLE` |
 | Video (required) | `video` | string | The source video file to be subsampled. |
@@ -90,14 +90,10 @@ Reduce video file size by adjusting frame rate, bitrate, and dimensions while ma
 | Height | `height` | integer | The height of the subsampled video, in pixels. Controls the output video's vertical resolution. If only height is provided, width is auto-calculated to maintain aspect ratio. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height. |
 </div>
 
-
-
-
-
-
+<h4 id="subsample-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Video | `video` | video/* | The subsampled video data, processed according to the specified input parameters. Maintains the content of the original video with potentially reduced file size due to changes in frame rate, bitrate, or dimensions. |
 </div>
@@ -107,22 +103,19 @@ Reduce video file size by adjusting frame rate, bitrate, and dimensions while ma
 
 Extract the audio track from a video file, creating a standalone audio output. This task takes a video input and isolates its sound component, removing all visual elements. The resulting audio data is provided as a single output, suitable for further audio processing, analysis, or use in audio-only applications.
 
+<h4 id="extract-audio-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_EXTRACT_AUDIO` |
 | Video (required) | `video` | string | The source video file from which the audio will be extracted. The video's visual content will be discarded, and only the audio track will be processed. |
 </div>
 
-
-
-
-
-
+<h4 id="extract-audio-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Audio | `audio` | audio/* | The extracted audio data from the input video. This is a standalone audio file containing only the sound component of the original video, with all visual elements removed. The audio format may vary depending on the original video's audio codec and the extraction process. |
 </div>
@@ -132,9 +125,10 @@ Extract the audio track from a video file, creating a standalone audio output. T
 
 Extract image frames from a video at regular intervals or specified timestamps. This task takes a video input and either an interval value or a list of timestamps. It then produces an array of image frames corresponding to these specifications, allowing for precise capture of key moments or creation of a sequence of still images from the video content.
 
+<h4 id="extract-frames-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_EXTRACT_FRAMES` |
 | Video (required) | `video` | string | The source video file from which frames will be extracted. |
@@ -142,14 +136,10 @@ Extract image frames from a video at regular intervals or specified timestamps. 
 | Timestamps | `timestamps` | array | An array of specific timestamps (in seconds) at which to extract frames from the video. If provided, frames will be extracted only at these exact times. This parameter is mutually exclusive with `interval`. |
 </div>
 
-
-
-
-
-
+<h4 id="extract-frames-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Frames | `frames` | array[string] | Extracted video frames. |
 </div>
@@ -159,23 +149,20 @@ Extract image frames from a video at regular intervals or specified timestamps. 
 
 Embed an audio to the existing video
 
+<h4 id="embed-audio-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_EMBED_AUDIO` |
 | Audio (required) | `audio` | audio | Audio data to embed to video |
 | Video (required) | `video` | video | Video input to be embedded with provided audio |
 </div>
 
-
-
-
-
-
+<h4 id="embed-audio-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Video | `video` | video | Final video embedded with audio |
 </div>

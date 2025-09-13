@@ -47,9 +47,9 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Milvus URL Endpoint (required) | `url` | string | Fill in your Milvus public URL endpoint with port number, e.g http://3.25.202.142:19530.  |
-| Milvus Username (required) | `username` | string | Fill in your Milvus username.  |
-| Milvus Password (required) | `password` | string | Fill in your Milvus password.  |
+| Milvus URL Endpoint (required) | `url` | string | Fill in your Milvus public URL endpoint with port number, e.g http://3.25.202.142:19530. |
+| Milvus Username (required) | `username` | string | Fill in your Milvus username. |
+| Milvus Password (required) | `password` | string | Fill in your Milvus password. |
 
 </div>
 
@@ -63,9 +63,10 @@ ${connection.<my-connection-id>}`.
 
 Perform a vector search on a collection
 
+<h4 id="vector-search-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to perform vector search on. |
@@ -80,33 +81,31 @@ Perform a vector search on a collection
 | Search Parameters | `search-params` | object | The search parameters to be applied to the data with milvus search parameters, please refer to [Search-parameters](https://milvus.io/docs/single-vector-search.md#Search-parameters). |
 </div>
 
-
-
-
-
-
+<h4 id="vector-search-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
+| Result | `result` | object ([result](#vector-search-result)) | Result of the vector search operation. |
 | Status | `status` | string | Vector search status. |
 </div>
 
 <details>
-<summary> Output Objects in Vector Search</summary>
+<summary> Referenced Objects</summary>
+<h4 id="vector-search-result">Result <sup><small><small>Referenced in <a href="#vector-search-output">Output</a></small></small></sup></h4>
 
-<h4 id="vector-search-result">Result</h4>
+Result of the vector search operation.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Data](#vector-search-data) | `data` | array | The points returned from the vector search operation. |
-| IDs | `ids` | array | The ids returned from the vector search operation. |
-| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
-| Vectors | `vectors` | array | The vectors returned from the vector search operation. |
+| IDs | `ids` | array[string] | The ids returned from the vector search operation. |
+| Data | `data` | array[object] | The points returned from the vector search operation. |
+| Vectors | `vectors` | array[array] | The vectors returned from the vector search operation. |
+| Metadata | `metadata` | array[object] | The metadata returned from the vector search operation. |
 </div>
+
 </details>
 
 
@@ -114,9 +113,10 @@ Perform a vector search on a collection
 
 Insert a vector data into a collection
 
+<h4 id="upsert-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPSERT` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into. |
@@ -124,14 +124,10 @@ Insert a vector data into a collection
 | Data (required) | `data` | object | The data. |
 </div>
 
-
-
-
-
-
+<h4 id="upsert-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Upsert status. |
 </div>
@@ -141,24 +137,21 @@ Insert a vector data into a collection
 
 Insert a batch of vector data into a collection
 
+<h4 id="batch-upsert-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into. |
 | Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used. |
-| [Array Data](#batch-upsert-array-data) (required) | `array-data` | array[object] | The data. |
+| Array Data (required) | `array-data` | array[object] | The data. |
 </div>
 
-
-
-
-
-
+<h4 id="batch-upsert-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Batch upsert status. |
 </div>
@@ -168,9 +161,10 @@ Insert a batch of vector data into a collection
 
 Delete vector data from a collection
 
+<h4 id="delete-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to delete the data from. |
@@ -178,14 +172,10 @@ Delete vector data from a collection
 | Filter | `filter` | string | The properties filter to be applied to the data with milvus scalar filter, please refer to [Filtered-search](https://milvus.io/docs/single-vector-search.md#Filtered-search). |
 </div>
 
-
-
-
-
-
+<h4 id="delete-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete status. |
 </div>
@@ -195,9 +185,10 @@ Delete vector data from a collection
 
 Create a collectio, please refer to [Create-Collection](https://milvus.io/docs/manage-collections.md#Create-Collection)
 
+<h4 id="create-collection-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_COLLECTION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to create. |
@@ -205,19 +196,15 @@ Create a collectio, please refer to [Create-Collection](https://milvus.io/docs/m
 | ID Type | `id-type` | string | The type of the id. |
 | Schema | `schema` | object | The schema of the collection. |
 | Auto ID | `auto-id` | boolean | Whether to auto generate id. |
-| Metric Type | `metric-type` | string | The metric type of the collection. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`L2`</li><li>`IP`</li><li>`COSINE`</li></ul></details>  |
-| [Index Parameters](#create-collection-index-parameters) | `index-params` | array[object] | The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Collection%20(v2)/Create.md). |
+| Metric Type | `metric-type` | string<br/><small><small><details><summary>Enum values</summary><ul><li>`L2`</li><li>`IP`</li><li>`COSINE`</li></ul></details></small></small> | The metric type of the collection. |
+| Index Parameters | `index-params` | array[object] | The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Collection%20(v2)/Create.md). |
 | Parameters | `params` | object | The parameters to be applied to the collection with milvus parameters, please refer to [Parameters](https://milvus.io/docs/single-vector-search.md#Parameters). |
 </div>
 
-
-
-
-
-
+<h4 id="create-collection-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create collection status. |
 </div>
@@ -227,22 +214,19 @@ Create a collectio, please refer to [Create-Collection](https://milvus.io/docs/m
 
 Drop a collection
 
+<h4 id="drop-collection-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_COLLECTION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to drop. |
 </div>
 
-
-
-
-
-
+<h4 id="drop-collection-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Drop collection status. |
 </div>
@@ -252,23 +236,20 @@ Drop a collection
 
 Create a partition in a collection
 
+<h4 id="create-partition-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_PARTITION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to create the partition in. |
 | Partition Name (required) | `partition-name` | string | The name of the partition to create. |
 </div>
 
-
-
-
-
-
+<h4 id="create-partition-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create partition status. |
 </div>
@@ -278,23 +259,20 @@ Create a partition in a collection
 
 Drop a partition from a collection
 
+<h4 id="drop-partition-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_PARTITION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to drop the partition from. |
 | Partition Name (required) | `partition-name` | string | The name of the partition to drop. |
 </div>
 
-
-
-
-
-
+<h4 id="drop-partition-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Drop partition status. |
 </div>
@@ -304,23 +282,20 @@ Drop a partition from a collection
 
 Create an index in a collection
 
+<h4 id="create-index-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_INDEX` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to create the index in. |
 | Index Parameters (required) | `index-params` | object | The index parameters to be applied to the collection with milvus index parameters, please refer to [Create](https://milvus.io/api-reference/restful/v2.4.x/v2/Index%20(v2)/Create.md). |
 </div>
 
-
-
-
-
-
+<h4 id="create-index-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create index status. |
 </div>
@@ -330,23 +305,20 @@ Create an index in a collection
 
 Drop an index from a collection
 
+<h4 id="drop-index-input">Input</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Input | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_INDEX` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to drop the index from. |
 | Index Name (required) | `index-name` | string | The name of the index to drop. |
 </div>
 
-
-
-
-
-
+<h4 id="drop-index-output">Output</h4>
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
-| Output | Field ID | Type | Description |
+| Field | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Drop index status. |
 </div>

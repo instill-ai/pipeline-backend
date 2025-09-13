@@ -74,3 +74,98 @@ func TestTitleCase(t *testing.T) {
 		})
 	}
 }
+
+func TestParseObjectPropertiesInto_NormalizesSchemaTitle(t *testing.T) {
+	c := qt.New(t)
+
+	rt := &readmeTask{
+		SignatureToCanonical:  map[string]string{},
+		FieldKeyToCanonical:   map[string]string{},
+		CanonicalToParents:    map[string]map[string]bool{},
+		CanonicalToParentsIn:  map[string]map[string]bool{},
+		CanonicalToParentsOut: map[string]map[string]bool{},
+		CanonicalToParentMeta: map[string]map[string]parentMeta{},
+		RootKeys:              map[string]bool{},
+		parseContext:          "input",
+	}
+
+	properties := map[string]property{
+		"parameters": {
+			Title:       "Parameters",
+			Type:        "object",
+			Description: "A schema-like object",
+			Properties: map[string]property{
+				"type":        {Title: "Type", Type: "string"},
+				"properties":  {Title: "Properties", Type: "object"},
+				"required":    {Title: "Required", Type: "array"},
+				"items":       {Title: "Items", Type: "object"},
+				"format":      {Title: "Format", Type: "string"},
+				"description": {Title: "Description", Type: "string"},
+			},
+		},
+	}
+
+	rt.parseObjectPropertiesInto(properties, &rt.InputObjects, "")
+
+	// Expect one object captured with key "parameters" but Title normalized to "Schema"
+	c.Assert(len(rt.InputObjects) > 0, qt.IsTrue)
+	found := false
+	for _, m := range rt.InputObjects {
+		if obj, ok := m["parameters"]; ok {
+			found = true
+			c.Check(obj.Title, qt.Equals, "Schema")
+		}
+	}
+	c.Check(found, qt.IsTrue)
+}
+
+func TestGetParents_ReturnsPropertyKeyForBacklink(t *testing.T) {
+	c := qt.New(t)
+
+	// Child key and parent container
+	childKey := "time-range-filter"
+	parentContainer := "web"
+
+	rt := readmeTask{
+		FieldKeyToCanonical:   map[string]string{},
+		CanonicalToParentMeta: map[string]map[string]parentMeta{childKey: {parentContainer: {IsRoot: true}}},
+		AllObjects: []map[string]objectSchema{
+			{
+				parentContainer: {
+					Title: parentContainer,
+					Properties: map[string]property{
+						childKey: {Title: "Time Range Filter", Type: "object", Properties: map[string]property{"start-time": {Title: "Start Time"}}},
+					},
+				},
+			},
+		},
+	}
+
+	parents := getParents(childKey, rt, "")
+	c.Assert(len(parents), qt.Equals, 1)
+	c.Check(parents[0], qt.Equals, childKey)
+}
+
+func TestDedupeObjects_DifferentTitlesNotMerged(t *testing.T) {
+	c := qt.New(t)
+
+	rt := &readmeTask{
+		RootKeys: map[string]bool{},
+	}
+	props := map[string]property{"a": {Title: "A", Type: "string"}}
+	src := []map[string]objectSchema{
+		{"top-candidates": {Title: "Top Candidates", Properties: props}},
+		{"dynamic-retrieval-config": {Title: "Dynamic Retrieval Config", Properties: props}},
+	}
+	out := rt.dedupeObjects(src)
+	c.Assert(len(out), qt.Equals, 2)
+	// Ensure both keys are present
+	seen := map[string]bool{}
+	for _, m := range out {
+		for k := range m {
+			seen[k] = true
+		}
+	}
+	c.Check(seen["top-candidates"], qt.IsTrue)
+	c.Check(seen["dynamic-retrieval-config"], qt.IsTrue)
+}
