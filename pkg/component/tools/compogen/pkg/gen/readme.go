@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"sort"
 	"strings"
@@ -159,12 +160,6 @@ func (g *READMEGenerator) parseTasks(configDir string) (map[string]task, error) 
 	return tasks, nil
 }
 
-// This is used to build the cURL examples for Instill Core and Cloud.
-type host struct {
-	Name string
-	URL  string
-}
-
 // Generate creates a MDX file with the component documentation from the
 // component schema.
 func (g *READMEGenerator) Generate() error {
@@ -192,12 +187,6 @@ func (g *READMEGenerator) Generate() error {
 		"anchorTaskObject":         anchorTaskObject,
 		"insertHeaderByObjectKey":  insertHeaderByObjectKey,
 		"insertHeaderByConstValue": insertHeaderByConstValue,
-		"hosts": func() []host {
-			return []host{
-				{Name: "Instill-Cloud", URL: "https://api.instill-ai.com"},
-				{Name: "Instill-Core", URL: "http://localhost:8080"},
-			}
-		},
 	}).Parse(readmeTmpl)
 	if err != nil {
 		return err
@@ -388,6 +377,11 @@ func parseResourceProperties(o *objectSchema) []resourceProperty {
 		return cmp.Compare(i.ID, j.ID)
 	})
 
+	// Ensure all descriptions are processed (handles $ref resolved properties)
+	for i := range props {
+		props[i].replaceDescription()
+	}
+
 	return props
 }
 
@@ -544,8 +538,6 @@ func (rt *readmeTask) parseOneOfsProperties(properties map[string]property) {
 		}
 		rt.parseOneOfsProperties(op.Properties)
 	}
-
-	return
 }
 
 func (sc *setupConfig) parseOneOfProperties(properties map[string]property) {
@@ -697,12 +689,15 @@ func insertHeaderByConstValue(option objectSchema, taskOrString interface{}) str
 
 func (prop *property) replaceDescription() {
 	if strings.Contains(prop.Description, "{{") && strings.Contains(prop.Description, "}}") {
-		prop.Description = strings.ReplaceAll(prop.Description, "{{", "`{{")
-		prop.Description = strings.ReplaceAll(prop.Description, "}}", "}}`")
+		// Skip if already processed (contains backticks around template variables)
+		if strings.Contains(prop.Description, "`{{") {
+			return
+		}
+		// Simple replacement: wrap template variables with backticks
+		re := regexp.MustCompile(`\{\{[^}]*\}\}`)
+		prop.Description = re.ReplaceAllString(prop.Description, "`$0`")
 	} else {
 		prop.Description = strings.ReplaceAll(prop.Description, "\n", " ")
-		prop.Description = strings.ReplaceAll(prop.Description, "{", "\\{")
-		prop.Description = strings.ReplaceAll(prop.Description, "}", "\\}")
 	}
 }
 
