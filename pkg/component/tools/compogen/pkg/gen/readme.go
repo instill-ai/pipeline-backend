@@ -159,12 +159,6 @@ func (g *READMEGenerator) parseTasks(configDir string) (map[string]task, error) 
 	return tasks, nil
 }
 
-// This is used to build the cURL examples for Instill Core and Cloud.
-type host struct {
-	Name string
-	URL  string
-}
-
 // Generate creates a MDX file with the component documentation from the
 // component schema.
 func (g *READMEGenerator) Generate() error {
@@ -192,12 +186,6 @@ func (g *READMEGenerator) Generate() error {
 		"anchorTaskObject":         anchorTaskObject,
 		"insertHeaderByObjectKey":  insertHeaderByObjectKey,
 		"insertHeaderByConstValue": insertHeaderByConstValue,
-		"hosts": func() []host {
-			return []host{
-				{Name: "Instill-Cloud", URL: "https://api.instill-ai.com"},
-				{Name: "Instill-Core", URL: "http://localhost:8080"},
-			}
-		},
 	}).Parse(readmeTmpl)
 	if err != nil {
 		return err
@@ -388,6 +376,11 @@ func parseResourceProperties(o *objectSchema) []resourceProperty {
 		return cmp.Compare(i.ID, j.ID)
 	})
 
+	// Ensure all descriptions are processed (handles $ref resolved properties)
+	for i := range props {
+		props[i].replaceDescription()
+	}
+
 	return props
 }
 
@@ -544,8 +537,6 @@ func (rt *readmeTask) parseOneOfsProperties(properties map[string]property) {
 		}
 		rt.parseOneOfsProperties(op.Properties)
 	}
-
-	return
 }
 
 func (sc *setupConfig) parseOneOfProperties(properties map[string]property) {
@@ -701,8 +692,6 @@ func (prop *property) replaceDescription() {
 		prop.Description = strings.ReplaceAll(prop.Description, "}}", "}}`")
 	} else {
 		prop.Description = strings.ReplaceAll(prop.Description, "\n", " ")
-		prop.Description = strings.ReplaceAll(prop.Description, "{", "\\{")
-		prop.Description = strings.ReplaceAll(prop.Description, "}", "\\}")
 	}
 }
 
