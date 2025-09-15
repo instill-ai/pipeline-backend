@@ -1,0 +1,60 @@
+## Example Recipes
+
+```yaml
+version: v1beta
+component:
+  gemini:
+    type: gemini
+    task: TASK_CHAT
+    input:
+      model: gemini-2.5-pro
+      stream: ${variable.stream}
+      prompt: ${variable.prompt}
+      images:
+        - ${variable.image:base64}
+      documents:
+        - ${variable.document:base64}
+      system-message: You are a helpful assistant.
+      temperature: 1
+      top-p: 1
+    setup: ${connection.gemini}
+variable:
+  prompt:
+    title: Prompt
+    description: Prompt to instruct the model
+    type: string
+  document:
+    title: Document
+    description: Document to convert to Markdown
+    type: document
+  image:
+    title: image
+    description: Image to take a look
+    type: image
+  stream:
+    title: Enable Stream
+    description: whether to enable streaming
+    type: boolean
+output:
+  texts:
+    title: texts[0]
+    value: ${gemini.output.texts[0]}
+  usage:
+    title: usage
+    value: ${gemini.output.usage}
+  candidates:
+    title: candidates
+    value: ${gemini.output.candidates}
+  usage-metadata:
+    title: usage-metadata
+    value: ${gemini.output.usage-metadata}
+  prompt-feedback:
+    title: prompt-feedback
+    value: ${gemini.output.prompt-feedback}
+  model-version:
+    title: model-version
+    value: ${gemini.output.model-version}
+  response-id:
+    title: response-id
+    value: ${gemini.output.response-id}
+```
