@@ -1,4 +1,6 @@
+
 # Setup
+
 
 mkdir -p pkg/dummy/config
 cp definition.yaml pkg/dummy/config/definition.yaml
@@ -235,22 +237,17 @@ The Dummy component is a data component that allows users to perform an action.
 It can carry out the following tasks:
 - [Dummy](#dummy)
 
-
-
 ## Release Stage
 
 `Coming Soon`
-
-
 
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/dummy/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/dummy/v0/config/tasks.yaml) files respectively.
 
 
-
-
 ## Setup
+
 
 <InfoBlock type="info" title="Prerequisites">An account at [dummy.io](https://dummy.io) is required.</InfoBlock>
 
@@ -265,10 +262,9 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | Fill in your Dummy API key  |
-| [Authentication](#authentication) | `authentication` | object | Authentication method to use for the Dummy  |
-| Organization ID | `organization` | string | Specify which organization is used for the requests  |
-
+| API Key (required) | `api-key` | string | Fill in your Dummy API key |
+| [Authentication](#authentication) | `authentication` | object | Authentication method to use for the Dummy |
+| Organization ID | `organization` | string | Specify which organization is used for the requests |
 </div>
 
 This is some crucial information about setup: do it before execution.
@@ -286,7 +282,7 @@ This is some crucial information about setup: do it before execution.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Auth Format | `auth-type` | string |  Must be `"NO_AUTH"`   |
+| Auth Format | `auth-type` | string | Must be `"NO_AUTH"` |
 </div>
 
 <h5 id="setup-auth-1"><code>Auth 1</code></h5>
@@ -295,12 +291,10 @@ This is some crucial information about setup: do it before execution.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Auth Format | `auth-type` | string |  Must be `"AUTH_1"`   |
-| Auth Way | `auth-way` | string |  ways for Auth 1  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`header`</li><li>`query`</li></ul></details>  |
+| Auth Format | `auth-type` | string | Must be `"AUTH_1"` |
+| Auth Way | `auth-way` | string | ways for Auth 1 <br/><details><summary><strong>Enum values</strong></summary><ul><li>`header`</li><li>`query`</li></ul></details> |
 </div>
 </details>
-
-
 ## Supported Tasks
 
 ### Dummy
@@ -317,9 +311,8 @@ Perform a dummy task.
 | Dummy String | `dummy-string` | string | `{{dummy_string}}` |
 | Durna (required) | `durna` | string | Lorem ipsum dolor sit amet, consectetur adipiscing elit |
 | [Strategy](#dummy-strategy) | `strategy` | object | Chunking strategy |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Dummy</summary>
 
@@ -327,14 +320,14 @@ Perform a dummy task.
 
 Chunking strategy
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Chunk Setting](#dummy-chunk-setting) | `setting` | object | Chunk Setting  |
+| [Chunk Setting](#dummy-chunk-setting) | `setting` | object | Chunk Setting |
 </div>
 </details>
-
 <details>
 <summary>The <code>setting</code> Object </summary>
 
@@ -346,34 +339,37 @@ Chunking strategy
 
 Language models have a token limit. You should not exceed the token limit. When you split your text into chunks it is therefore a good idea to count the number of tokens. There are many tokenizers. When you count tokens in your text you should use the same tokenizer as used in the language model.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Chunk Method | `chunk-method` | string |  Must be `"Token"`   |
-| Model | `model-name` | string |  The name of the model used for tokenization.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`gpt-4`</li><li>`gpt-3.5-turbo`</li></ul></details>  |
+| Chunk Method | `chunk-method` | string | Must be `"Token"` |
+| Model | `model-name` | string | The name of the model used for tokenization. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`gpt-4`</li><li>`gpt-3.5-turbo`</li></ul></details> |
 </div>
 
 <h5 id="dummy-markdown"><code>Markdown</code></h5>
 
 This text splitter is specially designed for Markdown format.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Chunk Method | `chunk-method` | string |  Must be `"Markdown"`   |
-| Model | `model-name` | string |  The name of the model used for tokenization.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`gpt-4`</li><li>`gpt-3.5-turbo`</li></ul></details>  |
+| Chunk Method | `chunk-method` | string | Must be `"Markdown"` |
+| Model | `model-name` | string | The name of the model used for tokenization. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`gpt-4`</li><li>`gpt-3.5-turbo`</li></ul></details> |
 </div>
 </details>
-
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Conversations](#dummy-conversations) (optional) | `conversations` | array[object] | An array of conversations with thread messages |
 | Orci (optional) | `orci` | string | Orci sagittis eu volutpat odio facilisis mauris sit |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Dummy</summary>
@@ -388,6 +384,7 @@ This text splitter is specially designed for Markdown format.
 | Start Conversation Message | `message` | string | message to start a conversation |
 | Start Date | `start-date` | string | when a conversation starts |
 | [Replied messages](#dummy-replied-messages) | `thread-reply-messages` | array | replies in a conversation |
+
 </div>
 
 <h4 id="dummy-replied-messages">Replied Messages</h4>
@@ -397,8 +394,7 @@ This text splitter is specially designed for Markdown format.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Replied Message | `message` | string | message to reply a conversation |
+
 </div>
 </details>
-
-
 

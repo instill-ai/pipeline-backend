@@ -11,19 +11,13 @@ It can carry out the following tasks:
 - [Write Chat Message](#write-chat-message)
 - [Write Multi Modal Chat Message](#write-multi-modal-chat-message)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/redis/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/redis/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -40,15 +34,12 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Host (required) | `host` | string | Redis host to connect to.  |
-| Port (required) | `port` | integer | Port of Redis.  |
-| Username | `username` | string | Username associated with Redis.  |
-| Password | `password` | string | Password associated with Redis.  |
-| SSL Connection | `ssl` | boolean | Indicates whether SSL encryption protocol will be used to connect to Redis. It is recommended to use SSL connection if possible.  |
-
+| Host (required) | `host` | string | Redis host to connect to. |
+| Port (required) | `port` | integer | Port of Redis. |
+| Username | `username` | string | Username associated with Redis. |
+| Password | `password` | string | Password associated with Redis. |
+| SSL Connection | `ssl` | boolean | Indicates whether SSL encryption protocol will be used to connect to Redis. It is recommended to use SSL connection if possible. |
 </div>
-
-
 
 
 
@@ -66,11 +57,8 @@ Retrieve chat history from Redis.
 | Session ID (required) | `session-id` | string | A unique identifier for the chat session. |
 | Latest K | `latest-k` | integer | The number of latest conversation turns to retrieve. A conversation turn typically includes one participant speaking or sending a message, and the other participant(s) responding to it. |
 | Include System Message if Exists | `include-system-message` | boolean | Include system message in the retrieved conversation turns if exists. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -78,7 +66,9 @@ Retrieve chat history from Redis.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Chat Message](#retrieve-chat-history-chat-message) | `messages` | array[object] | Messages. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Retrieve Chat History</summary>
@@ -92,6 +82,7 @@ Retrieve chat history from Redis.
 | [Content](#retrieve-chat-history-content) | `content` | array | The message content |
 | Metadata | `metadata` | json | The message metadata |
 | Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant' |
+
 </div>
 
 <h4 id="retrieve-chat-history-content">Content</h4>
@@ -102,7 +93,8 @@ Retrieve chat history from Redis.
 | :--- | :--- | :--- | :--- |
 | [Image URL](#retrieve-chat-history-image-url) | `image-url` | object | The image URL |
 | Text | `text` | string | The text content. |
-| Type | `type` | string | The type of the content part. |
+| Type | `type` | string | The type of the content part. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image-url`</li></ul></details> |
+
 </div>
 
 <h4 id="retrieve-chat-history-image-url">Image URL</h4>
@@ -112,6 +104,7 @@ Retrieve chat history from Redis.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | URL | `url` | string | Either a URL of the image or the base64 encoded image data. |
+
 </div>
 </details>
 
@@ -129,11 +122,8 @@ Write chat message into Redis.
 | Role (required) | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'. |
 | Content (required) | `content` | string | The message content. |
 | Metadata | `metadata` | object | The message metadata. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -141,8 +131,8 @@ Write chat message into Redis.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | boolean | The status of the write operation. |
-</div>
 
+</div>
 
 ### Write Multi Modal Chat Message
 
@@ -157,11 +147,8 @@ Write multi-modal chat message into Redis.
 | Role (required) | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'. |
 | Content (required) | `content` | string | The multi-modal message content. |
 | Metadata | `metadata` | object | The message metadata. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -169,7 +156,5 @@ Write multi-modal chat message into Redis.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | boolean | The status of the write operation. |
+
 </div>
-
-
-

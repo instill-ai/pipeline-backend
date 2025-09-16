@@ -14,19 +14,13 @@ It can carry out the following tasks:
 - [Create Collection](#create-collection)
 - [Delete Collection](#delete-collection)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/qdrant/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/qdrant/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -43,12 +37,9 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | Fill in your Qdrant API key. Please refer to clusters in Qdrant data access control.  |
-| Qdrant URL Endpoint (required) | `url` | string | Fill in your Qdrant URL endpoint. Please refer to clusters in Qdrant cluster details.  |
-
+| API Key (required) | `api-key` | string | Fill in your Qdrant API key. Please refer to clusters in Qdrant data access control. |
+| Qdrant URL Endpoint (required) | `url` | string | Fill in your Qdrant URL endpoint. Please refer to clusters in Qdrant cluster details. |
 </div>
-
-
 
 
 
@@ -70,11 +61,8 @@ Perform a vector search on a collection
 | Filter | `filter` | object | The properties filter to be applied to the data with Qdrant filter, please refer to [filter section](https://api.qdrant.tech/api-reference/search/points). |
 | Params | `params` | object | The additional parameters to be passed to the search, please refer to [params section](https://api.qdrant.tech/api-reference/search/points). |
 | Min Score | `min-score` | number | The minimum score of the points to be returned. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -83,7 +71,9 @@ Perform a vector search on a collection
 | :--- | :--- | :--- | :--- |
 | [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
 | Status | `status` | string | Vector search status. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Vector Search</summary>
@@ -98,6 +88,7 @@ Perform a vector search on a collection
 | [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
 | [Points](#vector-search-points) | `points` | array | The points returned from the vector search operation. |
 | Vectors | `vectors` | array | The vectors returned from the vector search operation. |
+
 </div>
 </details>
 
@@ -115,12 +106,9 @@ Insert multiple vector points into a collection
 | Array ID (required) | `array-id` | array[string] | The array of id. |
 | [Array Metadata](#batch-upsert-array-metadata) | `array-metadata` | array[object] | The array of vector metadata payload. |
 | Array Vector (required) | `array-vector` | array[array] | The array of vector values. |
-| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details>  |
+| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details> |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -128,8 +116,8 @@ Insert multiple vector points into a collection
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Batch upsert status. |
-</div>
 
+</div>
 
 ### Upsert
 
@@ -144,12 +132,9 @@ Upsert a vector point into a collection
 | ID (required) | `id` | string | The ID of the point. |
 | Metadata | `metadata` | object | The vector metadata payload. |
 | Vector (required) | `vector` | array[number] | An array of dimensions for the vector value. |
-| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details>  |
+| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details> |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -157,8 +142,8 @@ Upsert a vector point into a collection
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Upsert status. |
-</div>
 
+</div>
 
 ### Delete
 
@@ -172,12 +157,9 @@ Delete vector points from a collection
 | Collection Name (required) | `collection-name` | string | The name of the collection to delete the object from. |
 | ID | `id` | string | The ID of the point. |
 | Filter | `filter` | object | The properties filter to be applied to the data with Qdrant filter, please refer to [filter section](https://api.qdrant.tech/api-reference/points/delete-points). |
-| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details>  |
+| Ordering | `ordering` | string | The ordering guarantees of the batch upsert. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`weak`</li><li>`medium`</li><li>`strong`</li></ul></details> |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -185,8 +167,8 @@ Delete vector points from a collection
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete status. |
-</div>
 
+</div>
 
 ### Create Collection
 
@@ -199,11 +181,8 @@ Create a collection
 | Task ID (required) | `task` | string | `TASK_CREATE_COLLECTION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to create. |
 | Config (required) | `config` | object | The configuration of the collection. Please refer to [here](https://api.qdrant.tech/api-reference/collections/create-collection). |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -211,8 +190,8 @@ Create a collection
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create collection status. |
-</div>
 
+</div>
 
 ### Delete Collection
 
@@ -224,11 +203,8 @@ Delete a collection
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE_COLLECTION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to delete. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -236,7 +212,5 @@ Delete a collection
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete collection status. |
+
 </div>
-
-
-

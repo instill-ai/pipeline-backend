@@ -17,19 +17,13 @@ It can carry out the following tasks:
 - [Update Issue](#update-issue)
 - [Update Sprint](#update-sprint)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/jira/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/jira/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -46,13 +40,10 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Token (required) | `token` | string | Fill in your Jira API token. You can generate one from your Jira account "settings > security > API tokens".  |
-| Base URL (required) | `base-url` | string | Fill in your Jira base URL. For example, if your Jira URL is "https://mycompany.atlassian.net/...", then your base URL is https://mycompany.atlassian.net.  |
-| Email (required) | `email` | string | Fill in your Jira email address.  |
-
+| Token (required) | `token` | string | Fill in your Jira API token. You can generate one from your Jira account "settings > security > API tokens". |
+| Base URL (required) | `base-url` | string | Fill in your Jira base URL. For example, if your Jira URL is "https://mycompany.atlassian.net/...", then your base URL is https://mycompany.atlassian.net. |
+| Email (required) | `email` | string | Fill in your Jira email address. |
 </div>
-
-
 
 
 
@@ -71,10 +62,8 @@ Create an issue in Jira.
 | [Issue Type](#create-issue-issue-type) (required) | `issue-type` | object | The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc. |
 | Summary | `summary` | string | The summary of the issue. |
 | Description | `description` | string | The description of the issue. |
+
 </div>
-
-
-
 
 <details>
 <summary>The <code>issue-type</code> Object </summary>
@@ -87,49 +76,52 @@ Create an issue in Jira.
 
 Epic.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Issue Type | `issue-type` | string |  Must be `"Epic"`   |
+| Issue Type | `issue-type` | string | Must be `"Epic"` |
 </div>
 
 <h5 id="create-issue-task"><code>Task</code></h5>
 
 Task.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Issue Type | `issue-type` | string |  Must be `"Task"`   |
+| Issue Type | `issue-type` | string | Must be `"Task"` |
 </div>
 
 <h5 id="create-issue-subtask"><code>Subtask</code></h5>
 
 Subtask.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Issue Type | `issue-type` | string |  Must be `"Subtask"`   |
-| Parent Key | `parent-key` | string |  The key of the parent issue, e.g. `JRA-1330`.  |
+| Issue Type | `issue-type` | string | Must be `"Subtask"` |
+| Parent Key | `parent-key` | string | The key of the parent issue, e.g. `JRA-1330`. |
 </div>
 
 <h5 id="create-issue-other"><code>Other</code></h5>
 
 Other.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Issue Type | `custom-issue-type` | string |  The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc.  |
-| Issue Type | `issue-type` | string |  Must be `"Other"`   |
+| Issue Type | `custom-issue-type` | string | The type of the issue, can be: `Task`, `Epic`, `Subtask`, etc. |
+| Issue Type | `issue-type` | string | Must be `"Other"` |
 </div>
 </details>
-
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | Field ID | Type | Description |
@@ -142,8 +134,8 @@ Other.
 | Summary (optional) | `summary` | string | The summary of the issue. |
 | Description (optional) | `description` | string | The description of the issue. |
 | Status (optional) | `status` | string | The status of the issue, can be: `To Do`, `In Progress`, `Done`. |
-</div>
 
+</div>
 
 ### Create Sprint
 
@@ -159,11 +151,8 @@ Create a sprint in Jira.
 | Goal (required) | `goal` | string | The goal of the sprint. |
 | Start Date (required) | `start-date` | string | The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
 | End Date (required) | `end-date` | string | The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -179,8 +168,8 @@ Create a sprint in Jira.
 | Complete Date (optional) | `complete-date` | string | The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
 | Origin Board ID (optional) | `origin-board-id` | integer | The ID of the origin board. |
 | Goal (optional) | `goal` | string | The Goal of the sprint. |
-</div>
 
+</div>
 
 ### Get Issue
 
@@ -193,11 +182,8 @@ Get an issue in Jira. The issue will only be returned if the user has permission
 | Task ID (required) | `task` | string | `TASK_GET_ISSUE` |
 | Issue Key (required) | `issue-key` | string | The key of the issue, e.g. `JRA-1330`. |
 | Update History | `update-history` | boolean | Whether the action taken is added to the user's Recent history, as shown under `Your Work` in Jira. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -212,8 +198,8 @@ Get an issue in Jira. The issue will only be returned if the user has permission
 | Summary (optional) | `summary` | string | The summary of the issue. |
 | Description (optional) | `description` | string | The description of the issue. |
 | Status (optional) | `status` | string | The status of the issue, can be: `To Do`, `In Progress`, `Done`. |
-</div>
 
+</div>
 
 ### Get Sprint
 
@@ -225,11 +211,8 @@ Get a sprint in Jira. The sprint will only be returned if the user can view the 
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_SPRINT` |
 | Sprint ID (required) | `sprint-id` | integer | The ID of the sprint. The sprint will only be returned if you can view the board that the sprint was created on, or view at least one of the issues in the sprint. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -245,8 +228,8 @@ Get a sprint in Jira. The sprint will only be returned if the user can view the 
 | Complete Date (optional) | `complete-date` | string | The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
 | Origin Board ID (optional) | `origin-board-id` | integer | The ID of the origin board. |
 | Goal (optional) | `goal` | string | The Goal of the sprint. |
-</div>
 
+</div>
 
 ### List Boards
 
@@ -258,15 +241,12 @@ List all boards in Jira
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_LIST_BOARDS` |
 | Project Key or ID | `project-key-or-id` | string | This filters results to boards that are relevant to a project. Relevance meaning that the JQL filter defined in board contains a reference to a project. |
-| Board Type | `board-type` | string | The type of board, can be: scrum, kanban, simple. Default is simple. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`scrum`</li><li>`kanban`</li><li>`simple`</li></ul></details>  |
+| Board Type | `board-type` | string | The type of board, can be: scrum, kanban, simple. Default is simple. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`scrum`</li><li>`kanban`</li><li>`simple`</li></ul></details> |
 | Name | `name` | string | Name filters results to boards that match or partially match the specified name. Default is empty. |
 | Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. Default is 0. |
 | Max Results | `max-results` | integer | The maximum number of boards to return. Default is 50. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -278,7 +258,9 @@ List all boards in Jira
 | Max Results | `max-results` | integer | The maximum number of boards. |
 | Total | `total` | integer | The total number of boards. |
 | Is Last | `is-last` | boolean | Whether the last board is reached. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in List Boards</summary>
@@ -293,6 +275,7 @@ List all boards in Jira
 | Name | `name` | string | The name of the board. |
 | Self | `self` | string | The URL of the board. |
 | Type | `type` | string | The type of the board. |
+
 </div>
 </details>
 
@@ -310,10 +293,8 @@ List issues in Jira.
 | [Range](#list-issues-range) | `range` | object | Choose the range of issues to return. Default is `all`. |
 | Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. Default is 0. |
 | Max Results | `max-results` | integer | The maximum number of boards to return. Default is 50. |
+
 </div>
-
-
-
 
 <details>
 <summary>The <code>range</code> Object </summary>
@@ -326,94 +307,101 @@ List issues in Jira.
 
 All issues.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Range | `range` | string |  Must be `"All"`   |
+| Range | `range` | string | Must be `"All"` |
 </div>
 
 <h5 id="list-issues-standard-issues"><code>Standard Issues</code></h5>
 
 Standard issues.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Range | `range` | string |  Must be `"Standard Issues"`   |
+| Range | `range` | string | Must be `"Standard Issues"` |
 </div>
 
 <h5 id="list-issues-epics-only"><code>Epics only</code></h5>
 
 Epics only.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Range | `range` | string |  Must be `"Epics only"`   |
+| Range | `range` | string | Must be `"Epics only"` |
 </div>
 
 <h5 id="list-issues-in-backlog-only"><code>In Backlog Only</code></h5>
 
 In backlog only.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Range | `range` | string |  Must be `"In backlog only"`   |
+| Range | `range` | string | Must be `"In backlog only"` |
 </div>
 
 <h5 id="list-issues-issues-of-an-epic"><code>Issues of an Epic</code></h5>
 
 Issues of an epic.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Epic Key | `epic-key` | string |  The Key of the epic, e.g. `JRA-1330`.  |
-| Range | `range` | string |  Must be `"Issues of an epic"`   |
+| Epic Key | `epic-key` | string | The Key of the epic, e.g. `JRA-1330`. |
+| Range | `range` | string | Must be `"Issues of an epic"` |
 </div>
 
 <h5 id="list-issues-issues-of-a-sprint"><code>Issues of a Sprint</code></h5>
 
 Issues of a sprint.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Range | `range` | string |  Must be `"Issues of a sprint"`   |
-| Sprint Name | `sprint-name` | string |  The name of the sprint.  |
+| Range | `range` | string | Must be `"Issues of a sprint"` |
+| Sprint Name | `sprint-name` | string | The name of the sprint. |
 </div>
 
 <h5 id="list-issues-issues-without-epic-assigned"><code>Issues without Epic Assigned</code></h5>
 
 Issues without Epic Assigned.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Range | `range` | string |  Must be `"Issues without epic assigned"`   |
+| Range | `range` | string | Must be `"Issues without epic assigned"` |
 </div>
 
 <h5 id="list-issues-jql-query"><code>JQL Query</code></h5>
 
 JQL query.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| JQL | `jql` | string |  The JQL query. For example, `type = "Task" AND status = "Done"`. For more information, see <a href="https://support.atlassian.com/jira-software-cloud/docs/what-is-advanced-search-in-jira-cloud/">Advanced searching</a>.  |
-| Range | `range` | string |  Must be `"JQL query"`   |
+| JQL | `jql` | string | The JQL query. For example, `type = "Task" AND status = "Done"`. For more information, see <a href="https://support.atlassian.com/jira-software-cloud/docs/what-is-advanced-search-in-jira-cloud/">Advanced searching</a>. |
+| Range | `range` | string | Must be `"JQL query"` |
 </div>
 </details>
-
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | Field ID | Type | Description |
@@ -422,7 +410,9 @@ JQL query.
 | Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. |
 | Max Results | `max-results` | integer | The maximum number of boards. |
 | Total | `total` | integer | The total number of boards. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in List Issues</summary>
@@ -441,6 +431,7 @@ JQL query.
 | Self | `self` | string | The URL of the issue. |
 | Status | `status` | string | The status of the issue, can be: `To Do`, `In Progress`, `Done`. |
 | Summary | `summary` | string | The summary of the issue. |
+
 </div>
 </details>
 
@@ -457,11 +448,8 @@ List sprints in Jira.
 | Board ID (required) | `board-id` | integer | The ID of the board. |
 | Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. Default is 0. |
 | Max Results | `max-results` | integer | The maximum number of boards to return. Default is 50. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -472,7 +460,9 @@ List sprints in Jira.
 | Start At | `start-at` | integer | The starting index of the returned boards. Base index: 0. |
 | Max Results | `max-results` | integer | The maximum number of boards. |
 | Total | `total` | integer | The total number of boards. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in List Sprints</summary>
@@ -492,6 +482,7 @@ List sprints in Jira.
 | Self | `self` | string | The URL of the sprint. |
 | Start Date | `start-date` | string | The start date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
 | State | `state` | string | The state of the sprint, can be: `active`, `closed`, `future`. |
+
 </div>
 </details>
 
@@ -508,10 +499,8 @@ Update an issue in Jira.
 | Issue Key (required) | `issue-key` | string | The key of the issue, e.g. `JRA-1330`. |
 | Notify Users | `notify-users` | boolean | Whether to notify users. |
 | [Update](#update-issue-update) | `update` | object | Update an issue in Jira. |
+
 </div>
-
-
-
 
 <details>
 <summary>The <code>update</code> Object </summary>
@@ -524,27 +513,28 @@ Update an issue in Jira.
 
 Custom update.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Update | `update` | string |  Must be `"Custom Update"`   |
-| Update Fields | `update-fields` | array |  The fields to update.  |
+| Update | `update` | string | Must be `"Custom Update"` |
+| Update Fields | `update-fields` | array | The fields to update. |
 </div>
 
 <h5 id="update-issue-move-issue-to-epic"><code>Move Issue to Epic</code></h5>
 
 Move issue to epic.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Epic Key | `epic-key` | string |  The key of the epic, e.g. `JRA-1330`.  |
-| Update | `update` | string |  Must be `"Move Issue to Epic"`   |
+| Epic Key | `epic-key` | string | The key of the epic, e.g. `JRA-1330`. |
+| Update | `update` | string | Must be `"Move Issue to Epic"` |
 </div>
 </details>
-
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | Field ID | Type | Description |
@@ -557,8 +547,8 @@ Move issue to epic.
 | Summary (optional) | `summary` | string | The summary of the issue. |
 | Description (optional) | `description` | string | The description of the issue. |
 | Status (optional) | `status` | string | The status of the issue, can be: `To Do`, `In Progress`, `Done`. |
-</div>
 
+</div>
 
 ### Update Sprint
 
@@ -576,11 +566,8 @@ Update a sprint in Jira.
 | End Date (required) | `end-date` | string | The end date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
 | Current State (required) | `current-state` | string | The current state of the sprint, can be: `future`, `active`, `closed`. |
 | Enter Next State | `enter-next-state` | boolean | Whether to enter the next state. If `true`, the sprint will enter the next state, i.e., `future` -> `active` -> `closed`. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -596,10 +583,8 @@ Update a sprint in Jira.
 | Complete Date (optional) | `complete-date` | string | The complete date of the sprint, e.g. 2018-03-05 (default 00:00 UTC+0). To adjust your time zone, please provide a more detailed RFC3339 format like `2018-03-05T09:00:00Z0000`. |
 | Origin Board ID (optional) | `origin-board-id` | integer | The ID of the origin board. |
 | Goal (optional) | `goal` | string | The Goal of the sprint. |
+
 </div>
-
-
-
 ## Example Recipes
 
 ```yaml

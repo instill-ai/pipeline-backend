@@ -160,21 +160,13 @@ It can carry out the following tasks:
 - [Dummy](#dummy)
 - [Dummier](#dummier)
 
-
-
 ## Release Stage
 
 `Beta`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/dummy/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/dummy/v0/config/tasks.yaml) files respectively.
-
-
-
-
 
 
 
@@ -190,11 +182,8 @@ Perform a dummy task.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DUMMY` |
 | Durna (required) | `durna` | string | Lorem ipsum dolor sit amet, consectetur adipiscing elit |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -202,8 +191,8 @@ Perform a dummy task.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Orci (optional) | `orci` | string | Orci sagittis eu volutpat odio facilisis mauris sit |
-</div>
 
+</div>
 #### How to use the dummy task
 
 You might be tempted to think than dummier is better than dummy. However,
@@ -219,11 +208,8 @@ This task is dummier than `TASK_DUMMY`.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DUMMIER_THAN_DUMMY` |
 | Cursus (required) | `cursus` | string | Cursus mattis molestie a iaculis at erat pellentesque adipiscing commodo |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -235,7 +221,9 @@ This task is dummier than `TASK_DUMMY`.
 | Nullam Non | `nullam_non` | number | Id faucibus nisl tincidunt eget nullam non |
 | Errors (optional) | `errors` | array[string] | Error messages, if any, during the dummy process |
 | Meta (optional) | `context` | any | Free-form metadata |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Dummier</summary>
@@ -248,10 +236,9 @@ This task is dummier than `TASK_DUMMY`.
 | :--- | :--- | :--- | :--- |
 | Arcu | `arcu` | string | Bibendum arcu vitae elementum curabitur vitae nunc sed velit |
 | Tincidunt tortor | `tortor` | string | Tincidunt tortor aliquam nulla |
+
 </div>
 </details>
-
-
 
 ## Final words
 

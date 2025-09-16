@@ -18,19 +18,13 @@ It can carry out the following tasks:
 - [Drop Search Index](#drop-search-index)
 - [Vector Search](#vector-search)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/mongodb/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/mongodb/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -47,11 +41,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| URI (required) | `uri` | string | Fill in your MongoDB URI.  |
-
+| URI (required) | `uri` | string | Fill in your MongoDB URI. |
 </div>
-
-
 
 
 
@@ -70,11 +61,8 @@ Perform an insert operation
 | Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
 | ID | `id` | string | The ID of the document. |
 | Data (required) | `data` | object | The data to be inserted. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -82,8 +70,8 @@ Perform an insert operation
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Insert status. |
-</div>
 
+</div>
 
 ### Insert Many
 
@@ -98,11 +86,8 @@ Perform an insert many operation
 | Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
 | Array ID | `array-id` | array[string] | The array of id. |
 | [Data](#insert-many-data) (required) | `array-data` | array[object] | The array data to be inserted. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -110,8 +95,8 @@ Perform an insert many operation
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Insert many status. |
-</div>
 
+</div>
 
 ### Find
 
@@ -128,11 +113,8 @@ Perform a find operation
 | Filter | `filter` | object | The filter to find documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned. |
 | Limit | `limit` | integer | The number of documents to return. If empty then all documents will be returned. |
 | Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -141,7 +123,9 @@ Perform a find operation
 | :--- | :--- | :--- | :--- |
 | [Result](#find-result) | `result` | object | Result of the find operation. |
 | Status | `status` | string | Find status. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Find</summary>
@@ -155,6 +139,7 @@ Perform a find operation
 | [Metadata](#find-metadata) | `data` | array | The data returned from the find operation. |
 | [Documents](#find-documents) | `documents` | array | The documents returned from the find operation. |
 | IDs | `ids` | array | The ids returned from the find operation. |
+
 </div>
 </details>
 
@@ -173,11 +158,8 @@ Perform an update operation
 | ID | `id` | string | The ID of the document. |
 | Filter | `filter` | object | The filter to update documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned. |
 | Update (required) | `update-data` | object | The updated data to be applied to the documents. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -185,8 +167,8 @@ Perform an update operation
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Update status. |
-</div>
 
+</div>
 
 ### Delete
 
@@ -201,11 +183,8 @@ Perform a delete operation
 | Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
 | ID | `id` | string | The ID of the document. |
 | Filter | `filter` | object | The filter to delete documents, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -213,8 +192,8 @@ Perform a delete operation
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete status. |
-</div>
 
+</div>
 
 ### Drop Collection
 
@@ -227,11 +206,8 @@ Delete the collection
 | Task ID (required) | `task` | string | `TASK_DROP_COLLECTION` |
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
 | Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -239,8 +215,8 @@ Delete the collection
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete collection status. |
-</div>
 
+</div>
 
 ### Drop Database
 
@@ -252,11 +228,8 @@ Delete the database
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_DATABASE` |
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -264,8 +237,8 @@ Delete the database
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete database status. |
-</div>
 
+</div>
 
 ### Create Search Index
 
@@ -279,13 +252,10 @@ Create a search index, only works for M10 or larger clusters
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
 | Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
 | Index Name (required) | `index-name` | string | The name of the index to be created. |
-| Index Type (required) | `index-type` | string | The type of the index to be created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`search`</li><li>`vectorSearch`</li></ul></details>  |
+| Index Type (required) | `index-type` | string | The type of the index to be created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`search`</li><li>`vectorSearch`</li></ul></details> |
 | Syntax (required) | `syntax` | object | The syntax structure of the search index, please refer to the MongoDB documentation for more information. search [here](https://www.mongodb.com/docs/atlas/atlas-search/create-index/). vectorSearch [here](https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-type/). |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -293,8 +263,8 @@ Create a search index, only works for M10 or larger clusters
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create index status. |
-</div>
 
+</div>
 
 ### Drop Search Index
 
@@ -308,11 +278,8 @@ Drop a search index, only works for M10 or larger clusters
 | Database Name (required) | `database-name` | string | The name of the database in MongoDB. |
 | Collection Name (required) | `collection-name` | string | The name of the collection in MongoDB. |
 | Index Name (required) | `index-name` | string | The name of the index to be dropped. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -320,8 +287,8 @@ Drop a search index, only works for M10 or larger clusters
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete index status. |
-</div>
 
+</div>
 
 ### Vector Search
 
@@ -342,11 +309,8 @@ Perform a vector search operation
 | Path (required) | `path` | string | The path to the field to be used for vector search. |
 | Filter | `filter` | object | The filter to be used for vector search, need to first create filter vectorSearch search index, please refer to [the documentations](https://www.mongodb.com/docs/manual/reference/operator/query/). If empty then all documents will be returned to be used for vector search. |
 | Fields | `fields` | array[string] | The fields to return in the documents. If empty then all fields will be returned. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -355,7 +319,9 @@ Perform a vector search operation
 | :--- | :--- | :--- | :--- |
 | [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
 | Status | `status` | string | Vector search status. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Vector Search</summary>
@@ -370,8 +336,7 @@ Perform a vector search operation
 | IDs | `ids` | array | The ids returned from the vector search operation. |
 | [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
 | Vectors | `vectors` | array | The vectors returned from the vector search operation. |
+
 </div>
 </details>
-
-
 

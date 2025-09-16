@@ -15,19 +15,13 @@ It can carry out the following tasks:
 - [Head](#head)
 - [Options](#options)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/generic/http/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/generic/http/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -45,8 +39,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Authentication](#authentication) (required) | `authentication` | object | Authentication method to use for the REST API.  |
-
+| [Authentication](#authentication) (required) | `authentication` | object | Authentication method to use for the REST API. |
 </div>
 
 
@@ -63,7 +56,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Auth Type | `auth-type` | string |  Must be `"NO_AUTH"`   |
+| Auth Type | `auth-type` | string | Must be `"NO_AUTH"` |
 </div>
 
 <h5 id="setup-basic-auth"><code>Basic Auth</code></h5>
@@ -72,9 +65,9 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Auth Type | `auth-type` | string |  Must be `"BASIC_AUTH"`   |
-| Password | `password` | string |  Password for Basic auth.  |
-| Username | `username` | string |  Username for Basic Auth.  |
+| Auth Type | `auth-type` | string | Must be `"BASIC_AUTH"` |
+| Password | `password` | string | Password for Basic auth. |
+| Username | `username` | string | Username for Basic Auth. |
 </div>
 
 <h5 id="setup-api-key"><code>API Key</code></h5>
@@ -83,10 +76,10 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Auth Location | `auth-location` | string |  Add the API key to the header or query params.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`header`</li><li>`query`</li></ul></details>  |
-| Auth Type | `auth-type` | string |  Must be `"API_KEY"`   |
-| Key Name | `key` | string |  Key name for API key authentication.  |
-| Key Value | `value` | string |  Key value for API key authentication.  |
+| Auth Location | `auth-location` | string | Add the API key to the header or query params. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`header`</li><li>`query`</li></ul></details> |
+| Auth Type | `auth-type` | string | Must be `"API_KEY"` |
+| Key Name | `key` | string | Key name for API key authentication. |
+| Key Value | `value` | string | Key value for API key authentication. |
 </div>
 
 <h5 id="setup-bearer-token"><code>Bearer Token</code></h5>
@@ -95,12 +88,10 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Auth Type | `auth-type` | string |  Must be `"BEARER_TOKEN"`   |
-| Token | `token` | string |  Bearer token.  |
+| Auth Type | `auth-type` | string | Must be `"BEARER_TOKEN"` |
+| Token | `token` | string | Bearer token. |
 </div>
 </details>
-
-
 ## Supported Tasks
 
 ### Get
@@ -115,11 +106,8 @@ Send a HTTP GET request.
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
 | Body | `output-body-schema` | string | The request body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -129,8 +117,8 @@ Send a HTTP GET request.
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
 | Header | `header` | json | The HTTP header of the response. |
-</div>
 
+</div>
 
 ### Post
 
@@ -145,11 +133,8 @@ Send a HTTP POST request.
 | Body | `body` | any | The request body. |
 | Body | `output-body-schema` | string | The JSON schema of output body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -159,8 +144,8 @@ Send a HTTP POST request.
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
 | Header | `header` | json | The HTTP header of the response. |
-</div>
 
+</div>
 
 ### Patch
 
@@ -175,11 +160,8 @@ Send a HTTP PATCH request.
 | Body | `body` | any | The request body. |
 | Body | `output-body-schema` | string | The JSON schema of output body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -189,8 +171,8 @@ Send a HTTP PATCH request.
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
 | Header | `header` | json | The HTTP header of the response. |
-</div>
 
+</div>
 
 ### Put
 
@@ -205,11 +187,8 @@ Send a HTTP PUT request.
 | Body | `body` | any | The request body. |
 | Body | `output-body-schema` | string | The JSON schema of output body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -219,8 +198,8 @@ Send a HTTP PUT request.
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
 | Header | `header` | json | The HTTP header of the response. |
-</div>
 
+</div>
 
 ### Delete
 
@@ -235,11 +214,8 @@ Send a HTTP DELETE request.
 | Body | `body` | any | The request body. |
 | Body | `output-body-schema` | string | The JSON schema of output body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -249,8 +225,8 @@ Send a HTTP DELETE request.
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
 | Header | `header` | json | The HTTP header of the response. |
-</div>
 
+</div>
 
 ### Head
 
@@ -264,11 +240,8 @@ Send a HTTP HEAD request.
 | Endpoint URL (required) | `endpoint-url` | string | The API endpoint URL. It must be a valid URI reference and point to an external IP address. If the URL resolves to an internal or private IP, the component will throw an error. |
 | Body | `output-body-schema` | string | The request body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -278,8 +251,8 @@ Send a HTTP HEAD request.
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
 | Header | `header` | json | The HTTP header of the response. |
-</div>
 
+</div>
 
 ### Options
 
@@ -294,11 +267,8 @@ Send a HTTP OPTIONS request.
 | Body | `body` | any | The request body. |
 | Body | `output-body-schema` | string | The JSON schema of output body. |
 | Header | `header` | json | The HTTP header of the response. It must be an object whose values are arrays of strings. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -308,7 +278,5 @@ Send a HTTP OPTIONS request.
 | Status Code | `status-code` | integer | The HTTP status code of the response. |
 | Body | `body` | any | The body of the response. |
 | Header | `header` | json | The HTTP header of the response. |
+
 </div>
-
-
-

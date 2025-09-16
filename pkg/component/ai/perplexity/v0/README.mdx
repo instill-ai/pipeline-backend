@@ -9,19 +9,13 @@ The Perplexity component is an AI component that allows users to connect the AI 
 It can carry out the following tasks:
 - [Chat](#chat)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/perplexity/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/perplexity/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -38,11 +32,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key | `api-key` | string | Fill in your API key from the vendor's platform.  |
-
+| API Key | `api-key` | string | Fill in your API key from the vendor's platform. |
 </div>
-
-
 
 
 
@@ -59,9 +50,8 @@ Generate response base on conversation input.
 | Task ID (required) | `task` | string | `TASK_CHAT` |
 | [Chat Data](#chat-chat-data) (required) | `data` | object | Input data. |
 | [Input Parameter](#chat-input-parameter) | `parameter` | object | Input parameter. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Chat</summary>
 
@@ -69,88 +59,92 @@ Generate response base on conversation input.
 
 Input data.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Chat Messages](#chat-chat-messages) | `messages` | array | List of chat messages.  |
-| Model Name | `model` | string | The model to be used for `TASK_CHAT`.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`sonar`</li><li>`sonar-pro`</li><li>`llama-3.1-sonar-small-128k-online`</li><li>`llama-3.1-sonar-large-128k-online`</li><li>`llama-3.1-sonar-huge-128k-online`</li></ul></details>  |
+| [Chat Messages](#chat-chat-messages) | `messages` | array | List of chat messages. |
+| Model Name | `model` | string | The model to be used for `TASK_CHAT`. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`sonar`</li><li>`sonar-pro`</li><li>`llama-3.1-sonar-small-128k-online`</li><li>`llama-3.1-sonar-large-128k-online`</li><li>`llama-3.1-sonar-huge-128k-online`</li></ul></details> |
 </div>
 <h4 id="chat-chat-messages">Chat Messages</h4>
 
 List of chat messages.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#chat-content) | `content` | array | The message content.  |
-| Name | `name` | string | An optional name for the participant. Provides the model information to differentiate between participants of the same role.  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`system`</li><li>`user`</li><li>`assistant`</li></ul></details>  |
+| [Content](#chat-content) | `content` | array | The message content. |
+| Name | `name` | string | An optional name for the participant. Provides the model information to differentiate between participants of the same role. |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`system`</li><li>`user`</li><li>`assistant`</li></ul></details> |
 </div>
 <h4 id="chat-content">Content</h4>
 
 The message content.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Text Message | `text` | string | Text message.  |
-| Text | `type` | string | Text content type.  |
+| Text Message | `text` | string | Text message. |
+| Text | `type` | string | Text content type. |
 </div>
 <h4 id="chat-input-parameter">Input Parameter</h4>
 
 Input parameter.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Enable Search Classifier | `enable-search-classifier` | boolean | Whether to enable search classifier.  |
-| Frequency Penalty | `frequency-penalty` | number | A multiplicative penalty greater than 0. Values greater than 1.0 penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim. A value of 1.0 means no penalty. Incompatible with `presence_penalty`.  |
-| Last Updated After Filter | `last-updated-after-filter` | string | Filters search results to only include content last updated after this date. Format should be %m/%d/%Y (e.g. 3/1/2025)  |
-| Last Updated Before Filter | `last-updated-before-filter` | string | Filters search results to only include content last updated before this date. Format should be %m/%d/%Y (e.g. 3/1/2025)  |
-| Max New Tokens | `max-tokens` | integer | The maximum number of completion tokens returned by the API. The total number of tokens requested in max_tokens plus the number of prompt tokens sent in messages must not exceed the context window token limit of model requested. If left unspecified, then the model will generate tokens until either it reaches its stop token or the end of its context window.  |
-| Presence Penalty | `presence-penalty` | number | A value between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics. Incompatible with `frequency_penalty`.  |
-| Return Related Questions | `return-related-questions` | boolean | Determines whether related questions should be returned.  |
-| Search After Date Filter | `search-after-date-filter` | string | Filters search results to only include content published after this date. Format should be %m/%d/%Y (e.g. 3/1/2025)  |
-| Search Before Date Filter | `search-before-date-filter` | string | Filters search results to only include content published before this date. Format should be %m/%d/%Y (e.g. 3/1/2025)  |
-| Search Domain Filter | `search-domain-filter` | string | Given a list of domains, limit the citations used by the online model to URLs from the specified domains. Currently limited to only 3 domains for whitelisting and blacklisting. For blacklisting add a `-` to the beginning of the domain string.  |
-| Search Mode | `search-mode` | string | Controls the search mode used for the request. When set to 'academic', results will prioritize scholarly sources like peer-reviewed papers and academic journals. When set to 'sec', results will prioritize financial and legal sources.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`academic`</li><li>`web`</li><li>`sec`</li></ul></details>  |
-| Search Recency Filter | `search-recency-filter` | string | Returns search results within the specified time interval - does not apply to images. Values include `month`, `week`, `day`, `year`.  |
-| Stream | `stream` | boolean | If set, partial message deltas will be sent. Tokens will be sent as data-only server-sent events as they become available.  |
-| Temperature | `temperature` | number | The amount of randomness in the response, valued between 0 inclusive and 2 exclusive. Higher values are more random, and lower values are more deterministic.  |
-| Top K | `top-k` | number | The number of tokens to keep for highest top-k filtering, specified as an integer between 0 and 2048 inclusive. If set to 0, top-k filtering is disabled. We recommend either altering top_k or top_p, but not both.  |
-| Top P | `top-p` | number | The nucleus sampling threshold, valued between 0 and 1 inclusive. For each subsequent token, the model considers the results of the tokens with top_p probability mass. We recommend either altering top_k or top_p, but not both.  |
-| [Web Search Options](#chat-web-search-options) | `web-search-options` | object | Configuration for using web search in model responses.  |
+| Enable Search Classifier | `enable-search-classifier` | boolean | Whether to enable search classifier. |
+| Frequency Penalty | `frequency-penalty` | number | A multiplicative penalty greater than 0. Values greater than 1.0 penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim. A value of 1.0 means no penalty. Incompatible with `presence_penalty`. |
+| Last Updated After Filter | `last-updated-after-filter` | string | Filters search results to only include content last updated after this date. Format should be %m/%d/%Y (e.g. 3/1/2025) |
+| Last Updated Before Filter | `last-updated-before-filter` | string | Filters search results to only include content last updated before this date. Format should be %m/%d/%Y (e.g. 3/1/2025) |
+| Max New Tokens | `max-tokens` | integer | The maximum number of completion tokens returned by the API. The total number of tokens requested in max_tokens plus the number of prompt tokens sent in messages must not exceed the context window token limit of model requested. If left unspecified, then the model will generate tokens until either it reaches its stop token or the end of its context window. |
+| Presence Penalty | `presence-penalty` | number | A value between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics. Incompatible with `frequency_penalty`. |
+| Return Related Questions | `return-related-questions` | boolean | Determines whether related questions should be returned. |
+| Search After Date Filter | `search-after-date-filter` | string | Filters search results to only include content published after this date. Format should be %m/%d/%Y (e.g. 3/1/2025) |
+| Search Before Date Filter | `search-before-date-filter` | string | Filters search results to only include content published before this date. Format should be %m/%d/%Y (e.g. 3/1/2025) |
+| Search Domain Filter | `search-domain-filter` | string | Given a list of domains, limit the citations used by the online model to URLs from the specified domains. Currently limited to only 3 domains for whitelisting and blacklisting. For blacklisting add a `-` to the beginning of the domain string. |
+| Search Mode | `search-mode` | string | Controls the search mode used for the request. When set to 'academic', results will prioritize scholarly sources like peer-reviewed papers and academic journals. When set to 'sec', results will prioritize financial and legal sources. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`academic`</li><li>`web`</li><li>`sec`</li></ul></details> |
+| Search Recency Filter | `search-recency-filter` | string | Returns search results within the specified time interval - does not apply to images. Values include `month`, `week`, `day`, `year`. |
+| Stream | `stream` | boolean | If set, partial message deltas will be sent. Tokens will be sent as data-only server-sent events as they become available. |
+| Temperature | `temperature` | number | The amount of randomness in the response, valued between 0 inclusive and 2 exclusive. Higher values are more random, and lower values are more deterministic. |
+| Top K | `top-k` | number | The number of tokens to keep for highest top-k filtering, specified as an integer between 0 and 2048 inclusive. If set to 0, top-k filtering is disabled. We recommend either altering top_k or top_p, but not both. |
+| Top P | `top-p` | number | The nucleus sampling threshold, valued between 0 and 1 inclusive. For each subsequent token, the model considers the results of the tokens with top_p probability mass. We recommend either altering top_k or top_p, but not both. |
+| [Web Search Options](#chat-web-search-options) | `web-search-options` | object | Configuration for using web search in model responses. |
 </div>
 <h4 id="chat-web-search-options">Web Search Options</h4>
 
 Configuration for using web search in model responses.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Search Context Size | `search-context-size` | string | Determines how much search context is retrieved for the model. Options are: low (minimizes context for cost savings but less comprehensive answers), medium (balanced approach suitable for most queries), and high (maximizes context for comprehensive answers but at higher cost).  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`low`</li><li>`medium`</li><li>`high`</li></ul></details>  |
-| [User Location](#chat-user-location) | `user-location` | object | To refine search results based on geography, you can specify an approximate user location.  |
+| Search Context Size | `search-context-size` | string | Determines how much search context is retrieved for the model. Options are: low (minimizes context for cost savings but less comprehensive answers), medium (balanced approach suitable for most queries), and high (maximizes context for comprehensive answers but at higher cost). <br/><details><summary><strong>Enum values</strong></summary><ul><li>`low`</li><li>`medium`</li><li>`high`</li></ul></details> |
+| [User Location](#chat-user-location) | `user-location` | object | To refine search results based on geography, you can specify an approximate user location. |
 </div>
 <h4 id="chat-user-location">User Location</h4>
 
 To refine search results based on geography, you can specify an approximate user location.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Country | `country` | string | The two letter ISO country code of the user's location.  |
-| Latitude | `latitude` | number | The latitude of the user's location.  |
-| Longitude | `longitude` | number | The longitude of the user's location.  |
+| Country | `country` | string | The two letter ISO country code of the user's location. |
+| Latitude | `latitude` | number | The latitude of the user's location. |
+| Longitude | `longitude` | number | The longitude of the user's location. |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -158,7 +152,9 @@ To refine search results based on geography, you can specify an approximate user
 | :--- | :--- | :--- | :--- |
 | [Output Data](#chat-output-data) | `data` | object | Output data. |
 | [Output Metadata](#chat-output-metadata) (optional) | `metadata` | object | Output metadata. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Chat</summary>
@@ -172,6 +168,7 @@ To refine search results based on geography, you can specify an approximate user
 | [Choices](#chat-choices) | `choices` | array | List of chat completion choices. |
 | Citations | `citations` | array | List of citations. |
 | [Search Results](#chat-search-results) | `search-results` | array | A list of search results related to the response. |
+
 </div>
 
 <h4 id="chat-choices">Choices</h4>
@@ -184,6 +181,7 @@ To refine search results based on geography, you can specify an approximate user
 | Finish Reason | `finish-reason` | string | The reason the model stopped generating tokens. |
 | Index | `index` | integer | The index of the choice in the list of choices. |
 | [Message](#chat-message) | `message` | object | A chat message generated by the model. |
+
 </div>
 
 <h4 id="chat-message">Message</h4>
@@ -194,6 +192,7 @@ To refine search results based on geography, you can specify an approximate user
 | :--- | :--- | :--- | :--- |
 | Content | `content` | string | The contents of the message. |
 | Role | `role` | string | The role of the author of this message. |
+
 </div>
 
 <h4 id="chat-search-results">Search Results</h4>
@@ -205,6 +204,7 @@ To refine search results based on geography, you can specify an approximate user
 | Date | `date` | string | The date of the search result. |
 | Title | `title` | string | The title of the search result. |
 | URL | `url` | string | The URL of the search result. |
+
 </div>
 
 <h4 id="chat-output-metadata">Output Metadata</h4>
@@ -214,6 +214,7 @@ To refine search results based on geography, you can specify an approximate user
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Usage](#chat-usage) | `usage` | object | Usage statistics for the request. |
+
 </div>
 
 <h4 id="chat-usage">Usage</h4>
@@ -225,10 +226,9 @@ To refine search results based on geography, you can specify an approximate user
 | Completion Tokens | `completion-tokens` | integer | Number of tokens in the generated response. |
 | Prompt Tokens | `prompt-tokens` | integer | Number of tokens in the prompt. |
 | Total Tokens | `total-tokens` | integer | Total number of tokens used in the request (prompt + completion). |
+
 </div>
 </details>
-
-
 
 ## Example Recipes
 

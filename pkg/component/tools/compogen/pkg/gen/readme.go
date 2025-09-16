@@ -362,11 +362,16 @@ func parseResourceProperties(o *objectSchema) []resourceProperty {
 		}
 	}
 
-	props := make([]resourceProperty, len(propMap))
-	idx := 0
+	// Sort keys for deterministic ordering
+	keys := make([]string, 0, len(propMap))
 	for k := range propMap {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	props := make([]resourceProperty, len(propMap))
+	for idx, k := range keys {
 		props[idx] = propMap[k]
-		idx++
 	}
 
 	// Note: The order might not be consecutive numbers.
@@ -421,28 +426,50 @@ func (rt *readmeTask) parseObjectProperties(properties map[string]property, isIn
 		op.replaceFormat()
 
 		if op.Type == "object" {
+			// Process nested properties' descriptions before storing them
+			processedProperties := make(map[string]property)
+			// Sort keys for deterministic ordering
+			propKeys := make([]string, 0, len(op.Properties))
+			for key := range op.Properties {
+				propKeys = append(propKeys, key)
+			}
+			sort.Strings(propKeys)
+
+			for _, key := range propKeys {
+				prop := op.Properties[key]
+				prop.replaceDescription()
+				prop.replaceFormat()
+				processedProperties[key] = prop
+			}
 
 			if isInput {
 				rt.InputObjects = append(rt.InputObjects, map[string]objectSchema{
 					op.Title: {
-						Properties:  op.Properties,
+						Properties:  processedProperties,
 						Description: op.Description,
 					},
 				})
-				rt.parseObjectProperties(op.Properties, isInput)
+				rt.parseObjectProperties(processedProperties, isInput)
 			} else {
 				rt.OutputObjects = append(rt.OutputObjects, map[string]objectSchema{
 					op.Title: {
-						Properties:  op.Properties,
+						Properties:  processedProperties,
 						Description: op.Description,
 					},
 				})
-				rt.parseObjectProperties(op.Properties, isInput)
+				rt.parseObjectProperties(processedProperties, isInput)
 			}
 		} else { // op.Type == "array[object]" || (op.Type == "array" || op.Items.Type == "object")
 
 			props := op.Items.Properties
+			// Sort keys for deterministic ordering
+			propKeys := make([]string, 0, len(props))
 			for key := range props {
+				propKeys = append(propKeys, key)
+			}
+			sort.Strings(propKeys)
+
+			for _, key := range propKeys {
 				prop := props[key]
 				prop.replaceDescription()
 				prop.replaceFormat()
@@ -509,7 +536,15 @@ func (rt *readmeTask) parseOneOfsProperties(properties map[string]property) {
 		return
 	}
 
-	for key, op := range properties {
+	// Sort keys for deterministic ordering
+	keys := make([]string, 0, len(properties))
+	for key := range properties {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		op := properties[key]
 		if op.Deprecated {
 			continue
 		}
@@ -545,7 +580,15 @@ func (sc *setupConfig) parseOneOfProperties(properties map[string]property) {
 		return
 	}
 
-	for key, op := range properties {
+	// Sort keys for deterministic ordering
+	keys := make([]string, 0, len(properties))
+	for key := range properties {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		op := properties[key]
 		if op.Deprecated {
 			continue
 		}
@@ -679,7 +722,15 @@ func insertHeaderByConstValue(option objectSchema, taskOrString interface{}) str
 		prefix = "unknown"
 	}
 
-	for _, prop := range option.Properties {
+	// Sort keys for deterministic ordering
+	keys := make([]string, 0, len(option.Properties))
+	for key := range option.Properties {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		prop := option.Properties[key]
 		if prop.Const != "" {
 			return fmt.Sprintf(`<h5 id="%s-%s"><code>%s</code></h5>`, prefix, blackfriday.SanitizedAnchorName(option.Title), option.Title)
 		}
@@ -688,6 +739,10 @@ func insertHeaderByConstValue(option objectSchema, taskOrString interface{}) str
 }
 
 func (prop *property) replaceDescription() {
+	// Always replace newlines with spaces for table formatting
+	prop.Description = strings.ReplaceAll(prop.Description, "\n", " ")
+
+	// Handle template delimiters by wrapping them in backticks
 	if strings.Contains(prop.Description, "{{") && strings.Contains(prop.Description, "}}") {
 		// Skip if already processed (contains backticks around template variables)
 		if strings.Contains(prop.Description, "`{{") {
@@ -699,6 +754,9 @@ func (prop *property) replaceDescription() {
 	} else {
 		prop.Description = strings.ReplaceAll(prop.Description, "\n", " ")
 	}
+
+	// Trim trailing whitespace for consistent formatting
+	prop.Description = strings.TrimSpace(prop.Description)
 }
 
 func (prop *property) replaceFormat() {

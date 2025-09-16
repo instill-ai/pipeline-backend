@@ -14,19 +14,13 @@ It can carry out the following tasks:
 - [Delete](#delete)
 - [Delete Collection](#delete-collection)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/weaviate/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/weaviate/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -43,12 +37,9 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | Fill in your Weaviate API key. Please refer to clusters in Weaviate Console.  |
-| Weaviate URL Endpoint (required) | `url` | string | Fill in your Weaviate base URL without https:// or http://. Please refer to clusters in Weaviate Console.  |
-
+| API Key (required) | `api-key` | string | Fill in your Weaviate API key. Please refer to clusters in Weaviate Console. |
+| Weaviate URL Endpoint (required) | `url` | string | Fill in your Weaviate base URL without https:// or http://. Please refer to clusters in Weaviate Console. |
 </div>
-
-
 
 
 
@@ -69,11 +60,8 @@ Perform a vector search on a collection
 | Fields | `fields` | array[string] | The fields to return in the objects. If empty then all fields will be returned. |
 | Filter | `filter` | object | The properties filter to be applied to the data with GraphQL queries, which starts with WHERE field, please refer to [here](https://weaviate.io/developers/weaviate/search/filters). |
 | Tenant | `tenant` | string | The tenant to perform the vector search on. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -82,7 +70,9 @@ Perform a vector search on a collection
 | :--- | :--- | :--- | :--- |
 | [Result](#vector-search-result) | `result` | object | Result of the vector search operation. |
 | Status | `status` | string | Upsert status. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Vector Search</summary>
@@ -97,6 +87,7 @@ Perform a vector search on a collection
 | [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation. |
 | [Objects](#vector-search-objects) | `objects` | array | The objects returned from the vector search operation. |
 | Vectors | `vectors` | array | The vectors returned from the vector search operation. |
+
 </div>
 </details>
 
@@ -114,11 +105,8 @@ Insert multiple vector objects into a collection
 | Array ID | `array-id` | array[string] | The array of id. |
 | [Array Metadata](#batch-insert-array-metadata) (required) | `array-metadata` | array[object] | The array of vector metadata properties. |
 | Array Vector (required) | `array-vector` | array[array] | The array of vector values. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -126,8 +114,8 @@ Insert multiple vector objects into a collection
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Batch insert status. |
-</div>
 
+</div>
 
 ### Insert
 
@@ -142,11 +130,8 @@ Insert a vector object into a collection
 | ID | `id` | string | The ID of the object. |
 | Vector (required) | `vector` | array[number] | An array of dimensions for the vector value. |
 | Metadata (required) | `metadata` | object | The vector metadata properties. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -154,8 +139,8 @@ Insert a vector object into a collection
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Upsert status. |
-</div>
 
+</div>
 
 ### Update
 
@@ -170,11 +155,8 @@ Update vector object in a collection
 | ID (required) | `id` | string | The ID of the object. |
 | Update Vector | `update-vector` | array[number] | The updated vector value, optional. |
 | Update Metadata | `update-metadata` | object | The updated vector metadata properties, optional. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -182,8 +164,8 @@ Update vector object in a collection
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Update status. |
-</div>
 
+</div>
 
 ### Delete
 
@@ -197,11 +179,8 @@ Delete vector objects from a collection
 | Collection Name (required) | `collection-name` | string | The name of the collection to delete the object from. |
 | ID | `id` | string | The ID of the object. |
 | Filter | `filter` | object | The properties filter to be applied to the data with GraphQL queries, which starts with WHERE field, please refer to [here](https://weaviate.io/developers/weaviate/search/filters). |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -209,8 +188,8 @@ Delete vector objects from a collection
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete status. |
-</div>
 
+</div>
 
 ### Delete Collection
 
@@ -222,11 +201,8 @@ Delete a collection
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DELETE_COLLECTION` |
 | Collection Name (required) | `collection-name` | string | The name of the collection to delete. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -234,7 +210,5 @@ Delete a collection
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete collection status. |
+
 </div>
-
-
-

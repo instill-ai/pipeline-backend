@@ -23,19 +23,13 @@ It can carry out the following tasks:
 - [Get Group](#get-group)
 - [Get Skill](#get-skill)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/freshdesk/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/freshdesk/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -52,12 +46,9 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | Fill in your Freshdesk API key. To find your key, go to profile settigs and on the right pane, you can get your key once you have completed the captcha verification.  |
-| Domain (required) | `domain` | string | Your Freshdesk domain. You can find this by going to Admin -> Search for "Portals" -> Portal URL. Your portal URL will look like "yourdomain.freshdesk.com". Please only input your domain and not the whole URL.  |
-
+| API Key (required) | `api-key` | string | Fill in your Freshdesk API key. To find your key, go to profile settigs and on the right pane, you can get your key once you have completed the captcha verification. |
+| Domain (required) | `domain` | string | Your Freshdesk domain. You can find this by going to Admin -> Search for "Portals" -> Portal URL. Your portal URL will look like "yourdomain.freshdesk.com". Please only input your domain and not the whole URL. |
 </div>
-
-
 
 
 
@@ -73,11 +64,8 @@ Get ticket using ID
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_TICKET` |
 | Ticket ID (required) | `ticket-id` | integer | The ID of the ticket. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -116,7 +104,9 @@ Get ticket using ID
 | Sentiment Score (optional) | `sentiment-score` | integer | Freshdesk uses AI to assess the emotional tone and attitude expressed in customer interaction. |
 | Initial Sentiment Score (optional) | `initial-sentiment-score` | integer | The initial sentiment score of the ticket. |
 | Custom Fields (optional) | `custom-fields` | json | Custom fields that the ticket have. Custom fields can be created or modified in Admin -> Ticket Fields. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Get Ticket</summary>
@@ -130,6 +120,7 @@ Get ticket using ID
 | Attachment Content Type | `content-type` | string | The type of the file. |
 | Attachment Name | `name` | string | The name of the file. |
 | Attachment URL | `url` | string | The URL to the attachment. |
+
 </div>
 </details>
 
@@ -147,9 +138,9 @@ Create ticket
 | Email | `email` | string | Email address of the requester. If you fill in the Requester ID above, it will be ignored. Only one of the two fields is required. If no contact exists with this email address in Freshdesk, it will be added as a new contact. |
 | Subject (required) | `subject` | string | Subject of the ticket. |
 | Description (required) | `description` | string | Content of the ticket. You can use HTML tags in the content. |
-| Source (required) | `source` | string | Source of the ticket. Eg: Email. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Email`</li><li>`Portal`</li><li>`Phone`</li><li>`Twitter`</li><li>`Facebook`</li><li>`Chat`</li><li>`Feedback Widget`</li><li>`Outbound Email`</li><li>`Ecommerce`</li></ul></details>  |
-| Status (required) | `status` | string | Status of the ticket. Eg: Pending. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Open`</li><li>`Pending`</li><li>`Resolved`</li><li>`Closed`</li><li>`Waiting on Customer`</li><li>`Waiting on Third Party`</li></ul></details>  |
-| Priority (required) | `priority` | string | Priority of the ticket. Eg: Medium. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Low`</li><li>`Medium`</li><li>`High`</li><li>`Urgent`</li></ul></details>  |
+| Source (required) | `source` | string | Source of the ticket. Eg: Email. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Email`</li><li>`Portal`</li><li>`Phone`</li><li>`Twitter`</li><li>`Facebook`</li><li>`Chat`</li><li>`Feedback Widget`</li><li>`Outbound Email`</li><li>`Ecommerce`</li></ul></details> |
+| Status (required) | `status` | string | Status of the ticket. Eg: Pending. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Open`</li><li>`Pending`</li><li>`Resolved`</li><li>`Closed`</li><li>`Waiting on Customer`</li><li>`Waiting on Third Party`</li></ul></details> |
+| Priority (required) | `priority` | string | Priority of the ticket. Eg: Medium. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Low`</li><li>`Medium`</li><li>`High`</li><li>`Urgent`</li></ul></details> |
 | Ticket Type | `ticket-type` | string | Used to categorize the ticket. To check the possible types a ticket can have, please go to Admin -> Ticket Fields. |
 | Company ID | `company-id` | integer | ID of the company to which this ticket belongs. |
 | Product ID | `product-id` | integer | ID of the product to which the ticket is associated. List of products can be found in Admin -> Multiple Products. |
@@ -159,11 +150,8 @@ Create ticket
 | CC Emails | `cc-emails` | array[string] | Email addresses added in the `cc` field of the incoming ticket email. |
 | Parent ID | `parent-id` | integer | ID of the parent ticket. Need to be filled out if you want to create a child ticket. |
 | Related Ticket IDs | `related-ticket-ids` | array[integer] | List of related ticket IDs. Need to be filled out if you want to create a tracker ticket. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -172,8 +160,8 @@ Create ticket
 | :--- | :--- | :--- | :--- |
 | Ticket ID | `ticket-id` | integer | The ID of the ticket. |
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
-</div>
 
+</div>
 
 ### Reply to Ticket
 
@@ -190,11 +178,8 @@ Reply to a ticket thread.
 | User ID | `user-id` | integer | ID of the agent/contact replying to the ticket. If you fill this field using a contact ID, there will be no email sent to the requester. |
 | CC Emails | `cc-emails` | array[string] | Email addresses added in the `cc` field of the outgoing ticket email. |
 | BCC Emails | `bcc-emails` | array[string] | Email addresses added in the `bcc` field of the outgoing ticket email. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -203,8 +188,8 @@ Reply to a ticket thread.
 | :--- | :--- | :--- | :--- |
 | Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket. |
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
-</div>
 
+</div>
 
 ### Create Ticket Note
 
@@ -221,11 +206,8 @@ Create a private/public note on a ticket thread.
 | User ID | `user-id` | integer | ID of the agent/contact who is adding the note. |
 | Private | `private` | boolean | Set to true if the note is private. |
 | Incoming | `incoming` | boolean | Set to true if a particular note should appear as being created from outside (i.e., not through web portal). |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -234,8 +216,8 @@ Create a private/public note on a ticket thread.
 | :--- | :--- | :--- | :--- |
 | Conversation ID | `conversation-id` | integer | The ID of the note or reply that is associated with the ticket. |
 | Created At | `created-at` | string | Timestamp that denotes when the ticket/conversation was created. In UTC format. |
-</div>
 
+</div>
 
 ### Get All Conversations
 
@@ -247,11 +229,8 @@ Get all the conversations in a ticket. (Conversations are replies and notes that
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ALL_CONVERSATIONS` |
 | Ticket ID (required) | `ticket-id` | integer | Ticket ID. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -260,7 +239,9 @@ Get all the conversations in a ticket. (Conversations are replies and notes that
 | :--- | :--- | :--- | :--- |
 | [Conversations](#get-all-conversations-conversations) | `conversations` | array[object] | An array of conversations. |
 | Conversations Length | `conversations-length` | integer | Number of conversations. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Get All Conversations</summary>
@@ -282,6 +263,7 @@ Get all the conversations in a ticket. (Conversations are replies and notes that
 | Support Email | `support-email` | string | Support email address. You can find it in Admin -> Email (under channel). |
 | To Emails | `to-emails` | array | Email addresses of agents/users who need to be notified about this conversation. |
 | Incoming | `user-id` | integer | ID of the agent/contact replying to the ticket. |
+
 </div>
 </details>
 
@@ -296,11 +278,8 @@ Get contact using ID
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_CONTACT` |
 | Contact ID (required) | `contact-id` | integer | ID of the contact. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -329,7 +308,9 @@ Get contact using ID
 | Created At (optional) | `created-at` | string | Timestamp that denotes when the contact was created. In UTC format. |
 | Updated At (optional) | `updated-at` | string | Timestamp that denotes when the contact was last updated. In UTC format. |
 | Custom Fields (optional) | `custom-fields` | json | Custom fields that the contact have. Custom fields can be created or modified in Admin -> Customer Fields. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Get Contact</summary>
@@ -342,6 +323,7 @@ Get contact using ID
 | :--- | :--- | :--- | :--- |
 | Company ID | `company-id` | integer | ID of the company. |
 | View All Tickets | `view-all-tickets` | boolean | Set to true if the contact can see all the tickets that are associated with the company. |
+
 </div>
 </details>
 
@@ -363,8 +345,8 @@ Create contact
 | Address | `address` | string | Address of the contact. |
 | Job Title | `job-title` | string | Job title of the contact. |
 | Tags | `tags` | array[string] | Tags associated with the contact. |
-| Language | `language` | string | Language of the contact. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Arabic`</li><li>`Bosnian`</li><li>`Bulgarian`</li><li>`Catalan`</li><li>`Chinese`</li><li>`Chinese (Traditional)`</li><li>`Croatian`</li><li>`Czech`</li><li>`Danish`</li><li>`Dutch`</li><li>`English`</li><li>`Estonian`</li><li>`Filipino`</li><li>`Finnish`</li><li>`French`</li><li>`German`</li><li>`Greek`</li><li>`Hebrew`</li><li>`Hungarian`</li><li>`Icelandic`</li><li>`Indonesian`</li><li>`Italian`</li><li>`Japanese`</li><li>`Korean`</li><li>`Latvian`</li><li>`Lithuanian`</li><li>`Malay`</li><li>`Norwegian`</li><li>`Polish`</li><li>`Portuguese (BR)`</li><li>`Portuguese/Portugal`</li><li>`Romanian`</li><li>`Russian`</li><li>`Serbian`</li><li>`Slovak`</li><li>`Slovenian`</li><li>`Spanish`</li><li>`Spanish (Latin America)`</li><li>`Swedish`</li><li>`Thai`</li><li>`Turkish`</li><li>`Ukrainian`</li><li>`Vietnamese`</li></ul></details>  |
-| Time Zone | `time-zone` | string | Time zone of the contact. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`American Samoa`</li><li>`International Date Line West`</li><li>`Midway Island`</li><li>`Hawaii`</li><li>`Alaska`</li><li>`Pacific Time (US & Canada)`</li><li>`Tijuana`</li><li>`Arizona`</li><li>`Mazatlan`</li><li>`Mountain Time (US & Canada)`</li><li>`Central America`</li><li>`Central Time (US & Canada)`</li><li>`Chihuahua`</li><li>`Guadalajara`</li><li>`Mexico City`</li><li>`Monterrey`</li><li>`Saskatchewan`</li><li>`Bogota`</li><li>`Eastern Time (US & Canada)`</li><li>`Indiana (East)`</li><li>`Lima`</li><li>`Quito`</li><li>`Atlantic Time (Canada)`</li><li>`Caracas`</li><li>`Georgetown`</li><li>`La Paz`</li><li>`Santiago`</li><li>`Newfoundland`</li><li>`Brasilia`</li><li>`Buenos Aires`</li><li>`Montevideo`</li><li>`Greenland`</li><li>`Mid-Atlantic`</li><li>`Azores`</li><li>`Cape Verde Is.`</li><li>`Casablanca`</li><li>`Dublin`</li><li>`Edinburgh`</li><li>`Lisbon`</li><li>`London`</li><li>`Monrovia`</li><li>`UTC`</li><li>`Amsterdam`</li><li>`Belgrade`</li><li>`Berlin`</li><li>`Bern`</li><li>`Bratislava`</li><li>`Brussels`</li><li>`Budapest`</li><li>`Copenhagen`</li><li>`Ljubljana`</li><li>`Madrid`</li><li>`Paris`</li><li>`Prague`</li><li>`Rome`</li><li>`Sarajevo`</li><li>`Skopje`</li><li>`Stockholm`</li><li>`Vienna`</li><li>`Warsaw`</li><li>`West Central Africa`</li><li>`Zagreb`</li><li>`Athens`</li><li>`Bucharest`</li><li>`Cairo`</li><li>`Harare`</li><li>`Helsinki`</li><li>`Jerusalem`</li><li>`Kaliningrad`</li><li>`Kyiv`</li><li>`Pretoria`</li><li>`Riga`</li><li>`Sofia`</li><li>`Tallinn`</li><li>`Vilnius`</li><li>`Baghdad`</li><li>`Istanbul`</li><li>`Kuwait`</li><li>`Minsk`</li><li>`Moscow`</li><li>`Nairobi`</li><li>`Riyadh`</li><li>`St. Petersburg`</li><li>`Volgograd`</li><li>`Tehran`</li><li>`Abu Dhabi`</li><li>`Baku`</li><li>`Muscat`</li><li>`Samara`</li><li>`Tbilisi`</li><li>`Yerevan`</li><li>`Kabul`</li><li>`Ekaterinburg`</li><li>`Islamabad`</li><li>`Karachi`</li><li>`Tashkent`</li><li>`Chennai`</li><li>`Kolkata`</li><li>`Mumbai`</li><li>`New Delhi`</li><li>`Sri Jayawardenepura`</li><li>`Kathmandu`</li><li>`Almaty`</li><li>`Astana`</li><li>`Dhaka`</li><li>`Urumqi`</li><li>`Rangoon`</li><li>`Bangkok`</li><li>`Hanoi`</li><li>`Jakarta`</li><li>`Krasnoyarsk`</li><li>`Novosibirsk`</li><li>`Beijing`</li><li>`Chongqing`</li><li>`Hong Kong`</li><li>`Irkutsk`</li><li>`Kuala Lumpur`</li><li>`Perth`</li><li>`Singapore`</li><li>`Taipei`</li><li>`Ulaanbaatar`</li><li>`Osaka`</li><li>`Sapporo`</li><li>`Seoul`</li><li>`Tokyo`</li><li>`Yakutsk`</li><li>`Adelaide`</li><li>`Darwin`</li><li>`Brisbane`</li><li>`Canberra`</li><li>`Guam`</li><li>`Hobart`</li><li>`Melbourne`</li><li>`Port Moresby`</li><li>`Sydney`</li><li>`Vladivostok`</li><li>`Magadan`</li><li>`New Caledonia`</li><li>`Solomon Is.`</li><li>`Srednekolymsk`</li><li>`Auckland`</li><li>`Fiji`</li><li>`Kamchatka`</li><li>`Marshall Is.`</li><li>`Wellington`</li><li>`Chatham Is.`</li><li>`Nuku'alofa`</li><li>`Samoa`</li><li>`Tokelau Is.`</li></ul></details>  |
+| Language | `language` | string | Language of the contact. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Arabic`</li><li>`Bosnian`</li><li>`Bulgarian`</li><li>`Catalan`</li><li>`Chinese`</li><li>`Chinese (Traditional)`</li><li>`Croatian`</li><li>`Czech`</li><li>`Danish`</li><li>`Dutch`</li><li>`English`</li><li>`Estonian`</li><li>`Filipino`</li><li>`Finnish`</li><li>`French`</li><li>`German`</li><li>`Greek`</li><li>`Hebrew`</li><li>`Hungarian`</li><li>`Icelandic`</li><li>`Indonesian`</li><li>`Italian`</li><li>`Japanese`</li><li>`Korean`</li><li>`Latvian`</li><li>`Lithuanian`</li><li>`Malay`</li><li>`Norwegian`</li><li>`Polish`</li><li>`Portuguese (BR)`</li><li>`Portuguese/Portugal`</li><li>`Romanian`</li><li>`Russian`</li><li>`Serbian`</li><li>`Slovak`</li><li>`Slovenian`</li><li>`Spanish`</li><li>`Spanish (Latin America)`</li><li>`Swedish`</li><li>`Thai`</li><li>`Turkish`</li><li>`Ukrainian`</li><li>`Vietnamese`</li></ul></details> |
+| Time Zone | `time-zone` | string | Time zone of the contact. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`American Samoa`</li><li>`International Date Line West`</li><li>`Midway Island`</li><li>`Hawaii`</li><li>`Alaska`</li><li>`Pacific Time (US & Canada)`</li><li>`Tijuana`</li><li>`Arizona`</li><li>`Mazatlan`</li><li>`Mountain Time (US & Canada)`</li><li>`Central America`</li><li>`Central Time (US & Canada)`</li><li>`Chihuahua`</li><li>`Guadalajara`</li><li>`Mexico City`</li><li>`Monterrey`</li><li>`Saskatchewan`</li><li>`Bogota`</li><li>`Eastern Time (US & Canada)`</li><li>`Indiana (East)`</li><li>`Lima`</li><li>`Quito`</li><li>`Atlantic Time (Canada)`</li><li>`Caracas`</li><li>`Georgetown`</li><li>`La Paz`</li><li>`Santiago`</li><li>`Newfoundland`</li><li>`Brasilia`</li><li>`Buenos Aires`</li><li>`Montevideo`</li><li>`Greenland`</li><li>`Mid-Atlantic`</li><li>`Azores`</li><li>`Cape Verde Is.`</li><li>`Casablanca`</li><li>`Dublin`</li><li>`Edinburgh`</li><li>`Lisbon`</li><li>`London`</li><li>`Monrovia`</li><li>`UTC`</li><li>`Amsterdam`</li><li>`Belgrade`</li><li>`Berlin`</li><li>`Bern`</li><li>`Bratislava`</li><li>`Brussels`</li><li>`Budapest`</li><li>`Copenhagen`</li><li>`Ljubljana`</li><li>`Madrid`</li><li>`Paris`</li><li>`Prague`</li><li>`Rome`</li><li>`Sarajevo`</li><li>`Skopje`</li><li>`Stockholm`</li><li>`Vienna`</li><li>`Warsaw`</li><li>`West Central Africa`</li><li>`Zagreb`</li><li>`Athens`</li><li>`Bucharest`</li><li>`Cairo`</li><li>`Harare`</li><li>`Helsinki`</li><li>`Jerusalem`</li><li>`Kaliningrad`</li><li>`Kyiv`</li><li>`Pretoria`</li><li>`Riga`</li><li>`Sofia`</li><li>`Tallinn`</li><li>`Vilnius`</li><li>`Baghdad`</li><li>`Istanbul`</li><li>`Kuwait`</li><li>`Minsk`</li><li>`Moscow`</li><li>`Nairobi`</li><li>`Riyadh`</li><li>`St. Petersburg`</li><li>`Volgograd`</li><li>`Tehran`</li><li>`Abu Dhabi`</li><li>`Baku`</li><li>`Muscat`</li><li>`Samara`</li><li>`Tbilisi`</li><li>`Yerevan`</li><li>`Kabul`</li><li>`Ekaterinburg`</li><li>`Islamabad`</li><li>`Karachi`</li><li>`Tashkent`</li><li>`Chennai`</li><li>`Kolkata`</li><li>`Mumbai`</li><li>`New Delhi`</li><li>`Sri Jayawardenepura`</li><li>`Kathmandu`</li><li>`Almaty`</li><li>`Astana`</li><li>`Dhaka`</li><li>`Urumqi`</li><li>`Rangoon`</li><li>`Bangkok`</li><li>`Hanoi`</li><li>`Jakarta`</li><li>`Krasnoyarsk`</li><li>`Novosibirsk`</li><li>`Beijing`</li><li>`Chongqing`</li><li>`Hong Kong`</li><li>`Irkutsk`</li><li>`Kuala Lumpur`</li><li>`Perth`</li><li>`Singapore`</li><li>`Taipei`</li><li>`Ulaanbaatar`</li><li>`Osaka`</li><li>`Sapporo`</li><li>`Seoul`</li><li>`Tokyo`</li><li>`Yakutsk`</li><li>`Adelaide`</li><li>`Darwin`</li><li>`Brisbane`</li><li>`Canberra`</li><li>`Guam`</li><li>`Hobart`</li><li>`Melbourne`</li><li>`Port Moresby`</li><li>`Sydney`</li><li>`Vladivostok`</li><li>`Magadan`</li><li>`New Caledonia`</li><li>`Solomon Is.`</li><li>`Srednekolymsk`</li><li>`Auckland`</li><li>`Fiji`</li><li>`Kamchatka`</li><li>`Marshall Is.`</li><li>`Wellington`</li><li>`Chatham Is.`</li><li>`Nuku'alofa`</li><li>`Samoa`</li><li>`Tokelau Is.`</li></ul></details> |
 | Company ID | `company-id` | integer | ID of the primary company to which the contact belongs. |
 | Unique External ID | `unique-external-id` | string | Unique external ID of the contact which be assigned by the user(agent). |
 | Twitter ID | `twitter-id` | string | Twitter ID of the contact. |
@@ -372,11 +354,8 @@ Create contact
 | Other Emails | `other-emails` | array[string] | List of other email addresses of the contact. |
 | Other Companies | `other-companies` | array[string] | List of other companies to which the contact belongs. Each company should be in the format of company-id;view-all-tickets(boolean `true`/`false``) Example: `123;true`. |
 | Other Phone Numbers | `other-phone-numbers` | array[string] | List of other phone numbers of the contact. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -385,8 +364,8 @@ Create contact
 | :--- | :--- | :--- | :--- |
 | Contact ID | `contact-id` | integer | ID of the contact. |
 | Created At | `created-at` | string | Timestamp that denotes when the contact was created. In UTC format. |
-</div>
 
+</div>
 
 ### Get Company
 
@@ -398,11 +377,8 @@ Get company using ID
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_COMPANY` |
 | Company ID (required) | `company-id` | integer | ID of the primary company to which the contact belongs. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -420,8 +396,8 @@ Get company using ID
 | Created At | `created-at` | string | Timestamp that denotes when the company was created. In UTC format. |
 | Updated At | `updated-at` | string | Timestamp that denotes when the company was last updated. In UTC format. |
 | Custom Fields (optional) | `custom-fields` | json | Custom fields that the company have. Custom fields can be created or modified in Admin -> Customer Fields. |
-</div>
 
+</div>
 
 ### Create Company
 
@@ -440,11 +416,8 @@ Create company
 | Account Tier | `account-tier` | string | Classification based on how much value the company brings to your business. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. Default values: "Basic", "Premium", "Enterprise". |
 | Renewal Date | `renewal-date` | string | Date when your contract or relationship with the company is due for renewal. Enter in the format YYYY-MM-DD. |
 | Industry | `industry` | string | The industry in which the company operates. To look at all the possible values or create custom values, please go to Admin -> Customer Fields. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -453,8 +426,8 @@ Create company
 | :--- | :--- | :--- | :--- |
 | Company ID | `company-id` | integer | ID of the company. |
 | Created At | `created-at` | string | Timestamp that denotes when the company was created. In UTC format. |
-</div>
 
+</div>
 
 ### Get All
 
@@ -465,13 +438,10 @@ Task to get all the IDs of existing contacts, companies, tickets, products, agen
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ALL` |
-| Object Type (required) | `object-type` | string | Type of object to get IDs for. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Contacts`</li><li>`Companies`</li><li>`Tickets`</li><li>`Products`</li><li>`Agents`</li><li>`Roles`</li><li>`Skills`</li></ul></details>  |
+| Object Type (required) | `object-type` | string | Type of object to get IDs for. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Contacts`</li><li>`Companies`</li><li>`Tickets`</li><li>`Products`</li><li>`Agents`</li><li>`Roles`</li><li>`Skills`</li></ul></details> |
 | Length (required) | `length` | integer | The maximum number of IDs allowed is 500. The most recent IDs will be retrieved. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -480,8 +450,8 @@ Task to get all the IDs of existing contacts, companies, tickets, products, agen
 | :--- | :--- | :--- | :--- |
 | IDs | `ids` | array[integer] | List of IDs. |
 | ID Length | `id-length` | integer | Number of IDs. |
-</div>
 
+</div>
 
 ### Get Product
 
@@ -493,11 +463,8 @@ Get product using ID. This task will only work if you have admin privileges.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_PRODUCT` |
 | Product ID (required) | `product-id` | integer | Product ID. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -510,8 +477,8 @@ Get product using ID. This task will only work if you have admin privileges.
 | Created At | `created-at` | string | Timestamp that denotes when the product was created. |
 | Updated At | `updated-at` | string | Timestamp that denotes when the product was last updated. |
 | Default | `default` | boolean | Set to true if the product is the default product. |
-</div>
 
+</div>
 
 ### Get Agent
 
@@ -523,11 +490,8 @@ Get agent using ID. This task will only work if you have admin privileges. Agent
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_AGENT` |
 | Agent ID (required) | `agent-id` | integer | Agent ID. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -554,8 +518,8 @@ Get agent using ID. This task will only work if you have admin privileges. Agent
 | Deactivated (optional) | `deactivated` | boolean | Set to true if the agent is deactivated. |
 | Created At (optional) | `created-at` | string | Timestamp that denotes when the agent was created. |
 | Updated At (optional) | `updated-at` | string | Timestamp that denotes when the agent was last updated. |
-</div>
 
+</div>
 
 ### Get Role
 
@@ -567,11 +531,8 @@ Get role using ID. This task will only work if you have admin privileges. Roles 
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ROLE` |
 | Role ID (required) | `role-id` | integer | Role ID. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -584,8 +545,8 @@ Get role using ID. This task will only work if you have admin privileges. Roles 
 | Agent Type | `agent-type` | string | Type of the agent. Can be "Support Agent", "Field Agent" or "Collaborator". |
 | Created At | `created-at` | string | Timestamp that denotes when the role was created. |
 | Updated At | `updated-at` | string | Timestamp that denotes when the role was last updated. |
-</div>
 
+</div>
 
 ### Get Group
 
@@ -597,11 +558,8 @@ Get group using ID. This task will only work if you have admin privileges. Agent
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_GROUP` |
 | Group ID (required) | `group-id` | integer | Group ID. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -618,8 +576,8 @@ Get group using ID. This task will only work if you have admin privileges. Agent
 | Agent Availability Status (optional) | `agent-availability-status` | boolean | The availability status of the agent in the group. Automatically set to true if the group has enabled "Automatic Ticket Assignment". |
 | Created At | `created-at` | string | Timestamp that denotes when the group was created. |
 | Updated At | `updated-at` | string | Timestamp that denotes when the group was last updated. |
-</div>
 
+</div>
 
 ### Get Skill
 
@@ -631,11 +589,8 @@ Get skill using ID. This task will only work if you have admin privileges. Agent
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_SKILL` |
 | Skill ID (required) | `skill-id` | integer | Skill ID. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -648,7 +603,5 @@ Get skill using ID. This task will only work if you have admin privileges. Agent
 | Conditions | `conditions` | array[json] | Conditions for the skill. |
 | Created At | `created-at` | string | Timestamp that denotes when the skill was created. |
 | Updated At | `updated-at` | string | Timestamp that denotes when the skill was last updated. |
+
 </div>
-
-
-

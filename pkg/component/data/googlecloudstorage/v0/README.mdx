@@ -11,19 +11,13 @@ It can carry out the following tasks:
 - [Read Objects](#read-objects)
 - [Create Bucket](#create-bucket)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/googlecloudstorage/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/googlecloudstorage/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -40,11 +34,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| JSON Key File Contents (required) | `json-key` | string | Contents of the JSON key file with access to the bucket.  |
-
+| JSON Key File Contents (required) | `json-key` | string | Contents of the JSON key file with access to the bucket. |
 </div>
-
-
 
 
 
@@ -62,11 +53,8 @@ Upload data to Google Cloud Storage.
 | Bucket Name (required) | `bucket-name` | string | Name of the bucket to be used for object storage. |
 | Object Name (required) | `object-name` | string | The name of the object to be created. |
 | Data (required) | `data` | string | The data to be saved in the object. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -78,8 +66,8 @@ Upload data to Google Cloud Storage.
 | Public Access (optional) | `public-access` | boolean | Whether the object is publicly accessible. |
 | Public URL (optional) | `public-url` | string | Anyone with this link can access the object on the public Internet. |
 | Upload Status | `status` | string | Status of the upload operation. |
-</div>
 
+</div>
 
 ### Read Objects
 
@@ -99,11 +87,8 @@ Read objects from Google Cloud Storage.
 | Include Trailing Delimiter | `include-trailing-delimiter` | boolean | Whether to include the delimiter in the object name. |
 | Match Glob | `match-glob` | string | Whether to match objects using a glob pattern. |
 | Include Folders As Prefixes | `include-folders-as-prefixes` | boolean | Whether to include folders as prefixes. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -115,7 +100,9 @@ Read objects from Google Cloud Storage.
 | [Document Objects](#read-objects-document-objects) (optional) | `document-objects` | array[object] | The document objects in the bucket. |
 | [Audio Objects](#read-objects-audio-objects) (optional) | `audio-objects` | array[object] | The audio objects in the bucket. |
 | [Video Objects](#read-objects-video-objects) (optional) | `video-objects` | array[object] | The video objects in the bucket. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Read Objects</summary>
@@ -128,6 +115,7 @@ Read objects from Google Cloud Storage.
 | :--- | :--- | :--- | :--- |
 | [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
 | Data | `data` | string | The data of the object. |
+
 </div>
 
 <h4 id="read-objects-attributes">Attributes</h4>
@@ -146,6 +134,7 @@ Read objects from Google Cloud Storage.
 | Owner | `owner` | string | The owner of the object. |
 | Size | `size` | integer | The size of the object. |
 | Storage Class | `storage-class` | string | The storage class of the object. |
+
 </div>
 
 <h4 id="read-objects-image-objects">Image Objects</h4>
@@ -156,6 +145,7 @@ Read objects from Google Cloud Storage.
 | :--- | :--- | :--- | :--- |
 | [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
 | Data | `data` | string | The data of the object. |
+
 </div>
 
 <h4 id="read-objects-attributes">Attributes</h4>
@@ -174,6 +164,7 @@ Read objects from Google Cloud Storage.
 | Owner | `owner` | string | The owner of the object. |
 | Size | `size` | integer | The size of the object. |
 | Storage Class | `storage-class` | string | The storage class of the object. |
+
 </div>
 
 <h4 id="read-objects-document-objects">Document Objects</h4>
@@ -184,6 +175,7 @@ Read objects from Google Cloud Storage.
 | :--- | :--- | :--- | :--- |
 | [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
 | Data | `data` | string | The data of the object. |
+
 </div>
 
 <h4 id="read-objects-attributes">Attributes</h4>
@@ -202,6 +194,7 @@ Read objects from Google Cloud Storage.
 | Owner | `owner` | string | The owner of the object. |
 | Size | `size` | integer | The size of the object. |
 | Storage Class | `storage-class` | string | The storage class of the object. |
+
 </div>
 
 <h4 id="read-objects-audio-objects">Audio Objects</h4>
@@ -212,6 +205,7 @@ Read objects from Google Cloud Storage.
 | :--- | :--- | :--- | :--- |
 | [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
 | Data | `data` | string | The data of the object. |
+
 </div>
 
 <h4 id="read-objects-attributes">Attributes</h4>
@@ -230,6 +224,7 @@ Read objects from Google Cloud Storage.
 | Owner | `owner` | string | The owner of the object. |
 | Size | `size` | integer | The size of the object. |
 | Storage Class | `storage-class` | string | The storage class of the object. |
+
 </div>
 
 <h4 id="read-objects-video-objects">Video Objects</h4>
@@ -240,6 +235,7 @@ Read objects from Google Cloud Storage.
 | :--- | :--- | :--- | :--- |
 | [Attributes](#read-objects-attributes) | `attributes` | object | The attributes of the object. |
 | Data | `data` | string | The data of the object. |
+
 </div>
 
 <h4 id="read-objects-attributes">Attributes</h4>
@@ -258,6 +254,7 @@ Read objects from Google Cloud Storage.
 | Owner | `owner` | string | The owner of the object. |
 | Size | `size` | integer | The size of the object. |
 | Storage Class | `storage-class` | string | The storage class of the object. |
+
 </div>
 </details>
 
@@ -274,11 +271,8 @@ Read objects from Google Cloud Storage.
 | Bucket Name (required) | `bucket-name` | string | Name of the bucket to be used for object storage. |
 | Project ID (required) | `project-id` | string | The project ID to create the bucket in. |
 | Location | `location` | string | The location to create the bucket in. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -288,7 +282,5 @@ Read objects from Google Cloud Storage.
 | Result (optional) | `result` | string | The result of the operation. |
 | Bucket Name (optional) | `name` | string | The name of the bucket. |
 | Location (optional) | `location` | string | The location of the bucket. |
+
 </div>
-
-
-

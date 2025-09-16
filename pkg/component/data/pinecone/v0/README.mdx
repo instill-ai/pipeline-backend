@@ -12,19 +12,13 @@ It can carry out the following tasks:
 - [Batch Upsert](#batch-upsert)
 - [Rerank](#rerank)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/pinecone/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/pinecone/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -41,12 +35,9 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | Fill in your Pinecone AI API key. You can create an api key in Pinecone Console.  |
-| Pinecone Index URL | `url` | string | Fill in your Pinecone index URL. It is in the form.  |
-
+| API Key (required) | `api-key` | string | Fill in your Pinecone AI API key. You can create an api key in Pinecone Console. |
+| Pinecone Index URL | `url` | string | Fill in your Pinecone index URL. It is in the form. |
 </div>
-
-
 
 
 
@@ -69,11 +60,8 @@ Retrieve the ids of the most similar items in a namespace, along with their simi
 | Minimum Score | `min-score` | number | Exclude results whose score is below this value. |
 | Include Metadata | `include-metadata` | boolean | Indicates whether metadata is included in the response as well as the IDs. |
 | Include Values | `include-values` | boolean | Indicates whether vector values are included in the response. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -82,7 +70,9 @@ Retrieve the ids of the most similar items in a namespace, along with their simi
 | :--- | :--- | :--- | :--- |
 | Namespace | `namespace` | string | The namespace of the query. |
 | [Matches](#query-matches) | `matches` | array[object] | The matches returned for the query. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Query</summary>
@@ -97,6 +87,7 @@ Retrieve the ids of the most similar items in a namespace, along with their simi
 | Metadata | `metadata` | json | Metadata. |
 | Score | `score` | number | A measure of similarity between this vector and the query vector. The higher the score, the more similar they are. |
 | Values | `values` | array | Vector data values. |
+
 </div>
 </details>
 
@@ -114,11 +105,8 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 | Values (required) | `values` | array[number] | An array of dimensions for the vector to be saved. |
 | Namespace | `namespace` | string | The namespace to query. |
 | Metadata | `metadata` | object | The vector metadata. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -126,8 +114,8 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Upserted Count | `upserted-count` | integer | Number of records modified or added. |
-</div>
 
+</div>
 
 ### Batch Upsert
 
@@ -140,9 +128,8 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 | Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
 | [Vectors](#batch-upsert-vectors) (required) | `vectors` | array[object] | Array of vectors to upsert |
 | Namespace | `namespace` | string | The namespace to query. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Batch Upsert</summary>
 
@@ -150,25 +137,24 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 
 Array of vectors to upsert
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| ID | `id` | string | The unique ID of the vector.  |
-| Metadata | `metadata` | object | The vector metadata. This is a set of key-value pairs that can be used to store additional information about the vector. The values can have the following types: string, number, boolean, or array of strings.  |
-| Values | `values` | array | An array of dimensions for the vector to be saved.  |
+| ID | `id` | string | The unique ID of the vector. |
+| Metadata | `metadata` | object | The vector metadata. This is a set of key-value pairs that can be used to store additional information about the vector. The values can have the following types: string, number, boolean, or array of strings. |
+| Values | `values` | array | An array of dimensions for the vector to be saved. |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Upserted Count | `upserted-count` | integer | Number of records modified or added. |
-</div>
 
+</div>
 
 ### Rerank
 
@@ -182,11 +168,8 @@ Rerank documents, such as text passages, according to their relevance to a query
 | Query (required) | `query` | string | The query to rerank the documents. |
 | Documents (required) | `documents` | array[string] | The documents to rerank. |
 | Top N | `top-n` | integer | The number of results to return sorted by relevance. Defaults to the number of inputs. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -195,7 +178,5 @@ Rerank documents, such as text passages, according to their relevance to a query
 | :--- | :--- | :--- | :--- |
 | Reranked Documents. | `documents` | array[string] | Reranked documents. |
 | Scores | `scores` | array[number] | The relevance score of the documents normalized between 0 and 1. |
+
 </div>
-
-
-

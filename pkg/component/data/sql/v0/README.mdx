@@ -15,19 +15,13 @@ It can carry out the following tasks:
 - [Create Table](#create-table)
 - [Drop Table](#drop-table)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/sql/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/sql/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -45,14 +39,13 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Engine (required) | `engine` | string | Choose the engine of your database.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MySQL`</li><li>`PostgreSQL`</li><li>`SQL Server`</li><li>`Oracle`</li><li>`MariaDB`</li><li>`Firebird`</li></ul></details>  |
-| Username (required) | `username` | string | Fill in your account username.  |
-| Password (required) | `password` | string | Fill in your account password.  |
-| Database Name (required) | `database-name` | string | Fill in the name of your database.  |
-| Host (required) | `host` | string | Fill in the host of your database.  |
-| Port (required) | `port` | number | Fill in the port of your database.  |
-| [SSL / TLS](#ssl-tls) (required) | `ssl-tls` | object | Enable SSL / TLS.  |
-
+| Engine (required) | `engine` | string | Choose the engine of your database. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MySQL`</li><li>`PostgreSQL`</li><li>`SQL Server`</li><li>`Oracle`</li><li>`MariaDB`</li><li>`Firebird`</li></ul></details> |
+| Username (required) | `username` | string | Fill in your account username. |
+| Password (required) | `password` | string | Fill in your account password. |
+| Database Name (required) | `database-name` | string | Fill in the name of your database. |
+| Host (required) | `host` | string | Fill in the host of your database. |
+| Port (required) | `port` | number | Fill in the port of your database. |
+| [SSL / TLS](#ssl-tls) (required) | `ssl-tls` | object | Enable SSL / TLS. |
 </div>
 
 
@@ -69,7 +62,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| SSL / TLS Type | `ssl-tls-type` | string |  Must be `"NO TLS"`   |
+| SSL / TLS Type | `ssl-tls-type` | string | Must be `"NO TLS"` |
 </div>
 
 <h5 id="setup-tls"><code>TLS</code></h5>
@@ -78,8 +71,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file.  |
-| SSL / TLS Type | `ssl-tls-type` | string |  Must be `"TLS"`   |
+| CA Certificate | `ssl-tls-ca` | string | Base64 encoded CA certificate file. |
+| SSL / TLS Type | `ssl-tls-type` | string | Must be `"TLS"` |
 </div>
 
 <h5 id="setup-mtls"><code>mTLS</code></h5>
@@ -88,14 +81,12 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file.  |
-| Client Certificate | `ssl-tls-cert` | string |  Base64 encoded client certificate file.  |
-| Client Key | `ssl-tls-key` | string |  Base64 encoded client key file.  |
-| SSL / TLS Type | `ssl-tls-type` | string |  Must be `"mTLS"`   |
+| CA Certificate | `ssl-tls-ca` | string | Base64 encoded CA certificate file. |
+| Client Certificate | `ssl-tls-cert` | string | Base64 encoded client certificate file. |
+| Client Key | `ssl-tls-key` | string | Base64 encoded client key file. |
+| SSL / TLS Type | `ssl-tls-type` | string | Must be `"mTLS"` |
 </div>
 </details>
-
-
 ## Supported Tasks
 
 ### Insert
@@ -109,11 +100,8 @@ Perform insert operation
 | Task ID (required) | `task` | string | `TASK_INSERT` |
 | Table Name (required) | `table-name` | string | The table name in the database to insert data into. |
 | Data (required) | `data` | object | The data to be inserted. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -121,8 +109,8 @@ Perform insert operation
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Insert status. |
-</div>
 
+</div>
 
 ### Insert Many
 
@@ -135,11 +123,8 @@ Perform insert operation with multiple rows
 | Task ID (required) | `task` | string | `TASK_INSERT_MANY` |
 | Table Name (required) | `table-name` | string | The table name in the database to insert data into. |
 | [Data](#insert-many-data) (required) | `array-data` | array[object] | The array data to be inserted. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -147,8 +132,8 @@ Perform insert operation with multiple rows
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Insert many status. |
-</div>
 
+</div>
 
 ### Update
 
@@ -162,11 +147,8 @@ Perform update operation
 | Table Name (required) | `table-name` | string | The table name in the database to update data into. |
 | Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
 | Update (required) | `update-data` | object | The new data to be updated to. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -174,8 +156,8 @@ Perform update operation
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Update status. |
-</div>
 
+</div>
 
 ### Select
 
@@ -190,11 +172,8 @@ Perform select operation
 | Filter | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for all rows. |
 | Limit | `limit` | integer | The limit of rows to be selected, empty for all rows. |
 | Columns | `columns` | array[string] | The columns to return in the rows. If empty then all columns will be returned. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -203,8 +182,8 @@ Perform select operation
 | :--- | :--- | :--- | :--- |
 | Rows | `rows` | array[json] | The rows returned from the select operation. |
 | Status | `status` | string | Select status. |
-</div>
 
+</div>
 
 ### Delete
 
@@ -217,11 +196,8 @@ Perform delete operation
 | Task ID (required) | `task` | string | `TASK_DELETE` |
 | Table Name (required) | `table-name` | string | The table name in the database to be deleted. |
 | Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -229,8 +205,8 @@ Perform delete operation
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Delete status. |
-</div>
 
+</div>
 
 ### Create Table
 
@@ -243,11 +219,8 @@ Create a table in the database
 | Task ID (required) | `task` | string | `TASK_CREATE_TABLE` |
 | Table Name (required) | `table-name` | string | The table name in the database to be created. |
 | Columns (required) | `columns-structure` | object | The columns structure to be created in the table, json with value string, e.g {"name": "VARCHAR(255)", "age": "INT not null"}. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -255,8 +228,8 @@ Create a table in the database
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Create table status. |
-</div>
 
+</div>
 
 ### Drop Table
 
@@ -268,11 +241,8 @@ Drop a table in the database
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_DROP_TABLE` |
 | Table Name (required) | `table-name` | string | The table name in the database to be dropped. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -280,7 +250,5 @@ Drop a table in the database
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Drop table status. |
+
 </div>
-
-
-

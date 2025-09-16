@@ -10,21 +10,13 @@ It can carry out the following tasks:
 - [Detect Activity](#detect-activity)
 - [Segment](#segment)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/audio/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/audio/v0/config/tasks.yaml) files respectively.
-
-
-
-
 
 
 
@@ -42,11 +34,8 @@ Detect speech segments in audio data using Voice Activity Detection (VAD). This 
 | Audio (required) | `audio` | string | Audio file to analyze for speech activity. |
 | Minimum Silence Duration | `min-silence-duration` | integer | Minimum duration of silence (in milliseconds) required to split speech segments. Longer values result in fewer, longer segments. |
 | Speech Pad | `speech-pad` | integer | Additional padding (in milliseconds) added to the start and end of each detected speech segment to prevent cutting off speech. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -54,7 +43,9 @@ Detect speech segments in audio data using Voice Activity Detection (VAD). This 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Segments](#detect-activity-segments) | `segments` | array[object] | Array of time segments representing detected speech activity. Each segment contains start and end times in seconds. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Detect Activity</summary>
@@ -67,6 +58,7 @@ Detect speech segments in audio data using Voice Activity Detection (VAD). This 
 | :--- | :--- | :--- | :--- |
 | End Time | `end-time` | number | The number of seconds from the beginning of the audio file to the end of this segment. |
 | Start Time | `start-time` | number | The number of seconds from the beginning of the audio file to the start of this segment. |
+
 </div>
 </details>
 
@@ -82,9 +74,8 @@ Segment audio data into pieces based on the provided time segments.
 | Task ID (required) | `task` | string | `TASK_SEGMENT` |
 | Audio (required) | `audio` | string | Audio data to segment. |
 | [Segments](#segment-segments) (required) | `segments` | array[object] | A list of time segments of audio data. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Segment</summary>
 
@@ -92,26 +83,23 @@ Segment audio data into pieces based on the provided time segments.
 
 A list of time segments of audio data.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| End Time | `end-time` | number | The number of seconds from the beginning of the audio file to the end of this segment.  |
-| Start Time | `start-time` | number | The number of seconds from the beginning of the audio file to the start of this segment.  |
+| End Time | `end-time` | number | The number of seconds from the beginning of the audio file to the end of this segment. |
+| Start Time | `start-time` | number | The number of seconds from the beginning of the audio file to the start of this segment. |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Audios | `audio-segments` | array[audio] | A list of segmented audio data. |
+
 </div>
-
-
-
 ## Example Recipes
 
 ```yaml

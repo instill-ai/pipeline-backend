@@ -26,19 +26,13 @@ To achieve the basic use case that creating a campaign from scratch, you need to
 3. Save sequences by `TASK_SAVE_SEQUENCES`.
 4. Add leads to the campaign by `TASK_ADD_LEADS`.
 5. Add sender email by `TASK_ADD_SENDER_EMAIL`. Please notice that you need to create a sender email and configure in Smartlead console before adding it to the campaign.
-6. Start campaign by `TASK_UPDATE_CAMPAIGN_STATUS`.
-
-## Release Stage
+6. Start campaign by `TASK_UPDATE_CAMPAIGN_STATUS`.## Release Stage
 
 `Alpha`
-
-
 
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/smartlead/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/smartlead/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -55,11 +49,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key (required) | `api-key` | string | Fill in your Smartlead API key. You can generate one from your [Smartlead account](https://app.smartlead.ai/app/settings/profile).  |
-
+| API Key (required) | `api-key` | string | Fill in your Smartlead API key. You can generate one from your [Smartlead account](https://app.smartlead.ai/app/settings/profile). |
 </div>
-
-
 
 
 
@@ -75,11 +66,8 @@ Create a new campaign. You have to create a campaign before you can start adding
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CREATE_CAMPAIGN` |
 | Name (required) | `name` | string | Name of the campaign. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -88,8 +76,8 @@ Create a new campaign. You have to create a campaign before you can start adding
 | :--- | :--- | :--- | :--- |
 | ID | `id` | string | ID of the campaign. |
 | Created At | `created-at` | string | Created at timestamp of the campaign. |
-</div>
 
+</div>
 
 ### Setup Campaign
 
@@ -108,17 +96,14 @@ Setup a campaign. You can update campaign settings to this campaign. For Smartle
 | Minimum Time Between Emails (required) | `min-time-btw-emails` | number | Minimum time between emails in minutes. The minimum value is 3 minutes. |
 | Maximum New Leads per Day (required) | `max-new-leads-per-day` | number | Maximum new leads per day. |
 | Schedule Start Time (required) | `schedule-start-time` | string | Schedule start time of the campaign. Please specify the campaign start time in standard ISO 8601 format. e.g. 2024-11-27T07:29:25.978Z. |
-| Track Settings | `track-settings` | array[string] | Tracking settings like not tracking opens or link clicks. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`DONT_TRACK_EMAIL_OPEN`</li><li>`DONT_TRACK_LINK_CLICK`</li><li>`DONT_TRACK_REPLY_TO_AN_EMAIL`</li></ul></details>  |
-| Stop Lead Settings | `stop-lead-settings` | string | Stops lead if they do the action specified. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`CLICK_ON_A_LINK`</li><li>`OPEN_AN_EMAIL`</li></ul></details>  |
+| Track Settings | `track-settings` | array[string] | Tracking settings like not tracking opens or link clicks. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`DONT_TRACK_EMAIL_OPEN`</li><li>`DONT_TRACK_LINK_CLICK`</li><li>`DONT_TRACK_REPLY_TO_AN_EMAIL`</li></ul></details> |
+| Stop Lead Settings | `stop-lead-settings` | string | Stops lead if they do the action specified. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`CLICK_ON_A_LINK`</li><li>`OPEN_AN_EMAIL`</li></ul></details> |
 | Send As Plain Text | `send-as-plain-text` | boolean | Send emails as plain text. |
 | Follow up Percentage | `follow-up-percentage` | number | Specifies the percentage of leads in a campaign who should receive follow-up emails. |
 | Add Unsubscribe Tag | `add-unsubscribe-tag` | boolean | Add an unsubscribe tag to the email. |
 | Ignore Mailbox Sending Limit | `ignore-ss-mailbox-sending-limit` | boolean | Ignore mailbox sending limits, used when creating a subsequence. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -126,8 +111,8 @@ Setup a campaign. You can update campaign settings to this campaign. For Smartle
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Result (optional) | `result` | string | Result of setting up a campaign. |
-</div>
 
+</div>
 
 ### Save Sequences
 
@@ -140,9 +125,8 @@ Save sequences to a campaign. A Smartlead sequence is a series of automated emai
 | Task ID (required) | `task` | string | `TASK_SAVE_SEQUENCES` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
 | [Sequences](#save-sequences-sequences) (required) | `sequences` | array[object] | A Smartlead sequence is a series of automated emails sent to potential customers based on specific actions, or triggers. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Save Sequences</summary>
 
@@ -150,26 +134,25 @@ Save sequences to a campaign. A Smartlead sequence is a series of automated emai
 
 A Smartlead sequence is a series of automated emails sent to potential customers based on specific actions, or triggers.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Email Body | `email-body` | string | Body of the email. If you want to set the variable according to different leads, you can use `{{variable_name}}`. It will be replaced by the actual value from the lead.  |
-| Sequence Number | `seq-number` | number | Sequence number means the order of the sequence. If you don't specify this, it will be automatically assigned by the order of the sequences.  |
-| Sequence Delay Days | `sequence-delay-days` | number | Number of days to wait before sending the next email. If you don't specify this, the default value is 1 day.  |
-| Subject | `subject` | string | Subject of the email. If you want to set the variable according to different leads, you can use `{{variable_name}}`. It will be replaced by the actual value from the lead.  |
+| Email Body | `email-body` | string | Body of the email. If you want to set the variable according to different leads, you can use `{{variable_name}}`. It will be replaced by the actual value from the lead. |
+| Sequence Number | `seq-number` | number | Sequence number means the order of the sequence. If you don't specify this, it will be automatically assigned by the order of the sequences. |
+| Sequence Delay Days | `sequence-delay-days` | number | Number of days to wait before sending the next email. If you don't specify this, the default value is 1 day. |
+| Subject | `subject` | string | Subject of the email. If you want to set the variable according to different leads, you can use `{{variable_name}}`. It will be replaced by the actual value from the lead. |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Result | `result` | string | Result of saving sequences. |
-</div>
 
+</div>
 
 ### Get Sequences
 
@@ -181,11 +164,8 @@ Get sequences of a campaign. If you want to add more sequences to the campaign, 
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_SEQUENCES` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -193,7 +173,9 @@ Get sequences of a campaign. If you want to add more sequences to the campaign, 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Sequences](#get-sequences-sequences) | `sequences` | array[object] | Sequences of the campaign. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Get Sequences</summary>
@@ -209,6 +191,7 @@ Get sequences of a campaign. If you want to add more sequences to the campaign, 
 | Sequence Number | `seq-number` | number | Sequence number means the order of the sequence. |
 | Sequence Delay Days | `sequence-delay-days` | number | Number of days to wait before sending the next email. |
 | Subject | `subject` | string | Subject of the email when you save the sequence. |
+
 </div>
 </details>
 
@@ -225,9 +208,8 @@ Add leads to a campaign.
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
 | [Leads](#add-leads-leads) (required) | `leads` | array[object] | Leads to add to the campaign. |
 | [Settings](#add-leads-settings) | `settings` | object | Settings for adding leads. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Add Leads</summary>
 
@@ -235,33 +217,33 @@ Add leads to a campaign.
 
 Leads to add to the campaign.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Company | `company` | string | Company name of the lead.  |
-| Custom Fields | `custom-fields` | array | Custom fields of the lead. You can use custom fields to store additional information about the lead, which can be used in the variable in the sequence email template.  |
-| Email | `email` | string | Email of the lead.  |
-| First Name | `first-name` | string | First name of the lead.  |
-| Last Name | `last-name` | string | Last name of the lead.  |
-| Location | `location` | string | Location of the lead.  |
+| Company | `company` | string | Company name of the lead. |
+| Custom Fields | `custom-fields` | array | Custom fields of the lead. You can use custom fields to store additional information about the lead, which can be used in the variable in the sequence email template. |
+| Email | `email` | string | Email of the lead. |
+| First Name | `first-name` | string | First name of the lead. |
+| Last Name | `last-name` | string | Last name of the lead. |
+| Location | `location` | string | Location of the lead. |
 </div>
 <h4 id="add-leads-settings">Settings</h4>
 
 Settings for adding leads.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Ignore Community Bounce List | `ignore-community-bounce-list` | boolean | Ignore the community bounce list and add the lead. If true, uploaded leads will BYPASS any leads that bounced across Smartlead entire user base and be uploaded to the campaign.  |
-| Ignore Duplicate Leads in Other Campaign | `ignore-duplicate-leads-in-other-campaign` | boolean | Ignore duplicate leads in other campaigns and add the lead. If true, leads will NOT BYPASS the comparison with other campaigns and NOT be added to the campaign if they are part of any other campaign.  |
-| Ignore Global Block List | `ignore-global-block-list` | boolean | Ignore the global block list and add the lead. If true, uploaded leads will BYPASS the global block list and be uploaded to the campaign.  |
-| Ignore Unsubscribe List | `ignore-unsubscribe-list` | boolean | Ignore the unsubscribe list and add the lead. If true, leads will BYPASS the comparison with unsubscribed leads and be uploaded to the campaign.  |
+| Ignore Community Bounce List | `ignore-community-bounce-list` | boolean | Ignore the community bounce list and add the lead. If true, uploaded leads will BYPASS any leads that bounced across Smartlead entire user base and be uploaded to the campaign. |
+| Ignore Duplicate Leads in Other Campaign | `ignore-duplicate-leads-in-other-campaign` | boolean | Ignore duplicate leads in other campaigns and add the lead. If true, leads will NOT BYPASS the comparison with other campaigns and NOT be added to the campaign if they are part of any other campaign. |
+| Ignore Global Block List | `ignore-global-block-list` | boolean | Ignore the global block list and add the lead. If true, uploaded leads will BYPASS the global block list and be uploaded to the campaign. |
+| Ignore Unsubscribe List | `ignore-unsubscribe-list` | boolean | Ignore the unsubscribe list and add the lead. If true, leads will BYPASS the comparison with unsubscribed leads and be uploaded to the campaign. |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -272,8 +254,8 @@ Settings for adding leads.
 | Already Added to Campaign | `already-added-to-campaign` | number | Number of leads already added to the campaign. |
 | Invalid Email Count | `invalid-email-count` | number | Number of leads with invalid email. |
 | Error (optional) | `error` | string | Error message from Smartlead if any. |
-</div>
 
+</div>
 
 ### Add Sender Email
 
@@ -286,11 +268,8 @@ Add a sender email to the campaign. You have to configure the sender email in Sm
 | Task ID (required) | `task` | string | `TASK_ADD_SENDER_EMAIL` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
 | Sender Email (required) | `sender-email` | string | Email address of the sender. You need to configure the sender email in [Smartlead console](https://app.smartlead.ai/app/email-accounts) before adding it to the campaign. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -298,8 +277,8 @@ Add a sender email to the campaign. You have to configure the sender email in Sm
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Result | `result` | string | Result of adding a sender email. If you don't configure your sender email in Smartlead console, you will get an error. |
-</div>
 
+</div>
 
 ### Update Campaign Status
 
@@ -311,12 +290,9 @@ Update the status of a campaign. You need to start a campaign to send the emails
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_UPDATE_CAMPAIGN_STATUS` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
-| Status (required) | `status` | string | Status of the campaign. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`START`</li><li>`PAUSED`</li><li>`STOPPED`</li></ul></details>  |
+| Status (required) | `status` | string | Status of the campaign. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`START`</li><li>`PAUSED`</li><li>`STOPPED`</li></ul></details> |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -324,8 +300,8 @@ Update the status of a campaign. You need to start a campaign to send the emails
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Result | `result` | string | Result of updating the status of a campaign. |
-</div>
 
+</div>
 
 ### Get Campaign Metric
 
@@ -337,11 +313,8 @@ Get the metrics of a campaign. You can get the metrics like open count, click co
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_CAMPAIGN_METRIC` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -357,8 +330,8 @@ Get the metrics of a campaign. You can get the metrics like open count, click co
 | Reply Count (optional) | `reply-count` | number | Number of emails replied. |
 | Total Count (optional) | `total-count` | number | Total number of emails. |
 | Bounce Count (optional) | `bounce-count` | number | Number of emails bounced. |
-</div>
 
+</div>
 
 ### List Leads Status
 
@@ -371,11 +344,8 @@ List the status of leads in a campaign. You can get the status of leads like `ST
 | Task ID (required) | `task` | string | `TASK_LIST_LEADS_STATUS` |
 | Campaign Name (required) | `campaign-name` | string | Name of the campaign. |
 | Limit (required) | `limit` | number | Number of leads to list. The minimum value is 1. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -383,7 +353,9 @@ List the status of leads in a campaign. You can get the status of leads like `ST
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Leads](#list-leads-status-leads) | `leads` | array[object] | Lead status in the campaign. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in List Leads Status</summary>
@@ -396,10 +368,9 @@ List the status of leads in a campaign. You can get the status of leads like `ST
 | :--- | :--- | :--- | :--- |
 | Email | `email` | string | Email of the lead. |
 | Status | `status` | string | Status of the lead. |
+
 </div>
 </details>
-
-
 
 ## Example Recipes Based on Basic Use Cases
 
