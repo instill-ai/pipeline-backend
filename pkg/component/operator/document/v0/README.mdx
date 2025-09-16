@@ -12,21 +12,13 @@ It can carry out the following tasks:
 - [Convert to Images](#convert-to-images)
 - [Split in Pages](#split-in-pages)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/document/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/document/v0/config/tasks.yaml) files respectively.
-
-
-
-
 
 
 
@@ -46,12 +38,9 @@ Convert document to text in Markdown format.
 | Display Image Tag | `display-image-tag` | boolean | Whether to display image tag in the markdown text. Default is 'false'. It is only applicable for convert-2024-08-28 converter. And, it is only applicable for the type of PPTX/PPT/DOCX/DOC/PDF. |
 | Display All Page Image | `display-all-page-image` | boolean | Whether to respond the whole page as the images if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF. |
 | Resolution | `resolution` | number | Desired number pixels per inch. Defaults to 300. Minimum is 72. |
-| Converter | `converter` | string | The conversion engine used in the transformation. For now, it only applies to PDF to Markdown conversions. `pdfplumber` is quicker than Docling, but it typically produces less accurate results.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`pdfplumber`</li><li>`docling`</li></ul></details>  |
+| Converter | `converter` | string | The conversion engine used in the transformation. For now, it only applies to PDF to Markdown conversions. `pdfplumber` is quicker than Docling, but it typically produces less accurate results. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`pdfplumber`</li><li>`docling`</li></ul></details> |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -64,8 +53,8 @@ Convert document to text in Markdown format.
 | Error (optional) | `error` | string | Error message if any during the conversion process. |
 | All Page Images (optional) | `all-page-images` | array[string] | The image contains all the pages in the document if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF. |
 | Markdowns (optional) | `markdowns` | array[string] | Markdown text converted from the PDF document, separated by page. |
-</div>
 
+</div>
 
 ### Convert to Text
 
@@ -78,11 +67,8 @@ Convert document to text.
 | Task ID (required) | `task` | string | `TASK_CONVERT_TO_TEXT` |
 | Document (required) | `document` | string | Base64 encoded PDF/DOC/DOCX/XML/HTML/RTF/MD/PPTX/ODT/TIF/CSV/TXT/PNG document to be converted to plain text. |
 | Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -94,8 +80,8 @@ Convert document to text.
 | Meta | `meta` | json | Metadata extracted from the document. |
 | Milliseconds | `msecs` | number | Time taken to convert the document. |
 | Error | `error` | string | Error message if any during the conversion process. |
-</div>
 
+</div>
 
 ### Convert to Images
 
@@ -109,11 +95,8 @@ Convert Document to images.
 | PDF (required) | `document` | string | Base64 encoded PDF/DOCX/DOC/PPT/PPTX to be converted to images. |
 | Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'. |
 | Resolution | `resolution` | number | Desired number pixels per inch. Defaults to 300. Minimum is 72. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -122,8 +105,8 @@ Convert Document to images.
 | :--- | :--- | :--- | :--- |
 | Images | `images` | array[string] | Images converted from the document. |
 | Filenames (optional) | `filenames` | array[string] | The filenames of the images. The filenames will be appended with the page number. e.g. 'example-1.jpg'. |
-</div>
 
+</div>
 
 ### Split in Pages
 
@@ -136,11 +119,8 @@ Divide a document in batches of N pages.
 | Task ID (required) | `task` | string | `TASK_SPLIT_IN_PAGES` |
 | Document (required) | `document` | string | Document encoded in Base64. For now, only PDF documents are accepted. |
 | Batch Size | `batch-size` | number | Pages in each batch. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -148,10 +128,8 @@ Divide a document in batches of N pages.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Batches (optional) | `pages` | array[string] | An ordered list of Base64-encoded documents, each one containing N pages of the input document. Page order in the input document is preserved both in the batch array elements and in the pages within each batch. |
+
 </div>
-
-
-
 ## Example Recipes
 
 ```yaml

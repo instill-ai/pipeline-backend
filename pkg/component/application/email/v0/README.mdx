@@ -12,19 +12,13 @@ It can carry out the following tasks:
 
 You can connect to different email servers through the Email component.
 Emails are fetched and sent using the IMAP and SMTP protocols, respectively. You can set the server address and port for each protocol in the component configuration.
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/email/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/email/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -42,11 +36,10 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Server Address (required) | `server-address` | string | The address of the email server.  |
-| Server Port (required) | `server-port` | integer | The port of the email server.  |
-| Email Address (required) | `email-address` | string | The email address of the user.  |
-| App Password (required) | `password` | string | The password of the App passwords in Gmail settings.  |
-
+| Server Address (required) | `server-address` | string | The address of the email server. |
+| Server Port (required) | `server-port` | integer | The port of the email server. |
+| Email Address (required) | `email-address` | string | The email address of the user. |
+| App Password (required) | `password` | string | The password of the App passwords in Gmail settings. |
 </div>
 
 Supported Provider Samples for Sending Email
@@ -76,8 +69,6 @@ For App Password, please follow the steps below:
  - 4. Reference the secret in the App Password field in the component configuration.
 
 
-
-
 ## Supported Tasks
 
 ### Send Email
@@ -94,11 +85,8 @@ Send an email to recipients
 | BCC | `bcc` | array[string] | The email addresses for Blind Carbon Copy. |
 | Subject | `subject` | string | The subject of the email. |
 | Message (required) | `message` | string | The message to be sent. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -106,8 +94,8 @@ Send an email to recipients
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Result | `result` | string | The result of sending the email. |
-</div>
 
+</div>
 
 ### Read Emails
 
@@ -119,9 +107,8 @@ Read emails from a mailbox
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_EMAILS` |
 | [Search](#read-emails-search) | `search` | object | The search criteria for the emails. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Read Emails</summary>
 
@@ -129,28 +116,29 @@ Read emails from a mailbox
 
 The search criteria for the emails.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Search Date | `date` | string | Search for emails with the date the email was sent.  |
-| Limit | `limit` | integer | The maximum number of emails to search for.  |
-| Mailbox | `mailbox` | string | The mailbox to search for emails.  |
-| Search Message | `search-email-message` | string | Search for emails with a specific message.  |
-| Search From | `search-from` | string | Search for emails from a specific email address.  |
-| Search Subject | `search-subject` | string | Search for emails with a specific subject.  |
-| Search To | `search-to` | string | Search for emails to a specific email address.  |
+| Search Date | `date` | string | Search for emails with the date the email was sent. |
+| Limit | `limit` | integer | The maximum number of emails to search for. |
+| Mailbox | `mailbox` | string | The mailbox to search for emails. |
+| Search Message | `search-email-message` | string | Search for emails with a specific message. |
+| Search From | `search-from` | string | Search for emails from a specific email address. |
+| Search Subject | `search-subject` | string | Search for emails with a specific subject. |
+| Search To | `search-to` | string | Search for emails to a specific email address. |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Emails](#read-emails-emails) | `emails` | array[object] | The emails that match the search criteria. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Read Emails</summary>
@@ -166,6 +154,7 @@ The search criteria for the emails.
 | Message | `message` | string | The message of the email. |
 | Subject | `subject` | string | The subject of the email. |
 | To | `to` | array | The email addresses of the recipient. |
+
 </div>
 </details>
 
@@ -184,5 +173,3 @@ Take Gmail as an example, the mailbox names are following.
 #### Search From and Search To
 You need to input the exact same email address with `<` as a prefix and `>` as a suffix as the email you want to search for.
 For example, if you want to search for the email from `email@example.com`, you need to input `<email@example.com>`.
-
-

@@ -10,19 +10,13 @@ It can carry out the following tasks:
 - [Insert](#insert)
 - [Read](#read)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/bigquery/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/bigquery/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -39,14 +33,11 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| JSON Key File Contents (required) | `json-key` | string | Contents of the JSON key file with access to the bucket.  |
-| BigQuery Project ID (required) | `project-id` | string | Fill in your BigQuery Project ID.  |
-| BigQuery Dataset ID (required) | `dataset-id` | string | Fill in your BigQuery Dataset ID.  |
-| BigQuery Table Name (required) | `table-name` | string | Fill in your BigQuery Table Name.  |
-
+| JSON Key File Contents (required) | `json-key` | string | Contents of the JSON key file with access to the bucket. |
+| BigQuery Project ID (required) | `project-id` | string | Fill in your BigQuery Project ID. |
+| BigQuery Dataset ID (required) | `dataset-id` | string | Fill in your BigQuery Dataset ID. |
+| BigQuery Table Name (required) | `table-name` | string | Fill in your BigQuery Table Name. |
 </div>
-
-
 
 
 
@@ -62,11 +53,8 @@ Insert data to BigQuery.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_INSERT` |
 | Data | `data` | object | The data to be inserted to BigQuery. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -74,8 +62,8 @@ Insert data to BigQuery.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Status of the upload operation. |
-</div>
 
+</div>
 
 ### Read
 
@@ -87,11 +75,8 @@ Read data from BigQuery.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ` |
 | Filtering | `filtering` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -99,7 +84,5 @@ Read data from BigQuery.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Data](#read-data) | `data` | array[object] | The data to be read from BigQuery. |
+
 </div>
-
-
-

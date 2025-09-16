@@ -10,23 +10,21 @@ It can carry out the following tasks:
 {{- range .Tasks }}
 - [{{ .Title }}](#{{ asAnchor .Title}}){{- end }}
 
-{{ loadExtraContent "intro" }}
-
+{{ loadExtraContent "intro" -}}
 ## Release Stage
 
 `{{ .ReleaseStage.String }}`
 
-{{ loadExtraContent "release" }}
-
+{{ loadExtraContent "release" -}}
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml]({{ .SourceURL }}/config/definition.yaml) and [tasks.yaml]({{ .SourceURL }}/config/tasks.yaml) files respectively.
 
-{{ loadExtraContent "config" }}
-
+{{ loadExtraContent "config" -}}
 {{ if or .SetupConfig.Prerequisites .SetupConfig.Properties }}
 ## Setup
 {{ with .SetupConfig.Prerequisites}}
+
 <InfoBlock type="info" title="Prerequisites">{{ . }}</InfoBlock>
 {{- end }}
 {{ $vendor := .Vendor }}
@@ -44,16 +42,16 @@ ${connection.<my-connection-id>}`.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 {{- range . }}
-| {{ anchorSetup . }}{{ if .Required }} (required){{- end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+| {{ anchorSetup . }}{{ if .Required }} (required){{- end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }}{{ if .Enum }} {{ enumValues .Enum }}{{ end }} |
 {{- end }}
 {{- end }}
-
 </div>
 
-{{ loadExtraContent "setup" }}
+{{ loadExtraContent "setup" -}}
 {{- end }}
 {{ if .SetupConfig.OneOf -}}
 {{- range $key, $options := .SetupConfig.OneOf -}}
+
 <details>
 <summary>The <code>{{ $key }}</code> Object </summary>
 
@@ -69,14 +67,13 @@ ${connection.<my-connection-id>}`.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 {{- range $propKey, $prop := $option.Properties }}
-| {{ anchorSetup $prop }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ if $prop.Const }} Must be `"{{ $prop.Const }}"` {{ else }} {{ $prop.Description }}  {{- end }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+| {{ anchorSetup $prop }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ if $prop.Const }}Must be `"{{ $prop.Const }}"`{{ else }}{{ $prop.Description }}{{- end }}{{ if .Enum }} {{ enumValues .Enum }}{{ end }} |
 {{- end }}
 </div>
 {{- end }}
 </details>
 {{- end }}
-{{- end }}
-
+{{- end -}}
 {{ if .Tasks }}
 ## Supported Tasks
 {{- end }}
@@ -92,13 +89,14 @@ ${connection.<my-connection-id>}`.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `{{ $task.ID }}` |
 {{- range $task.Input }}
-| {{ anchorTaskObject . $task }}{{ if .Required }} (required){{ end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} {{- if .Enum }} {{ enumValues .Enum }} {{ end }} |
+| {{ anchorTaskObject . $task }}{{ if .Required }} (required){{ end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} {{- if .Enum }} {{ enumValues .Enum }}{{ end }} |
 {{- end }}
+
 </div>
+
 {{- end }}
-
-
 {{ if $task.InputObjects -}}
+
 <details>
 <summary> Input Objects in {{ $task.Title }}</summary>
 {{ range $idx, $objectSchemaMap := $task.InputObjects }}
@@ -108,12 +106,13 @@ ${connection.<my-connection-id>}`.
 {{ with $schema.Description }}
 {{ . }}
 {{ end }}
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 {{- range $propKey, $prop := $schema.Properties }}
-| {{ anchorTaskObject $prop $task }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ $prop.Description }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+| {{ anchorTaskObject $prop $task }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ $prop.Description }}{{ if $prop.Enum }} {{ enumValues $prop.Enum }}{{ end }} |
 {{- end }}
 </div>
 {{- end }}
@@ -121,10 +120,10 @@ ${connection.<my-connection-id>}`.
 {{- end }}
 </details>
 {{- end }}
-
 {{ if $task.OneOfs -}}
 {{ range $idx, $oneOf := $task.OneOfs -}}
 {{ range $key, $options := $oneOf -}}
+
 <details>
 <summary>The <code>{{ $key }}</code> Object </summary>
 
@@ -137,12 +136,13 @@ ${connection.<my-connection-id>}`.
 {{ with $option.Description }}
 {{ . }}
 {{ end }}
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 {{- range $propKey, $prop := $option.Properties }}
-| {{ $prop.Title }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ if $prop.Const }} Must be `"{{ $prop.Const }}"` {{ else }} {{ $prop.Description }} {{- end }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+| {{ $prop.Title }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ if $prop.Const }}Must be `"{{ $prop.Const }}"`{{ else }}{{ $prop.Description }}{{- end }}{{ if $prop.Enum }} {{ enumValues $prop.Enum }}{{ end }} |
 {{- end }}
 </div>
 {{- end }}
@@ -151,7 +151,6 @@ ${connection.<my-connection-id>}`.
 {{- end }}
 {{- end }}
 {{- end }}
-
 {{ if $task.Output -}}
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -160,9 +159,12 @@ ${connection.<my-connection-id>}`.
 {{- range $task.Output }}
 | {{ anchorTaskObject . $task }}{{ if not .Required }} (optional){{- end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} |
 {{- end }}
+
 </div>
+
 {{- end }}
 {{ if $task.OutputObjects }}
+
 <details>
 <summary> Output Objects in {{ $task.Title }}</summary>
 {{- range $idx, $objectSchemaMap := $task.OutputObjects }}
@@ -176,15 +178,17 @@ ${connection.<my-connection-id>}`.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 {{- range $propKey, $prop := $schema.Properties }}
-| {{ anchorTaskObject $prop $task }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ $prop.Description }} |
+| {{ anchorTaskObject $prop $task }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ $prop.Description }}{{ if $prop.Enum }} {{ enumValues $prop.Enum }}{{ end }} |
 {{- end }}
+
 </div>
 {{- end }}
 {{- end }}
 {{- end }}
 </details>
-{{ end }}
+
+{{ end -}}
 {{ loadExtraContent $task.ID -}}
-{{- end }}
+{{- end -}}
 
 {{ loadExtraContent "bottom" -}}

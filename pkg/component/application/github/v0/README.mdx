@@ -19,19 +19,13 @@ It can carry out the following tasks:
 - [Create Issue](#create-issue)
 - [Create Webhook](#create-webhook)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/github/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/github/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -48,11 +42,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Token (required) | `token` | string | Fill in your GitHub access token for advanced usages. For more information about how to create tokens, please refer to the <a href="https://github.com/settings/tokens">github settings</a>.  |
-
+| Token (required) | `token` | string | Fill in your GitHub access token for advanced usages. For more information about how to create tokens, please refer to the <a href="https://github.com/settings/tokens">github settings</a>. |
 </div>
-
-
 
 
 
@@ -69,16 +60,13 @@ Get the list of all pull requests in a repository. Detailed information about ea
 | Task ID (required) | `task` | string | `TASK_LIST_PULL_REQUESTS` |
 | Owner (required) | `owner` | string | Owner of the repository. |
 | Repository (required) | `repository` | string | Repository name. |
-| State | `state` | string | State of the PRs, including open, closed, all. Default is open. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open`</li><li>`closed`</li><li>`all`</li></ul></details>  |
-| Sort | `sort` | string | Sort the PRs by created, updated, popularity, or long-running. Default is created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`created`</li><li>`updated`</li><li>`popularity`</li><li>`long-running`</li></ul></details>  |
-| Direction | `direction` | string | Direction of the sort, including asc or desc. Default is desc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details>  |
+| State | `state` | string | State of the PRs, including open, closed, all. Default is open. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open`</li><li>`closed`</li><li>`all`</li></ul></details> |
+| Sort | `sort` | string | Sort the PRs by created, updated, popularity, or long-running. Default is created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`created`</li><li>`updated`</li><li>`popularity`</li><li>`long-running`</li></ul></details> |
+| Direction | `direction` | string | Direction of the sort, including asc or desc. Default is desc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details> |
 | Page | `page` | integer | Page number of the results to fetch. Default is 1. |
 | Per Page | `per-page` | integer | Number of results to fetch per page. Default is 30. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -86,7 +74,9 @@ Get the list of all pull requests in a repository. Detailed information about ea
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Pull Requests](#list-pull-requests-pull-requests) | `pull-requests` | array[object] | An array of PRs. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in List Pull Requests</summary>
@@ -109,6 +99,7 @@ Get the list of all pull requests in a repository. Detailed information about ea
 | Number of PR review comments | `review-comments-num` | integer | Number of review comments in the PR. |
 | PR state | `state` | string | State of the PR. |
 | PR Title | `title` | string | Title of the PR. |
+
 </div>
 
 <h4 id="list-pull-requests-commits">Commits</h4>
@@ -121,6 +112,7 @@ Get the list of all pull requests in a repository. Detailed information about ea
 | Commit message | `message` | string | Message of the commit. |
 | Commit SHA | `sha` | string | SHA of the commit. |
 | [Commit stats](#list-pull-requests-commit-stats) | `stats` | object | Stats of changes. |
+
 </div>
 
 <h4 id="list-pull-requests-commit-stats">Commit Stats</h4>
@@ -132,6 +124,7 @@ Get the list of all pull requests in a repository. Detailed information about ea
 | Additions | `additions` | integer | Number of additions in the commit. |
 | Total changes | `changes` | integer | Total number of changes in the commit. |
 | Deletions | `deletions` | integer | Number of deletions in the commit. |
+
 </div>
 
 <h4 id="list-pull-requests-files">Files</h4>
@@ -145,6 +138,7 @@ Get the list of all pull requests in a repository. Detailed information about ea
 | Deletions | `deletions` | integer | Number of deletions in the commit. |
 | File name | `filename` | string | Name of the file. |
 | Patch | `patch` | string | Patch of the file. |
+
 </div>
 </details>
 
@@ -161,11 +155,8 @@ Get a pull request from a repository, given the PR number. This will default to 
 | Owner (required) | `owner` | string | Owner of the repository. |
 | Repository (required) | `repository` | string | Repository name. |
 | PR Number | `pr-number` | integer | Number of the PR. `0` for the latest PR. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -184,7 +175,9 @@ Get a pull request from a repository, given the PR number. This will default to 
 | Number of PR Commits (optional) | `commits-num` | integer | Number of commits in the PR. |
 | Number of PR Review Comments (optional) | `review-comments-num` | integer | Number of review comments in the PR. |
 | [Commits](#get-pull-request-commits) (optional) | `commits` | array[object] | Commits in the PR. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Get Pull Request</summary>
@@ -199,6 +192,7 @@ Get a pull request from a repository, given the PR number. This will default to 
 | Commit message | `message` | string | Message of the commit. |
 | Commit SHA | `sha` | string | SHA of the commit. |
 | [Commit stats](#get-pull-request-commit-stats) | `stats` | object | Stats of changes. |
+
 </div>
 
 <h4 id="get-pull-request-commit-stats">Commit Stats</h4>
@@ -210,6 +204,7 @@ Get a pull request from a repository, given the PR number. This will default to 
 | Additions | `additions` | integer | Number of additions in the commit. |
 | Total changes | `changes` | integer | Total number of changes in the commit. |
 | Deletions | `deletions` | integer | Number of deletions in the commit. |
+
 </div>
 
 <h4 id="get-pull-request-files">Files</h4>
@@ -223,6 +218,7 @@ Get a pull request from a repository, given the PR number. This will default to 
 | Deletions | `deletions` | integer | Number of deletions in the commit. |
 | File name | `filename` | string | Name of the file. |
 | Patch | `patch` | string | Patch of the file. |
+
 </div>
 </details>
 
@@ -239,11 +235,8 @@ Get a commit from a repository, given the commit SHA
 | Owner (required) | `owner` | string | Owner of the repository. |
 | Repository (required) | `repository` | string | Repository name. |
 | Commit SHA (required) | `sha` | string | SHA of the commit. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -254,7 +247,9 @@ Get a commit from a repository, given the commit SHA
 | Commit Message (optional) | `message` | string | Message of the commit. |
 | [Commit Stats](#get-commit-commit-stats) (optional) | `stats` | object | Stats of changes. |
 | [Files](#get-commit-files) (optional) | `files` | array[object] | Files in the commit. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Get Commit</summary>
@@ -268,6 +263,7 @@ Get a commit from a repository, given the commit SHA
 | Additions | `additions` | integer | Number of additions in the commit. |
 | Total changes | `changes` | integer | Total number of changes in the commit. |
 | Deletions | `deletions` | integer | Number of deletions in the commit. |
+
 </div>
 
 <h4 id="get-commit-files">Files</h4>
@@ -281,6 +277,7 @@ Get a commit from a repository, given the commit SHA
 | Deletions | `deletions` | integer | Number of deletions in the commit. |
 | File name | `filename` | string | Name of the file. |
 | Patch | `patch` | string | Patch of the file. |
+
 </div>
 </details>
 
@@ -297,16 +294,13 @@ Get the review comments in a pull request. The comments can be on a specific lin
 | Owner (required) | `owner` | string | Owner of the repository. |
 | Repository (required) | `repository` | string | Repository name. |
 | PR Number | `pr-number` | integer | Number of the PR. Default is `0`, which retrieves all comments on all PRs in the repository. |
-| Sort | `sort` | string | Sort the comments by created, updated. Default is created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`created`</li><li>`updated`</li></ul></details>  |
-| Direction | `direction` | string | Direction of the sort, including asc or desc. Default is desc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details>  |
+| Sort | `sort` | string | Sort the comments by created, updated. Default is created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`created`</li><li>`updated`</li></ul></details> |
+| Direction | `direction` | string | Direction of the sort, including asc or desc. Default is desc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details> |
 | Since | `since` | string | Date (in `YYYY-MM-DD` format) from which comments will start to be fetched. The date will be in the UTC timezone. |
 | Page | `page` | integer | Page number of the results to fetch. Default is 1. |
 | Per Page | `per-page` | integer | Number of results to fetch per page. Default is 30. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -314,7 +308,9 @@ Get the review comments in a pull request. The comments can be on a specific lin
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Comments](#list-review-comments-comments) | `comments` | array[object] | An array of comments. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in List Review Comments</summary>
@@ -332,12 +328,13 @@ Get the review comments in a pull request. The comments can be on a specific lin
 | In Reply To | `in-reply-to-id` | integer | ID of the comment this comment is in reply to. |
 | Comment end line | `line` | integer | The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that your comment applies to. |
 | Comment path | `path` | string | Path of the file the comment is on. |
-| Comment end side | `side` | string | Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. |
+| Comment end side | `side` | string | Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`LEFT`</li><li>`RIGHT`</li><li>`side`</li></ul></details> |
 | Comment start line | `start-line` | integer | The first line in the pull request diff that your multi-line comment applies to. Only multi-line comment needs to fill this field. |
-| Comment start side | `start-side` | string | Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. |
-| Comment type | `subject-type` | string | Subject type of the comment, can be one of: line, file. Default is line. |
+| Comment start side | `start-side` | string | Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`LEFT`</li><li>`RIGHT`</li><li>`side`</li></ul></details> |
+| Comment type | `subject-type` | string | Subject type of the comment, can be one of: line, file. Default is line. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`line`</li><li>`file`</li></ul></details> |
 | Comment updated at | `updated-at` | string | Time the comment was updated. |
 | [User](#list-review-comments-user) | `user` | object | User who created the comment. |
+
 </div>
 
 <h4 id="list-review-comments-user">User</h4>
@@ -348,6 +345,7 @@ Get the review comments in a pull request. The comments can be on a specific lin
 | :--- | :--- | :--- | :--- |
 | User id | `id` | integer | ID of the user. |
 | User URL | `url` | string | URL of the user. |
+
 </div>
 </details>
 
@@ -365,9 +363,8 @@ Create a review comment in a pull request. The comment can be a general comment 
 | Repository (required) | `repository` | string | Repository name. |
 | PR Number (required) | `pr-number` | integer | Number of the PR. |
 | [Comment](#create-review-comment-comment) (required) | `comment` | object | The comment to be added. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Create Review Comment</summary>
 
@@ -375,22 +372,21 @@ Create a review comment in a pull request. The comment can be a general comment 
 
 The comment to be added.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Comment body | `body` | string | Body of the comment.  |
-| Commit SHA | `commit-id` | string | SHA of the commit on which you want to comment.  |
-| Comment end line | `line` | integer | The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that your comment applies to.  |
-| Comment path | `path` | string | Path of the file the comment is on.  |
-| Comment end side | `side` | string | Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`LEFT`</li><li>`RIGHT`</li><li>`side`</li></ul></details>  |
-| Comment start line | `start-line` | integer | The first line in the pull request diff that your multi-line comment applies to. Only multi-line comment needs to fill this field.  |
-| Comment start side | `start-side` | string | Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`LEFT`</li><li>`RIGHT`</li><li>`side`</li></ul></details>  |
-| Comment type | `subject-type` | string | Subject type of the comment, can be one of: line, file. Default is line.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`line`</li><li>`file`</li></ul></details>  |
+| Comment body | `body` | string | Body of the comment. |
+| Commit SHA | `commit-id` | string | SHA of the commit on which you want to comment. |
+| Comment end line | `line` | integer | The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that your comment applies to. |
+| Comment path | `path` | string | Path of the file the comment is on. |
+| Comment end side | `side` | string | Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`LEFT`</li><li>`RIGHT`</li><li>`side`</li></ul></details> |
+| Comment start line | `start-line` | integer | The first line in the pull request diff that your multi-line comment applies to. Only multi-line comment needs to fill this field. |
+| Comment start side | `start-side` | string | Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`LEFT`</li><li>`RIGHT`</li><li>`side`</li></ul></details> |
+| Comment type | `subject-type` | string | Subject type of the comment, can be one of: line, file. Default is line. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`line`</li><li>`file`</li></ul></details> |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -409,7 +405,9 @@ The comment to be added.
 | Comment Created At (optional) | `created-at` | string | Time the comment was created. |
 | Comment Updated At (optional) | `updated-at` | string | Time the comment was updated. |
 | [User](#create-review-comment-user) (optional) | `user` | object | User who created the comment. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Create Review Comment</summary>
@@ -422,6 +420,7 @@ The comment to be added.
 | :--- | :--- | :--- | :--- |
 | User id | `id` | integer | ID of the user. |
 | User URL | `url` | string | URL of the user. |
+
 </div>
 </details>
 
@@ -437,18 +436,15 @@ Get the list of all issues in a repository,This can be a pull request or a gener
 | Task ID (required) | `task` | string | `TASK_LIST_ISSUES` |
 | Owner (required) | `owner` | string | Owner of the repository. |
 | Repository (required) | `repository` | string | Repository name. |
-| State | `state` | string | State of the issues, can be one of: open, closed, all. Default is open. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open`</li><li>`closed`</li><li>`all`</li></ul></details>  |
-| Sort | `sort` | string | Sort the issues by created, updated, popularity, or long-running. Default is created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`created`</li><li>`updated`</li><li>`popularity`</li><li>`long-running`</li></ul></details>  |
-| Direction | `direction` | string | Direction of the sort, can be one of: asc, desc. Default is desc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details>  |
+| State | `state` | string | State of the issues, can be one of: open, closed, all. Default is open. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open`</li><li>`closed`</li><li>`all`</li></ul></details> |
+| Sort | `sort` | string | Sort the issues by created, updated, popularity, or long-running. Default is created. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`created`</li><li>`updated`</li><li>`popularity`</li><li>`long-running`</li></ul></details> |
+| Direction | `direction` | string | Direction of the sort, can be one of: asc, desc. Default is desc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`asc`</li><li>`desc`</li></ul></details> |
 | Since | `since` | string | Date (in `YYYY-MM-DD` format) from which issues will start to be fetched. The date will be in the UTC timezone. |
 | No Pull Request | `no-pull-request` | boolean | Whether to `not` include pull requests in the response. Since issue and pr use the same indexing system in GitHub, the API returns all relevant objects (issues and pr). Default is false. |
 | Page | `page` | integer | Page number of the results to fetch. Default is 1. |
 | Per Page | `per-page` | integer | Number of results to fetch per page. Default is 30. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -456,7 +452,9 @@ Get the list of all issues in a repository,This can be a pull request or a gener
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Issues](#list-issues-issues) | `issues` | array[object] | An array of issues. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in List Issues</summary>
@@ -475,6 +473,7 @@ Get the list of all issues in a repository,This can be a pull request or a gener
 | Issue Number | `number` | integer | Number of the issue. |
 | Issue state | `state` | string | State of the issue. |
 | Issue title | `title` | string | Title of the issue. |
+
 </div>
 </details>
 
@@ -491,11 +490,8 @@ Get an issue. This can be a pull request or a general issue, and you can tell by
 | Owner (required) | `owner` | string | Owner of the repository. |
 | Repository (required) | `repository` | string | Repository name. |
 | Issue Number (required) | `issue-number` | integer | Number of the issue. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -510,8 +506,8 @@ Get an issue. This can be a pull request or a general issue, and you can tell by
 | Assignees (optional) | `assignees` | array[string] | Assignees of the issue. |
 | Labels (optional) | `labels` | array[string] | Labels of the issue. |
 | Is Pull Request (optional) | `is-pull-request` | boolean | Whether the issue is a pull request. |
-</div>
 
+</div>
 
 ### Get User
 
@@ -524,11 +520,8 @@ Get a user by name or ID.
 | Task ID (required) | `task` | string | `TASK_GET_USER` |
 | Name | `name` | string | The GitHub username of the user. |
 | ID | `id` | integer | The GitHub user ID. If both `name` and `id` are provided, `id` takes precedence. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -536,8 +529,8 @@ Get a user by name or ID.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | User (optional) | `user` | any | The GitHub user information. |
-</div>
 
+</div>
 
 ### Get Organization
 
@@ -550,11 +543,8 @@ Get an organization by name or ID.
 | Task ID (required) | `task` | string | `TASK_GET_ORGANIZATION` |
 | Name | `name` | string | The GitHub organization name. |
 | ID | `id` | integer | The GitHub organization ID. If both `name` and `id` are provided, `id` takes precedence. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -562,7 +552,9 @@ Get an organization by name or ID.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Organization Full](#get-organization-organization-full) (optional) | `organization` | object | Organization Full |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Get Organization</summary>
@@ -631,6 +623,7 @@ Get an organization by name or ID.
 | Updated At | `updated-at` | string | The timestamp when the organization was last updated. |
 | URL | `url` | string | The URL of the organization's API endpoint. |
 | Web Commit Signoff Required | `web-commit-signoff-required` | boolean | Whether web commit sign-off is required. |
+
 </div>
 
 <h4 id="get-organization-plan">Plan</h4>
@@ -644,6 +637,7 @@ Get an organization by name or ID.
 | Private Repositories | `private-repos` | integer | The number of private repositories included in the plan. |
 | Seats | `seats` | integer | The total number of seats in the plan. |
 | Space | `space` | integer | The amount of disk space included in the plan. |
+
 </div>
 </details>
 
@@ -663,11 +657,8 @@ Create an issue.
 | Issue Body (required) | `body` | string | Body of the issue. |
 | Assignees | `assignees` | array[string] | Assignees of the issue. |
 | Labels | `labels` | array[string] | Labels of the issue. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -682,8 +673,8 @@ Create an issue.
 | Assignees (optional) | `assignees` | array[string] | Assignees of the issue. |
 | Labels (optional) | `labels` | array[string] | Labels of the issue. |
 | Is Pull Request (optional) | `is-pull-request` | boolean | Whether the issue is a pull request. |
-</div>
 
+</div>
 
 ### Create Webhook
 
@@ -699,13 +690,10 @@ Create a webhook for a repository.
 | Webhook URL (required) | `hook-url` | string | URL to send the payload to. |
 | Events (required) | `events` | array[string] | Events to trigger the webhook. Please see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads">the github document</a> for more information. |
 | Active | `active` | boolean | Whether the webhook is active. Default is false. |
-| Content Type | `content-type` | string | Content type of the webhook, can be one of: json, form. Default is json. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`json`</li><li>`form`</li></ul></details>  |
+| Content Type | `content-type` | string | Content type of the webhook, can be one of: json, form. Default is json. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`json`</li><li>`form`</li></ul></details> |
 | Hook Secret | `hook-secret` | string | If provided, the secret will be used as the key to generate the HMAC hex digest value for delivery signature headers. (see <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#delivery-headers">the document</a>). |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -717,7 +705,9 @@ Create a webhook for a repository.
 | Ping URL (optional) | `ping-url` | string | URL to ping the webhook. |
 | Test URL (optional) | `test-url` | string | URL to test the webhook. |
 | [Config](#create-webhook-config) (optional) | `config` | object | Configuration of the webhook. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Create Webhook</summary>
@@ -731,10 +721,9 @@ Create a webhook for a repository.
 | Content Type | `content-type` | string | Content type of the webhook. |
 | Insecure SSL | `insecure-ssl` | string | Whether the webhook is insecure. |
 | Webhook URL | `url` | string | URL of the webhook. |
+
 </div>
 </details>
-
-
 
 ## Supported Events
 

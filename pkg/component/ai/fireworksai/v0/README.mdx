@@ -10,19 +10,13 @@ It can carry out the following tasks:
 - [Text Generation Chat](#text-generation-chat)
 - [Text Embeddings](#text-embeddings)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/fireworksai/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/fireworksai/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -39,11 +33,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key | `api-key` | string | Fill in your Fireworks AI API key. To find your keys, visit the Fireworks AI API Keys page.  |
-
+| API Key | `api-key` | string | Fill in your Fireworks AI API key. To find your keys, visit the Fireworks AI API Keys page. |
 </div>
-
-
 
 
 
@@ -58,7 +49,7 @@ Fireworks AI's text generation models (often called generative pre-trained trans
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
-| Model Name (required) | `model` | string | The OSS model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`llama-v3p1-405b-instruct`</li><li>`llama-v3p1-70b-instruct`</li><li>`llama-v3p1-8b-instruct`</li><li>`llama-v3-70b-instruct`</li><li>`llama-v3-8b-instruct`</li><li>`firellava-13b`</li><li>`firefunction-v2`</li><li>`deepseek-coder-v2-instruct`</li><li>`deepseek-coder-v2-lite-instruct`</li><li>`starcoder-16b`</li><li>`starcoder-7b`</li><li>`phi-3-vision-128k-instruct`</li><li>`qwen2-72b-instruct`</li><li>`mythomax-l2-13b`</li><li>`yi-large`</li></ul></details>  |
+| Model Name (required) | `model` | string | The OSS model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`llama-v3p1-405b-instruct`</li><li>`llama-v3p1-70b-instruct`</li><li>`llama-v3p1-8b-instruct`</li><li>`llama-v3-70b-instruct`</li><li>`llama-v3-8b-instruct`</li><li>`firellava-13b`</li><li>`firefunction-v2`</li><li>`deepseek-coder-v2-instruct`</li><li>`deepseek-coder-v2-lite-instruct`</li><li>`starcoder-16b`</li><li>`starcoder-7b`</li><li>`phi-3-vision-128k-instruct`</li><li>`qwen2-72b-instruct`</li><li>`mythomax-l2-13b`</li><li>`yi-large`</li></ul></details> |
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model's behavior is set using a generic message as "You are a helpful assistant.". |
 | Prompt Images | `prompt-images` | array[string] | The prompt images (Note: According to Fireworks AI documentation on 2024-07-24, the total number of images included in a single API request should not exceed 30, and all the images should be smaller than 5MB in size). |
@@ -68,9 +59,8 @@ Fireworks AI's text generation models (often called generative pre-trained trans
 | Top K | `top-k` | integer | Integer to define the top tokens considered within the sample operation to create new text. |
 | Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate. |
 | Top P | `top-p` | number | Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top-p (default=0.5). |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Text Generation Chat</summary>
 
@@ -78,38 +68,39 @@ Fireworks AI's text generation models (often called generative pre-trained trans
 
 'Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : {"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"}.'
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#text-generation-chat-content) | `content` | array | The message content.  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
+| [Content](#text-generation-chat-content) | `content` | array | The message content. |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'. |
 </div>
 <h4 id="text-generation-chat-content">Content</h4>
 
 The message content.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL.  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details>  |
+| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL. |
+| Text | `text` | string | The text content. |
+| Type | `type` | string | The type of the content part. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details> |
 </div>
 <h4 id="text-generation-chat-image-url">Image URL</h4>
 
 The image URL.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
+| URL | `url` | string | Either a URL of the image or the base64 encoded image data. |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -117,7 +108,9 @@ The image URL.
 | :--- | :--- | :--- | :--- |
 | Text | `text` | string | Model Output. |
 | [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Token usage on the Fireworks AI platform text generation models. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Text Generation Chat</summary>
@@ -130,6 +123,7 @@ The image URL.
 | :--- | :--- | :--- | :--- |
 | Input Tokens | `input-tokens` | number | The input tokens used by Fireworks AI models. |
 | Output Tokens | `output-tokens` | number | The output tokens generated by Fireworks AI models. |
+
 </div>
 </details>
 
@@ -143,13 +137,10 @@ An embedding is a list of floating point numbers that captures semantic informat
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
-| Model Name (required) | `model` | string | The OSS embedding model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`nomic-ai/nomic-embed-text-v1.5`</li><li>`nomic-ai/nomic-embed-text-v1`</li><li>`WhereIsAI/UAE-Large-V1`</li><li>`thenlper/gte-large`</li><li>`thenlper/gte-base`</li></ul></details>  |
+| Model Name (required) | `model` | string | The OSS embedding model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`nomic-ai/nomic-embed-text-v1.5`</li><li>`nomic-ai/nomic-embed-text-v1`</li><li>`WhereIsAI/UAE-Large-V1`</li><li>`thenlper/gte-large`</li><li>`thenlper/gte-base`</li></ul></details> |
 | Text (required) | `text` | string | The text. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -158,7 +149,9 @@ An embedding is a list of floating point numbers that captures semantic informat
 | :--- | :--- | :--- | :--- |
 | Embedding | `embedding` | array[number] | Embedding of the input text. |
 | [Usage](#text-embeddings-usage) (optional) | `usage` | object | Token usage on the Fireworks AI platform embedding models. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Text Embeddings</summary>
@@ -170,10 +163,9 @@ An embedding is a list of floating point numbers that captures semantic informat
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Token Count | `tokens` | number | The token count used by Fireworks AI models. |
+
 </div>
 </details>
-
-
 
 ## Example Recipes
 

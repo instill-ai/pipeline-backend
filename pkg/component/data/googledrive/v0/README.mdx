@@ -11,19 +11,13 @@ It can carry out the following tasks:
 - [Read Folder](#read-folder)
 
 **Note**: This component is only available on **🔮 Instill Core**.
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/googledrive/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/googledrive/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -40,11 +34,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Refresh Token | `refresh-token` | string | Refresh token for the Google Drive API. For more information about how to create tokens, please refer to the <a href="https://developers.google.com/drive/api/v3/about-auth">Google Drive API documentation</a> and <a href="https://developers.google.com/identity/protocols/oauth2" >OAuth 2.0 documentation</a>.  |
-
+| Refresh Token | `refresh-token` | string | Refresh token for the Google Drive API. For more information about how to create tokens, please refer to the <a href="https://developers.google.com/drive/api/v3/about-auth">Google Drive API documentation</a> and <a href="https://developers.google.com/identity/protocols/oauth2" >OAuth 2.0 documentation</a>. |
 </div>
-
-
 
 
 
@@ -60,11 +51,8 @@ Read a file content and metadata from Google Drive.
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_FILE` |
 | File ID (required) | `shared-link` | string | Shared link of the file. You can get the shared link by right-clicking on the file and selecting `Copy link`. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -72,7 +60,9 @@ Read a file content and metadata from Google Drive.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [File](#read-file-file) | `file` | object | File in Google Drive. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Read File</summary>
@@ -94,6 +84,7 @@ Read a file content and metadata from Google Drive.
 | Version | `version` | integer | Version of the file in Google Drive. |
 | Web Content Link | `web-content-link` | string | Link for downloading the content of the file in a browser. |
 | Web View Link | `web-view-link` | string | Link for opening the file in a relevant Google editor or viewer in a browser. Usually, web view link is same as shared link. |
+
 </div>
 </details>
 
@@ -109,11 +100,8 @@ Read metadata and content of files under the specified folder in Google Drive.
 | Task ID (required) | `task` | string | `TASK_READ_FOLDER` |
 | File ID (required) | `shared-link` | string | Shared link of the file. You can get the shared link by right-clicking on the file and selecting `Copy link`. |
 | Read Content | `read-content` | boolean | Whether to read the content of the files under the folder. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -121,7 +109,9 @@ Read metadata and content of files under the specified folder in Google Drive.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | [Files](#read-folder-files) | `files` | array[object] | List of files under the specified folder. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Read Folder</summary>
@@ -143,8 +133,7 @@ Read metadata and content of files under the specified folder in Google Drive.
 | Version | `version` | integer | Version of the file in Google Drive. |
 | Web Content Link | `web-content-link` | string | Link for downloading the content of the file in a browser. |
 | Web View Link | `web-view-link` | string | Link for opening the file in a relevant Google editor or viewer in a browser. Usually, web view link is same as shared link. |
+
 </div>
 </details>
-
-
 

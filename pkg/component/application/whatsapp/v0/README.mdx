@@ -17,19 +17,13 @@ It can carry out the following tasks:
 - [Send Contact Message](#send-contact-message)
 - [Send Interactive Call to Action URL Button Message](#send-interactive-call-to-action-url-button-message)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/whatsapp/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/whatsapp/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -46,11 +40,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Token (required) | `token` | string | Fill in your WhatsApp access token. Go [here](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started) for more information.  |
-
+| Token (required) | `token` | string | Fill in your WhatsApp access token. Go [here](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started) for more information. |
 </div>
-
-
 
 
 
@@ -72,11 +63,8 @@ Send text-based template message. This task support header(text), body and butto
 | Header Parameters | `header-parameters` | array[string] | Specify the parameters for the header section of the template. Leave this blank if there is no parameter. |
 | Body Parameters | `body-parameters` | array[string] | Specify the parameters for the body section of the template. Leave this blank if there is no parameter. |
 | Button Parameters | `button-parameters` | array[string] | Specify the parameters for button(s). Leave this blank if there is no parameter. Follow this format or it won't work: button_index;button_type;value_of_the_parameter. The separator is a semicolon. button_index starts at 0. Example: 0;quick_reply;randomvalue. Note: This button parameter only support three types `quick_reply`, `url` and `copy_code`." |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -86,8 +74,8 @@ Send text-based template message. This task support header(text), body and butto
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
 | Message Status | `message-status` | string | The status of the message. |
-</div>
 
+</div>
 
 ### Send Media Based Template Message
 
@@ -102,16 +90,13 @@ Send media-based template message. This task support header(image, document & vi
 | Recipient Phone Number (required) | `to` | string | The number of the recipient you are sending the message to. |
 | Template Name (required) | `name` | string | Name of the template. |
 | Language Code (required) | `language-code` | string | The code of the language in which the template is used. [Supported languages](https://developers.facebook.com/docs/whatsapp/api/messages/message-templates#supported-languages). |
-| Header Type (required) | `media-type` | string | Specify the header(media) type for the header section of the template. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`image`</li><li>`video`</li><li>`document`</li></ul></details>  |
+| Header Type (required) | `media-type` | string | Specify the header(media) type for the header section of the template. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`image`</li><li>`video`</li><li>`document`</li></ul></details> |
 | ID or Link (Header Parameter) (required) | `id-or-link` | string | Input either ID or link of the media. If the input has `http`, it will be considered as a link. |
 | Filename (Header Parameter) | `filename` | string | The filename of the document. Only document can use this property. This property will specify what format the document is displayed as in WhatsApp. If other media type tried to use this property, it will be ignored. |
 | Body Parameters | `body-parameters` | array[string] | Specify the parameters for the body section of the template. Leave this blank if there is no parameter. |
 | Button Parameters | `button-parameters` | array[string] | Specify the parameters for button(s). Leave this blank if there is no parameter. Follow this format or it won't work: button_index;button_type;value_of_the_parameter. The separator is a semicolon. button_index starts at 0. Example: 0;quick_reply;randomvalue. Note: This button parameter only support three types `quick_reply`, `url` and `copy_code`." |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -121,8 +106,8 @@ Send media-based template message. This task support header(image, document & vi
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
 | Message Status | `message-status` | string | The status of the message. |
-</div>
 
+</div>
 
 ### Send Location Based Template Message
 
@@ -143,11 +128,8 @@ Send location-based template message. This task support header(location), body a
 | Location Address (Header Parameter) (required) | `address` | string | Address of the location. |
 | Body Parameters | `body-parameters` | array[string] | Specify the parameters for the body section of the template. Leave this blank if there is no parameter. |
 | Button Parameters | `button-parameters` | array[string] | Specify the parameters for button(s). Leave this blank if there is no parameter. Follow this format or it won't work: button_index;button_type;value_of_the_parameter. The separator is a semicolon. button_index starts at 0. Example: 0;quick_reply;randomvalue. Note: This button parameter only support three types `quick_reply`, `url` and `copy_code`." |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -157,8 +139,8 @@ Send location-based template message. This task support header(location), body a
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
 | Message Status | `message-status` | string | The status of the message. |
-</div>
 
+</div>
 
 ### Send Authentication Template Message
 
@@ -174,11 +156,8 @@ Send authentication template message with one-time password button (The button i
 | Template Name (required) | `name` | string | Name of the template. |
 | Language Code (required) | `language-code` | string | The code of the language in which the template is used. [Supported languages](https://developers.facebook.com/docs/whatsapp/api/messages/message-templates#supported-languages). |
 | One-Time Password (required) | `one-time-password` | string | One-time password to be sent to the recipient. Maximum 15 characters. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -188,8 +167,8 @@ Send authentication template message with one-time password button (The button i
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
 | Message Status | `message-status` | string | The status of the message. |
-</div>
 
+</div>
 
 ### Send Text Message
 
@@ -203,12 +182,9 @@ Send text message. Note: Message can only be sent when the 24-hour customer serv
 | Phone Number ID (required) | `phone-number-id` | string | Phone Number ID. Obtainable through the app dashboard. Note: This is for sender. |
 | Recipient Phone Number (required) | `to` | string | The number of the recipient you are sending the message to. |
 | Text (required) | `body` | string | Body of the message. |
-| Preview URL (required) | `preview-url` | string | Specify whether URL should be previewed or not. This will have no affect if the message does not contain any URL. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`false`</li><li>`true`</li></ul></details>  |
+| Preview URL (required) | `preview-url` | string | Specify whether URL should be previewed or not. This will have no affect if the message does not contain any URL. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`false`</li><li>`true`</li></ul></details> |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -217,8 +193,8 @@ Send text message. Note: Message can only be sent when the 24-hour customer serv
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
-</div>
 
+</div>
 
 ### Send Media Message
 
@@ -231,15 +207,12 @@ Send media message. Media supported: video, audio, document, image. Note: Messag
 | Task ID (required) | `task` | string | `TASK_SEND_MEDIA_MESSAGE` |
 | Phone Number ID (required) | `phone-number-id` | string | Phone Number ID. Obtainable through the app dashboard. Note: This is for sender. |
 | Recipient Phone Number (required) | `to` | string | The number of the recipient you are sending the message to. |
-| Media Type (required) | `media-type` | string | Specify what media to send. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`image`</li><li>`audio`</li><li>`document`</li><li>`video`</li></ul></details>  |
+| Media Type (required) | `media-type` | string | Specify what media to send. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`image`</li><li>`audio`</li><li>`document`</li><li>`video`</li></ul></details> |
 | ID or Link (required) | `id-or-link` | string | Input either ID or link of the media. If the input has `http`, it will be considered as a link. |
 | Caption | `caption` | string | Media asset caption. Description of the media. This property cannot be used when the media type is audio. If audio tried to use this property, it will be ignored. |
 | Filename | `filename` | string | The filename of the document. Only document can use this property. This property will specify what format the document is displayed as in WhatsApp. If other media type tried to use this property, it will be ignored. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -248,8 +221,8 @@ Send media message. Media supported: video, audio, document, image. Note: Messag
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
-</div>
 
+</div>
 
 ### Send Location Message
 
@@ -266,11 +239,8 @@ Send location message. Note: Message can only be sent when the 24-hour customer 
 | Longitude (required) | `longitude` | number | Location longitude. |
 | Location Name (required) | `location-name` | string | Name of the location. |
 | Location Address (required) | `address` | string | Address of the location. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -279,8 +249,8 @@ Send location message. Note: Message can only be sent when the 24-hour customer 
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
-</div>
 
+</div>
 
 ### Send Contact Message
 
@@ -297,15 +267,12 @@ Send contact message. Note: Message can only be sent when the 24-hour customer s
 | Middle Name | `middle-name` | string | Middle name of the contact. |
 | Last Name | `last-name` | string | Last name of the contact. |
 | Phone Number | `phone-number` | string | Phone number of the contact. |
-| Phone Number Type | `phone-number-type` | string | Phone number type of the contact. If there is no phone number, pick none. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`none`</li><li>`CELL`</li><li>`MAIN`</li><li>`PHONE`</li><li>`HOME`</li><li>`WORK`</li></ul></details>  |
+| Phone Number Type | `phone-number-type` | string | Phone number type of the contact. If there is no phone number, pick none. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`none`</li><li>`CELL`</li><li>`MAIN`</li><li>`PHONE`</li><li>`HOME`</li><li>`WORK`</li></ul></details> |
 | Email | `email` | string | Email of the contact. |
-| Email Type | `email-type` | string | Email type of the contact. If there is no email, pick none. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`none`</li><li>`HOME`</li><li>`WORK`</li></ul></details>  |
+| Email Type | `email-type` | string | Email type of the contact. If there is no email, pick none. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`none`</li><li>`HOME`</li><li>`WORK`</li></ul></details> |
 | Birthday | `birthday` | string | Birthday of the contact. Format is in `YYYY-MM-DD`. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -314,8 +281,8 @@ Send contact message. Note: Message can only be sent when the 24-hour customer s
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
-</div>
 
+</div>
 
 ### Send Interactive Call to Action URL Button Message
 
@@ -333,11 +300,8 @@ Send interactive Call-To-Action URL button message. Note: Message can only be se
 | Footer Text | `footer-text` | string | Message footer text. |
 | Button Display Text (required) | `button-display-text` | string | The text displayed on the button. |
 | Button URL (required) | `button-url` | string | URL to load when the user tapped the button. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -346,7 +310,5 @@ Send interactive Call-To-Action URL button message. Note: Message can only be se
 | :--- | :--- | :--- | :--- |
 | Recipient WhatsApp ID | `recipient-wa-id` | string | The WhatsApp ID of the recipient. Most likely the same with their phone number. |
 | Message ID | `message-id` | string | The ID of the message. |
+
 </div>
-
-
-

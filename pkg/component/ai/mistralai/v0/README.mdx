@@ -10,19 +10,13 @@ It can carry out the following tasks:
 - [Text Generation Chat](#text-generation-chat)
 - [Text Embeddings](#text-embeddings)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/mistralai/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/mistralai/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -39,11 +33,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key | `api-key` | string | Fill in your Mistral API key. To find your keys, visit the Mistral AI platform page.  |
-
+| API Key | `api-key` | string | Fill in your Mistral API key. To find your keys, visit the Mistral AI platform page. |
 </div>
-
-
 
 
 
@@ -58,7 +49,7 @@ Mistral AI's text generation models (often called generative pre-trained transfo
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
-| Model Name (required) | `model-name` | string | The Mistral model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open-mixtral-8x22b`</li><li>`open-mixtral-8x7b`</li><li>`open-mistral-7b`</li><li>`mistral-large-latest`</li><li>`mistral-small-latest`</li><li>`codestral-latest`</li></ul></details>  |
+| Model Name (required) | `model-name` | string | The Mistral model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`open-mixtral-8x22b`</li><li>`open-mixtral-8x7b`</li><li>`open-mistral-7b`</li><li>`mistral-large-latest`</li><li>`mistral-small-latest`</li><li>`codestral-latest`</li></ul></details> |
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model's behavior is set using a generic message as "You are a helpful assistant.". |
 | Prompt Images | `prompt-images` | array[string] | The prompt images (Note: The Mistral models are not trained to process images, thus images will be omitted). |
@@ -69,9 +60,8 @@ Mistral AI's text generation models (often called generative pre-trained transfo
 | Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate. |
 | Top P | `top-p` | number | Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top-p (default=0.5). |
 | Safe | `safe` | boolean | Safe generation mode. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Text Generation Chat</summary>
 
@@ -79,38 +69,39 @@ Mistral AI's text generation models (often called generative pre-trained transfo
 
 Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: {"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"}.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#text-generation-chat-content) | `content` | array | The message content.  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
+| [Content](#text-generation-chat-content) | `content` | array | The message content. |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'. |
 </div>
 <h4 id="text-generation-chat-content">Content</h4>
 
 The message content.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL.  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details>  |
+| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL. |
+| Text | `text` | string | The text content. |
+| Type | `type` | string | The type of the content part. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details> |
 </div>
 <h4 id="text-generation-chat-image-url">Image URL</h4>
 
 The image URL.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
+| URL | `url` | string | Either a URL of the image or the base64 encoded image data. |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -118,7 +109,9 @@ The image URL.
 | :--- | :--- | :--- | :--- |
 | Text | `text` | string | Model Output. |
 | [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Token usage on the Mistral platform text generation models. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Text Generation Chat</summary>
@@ -131,6 +124,7 @@ The image URL.
 | :--- | :--- | :--- | :--- |
 | Input Tokens | `input-tokens` | number | The input tokens used by Mistral models. |
 | Output Tokens | `output-tokens` | number | The output tokens generated by Mistral models. |
+
 </div>
 </details>
 
@@ -144,13 +138,10 @@ An embedding is a list of floating point numbers that captures semantic informat
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
-| Model Name (required) | `model-name` | string | The Mistral embed model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`mistral-embed`</li></ul></details>  |
+| Model Name (required) | `model-name` | string | The Mistral embed model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`mistral-embed`</li></ul></details> |
 | Text (required) | `text` | string | The text. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -159,7 +150,9 @@ An embedding is a list of floating point numbers that captures semantic informat
 | :--- | :--- | :--- | :--- |
 | Embedding | `embedding` | array[number] | Embedding of the input text. |
 | [Usage](#text-embeddings-usage) (optional) | `usage` | object | Token usage on the Mistral platform embedding models. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Text Embeddings</summary>
@@ -171,10 +164,9 @@ An embedding is a list of floating point numbers that captures semantic informat
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Token Count | `tokens` | number | The token count used by Mistral models. |
+
 </div>
 </details>
-
-
 
 ## Example Recipes
 

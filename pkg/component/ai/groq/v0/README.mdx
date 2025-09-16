@@ -9,19 +9,13 @@ The Groq component is an AI component that allows users to connect the AI models
 It can carry out the following tasks:
 - [Text Generation Chat](#text-generation-chat)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/groq/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/groq/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -38,11 +32,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API Key | `api-key` | string | Fill in your GroqCloud API key. To find your keys, visit the GroqCloud API Keys page.  |
-
+| API Key | `api-key` | string | Fill in your GroqCloud API key. To find your keys, visit the GroqCloud API Keys page. |
 </div>
-
-
 
 
 
@@ -57,7 +48,7 @@ Groq serves open source text generation models (often called generative pre-trai
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
-| Model (required) | `model` | string | The OSS model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`llama-3.1-405b-reasoning`</li><li>`llama-3.1-70b-versatile`</li><li>`llama-3.1-8b-instant`</li><li>`llama3-groq-70b-8192-tool-use-preview`</li><li>`llama3-groq-8b-8192-tool-use-preview`</li><li>`llama3-70b-8192`</li><li>`llama-guard-3-8b`</li><li>`llama3-8b-8192`</li><li>`mixtral-8x7b-32768`</li><li>`gemma2-9b-it`</li><li>`gemma-7b-it`</li></ul></details>  |
+| Model (required) | `model` | string | The OSS model to be used. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`llama-3.1-405b-reasoning`</li><li>`llama-3.1-70b-versatile`</li><li>`llama-3.1-8b-instant`</li><li>`llama3-groq-70b-8192-tool-use-preview`</li><li>`llama3-groq-8b-8192-tool-use-preview`</li><li>`llama3-70b-8192`</li><li>`llama-guard-3-8b`</li><li>`llama3-8b-8192`</li><li>`mixtral-8x7b-32768`</li><li>`gemma2-9b-it`</li><li>`gemma-7b-it`</li></ul></details> |
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model's behavior is set using a generic message as "You are a helpful assistant.". |
 | Prompt Images | `prompt-images` | array[string] | The prompt images (Note: Only a subset of OSS models support image inputs). |
@@ -68,9 +59,8 @@ Groq serves open source text generation models (often called generative pre-trai
 | Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate. |
 | Top P | `top-p` | number | Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top-p (default=0.5). |
 | User | `user` | string | The user name passed to GroqPlatform. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Text Generation Chat</summary>
 
@@ -78,38 +68,39 @@ Groq serves open source text generation models (often called generative pre-trai
 
 Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: {"role": "The message role, i.e. `system`, `user` or `assistant`", "content": "message content"}.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Content](#text-generation-chat-content) | `content` | array | The message content.  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'.  |
+| [Content](#text-generation-chat-content) | `content` | array | The message content. |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'. |
 </div>
 <h4 id="text-generation-chat-content">Content</h4>
 
 The message content.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL.  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details>  |
+| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL. |
+| Text | `text` | string | The text content. |
+| Type | `type` | string | The type of the content part. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details> |
 </div>
 <h4 id="text-generation-chat-image-url">Image URL</h4>
 
 The image URL.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
+| URL | `url` | string | Either a URL of the image or the base64 encoded image data. |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -117,7 +108,9 @@ The image URL.
 | :--- | :--- | :--- | :--- |
 | Text | `text` | string | Model Output. |
 | [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Token usage on the GroqCloud platform text generation models. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Text Generation Chat</summary>
@@ -130,10 +123,9 @@ The image URL.
 | :--- | :--- | :--- | :--- |
 | Input Tokens | `input-tokens` | number | The input tokens used by GroqCloud OSS models. |
 | Output Tokens | `output-tokens` | number | The output tokens generated by GroqCloud OSS models. |
+
 </div>
 </details>
-
-
 
 ## Example Recipes
 

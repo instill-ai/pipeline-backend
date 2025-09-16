@@ -23,19 +23,13 @@ It can carry out the following tasks:
 - [Get Owner](#get-owner)
 - [Get All](#get-all)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/hubspot/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/hubspot/v0/config/tasks.yaml) files respectively.
-
-
 
 
 ## Setup
@@ -52,11 +46,8 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Token (required) | `token` | string | Fill in your HubSpot private app access token. Go here for [more information](https://developers.hubspot.com/docs/api/private-apps).  |
-
+| Token (required) | `token` | string | Fill in your HubSpot private app access token. Go here for [more information](https://developers.hubspot.com/docs/api/private-apps). |
 </div>
-
-
 
 
 
@@ -72,11 +63,8 @@ Get contact information using contact ID or Email
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_CONTACT` |
 | Contact ID or Email (required) | `contact-id-or-email` | string | Input contact ID or email. If the input has @, it will search the contact using email. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -93,8 +81,8 @@ Get contact information using contact ID or Email
 | Lifecycle Stage (optional) | `lifecycle-stage` | string | Lifecycle stages are used to track how contacts or companies move forward in your process. Default format is in small letters, all words are combined. Example: salesqualifiedlead. However, remember to check internal value for custom fields. |
 | Lead Status (optional) | `lead-status` | string | The contact's sales, prospecting or outreach status. Default format is in capital letters, with _ as space. Example: IN_PROGRESS. However, remember to check internal value for custom fields. |
 | Contact ID | `contact-id` | string | Contact ID. |
-</div>
 
+</div>
 
 ### Create Contact
 
@@ -117,11 +105,8 @@ Create new contact
 | Create Object -> Deal Association Using Deal IDs | `create-deals-association` | array[string] | Existing deal IDs to be associated with the object. |
 | Create Object -> Company Association Using Company IDs | `create-companies-association` | array[string] | Existing company IDs to be associated with the object. |
 | Create Object -> Ticket Association Using Ticket IDs | `create-tickets-association` | array[string] | Existing ticket IDs to be associated with the object. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -129,8 +114,8 @@ Create new contact
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Contact ID | `contact-id` | string | Contact ID. |
-</div>
 
+</div>
 
 ### Get Deal
 
@@ -142,11 +127,8 @@ Get deal information using deal ID
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_DEAL` |
 | Deal ID (required) | `deal-id` | string | Input deal ID. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -162,8 +144,8 @@ Get deal information using deal ID
 | Close Date (optional) | `close-date` | string | Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
 | Create Date (optional) | `create-date` | string | Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
 | Associated Contact IDs (optional) | `associated-contact-ids` | array[string] | Contact IDs associated with the object. |
-</div>
 
+</div>
 
 ### Create Deal
 
@@ -182,11 +164,8 @@ Create new deal
 | Deal Type | `deal-type` | string | The type of deal. Default format is in small letters, all words are combined. Example: newbusiness. However, remember to check internal value for custom fields. |
 | Close Date | `close-date` | string | Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
 | Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -194,8 +173,8 @@ Create new deal
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Deal ID | `deal-id` | string | Deal ID. |
-</div>
 
+</div>
 
 ### Update Deal
 
@@ -215,11 +194,8 @@ Update existing deal
 | Deal Type | `deal-type` | string | The type of deal. Default format is in small letters, all words are combined. Example: newbusiness. However, remember to check internal value for custom fields. |
 | Close Date | `close-date` | string | Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
 | Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -228,8 +204,8 @@ Update existing deal
 | :--- | :--- | :--- | :--- |
 | Updated by User ID | `updated-by-user-id` | string | User ID that updated the deal. |
 | Updated At | `updated-at` | string | The time when the deal was updated. |
-</div>
 
+</div>
 
 ### Get Company
 
@@ -241,11 +217,8 @@ Get company information using company ID
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_COMPANY` |
 | Company ID (required) | `company-id` | string | Input company ID. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -268,8 +241,8 @@ Get company information using company ID
 | Total Revenue (optional) | `total-revenue` | number | Total revenue. Calculated automatically by HubSpot. |
 | Linkedin Page (optional) | `linkedin-page` | string | Linkedin page of the company. |
 | Associated Contact IDs (optional) | `associated-contact-ids` | array[string] | Contact IDs associated with the object. |
-</div>
 
+</div>
 
 ### Create Company
 
@@ -295,11 +268,8 @@ Create new company
 | Annual Revenue | `annual-revenue` | number | Annual revenue. |
 | Linkedin Page | `linkedin-page` | string | Linkedin page of the company. |
 | Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -307,8 +277,8 @@ Create new company
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Company ID | `company-id` | string | Company ID. |
-</div>
 
+</div>
 
 ### Get Ticket
 
@@ -320,11 +290,8 @@ Get ticket information using ticket ID
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_TICKET` |
 | Ticket ID (required) | `ticket-id` | string | Input ticket ID. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -342,8 +309,8 @@ Get ticket information using ticket ID
 | Create Date (optional) | `create-date` | string | Create date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
 | Last Modified Date (optional) | `last-modified-date` | string | Last modified date. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z. |
 | Associated Contact IDs (optional) | `associated-contact-ids` | array[string] | Contact IDs associated with the object. |
-</div>
 
+</div>
 
 ### Create Ticket
 
@@ -362,11 +329,8 @@ Create new ticket
 | Priority | `priority` | string | The level of attention needed on the ticket. Default format is in capital letters. Example: MEDIUM. However, remember to check internal value for custom fields. |
 | Source | `source` | string | Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL. |
 | Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -374,8 +338,8 @@ Create new ticket
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Ticket ID | `ticket-id` | string | Ticket ID. |
-</div>
 
+</div>
 
 ### Update Ticket
 
@@ -395,11 +359,8 @@ Update existing ticket
 | Priority | `priority` | string | The level of attention needed on the ticket. Default format is in capital letters. Example: MEDIUM. However, remember to check internal value for custom fields. |
 | Source | `source` | string | Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL. |
 | Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -407,8 +368,8 @@ Update existing ticket
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Updated At | `updated-at` | string | The time when the ticket was updated. |
-</div>
 
+</div>
 
 ### Get Thread
 
@@ -420,11 +381,8 @@ Retrieve all the messages inside a thread (conversation inbox). The messages wil
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_THREAD` |
 | Thread ID (required) | `thread-id` | string | Input thread ID. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -433,7 +391,9 @@ Retrieve all the messages inside a thread (conversation inbox). The messages wil
 | :--- | :--- | :--- | :--- |
 | [Messages](#get-thread-messages) | `results` | array[object] | An array of messages. |
 | Number of Messages | `no-of-messages` | integer | The number of messages in a thread. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Get Thread</summary>
@@ -451,6 +411,7 @@ Retrieve all the messages inside a thread (conversation inbox). The messages wil
 | [Sender](#get-thread-sender) | `sender` | object | Sender's information. |
 | Subject | `subject` | string | The subject of the message. |
 | Text | `text` | string | The content of the message. |
+
 </div>
 
 <h4 id="get-thread-sender">Sender</h4>
@@ -463,6 +424,7 @@ Retrieve all the messages inside a thread (conversation inbox). The messages wil
 | Name | `sender-name` | string | The name of the sender. |
 | Type | `sender-type` | string | Specify the category of sender information. |
 | Value | `sender-value` | string | Contains the actual sender information (e.g.: email address). |
+
 </div>
 
 <h4 id="get-thread-recipients">Recipients</h4>
@@ -474,6 +436,7 @@ Retrieve all the messages inside a thread (conversation inbox). The messages wil
 | Name | `name` | string | The name of the recipient. |
 | Type | `type` | string | Specify the category of recipient information. |
 | Value | `value` | string | Contains the actual recipient information (e.g.: email address). |
+
 </div>
 </details>
 
@@ -493,11 +456,8 @@ Insert message into a thread (only support email thread)
 | Channel Account ID (required) | `channel-account-id` | string | The ID of an account that is part of the channel-id channel. On an existing thread, it is recommended to copy channel-account-id of the most recent message on the thread. |
 | Subject (required) | `subject` | string | The subject of the message. |
 | Text (required) | `text` | string | The body of the message. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -505,8 +465,8 @@ Insert message into a thread (only support email thread)
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | The message status. |
-</div>
 
+</div>
 
 ### Retrieve Association
 
@@ -518,12 +478,9 @@ Get the object IDs associated with contact ID (contact->objects). If you are try
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_RETRIEVE_ASSOCIATION` |
 | Contact ID (required) | `contact-id` | string | Input contact ID. |
-| Object Type (required) | `object-type` | string | Input object type (CRM objects or `Threads`). Note: CRM objects include `Deals`, `Companies`, `Tickets`, etc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Deals`</li><li>`Companies`</li><li>`Tickets`</li><li>`Threads`</li></ul></details>  |
+| Object Type (required) | `object-type` | string | Input object type (CRM objects or `Threads`). Note: CRM objects include `Deals`, `Companies`, `Tickets`, etc. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Deals`</li><li>`Companies`</li><li>`Tickets`</li><li>`Threads`</li></ul></details> |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -532,8 +489,8 @@ Get the object IDs associated with contact ID (contact->objects). If you are try
 | :--- | :--- | :--- | :--- |
 | Object ID Array | `object-ids` | array[string] | An array of object ID associated with the contact. |
 | Object IDs Length | `object-ids-length` | integer | The number of object IDs. |
-</div>
 
+</div>
 
 ### Get Owner
 
@@ -544,13 +501,10 @@ Get information about HubSpot owner using either owner ID or user ID. For more i
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_OWNER` |
-| ID Type (required) | `id-type` | string | Specify the type of ID you will use to get owner's information. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Owner ID`</li><li>`User ID`</li></ul></details>  |
+| ID Type (required) | `id-type` | string | Specify the type of ID you will use to get owner's information. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Owner ID`</li><li>`User ID`</li></ul></details> |
 | ID (required) | `id` | string | Can either be owner ID or user ID; according to the ID type you selected. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -566,7 +520,9 @@ Get information about HubSpot owner using either owner ID or user ID. For more i
 | Created At | `created-at` | string | Created at. |
 | Updated At | `updated-at` | string | Updated at. |
 | Archived | `archived` | boolean | Archived. |
+
 </div>
+
 
 <details>
 <summary> Output Objects in Get Owner</summary>
@@ -580,6 +536,7 @@ Get information about HubSpot owner using either owner ID or user ID. For more i
 | Team ID | `team-id` | string | The ID of the team. |
 | Team Name | `team-name` | string | The name of the team. |
 | Team Primary | `team-primary` | boolean | Indicate whether this team is the primary team of the owner. |
+
 </div>
 </details>
 
@@ -593,12 +550,9 @@ Get all the IDs for a specific object (e.g. all contact IDs)
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_GET_ALL` |
-| Object Type (required) | `object-type` | string | The object which you want to get all IDs for. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Contacts`</li><li>`Deals`</li><li>`Companies`</li><li>`Tickets`</li><li>`Threads`</li><li>`Owners`</li></ul></details>  |
+| Object Type (required) | `object-type` | string | The object which you want to get all IDs for. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`Contacts`</li><li>`Deals`</li><li>`Companies`</li><li>`Tickets`</li><li>`Threads`</li><li>`Owners`</li></ul></details> |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -607,7 +561,5 @@ Get all the IDs for a specific object (e.g. all contact IDs)
 | :--- | :--- | :--- | :--- |
 | Object ID Array | `object-ids` | array[string] | An array of object ID. |
 | Object IDs Length | `object-ids-length` | integer | The number of object IDs. |
+
 </div>
-
-
-

@@ -17,21 +17,13 @@ It can carry out the following tasks:
 - [Draw Instance Segmentation](#draw-instance-segmentation)
 - [Draw Semantic Segmentation](#draw-semantic-segmentation)
 
-
-
 ## Release Stage
 
 `Alpha`
 
-
-
 ## Configuration
 
 The component definition and tasks are defined in the [definition.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/image/v0/config/definition.yaml) and [tasks.yaml](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/image/v0/config/tasks.yaml) files respectively.
-
-
-
-
 
 
 
@@ -50,11 +42,8 @@ Concatenate images horizontally or vertically. All images must have the same wid
 | Grid Width | `grid-width` | integer | Grid width. If `grid-width` is provided, `grid-height` will be ignored. |
 | Grid Height | `grid-height` | integer | Grid height. If `grid-height` is provided, `grid-width` will be ignored. |
 | Padding | `padding` | integer | Padding between images. If `padding` is provided, it will be applied to all four sides of the image. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -62,8 +51,8 @@ Concatenate images horizontally or vertically. All images must have the same wid
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
-</div>
 
+</div>
 
 ### Crop
 
@@ -81,11 +70,8 @@ Crop image to the specified size.
 | Right Offset | `right-offset` | integer | Right offset of the crop. |
 | Bottom Offset | `bottom-offset` | integer | Bottom offset of the crop. |
 | Left Offset | `left-offset` | integer | Left offset of the crop. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -93,8 +79,8 @@ Crop image to the specified size.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
-</div>
 
+</div>
 
 ### Resize
 
@@ -109,11 +95,8 @@ Resize image to the specified size.
 | Ratio | `ratio` | number | Resize ratio (e.g., 0.5 for half size, 2 for double size) to resize the image. If ratio is provided, width and height will be ignored. |
 | Width | `width` | integer | Width of the output image. |
 | Height | `height` | integer | Height of the output image. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -121,8 +104,8 @@ Resize image to the specified size.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
-</div>
 
+</div>
 
 ### Draw Classification
 
@@ -137,11 +120,8 @@ Draw classification result on the image.
 | Image (required) | `image` | string | Input image. |
 | Show Score | `show-score` | boolean | Show model confidence score on each instance. |
 | Score (required) | `score` | number | The confidence score of the predicted category of the input. |
+
 </div>
-
-
-
-
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -149,8 +129,8 @@ Draw classification result on the image.
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
-</div>
 
+</div>
 
 ### Draw Detection
 
@@ -164,9 +144,8 @@ Draw detection result on the image.
 | Image (required) | `image` | string | Input image. |
 | [Objects](#draw-detection-objects) (required) | `objects` | array[object] | A list of detected objects. |
 | Show Score | `show-score` | boolean | Show model confidence score on each instance. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Draw Detection</summary>
 
@@ -174,38 +153,38 @@ Draw detection result on the image.
 
 A list of detected objects.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Bounding box](#draw-detection-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format.  |
-| Category | `category` | string | The predicted category of the bounding box.  |
-| Score | `score` | number | The confidence score of the predicted category of the bounding box.  |
+| [Bounding box](#draw-detection-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format. |
+| Category | `category` | string | The predicted category of the bounding box. |
+| Score | `score` | number | The confidence score of the predicted category of the bounding box. |
 </div>
 <h4 id="draw-detection-bounding-box">Bounding Box</h4>
 
 The detected bounding box in (left, top, width, height) format.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Height | `height` | number | Bounding box height value  |
-| Left | `left` | number | Bounding box left x-axis value  |
-| Top | `top` | number | Bounding box top y-axis value  |
-| Width | `width` | number | Bounding box width value  |
+| Height | `height` | number | Bounding box height value |
+| Left | `left` | number | Bounding box left x-axis value |
+| Top | `top` | number | Bounding box top y-axis value |
+| Width | `width` | number | Bounding box width value |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
-</div>
 
+</div>
 
 ### Draw Keypoint
 
@@ -219,9 +198,8 @@ Draw keypoint result on the image.
 | Image (required) | `image` | string | Input image. |
 | [Objects](#draw-keypoint-objects) (required) | `objects` | array[object] | A list of keypoint objects, a keypoint object includes all the pre-defined keypoints of a detected object. |
 | Show Score | `show-score` | boolean | Show model confidence score on each instance. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Draw Keypoint</summary>
 
@@ -229,50 +207,51 @@ Draw keypoint result on the image.
 
 A list of keypoint objects, a keypoint object includes all the pre-defined keypoints of a detected object.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Bounding Box](#draw-keypoint-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format.  |
-| [Keypoints](#draw-keypoint-keypoints) | `keypoints` | array | A keypoint group is composed of a list of pre-defined keypoints of a detected object.  |
-| Score | `score` | number | The confidence score of the predicted object.  |
+| [Bounding Box](#draw-keypoint-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format. |
+| [Keypoints](#draw-keypoint-keypoints) | `keypoints` | array | A keypoint group is composed of a list of pre-defined keypoints of a detected object. |
+| Score | `score` | number | The confidence score of the predicted object. |
 </div>
 <h4 id="draw-keypoint-keypoints">Keypoints</h4>
 
 A keypoint group is composed of a list of pre-defined keypoints of a detected object.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Visibility Score | `v` | number | visibility score of the keypoint.  |
-| X Coordinate | `x` | number | x coordinate of the keypoint.  |
-| Y Coordinate | `y` | number | y coordinate of the keypoint.  |
+| Visibility Score | `v` | number | visibility score of the keypoint. |
+| X Coordinate | `x` | number | x coordinate of the keypoint. |
+| Y Coordinate | `y` | number | y coordinate of the keypoint. |
 </div>
 <h4 id="draw-keypoint-bounding-box">Bounding Box</h4>
 
 The detected bounding box in (left, top, width, height) format.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Height | `height` | number | Bounding box height value  |
-| Left | `left` | number | Bounding box left x-axis value  |
-| Top | `top` | number | Bounding box top y-axis value  |
-| Width | `width` | number | Bounding box width value  |
+| Height | `height` | number | Bounding box height value |
+| Left | `left` | number | Bounding box left x-axis value |
+| Top | `top` | number | Bounding box top y-axis value |
+| Width | `width` | number | Bounding box width value |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
-</div>
 
+</div>
 
 ### Draw OCR
 
@@ -286,9 +265,8 @@ Draw OCR result on the image.
 | Image (required) | `image` | string | Input image. |
 | [Objects](#draw-ocr-objects) (required) | `objects` | array[object] | A list of detected bounding boxes. |
 | Show Score | `show-score` | boolean | Show model confidence score on each instance. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Draw OCR</summary>
 
@@ -296,38 +274,38 @@ Draw OCR result on the image.
 
 A list of detected bounding boxes.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Bounding Box](#draw-ocr-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format.  |
-| Score | `score` | number | The confidence score of the predicted object.  |
-| Text | `text` | string | Text string recognised per bounding box.  |
+| [Bounding Box](#draw-ocr-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format. |
+| Score | `score` | number | The confidence score of the predicted object. |
+| Text | `text` | string | Text string recognised per bounding box. |
 </div>
 <h4 id="draw-ocr-bounding-box">Bounding Box</h4>
 
 The detected bounding box in (left, top, width, height) format.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Height | `height` | number | Bounding box height value  |
-| Left | `left` | number | Bounding box left x-axis value  |
-| Top | `top` | number | Bounding box top y-axis value  |
-| Width | `width` | number | Bounding box width value  |
+| Height | `height` | number | Bounding box height value |
+| Left | `left` | number | Bounding box left x-axis value |
+| Top | `top` | number | Bounding box top y-axis value |
+| Width | `width` | number | Bounding box width value |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
-</div>
 
+</div>
 
 ### Draw Instance Segmentation
 
@@ -341,9 +319,8 @@ Draw instance segmentation result on the image.
 | Image (required) | `image` | string | Input image. |
 | [Objects](#draw-instance-segmentation-objects) (required) | `objects` | array[object] | A list of detected instance bounding boxes. |
 | Show Score | `show-score` | boolean | Show model confidence score on each instance. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Draw Instance Segmentation</summary>
 
@@ -351,39 +328,39 @@ Draw instance segmentation result on the image.
 
 A list of detected instance bounding boxes.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Bounding Box](#draw-instance-segmentation-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format.  |
-| Category | `category` | string | The predicted category of the bounding box.  |
-| RLE | `rle` | string | Run Length Encoding (RLE) of instance mask within the bounding box.  |
-| Score | `score` | number | The confidence score of the predicted instance object.  |
+| [Bounding Box](#draw-instance-segmentation-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format. |
+| Category | `category` | string | The predicted category of the bounding box. |
+| RLE | `rle` | string | Run Length Encoding (RLE) of instance mask within the bounding box. |
+| Score | `score` | number | The confidence score of the predicted instance object. |
 </div>
 <h4 id="draw-instance-segmentation-bounding-box">Bounding Box</h4>
 
 The detected bounding box in (left, top, width, height) format.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Height | `height` | number | Bounding box height value  |
-| Left | `left` | number | Bounding box left x-axis value  |
-| Top | `top` | number | Bounding box top y-axis value  |
-| Width | `width` | number | Bounding box width value  |
+| Height | `height` | number | Bounding box height value |
+| Left | `left` | number | Bounding box left x-axis value |
+| Top | `top` | number | Bounding box top y-axis value |
+| Width | `width` | number | Bounding box width value |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
-</div>
 
+</div>
 
 ### Draw Semantic Segmentation
 
@@ -396,9 +373,8 @@ Draw semantic segmentation result on the image.
 | Task ID (required) | `task` | string | `TASK_DRAW_SEMANTIC_SEGMENTATION` |
 | Image (required) | `image` | string | Input image. |
 | [Stuffs](#draw-semantic-segmentation-stuffs) (required) | `stuffs` | array[object] | A list of RLE binary masks. |
+
 </div>
-
-
 <details>
 <summary> Input Objects in Draw Semantic Segmentation</summary>
 
@@ -406,23 +382,20 @@ Draw semantic segmentation result on the image.
 
 A list of RLE binary masks.
 
+
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Category | `category` | string | Category text string corresponding to each stuff mask.  |
-| RLE | `rle` | string | Run Length Encoding (RLE) of each stuff mask within the image.  |
+| Category | `category` | string | Category text string corresponding to each stuff mask. |
+| RLE | `rle` | string | Run Length Encoding (RLE) of each stuff mask within the image. |
 </div>
 </details>
-
-
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Image | `image` | image/png | Output image. |
+
 </div>
-
-
-
