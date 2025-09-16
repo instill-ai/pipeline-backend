@@ -1,0 +1,12 @@
+additionalProperties: false
+properties:
+  api-key:
+    description: Fill in your Gemini API key. To find your keys, visit your Gemini's API Keys page.
+    type: string
+    instillSecret: true
+    instillCredential: true
+    uiOrder: 0
+    title: API Key
+required: []
+title: Gemini Connection
+type: object
