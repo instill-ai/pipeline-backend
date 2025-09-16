@@ -492,12 +492,20 @@ func buildReqParts(in TaskChatInput) []genai.Part {
 		parts = append(parts, buildParts(last.Parts)...)
 	}
 	for _, img := range in.Images {
-		if p := newURIOrDataPart(img, detectMIMEFromPath(img, "image/png")); p != nil {
+		imgBase64, err := img.Base64()
+		if err != nil {
+			return nil
+		}
+		if p := newURIOrDataPart(imgBase64.String(), detectMIMEFromPath(imgBase64.String(), "image/png")); p != nil {
 			parts = append(parts, *p)
 		}
 	}
 	for _, doc := range in.Documents {
-		if p := newURIOrDataPart(doc, detectMIMEFromPath(doc, "application/pdf")); p != nil {
+		docBase64, err := doc.Base64()
+		if err != nil {
+			return nil
+		}
+		if p := newURIOrDataPart(docBase64.String(), detectMIMEFromPath(docBase64.String(), "application/pdf")); p != nil {
 			parts = append(parts, *p)
 		}
 	}

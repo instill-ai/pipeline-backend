@@ -9,17 +9,17 @@ import (
 // TaskChatInput is the input for the TASK_CHAT task.
 type TaskChatInput struct {
 	// Flattened chat input properties
-	Stream          *bool     `instill:"stream"`
-	Prompt          *string   `instill:"prompt"`
-	Images          []string  `instill:"images"`
-	Documents       []string  `instill:"documents"`
-	SystemMessage   *string   `instill:"system-message"`
-	ChatHistory     []content `instill:"chat-history"`
-	MaxOutputTokens *int32    `instill:"max-output-tokens"`
-	Temperature     *float32  `instill:"temperature"`
-	TopP            *float32  `instill:"top-p"`
-	TopK            *int32    `instill:"top-k"`
-	Seed            *int32    `instill:"seed"`
+	Stream          *bool             `instill:"stream"`
+	Prompt          *string           `instill:"prompt"`
+	Images          []format.Image    `instill:"images"`
+	Documents       []format.Document `instill:"documents"`
+	SystemMessage   *string           `instill:"system-message"`
+	ChatHistory     []content         `instill:"chat-history"`
+	MaxOutputTokens *int32            `instill:"max-output-tokens"`
+	Temperature     *float32          `instill:"temperature"`
+	TopP            *float32          `instill:"top-p"`
+	TopK            *int32            `instill:"top-k"`
+	Seed            *int32            `instill:"seed"`
 
 	// Other properties
 	Model             string            `instill:"model"`

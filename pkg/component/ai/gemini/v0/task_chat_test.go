@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	qt "github.com/frankban/quicktest"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 
 	"google.golang.org/genai"
 )
@@ -72,12 +74,29 @@ func Test_buildParts_TextAndInlineData(t *testing.T) {
 func Test_buildReqParts_Prompt_Images_Documents(t *testing.T) {
 	c := qt.New(t)
 	prompt := "Summarize this."
-	imgData := "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+	imgData := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
 	pdfHeader := "JVBERi0xLjQK" // raw base64 PDF header
+	imageBytes, err := base64.StdEncoding.DecodeString(imgData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	img, err := data.NewImageFromBytes(imageBytes, "image/png", "test.png", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pdfBytes, err := base64.StdEncoding.DecodeString(pdfHeader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc, err := data.NewDocumentFromBytes(pdfBytes, "application/pdf", "test.pdf")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	in := TaskChatInput{
 		Prompt:    &prompt,
-		Images:    []string{imgData},
-		Documents: []string{pdfHeader},
+		Images:    []format.Image{img},
+		Documents: []format.Document{doc},
 	}
 	got := buildReqParts(in)
 	// Expect 1 text + 1 image + 1 doc = 3 parts
