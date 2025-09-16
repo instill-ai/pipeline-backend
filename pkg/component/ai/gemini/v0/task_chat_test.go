@@ -4,11 +4,12 @@ import (
 	"encoding/base64"
 	"testing"
 
+	"google.golang.org/genai"
+
 	qt "github.com/frankban/quicktest"
+
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
-
-	"google.golang.org/genai"
 )
 
 func Test_newURIOrDataPart_DataURI_ImagePNG(t *testing.T) {
