@@ -405,6 +405,15 @@ func evalExpr(expr ast.Expr, value map[string]any) (any, error) {
 		if e.Name == "false" {
 			return false, nil
 		}
+		if e.Name == "nil" {
+			return nil, nil
+		}
+		if e.Name == "null" {
+			return nil, nil
+		}
+		if e.Name == "undefined" {
+			return nil, nil
+		}
 		val, ok := value[e.Name]
 		if !ok {
 			return nil, fmt.Errorf("undefined variable: %s", e.Name)
