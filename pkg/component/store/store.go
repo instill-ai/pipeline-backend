@@ -16,6 +16,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/anthropic/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/cohere/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/fireworksai/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/ai/gemini/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/groq/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/huggingface/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/instillmodel/v0"
@@ -131,6 +132,12 @@ func Init(param InitParams) *Store {
 		{
 			// OpenAI
 			conn := openai.Init(baseComp)
+			conn = conn.WithInstillCredentials(secrets[conn.GetDefinitionID()])
+			compStore.Import(conn)
+		}
+		{
+			// Gemini
+			conn := gemini.Init(baseComp)
 			conn = conn.WithInstillCredentials(secrets[conn.GetDefinitionID()])
 			compStore.Import(conn)
 		}
