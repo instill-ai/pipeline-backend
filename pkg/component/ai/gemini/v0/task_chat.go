@@ -15,7 +15,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 )
 
-func (e *execution) textGeneration(ctx context.Context, job *base.Job) error {
+func (e *execution) chat(ctx context.Context, job *base.Job) error {
 	// Read input
 	in := TaskChatInput{}
 	if err := job.Input.ReadData(ctx, &in); err != nil {

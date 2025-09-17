@@ -78,7 +78,7 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 
 	switch x.Task {
 	case ChatTask:
-		e.execute = e.textGeneration
+		e.execute = e.chat
 	default:
 		return nil, fmt.Errorf("unsupported task")
 	}
