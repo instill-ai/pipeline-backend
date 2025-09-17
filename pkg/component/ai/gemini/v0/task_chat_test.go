@@ -4,9 +4,12 @@ import (
 	"encoding/base64"
 	"testing"
 
+	"google.golang.org/genai"
+
 	qt "github.com/frankban/quicktest"
 
-	"google.golang.org/genai"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
 func Test_newURIOrDataPart_DataURI_ImagePNG(t *testing.T) {
@@ -72,14 +75,32 @@ func Test_buildParts_TextAndInlineData(t *testing.T) {
 func Test_buildReqParts_Prompt_Images_Documents(t *testing.T) {
 	c := qt.New(t)
 	prompt := "Summarize this."
-	imgData := "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+	imgData := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
 	pdfHeader := "JVBERi0xLjQK" // raw base64 PDF header
+	imageBytes, err := base64.StdEncoding.DecodeString(imgData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	img, err := data.NewImageFromBytes(imageBytes, "image/png", "test.png", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pdfBytes, err := base64.StdEncoding.DecodeString(pdfHeader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc, err := data.NewDocumentFromBytes(pdfBytes, "application/pdf", "test.pdf")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	in := TaskChatInput{
 		Prompt:    &prompt,
-		Images:    []string{imgData},
-		Documents: []string{pdfHeader},
+		Images:    []format.Image{img},
+		Documents: []format.Document{doc},
 	}
-	got := buildReqParts(in)
+	got, err := buildReqParts(in)
+	c.Assert(err, qt.IsNil)
 	// Expect 1 text + 1 image + 1 doc = 3 parts
 	c.Assert(got, qt.HasLen, 3)
 	c.Check(got[0].Text, qt.Equals, prompt)
@@ -87,6 +108,52 @@ func Test_buildReqParts_Prompt_Images_Documents(t *testing.T) {
 	c.Check(got[1].InlineData.MIMEType, qt.Equals, "image/png")
 	c.Check(got[2].InlineData, qt.Not(qt.IsNil))
 	c.Check(got[2].InlineData.MIMEType, qt.Equals, "application/pdf")
+}
+
+func Test_buildReqParts_UnsupportedDocumentMIME_Convertible(t *testing.T) {
+	c := qt.New(t)
+	prompt := "Summarize this."
+
+	// Create a document with convertible MIME type (DOC)
+	docBytes := []byte("This is a DOC document")
+	doc, err := data.NewDocumentFromBytes(docBytes, data.DOC, "test.doc")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in := TaskChatInput{
+		Prompt:    &prompt,
+		Documents: []format.Document{doc},
+	}
+
+	got, err := buildReqParts(in)
+	c.Assert(err, qt.Not(qt.IsNil))
+	c.Assert(err.Error(), qt.Contains, "unsupported document MIME type: application/msword")
+	c.Assert(err.Error(), qt.Contains, "Use \":pdf\" syntax")
+	c.Assert(got, qt.IsNil)
+}
+
+func Test_buildReqParts_UnsupportedDocumentMIME_ConvertibleText(t *testing.T) {
+	c := qt.New(t)
+	prompt := "Summarize this."
+
+	// Create a document with convertible text MIME type (CSV)
+	docBytes := []byte("name,age\nJohn,30\nJane,25")
+	doc, err := data.NewDocumentFromBytes(docBytes, data.CSV, "test.csv")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in := TaskChatInput{
+		Prompt:    &prompt,
+		Documents: []format.Document{doc},
+	}
+
+	got, err := buildReqParts(in)
+	c.Assert(err, qt.Not(qt.IsNil))
+	c.Assert(err.Error(), qt.Contains, "unsupported document MIME type: text/csv")
+	c.Assert(err.Error(), qt.Contains, "Use \":pdf\" syntax")
+	c.Assert(got, qt.IsNil)
 }
 
 func Test_renderFinal_Minimal(t *testing.T) {
