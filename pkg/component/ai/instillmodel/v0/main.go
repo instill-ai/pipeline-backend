@@ -14,7 +14,6 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/pipeline-backend/pkg/component/ai"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 	"github.com/instill-ai/pipeline-backend/pkg/component/resources/schemas"
@@ -111,7 +110,8 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	// We will refactor the component soon to align the data structure with Instill Model.
 	// For now, we move out `TASK_EMBEDDING` to a separate section.
 	if e.Task == "TASK_EMBEDDING" {
-		var inputStruct ai.EmbeddingInput
+		// Parse input to extract model information
+		var inputStruct EmbeddingInput
 		err := base.ConvertFromStructpb(inputs[0], &inputStruct)
 		if err != nil {
 			return fmt.Errorf("convert to defined struct: %w", err)

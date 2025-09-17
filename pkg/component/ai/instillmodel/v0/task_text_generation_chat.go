@@ -7,44 +7,11 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/pipeline-backend/pkg/component/ai/openai/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
+
 	modelpb "github.com/instill-ai/protogen-go/model/model/v1alpha"
 )
-
-type TextGenerationInput struct {
-	Prompt        string   `json:"prompt"`
-	SystemMessage *string  `json:"system-message,omitempty"`
-	PromptImages  []string `json:"prompt-images,omitempty"`
-
-	// Note: We're currently sharing the same struct in the OpenAI component,
-	// but this will be moved to the standardized format later.
-	ChatHistory []*openai.TextMessage `json:"chat-history,omitempty"`
-}
-
-type ChatRequestData struct {
-	Messages []Message `json:"messages,omitempty"`
-}
-
-type Message struct {
-	Content []Content `json:"content,omitempty"`
-	Role    string    `json:"role,omitempty"`
-}
-
-type Content struct {
-	Text        string `json:"text,omitempty"`
-	ImageBase64 string `json:"image-base64,omitempty"`
-	Type        string `json:"type,omitempty"`
-}
-
-type ChatParameter struct {
-	MaxTokens   int     `json:"max-tokens,omitempty"`
-	Seed        int     `json:"seed,omitempty"`
-	N           int     `json:"n,omitempty"`
-	Temperature float32 `json:"temperature,omitempty"`
-	TopP        int     `json:"top-p,omitempty"`
-}
 
 func (e *execution) executeTextGenerationChat(grpcClient modelpb.ModelPublicServiceClient, nsID string, modelID string, version string, inputs []*structpb.Struct) ([]*structpb.Struct, error) {
 
@@ -56,28 +23,31 @@ func (e *execution) executeTextGenerationChat(grpcClient modelpb.ModelPublicServ
 		return nil, fmt.Errorf("uninitialized client")
 	}
 
+	// Transform inputs to standardized format
 	taskInputs := []*structpb.Struct{}
 	for _, input := range inputs {
-		inputStruct := TextGenerationInput{}
+		// Parse the input using TextGenerationChatInput struct
+		var inputStruct TextGenerationChatInput
 		err := base.ConvertFromStructpb(input, &inputStruct)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to convert input to TextGenerationChatInput struct: %w", err)
 		}
+
 		messages := []Message{}
 
 		// If chat history is provided, add it to the messages, and ignore the system message
-		if inputStruct.ChatHistory != nil {
+		if len(inputStruct.ChatHistory) > 0 {
 			for _, chat := range inputStruct.ChatHistory {
 				contents := make([]Content, len(chat.Content))
 				for i, c := range chat.Content {
 					if c.Type == "text" {
 						contents[i] = Content{
-							Text: *c.Text,
+							Text: c.Text,
 							Type: "text",
 						}
 					} else {
 						contents[i] = Content{
-							ImageBase64: c.ImageURL.URL,
+							ImageBase64: c.ImageURL,
 							Type:        "image-base64",
 						}
 					}
@@ -102,29 +72,32 @@ func (e *execution) executeTextGenerationChat(grpcClient modelpb.ModelPublicServ
 		}
 		messages = append(messages, Message{Role: "user", Content: userContents})
 
-		i := &RequestWrapper{
+		// Create request parameters
+		requestParam := &ChatParameter{
+			N: 1,
+		}
+		if inputStruct.Seed != nil {
+			requestParam.Seed = *inputStruct.Seed
+		}
+		if inputStruct.MaxNewTokens != nil {
+			requestParam.MaxTokens = *inputStruct.MaxNewTokens
+		}
+		if inputStruct.Temperature != nil {
+			requestParam.Temperature = *inputStruct.Temperature
+		}
+
+		// Create standardized request wrapper
+		requestWrapper := &RequestWrapper{
 			Data: &ChatRequestData{
 				Messages: messages,
 			},
-			Parameter: &ChatParameter{
-				N: 1,
-			},
+			Parameter: requestParam,
 		}
-		if _, ok := input.GetFields()["seed"]; ok {
-			v := int(input.GetFields()["seed"].GetNumberValue())
-			i.Parameter.(*ChatParameter).Seed = v
-		}
-		if _, ok := input.GetFields()["max-new-tokens"]; ok {
-			v := int(input.GetFields()["max-new-tokens"].GetNumberValue())
-			i.Parameter.(*ChatParameter).MaxTokens = v
-		}
-		if _, ok := input.GetFields()["temperature"]; ok {
-			v := float32(input.GetFields()["temperature"].GetNumberValue())
-			i.Parameter.(*ChatParameter).Temperature = v
-		}
-		taskInput, err := base.ConvertToStructpb(i)
+
+		// Convert to structpb
+		taskInput, err := base.ConvertToStructpb(requestWrapper)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to convert request wrapper to structpb: %w", err)
 		}
 		taskInputs = append(taskInputs, taskInput)
 	}
@@ -137,15 +110,25 @@ func (e *execution) executeTextGenerationChat(grpcClient modelpb.ModelPublicServ
 		return nil, fmt.Errorf("invalid output: %v for model: %s/%s/%s", taskOutputs, nsID, modelID, version)
 	}
 
+	// Transform raw outputs to standardized TextGenerationChatOutput format
 	outputs := []*structpb.Struct{}
 	for idx := range inputs {
 		choices := taskOutputs[idx].Fields["data"].GetStructValue().Fields["choices"].GetListValue()
-		output := structpb.Struct{Fields: make(map[string]*structpb.Value)}
-		output.Fields["text"] = structpb.NewStringValue(
-			choices.GetValues()[0].GetStructValue().
+
+		// Create standardized output structure
+		textGenChatOutput := TextGenerationChatOutput{
+			Text: choices.GetValues()[0].GetStructValue().
 				Fields["message"].GetStructValue().
-				Fields["content"].GetStringValue())
-		outputs = append(outputs, &output)
+				Fields["content"].GetStringValue(),
+		}
+
+		// Convert to structpb
+		outputStruct, err := base.ConvertToStructpb(textGenChatOutput)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert text generation chat output to structpb: %w", err)
+		}
+
+		outputs = append(outputs, outputStruct)
 	}
 	return outputs, nil
 }
