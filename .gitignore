@@ -108,3 +108,6 @@ protogen-go
 .air.toml
 tmp
 .idea
+
+# Cursor related files and folders
+.cursor/
