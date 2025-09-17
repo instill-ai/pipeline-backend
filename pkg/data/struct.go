@@ -279,6 +279,8 @@ func (u *Unmarshaler) unmarshalString(ctx context.Context, v format.String, fiel
 				field.Set(reflect.ValueOf(f))
 				return nil
 			}
+			// If URL creation fails, return a helpful error message
+			return fmt.Errorf("cannot unmarshal string into %v: expected valid URL, not base64 string: %w", field.Type(), err)
 		case reflect.TypeOf(v), reflect.TypeOf((*format.String)(nil)).Elem():
 			field.Set(reflect.ValueOf(v))
 		case reflect.TypeOf((*format.Value)(nil)).Elem():
