@@ -3,13 +3,16 @@ package gemini
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"mime"
 	"path"
+	"slices"
 	"strings"
 
 	"google.golang.org/genai"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 )
 
 func (e *execution) textGeneration(ctx context.Context, job *base.Job) error {
@@ -45,7 +48,11 @@ func (e *execution) textGeneration(ctx context.Context, job *base.Job) error {
 	cfg := buildGenerateContentConfig(in, systemMessage)
 
 	// Build user parts (prompt/contents + images + documents)
-	inParts := buildReqParts(in)
+	inParts, err := buildReqParts(in)
+	if err != nil {
+		job.Error.Error(ctx, err)
+		return nil
+	}
 	if len(inParts) == 0 {
 		return nil
 	}
@@ -483,7 +490,7 @@ func buildParts(ps []part) []genai.Part {
 }
 
 // buildReqParts constructs the user request parts from input, including prompt/contents, images, and documents.
-func buildReqParts(in TaskChatInput) []genai.Part {
+func buildReqParts(in TaskChatInput) ([]genai.Part, error) {
 	parts := []genai.Part{}
 	if in.Prompt != nil && *in.Prompt != "" {
 		parts = append(parts, genai.Part{Text: *in.Prompt})
@@ -494,22 +501,50 @@ func buildReqParts(in TaskChatInput) []genai.Part {
 	for _, img := range in.Images {
 		imgBase64, err := img.Base64()
 		if err != nil {
-			return nil
+			return nil, err
 		}
 		if p := newURIOrDataPart(imgBase64.String(), detectMIMEFromPath(imgBase64.String(), "image/png")); p != nil {
 			parts = append(parts, *p)
 		}
 	}
 	for _, doc := range in.Documents {
+		// Validate document MIME type - only PDF is supported
+		contentType := doc.ContentType().String()
+		if contentType != data.PDF {
+			if isConvertibleToPDF(contentType) {
+				return nil, fmt.Errorf("unsupported document MIME type %s, only PDF documents are supported; use \":pdf\" syntax in your input variable to convert the document to PDF format", contentType)
+			}
+			return nil, fmt.Errorf("unsupported document MIME type: %s, only PDF documents are supported", contentType)
+		}
+
 		docBase64, err := doc.Base64()
 		if err != nil {
-			return nil
+			return nil, err
 		}
 		if p := newURIOrDataPart(docBase64.String(), detectMIMEFromPath(docBase64.String(), "application/pdf")); p != nil {
 			parts = append(parts, *p)
 		}
 	}
-	return parts
+	return parts, nil
+}
+
+// isConvertibleToPDF checks if a MIME type can be converted to PDF using the :pdf syntax
+func isConvertibleToPDF(contentType string) bool {
+	convertibleTypes := []string{
+		data.DOC,      // application/msword
+		data.DOCX,     // application/vnd.openxmlformats-officedocument.wordprocessingml.document
+		data.PPT,      // application/vnd.ms-powerpoint
+		data.PPTX,     // application/vnd.openxmlformats-officedocument.presentationml.presentation
+		data.XLS,      // application/vnd.ms-excel
+		data.XLSX,     // application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+		data.HTML,     // text/html
+		data.MARKDOWN, // text/markdown
+		data.TEXT,     // text
+		data.PLAIN,    // text/plain
+		data.CSV,      // text/csv
+	}
+
+	return slices.Contains(convertibleTypes, contentType)
 }
 
 // buildGenerateContentConfig creates a genai.GenerateContentConfig from the input parameters
