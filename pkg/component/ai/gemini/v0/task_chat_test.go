@@ -101,13 +101,13 @@ func Test_buildReqParts_Prompt_Images_Documents(t *testing.T) {
 	}
 	got, err := buildReqParts(in)
 	c.Assert(err, qt.IsNil)
-	// Expect 1 text + 1 image + 1 doc = 3 parts
+	// Expect 1 image + 1 PDF doc + 1 text prompt = 3 parts (prompt now comes last)
 	c.Assert(got, qt.HasLen, 3)
-	c.Check(got[0].Text, qt.Equals, prompt)
+	c.Check(got[0].InlineData, qt.Not(qt.IsNil))
+	c.Check(got[0].InlineData.MIMEType, qt.Equals, "image/png")
 	c.Check(got[1].InlineData, qt.Not(qt.IsNil))
-	c.Check(got[1].InlineData.MIMEType, qt.Equals, "image/png")
-	c.Check(got[2].InlineData, qt.Not(qt.IsNil))
-	c.Check(got[2].InlineData.MIMEType, qt.Equals, "application/pdf")
+	c.Check(got[1].InlineData.MIMEType, qt.Equals, "application/pdf")
+	c.Check(got[2].Text, qt.Equals, prompt) // Prompt is now last
 }
 
 func Test_buildReqParts_UnsupportedDocumentMIME_Convertible(t *testing.T) {
@@ -128,17 +128,18 @@ func Test_buildReqParts_UnsupportedDocumentMIME_Convertible(t *testing.T) {
 
 	got, err := buildReqParts(in)
 	c.Assert(err, qt.Not(qt.IsNil))
-	c.Assert(err.Error(), qt.Contains, "unsupported document MIME type: application/msword")
-	c.Assert(err.Error(), qt.Contains, "Use \":pdf\" syntax")
+	c.Assert(err.Error(), qt.Contains, "document type application/msword will be processed as text only")
+	c.Assert(err.Error(), qt.Contains, "use \":pdf\" syntax")
 	c.Assert(got, qt.IsNil)
 }
 
-func Test_buildReqParts_UnsupportedDocumentMIME_ConvertibleText(t *testing.T) {
+func Test_buildReqParts_TextBasedDocument_CSV(t *testing.T) {
 	c := qt.New(t)
 	prompt := "Summarize this."
 
-	// Create a document with convertible text MIME type (CSV)
-	docBytes := []byte("name,age\nJohn,30\nJane,25")
+	// Create a document with text-based MIME type (CSV)
+	csvContent := "name,age\nJohn,30\nJane,25"
+	docBytes := []byte(csvContent)
 	doc, err := data.NewDocumentFromBytes(docBytes, data.CSV, "test.csv")
 	if err != nil {
 		t.Fatal(err)
@@ -150,10 +151,182 @@ func Test_buildReqParts_UnsupportedDocumentMIME_ConvertibleText(t *testing.T) {
 	}
 
 	got, err := buildReqParts(in)
+	c.Assert(err, qt.IsNil)
+	// Expect 1 text part (CSV content) + 1 text part (prompt) = 2 parts
+	c.Assert(got, qt.HasLen, 2)
+	c.Check(got[0].Text, qt.Equals, csvContent) // CSV content as text
+	c.Check(got[1].Text, qt.Equals, prompt)     // Prompt comes last
+}
+
+func Test_buildReqParts_TextBasedDocument_HTML(t *testing.T) {
+	c := qt.New(t)
+	prompt := "Extract the main content."
+
+	// Create an HTML document
+	htmlContent := "<html><body><h1>Title</h1><p>Content</p></body></html>"
+	docBytes := []byte(htmlContent)
+	doc, err := data.NewDocumentFromBytes(docBytes, data.HTML, "test.html")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in := TaskChatInput{
+		Prompt:    &prompt,
+		Documents: []format.Document{doc},
+	}
+
+	got, err := buildReqParts(in)
+	c.Assert(err, qt.IsNil)
+	// Expect 1 text part (HTML content) + 1 text part (prompt) = 2 parts
+	c.Assert(got, qt.HasLen, 2)
+	c.Check(got[0].Text, qt.Equals, htmlContent) // HTML content as text (tags preserved in extraction)
+	c.Check(got[1].Text, qt.Equals, prompt)      // Prompt comes last
+}
+
+func Test_buildReqParts_TextBasedDocument_Markdown(t *testing.T) {
+	c := qt.New(t)
+	prompt := "Convert to HTML."
+
+	// Create a Markdown document
+	markdownContent := "# Title\n\nThis is **bold** text."
+	docBytes := []byte(markdownContent)
+	doc, err := data.NewDocumentFromBytes(docBytes, data.MARKDOWN, "test.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in := TaskChatInput{
+		Prompt:    &prompt,
+		Documents: []format.Document{doc},
+	}
+
+	got, err := buildReqParts(in)
+	c.Assert(err, qt.IsNil)
+	// Expect 1 text part (Markdown content) + 1 text part (prompt) = 2 parts
+	c.Assert(got, qt.HasLen, 2)
+	c.Check(got[0].Text, qt.Equals, markdownContent) // Markdown content as text
+	c.Check(got[1].Text, qt.Equals, prompt)          // Prompt comes last
+}
+
+func Test_buildReqParts_UnsupportedDocumentType(t *testing.T) {
+	c := qt.New(t)
+	prompt := "Process this."
+
+	// Create a mock document that simulates an unsupported type
+	// We'll create a document with a supported data package type but use a filename that won't trigger conversion
+	docBytes := []byte("binary data")
+	doc, err := data.NewDocumentFromBytes(docBytes, data.OCTETSTREAM, "test.unknown")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in := TaskChatInput{
+		Prompt:    &prompt,
+		Documents: []format.Document{doc},
+	}
+
+	got, err := buildReqParts(in)
 	c.Assert(err, qt.Not(qt.IsNil))
-	c.Assert(err.Error(), qt.Contains, "unsupported document MIME type: text/csv")
-	c.Assert(err.Error(), qt.Contains, "Use \":pdf\" syntax")
+	// Since OCTETSTREAM with unknown extension gets converted to DOC by default,
+	// it will be caught by our convertible check
+	c.Assert(err.Error(), qt.Contains, "document type application/msword will be processed as text only")
 	c.Assert(got, qt.IsNil)
+}
+
+func Test_buildReqParts_Contents_TextOrdering(t *testing.T) {
+	c := qt.New(t)
+
+	// Create test data
+	imgData := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+	pdfHeader := "JVBORi0xLjQK"
+	imageBytes, err := base64.StdEncoding.DecodeString(imgData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	img, err := data.NewImageFromBytes(imageBytes, "image/png", "test.png", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pdfBytes, err := base64.StdEncoding.DecodeString(pdfHeader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc, err := data.NewDocumentFromBytes(pdfBytes, "application/pdf", "test.pdf")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create Contents with mixed text and non-text parts
+	textPart1 := "First text from Contents"
+	textPart2 := "Second text from Contents"
+	imgBase64 := base64.StdEncoding.EncodeToString(imageBytes)
+
+	in := TaskChatInput{
+		Images:    []format.Image{img},
+		Documents: []format.Document{doc},
+		Contents: []content{
+			{
+				Parts: []part{
+					{Text: &textPart1},
+					{InlineData: &blob{MIMEType: "image/png", Data: imgBase64}},
+					{Text: &textPart2},
+				},
+			},
+		},
+	}
+
+	got, err := buildReqParts(in)
+	c.Assert(err, qt.IsNil)
+	// Expect: 1 image from Contents + 1 image from Images + 1 PDF doc + 2 text parts from Contents = 5 parts
+	c.Assert(got, qt.HasLen, 5)
+
+	// Verify ordering: non-text from Contents, then Images, then Documents, then text from Contents
+	c.Check(got[0].InlineData, qt.Not(qt.IsNil)) // Image from Contents
+	c.Check(got[0].InlineData.MIMEType, qt.Equals, "image/png")
+	c.Check(got[1].InlineData, qt.Not(qt.IsNil)) // Image from Images field
+	c.Check(got[1].InlineData.MIMEType, qt.Equals, "image/png")
+	c.Check(got[2].InlineData, qt.Not(qt.IsNil)) // PDF from Documents
+	c.Check(got[2].InlineData.MIMEType, qt.Equals, "application/pdf")
+	c.Check(got[3].Text, qt.Equals, textPart1) // First text from Contents (placed after documents)
+	c.Check(got[4].Text, qt.Equals, textPart2) // Second text from Contents
+}
+
+func Test_isTextBasedDocument(t *testing.T) {
+	c := qt.New(t)
+
+	// Test text-based document types
+	c.Check(isTextBasedDocument(data.HTML), qt.Equals, true)
+	c.Check(isTextBasedDocument(data.MARKDOWN), qt.Equals, true)
+	c.Check(isTextBasedDocument(data.PLAIN), qt.Equals, true)
+	c.Check(isTextBasedDocument(data.CSV), qt.Equals, true)
+	c.Check(isTextBasedDocument("text/xml"), qt.Equals, true)
+	c.Check(isTextBasedDocument("text/javascript"), qt.Equals, true)
+
+	// Test non-text-based document types
+	c.Check(isTextBasedDocument(data.PDF), qt.Equals, false)
+	c.Check(isTextBasedDocument(data.DOC), qt.Equals, false)
+	c.Check(isTextBasedDocument(data.DOCX), qt.Equals, false)
+	c.Check(isTextBasedDocument("application/octet-stream"), qt.Equals, false)
+	c.Check(isTextBasedDocument("image/png"), qt.Equals, false)
+}
+
+func Test_isConvertibleToPDF(t *testing.T) {
+	c := qt.New(t)
+
+	// Test convertible document types
+	c.Check(isConvertibleToPDF(data.DOC), qt.Equals, true)
+	c.Check(isConvertibleToPDF(data.DOCX), qt.Equals, true)
+	c.Check(isConvertibleToPDF(data.PPT), qt.Equals, true)
+	c.Check(isConvertibleToPDF(data.PPTX), qt.Equals, true)
+	c.Check(isConvertibleToPDF(data.XLS), qt.Equals, true)
+	c.Check(isConvertibleToPDF(data.XLSX), qt.Equals, true)
+
+	// Test non-convertible document types
+	c.Check(isConvertibleToPDF(data.PDF), qt.Equals, false)
+	c.Check(isConvertibleToPDF(data.HTML), qt.Equals, false)
+	c.Check(isConvertibleToPDF(data.MARKDOWN), qt.Equals, false)
+	c.Check(isConvertibleToPDF(data.PLAIN), qt.Equals, false)
+	c.Check(isConvertibleToPDF("application/octet-stream"), qt.Equals, false)
 }
 
 func Test_renderFinal_Minimal(t *testing.T) {

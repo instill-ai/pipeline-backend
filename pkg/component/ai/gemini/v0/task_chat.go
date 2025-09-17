@@ -490,14 +490,29 @@ func buildParts(ps []part) []genai.Part {
 }
 
 // buildReqParts constructs the user request parts from input, including prompt/contents, images, and documents.
+// Following best practices: text content (from both Contents and Prompt) is placed after visual content (images/documents).
 func buildReqParts(in TaskChatInput) ([]genai.Part, error) {
 	parts := []genai.Part{}
-	if in.Prompt != nil && *in.Prompt != "" {
-		parts = append(parts, genai.Part{Text: *in.Prompt})
-	} else if len(in.Contents) > 0 {
+
+	// Separate non-text and text parts from Contents for proper ordering
+	var nonTextParts []genai.Part
+	var textParts []genai.Part
+	if len(in.Contents) > 0 {
 		last := in.Contents[len(in.Contents)-1]
-		parts = append(parts, buildParts(last.Parts)...)
+		contentParts := buildParts(last.Parts)
+		for _, part := range contentParts {
+			if part.Text != "" {
+				textParts = append(textParts, part)
+			} else {
+				nonTextParts = append(nonTextParts, part)
+			}
+		}
 	}
+
+	// Add non-text parts from Contents first (images, files, etc.)
+	parts = append(parts, nonTextParts...)
+
+	// Add images before documents for optimal processing
 	for _, img := range in.Images {
 		imgBase64, err := img.Base64()
 		if err != nil {
@@ -507,41 +522,79 @@ func buildReqParts(in TaskChatInput) ([]genai.Part, error) {
 			parts = append(parts, *p)
 		}
 	}
+	// Process documents according to their capabilities:
+	// - PDFs: Full document vision support (charts, diagrams, formatting preserved)
+	// - Text-based: Extract as plain text (HTML tags, Markdown formatting, etc. lost)
+	// - Office documents: Recommend PDF conversion for visual understanding
 	for _, doc := range in.Documents {
-		// Validate document MIME type - only PDF is supported
 		contentType := doc.ContentType().String()
-		if contentType != data.PDF {
-			if isConvertibleToPDF(contentType) {
-				return nil, fmt.Errorf("unsupported document MIME type %s, only PDF documents are supported; use \":pdf\" syntax in your input variable to convert the document to PDF format", contentType)
-			}
-			return nil, fmt.Errorf("unsupported document MIME type: %s, only PDF documents are supported", contentType)
-		}
 
-		docBase64, err := doc.Base64()
-		if err != nil {
-			return nil, err
-		}
-		if p := newURIOrDataPart(docBase64.String(), detectMIMEFromPath(docBase64.String(), "application/pdf")); p != nil {
-			parts = append(parts, *p)
+		if contentType == data.PDF {
+			// PDFs support full document vision capabilities
+			// The model can interpret visual elements like charts, diagrams, and formatting
+			docBase64, err := doc.Base64()
+			if err != nil {
+				return nil, err
+			}
+			if p := newURIOrDataPart(docBase64.String(), detectMIMEFromPath(docBase64.String(), "application/pdf")); p != nil {
+				parts = append(parts, *p)
+			}
+		} else if isTextBasedDocument(contentType) {
+			// Text-based documents (TXT, Markdown, HTML, XML, etc.)
+			// These are processed as pure text content - visual formatting is lost
+			// The model won't see HTML tags, Markdown formatting, etc.
+			textContent, err := doc.Text()
+			if err != nil {
+				return nil, fmt.Errorf("failed to extract text from document: %w", err)
+			}
+			if textContent.String() != "" {
+				parts = append(parts, genai.Part{Text: textContent.String()})
+			}
+		} else if isConvertibleToPDF(contentType) {
+			// Office documents (DOC, DOCX, PPT, PPTX, XLS, XLSX)
+			// These can contain visual elements that would be lost in text extraction
+			return nil, fmt.Errorf("document type %s will be processed as text only, losing visual elements like charts and formatting; use \":pdf\" syntax in your input variable to convert to PDF for document vision capabilities", contentType)
+		} else {
+			return nil, fmt.Errorf("unsupported document type: %s", contentType)
 		}
 	}
+
+	// Add text parts after documents for best results (as per best practices)
+	// This includes both text parts from Contents and the Prompt field
+	parts = append(parts, textParts...)
+	if in.Prompt != nil && *in.Prompt != "" {
+		parts = append(parts, genai.Part{Text: *in.Prompt})
+	}
+
 	return parts, nil
 }
 
-// isConvertibleToPDF checks if a MIME type can be converted to PDF using the :pdf syntax
+// isTextBasedDocument checks if a document type should be processed as text content.
+// Text-based documents are extracted as plain text, losing visual formatting but preserving content.
+// This includes HTML (tags removed), Markdown (formatting lost), plain text, CSV, XML, etc.
+func isTextBasedDocument(contentType string) bool {
+	textBasedTypes := []string{
+		data.HTML,     // text/html - HTML tags will be lost, only text content preserved
+		data.MARKDOWN, // text/markdown - Markdown formatting will be lost
+		data.TEXT,     // text - already plain text
+		data.PLAIN,    // text/plain - already plain text
+		data.CSV,      // text/csv - processed as structured text
+	}
+
+	return slices.Contains(textBasedTypes, contentType) || strings.HasPrefix(contentType, "text/")
+}
+
+// isConvertibleToPDF checks if a MIME type can be converted to PDF using the :pdf syntax.
+// These document types often contain visual elements (charts, diagrams, formatting)
+// that would be lost if processed as text only. PDF conversion preserves visual understanding.
 func isConvertibleToPDF(contentType string) bool {
 	convertibleTypes := []string{
-		data.DOC,      // application/msword
-		data.DOCX,     // application/vnd.openxmlformats-officedocument.wordprocessingml.document
-		data.PPT,      // application/vnd.ms-powerpoint
-		data.PPTX,     // application/vnd.openxmlformats-officedocument.presentationml.presentation
-		data.XLS,      // application/vnd.ms-excel
-		data.XLSX,     // application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-		data.HTML,     // text/html
-		data.MARKDOWN, // text/markdown
-		data.TEXT,     // text
-		data.PLAIN,    // text/plain
-		data.CSV,      // text/csv
+		data.DOC,  // application/msword - may contain charts, images, formatting
+		data.DOCX, // application/vnd.openxmlformats-officedocument.wordprocessingml.document
+		data.PPT,  // application/vnd.ms-powerpoint - presentations with slides, charts
+		data.PPTX, // application/vnd.openxmlformats-officedocument.presentationml.presentation
+		data.XLS,  // application/vnd.ms-excel - spreadsheets with charts, formatting
+		data.XLSX, // application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 	}
 
 	return slices.Contains(convertibleTypes, contentType)
