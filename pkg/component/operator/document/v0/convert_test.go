@@ -2,7 +2,6 @@ package document
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
@@ -15,6 +14,14 @@ import (
 
 func TestConvertToText(t *testing.T) {
 	c := qt.New(t)
+	c.Parallel()
+
+	// Skip test if Python dependencies are not available
+	if !checkExternalDependency("python3") && !checkExternalDependency("python") {
+		c.Skip("Python not found, skipping test")
+		return
+	}
+
 	tests := []struct {
 		name     string
 		filepath string
@@ -57,10 +64,13 @@ func TestConvertToText(t *testing.T) {
 	bc := base.Component{}
 	for _, test := range tests {
 		c.Run(test.name, func(c *qt.C) {
+			c.Parallel()
+
 			component := Init(bc)
 			ctx := context.Background()
 
-			fileContent, err := os.ReadFile(test.filepath)
+			// Use cached file content for better performance
+			fileContent, err := getTestFileContent(test.filepath)
 			c.Assert(err, qt.IsNil)
 
 			execution, err := component.CreateExecution(base.ComponentExecution{

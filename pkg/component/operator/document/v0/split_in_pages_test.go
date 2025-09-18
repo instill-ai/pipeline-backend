@@ -3,7 +3,6 @@ package document
 import (
 	"bytes"
 	"context"
-	"os"
 	"testing"
 
 	pdfreader "github.com/dslipak/pdf"
@@ -19,6 +18,7 @@ import (
 
 func Test_SplitInPages(t *testing.T) {
 	c := qt.New(t)
+	c.Parallel()
 
 	testCases := []struct {
 		name          string
@@ -68,6 +68,8 @@ func Test_SplitInPages(t *testing.T) {
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *qt.C) {
+			c.Parallel()
+
 			component := Init(base.Component{})
 			c.Assert(component, qt.IsNotNil)
 
@@ -77,7 +79,8 @@ func Test_SplitInPages(t *testing.T) {
 			})
 			c.Assert(err, qt.IsNil)
 
-			fileContent, err := os.ReadFile(tc.filePath)
+			// Use cached file content for better performance
+			fileContent, err := getTestFileContent(tc.filePath)
 			c.Assert(err, qt.IsNil)
 
 			ir, ow, eh, job := mock.GenerateMockJob(c)

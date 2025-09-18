@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/extrame/xls"
@@ -19,6 +20,13 @@ import (
 	md "github.com/JohannesKaufmann/html-to-markdown"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
+)
+
+var (
+	// libreOfficeMutex ensures only one LibreOffice process runs at a time
+	// This prevents race conditions and permission issues when multiple processes
+	// try to initialize LibreOffice user profiles simultaneously
+	libreOfficeMutex sync.Mutex
 )
 
 type converterOutput struct {
@@ -380,8 +388,14 @@ func encodeFileToBase64(inputPath string) (string, error) {
 	return base64.StdEncoding.EncodeToString(data), nil
 }
 
-// ConvertToPDF converts a base64 encoded document to a PDF.
+// ConvertToPDF converts a base64 encoded document to a PDF using LibreOffice.
+// It uses a mutex to ensure only one LibreOffice process runs at a time, preventing
+// race conditions and permission issues.
 func ConvertToPDF(base64Encoded, fileExtension string) (string, error) {
+	// Serialize LibreOffice operations to prevent race conditions
+	libreOfficeMutex.Lock()
+	defer libreOfficeMutex.Unlock()
+
 	tempPpt, err := os.CreateTemp("", "temp_document.*."+fileExtension)
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary document: %w", err)
@@ -396,26 +410,30 @@ func ConvertToPDF(base64Encoded, fileExtension string) (string, error) {
 
 	tempDir, err := os.MkdirTemp("", "libreoffice")
 	if err != nil {
-		return "", fmt.Errorf("failed to create temporary directory: %s", err.Error())
+		return "", fmt.Errorf("failed to create temporary directory: %w", err)
 	}
 	defer os.RemoveAll(tempDir)
 
-	cmd := exec.Command("libreoffice", "--headless", "--convert-to", "pdf", inputFileName)
-	cmd.Env = append(os.Environ(), "HOME="+tempDir)
-
-	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("failed to execute LibreOffice command: %s", err.Error())
+	// Set proper permissions for the temporary directory
+	if err := os.Chmod(tempDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to set permissions on temporary directory: %w", err)
 	}
 
-	// LibreOffice is not executed in temp directory like inputFileName.
-	// The generated PDF is not in temp directory.
-	// So, we need to remove the path and keep only the file name.
+	cmd := exec.Command("libreoffice", "--headless", "--convert-to", "pdf", "--outdir", tempDir, inputFileName)
+	cmd.Env = append(os.Environ(), "HOME="+tempDir)
+
+	// Capture both stdout and stderr for better error reporting
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to execute LibreOffice command: %s (output: %s)", err.Error(), string(output))
+	}
+
+	// With --outdir option, the generated PDF will be in the temp directory
 	noPathFileName := filepath.Base(inputFileName)
-	tempPDFName := strings.TrimSuffix(noPathFileName, filepath.Ext(inputFileName)) + ".pdf"
+	tempPDFName := filepath.Join(tempDir, strings.TrimSuffix(noPathFileName, filepath.Ext(inputFileName))+".pdf")
 	defer os.Remove(tempPDFName)
 
 	base64PDF, err := encodeFileToBase64(tempPDFName)
-
 	if err != nil {
 		// In the different containers, we have the different versions of LibreOffice, which means the behavior of LibreOffice may be different.
 		// So, we need to handle the case when the generated PDF is not in the temp directory.
@@ -426,6 +444,8 @@ func ConvertToPDF(base64Encoded, fileExtension string) (string, error) {
 			}
 			return base64PDF, nil
 		}
+		return "", fmt.Errorf("failed to encode PDF file to base64: %w", err)
 	}
+
 	return base64PDF, nil
 }
