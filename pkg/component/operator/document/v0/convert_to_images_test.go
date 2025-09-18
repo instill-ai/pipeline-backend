@@ -2,7 +2,6 @@ package document
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
@@ -15,6 +14,12 @@ import (
 
 func Test_ConvertDocumentToImages(t *testing.T) {
 	c := qt.New(t)
+
+	// Skip test if Python dependencies are not available
+	if !checkExternalDependency("python3") && !checkExternalDependency("python") {
+		c.Skip("Python not found, skipping test")
+		return
+	}
 
 	test := struct {
 		name        string
@@ -39,7 +44,8 @@ func Test_ConvertDocumentToImages(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 	c.Assert(execution, qt.IsNotNil)
 
-	fileContent, err := os.ReadFile(test.filepath)
+	// Use cached file content for better performance
+	fileContent, err := getTestFileContent(test.filepath)
 	c.Assert(err, qt.IsNil)
 
 	ir, ow, eh, job := mock.GenerateMockJob(c)

@@ -2,7 +2,6 @@ package document
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
@@ -18,15 +17,18 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 	c.Parallel()
 
 	tests := []struct {
-		name      string
-		filepath  string
-		converter string
-		expected  ConvertDocumentToMarkdownOutput
+		name                string
+		filepath            string
+		converter           string
+		expected            ConvertDocumentToMarkdownOutput
+		requiresLibreOffice bool
+		skipIfMissingDeps   bool
 	}{
 		{
-			name:      "Convert PDF file - pdfplumber",
-			filepath:  "testdata/test.pdf",
-			converter: "pdfplumber",
+			name:              "Convert PDF file - pdfplumber",
+			filepath:          "testdata/test.pdf",
+			converter:         "pdfplumber",
+			skipIfMissingDeps: true, // Skip if Python dependencies missing
 			expected: ConvertDocumentToMarkdownOutput{
 				Body:          "# This is test file for markdown\n",
 				Images:        []format.Image{},
@@ -35,9 +37,10 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 			},
 		},
 		{
-			name:      "Convert PDF file - Docling",
-			filepath:  "testdata/test.pdf",
-			converter: "docling",
+			name:              "Convert PDF file - Docling",
+			filepath:          "testdata/test.pdf",
+			converter:         "docling",
+			skipIfMissingDeps: true, // Skip if Python dependencies missing
 			expected: ConvertDocumentToMarkdownOutput{
 				Body:          "This is test file for markdown",
 				Images:        []format.Image{},
@@ -46,8 +49,10 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 			},
 		},
 		{
-			name:     "Convert DOCX file",
-			filepath: "testdata/test.docx",
+			name:                "Convert DOCX file",
+			filepath:            "testdata/test.docx",
+			requiresLibreOffice: true,
+			skipIfMissingDeps:   true,
 			expected: ConvertDocumentToMarkdownOutput{
 				Body:          "# This is test file for markdown\n",
 				Images:        []format.Image{},
@@ -56,8 +61,10 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 			},
 		},
 		{
-			name:     "Convert DOC file",
-			filepath: "testdata/test.doc",
+			name:                "Convert DOC file",
+			filepath:            "testdata/test.doc",
+			requiresLibreOffice: true,
+			skipIfMissingDeps:   true,
 			expected: ConvertDocumentToMarkdownOutput{
 				Body:          "# This is test file for markdown\n",
 				Images:        []format.Image{},
@@ -75,8 +82,10 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 			},
 		},
 		{
-			name:     "Convert PPTX file",
-			filepath: "testdata/test.pptx",
+			name:                "Convert PPTX file",
+			filepath:            "testdata/test.pptx",
+			requiresLibreOffice: true,
+			skipIfMissingDeps:   true,
 			expected: ConvertDocumentToMarkdownOutput{
 				Body:          "# This           is     test          file       for markdown\n",
 				Images:        []format.Image{},
@@ -85,8 +94,10 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 			},
 		},
 		{
-			name:     "Convert PPT file",
-			filepath: "testdata/test.ppt",
+			name:                "Convert PPT file",
+			filepath:            "testdata/test.ppt",
+			requiresLibreOffice: true,
+			skipIfMissingDeps:   true,
 			expected: ConvertDocumentToMarkdownOutput{
 				Body:          "# This           is     test          file       for markdown\n",
 				Images:        []format.Image{},
@@ -127,6 +138,18 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 		c.Run(test.name, func(c *qt.C) {
 			c.Parallel()
 
+			// Skip tests that require external dependencies if they're not available
+			if test.skipIfMissingDeps {
+				if test.requiresLibreOffice && !checkExternalDependency("libreoffice") {
+					c.Skip("LibreOffice not found, skipping test")
+					return
+				}
+				if !checkExternalDependency("python3") && !checkExternalDependency("python") {
+					c.Skip("Python not found, skipping test")
+					return
+				}
+			}
+
 			ctx := context.Background()
 			component := Init(base.Component{})
 			c.Assert(component, qt.IsNotNil)
@@ -138,7 +161,8 @@ func TestConvertDocumentToMarkdown(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 			c.Assert(execution, qt.IsNotNil)
 
-			fileContent, err := os.ReadFile(test.filepath)
+			// Use cached file content for better performance
+			fileContent, err := getTestFileContent(test.filepath)
 			c.Assert(err, qt.IsNil)
 
 			ir, ow, eh, job := mock.GenerateMockJob(c)
