@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"sync"
 
 	pdfcpu "github.com/pdfcpu/pdfcpu/pkg/api"
 
@@ -14,6 +15,10 @@ import (
 
 	errorsx "github.com/instill-ai/x/errors"
 )
+
+// pdfcpuMutex protects concurrent access to pdfcpu library functions
+// to prevent data races in the library's internal global state initialization
+var pdfcpuMutex sync.Mutex
 
 func (e *execution) splitInPages(ctx context.Context, job *base.Job) error {
 	in := SplitInPagesInput{}
@@ -42,7 +47,13 @@ func (e *execution) splitInPages(ctx context.Context, job *base.Job) error {
 	}
 
 	rs := bytes.NewReader(b.ByteArray())
+
+	// Protect pdfcpu library calls with mutex to prevent data races
+	// in the library's internal global state initialization
+	pdfcpuMutex.Lock()
 	rawPages, err := pdfcpu.SplitRaw(rs, batchSize, nil)
+	pdfcpuMutex.Unlock()
+
 	if err != nil {
 		return fmt.Errorf("splitting PDF: %w", err)
 	}
