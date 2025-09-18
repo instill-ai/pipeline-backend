@@ -2,6 +2,7 @@ package base
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"runtime"
@@ -10,6 +11,8 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data"
+
+	errorsx "github.com/instill-ai/x/errors"
 )
 
 var _ IExecution = &ExecutionWrapper{}
@@ -86,7 +89,6 @@ func (ow *outputWriter) GetOutput() *structpb.Struct {
 
 // Execute wraps the execution method with validation and usage collection.
 func (e *ExecutionWrapper) Execute(ctx context.Context, jobs []*Job) (err error) {
-
 	newUH := e.GetComponent().UsageHandlerCreator()
 	h, err := newUH(e)
 	if err != nil {
@@ -97,6 +99,7 @@ func (e *ExecutionWrapper) Execute(ctx context.Context, jobs []*Job) (err error)
 	outputs := make([]*structpb.Struct, len(jobs))
 
 	validInputs := make([]*structpb.Struct, 0, len(jobs))
+	inputErrs := make([]error, 0, len(jobs))
 	validJobs := make([]*Job, 0, len(jobs))
 	validJobIdx := make([]int, 0, len(jobs))
 
@@ -105,16 +108,33 @@ func (e *ExecutionWrapper) Execute(ctx context.Context, jobs []*Job) (err error)
 	for batchIdx, job := range jobs {
 		inputs[batchIdx], err = job.Input.Read(ctx)
 		if err != nil {
+			if len(jobs) == 1 {
+				// No need to index the errors
+				return err
+			}
+
+			err := errorsx.AddMessage(
+				fmt.Errorf("invalid input [%d]: %w", batchIdx, err),
+				fmt.Sprintf("Invalid input on batch element %d.", batchIdx),
+			)
+
+			inputErrs = append(inputErrs, err)
 			job.Error.Error(ctx, err)
+
 			continue
 		}
+
 		validInputs = append(validInputs, inputs[batchIdx])
 		validJobs = append(validJobs, job)
 		validJobIdx = append(validJobIdx, batchIdx)
 	}
 
-	if err = h.Check(ctx, inputs); err != nil {
-		return err
+	if len(validInputs) == 0 {
+		return errors.Join(inputErrs...)
+	}
+
+	if err = h.Check(ctx, validInputs); err != nil {
+		return fmt.Errorf("checking trigger usage: %w", err)
 	}
 
 	wrappedJobs := make([]*Job, len(validJobs))
@@ -131,7 +151,7 @@ func (e *ExecutionWrapper) Execute(ctx context.Context, jobs []*Job) (err error)
 	}
 
 	// Since there might be multiple writes, we collect the usage at the end of
-	// the execution.​
+	// the execution.
 	for batchIdx, job := range wrappedJobs {
 		outputs[validJobIdx[batchIdx]] = job.Output.(*outputWriter).GetOutput()
 	}

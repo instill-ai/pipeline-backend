@@ -35,7 +35,7 @@ func (s *setupReader) Read(ctx context.Context) (setups []*structpb.Struct, err 
 		}
 		setupVal, err := recipe.Render(ctx, setupTemplate, batchIdx, wfm, false)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("rendering setup: %w", err)
 		}
 		setup, err := setupVal.ToStructValue()
 		if err != nil {
@@ -81,7 +81,7 @@ func (i *inputReader) read(ctx context.Context) (inputVal format.Value, err erro
 
 	inputVal, err = recipe.Render(ctx, inputTemplate, i.originalIdx, wfm, false)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("reading input template: %w", err)
 	}
 
 	if err = wfm.SetComponentData(ctx, i.originalIdx, i.compID, memory.ComponentDataInput, inputVal); err != nil {
