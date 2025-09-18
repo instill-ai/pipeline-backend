@@ -71,10 +71,14 @@ func subsample(ctx context.Context, job *base.Job) error {
 		}
 	}
 
+	// Protect ffmpeg library calls with mutex to prevent data races
+	// in the library's internal global state initialization
+	ffmpegMutex.Lock()
 	err = ffmpeg.Input(tempInputFile.Name()).
 		Output(outputFile, ffmpegArgs).
 		OverWriteOutput().
 		Run()
+	ffmpegMutex.Unlock()
 
 	if err != nil {
 		return fmt.Errorf("subsampling video: %w", err)

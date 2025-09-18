@@ -11,6 +11,10 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
+// ffmpegMutex protects concurrent access to ffmpeg library functions
+// to prevent data races in the library's internal global state initialization
+var ffmpegMutex sync.Mutex
+
 const (
 	taskSegment       = "TASK_SEGMENT"
 	taskSubsample     = "TASK_SUBSAMPLE"

@@ -92,6 +92,9 @@ func embedAudioToVideo(inputVideoFile string, inputAudioFile string) (string, er
 
 	input := []*ffmpeg.Stream{ffmpeg.Input(inputVideoFile), ffmpeg.Input(inputAudioFile)}
 
+	// Protect ffmpeg library calls with mutex to prevent data races
+	// in the library's internal global state initialization
+	ffmpegMutex.Lock()
 	// https://www.mux.com/articles/merge-audio-and-video-files-with-ffmpeg
 	// Workaround for multiple maps https://github.com/u2takey/ffmpeg-go/issues/1#issuecomment-2507904461
 	err := ffmpeg.Output(input, outputFilePath, ffmpeg.KwArgs{
@@ -100,6 +103,7 @@ func embedAudioToVideo(inputVideoFile string, inputAudioFile string) (string, er
 		"map_0": "0:v:0",
 		"map_1": "1:a:0",
 	}).OverWriteOutput().Run()
+	ffmpegMutex.Unlock()
 
 	if err != nil {
 		return "", fmt.Errorf("embedding audio to video: %w", err)

@@ -82,6 +82,9 @@ func segment(ctx context.Context, job *base.Job) error {
 func extractVideoSegment(inputFile string, seg *segmentData) (string, error) {
 	outputFile := filepath.Join(os.TempDir(), fmt.Sprintf("segment-%s.mp4", uuid.New().String()))
 
+	// Protect ffmpeg library calls with mutex to prevent data races
+	// in the library's internal global state initialization
+	ffmpegMutex.Lock()
 	err := ffmpeg.Input(inputFile, ffmpeg.KwArgs{
 		"ss": seg.StartTime,
 		"to": seg.EndTime,
@@ -91,6 +94,7 @@ func extractVideoSegment(inputFile string, seg *segmentData) (string, error) {
 		}).
 		OverWriteOutput().
 		Run()
+	ffmpegMutex.Unlock()
 
 	if err != nil {
 		return "", fmt.Errorf("extracting video segment: %w", err)

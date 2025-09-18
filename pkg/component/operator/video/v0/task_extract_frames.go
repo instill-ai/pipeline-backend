@@ -78,12 +78,16 @@ func extractFramesAtInterval(inputFile string, interval float64) ([]format.Image
 
 	outputPattern := filepath.Join(outputDir, "frame-%04d.png")
 
+	// Protect ffmpeg library calls with mutex to prevent data races
+	// in the library's internal global state initialization
+	ffmpegMutex.Lock()
 	err := ffmpeg.Input(inputFile).
 		Output(outputPattern, ffmpeg.KwArgs{
 			"vf": fmt.Sprintf("select='not(mod(t,%f))',setpts=N/FRAME_RATE/TB", interval),
 		}).
 		OverWriteOutput().
 		Run()
+	ffmpegMutex.Unlock()
 
 	if err != nil {
 		return nil, fmt.Errorf("extracting frames from video: %w", err)
@@ -127,12 +131,17 @@ func extractFramesAtTimestamps(inputFile string, timestamps []float64) ([]format
 	var frames []format.Image
 	for i, timestamp := range timestamps {
 		outputFile := filepath.Join(outputDir, fmt.Sprintf("frame-%04d.png", i))
+
+		// Protect ffmpeg library calls with mutex to prevent data races
+		// in the library's internal global state initialization
+		ffmpegMutex.Lock()
 		err := ffmpeg.Input(inputFile, ffmpeg.KwArgs{"ss": fmt.Sprintf("%f", timestamp)}).
 			Output(outputFile, ffmpeg.KwArgs{
 				"vframes": 1,
 			}).
 			OverWriteOutput().
 			Run()
+		ffmpegMutex.Unlock()
 
 		if err != nil {
 			return nil, fmt.Errorf("extracting frame at timestamp %f: %w", timestamp, err)

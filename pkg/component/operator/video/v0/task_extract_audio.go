@@ -72,6 +72,9 @@ func extractAudio(ctx context.Context, job *base.Job) error {
 func extractAudioFromVideo(inputFile string) (string, error) {
 	outputFilePath := filepath.Join(os.TempDir(), fmt.Sprintf("audio-%s.ogg", uuid.New().String()))
 
+	// Protect ffmpeg library calls with mutex to prevent data races
+	// in the library's internal global state initialization
+	ffmpegMutex.Lock()
 	err := ffmpeg.Input(inputFile).
 		Output(outputFilePath, ffmpeg.KwArgs{
 			"vn":  "",
@@ -79,6 +82,7 @@ func extractAudioFromVideo(inputFile string) (string, error) {
 		}).
 		OverWriteOutput().
 		Run()
+	ffmpegMutex.Unlock()
 
 	if err != nil {
 		return "", fmt.Errorf("extracting audio from video: %w", err)
