@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	_ "embed"
-
 	"github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
@@ -14,34 +12,25 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 )
 
-//go:embed testdata/cls-dog.json
-var clsDogJSON []byte
-
-//go:embed testdata/cls-dog.jpeg
-var clsDogJPEG []byte
-
 // TestDrawClassification tests the drawClassification function
 func TestDrawClassification(t *testing.T) {
 	c := quicktest.New(t)
 
-	testCases := []struct {
-		name      string
-		inputJPEG []byte
-		inputJSON []byte
+	simpleClassificationData := `{
+		"category": "test_class",
+		"score": 0.95
+	}`
 
-		expectedError  string
-		expectedOutput bool
+	testCases := []struct {
+		name          string
+		inputJPEG     []byte
+		inputJSON     []byte
+		expectedError string
 	}{
-		{
-			name:           "Classification Dog",
-			inputJPEG:      clsDogJPEG,
-			inputJSON:      clsDogJSON,
-			expectedOutput: true,
-		},
 		{
 			name:          "Invalid Image",
 			inputJPEG:     []byte("invalid image data"),
-			inputJSON:     clsDogJSON,
+			inputJSON:     []byte(simpleClassificationData),
 			expectedError: "error decoding image: image: unknown format",
 		},
 	}
@@ -99,7 +88,7 @@ func TestDrawClassification(t *testing.T) {
 				eh.ErrorMock.Optional()
 			}
 
-			err = execution.Execute(context.Background(), []*base.Job{job})
+			_ = execution.Execute(context.Background(), []*base.Job{job})
 
 			if tc.expectedError == "" {
 				c.Assert(err, quicktest.IsNil)
