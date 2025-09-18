@@ -34,12 +34,23 @@ RUN apt update && \
     /opt/venv/bin/pip install pdfplumber mistral-common tokenizers docling==2.18.0 && \
     rm -rf /var/lib/apt/lists/*
 
-# Install FFmpeg Static Build
+# Install FFmpeg Static Build with GitHub fallback
 RUN FFMPEG_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "arm64" || echo "amd64") && \
-    wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-${FFMPEG_ARCH}-static.tar.xz && \
+    (wget --timeout=30 --tries=3 https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-${FFMPEG_ARCH}-static.tar.xz || \
+    (echo "Primary source failed, trying GitHub fallback..." && \
+      if [ "$FFMPEG_ARCH" = "amd64" ]; then \
+          wget https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz -O ffmpeg-release-${FFMPEG_ARCH}-static.tar.xz; \
+      else \
+          wget https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz -O ffmpeg-release-${FFMPEG_ARCH}-static.tar.xz; \
+      fi)) && \
     tar xvf ffmpeg-release-${FFMPEG_ARCH}-static.tar.xz && \
-    mv ffmpeg-*-static/ffmpeg /usr/local/bin/ && \
-    mv ffmpeg-*-static/ffprobe /usr/local/bin/ && \
+    if [ -d ffmpeg-*-static ]; then \
+        mv ffmpeg-*-static/ffmpeg /usr/local/bin/ && \
+        mv ffmpeg-*-static/ffprobe /usr/local/bin/; \
+    else \
+        mv ffmpeg-*/bin/ffmpeg /usr/local/bin/ && \
+        mv ffmpeg-*/bin/ffprobe /usr/local/bin/; \
+    fi && \
     rm -rf ffmpeg-*
 
 # Install ONNX Runtime (latest release)
