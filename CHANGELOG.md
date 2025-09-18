@@ -1,5 +1,48 @@
 # Changelog
 
+## [0.60.0](https://github.com/instill-ai/pipeline-backend/compare/v0.59.2...v0.60.0) (2025-09-18)
+
+
+### Features
+
+* **artifact:** expose chunk file reference in search task ([#1085](https://github.com/instill-ai/pipeline-backend/issues/1085)) ([39bbe95](https://github.com/instill-ai/pipeline-backend/commit/39bbe958ffd792ceed1c8443c14d2e0c7bfd6b71))
+* **component,ai:** add Gemini integration ([#1088](https://github.com/instill-ai/pipeline-backend/issues/1088)) ([cea127a](https://github.com/instill-ai/pipeline-backend/commit/cea127ad207f71e24db5194c4e32592cd87e01eb))
+* **component,cohere:** add rerank indexes in the response ([#1087](https://github.com/instill-ai/pipeline-backend/issues/1087)) ([fe6366a](https://github.com/instill-ai/pipeline-backend/commit/fe6366a14a079920753b7888773198435fea7916))
+
+
+### Bug Fixes
+
+* **compogen:** remove redundant escape characters ([#1089](https://github.com/instill-ai/pipeline-backend/issues/1089)) ([9d21061](https://github.com/instill-ai/pipeline-backend/commit/9d21061e18d17b4544d10c4719feedef9a892a7a))
+* **component,ai,instillmodel:** fix outdated data struct ([#1095](https://github.com/instill-ai/pipeline-backend/issues/1095)) ([c81f59c](https://github.com/instill-ai/pipeline-backend/commit/c81f59ce720950b667de9a1e97c3607362c42c95))
+* **component,ai,instillmodel:** resolve panics and test failures ([#1100](https://github.com/instill-ai/pipeline-backend/issues/1100)) ([34fc930](https://github.com/instill-ai/pipeline-backend/commit/34fc9307fdb08b83b664393d7448b3078d0e60c9))
+* **recipe:** support nil, null, undefined for condition field ([#1091](https://github.com/instill-ai/pipeline-backend/issues/1091)) ([a249070](https://github.com/instill-ai/pipeline-backend/commit/a249070ba2f7a399b3312933072a125987fcbf66))
+* **usage:** treat input rendering error as fatal ([#1098](https://github.com/instill-ai/pipeline-backend/issues/1098)) ([06c8025](https://github.com/instill-ai/pipeline-backend/commit/06c8025ecc35774cf3cc2959546cb42c5c49caab))
+
+
+### Miscellaneous
+
+* **ce:** release v0.60.0 ([#1099](https://github.com/instill-ai/pipeline-backend/issues/1099)) ([09c5c0f](https://github.com/instill-ai/pipeline-backend/commit/09c5c0fa812f9a87c9a8abdc6596f9f3e1effea9))
+* **compogen:** update component document layout ([#1090](https://github.com/instill-ai/pipeline-backend/issues/1090)) ([5613ee3](https://github.com/instill-ai/pipeline-backend/commit/5613ee3a2447170e4ca35ca2462cb58281677a2d))
+* **component,ai:** remove unused files ([#1094](https://github.com/instill-ai/pipeline-backend/issues/1094)) ([11b0f4a](https://github.com/instill-ai/pipeline-backend/commit/11b0f4af3622ff5183b7a372467efbff6b324af6))
+* **component,gemini:** optimize the IO struct ([#1092](https://github.com/instill-ai/pipeline-backend/issues/1092)) ([a0772d2](https://github.com/instill-ai/pipeline-backend/commit/a0772d2b040229b2156c3de54314692f7187534e))
+* **data,component,gemini:** improve error msg ([#1093](https://github.com/instill-ai/pipeline-backend/issues/1093)) ([c2ea248](https://github.com/instill-ai/pipeline-backend/commit/c2ea248920a32b0bbe805e24d304a545b30edc08))
+* **data:** improve unified Instill Type data presentation ([#1078](https://github.com/instill-ai/pipeline-backend/issues/1078)) ([abcccd6](https://github.com/instill-ai/pipeline-backend/commit/abcccd6ed0629d9a9b8c0fa16ba53ed3aea0d866))
+
+
+### Documentation
+
+* **component:** update description format ([#1084](https://github.com/instill-ai/pipeline-backend/issues/1084)) ([faaaed0](https://github.com/instill-ai/pipeline-backend/commit/faaaed0773a20914e43894903da8501449456ee6))
+
+
+### Refactor
+
+* **component,ai,gemini:** enhance document processing with text … ([#1097](https://github.com/instill-ai/pipeline-backend/issues/1097)) ([38639c6](https://github.com/instill-ai/pipeline-backend/commit/38639c6bb767403f094f32ad48f99698e84ff965))
+
+
+### Tests
+
+* **integration:** tinker script ([#1083](https://github.com/instill-ai/pipeline-backend/issues/1083)) ([1712bb6](https://github.com/instill-ai/pipeline-backend/commit/1712bb6cb06f607b1079af258c9313afbd068535))
+
 ## [0.59.2](https://github.com/instill-ai/pipeline-backend/compare/v0.59.1...v0.59.2) (2025-09-09)
 
 
