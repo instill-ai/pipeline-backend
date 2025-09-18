@@ -210,18 +210,16 @@ func GetHeaderAuthorization(vars map[string]any) string {
 	return ""
 }
 func GetInstillUserUID(vars map[string]any) string {
-	if v, ok := vars["__PIPELINE_USER_UID"]; ok {
+	if v, ok := vars["__PIPELINE_USER_UID"]; ok && v != nil {
 		return v.(string)
 	}
-
 	return ""
 }
 
 func GetInstillRequesterUID(vars map[string]any) string {
-	if v, ok := vars["__PIPELINE_REQUESTER_UID"]; ok {
+	if v, ok := vars["__PIPELINE_REQUESTER_UID"]; ok && v != nil {
 		return v.(string)
 	}
-
 	return ""
 }
 
