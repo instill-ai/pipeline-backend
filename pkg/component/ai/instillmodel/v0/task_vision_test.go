@@ -189,7 +189,7 @@ func TestExecuteVisionTask(t *testing.T) {
 
 		result, err := exec.executeVisionTask(mockClient, "test-ns", "test-model", "v1", inputs)
 
-		c.Assert(err, qt.ErrorMatches, "failed to convert input to VisionInput struct.*")
+		c.Assert(err, qt.ErrorMatches, "invalid output.*for model.*")
 		c.Assert(result, qt.IsNil)
 	})
 

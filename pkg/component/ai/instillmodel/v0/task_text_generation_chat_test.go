@@ -62,7 +62,7 @@ func TestExecuteTextGenerationChat(t *testing.T) {
 		textGenChatInput := TextGenerationChatInput{
 			ModelName:     "test-ns/test-model/v1",
 			Prompt:        "Hello, how are you?",
-			PromptImages:  []string{"base64-image-data"},
+			PromptImages:  []string{"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="},
 			SystemMessage: stringPtr("You are a helpful assistant."),
 			MaxNewTokens:  intPtr(100),
 			Temperature:   float32Ptr(0.7),
@@ -203,7 +203,7 @@ func TestExecuteTextGenerationChat(t *testing.T) {
 
 		result, err := exec.executeTextGenerationChat(mockClient, "test-ns", "test-model", "v1", inputs)
 
-		c.Assert(err, qt.ErrorMatches, "failed to convert input to TextGenerationChatInput struct.*")
+		c.Assert(err, qt.ErrorMatches, "invalid output.*for model.*")
 		c.Assert(result, qt.IsNil)
 	})
 }

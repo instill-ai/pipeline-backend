@@ -142,6 +142,10 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 
 	modelNameSplits := strings.Split(inputs[0].GetFields()["model-name"].GetStringValue(), "/")
 
+	if len(modelNameSplits) < 3 {
+		return fmt.Errorf("invalid model name format: expected 'namespace/model/version', got '%s'", inputs[0].GetFields()["model-name"].GetStringValue())
+	}
+
 	nsID := modelNameSplits[0]
 	modelID := modelNameSplits[1]
 	version := modelNameSplits[2]
