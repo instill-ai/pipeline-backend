@@ -35,6 +35,7 @@ func TestExtractAudio(t *testing.T) {
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *qt.C) {
+			c.Parallel()
 			component := Init(base.Component{})
 			c.Assert(component, qt.IsNotNil)
 

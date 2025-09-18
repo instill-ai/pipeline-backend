@@ -37,6 +37,7 @@ func TestEmbedAudio(t *testing.T) {
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *qt.C) {
+			// Note: Removed c.Parallel() to avoid data race in ffmpeg-go library
 			component := Init(base.Component{})
 			c.Assert(component, qt.IsNotNil)
 
