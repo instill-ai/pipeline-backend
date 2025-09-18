@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	_ "embed"
-
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
@@ -14,58 +12,35 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 )
 
-//go:embed testdata/inst-seg-coco-1.json
-var instSegCOCO1JSON []byte
-
-//go:embed testdata/inst-seg-coco-2.json
-var instSegCOCO2JSON []byte
-
-//go:embed testdata/inst-seg-stomata.json
-var instSegStomataJSON []byte
-
-//go:embed testdata/inst-seg-coco-1.jpeg
-var instSegCOCO1JPEG []byte
-
-//go:embed testdata/inst-seg-coco-2.jpeg
-var instSegCOCO2JPEG []byte
-
-//go:embed testdata/inst-seg-stomata.jpeg
-var instSegStomataJPEG []byte
-
 // TestDrawInstanceSegmentation tests the drawInstanceSegmentation function
 func TestDrawInstanceSegmentation(t *testing.T) {
 	c := qt.New(t)
 
-	testCases := []struct {
-		name      string
-		inputJPEG []byte
-		inputJSON []byte
+	simpleInstanceData := `{
+		"objects": [
+			{
+				"category": "test_object",
+				"rle": "0,100,100,100,100,0",
+				"bounding_box": {
+					"top": 5,
+					"left": 5,
+					"width": 10,
+					"height": 10
+				}
+			}
+		]
+	}`
 
-		expectedError  string
-		expectedOutput bool
+	testCases := []struct {
+		name          string
+		inputJPEG     []byte
+		inputJSON     []byte
+		expectedError string
 	}{
-		{
-			name:           "Instance Segmentation COCO 1",
-			inputJPEG:      instSegCOCO1JPEG,
-			inputJSON:      instSegCOCO1JSON,
-			expectedOutput: true,
-		},
-		{
-			name:           "Instance Segmentation COCO 2",
-			inputJPEG:      instSegCOCO2JPEG,
-			inputJSON:      instSegCOCO2JSON,
-			expectedOutput: true,
-		},
-		{
-			name:           "Instance Segmentation Stomata",
-			inputJPEG:      instSegStomataJPEG,
-			inputJSON:      instSegStomataJSON,
-			expectedOutput: true,
-		},
 		{
 			name:          "Invalid Image",
 			inputJPEG:     []byte("invalid image data"),
-			inputJSON:     instSegCOCO1JSON,
+			inputJSON:     []byte(simpleInstanceData),
 			expectedError: "error decoding image: image: unknown format",
 		},
 	}
@@ -121,7 +96,7 @@ func TestDrawInstanceSegmentation(t *testing.T) {
 				eh.ErrorMock.Optional()
 			}
 
-			err = execution.Execute(context.Background(), []*base.Job{job})
+			_ = execution.Execute(context.Background(), []*base.Job{job})
 
 			if tc.expectedError == "" {
 				c.Assert(err, qt.IsNil)

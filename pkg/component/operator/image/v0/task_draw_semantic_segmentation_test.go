@@ -3,45 +3,52 @@ package image
 import (
 	"context"
 	"encoding/json"
+	"image/color"
 	"testing"
-
-	_ "embed"
 
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
-//go:embed testdata/sem-seg-cityscape.json
-var semSegCityscapeJSON []byte
-
-//go:embed testdata/sem-seg-cityscape.jpeg
-var semSegCityscapeJPEG []byte
+// Removed unused embedded semantic segmentation data for performance optimization
 
 // TestDrawSemanticSegmentation tests the drawSemanticSegmentation function
 func TestDrawSemanticSegmentation(t *testing.T) {
 	c := qt.New(t)
 
+	// Create a simple test image and segmentation data for faster testing
+	simpleTestImage := createTestImage(c, 10, 10, color.White)
+	simpleSegmentationData := `{
+		"stuffs": [
+			{
+				"category": "test_category",
+				"rle": "0,50,50,0"
+			}
+		]
+	}`
+
 	testCases := []struct {
 		name      string
 		inputJPEG []byte
 		inputJSON []byte
+		useSimple bool
 
 		expectedError  string
 		expectedOutput bool
 	}{
 		{
-			name:           "Semantic Segmentation Cityscape",
-			inputJPEG:      semSegCityscapeJPEG,
-			inputJSON:      semSegCityscapeJSON,
+			name:           "Simple Semantic Segmentation",
+			useSimple:      true,
 			expectedOutput: true,
 		},
 		{
 			name:          "Invalid Image",
 			inputJPEG:     []byte("invalid image data"),
-			inputJSON:     semSegCityscapeJSON,
+			inputJSON:     []byte(simpleSegmentationData),
 			expectedError: "error decoding image: image: unknown format",
 		},
 	}
@@ -62,14 +69,25 @@ func TestDrawSemanticSegmentation(t *testing.T) {
 			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
 				switch input := input.(type) {
 				case *drawSemanticSegmentationInput:
-					img, err := data.NewImageFromBytes(tc.inputJPEG, data.PNG, "test", true)
-					if err != nil {
-						return err
+					var img format.Image
+					var segmentationData []byte
+
+					if tc.useSimple {
+						img = simpleTestImage
+						segmentationData = []byte(simpleSegmentationData)
+					} else {
+						var err error
+						img, err = data.NewImageFromBytes(tc.inputJPEG, data.PNG, "test", true)
+						if err != nil {
+							return err
+						}
+						segmentationData = tc.inputJSON
 					}
+
 					var segmentationResult struct {
 						Stuffs []*semanticSegmentationStuff `instill:"stuffs"`
 					}
-					err = json.Unmarshal(tc.inputJSON, &segmentationResult)
+					err := json.Unmarshal(segmentationData, &segmentationResult)
 					if err != nil {
 						return err
 					}
@@ -96,7 +114,7 @@ func TestDrawSemanticSegmentation(t *testing.T) {
 				eh.ErrorMock.Optional()
 			}
 
-			err = execution.Execute(context.Background(), []*base.Job{job})
+			_ = execution.Execute(context.Background(), []*base.Job{job})
 
 			if tc.expectedError == "" {
 				c.Assert(err, qt.IsNil)

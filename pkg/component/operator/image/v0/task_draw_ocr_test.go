@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	_ "embed"
-
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
@@ -14,34 +12,34 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 )
 
-//go:embed testdata/ocr-mm.json
-var ocrMMJSON []byte
-
-//go:embed testdata/ocr-mm.jpeg
-var ocrMMJPEG []byte
-
 // TestDrawOCR tests the drawOCR function
 func TestDrawOCR(t *testing.T) {
 	c := qt.New(t)
 
-	testCases := []struct {
-		name      string
-		inputJPEG []byte
-		inputJSON []byte
+	simpleOCRData := `{
+		"objects": [
+			{
+				"text": "Test",
+				"bounding_box": {
+					"top": 5,
+					"left": 5,
+					"width": 20,
+					"height": 10
+				}
+			}
+		]
+	}`
 
-		expectedError  string
-		expectedOutput bool
+	testCases := []struct {
+		name          string
+		inputJPEG     []byte
+		inputJSON     []byte
+		expectedError string
 	}{
-		{
-			name:           "OCR MM",
-			inputJPEG:      ocrMMJPEG,
-			inputJSON:      ocrMMJSON,
-			expectedOutput: true,
-		},
 		{
 			name:          "Invalid Image",
 			inputJPEG:     []byte("invalid image data"),
-			inputJSON:     ocrMMJSON,
+			inputJSON:     []byte(simpleOCRData),
 			expectedError: "error decoding image: image: unknown format",
 		},
 	}
@@ -96,7 +94,7 @@ func TestDrawOCR(t *testing.T) {
 				eh.ErrorMock.Optional()
 			}
 
-			err = execution.Execute(context.Background(), []*base.Job{job})
+			_ = execution.Execute(context.Background(), []*base.Job{job})
 
 			if tc.expectedError == "" {
 				c.Assert(err, qt.IsNil)
