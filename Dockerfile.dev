@@ -1,15 +1,13 @@
 ARG GOLANG_VERSION=1.24.4
-FROM golang:${GOLANG_VERSION}-bullseye
 
-ARG SERVICE_NAME SERVICE_VERSION
+# ================================
+# Stage 1: Base dependencies layer
+# ================================
+FROM golang:${GOLANG_VERSION}-bullseye AS base-deps
 
-WORKDIR /${SERVICE_NAME}
+ARG TARGETOS TARGETARCH
 
-# -- install 3rd-party
-
-ARG TARGETOS TARGETARCH K6_VERSION XK6_VERSION XK6_SQL_VERSION XK6_SQL_POSTGRES_VERSION
-
-# Install Python, create virtual environment, install pdfplumber and Docling
+# Install all system packages in a single layer for better caching
 RUN apt update && \
     apt install -y \
     wget \
@@ -29,20 +27,30 @@ RUN apt update && \
     libreoffice \
     libsoxr-dev \
     chromium \
-    qpdf && \
-    python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers docling==2.18.0 && \
+    qpdf \
+    jq && \
     rm -rf /var/lib/apt/lists/*
 
-# Install FFmpeg Static Build with GitHub fallback
+# Create Python virtual environment and install packages in one layer
+RUN python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install --no-cache-dir pdfplumber mistral-common tokenizers docling==2.18.0
+
+# ===============================
+# Stage 2: Binary dependencies
+# ===============================
+FROM base-deps AS binary-deps
+
+ENV ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime
+
+# Download and install FFmpeg
 RUN FFMPEG_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "arm64" || echo "amd64") && \
     (wget --timeout=30 --tries=3 https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-${FFMPEG_ARCH}-static.tar.xz || \
     (echo "Primary source failed, trying GitHub fallback..." && \
-      if [ "$FFMPEG_ARCH" = "amd64" ]; then \
-          wget https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz -O ffmpeg-release-${FFMPEG_ARCH}-static.tar.xz; \
-      else \
-          wget https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz -O ffmpeg-release-${FFMPEG_ARCH}-static.tar.xz; \
-      fi)) && \
+    if [ "$FFMPEG_ARCH" = "amd64" ]; then \
+        wget https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz -O ffmpeg-release-${FFMPEG_ARCH}-static.tar.xz; \
+    else \
+        wget https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz -O ffmpeg-release-${FFMPEG_ARCH}-static.tar.xz; \
+    fi)) && \
     tar xvf ffmpeg-release-${FFMPEG_ARCH}-static.tar.xz && \
     if [ -d ffmpeg-*-static ]; then \
         mv ffmpeg-*-static/ffmpeg /usr/local/bin/ && \
@@ -53,82 +61,100 @@ RUN FFMPEG_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "arm64" || echo "amd64") &
     fi && \
     rm -rf ffmpeg-*
 
-# Install ONNX Runtime (latest release)
-ENV ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime
-RUN apt update && \
-    apt install -y jq && \
+# Download and install ONNX Runtime
+RUN ONNX_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "aarch64" || echo "x64") && \
     VERSION=v1.20.1 && \
-    ONNX_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "aarch64" || echo "x64") && \
     wget https://github.com/microsoft/onnxruntime/releases/download/${VERSION}/onnxruntime-linux-${ONNX_ARCH}-${VERSION#v}.tgz && \
     tar -xzf onnxruntime-linux-${ONNX_ARCH}-${VERSION#v}.tgz && \
     mv onnxruntime-linux-${ONNX_ARCH}-${VERSION#v} ${ONNXRUNTIME_ROOT_PATH} && \
-    rm onnxruntime-linux-${ONNX_ARCH}-${VERSION#v}.tgz && \
-    apt remove -y jq
+    rm onnxruntime-linux-${ONNX_ARCH}-${VERSION#v}.tgz
 
-# Set environment variables and create symlinks for ONNX Runtime
+# Set environment variables for ONNX Runtime
 ENV C_INCLUDE_PATH=${ONNXRUNTIME_ROOT_PATH}/include
 ENV LD_RUN_PATH=${ONNXRUNTIME_ROOT_PATH}/lib
 ENV LIBRARY_PATH=${ONNXRUNTIME_ROOT_PATH}/lib
 
-# tparse
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/mfridman/tparse@latest
+# ===============================
+# Stage 3: Go dependencies
+# ===============================
+FROM binary-deps AS go-deps
 
-# air
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/cosmtrek/air@v1.49
+ARG SERVICE_NAME SERVICE_VERSION K6_VERSION XK6_VERSION XK6_SQL_VERSION XK6_SQL_POSTGRES_VERSION
 
-# k6
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install go.k6.io/xk6/cmd/xk6@v${XK6_VERSION}
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH xk6 build v${K6_VERSION} \
+WORKDIR /${SERVICE_NAME}
+
+# Copy go.mod and go.sum first for better caching of Go dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Install Go tools with build cache mounts
+RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg \
+    GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/mfridman/tparse@latest && \
+    GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/cosmtrek/air@v1.49 && \
+    GOOS=$TARGETOS GOARCH=$TARGETARCH go install go.k6.io/xk6/cmd/xk6@v${XK6_VERSION}
+
+# Build k6 with extensions - separate layer for better error handling
+RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg \
+    GOOS=$TARGETOS GOARCH=$TARGETARCH /go/bin/xk6 build v${K6_VERSION} \
     --with github.com/grafana/xk6-sql@v${XK6_SQL_VERSION} \
     --with github.com/grafana/xk6-sql-driver-postgres@v${XK6_SQL_POSTGRES_VERSION} \
     --output /usr/bin/k6
 
-# -- set up Go
+# ===============================
+# Stage 4: Model artifacts
+# ===============================
+FROM go-deps AS model-artifacts
 
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . .
-
-RUN chown -R nobody:nogroup /go
-ENV GOCACHE=/go/.cache/go-build
-ENV GOENV=/go/.config/go/env
-
-# Go 1.22 has dropped support for some TLS versions. This configuration is
-# required to restore compatibility with those versions.
-ENV GODEBUG=tlsrsakex=1
-
-# Set up ONNX model and environment variable
-COPY ./pkg/component/resources/onnx/silero_vad.onnx /${SERVICE_NAME}/pkg/component/resources/onnx/silero_vad.onnx
+ENV BASE_DOCLING_PATH=/home/nobody
+ENV DOCLING_ARTIFACTS_PATH=${BASE_DOCLING_PATH}/docling-artifacts
 ENV ONNX_MODEL_FOLDER_PATH=/${SERVICE_NAME}/pkg/component/resources/onnx
 
-# Docling will need a $HOME-prefixed path to write cache files. We'll also put
-# the prefetched model artifacts there.
-ENV BASE_DOCLING_PATH=/home/nobody
-RUN mkdir -p ${BASE_DOCLING_PATH}/.EasyOCR/model && chown -R nobody:nogroup ${BASE_DOCLING_PATH}
-RUN wget https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/latin_g2.zip && \
+# Create necessary directories
+RUN mkdir -p ${BASE_DOCLING_PATH}/.EasyOCR/model && \
+    mkdir -p /${SERVICE_NAME}/pkg/component/resources/onnx && \
+    chown -R nobody:nogroup ${BASE_DOCLING_PATH}
+
+# Download EasyOCR models in parallel and set up Docling artifacts
+RUN wget https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/latin_g2.zip & \
+    wget https://github.com/JaidedAI/EasyOCR/releases/download/pre-v1.1.6/craft_mlt_25k.zip & \
+    wait && \
     unzip latin_g2.zip -d ${BASE_DOCLING_PATH}/.EasyOCR/model/ && \
-    rm latin_g2.zip
-RUN wget https://github.com/JaidedAI/EasyOCR/releases/download/pre-v1.1.6/craft_mlt_25k.zip && \
     unzip craft_mlt_25k.zip -d ${BASE_DOCLING_PATH}/.EasyOCR/model/ && \
-    rm craft_mlt_25k.zip
+    rm latin_g2.zip craft_mlt_25k.zip && \
+    # Download Docling artifacts
+    echo "from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline" > import_artifacts.py && \
+    echo "StandardPdfPipeline.download_models_hf(local_dir='${DOCLING_ARTIFACTS_PATH}')" >> import_artifacts.py && \
+    /opt/venv/bin/python import_artifacts.py && \
+    rm import_artifacts.py
 
-ENV DOCLING_ARTIFACTS_PATH=${BASE_DOCLING_PATH}/docling-artifacts
-RUN echo "from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline" > import_artifacts.py
-RUN echo "StandardPdfPipeline.download_models_hf(local_dir='${DOCLING_ARTIFACTS_PATH}')" >> import_artifacts.py
-RUN /opt/venv/bin/python import_artifacts.py && rm import_artifacts.py
+# ===============================
+# Stage 5: Final development image
+# ===============================
+FROM model-artifacts AS final
 
-# Clean up apt
-RUN apt remove -y wget unzip && \
+# Copy source code (this should be last for optimal caching)
+COPY . .
+
+# Copy ONNX model (this is a small file, so copying late is fine)
+COPY ./pkg/component/resources/onnx/silero_vad.onnx /${SERVICE_NAME}/pkg/component/resources/onnx/silero_vad.onnx
+
+# Final cleanup - remove wget and unzip since they're no longer needed
+RUN apt remove -y wget unzip jq && \
     apt autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
-# USER needs write permissions on the workspace to run the coverage report.
-RUN chown -R nobody:nogroup /${SERVICE_NAME}
+# Set up proper permissions
+RUN chown -R nobody:nogroup /go && \
+    chown -R nobody:nogroup /${SERVICE_NAME}
 
-USER nobody:nogroup
+# Set environment variables
+ENV GOCACHE=/go/.cache/go-build
+ENV GOENV=/go/.config/go/env
+ENV GODEBUG=tlsrsakex=1
 ENV HOME=${BASE_DOCLING_PATH}
-
 ENV SERVICE_NAME=${SERVICE_NAME}
 ENV SERVICE_VERSION=${SERVICE_VERSION}
+
+USER nobody:nogroup
 
 ENTRYPOINT ["tail", "-f", "/dev/null"]
