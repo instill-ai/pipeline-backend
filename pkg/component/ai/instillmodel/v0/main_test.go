@@ -145,7 +145,7 @@ func TestExecution_Execute(t *testing.T) {
 
 		// Create mock job
 		input, _ := structpb.NewStruct(map[string]any{
-			"model-name": "test-model",
+			"model-name": "namespace/test-model/v0.1.0",
 			"prompt":     "test prompt",
 		})
 
