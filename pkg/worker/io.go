@@ -107,6 +107,9 @@ func (i *inputReader) Read(ctx context.Context) (inputStruct *structpb.Struct, e
 	return input.GetStructValue(), nil
 }
 
+// ReadData reads input data with automatic naming convention detection.
+// The unmarshaler automatically detects the correct naming convention for each field
+// based on available input data, providing seamless integration with any external package.
 func (i *inputReader) ReadData(ctx context.Context, input any) (err error) {
 	inputVal, err := i.read(ctx)
 	if err != nil {

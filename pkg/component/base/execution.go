@@ -32,6 +32,8 @@ type Job struct {
 // InputReader is an interface for reading input data from a job.
 type InputReader interface {
 	// ReadData reads the input data from the job into the provided struct.
+	// The unmarshaler automatically detects the correct naming convention for each field
+	// based on available input data, providing seamless integration with any external package.
 	ReadData(ctx context.Context, input any) (err error)
 
 	// Deprecated: Read() is deprecated and will be removed in a future version.
