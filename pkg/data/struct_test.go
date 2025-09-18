@@ -440,6 +440,173 @@ func TestUnmarshal(t *testing.T) {
 		c.Assert(result.BaseField.String(), qt.Equals, "base value")
 		c.Assert(result.ExtraField.Float64(), qt.Equals, 123.0)
 	})
+
+	// Test camelCase field name extraction
+	c.Run("CamelCase field name extraction", func(c *qt.C) {
+		// Test struct that mimics external package types with json tags
+		type ExternalType struct {
+			MIMEType    string `json:"mimeType"`
+			FileURI     string `json:"fileUri"`
+			DisplayName string `json:"displayName"`
+			WithInstill string `instill:"custom-field-name" json:"jsonFieldName"`
+			PlainField  string
+		}
+
+		inputData := Map{
+			"mime-type":         NewString("application/pdf"),
+			"file-uri":          NewString("gs://bucket/file.pdf"),
+			"display-name":      NewString("document.pdf"),
+			"custom-field-name": NewString("instill-value"), // Should match instill tag
+			"PlainField":        NewString("plain-value"),   // No tag, uses field name
+		}
+
+		// Test with automatic detection (now default behavior)
+		unmarshalerWithCamelCase := NewUnmarshaler(binaryFetcher)
+		var resultWithCamelCase ExternalType
+		err := unmarshalerWithCamelCase.Unmarshal(context.Background(), inputData, &resultWithCamelCase)
+		c.Assert(err, qt.IsNil)
+
+		// Verify kebab-case → camelCase mapping worked
+		c.Check(resultWithCamelCase.MIMEType, qt.Equals, "application/pdf")
+		c.Check(resultWithCamelCase.FileURI, qt.Equals, "gs://bucket/file.pdf")
+		c.Check(resultWithCamelCase.DisplayName, qt.Equals, "document.pdf")
+		// Verify instill tag takes precedence over json tag
+		c.Check(resultWithCamelCase.WithInstill, qt.Equals, "instill-value")
+		c.Check(resultWithCamelCase.PlainField, qt.Equals, "plain-value")
+
+		// Test with automatic detection (now default behavior)
+		unmarshalerDefault := NewUnmarshaler(binaryFetcher)
+		var resultDefault ExternalType
+		err = unmarshalerDefault.Unmarshal(context.Background(), inputData, &resultDefault)
+		c.Assert(err, qt.IsNil)
+
+		// With automatic detection, camelCase json tags are now automatically converted
+		c.Check(resultDefault.MIMEType, qt.Equals, "application/pdf")     // Automatic kebab-case → camelCase mapping
+		c.Check(resultDefault.FileURI, qt.Equals, "gs://bucket/file.pdf") // Automatic kebab-case → camelCase mapping
+		c.Check(resultDefault.DisplayName, qt.Equals, "document.pdf")     // Automatic kebab-case → camelCase mapping
+		c.Check(resultDefault.WithInstill, qt.Equals, "instill-value")    // instill tag still takes precedence
+		c.Check(resultDefault.PlainField, qt.Equals, "plain-value")       // Field name match
+	})
+
+	c.Run("CamelCase with complex nested structures", func(c *qt.C) {
+		type NestedType struct {
+			InnerField string `json:"innerField"`
+			DataCount  int    `json:"dataCount"`
+		}
+
+		type ComplexType struct {
+			TopLevel    string                `json:"topLevel"`
+			NestedArray []NestedType          `json:"nestedArray"`
+			ConfigMap   map[string]NestedType `json:"configMap"`
+		}
+
+		inputData := Map{
+			"top-level": NewString("top-value"),
+			"nested-array": Array{
+				Map{
+					"inner-field": NewString("nested1"),
+					"data-count":  NewNumberFromInteger(10),
+				},
+				Map{
+					"inner-field": NewString("nested2"),
+					"data-count":  NewNumberFromInteger(20),
+				},
+			},
+			"config-map": Map{
+				"key1": Map{
+					"inner-field": NewString("config1"),
+					"data-count":  NewNumberFromInteger(100),
+				},
+			},
+		}
+
+		unmarshaler := NewUnmarshaler(binaryFetcher)
+		var result ComplexType
+		err := unmarshaler.Unmarshal(context.Background(), inputData, &result)
+		c.Assert(err, qt.IsNil)
+
+		// Verify top-level camelCase conversion
+		c.Check(result.TopLevel, qt.Equals, "top-value")
+
+		// Verify nested array camelCase conversion
+		c.Assert(result.NestedArray, qt.HasLen, 2)
+		c.Check(result.NestedArray[0].InnerField, qt.Equals, "nested1")
+		c.Check(result.NestedArray[0].DataCount, qt.Equals, 10)
+		c.Check(result.NestedArray[1].InnerField, qt.Equals, "nested2")
+		c.Check(result.NestedArray[1].DataCount, qt.Equals, 20)
+
+		// Verify nested map camelCase conversion
+		c.Assert(result.ConfigMap, qt.HasLen, 1)
+		c.Check(result.ConfigMap["key1"].InnerField, qt.Equals, "config1")
+		c.Check(result.ConfigMap["key1"].DataCount, qt.Equals, 100)
+	})
+
+	c.Run("SnakeCase field name extraction", func(c *qt.C) {
+		// Test struct that mimics external package types with snake_case json tags
+		type SnakeType struct {
+			MIMEType    string `json:"mime_type"`
+			FileURI     string `json:"file_uri"`
+			DisplayName string `json:"display_name"`
+			WithInstill string `instill:"custom-field-name" json:"json_field_name"`
+			PlainField  string
+		}
+
+		inputData := Map{
+			"mime-type":         NewString("application/json"),
+			"file-uri":          NewString("gs://bucket/data.json"),
+			"display-name":      NewString("data.json"),
+			"custom-field-name": NewString("instill-value"), // Should match instill tag
+			"PlainField":        NewString("plain-value"),   // No tag, uses field name
+		}
+
+		// Test with automatic detection (now default behavior)
+		unmarshalerWithSnakeCase := NewUnmarshaler(binaryFetcher)
+		var resultWithSnakeCase SnakeType
+		err := unmarshalerWithSnakeCase.Unmarshal(context.Background(), inputData, &resultWithSnakeCase)
+		c.Assert(err, qt.IsNil)
+
+		// Verify kebab-case → snake_case mapping worked
+		c.Check(resultWithSnakeCase.MIMEType, qt.Equals, "application/json")
+		c.Check(resultWithSnakeCase.FileURI, qt.Equals, "gs://bucket/data.json")
+		c.Check(resultWithSnakeCase.DisplayName, qt.Equals, "data.json")
+		// Verify instill tag takes precedence over json tag
+		c.Check(resultWithSnakeCase.WithInstill, qt.Equals, "instill-value")
+		c.Check(resultWithSnakeCase.PlainField, qt.Equals, "plain-value")
+	})
+
+	c.Run("PascalCase field name extraction", func(c *qt.C) {
+		// Test struct that mimics external package types with PascalCase json tags
+		type PascalType struct {
+			MIMEType    string `json:"MimeType"`
+			FileURI     string `json:"FileUri"`
+			DisplayName string `json:"DisplayName"`
+			WithInstill string `instill:"custom-field-name" json:"JsonFieldName"`
+			PlainField  string
+		}
+
+		inputData := Map{
+			"mime-type":         NewString("text/plain"),
+			"file-uri":          NewString("gs://bucket/file.txt"),
+			"display-name":      NewString("file.txt"),
+			"custom-field-name": NewString("instill-value"), // Should match instill tag
+			"PlainField":        NewString("plain-value"),   // No tag, uses field name
+		}
+
+		// Test with automatic detection (now default behavior)
+		unmarshalerWithPascalCase := NewUnmarshaler(binaryFetcher)
+		var resultWithPascalCase PascalType
+		err := unmarshalerWithPascalCase.Unmarshal(context.Background(), inputData, &resultWithPascalCase)
+		c.Assert(err, qt.IsNil)
+
+		// Verify kebab-case → PascalCase mapping worked
+		c.Check(resultWithPascalCase.MIMEType, qt.Equals, "text/plain")
+		c.Check(resultWithPascalCase.FileURI, qt.Equals, "gs://bucket/file.txt")
+		c.Check(resultWithPascalCase.DisplayName, qt.Equals, "file.txt")
+		// Verify instill tag takes precedence over json tag
+		c.Check(resultWithPascalCase.WithInstill, qt.Equals, "instill-value")
+		c.Check(resultWithPascalCase.PlainField, qt.Equals, "plain-value")
+	})
+
 }
 
 func TestMarshal(t *testing.T) {
@@ -749,4 +916,236 @@ func TestMarshal(t *testing.T) {
 		c.Assert(ok, qt.IsTrue)
 		c.Assert(extraField.Float64(), qt.Equals, 123.0)
 	})
+
+	c.Run("JSON tag automatic naming convention", func(c *qt.C) {
+		type ExternalType struct {
+			MIMEType    string `json:"mimeType"`
+			FileURI     string `json:"fileUri"`
+			DisplayName string `json:"displayName"`
+			WithInstill string `instill:"custom-field-name" json:"jsonFieldName"`
+			PlainField  string
+		}
+
+		input := ExternalType{
+			MIMEType:    "application/pdf",
+			FileURI:     "gs://bucket/file.pdf",
+			DisplayName: "document.pdf",
+			WithInstill: "instill-value",
+			PlainField:  "plain-value",
+		}
+
+		marshaler := NewMarshaler()
+		result, err := marshaler.Marshal(input)
+		c.Assert(err, qt.IsNil)
+
+		resultMap, ok := result.(Map)
+		c.Assert(ok, qt.IsTrue)
+
+		// Verify json tags are converted to kebab-case
+		c.Check(resultMap["mime-type"].(format.String).String(), qt.Equals, "application/pdf")
+		c.Check(resultMap["file-uri"].(format.String).String(), qt.Equals, "gs://bucket/file.pdf")
+		c.Check(resultMap["display-name"].(format.String).String(), qt.Equals, "document.pdf")
+
+		// Verify instill tag takes precedence over json tag
+		c.Check(resultMap["custom-field-name"].(format.String).String(), qt.Equals, "instill-value")
+
+		// Verify field name is used when no tag is present
+		c.Check(resultMap["PlainField"].(format.String).String(), qt.Equals, "plain-value")
+	})
+
+	c.Run("JSON tag naming conventions - snake_case and PascalCase", func(c *qt.C) {
+		type MixedNamingType struct {
+			CamelCaseField  string `json:"camelCaseField"`
+			SnakeCaseField  string `json:"snake_case_field"`
+			PascalCaseField string `json:"PascalCaseField"`
+			WithInstill     string `instill:"custom-field-name" json:"anyJsonName"`
+			NoTag           string
+		}
+
+		input := MixedNamingType{
+			CamelCaseField:  "camel-value",
+			SnakeCaseField:  "snake-value",
+			PascalCaseField: "pascal-value",
+			WithInstill:     "instill-value",
+			NoTag:           "no-tag-value",
+		}
+
+		marshaler := NewMarshaler()
+		result, err := marshaler.Marshal(input)
+		c.Assert(err, qt.IsNil)
+
+		resultMap, ok := result.(Map)
+		c.Assert(ok, qt.IsTrue)
+
+		// Verify all json tags are converted to kebab-case
+		c.Check(resultMap["camel-case-field"].(format.String).String(), qt.Equals, "camel-value")
+		c.Check(resultMap["snake-case-field"].(format.String).String(), qt.Equals, "snake-value")
+		c.Check(resultMap["pascal-case-field"].(format.String).String(), qt.Equals, "pascal-value")
+
+		// Verify instill tag takes precedence
+		c.Check(resultMap["custom-field-name"].(format.String).String(), qt.Equals, "instill-value")
+
+		// Verify field name is used when no tag is present
+		c.Check(resultMap["NoTag"].(format.String).String(), qt.Equals, "no-tag-value")
+	})
+
+	c.Run("Round-trip marshaling and unmarshaling with JSON tags", func(c *qt.C) {
+		type ExternalType struct {
+			MIMEType    string `json:"mimeType"`
+			FileURI     string `json:"fileUri"`
+			DisplayName string `json:"displayName"`
+			WithInstill string `instill:"custom-field-name" json:"jsonFieldName"`
+			PlainField  string
+		}
+
+		original := ExternalType{
+			MIMEType:    "application/pdf",
+			FileURI:     "gs://bucket/file.pdf",
+			DisplayName: "document.pdf",
+			WithInstill: "instill-value",
+			PlainField:  "plain-value",
+		}
+
+		// Marshal to Map
+		marshaler := NewMarshaler()
+		marshaled, err := marshaler.Marshal(original)
+		c.Assert(err, qt.IsNil)
+
+		// Unmarshal back to struct
+		binaryFetcher := external.NewBinaryFetcher()
+		unmarshaler := NewUnmarshaler(binaryFetcher)
+		var unmarshaled ExternalType
+		err = unmarshaler.Unmarshal(context.Background(), marshaled, &unmarshaled)
+		c.Assert(err, qt.IsNil)
+
+		// Verify round-trip preserves all values
+		c.Check(unmarshaled.MIMEType, qt.Equals, original.MIMEType)
+		c.Check(unmarshaled.FileURI, qt.Equals, original.FileURI)
+		c.Check(unmarshaled.DisplayName, qt.Equals, original.DisplayName)
+		c.Check(unmarshaled.WithInstill, qt.Equals, original.WithInstill)
+		c.Check(unmarshaled.PlainField, qt.Equals, original.PlainField)
+	})
+}
+
+// Benchmark tests to demonstrate caching performance improvements
+func BenchmarkUnmarshalWithCache(b *testing.B) {
+	type ExternalType struct {
+		MIMEType    string `json:"mimeType"`
+		FileURI     string `json:"fileUri"`
+		DisplayName string `json:"displayName"`
+		WithInstill string `instill:"custom-field-name" json:"jsonFieldName"`
+		PlainField  string
+	}
+
+	inputData := Map{
+		"mime-type":         NewString("application/pdf"),
+		"file-uri":          NewString("gs://bucket/file.pdf"),
+		"display-name":      NewString("document.pdf"),
+		"custom-field-name": NewString("instill-value"),
+		"PlainField":        NewString("plain-value"),
+	}
+
+	binaryFetcher := external.NewBinaryFetcher()
+	unmarshaler := NewUnmarshaler(binaryFetcher)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var result ExternalType
+		err := unmarshaler.Unmarshal(context.Background(), inputData, &result)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkMarshalWithCache(b *testing.B) {
+	type ExternalType struct {
+		MIMEType    string `json:"mimeType"`
+		FileURI     string `json:"fileUri"`
+		DisplayName string `json:"displayName"`
+		WithInstill string `instill:"custom-field-name" json:"jsonFieldName"`
+		PlainField  string
+	}
+
+	input := ExternalType{
+		MIMEType:    "application/pdf",
+		FileURI:     "gs://bucket/file.pdf",
+		DisplayName: "document.pdf",
+		WithInstill: "instill-value",
+		PlainField:  "plain-value",
+	}
+
+	marshaler := NewMarshaler()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := marshaler.Marshal(input)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkUnmarshalWithoutCache(b *testing.B) {
+	type ExternalType struct {
+		MIMEType    string `json:"mimeType"`
+		FileURI     string `json:"fileUri"`
+		DisplayName string `json:"displayName"`
+		WithInstill string `instill:"custom-field-name" json:"jsonFieldName"`
+		PlainField  string
+	}
+
+	inputData := Map{
+		"mime-type":         NewString("application/pdf"),
+		"file-uri":          NewString("gs://bucket/file.pdf"),
+		"display-name":      NewString("document.pdf"),
+		"custom-field-name": NewString("instill-value"),
+		"PlainField":        NewString("plain-value"),
+	}
+
+	binaryFetcher := external.NewBinaryFetcher()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		// Create new unmarshaler each time to avoid caching
+		unmarshaler := &Unmarshaler{
+			binaryFetcher: binaryFetcher,
+			fieldCache:    nil, // No cache
+		}
+		var result ExternalType
+		err := unmarshaler.Unmarshal(context.Background(), inputData, &result)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkMarshalWithoutCache(b *testing.B) {
+	type ExternalType struct {
+		MIMEType    string `json:"mimeType"`
+		FileURI     string `json:"fileUri"`
+		DisplayName string `json:"displayName"`
+		WithInstill string `instill:"custom-field-name" json:"jsonFieldName"`
+		PlainField  string
+	}
+
+	input := ExternalType{
+		MIMEType:    "application/pdf",
+		FileURI:     "gs://bucket/file.pdf",
+		DisplayName: "document.pdf",
+		WithInstill: "instill-value",
+		PlainField:  "plain-value",
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		// Create new marshaler each time to avoid caching
+		marshaler := &Marshaler{
+			fieldCache: nil, // No cache
+		}
+		_, err := marshaler.Marshal(input)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
 }
