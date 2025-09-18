@@ -541,14 +541,13 @@ func buildReqParts(in TaskChatInput) ([]genai.Part, error) {
 			}
 		} else if isTextBasedDocument(contentType) {
 			// Text-based documents (TXT, Markdown, HTML, XML, etc.)
-			// These are processed as pure text content - visual formatting is lost
-			// The model won't see HTML tags, Markdown formatting, etc.
-			textContent, err := doc.Text()
+			// Pass as base64 like PDFs for consistent handling
+			docBase64, err := doc.Base64()
 			if err != nil {
-				return nil, fmt.Errorf("failed to extract text from document: %w", err)
+				return nil, err
 			}
-			if textContent.String() != "" {
-				parts = append(parts, genai.Part{Text: textContent.String()})
+			if p := newURIOrDataPart(docBase64.String(), detectMIMEFromPath(docBase64.String(), contentType)); p != nil {
+				parts = append(parts, *p)
 			}
 		} else if isConvertibleToPDF(contentType) {
 			// Office documents (DOC, DOCX, PPT, PPTX, XLS, XLSX)
