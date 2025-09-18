@@ -198,6 +198,7 @@ func StripProtocolFromURL(url string) string {
 	if index > 0 {
 		return url[strings.Index(url, "://")+3:]
 	}
+
 	return url
 }
 
@@ -205,20 +206,30 @@ func GetHeaderAuthorization(vars map[string]any) string {
 	if v, ok := vars["__PIPELINE_HEADER_AUTHORIZATION"]; ok {
 		return v.(string)
 	}
+
 	return ""
 }
 func GetInstillUserUID(vars map[string]any) string {
-	return vars["__PIPELINE_USER_UID"].(string)
+	if v, ok := vars["__PIPELINE_USER_UID"]; ok {
+		return v.(string)
+	}
+
+	return ""
 }
 
 func GetInstillRequesterUID(vars map[string]any) string {
-	return vars["__PIPELINE_REQUESTER_UID"].(string)
+	if v, ok := vars["__PIPELINE_REQUESTER_UID"]; ok {
+		return v.(string)
+	}
+
+	return ""
 }
 
 func GetOriginalHeader(vars map[string]any) map[string]any {
 	if v, ok := vars["__ORIGINAL_HEADER"]; ok {
 		return v.(map[string]any)
 	}
+
 	return nil
 }
 

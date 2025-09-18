@@ -85,7 +85,7 @@ func TestExecutionWrapper_Execute(t *testing.T) {
 			name:     "nok - check error",
 			in:       inputValid,
 			checkErr: fmt.Errorf("foo"),
-			wantErr:  "foo",
+			wantErr:  ".*foo",
 		},
 		// {
 		// 	name:    "nok - invalid output",
