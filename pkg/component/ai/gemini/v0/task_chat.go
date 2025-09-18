@@ -24,37 +24,63 @@ func (e *execution) chat(ctx context.Context, job *base.Job) error {
 	}
 
 	// Create Gemini client
-	apiKey := e.Setup.GetFields()[cfgAPIKey].GetStringValue()
-	client, err := genai.NewClient(ctx, &genai.ClientConfig{APIKey: apiKey, Backend: genai.BackendGeminiAPI})
+	client, err := e.createGeminiClient(ctx)
 	if err != nil {
 		job.Error.Error(ctx, err)
 		return nil
 	}
 
-	// Handle system message/instruction - prioritize system-message over system-instruction
-	var systemMessage string
+	// Prepare request components
+	systemMessage := extractSystemMessage(in)
+	cfg := buildGenerateContentConfig(in, systemMessage)
+	contents, err := e.buildRequestContents(in)
+	if err != nil {
+		job.Error.Error(ctx, err)
+		return nil
+	}
+	if len(contents) == 0 {
+		return nil
+	}
+
+	// Execute request (streaming or non-streaming)
+	streamEnabled := in.Stream != nil && *in.Stream
+	if streamEnabled {
+		return e.handleStreamingRequest(ctx, job, client, in.Model, contents, cfg)
+	} else {
+		return e.handleNonStreamingRequest(ctx, job, client, in.Model, contents, cfg)
+	}
+}
+
+// createGeminiClient creates a new Gemini API client
+func (e *execution) createGeminiClient(ctx context.Context) (*genai.Client, error) {
+	apiKey := e.Setup.GetFields()[cfgAPIKey].GetStringValue()
+	return genai.NewClient(ctx, &genai.ClientConfig{APIKey: apiKey, Backend: genai.BackendGeminiAPI})
+}
+
+// extractSystemMessage extracts system message from input, prioritizing system-message over system-instruction
+func extractSystemMessage(in TaskChatInput) string {
 	if in.SystemMessage != nil && *in.SystemMessage != "" {
-		systemMessage = *in.SystemMessage
-	} else if in.SystemInstruction != nil && len(in.SystemInstruction.Parts) > 0 {
+		return *in.SystemMessage
+	}
+	if in.SystemInstruction != nil && len(in.SystemInstruction.Parts) > 0 {
 		for _, p := range in.SystemInstruction.Parts {
-			if p.Text != nil && *p.Text != "" {
-				systemMessage = *p.Text
-				break
+			if p.Text != "" {
+				return p.Text
 			}
 		}
 	}
+	return ""
+}
 
-	// Build generation config
-	cfg := buildGenerateContentConfig(in, systemMessage)
-
+// buildRequestContents builds the complete request contents from input (history + current message)
+func (e *execution) buildRequestContents(in TaskChatInput) ([]*genai.Content, error) {
 	// Build user parts (prompt/contents + images + documents)
 	inParts, err := buildReqParts(in)
 	if err != nil {
-		job.Error.Error(ctx, err)
-		return nil
+		return nil, err
 	}
 	if len(inParts) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	// Merge chat history and current message into contents
@@ -62,19 +88,13 @@ func (e *execution) chat(ctx context.Context, job *base.Job) error {
 	if len(in.ChatHistory) > 0 {
 		for _, h := range in.ChatHistory {
 			role := genai.RoleUser
-			if h.Role != nil && *h.Role == "model" {
+			if h.Role == "model" {
 				role = genai.RoleModel
 			}
-			ps := buildParts(h.Parts)
-			if len(ps) == 0 {
+			if len(h.Parts) == 0 {
 				continue
 			}
-			partsPtrs := make([]*genai.Part, 0, len(ps))
-			for i := range ps {
-				p := ps[i]
-				partsPtrs = append(partsPtrs, &p)
-			}
-			contents = append(contents, &genai.Content{Role: role, Parts: partsPtrs})
+			contents = append(contents, &genai.Content{Role: role, Parts: h.Parts})
 		}
 	}
 
@@ -86,56 +106,249 @@ func (e *execution) chat(ctx context.Context, job *base.Job) error {
 	}
 	contents = append(contents, &genai.Content{Role: genai.RoleUser, Parts: partsPtrs})
 
-	// Send message (merged history + current)
-	var resp *genai.GenerateContentResponse
-	streamEnabled := in.Stream != nil && *in.Stream
-	if streamEnabled {
-		texts := make([]string, 0)
-		for r, err := range client.Models.GenerateContentStream(ctx, in.Model, contents, cfg) {
-			if err != nil {
-				job.Error.Error(ctx, err)
-				return nil
-			}
-			if r != nil && len(r.Candidates) > 0 {
-				for len(texts) < len(r.Candidates) {
-					texts = append(texts, "")
-				}
-				for i, c := range r.Candidates {
-					if c.Content != nil {
-						for _, p := range c.Content.Parts {
-							if p != nil && p.Text != "" {
-								texts[i] += p.Text
-							}
-						}
-					}
-				}
-			}
-			// incremental flush
-			if err := job.Output.WriteData(ctx, TaskChatOutput{Texts: texts, Usage: map[string]any{}, Candidates: []candidate{}, UsageMetadata: usageMetadata{}, PromptFeedback: promptFeedback{}}); err != nil {
-				job.Error.Error(ctx, err)
-				return nil
-			}
-			resp = r
-		}
-		finalOut := renderFinal(resp, texts)
-		if err := job.Output.WriteData(ctx, finalOut); err != nil {
-			job.Error.Error(ctx, err)
-			return nil
-		}
-	} else {
-		res, err := client.Models.GenerateContent(ctx, in.Model, contents, cfg)
+	return contents, nil
+}
+
+// handleStreamingRequest processes streaming requests
+func (e *execution) handleStreamingRequest(ctx context.Context, job *base.Job, client *genai.Client, model string, contents []*genai.Content, cfg *genai.GenerateContentConfig) error {
+	texts := make([]string, 0)
+	var finalResp *genai.GenerateContentResponse
+
+	for r, err := range client.Models.GenerateContentStream(ctx, model, contents, cfg) {
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return nil
 		}
-		resp = res
-		finalOut := renderFinal(resp, nil)
-		if err := job.Output.WriteData(ctx, finalOut); err != nil {
+
+		// Accumulate text from candidates
+		e.accumulateTexts(r, &texts)
+
+		// Merge response chunks
+		e.mergeResponseChunk(r, &finalResp)
+
+		// Stream incremental output
+		streamOutput := e.buildStreamOutput(texts, finalResp)
+		if err := job.Output.WriteData(ctx, streamOutput); err != nil {
 			job.Error.Error(ctx, err)
 			return nil
 		}
 	}
+
+	// Send final output
+	finalOut := renderFinal(finalResp, nil)
+	if err := job.Output.WriteData(ctx, finalOut); err != nil {
+		job.Error.Error(ctx, err)
+		return nil
+	}
 	return nil
+}
+
+// handleNonStreamingRequest processes non-streaming requests
+func (e *execution) handleNonStreamingRequest(ctx context.Context, job *base.Job, client *genai.Client, model string, contents []*genai.Content, cfg *genai.GenerateContentConfig) error {
+	resp, err := client.Models.GenerateContent(ctx, model, contents, cfg)
+	if err != nil {
+		job.Error.Error(ctx, err)
+		return nil
+	}
+
+	finalOut := renderFinal(resp, nil)
+	if err := job.Output.WriteData(ctx, finalOut); err != nil {
+		job.Error.Error(ctx, err)
+		return nil
+	}
+	return nil
+}
+
+// accumulateTexts accumulates text content from streaming response chunks
+func (e *execution) accumulateTexts(r *genai.GenerateContentResponse, texts *[]string) {
+	if r != nil && len(r.Candidates) > 0 {
+		// Ensure texts slice has enough capacity
+		for len(*texts) < len(r.Candidates) {
+			*texts = append(*texts, "")
+		}
+		// Accumulate text from each candidate
+		for i, c := range r.Candidates {
+			if c.Content != nil {
+				for _, p := range c.Content.Parts {
+					if p != nil && p.Text != "" {
+						(*texts)[i] += p.Text
+					}
+				}
+			}
+		}
+	}
+}
+
+// mergeResponseChunk merges streaming response chunks into a final response
+func (e *execution) mergeResponseChunk(r *genai.GenerateContentResponse, finalResp **genai.GenerateContentResponse) {
+	if r == nil {
+		return
+	}
+
+	if *finalResp == nil {
+		// Initialize with first chunk
+		*finalResp = &genai.GenerateContentResponse{
+			ModelVersion:   r.ModelVersion,
+			ResponseID:     r.ResponseID,
+			UsageMetadata:  r.UsageMetadata,
+			PromptFeedback: r.PromptFeedback,
+			Candidates:     make([]*genai.Candidate, len(r.Candidates)),
+		}
+		// Deep copy candidates
+		for i, c := range r.Candidates {
+			if c != nil {
+				(*finalResp).Candidates[i] = &genai.Candidate{
+					Index:              c.Index,
+					SafetyRatings:      c.SafetyRatings,
+					FinishReason:       c.FinishReason,
+					CitationMetadata:   c.CitationMetadata,
+					TokenCount:         c.TokenCount,
+					LogprobsResult:     c.LogprobsResult,
+					AvgLogprobs:        c.AvgLogprobs,
+					URLContextMetadata: c.URLContextMetadata,
+					GroundingMetadata:  c.GroundingMetadata,
+					Content:            &genai.Content{Role: c.Content.Role, Parts: []*genai.Part{}},
+				}
+				// Copy parts
+				if c.Content != nil {
+					for _, p := range c.Content.Parts {
+						if p != nil {
+							(*finalResp).Candidates[i].Content.Parts = append((*finalResp).Candidates[i].Content.Parts, p)
+						}
+					}
+				}
+			}
+		}
+	} else {
+		// Merge subsequent chunks - append parts to existing candidates
+		for i, c := range r.Candidates {
+			if c != nil && i < len((*finalResp).Candidates) && (*finalResp).Candidates[i] != nil {
+				// Update metadata from latest chunk
+				(*finalResp).Candidates[i].FinishReason = c.FinishReason
+				(*finalResp).Candidates[i].TokenCount = c.TokenCount
+				(*finalResp).Candidates[i].AvgLogprobs = c.AvgLogprobs
+				if c.SafetyRatings != nil {
+					(*finalResp).Candidates[i].SafetyRatings = c.SafetyRatings
+				}
+				if c.CitationMetadata != nil {
+					(*finalResp).Candidates[i].CitationMetadata = c.CitationMetadata
+				}
+				if c.LogprobsResult != nil {
+					(*finalResp).Candidates[i].LogprobsResult = c.LogprobsResult
+				}
+				if c.URLContextMetadata != nil {
+					(*finalResp).Candidates[i].URLContextMetadata = c.URLContextMetadata
+				}
+				if c.GroundingMetadata != nil {
+					(*finalResp).Candidates[i].GroundingMetadata = c.GroundingMetadata
+				}
+
+				// Append new parts
+				if c.Content != nil {
+					for _, p := range c.Content.Parts {
+						if p != nil {
+							(*finalResp).Candidates[i].Content.Parts = append((*finalResp).Candidates[i].Content.Parts, p)
+						}
+					}
+				}
+			}
+		}
+		// Update response-level metadata from latest chunk
+		if r.UsageMetadata != nil {
+			(*finalResp).UsageMetadata = r.UsageMetadata
+		}
+		if r.PromptFeedback != nil {
+			(*finalResp).PromptFeedback = r.PromptFeedback
+		}
+	}
+}
+
+// buildStreamOutput creates streaming output with all available fields
+func (e *execution) buildStreamOutput(texts []string, finalResp *genai.GenerateContentResponse) TaskChatOutput {
+	streamOutput := TaskChatOutput{
+		Texts:          texts,
+		Usage:          map[string]any{},
+		Candidates:     []*genai.Candidate{},
+		UsageMetadata:  nil,
+		PromptFeedback: nil,
+		ModelVersion:   nil,
+		ResponseID:     nil,
+	}
+
+	if finalResp != nil {
+		streamOutput.Candidates = finalResp.Candidates
+		streamOutput.UsageMetadata = finalResp.UsageMetadata
+		streamOutput.PromptFeedback = finalResp.PromptFeedback
+		if finalResp.ModelVersion != "" {
+			mv := finalResp.ModelVersion
+			streamOutput.ModelVersion = &mv
+		}
+		if finalResp.ResponseID != "" {
+			ri := finalResp.ResponseID
+			streamOutput.ResponseID = &ri
+		}
+
+		// Build usage map from UsageMetadata if available
+		if finalResp.UsageMetadata != nil {
+			streamOutput.Usage = buildUsageMap(finalResp.UsageMetadata)
+		}
+	}
+
+	return streamOutput
+}
+
+// buildUsageMap creates a usage map from UsageMetadata with kebab-case keys
+func buildUsageMap(metadata *genai.GenerateContentResponseUsageMetadata) map[string]any {
+	usage := make(map[string]any)
+	usage["prompt-token-count"] = metadata.PromptTokenCount
+	usage["cached-content-token-count"] = metadata.CachedContentTokenCount
+	usage["candidates-token-count"] = metadata.CandidatesTokenCount
+	usage["total-token-count"] = metadata.TotalTokenCount
+	usage["tool-use-prompt-token-count"] = metadata.ToolUsePromptTokenCount
+	usage["thoughts-token-count"] = metadata.ThoughtsTokenCount
+
+	if len(metadata.PromptTokensDetails) > 0 {
+		arr := make([]map[string]any, 0, len(metadata.PromptTokensDetails))
+		for _, d := range metadata.PromptTokensDetails {
+			if d == nil {
+				continue
+			}
+			arr = append(arr, map[string]any{"modality": string(d.Modality), "token-count": int(d.TokenCount)})
+		}
+		usage["prompt-tokens-details"] = arr
+	}
+	if len(metadata.CacheTokensDetails) > 0 {
+		arr := make([]map[string]any, 0, len(metadata.CacheTokensDetails))
+		for _, d := range metadata.CacheTokensDetails {
+			if d == nil {
+				continue
+			}
+			arr = append(arr, map[string]any{"modality": string(d.Modality), "token-count": int(d.TokenCount)})
+		}
+		usage["cache-tokens-details"] = arr
+	}
+	if len(metadata.CandidatesTokensDetails) > 0 {
+		arr := make([]map[string]any, 0, len(metadata.CandidatesTokensDetails))
+		for _, d := range metadata.CandidatesTokensDetails {
+			if d == nil {
+				continue
+			}
+			arr = append(arr, map[string]any{"modality": string(d.Modality), "token-count": int(d.TokenCount)})
+		}
+		usage["candidates-tokens-details"] = arr
+	}
+	if len(metadata.ToolUsePromptTokensDetails) > 0 {
+		arr := make([]map[string]any, 0, len(metadata.ToolUsePromptTokensDetails))
+		for _, d := range metadata.ToolUsePromptTokensDetails {
+			if d == nil {
+				continue
+			}
+			arr = append(arr, map[string]any{"modality": string(d.Modality), "token-count": int(d.TokenCount)})
+		}
+		usage["tool-use-prompt-tokens-details"] = arr
+	}
+
+	return usage
 }
 
 // renderFinal builds a complete output from a final genai response.
@@ -143,120 +356,16 @@ func renderFinal(resp *genai.GenerateContentResponse, texts []string) TaskChatOu
 	out := TaskChatOutput{
 		Texts:          []string{},
 		Usage:          map[string]any{},
-		Candidates:     []candidate{},
-		UsageMetadata:  usageMetadata{},
-		PromptFeedback: promptFeedback{},
+		Candidates:     []*genai.Candidate{},
+		UsageMetadata:  nil,
+		PromptFeedback: nil,
 	}
 	if resp == nil {
 		return out
 	}
-	// Candidates
-	if len(resp.Candidates) > 0 {
-		out.Candidates = make([]candidate, 0, len(resp.Candidates))
-		for i, c := range resp.Candidates {
-			var contentPtr *content
-			if c.Content != nil {
-				contentPtr = convertGenaiContent(c.Content)
-			}
-			srSlice := make([]safetyRating, 0, len(c.SafetyRatings))
-			for _, sr := range c.SafetyRatings {
-				if sr == nil {
-					continue
-				}
-				srSlice = append(srSlice, safetyRating{Category: string(sr.Category), Probability: string(sr.Probability), Blocked: &sr.Blocked})
-			}
-			finishReason := string(c.FinishReason)
-			var citationPtr *citationMetadata
-			if c.CitationMetadata != nil {
-				citations := make([]citationSource, 0, len(c.CitationMetadata.Citations))
-				for _, cs := range c.CitationMetadata.Citations {
-					if cs == nil {
-						continue
-					}
-					citations = append(citations, citationSource{URI: cs.URI, Title: cs.Title, StartIndex: cs.StartIndex, EndIndex: cs.EndIndex})
-				}
-				citationPtr = &citationMetadata{Citations: citations}
-			}
-			tokenCount := int32(0)
-			if c.TokenCount > 0 {
-				tokenCount = c.TokenCount
-			}
-			var logprobPtr *logprobsResult
-			if c.LogprobsResult != nil {
-				logprobTops := make([]logprobsTopCandidate, 0)
-				for _, step := range c.LogprobsResult.TopCandidates {
-					if step == nil {
-						continue
-					}
-					for _, tc := range step.Candidates {
-						if tc == nil {
-							continue
-						}
-						logprobTops = append(logprobTops, logprobsTopCandidate{Token: tc.Token, Logprob: tc.LogProbability})
-					}
-				}
-				logprobPtr = &logprobsResult{TopCandidates: logprobTops}
-			}
-			var groundingMetaPtr *groundingMetadata
-			if c.GroundingMetadata != nil {
-				gm := groundingMetadata{}
-				if len(c.GroundingMetadata.GroundingChunks) > 0 {
-					gm.GroundingChunks = make([]groundingChunk, 0, len(c.GroundingMetadata.GroundingChunks))
-					for _, gch := range c.GroundingMetadata.GroundingChunks {
-						if gch == nil {
-							continue
-						}
-						var wc *webChunk
-						if gch.Web != nil {
-							wc = &webChunk{URI: gch.Web.URI, Title: gch.Web.Title}
-						}
-						gm.GroundingChunks = append(gm.GroundingChunks, groundingChunk{Web: wc})
-					}
-				}
-				if len(c.GroundingMetadata.GroundingSupports) > 0 {
-					gm.GroundingSupports = make([]groundingSupport, 0, len(c.GroundingMetadata.GroundingSupports))
-					for _, gs := range c.GroundingMetadata.GroundingSupports {
-						if gs == nil {
-							continue
-						}
-						var segPtr *segment
-						if gs.Segment != nil {
-							segPtr = &segment{PartIndex: gs.Segment.PartIndex, StartIndex: gs.Segment.StartIndex, EndIndex: gs.Segment.EndIndex, Text: gs.Segment.Text}
-						}
-						gm.GroundingSupports = append(gm.GroundingSupports, groundingSupport{GroundingChunkIndices: gs.GroundingChunkIndices, ConfidenceScores: gs.ConfidenceScores, Segment: segPtr})
-					}
-				}
-				if c.GroundingMetadata.RetrievalMetadata != nil {
-					gm.RetrievalMetadata = &retrievalMetadata{GoogleSearchDynamicRetrievalScore: c.GroundingMetadata.RetrievalMetadata.GoogleSearchDynamicRetrievalScore}
-				}
-				if len(c.GroundingMetadata.WebSearchQueries) > 0 {
-					gm.WebSearchQueries = append([]string{}, c.GroundingMetadata.WebSearchQueries...)
-				}
-				if c.GroundingMetadata.SearchEntryPoint != nil {
-					gm.SearchEntryPoint = &searchEntryPoint{RenderedContent: c.GroundingMetadata.SearchEntryPoint.RenderedContent, SDKBlob: string(c.GroundingMetadata.SearchEntryPoint.SDKBlob)}
-				}
-				groundingMetaPtr = &gm
-			}
-			out.Candidates = append(out.Candidates, candidate{Index: int32(i), Content: contentPtr, SafetyRatings: srSlice, FinishReason: finishReason, CitationMetadata: citationPtr, TokenCount: tokenCount, LogprobsResult: logprobPtr, AvgLogprobs: c.AvgLogprobs, GroundingMetadata: groundingMetaPtr})
-		}
-	}
-	// Usage metadata
-	if resp.UsageMetadata != nil {
-		out.UsageMetadata = usageMetadata{PromptTokenCount: resp.UsageMetadata.PromptTokenCount, CachedContentTokenCount: resp.UsageMetadata.CachedContentTokenCount, CandidatesTokenCount: resp.UsageMetadata.CandidatesTokenCount, ToolUsePromptTokenCount: resp.UsageMetadata.ToolUsePromptTokenCount, ThoughtsTokenCount: resp.UsageMetadata.ThoughtsTokenCount, TotalTokenCount: resp.UsageMetadata.TotalTokenCount, PromptTokensDetails: cloneModalityCounts(resp.UsageMetadata.PromptTokensDetails), CacheTokensDetails: cloneModalityCounts(resp.UsageMetadata.CacheTokensDetails), CandidatesTokensDetails: cloneModalityCounts(resp.UsageMetadata.CandidatesTokensDetails), ToolUsePromptTokensDetails: cloneModalityCounts(resp.UsageMetadata.ToolUsePromptTokensDetails)}
-	}
-	// Prompt feedback
-	if resp.PromptFeedback != nil {
-		pf := promptFeedback{}
-		br := string(resp.PromptFeedback.BlockReason)
-		pf.BlockReason = &br
-		for _, sr := range resp.PromptFeedback.SafetyRatings {
-			if sr == nil {
-				continue
-			}
-			pf.SafetyRatings = append(pf.SafetyRatings, safetyRating{Category: string(sr.Category), Probability: string(sr.Probability), Blocked: &sr.Blocked})
-		}
-		out.PromptFeedback = pf
-	}
+	out.Candidates = resp.Candidates
+	out.UsageMetadata = resp.UsageMetadata
+	out.PromptFeedback = resp.PromptFeedback
 	if resp.ModelVersion != "" {
 		mv := resp.ModelVersion
 		out.ModelVersion = &mv
@@ -284,119 +393,7 @@ func renderFinal(resp *genai.GenerateContentResponse, texts []string) TaskChatOu
 		out.Texts = acc
 	}
 	if resp.UsageMetadata != nil {
-		usage := make(map[string]any)
-		// Kebab-case counts expected by schema
-		usage["prompt-token-count"] = resp.UsageMetadata.PromptTokenCount
-		usage["cached-content-token-count"] = resp.UsageMetadata.CachedContentTokenCount
-		usage["candidates-token-count"] = resp.UsageMetadata.CandidatesTokenCount
-		usage["total-token-count"] = resp.UsageMetadata.TotalTokenCount
-		usage["tool-use-prompt-token-count"] = resp.UsageMetadata.ToolUsePromptTokenCount
-		usage["thoughts-token-count"] = resp.UsageMetadata.ThoughtsTokenCount
-
-		// Details arrays in kebab-case
-		if len(resp.UsageMetadata.PromptTokensDetails) > 0 {
-			arr := make([]map[string]any, 0, len(resp.UsageMetadata.PromptTokensDetails))
-			for _, d := range resp.UsageMetadata.PromptTokensDetails {
-				if d == nil {
-					continue
-				}
-				arr = append(arr, map[string]any{"modality": string(d.Modality), "token-count": int(d.TokenCount)})
-			}
-			usage["prompt-tokens-details"] = arr
-		}
-		if len(resp.UsageMetadata.CacheTokensDetails) > 0 {
-			arr := make([]map[string]any, 0, len(resp.UsageMetadata.CacheTokensDetails))
-			for _, d := range resp.UsageMetadata.CacheTokensDetails {
-				if d == nil {
-					continue
-				}
-				arr = append(arr, map[string]any{"modality": string(d.Modality), "token-count": int(d.TokenCount)})
-			}
-			usage["cache-tokens-details"] = arr
-		}
-		if len(resp.UsageMetadata.CandidatesTokensDetails) > 0 {
-			arr := make([]map[string]any, 0, len(resp.UsageMetadata.CandidatesTokensDetails))
-			for _, d := range resp.UsageMetadata.CandidatesTokensDetails {
-				if d == nil {
-					continue
-				}
-				arr = append(arr, map[string]any{"modality": string(d.Modality), "token-count": int(d.TokenCount)})
-			}
-			usage["candidates-tokens-details"] = arr
-		}
-		if len(resp.UsageMetadata.ToolUsePromptTokensDetails) > 0 {
-			arr := make([]map[string]any, 0, len(resp.UsageMetadata.ToolUsePromptTokensDetails))
-			for _, d := range resp.UsageMetadata.ToolUsePromptTokensDetails {
-				if d == nil {
-					continue
-				}
-				arr = append(arr, map[string]any{"modality": string(d.Modality), "token-count": int(d.TokenCount)})
-			}
-			usage["tool-use-prompt-tokens-details"] = arr
-		}
-
-		out.Usage = usage
-	}
-	return out
-}
-
-// convertGenaiContent maps genai.Content to our internal content type.
-func convertGenaiContent(c *genai.Content) *content {
-	out := content{}
-	if c.Role != "" {
-		r := string(c.Role)
-		out.Role = &r
-	}
-	for _, p := range c.Parts {
-		if p == nil {
-			continue
-		}
-		pp := part{}
-		if p.Text != "" {
-			pp.Text = &p.Text
-			out.Parts = append(out.Parts, pp)
-			continue
-		}
-		if p.InlineData != nil {
-			pp.InlineData = &blob{MIMEType: p.InlineData.MIMEType, Data: base64.StdEncoding.EncodeToString(p.InlineData.Data)}
-			out.Parts = append(out.Parts, pp)
-			continue
-		}
-		if p.FileData != nil {
-			pp.FileData = &fileData{MIMEType: p.FileData.MIMEType, URI: p.FileData.FileURI}
-			out.Parts = append(out.Parts, pp)
-			continue
-		}
-		if p.ExecutableCode != nil {
-			pp.ExecutableCode = &executableCode{Language: string(p.ExecutableCode.Language), Code: p.ExecutableCode.Code}
-			out.Parts = append(out.Parts, pp)
-			continue
-		}
-		if p.CodeExecutionResult != nil {
-			var outStr *string
-			if p.CodeExecutionResult.Output != "" {
-				v := p.CodeExecutionResult.Output
-				outStr = &v
-			}
-			pp.CodeExecutionResult = &codeExecutionResult{Outcome: string(p.CodeExecutionResult.Outcome), Output: outStr}
-			out.Parts = append(out.Parts, pp)
-			continue
-		}
-	}
-	return &out
-}
-
-// cloneModalityCounts converts []*genai.ModalityTokenCount to []modalityTokenCount.
-func cloneModalityCounts(src []*genai.ModalityTokenCount) []modalityTokenCount {
-	if len(src) == 0 {
-		return nil
-	}
-	out := make([]modalityTokenCount, 0, len(src))
-	for _, m := range src {
-		if m == nil {
-			continue
-		}
-		out = append(out, modalityTokenCount{Modality: string(m.Modality), TokenCount: int(m.TokenCount)})
+		out.Usage = buildUsageMap(resp.UsageMetadata)
 	}
 	return out
 }
@@ -465,30 +462,6 @@ func detectMIMEFromPath(u string, defaultMIME string) string {
 	return defaultMIME
 }
 
-// buildParts converts our []part to []genai.Part.
-func buildParts(ps []part) []genai.Part {
-	out := make([]genai.Part, 0, len(ps))
-	for _, p := range ps {
-		if p.Text != nil {
-			out = append(out, genai.Part{Text: *p.Text})
-			continue
-		}
-		if p.FileData != nil {
-			if u := genai.NewPartFromURI(p.FileData.URI, p.FileData.MIMEType); u != nil {
-				out = append(out, *u)
-			}
-			continue
-		}
-		if p.InlineData != nil {
-			if b, err := base64.StdEncoding.DecodeString(p.InlineData.Data); err == nil {
-				out = append(out, genai.Part{InlineData: &genai.Blob{MIMEType: p.InlineData.MIMEType, Data: b}})
-			}
-			continue
-		}
-	}
-	return out
-}
-
 // buildReqParts constructs the user request parts from input, including prompt/contents, images, and documents.
 // Following best practices: text content (from both Contents and Prompt) is placed after visual content (images/documents).
 func buildReqParts(in TaskChatInput) ([]genai.Part, error) {
@@ -499,12 +472,11 @@ func buildReqParts(in TaskChatInput) ([]genai.Part, error) {
 	var textParts []genai.Part
 	if len(in.Contents) > 0 {
 		last := in.Contents[len(in.Contents)-1]
-		contentParts := buildParts(last.Parts)
-		for _, part := range contentParts {
+		for _, part := range last.Parts {
 			if part.Text != "" {
-				textParts = append(textParts, part)
+				textParts = append(textParts, *part)
 			} else {
-				nonTextParts = append(nonTextParts, part)
+				nonTextParts = append(nonTextParts, *part)
 			}
 		}
 	}
@@ -541,14 +513,9 @@ func buildReqParts(in TaskChatInput) ([]genai.Part, error) {
 			}
 		} else if isTextBasedDocument(contentType) {
 			// Text-based documents (TXT, Markdown, HTML, XML, etc.)
-			// Pass as base64 like PDFs for consistent handling
-			docBase64, err := doc.Base64()
-			if err != nil {
-				return nil, err
-			}
-			if p := newURIOrDataPart(docBase64.String(), detectMIMEFromPath(docBase64.String(), contentType)); p != nil {
-				parts = append(parts, *p)
-			}
+			// Extract as plain text content
+			textContent := doc.String()
+			parts = append(parts, genai.Part{Text: textContent})
 		} else if isConvertibleToPDF(contentType) {
 			// Office documents (DOC, DOCX, PPT, PPTX, XLS, XLSX)
 			// These can contain visual elements that would be lost in text extraction
@@ -640,52 +607,49 @@ func buildGenerateContentConfig(in TaskChatInput, systemMessage string) *genai.G
 		if cfg.TopK == nil && in.GenerationConfig.TopK != nil {
 			cfg.TopK = genai.Ptr(*in.GenerationConfig.TopK)
 		}
-		if cfg.MaxOutputTokens == 0 && in.GenerationConfig.MaxOutputTokens != nil {
-			cfg.MaxOutputTokens = *in.GenerationConfig.MaxOutputTokens
+		if cfg.MaxOutputTokens == 0 && in.GenerationConfig.MaxOutputTokens != 0 {
+			cfg.MaxOutputTokens = in.GenerationConfig.MaxOutputTokens
 		}
 		if len(in.GenerationConfig.StopSequences) > 0 {
 			cfg.StopSequences = append([]string{}, in.GenerationConfig.StopSequences...)
 		}
-		if in.GenerationConfig.CandidateCount != nil {
-			cfg.CandidateCount = *in.GenerationConfig.CandidateCount
+		if in.GenerationConfig.CandidateCount != 0 {
+			cfg.CandidateCount = in.GenerationConfig.CandidateCount
 		}
-		if in.GenerationConfig.ResponseMimeType != nil {
-			cfg.ResponseMIMEType = *in.GenerationConfig.ResponseMimeType
+		if in.GenerationConfig.ResponseMIMEType != "" {
+			cfg.ResponseMIMEType = in.GenerationConfig.ResponseMIMEType
 		}
 		if in.GenerationConfig.ResponseSchema != nil {
-			cfg.ResponseSchema = buildSchema(in.GenerationConfig.ResponseSchema)
+			cfg.ResponseSchema = in.GenerationConfig.ResponseSchema
 		}
 		if in.GenerationConfig.ThinkingConfig != nil {
-			thinkingConfig := &genai.ThinkingConfig{
-				ThinkingBudget: in.GenerationConfig.ThinkingConfig.ThinkingBudget,
+			cfg.ThinkingConfig = &genai.ThinkingConfig{
+				IncludeThoughts: in.GenerationConfig.ThinkingConfig.IncludeThoughts,
+				ThinkingBudget:  in.GenerationConfig.ThinkingConfig.ThinkingBudget,
 			}
-			if in.GenerationConfig.ThinkingConfig.IncludeThoughts != nil {
-				thinkingConfig.IncludeThoughts = *in.GenerationConfig.ThinkingConfig.IncludeThoughts
-			}
-			cfg.ThinkingConfig = thinkingConfig
 		}
 	}
 
 	// Convert Tools
 	if len(in.Tools) > 0 {
-		cfg.Tools = buildTools(in.Tools)
+		cfg.Tools = in.Tools
 	}
 
 	// Convert ToolConfig
 	if in.ToolConfig != nil {
-		cfg.ToolConfig = buildToolConfig(in.ToolConfig)
+		cfg.ToolConfig = in.ToolConfig
 	}
 
 	// Convert SafetySettings
 	if len(in.SafetySettings) > 0 {
-		cfg.SafetySettings = buildSafetySettings(in.SafetySettings)
+		cfg.SafetySettings = in.SafetySettings
 	}
 
 	// Handle SystemInstruction - prioritize systemMessage over SystemInstruction
 	if systemMessage != "" {
 		cfg.SystemInstruction = &genai.Content{Parts: []*genai.Part{{Text: systemMessage}}}
 	} else if in.SystemInstruction != nil && len(in.SystemInstruction.Parts) > 0 {
-		cfg.SystemInstruction = buildContent(in.SystemInstruction)
+		cfg.SystemInstruction = in.SystemInstruction
 	}
 
 	// Handle CachedContent
@@ -694,163 +658,4 @@ func buildGenerateContentConfig(in TaskChatInput, systemMessage string) *genai.G
 	}
 
 	return cfg
-}
-
-// buildTools converts []tool to []*genai.Tool
-func buildTools(tools []tool) []*genai.Tool {
-	result := make([]*genai.Tool, 0, len(tools))
-	for _, t := range tools {
-		genaiTool := &genai.Tool{}
-
-		// Convert function declarations
-		if len(t.FunctionDeclarations) > 0 {
-			genaiTool.FunctionDeclarations = make([]*genai.FunctionDeclaration, 0, len(t.FunctionDeclarations))
-			for _, fd := range t.FunctionDeclarations {
-				genaiDecl := &genai.FunctionDeclaration{
-					Name: fd.Name,
-				}
-				if fd.Description != nil {
-					genaiDecl.Description = *fd.Description
-				}
-				if fd.Parameters != nil {
-					genaiDecl.Parameters = buildSchema(fd.Parameters)
-				}
-				genaiTool.FunctionDeclarations = append(genaiTool.FunctionDeclarations, genaiDecl)
-			}
-		}
-
-		// Convert Google Search Retrieval
-		if t.GoogleSearchRetrieval != nil {
-			genaiTool.GoogleSearchRetrieval = &genai.GoogleSearchRetrieval{}
-			// Note: DynamicRetrievalConfig conversion may need adjustment based on genai package version
-		}
-
-		// Convert Code Execution
-		if t.CodeExecution != nil {
-			genaiTool.CodeExecution = &genai.ToolCodeExecution{}
-		}
-
-		result = append(result, genaiTool)
-	}
-	return result
-}
-
-// buildToolConfig converts *toolConfig to *genai.ToolConfig
-func buildToolConfig(tc *toolConfig) *genai.ToolConfig {
-	if tc == nil {
-		return nil
-	}
-
-	result := &genai.ToolConfig{}
-	if tc.FunctionCallingConfig != nil {
-		result.FunctionCallingConfig = &genai.FunctionCallingConfig{}
-		// Note: Mode conversion may need adjustment based on genai package version
-		if len(tc.FunctionCallingConfig.AllowedFunctionNames) > 0 {
-			result.FunctionCallingConfig.AllowedFunctionNames = append([]string{}, tc.FunctionCallingConfig.AllowedFunctionNames...)
-		}
-	}
-	return result
-}
-
-// buildSafetySettings converts []safetySetting to []*genai.SafetySetting
-func buildSafetySettings(settings []safetySetting) []*genai.SafetySetting {
-	result := make([]*genai.SafetySetting, 0, len(settings))
-	for _, s := range settings {
-		result = append(result, &genai.SafetySetting{
-			Category:  genai.HarmCategory(s.Category),
-			Threshold: genai.HarmBlockThreshold(s.Threshold),
-		})
-	}
-	return result
-}
-
-// buildContent converts *content to *genai.Content
-func buildContent(c *content) *genai.Content {
-	if c == nil || len(c.Parts) == 0 {
-		return nil
-	}
-
-	parts := buildParts(c.Parts)
-	if len(parts) == 0 {
-		return nil
-	}
-
-	partsPtrs := make([]*genai.Part, 0, len(parts))
-	for i := range parts {
-		p := parts[i]
-		partsPtrs = append(partsPtrs, &p)
-	}
-
-	result := &genai.Content{Parts: partsPtrs}
-	if c.Role != nil {
-		if *c.Role == "model" {
-			result.Role = genai.RoleModel
-		} else {
-			result.Role = genai.RoleUser
-		}
-	}
-	return result
-}
-
-// buildSchema converts *jsonSchema to *genai.Schema
-func buildSchema(js *jsonSchema) *genai.Schema {
-	if js == nil {
-		return nil
-	}
-
-	schema := &genai.Schema{
-		Type:        genai.Type(js.Type),
-		Format:      js.Format,
-		Title:       js.Title,
-		Description: js.Description,
-		Enum:        js.Enum,
-		Required:    js.Required,
-		Pattern:     js.Pattern,
-		Default:     js.Default,
-		Minimum:     js.Minimum,
-		Maximum:     js.Maximum,
-	}
-
-	// Convert int32 to int64 for items counts and lengths
-	if js.MaxItems != nil {
-		schema.MaxItems = genai.Ptr(int64(*js.MaxItems))
-	}
-	if js.MinItems != nil {
-		schema.MinItems = genai.Ptr(int64(*js.MinItems))
-	}
-	if js.MinProperties != nil {
-		schema.MinProperties = genai.Ptr(int64(*js.MinProperties))
-	}
-	if js.MaxProperties != nil {
-		schema.MaxProperties = genai.Ptr(int64(*js.MaxProperties))
-	}
-	if js.MinLength != nil {
-		schema.MinLength = genai.Ptr(int64(*js.MinLength))
-	}
-	if js.MaxLength != nil {
-		schema.MaxLength = genai.Ptr(int64(*js.MaxLength))
-	}
-
-	// Convert Properties map
-	if js.Properties != nil {
-		schema.Properties = make(map[string]*genai.Schema)
-		for k, v := range js.Properties {
-			schema.Properties[k] = buildSchema(&v)
-		}
-	}
-
-	// Convert AnyOf slice
-	if js.AnyOf != nil {
-		schema.AnyOf = make([]*genai.Schema, 0, len(js.AnyOf))
-		for _, v := range js.AnyOf {
-			schema.AnyOf = append(schema.AnyOf, buildSchema(&v))
-		}
-	}
-
-	// Convert Items
-	if js.Items != nil {
-		schema.Items = buildSchema(js.Items)
-	}
-
-	return schema
 }
