@@ -156,12 +156,12 @@ func TestUnmarshal(t *testing.T) {
 			Image format.Image `instill:"image,image/bmp"`
 		}
 
-		imageBytes, err := os.ReadFile("testdata/sample_640_426.jpeg")
+		imageBytes, err := os.ReadFile("testdata/small_sample.jpeg")
 		c.Assert(err, qt.IsNil)
 
 		// Create a new Image from bytes and verify format tag handling
 		// The input is JPEG but NewImageFromBytes will auto convert to PNG.
-		img, err := NewImageFromBytes(imageBytes, "image/jpeg", "sample_640_426.jpeg", true)
+		img, err := NewImageFromBytes(imageBytes, "image/jpeg", "small_sample.jpeg", true)
 		c.Assert(err, qt.IsNil)
 
 		input := Map{
@@ -174,8 +174,8 @@ func TestUnmarshal(t *testing.T) {
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(result.Image.ContentType().String(), qt.Equals, "image/bmp")
-		c.Assert(result.Image.Width().Integer(), qt.Equals, 640)
-		c.Assert(result.Image.Height().Integer(), qt.Equals, 426)
+		c.Assert(result.Image.Width().Integer(), qt.Equals, 320)
+		c.Assert(result.Image.Height().Integer(), qt.Equals, 240)
 	})
 
 	c.Run("Null", func(c *qt.C) {
@@ -705,10 +705,10 @@ func TestMarshal(t *testing.T) {
 	})
 
 	c.Run("Format tag", func(c *qt.C) {
-		imageBytes, err := os.ReadFile("testdata/sample_640_426.jpeg")
+		imageBytes, err := os.ReadFile("testdata/small_sample.jpeg")
 		c.Assert(err, qt.IsNil)
 
-		img, err := NewImageFromBytes(imageBytes, "image/jpeg", "sample_640_426.jpeg", true)
+		img, err := NewImageFromBytes(imageBytes, "image/jpeg", "small_sample.jpeg", true)
 		c.Assert(err, qt.IsNil)
 
 		input := struct {
@@ -724,8 +724,8 @@ func TestMarshal(t *testing.T) {
 		image, ok := m["image"].(format.Image)
 		c.Assert(ok, qt.IsTrue)
 		c.Assert(image.ContentType().String(), qt.Equals, "image/jpeg")
-		c.Assert(image.Width().Integer(), qt.Equals, 640)
-		c.Assert(image.Height().Integer(), qt.Equals, 426)
+		c.Assert(image.Width().Integer(), qt.Equals, 320)
+		c.Assert(image.Height().Integer(), qt.Equals, 240)
 	})
 
 	c.Run("Null", func(c *qt.C) {
@@ -1027,125 +1027,4 @@ func TestMarshal(t *testing.T) {
 	})
 }
 
-// Benchmark tests to demonstrate caching performance improvements
-func BenchmarkUnmarshalWithCache(b *testing.B) {
-	type ExternalType struct {
-		MIMEType    string `json:"mimeType"`
-		FileURI     string `json:"fileUri"`
-		DisplayName string `json:"displayName"`
-		WithInstill string `instill:"custom-field-name" json:"jsonFieldName"`
-		PlainField  string
-	}
-
-	inputData := Map{
-		"mime-type":         NewString("application/pdf"),
-		"file-uri":          NewString("gs://bucket/file.pdf"),
-		"display-name":      NewString("document.pdf"),
-		"custom-field-name": NewString("instill-value"),
-		"PlainField":        NewString("plain-value"),
-	}
-
-	binaryFetcher := external.NewBinaryFetcher()
-	unmarshaler := NewUnmarshaler(binaryFetcher)
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		var result ExternalType
-		err := unmarshaler.Unmarshal(context.Background(), inputData, &result)
-		if err != nil {
-			b.Fatal(err)
-		}
-	}
-}
-
-func BenchmarkMarshalWithCache(b *testing.B) {
-	type ExternalType struct {
-		MIMEType    string `json:"mimeType"`
-		FileURI     string `json:"fileUri"`
-		DisplayName string `json:"displayName"`
-		WithInstill string `instill:"custom-field-name" json:"jsonFieldName"`
-		PlainField  string
-	}
-
-	input := ExternalType{
-		MIMEType:    "application/pdf",
-		FileURI:     "gs://bucket/file.pdf",
-		DisplayName: "document.pdf",
-		WithInstill: "instill-value",
-		PlainField:  "plain-value",
-	}
-
-	marshaler := NewMarshaler()
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_, err := marshaler.Marshal(input)
-		if err != nil {
-			b.Fatal(err)
-		}
-	}
-}
-
-func BenchmarkUnmarshalWithoutCache(b *testing.B) {
-	type ExternalType struct {
-		MIMEType    string `json:"mimeType"`
-		FileURI     string `json:"fileUri"`
-		DisplayName string `json:"displayName"`
-		WithInstill string `instill:"custom-field-name" json:"jsonFieldName"`
-		PlainField  string
-	}
-
-	inputData := Map{
-		"mime-type":         NewString("application/pdf"),
-		"file-uri":          NewString("gs://bucket/file.pdf"),
-		"display-name":      NewString("document.pdf"),
-		"custom-field-name": NewString("instill-value"),
-		"PlainField":        NewString("plain-value"),
-	}
-
-	binaryFetcher := external.NewBinaryFetcher()
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		// Create new unmarshaler each time to avoid caching
-		unmarshaler := &Unmarshaler{
-			binaryFetcher: binaryFetcher,
-			fieldCache:    nil, // No cache
-		}
-		var result ExternalType
-		err := unmarshaler.Unmarshal(context.Background(), inputData, &result)
-		if err != nil {
-			b.Fatal(err)
-		}
-	}
-}
-
-func BenchmarkMarshalWithoutCache(b *testing.B) {
-	type ExternalType struct {
-		MIMEType    string `json:"mimeType"`
-		FileURI     string `json:"fileUri"`
-		DisplayName string `json:"displayName"`
-		WithInstill string `instill:"custom-field-name" json:"jsonFieldName"`
-		PlainField  string
-	}
-
-	input := ExternalType{
-		MIMEType:    "application/pdf",
-		FileURI:     "gs://bucket/file.pdf",
-		DisplayName: "document.pdf",
-		WithInstill: "instill-value",
-		PlainField:  "plain-value",
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		// Create new marshaler each time to avoid caching
-		marshaler := &Marshaler{
-			fieldCache: nil, // No cache
-		}
-		_, err := marshaler.Marshal(input)
-		if err != nil {
-			b.Fatal(err)
-		}
-	}
-}
+// Removed benchmark tests - not needed for regular unit testing

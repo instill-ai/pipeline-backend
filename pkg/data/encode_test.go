@@ -25,7 +25,7 @@ func TestEncodeDecode(t *testing.T) {
 	variable["nested"] = Map{"string": NewString("ghjk")}
 	variable["bytes"] = NewByteArray([]byte(`1234`))
 
-	filename := "sample_640_426.jpeg"
+	filename := "small_sample.jpeg"
 	img, err := os.ReadFile("testdata/" + filename)
 	c.Assert(err, qt.IsNil)
 
@@ -35,14 +35,14 @@ func TestEncodeDecode(t *testing.T) {
 	variable["img"], err = NewImageFromBytes([]byte(img), JPEG, filename, true)
 	c.Assert(err, qt.IsNil)
 
-	filename = "sample1.mp3"
+	filename = "small_sample.mp3"
 	audio, err := os.ReadFile("testdata/" + filename)
 	c.Assert(err, qt.IsNil)
 
 	variable["audio"], err = NewAudioFromBytes([]byte(audio), MP3, filename, true)
 	c.Assert(err, qt.IsNil)
 
-	filename = "sample_640_360.mp4"
+	filename = "small_sample.mp4"
 	vid, err := os.ReadFile("testdata/" + filename)
 	c.Assert(err, qt.IsNil)
 
