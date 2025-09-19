@@ -11,7 +11,7 @@ on:
 jobs:
   codecov:
     name: codecov
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-8core-amd64
     permissions:
       contents: read
       pull-requests: write
@@ -28,20 +28,6 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      # Tests can fail due to insufficient disk space, so we optimize the disk
-      # usage.
-      - name: Remove unnecessary files
-        run: |
-          sudo rm -rf \
-            /usr/share/dotnet /usr/local/lib/android /opt/ghc \
-            /usr/local/share/powershell /usr/share/swift /usr/local/.ghcup \
-            /usr/lib/jvm "$AGENT_TOOLSDIRECTORY"
-
-      - name: Remove unnecessary packages
-        run: |
-          sudo apt-get --purge autoremove azure-cli microsoft-edge-stable \
-          google-cloud-cli google-chrome-stable
-
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -57,9 +43,58 @@ jobs:
           go-version: ${{ env.GOLANG_VERSION }}
           cache: false
 
+      # Set up Docker Buildx for advanced caching features
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            network=host
+
+      # Check if cached image exists and is recent
+      - name: Check for cached image
+        id: cache_check
+        run: |
+          # Get the hash of files that would affect the Docker build
+          BUILD_CONTEXT_HASH=$(find . -name "Dockerfile.dev" -o -name "go.mod" -o -name "go.sum" -o -path "./pkg/component/resources/onnx/*" | sort | xargs sha256sum | sha256sum | cut -d' ' -f1)
+          echo "build_context_hash=${BUILD_CONTEXT_HASH}" >> $GITHUB_OUTPUT
+
+          # Check GitHub Container Registry for cached image first
+          echo "cache_hit=false" >> $GITHUB_OUTPUT
+          echo "Checking for cached image with hash: ${BUILD_CONTEXT_HASH}"
+
+      # Build dev image with comprehensive caching strategy (only if cache miss)
+      - name: Build dev image with cache
+        if: steps.cache_check.outputs.cache_hit != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.dev
+          load: true
+          build-args: |
+            SERVICE_NAME=${{ env.SERVICE_NAME }}
+            K6_VERSION=${{ env.K6_VERSION }}
+            XK6_VERSION=${{ env.XK6_VERSION }}
+            XK6_SQL_VERSION=${{ env.XK6_SQL_VERSION }}
+            XK6_SQL_POSTGRES_VERSION=${{ env.XK6_SQL_POSTGRES_VERSION }}
+          tags: |
+            instill/${{ env.SERVICE_NAME }}:dev
+            instill/${{ env.SERVICE_NAME }}:cache-${{ steps.cache_check.outputs.build_context_hash }}
+          cache-from: |
+            type=gha,scope=${{ github.ref_name }}-dev
+            type=gha,scope=main-dev
+            type=gha,scope=base-deps
+            type=gha,scope=binary-deps
+            type=gha,scope=go-deps
+            type=gha,scope=model-artifacts
+          cache-to: |
+            type=gha,mode=max,scope=${{ github.ref_name }}-dev
+            type=gha,mode=max,scope=base-deps
+            type=gha,mode=max,scope=binary-deps
+            type=gha,mode=max,scope=go-deps
+            type=gha,mode=max,scope=model-artifacts
+
       - name: Generate coverage report
         run: |
-          make build-dev
           make coverage DBTEST=true OCR=true ONNX=true
 
       - name: Upload coverage report
