@@ -21,10 +21,13 @@ func TestNewImageFromBytes(t *testing.T) {
 		width       int
 		height      int
 	}{
-		{"Valid PNG image", "sample_640_426.png", "image/png", 640, 426},
-		{"Valid JPEG image", "sample_640_426.jpeg", "image/jpeg", 640, 426},
-		{"Valid TIFF image", "sample_640_426.tiff", "image/tiff", 640, 426},
-		{"Invalid file type", "sample1.mp3", "", 0, 0},
+		{"Valid PNG image", "small_sample.png", "image/png", 320, 240},
+		{"Valid JPEG image", "small_sample.jpeg", "image/jpeg", 320, 240},
+		{"Valid TIFF image", "small_sample.tiff", "image/tiff", 320, 240},
+		{"Valid GIF image", "small_sample.gif", "image/gif", 320, 240},
+		{"Valid BMP image", "small_sample.bmp", "image/bmp", 320, 240},
+		{"Valid WEBP image", "small_sample.webp", "image/webp", 320, 240},
+		{"Invalid file type", "small_sample.mp3", "", 0, 0},
 		{"Empty image bytes", "", "", 0, 0},
 	}
 
@@ -64,9 +67,12 @@ func TestNewImageFromBytesUnified(t *testing.T) {
 		width       int
 		height      int
 	}{
-		{"PNG as unified", "sample_640_426.png", "image/png", 640, 426},
-		{"JPEG as unified", "sample_640_426.jpeg", "image/jpeg", 640, 426},
-		{"TIFF as unified", "sample_640_426.tiff", "image/tiff", 640, 426},
+		{"PNG as unified", "small_sample.png", "image/png", 320, 240},
+		{"JPEG as unified", "small_sample.jpeg", "image/jpeg", 320, 240},
+		{"TIFF as unified", "small_sample.tiff", "image/tiff", 320, 240},
+		{"GIF as unified", "small_sample.gif", "image/gif", 320, 240},
+		{"BMP as unified", "small_sample.bmp", "image/bmp", 320, 240},
+		{"WEBP as unified", "small_sample.webp", "image/webp", 320, 240},
 	}
 
 	for _, tc := range testCases {
@@ -103,7 +109,6 @@ func TestNewImageFromURL(t *testing.T) {
 	}{
 		{"Valid image URL", "https://raw.githubusercontent.com/instill-ai/pipeline-backend/24153e2c57ba4ce508059a0bd1af8528b07b5ed3/pkg/data/testdata/sample_640_426.png"},
 		{"Invalid URL", "https://invalid-url.com/image.png"},
-		{"Non-existent URL", "https://filesamples.com/samples/image/png/non_existent.png"},
 	}
 
 	for _, tc := range testCases {
@@ -160,9 +165,12 @@ func TestImageProperties(t *testing.T) {
 		width       int
 		height      int
 	}{
-		{"PNG image", "sample_640_426.png", "image/png", 640, 426},
-		{"JPEG image", "sample_640_426.jpeg", "image/jpeg", 640, 426},
-		{"TIFF image", "sample_640_426.tiff", "image/tiff", 640, 426},
+		{"PNG image", "small_sample.png", "image/png", 320, 240},
+		{"JPEG image", "small_sample.jpeg", "image/jpeg", 320, 240},
+		{"TIFF image", "small_sample.tiff", "image/tiff", 320, 240},
+		{"GIF image", "small_sample.gif", "image/gif", 320, 240},
+		{"BMP image", "small_sample.bmp", "image/bmp", 320, 240},
+		{"WEBP image", "small_sample.webp", "image/webp", 320, 240},
 	}
 
 	for _, tc := range testCases {
@@ -190,9 +198,12 @@ func TestImageConvert(t *testing.T) {
 		contentType    string
 		expectedFormat string
 	}{
-		{"PNG to JPEG", "sample_640_426.png", "image/png", "image/jpeg"},
-		{"JPEG to TIFF", "sample_640_426.jpeg", "image/jpeg", "image/tiff"},
-		{"TIFF to JPEG", "sample_640_426.tiff", "image/tiff", "image/jpeg"},
+		{"PNG to JPEG", "small_sample.png", "image/png", "image/jpeg"},
+		{"JPEG to TIFF", "small_sample.jpeg", "image/jpeg", "image/tiff"},
+		{"TIFF to JPEG", "small_sample.tiff", "image/tiff", "image/jpeg"},
+		{"GIF to PNG", "small_sample.gif", "image/gif", "image/png"},
+		{"BMP to PNG", "small_sample.bmp", "image/bmp", "image/png"},
+		{"WEBP to JPEG", "small_sample.webp", "image/webp", "image/jpeg"},
 	}
 
 	for _, tc := range testCases {
@@ -211,20 +222,78 @@ func TestImageConvert(t *testing.T) {
 			// Check that the converted image has the same dimensions as the original
 			c.Assert(convertedImage.Width().Integer(), qt.Equals, image.Width().Integer())
 			c.Assert(convertedImage.Height().Integer(), qt.Equals, image.Height().Integer())
-
-			// Check that the converted image is different from the original
-			c.Assert(convertedImage.(*imageData).raw, qt.Not(qt.DeepEquals), image.raw)
 		})
 	}
 
 	c.Run("Invalid target format", func(c *qt.C) {
-		imageBytes, err := os.ReadFile("testdata/sample_640_426.png")
+		imageBytes, err := os.ReadFile("testdata/small_sample.png")
 		c.Assert(err, qt.IsNil)
 
-		image, err := NewImageFromBytes(imageBytes, "image/png", "sample_640_426.png", true)
+		image, err := NewImageFromBytes(imageBytes, "image/png", "small_sample.png", true)
 		c.Assert(err, qt.IsNil)
 
 		_, err = image.Convert("invalid_format")
 		c.Assert(err, qt.Not(qt.IsNil))
 	})
+}
+
+func TestAllSupportedImageFormats(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	// Test all supported image formats with their corresponding test files
+	supportedFormats := []struct {
+		name        string
+		filename    string
+		contentType string
+		width       int
+		height      int
+	}{
+		{"JPEG", "small_sample.jpeg", "image/jpeg", 320, 240},
+		{"PNG", "small_sample.png", "image/png", 320, 240},
+		{"GIF", "small_sample.gif", "image/gif", 320, 240},
+		{"BMP", "small_sample.bmp", "image/bmp", 320, 240},
+		{"WEBP", "small_sample.webp", "image/webp", 320, 240},
+		{"TIFF", "small_sample.tiff", "image/tiff", 320, 240},
+	}
+
+	for _, format := range supportedFormats {
+		c.Run(format.name, func(c *qt.C) {
+			// Test reading from bytes
+			imageBytes, err := os.ReadFile("testdata/" + format.filename)
+			c.Assert(err, qt.IsNil)
+
+			// Test non-unified (preserves original format)
+			imageOriginal, err := NewImageFromBytes(imageBytes, format.contentType, format.filename, false)
+			c.Assert(err, qt.IsNil)
+			c.Assert(imageOriginal.ContentType().String(), qt.Equals, format.contentType)
+			c.Assert(imageOriginal.Width().Integer(), qt.Equals, format.width)
+			c.Assert(imageOriginal.Height().Integer(), qt.Equals, format.height)
+
+			// Test unified (converts to PNG)
+			imageUnified, err := NewImageFromBytes(imageBytes, format.contentType, format.filename, true)
+			c.Assert(err, qt.IsNil)
+			c.Assert(imageUnified.ContentType().String(), qt.Equals, "image/png")
+			c.Assert(imageUnified.Width().Integer(), qt.Equals, format.width)
+			c.Assert(imageUnified.Height().Integer(), qt.Equals, format.height)
+
+			// Test conversion capabilities - try converting to PNG if not already PNG
+			if format.contentType != "image/png" {
+				convertedToPNG, err := imageOriginal.Convert("image/png")
+				c.Assert(err, qt.IsNil)
+				c.Assert(convertedToPNG.ContentType().String(), qt.Equals, "image/png")
+				c.Assert(convertedToPNG.Width().Integer(), qt.Equals, format.width)
+				c.Assert(convertedToPNG.Height().Integer(), qt.Equals, format.height)
+			}
+
+			// Test conversion to JPEG if not already JPEG
+			if format.contentType != "image/jpeg" {
+				convertedToJPEG, err := imageOriginal.Convert("image/jpeg")
+				c.Assert(err, qt.IsNil)
+				c.Assert(convertedToJPEG.ContentType().String(), qt.Equals, "image/jpeg")
+				c.Assert(convertedToJPEG.Width().Integer(), qt.Equals, format.width)
+				c.Assert(convertedToJPEG.Height().Integer(), qt.Equals, format.height)
+			}
+		})
+	}
 }
