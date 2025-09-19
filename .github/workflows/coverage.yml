@@ -11,26 +11,53 @@ on:
 jobs:
   codecov:
     name: codecov
-    runs-on: ubuntu-24.04-8core-amd64
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_PASSWORD: password
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
     steps:
+      # Tests can fail due to insufficient disk space, so we optimize the disk
+      # usage.
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 10240
+          remove-dotnet: "true"
+          remove-android: "true"
+          remove-haskell: "true"
+          remove-codeql: "true"
+          remove-docker-images: "true"
+          build-mount-path: "/var/lib/docker"
+
+      - name: Restart docker
+        run: sudo service docker restart
+
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Start PostgreSQL as a container after disk optimization
+      - name: Start PostgreSQL
+        run: |
+          docker run -d \
+            --name postgres \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=password \
+            -e POSTGRES_DB=pipeline_test \
+            -p 5432:5432 \
+            --health-cmd="pg_isready -U postgres" \
+            --health-interval=10s \
+            --health-timeout=5s \
+            --health-retries=5 \
+            postgres:15
+
+          # Wait for PostgreSQL to be healthy
+          echo "Waiting for PostgreSQL to be ready..."
+          while [ "$(docker inspect --format='{{.State.Health.Status}}' postgres)" != "healthy" ]; do
+            echo "Waiting for PostgreSQL health check..."
+            sleep 2
+          done
+          echo "PostgreSQL is ready!"
 
       - name: Load .env file
         uses: cardinalby/export-env-action@v2
@@ -94,6 +121,12 @@ jobs:
             type=gha,mode=max,scope=model-artifacts
 
       - name: Generate coverage report
+        env:
+          CFG_DATABASE_HOST: localhost
+          CFG_DATABASE_NAME: pipeline_test
+          CFG_DATABASE_USERNAME: postgres
+          CFG_DATABASE_PASSWORD: password
+          CFG_DATABASE_PORT: 5432
         run: |
           make coverage DBTEST=true OCR=true ONNX=true
 
@@ -103,3 +136,10 @@ jobs:
           file: ./coverage.out
           flags: unittests
           name: codecov-umbrella
+
+      # Cleanup PostgreSQL container
+      - name: Cleanup PostgreSQL
+        if: always()
+        run: |
+          docker stop postgres || true
+          docker rm postgres || true
