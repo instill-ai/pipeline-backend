@@ -8,7 +8,9 @@ FROM golang:${GOLANG_VERSION}-bullseye AS base-deps
 ARG TARGETOS TARGETARCH
 
 # Install all system packages in a single layer for better caching
-RUN apt update && \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt update && \
     apt install -y \
     wget \
     unzip \
@@ -28,12 +30,12 @@ RUN apt update && \
     libsoxr-dev \
     chromium \
     qpdf \
-    jq && \
-    rm -rf /var/lib/apt/lists/*
+    jq
 
 # Create Python virtual environment and install packages in one layer
-RUN python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install --no-cache-dir pdfplumber mistral-common tokenizers docling==2.18.0
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers docling==2.18.0
 
 # ===============================
 # Stage 2: Binary dependencies
@@ -85,7 +87,8 @@ WORKDIR /${SERVICE_NAME}
 
 # Copy go.mod and go.sum first for better caching of Go dependencies
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 
 # Install Go tools with build cache mounts
 RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg \
@@ -139,9 +142,10 @@ COPY . .
 COPY ./pkg/component/resources/onnx/silero_vad.onnx /${SERVICE_NAME}/pkg/component/resources/onnx/silero_vad.onnx
 
 # Final cleanup - remove wget and unzip since they're no longer needed
-RUN apt remove -y wget unzip jq && \
-    apt autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt remove -y wget unzip jq && \
+    apt autoremove -y
 
 # Set up proper permissions
 RUN chown -R nobody:nogroup /go && \
