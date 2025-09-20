@@ -3,16 +3,15 @@ package gemini
 import (
 	"context"
 	"encoding/base64"
-	"fmt"
 	"mime"
 	"path"
-	"slices"
 	"strings"
 
 	"google.golang.org/genai"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 func (e *execution) chat(ctx context.Context, job *base.Job) error {
@@ -46,9 +45,8 @@ func (e *execution) chat(ctx context.Context, job *base.Job) error {
 	streamEnabled := in.Stream != nil && *in.Stream
 	if streamEnabled {
 		return e.handleStreamingRequest(ctx, job, client, in.Model, contents, cfg)
-	} else {
-		return e.handleNonStreamingRequest(ctx, job, client, in.Model, contents, cfg)
 	}
+	return e.handleNonStreamingRequest(ctx, job, client, in.Model, contents, cfg)
 }
 
 // createGeminiClient creates a new Gemini API client
@@ -398,56 +396,48 @@ func renderFinal(resp *genai.GenerateContentResponse, texts []string) TaskChatOu
 	return out
 }
 
-// Helpers for Images/Documents strings to genai.Part
+// Helpers for Images/Audio/Videos/Documents strings to genai.Part
 func newURIOrDataPart(s string, defaultMIME string) *genai.Part {
 	if s == "" {
 		return nil
 	}
+
+	// Handle data URIs - these need to be decoded and embedded as inline data
 	if strings.HasPrefix(s, "data:") {
-		// data:[<mediatype>][;base64],<data>
-		h := s[5:]
-		comma := strings.IndexByte(h, ',')
-		if comma < 0 {
+		fetcher := external.NewBinaryFetcher()
+		b, contentType, _, err := fetcher.FetchFromURL(context.Background(), s)
+		if err != nil {
 			return nil
 		}
-		head := h[:comma]
-		data := h[comma+1:]
-		mimeType := defaultMIME
-		isBase64 := false
-
-		// Parse the media type and check for base64 encoding
-		if semi := strings.IndexByte(head, ';'); semi >= 0 {
-			mimeType = head[:semi]
-			params := head[semi+1:]
-			if params == "base64" {
-				isBase64 = true
-			}
-		} else if head != "" {
-			mimeType = head
-		}
-
-		var b []byte
-		var err error
-		if isBase64 {
-			b, err = base64.StdEncoding.DecodeString(data)
-			if err != nil {
-				return nil
-			}
-		} else {
-			// URL decode the data for non-base64 data URIs
-			b = []byte(data)
+		mimeType := contentType
+		if mimeType == "" {
+			mimeType = defaultMIME
 		}
 		return &genai.Part{InlineData: &genai.Blob{MIMEType: mimeType, Data: b}}
 	}
-	// Try raw base64 (no prefix)
+
+	// Handle remote URIs (http/https) - let Gemini API fetch these directly
+	if strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://") {
+		// Use genai.NewPartFromURI to create a fileData part that references the remote URI
+		// This leverages Gemini API's native ability to fetch remote files
+		if u := genai.NewPartFromURI(s, defaultMIME); u != nil {
+			return u
+		}
+		return nil
+	}
+
+	// Try raw base64 (no prefix) - decode and embed as inline data
 	if decoded, err := base64.StdEncoding.DecodeString(s); err == nil {
 		return &genai.Part{InlineData: &genai.Blob{MIMEType: defaultMIME, Data: decoded}}
 	}
-	// Otherwise, treat as URI
-	mimeType := defaultMIME
-	if u := genai.NewPartFromURI(s, mimeType); u != nil {
-		return u
+
+	// Handle other URI schemes (file://, gs://, etc.) - let Gemini API handle these
+	if strings.Contains(s, "://") {
+		if u := genai.NewPartFromURI(s, defaultMIME); u != nil {
+			return u
+		}
 	}
+
 	return nil
 }
 
@@ -462,46 +452,136 @@ func detectMIMEFromPath(u string, defaultMIME string) string {
 	return defaultMIME
 }
 
-// buildReqParts constructs the user request parts from input, including prompt/contents, images, and documents.
-// Following best practices: text content (from both Contents and Prompt) is placed after visual content (images/documents).
-func buildReqParts(in TaskChatInput) ([]genai.Part, error) {
-	parts := []genai.Part{}
-
-	// Separate non-text and text parts from Contents for proper ordering
-	var nonTextParts []genai.Part
+// processTextParts extracts text content from Contents and Prompt, returning them as genai.Part objects.
+// Text parts are processed last according to best practices.
+func processTextParts(in TaskChatInput) []genai.Part {
 	var textParts []genai.Part
+
+	// Extract text parts from Contents
 	if len(in.Contents) > 0 {
 		last := in.Contents[len(in.Contents)-1]
 		for _, part := range last.Parts {
 			if part.Text != "" {
 				textParts = append(textParts, *part)
-			} else {
+			}
+		}
+	}
+
+	// Add prompt as text part
+	if in.Prompt != nil && *in.Prompt != "" {
+		textParts = append(textParts, genai.Part{Text: *in.Prompt})
+	}
+
+	return textParts
+}
+
+// processNonTextContentParts extracts non-text parts from Contents (images, files, etc.).
+// These parts are processed first in the final ordering.
+func processNonTextContentParts(in TaskChatInput) []genai.Part {
+	var nonTextParts []genai.Part
+
+	if len(in.Contents) > 0 {
+		last := in.Contents[len(in.Contents)-1]
+		for _, part := range last.Parts {
+			if part.Text == "" {
 				nonTextParts = append(nonTextParts, *part)
 			}
 		}
 	}
 
-	// Add non-text parts from Contents first (images, files, etc.)
-	parts = append(parts, nonTextParts...)
+	return nonTextParts
+}
 
-	// Add images before documents for optimal processing
-	for _, img := range in.Images {
+// processImageParts converts image inputs to genai.Part objects with appropriate MIME types.
+func processImageParts(images []format.Image) ([]genai.Part, error) {
+	var parts []genai.Part
+
+	for _, img := range images {
+		contentType := img.ContentType().String()
+
+		// Validate image format
+		if _, err := validateFormat(contentType, "image", imageFormats, "GIF, BMP, TIFF", "PNG, JPEG, WEBP", ":png\", \":jpeg\", \":webp"); err != nil {
+			return nil, err
+		}
+
 		imgBase64, err := img.Base64()
 		if err != nil {
 			return nil, err
 		}
-		if p := newURIOrDataPart(imgBase64.String(), detectMIMEFromPath(imgBase64.String(), "image/png")); p != nil {
+		if p := newURIOrDataPart(imgBase64.String(), detectMIMEFromPath(imgBase64.String(), contentType)); p != nil {
 			parts = append(parts, *p)
 		}
 	}
-	// Process documents according to their capabilities:
-	// - PDFs: Full document vision support (charts, diagrams, formatting preserved)
-	// - Text-based: Extract as plain text (HTML tags, Markdown formatting, etc. lost)
-	// - Office documents: Recommend PDF conversion for visual understanding
-	for _, doc := range in.Documents {
+
+	return parts, nil
+}
+
+// processAudioParts converts audio inputs to genai.Part objects with appropriate MIME types.
+func processAudioParts(audio []format.Audio) ([]genai.Part, error) {
+	var parts []genai.Part
+
+	for _, audioFile := range audio {
+		contentType := audioFile.ContentType().String()
+
+		// Validate audio format
+		if _, err := validateFormat(contentType, "audio", audioFormats, "M4A, WMA", "WAV, MP3, AIFF, AAC, OGG, FLAC", ":wav\", \":mp3\", \":ogg"); err != nil {
+			return nil, err
+		}
+
+		audioBase64, err := audioFile.Base64()
+		if err != nil {
+			return nil, err
+		}
+		if p := newURIOrDataPart(audioBase64.String(), contentType); p != nil {
+			parts = append(parts, *p)
+		}
+	}
+
+	return parts, nil
+}
+
+// processVideoParts converts video inputs to genai.Part objects with appropriate MIME types.
+func processVideoParts(videos []format.Video) ([]genai.Part, error) {
+	var parts []genai.Part
+
+	for _, video := range videos {
+		contentType := video.ContentType().String()
+
+		// Validate video format
+		if _, err := validateFormat(contentType, "video", videoFormats, "MKV", "MP4, MPEG, MOV, AVI, FLV, WEBM, WMV", ":mp4\", \":mov\", \":webm"); err != nil {
+			return nil, err
+		}
+
+		videoBase64, err := video.Base64()
+		if err != nil {
+			return nil, err
+		}
+		if p := newURIOrDataPart(videoBase64.String(), contentType); p != nil {
+			parts = append(parts, *p)
+		}
+	}
+
+	return parts, nil
+}
+
+// processDocumentParts converts document inputs to genai.Part objects based on their type and capabilities.
+// - PDFs: Full document vision support (charts, diagrams, formatting preserved)
+// - Text-based: Extract as plain text (HTML tags, Markdown formatting, etc. lost)
+// - Office documents: Recommend PDF conversion for visual understanding
+func processDocumentParts(documents []format.Document) ([]genai.Part, error) {
+	var parts []genai.Part
+
+	for _, doc := range documents {
 		contentType := doc.ContentType().String()
 
-		if contentType == data.PDF {
+		// Validate document format and get processing mode
+		mode, err := validateFormat(contentType, "document", documentFormats, "", "", "")
+		if err != nil {
+			return nil, err
+		}
+
+		switch mode {
+		case "visual":
 			// PDFs support full document vision capabilities
 			// The model can interpret visual elements like charts, diagrams, and formatting
 			docBase64, err := doc.Base64()
@@ -511,59 +591,56 @@ func buildReqParts(in TaskChatInput) ([]genai.Part, error) {
 			if p := newURIOrDataPart(docBase64.String(), detectMIMEFromPath(docBase64.String(), "application/pdf")); p != nil {
 				parts = append(parts, *p)
 			}
-		} else if isTextBasedDocument(contentType) {
+		case "text":
 			// Text-based documents (TXT, Markdown, HTML, XML, etc.)
 			// Extract as plain text content
 			textContent := doc.String()
 			parts = append(parts, genai.Part{Text: textContent})
-		} else if isConvertibleToPDF(contentType) {
-			// Office documents (DOC, DOCX, PPT, PPTX, XLS, XLSX)
-			// These can contain visual elements that would be lost in text extraction
-			return nil, fmt.Errorf("document type %s will be processed as text only, losing visual elements like charts and formatting; use \":pdf\" syntax in your input variable to convert to PDF for document vision capabilities", contentType)
-		} else {
-			return nil, fmt.Errorf("unsupported document type: %s", contentType)
 		}
-	}
-
-	// Add text parts after documents for best results (as per best practices)
-	// This includes both text parts from Contents and the Prompt field
-	parts = append(parts, textParts...)
-	if in.Prompt != nil && *in.Prompt != "" {
-		parts = append(parts, genai.Part{Text: *in.Prompt})
 	}
 
 	return parts, nil
 }
 
-// isTextBasedDocument checks if a document type should be processed as text content.
-// Text-based documents are extracted as plain text, losing visual formatting but preserving content.
-// This includes HTML (tags removed), Markdown (formatting lost), plain text, CSV, XML, etc.
-func isTextBasedDocument(contentType string) bool {
-	textBasedTypes := []string{
-		data.HTML,     // text/html - HTML tags will be lost, only text content preserved
-		data.MARKDOWN, // text/markdown - Markdown formatting will be lost
-		data.TEXT,     // text - already plain text
-		data.PLAIN,    // text/plain - already plain text
-		data.CSV,      // text/csv - processed as structured text
+// buildReqParts constructs the user request parts from input, including prompt/contents, images, audio, videos, and documents.
+// Following best practices: text content (from both Contents and Prompt) is placed after visual/multimedia content (images/audio/videos/documents).
+func buildReqParts(in TaskChatInput) ([]genai.Part, error) {
+	var parts []genai.Part
+
+	// Process non-text parts from Contents first (images, files, etc.)
+	nonTextContentParts := processNonTextContentParts(in)
+	parts = append(parts, nonTextContentParts...)
+
+	// Process multimedia content in optimal order: images → audio → videos → documents
+	imageParts, err := processImageParts(in.Images)
+	if err != nil {
+		return nil, err
 	}
+	parts = append(parts, imageParts...)
 
-	return slices.Contains(textBasedTypes, contentType) || strings.HasPrefix(contentType, "text/")
-}
-
-// isConvertibleToPDF checks if a MIME type can be converted to PDF using the :pdf syntax.
-// These document types often contain visual elements (charts, diagrams, formatting)
-// that would be lost if processed as text only. PDF conversion preserves visual understanding.
-func isConvertibleToPDF(contentType string) bool {
-	convertibleTypes := []string{
-		data.DOC,  // application/msword - may contain charts, images, formatting
-		data.DOCX, // application/vnd.openxmlformats-officedocument.wordprocessingml.document
-		data.PPT,  // application/vnd.ms-powerpoint - presentations with slides, charts
-		data.PPTX, // application/vnd.openxmlformats-officedocument.presentationml.presentation
-		data.XLS,  // application/vnd.ms-excel - spreadsheets with charts, formatting
-		data.XLSX, // application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+	audioParts, err := processAudioParts(in.Audio)
+	if err != nil {
+		return nil, err
 	}
+	parts = append(parts, audioParts...)
 
-	return slices.Contains(convertibleTypes, contentType)
+	videoParts, err := processVideoParts(in.Videos)
+	if err != nil {
+		return nil, err
+	}
+	parts = append(parts, videoParts...)
+
+	documentParts, err := processDocumentParts(in.Documents)
+	if err != nil {
+		return nil, err
+	}
+	parts = append(parts, documentParts...)
+
+	// Process text content last (as per best practices)
+	textParts := processTextParts(in)
+	parts = append(parts, textParts...)
+
+	return parts, nil
 }
 
 // buildGenerateContentConfig creates a genai.GenerateContentConfig from the input parameters

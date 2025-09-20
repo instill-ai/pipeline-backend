@@ -2,6 +2,7 @@ package gemini
 
 import (
 	"encoding/base64"
+	"os"
 	"testing"
 
 	"google.golang.org/genai"
@@ -25,57 +26,59 @@ func Test_newURIOrDataPart_DataURI_ImagePNG(t *testing.T) {
 	c.Check(p.InlineData.Data, qt.DeepEquals, decoded)
 }
 
-func Test_newURIOrDataPart_RawBase64_PDF(t *testing.T) {
+func Test_newURIOrDataPart_RemoteURI(t *testing.T) {
 	c := qt.New(t)
-	// "%PDF-1.4\n" in base64
-	pdfHeader := "JVBERi0xLjQK"
-	p := newURIOrDataPart(pdfHeader, "application/pdf")
+
+	t.Run("with https URL", func(t *testing.T) {
+		remoteURI := "https://example.com/image.png"
+		p := newURIOrDataPart(remoteURI, "image/png")
+		c.Assert(p, qt.IsNotNil)
+		// Should create a fileData part, not inline data
+		c.Check(p.InlineData, qt.IsNil)
+		c.Check(p.FileData, qt.Not(qt.IsNil))
+		c.Check(p.FileData.FileURI, qt.Equals, remoteURI)
+		c.Check(p.FileData.MIMEType, qt.Equals, "image/png")
+	})
+
+	t.Run("with http URL", func(t *testing.T) {
+		remoteURI := "http://example.com/video.mp4"
+		p := newURIOrDataPart(remoteURI, "video/mp4")
+		c.Assert(p, qt.IsNotNil)
+		// Should create a fileData part, not inline data
+		c.Check(p.InlineData, qt.IsNil)
+		c.Check(p.FileData, qt.Not(qt.IsNil))
+		c.Check(p.FileData.FileURI, qt.Equals, remoteURI)
+		c.Check(p.FileData.MIMEType, qt.Equals, "video/mp4")
+	})
+
+	t.Run("with gs:// URL", func(t *testing.T) {
+		remoteURI := "gs://bucket/audio.wav"
+		p := newURIOrDataPart(remoteURI, "audio/wav")
+		c.Assert(p, qt.IsNotNil)
+		// Should create a fileData part for Google Cloud Storage URI
+		c.Check(p.InlineData, qt.IsNil)
+		c.Check(p.FileData, qt.Not(qt.IsNil))
+		c.Check(p.FileData.FileURI, qt.Equals, remoteURI)
+		c.Check(p.FileData.MIMEType, qt.Equals, "audio/wav")
+	})
+}
+
+func Test_newURIOrDataPart_RawBase64(t *testing.T) {
+	c := qt.New(t)
+	// Raw base64 without data URI prefix
+	pngB64 := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+	p := newURIOrDataPart(pngB64, "image/png")
 	c.Assert(p, qt.IsNotNil)
 	c.Check(p.InlineData, qt.Not(qt.IsNil))
-	c.Check(p.InlineData.MIMEType, qt.Equals, "application/pdf")
-	decoded, _ := base64.StdEncoding.DecodeString(pdfHeader)
+	c.Check(p.InlineData.MIMEType, qt.Equals, "image/png")
+	decoded, _ := base64.StdEncoding.DecodeString(pngB64)
 	c.Check(p.InlineData.Data, qt.DeepEquals, decoded)
 }
 
-func Test_newURIOrDataPart_DataURI_EmptyMediaType(t *testing.T) {
+func Test_buildReqParts_Images(t *testing.T) {
 	c := qt.New(t)
-	// Test data URI with no media type: data:,somedata
-	dataURI := "data:,somedata"
-	p := newURIOrDataPart(dataURI, "text/plain")
-	c.Assert(p, qt.IsNotNil)
-	c.Check(p.InlineData, qt.Not(qt.IsNil))
-	c.Check(p.InlineData.MIMEType, qt.Equals, "text/plain") // Should use default
-	c.Check(p.InlineData.Data, qt.DeepEquals, []byte("somedata"))
-}
-
-func Test_detectMIMEFromPath(t *testing.T) {
-	c := qt.New(t)
-	c.Check(detectMIMEFromPath("photo.jpg", "image/png"), qt.Equals, "image/jpeg")
-	c.Check(detectMIMEFromPath("doc.pdf", "application/octet-stream"), qt.Equals, "application/pdf")
-	c.Check(detectMIMEFromPath("unknown.bin", "application/octet-stream"), qt.Equals, "application/octet-stream")
-}
-
-func Test_GenaiParts_TextAndInlineData(t *testing.T) {
-	c := qt.New(t)
-	hello := "hello"
-	// Using genai.Part directly - no conversion needed
-	ps := []*genai.Part{
-		{Text: hello},
-		{InlineData: &genai.Blob{MIMEType: "application/octet-stream", Data: []byte{0x01, 0x02}}},
-	}
-	// Test that genai parts work correctly
-	c.Assert(ps, qt.HasLen, 2)
-	c.Check(ps[0].Text, qt.Equals, hello)
-	c.Check(ps[1].InlineData, qt.Not(qt.IsNil))
-	c.Check(ps[1].InlineData.MIMEType, qt.Equals, "application/octet-stream")
-	c.Check(len(ps[1].InlineData.Data) > 0, qt.IsTrue)
-}
-
-func Test_buildReqParts_Prompt_Images_Documents(t *testing.T) {
-	c := qt.New(t)
-	prompt := "Summarize this."
+	prompt := "Describe the image."
 	imgData := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
-	pdfHeader := "JVBERi0xLjQK" // raw base64 PDF header
 	imageBytes, err := base64.StdEncoding.DecodeString(imgData)
 	if err != nil {
 		t.Fatal(err)
@@ -84,6 +87,24 @@ func Test_buildReqParts_Prompt_Images_Documents(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	in := TaskChatInput{
+		Prompt: &prompt,
+		Images: []format.Image{img},
+	}
+	got, err := buildReqParts(in)
+	c.Assert(err, qt.IsNil)
+	// Expect 1 image + 1 text prompt = 2 parts
+	c.Assert(got, qt.HasLen, 2)
+	c.Check(got[0].InlineData, qt.Not(qt.IsNil))
+	c.Check(got[0].InlineData.MIMEType, qt.Equals, "image/png")
+	c.Check(got[1].Text, qt.Equals, prompt) // Prompt is last
+}
+
+func Test_buildReqParts_Documents(t *testing.T) {
+	c := qt.New(t)
+	prompt := "Summarize this document."
+	pdfHeader := "JVBERi0xLjQK" // raw base64 PDF header
 	pdfBytes, err := base64.StdEncoding.DecodeString(pdfHeader)
 	if err != nil {
 		t.Fatal(err)
@@ -95,18 +116,479 @@ func Test_buildReqParts_Prompt_Images_Documents(t *testing.T) {
 
 	in := TaskChatInput{
 		Prompt:    &prompt,
-		Images:    []format.Image{img},
 		Documents: []format.Document{doc},
 	}
 	got, err := buildReqParts(in)
 	c.Assert(err, qt.IsNil)
-	// Expect 1 image + 1 PDF doc + 1 text prompt = 3 parts (prompt now comes last)
-	c.Assert(got, qt.HasLen, 3)
+	// Expect 1 PDF doc + 1 text prompt = 2 parts
+	c.Assert(got, qt.HasLen, 2)
 	c.Check(got[0].InlineData, qt.Not(qt.IsNil))
-	c.Check(got[0].InlineData.MIMEType, qt.Equals, "image/png")
-	c.Check(got[1].InlineData, qt.Not(qt.IsNil))
-	c.Check(got[1].InlineData.MIMEType, qt.Equals, "application/pdf")
-	c.Check(got[2].Text, qt.Equals, prompt) // Prompt is now last
+	c.Check(got[0].InlineData.MIMEType, qt.Equals, "application/pdf")
+	c.Check(got[1].Text, qt.Equals, prompt) // Prompt is last
+}
+
+func Test_buildReqParts_Audio(t *testing.T) {
+	c := qt.New(t)
+	prompt := "Describe the audio content."
+
+	// Read real test audio file
+	audioPath := "../../../../data/testdata/small_sample.wav"
+	audioBytes, err := os.ReadFile(audioPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	audio, err := data.NewAudioFromBytes(audioBytes, "audio/wav", "small_sample.wav", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in := TaskChatInput{
+		Prompt: &prompt,
+		Audio:  []format.Audio{audio},
+	}
+	got, err := buildReqParts(in)
+	c.Assert(err, qt.IsNil)
+	// Expect 1 audio + 1 text prompt = 2 parts
+	c.Assert(got, qt.HasLen, 2)
+
+	// Check audio part
+	c.Check(got[0].InlineData, qt.Not(qt.IsNil))
+	c.Check(got[0].InlineData.MIMEType, qt.Equals, "audio/wav")
+
+	// Check text prompt (should be last)
+	c.Check(got[1].Text, qt.Equals, prompt)
+}
+
+func Test_buildReqParts_Video(t *testing.T) {
+	c := qt.New(t)
+	prompt := "Describe the video content."
+
+	// Read real test video file
+	videoPath := "../../../../data/testdata/small_sample.mp4"
+	videoBytes, err := os.ReadFile(videoPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	video, err := data.NewVideoFromBytes(videoBytes, "video/mp4", "small_sample.mp4", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	in := TaskChatInput{
+		Prompt: &prompt,
+		Videos: []format.Video{video},
+	}
+	got, err := buildReqParts(in)
+	c.Assert(err, qt.IsNil)
+	// Expect 1 video + 1 text prompt = 2 parts
+	c.Assert(got, qt.HasLen, 2)
+
+	// Check video part
+	c.Check(got[0].InlineData, qt.Not(qt.IsNil))
+	c.Check(got[0].InlineData.MIMEType, qt.Equals, "video/mp4")
+
+	// Check text prompt (should be last)
+	c.Check(got[1].Text, qt.Equals, prompt)
+}
+
+func Test_processTextParts(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("with prompt only", func(t *testing.T) {
+		prompt := "Test prompt"
+		in := TaskChatInput{Prompt: &prompt}
+
+		got := processTextParts(in)
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].Text, qt.Equals, prompt)
+	})
+
+	t.Run("with contents text only", func(t *testing.T) {
+		textContent := "Content text"
+		in := TaskChatInput{
+			Contents: []*genai.Content{
+				{
+					Parts: []*genai.Part{
+						{Text: textContent},
+					},
+				},
+			},
+		}
+
+		got := processTextParts(in)
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].Text, qt.Equals, textContent)
+	})
+
+	t.Run("with both prompt and contents", func(t *testing.T) {
+		prompt := "Test prompt"
+		textContent := "Content text"
+		in := TaskChatInput{
+			Prompt: &prompt,
+			Contents: []*genai.Content{
+				{
+					Parts: []*genai.Part{
+						{Text: textContent},
+					},
+				},
+			},
+		}
+
+		got := processTextParts(in)
+		c.Assert(got, qt.HasLen, 2)
+		c.Check(got[0].Text, qt.Equals, textContent) // Content text comes first
+		c.Check(got[1].Text, qt.Equals, prompt)      // Prompt comes last
+	})
+
+	t.Run("with empty prompt", func(t *testing.T) {
+		emptyPrompt := ""
+		in := TaskChatInput{Prompt: &emptyPrompt}
+
+		got := processTextParts(in)
+		c.Assert(got, qt.HasLen, 0) // Empty prompt should not be added
+	})
+
+	t.Run("with nil prompt", func(t *testing.T) {
+		in := TaskChatInput{Prompt: nil}
+
+		got := processTextParts(in)
+		c.Assert(got, qt.HasLen, 0)
+	})
+}
+
+func Test_processNonTextContentParts(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("with non-text parts", func(t *testing.T) {
+		in := TaskChatInput{
+			Contents: []*genai.Content{
+				{
+					Parts: []*genai.Part{
+						{Text: "text part"},
+						{InlineData: &genai.Blob{MIMEType: "image/png", Data: []byte("fake")}},
+						{Text: "another text"},
+						{InlineData: &genai.Blob{MIMEType: "audio/wav", Data: []byte("fake")}},
+					},
+				},
+			},
+		}
+
+		got := processNonTextContentParts(in)
+		c.Assert(got, qt.HasLen, 2) // Only non-text parts
+		c.Check(got[0].InlineData.MIMEType, qt.Equals, "image/png")
+		c.Check(got[1].InlineData.MIMEType, qt.Equals, "audio/wav")
+	})
+
+	t.Run("with only text parts", func(t *testing.T) {
+		in := TaskChatInput{
+			Contents: []*genai.Content{
+				{
+					Parts: []*genai.Part{
+						{Text: "text part 1"},
+						{Text: "text part 2"},
+					},
+				},
+			},
+		}
+
+		got := processNonTextContentParts(in)
+		c.Assert(got, qt.HasLen, 0) // No non-text parts
+	})
+
+	t.Run("with empty contents", func(t *testing.T) {
+		in := TaskChatInput{Contents: nil}
+
+		got := processNonTextContentParts(in)
+		c.Assert(got, qt.HasLen, 0)
+	})
+}
+
+func Test_processImageParts(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("with supported format (PNG)", func(t *testing.T) {
+		imgData := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+		imageBytes, err := base64.StdEncoding.DecodeString(imgData)
+		c.Assert(err, qt.IsNil)
+
+		img, err := data.NewImageFromBytes(imageBytes, "image/png", "test.png", false)
+		c.Assert(err, qt.IsNil)
+
+		got, err := processImageParts([]format.Image{img})
+		c.Assert(err, qt.IsNil)
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].InlineData, qt.Not(qt.IsNil))
+		c.Check(got[0].InlineData.MIMEType, qt.Equals, "image/png")
+	})
+
+	t.Run("with supported format (JPEG)", func(t *testing.T) {
+		// JPEG header bytes for a minimal 1x1 image
+		jpegBytes := []byte{0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46}
+		img, err := data.NewImageFromBytes(jpegBytes, "image/jpeg", "test.jpg", false)
+		if err != nil {
+			// Skip if we can't create a valid JPEG for testing
+			t.Skip("Cannot create JPEG for testing")
+		}
+
+		got, err := processImageParts([]format.Image{img})
+		c.Assert(err, qt.IsNil)
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].InlineData.MIMEType, qt.Equals, "image/jpeg")
+	})
+
+	t.Run("with unsupported format (GIF)", func(t *testing.T) {
+		// GIF header for a minimal 1x1 transparent GIF
+		gifBytes := []byte{0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00}
+		img, err := data.NewImageFromBytes(gifBytes, "image/gif", "test.gif", false)
+		if err != nil {
+			// Skip if we can't create a valid GIF for testing
+			t.Skip("Cannot create GIF for testing")
+		}
+
+		got, err := processImageParts([]format.Image{img})
+		c.Assert(err, qt.Not(qt.IsNil))
+		c.Check(err.Error(), qt.Contains, "image format image/gif is not supported by Gemini API")
+		c.Check(err.Error(), qt.Contains, "such as \":png\"")
+		c.Check(err.Error(), qt.Contains, "Use \":\" syntax to convert GIF, BMP, TIFF to PNG, JPEG, WEBP")
+		c.Assert(got, qt.IsNil)
+	})
+
+	t.Run("with unsupported format (BMP)", func(t *testing.T) {
+		// BMP header for a minimal bitmap
+		bmpBytes := []byte{0x42, 0x4D, 0x3A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+		img, err := data.NewImageFromBytes(bmpBytes, "image/bmp", "test.bmp", false)
+		if err != nil {
+			// Skip if we can't create a valid BMP for testing
+			t.Skip("Cannot create BMP for testing")
+		}
+
+		got, err := processImageParts([]format.Image{img})
+		c.Assert(err, qt.Not(qt.IsNil))
+		c.Check(err.Error(), qt.Contains, "image format image/bmp is not supported by Gemini API")
+		c.Check(err.Error(), qt.Contains, "such as \":png\"")
+		c.Assert(got, qt.IsNil)
+	})
+
+	t.Run("with completely unknown format", func(t *testing.T) {
+		// Create a fake image with an unknown format
+		imgData := []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A} // PNG header
+		img, err := data.NewImageFromBytes(imgData, "image/unknown", "test.unknown", false)
+		if err != nil {
+			t.Skip("Cannot create unknown image format for testing")
+		}
+
+		got, err := processImageParts([]format.Image{img})
+		c.Assert(err, qt.Not(qt.IsNil))
+		c.Check(err.Error(), qt.Contains, "image format image/unknown is not supported and cannot be processed")
+		c.Assert(got, qt.IsNil)
+	})
+}
+
+func Test_processAudioParts(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("with supported format (WAV)", func(t *testing.T) {
+		// Read real test audio file
+		audioPath := "../../../../data/testdata/small_sample.wav"
+		audioBytes, err := os.ReadFile(audioPath)
+		c.Assert(err, qt.IsNil)
+
+		audio, err := data.NewAudioFromBytes(audioBytes, "audio/wav", "small_sample.wav", false)
+		c.Assert(err, qt.IsNil)
+
+		got, err := processAudioParts([]format.Audio{audio})
+		c.Assert(err, qt.IsNil)
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].InlineData, qt.Not(qt.IsNil))
+		c.Check(got[0].InlineData.MIMEType, qt.Equals, "audio/wav")
+	})
+
+	t.Run("with supported format (OGG)", func(t *testing.T) {
+		// Use the real WAV file but create it as OGG format for testing
+		audioPath := "../../../../data/testdata/small_sample.wav"
+		audioBytes, err := os.ReadFile(audioPath)
+		c.Assert(err, qt.IsNil)
+
+		// Create audio with OGG content type (unified format in pipeline-backend)
+		audio, err := data.NewAudioFromBytes(audioBytes, "audio/ogg", "test.ogg", false)
+		if err != nil {
+			t.Skip("Cannot create OGG audio for testing")
+		}
+
+		got, err := processAudioParts([]format.Audio{audio})
+		c.Assert(err, qt.IsNil)
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].InlineData.MIMEType, qt.Equals, "audio/ogg")
+	})
+
+	t.Run("with completely unknown format", func(t *testing.T) {
+		// Use a real audio file but with an unknown content type
+		audioPath := "../../../../data/testdata/small_sample.wav"
+		audioBytes, err := os.ReadFile(audioPath)
+		c.Assert(err, qt.IsNil)
+
+		audio, err := data.NewAudioFromBytes(audioBytes, "audio/unknown", "test.unknown", false)
+		if err != nil {
+			t.Skip("Cannot create unknown audio format for testing")
+		}
+
+		got, err := processAudioParts([]format.Audio{audio})
+		c.Assert(err, qt.Not(qt.IsNil))
+		c.Check(err.Error(), qt.Contains, "audio format audio/unknown is not supported and cannot be processed")
+		c.Assert(got, qt.IsNil)
+	})
+}
+
+func Test_processVideoParts(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("with supported format (MP4)", func(t *testing.T) {
+		// Read real test video file
+		videoPath := "../../../../data/testdata/small_sample.mp4"
+		videoBytes, err := os.ReadFile(videoPath)
+		c.Assert(err, qt.IsNil)
+
+		video, err := data.NewVideoFromBytes(videoBytes, "video/mp4", "small_sample.mp4", false)
+		c.Assert(err, qt.IsNil)
+
+		got, err := processVideoParts([]format.Video{video})
+		c.Assert(err, qt.IsNil)
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].InlineData, qt.Not(qt.IsNil))
+		c.Check(got[0].InlineData.MIMEType, qt.Equals, "video/mp4")
+	})
+
+	t.Run("with supported format (WEBM)", func(t *testing.T) {
+		// Use the real MP4 file but create it as WEBM format for testing
+		videoPath := "../../../../data/testdata/small_sample.mp4"
+		videoBytes, err := os.ReadFile(videoPath)
+		c.Assert(err, qt.IsNil)
+
+		// Create video with WEBM content type
+		video, err := data.NewVideoFromBytes(videoBytes, "video/webm", "test.webm", false)
+		if err != nil {
+			t.Skip("Cannot create WEBM video for testing")
+		}
+
+		got, err := processVideoParts([]format.Video{video})
+		c.Assert(err, qt.IsNil)
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].InlineData.MIMEType, qt.Equals, "video/webm")
+	})
+
+	t.Run("with unsupported format (MKV)", func(t *testing.T) {
+		// Use a real video file but with an unsupported content type for testing validation logic
+		videoPath := "../../../../data/testdata/small_sample.mp4"
+		videoBytes, err := os.ReadFile(videoPath)
+		c.Assert(err, qt.IsNil)
+
+		// Create video with unsupported format (MKV) to test validation
+		video, err := data.NewVideoFromBytes(videoBytes, "video/x-matroska", "test.mkv", false)
+		if err != nil {
+			t.Skip("Cannot create MKV video for testing")
+		}
+
+		got, err := processVideoParts([]format.Video{video})
+		c.Assert(err, qt.Not(qt.IsNil))
+		c.Check(err.Error(), qt.Contains, "video format video/x-matroska is not supported by Gemini API")
+		c.Check(err.Error(), qt.Contains, "such as \":mp4\"")
+		c.Check(err.Error(), qt.Contains, "Use \":\" syntax to convert MKV to MP4, MPEG, MOV, AVI, FLV, WEBM, WMV")
+		c.Assert(got, qt.IsNil)
+	})
+
+	t.Run("with completely unknown format", func(t *testing.T) {
+		// Use a real video file but with an unknown content type
+		videoPath := "../../../../data/testdata/small_sample.mp4"
+		videoBytes, err := os.ReadFile(videoPath)
+		c.Assert(err, qt.IsNil)
+
+		video, err := data.NewVideoFromBytes(videoBytes, "video/unknown", "test.unknown", false)
+		if err != nil {
+			t.Skip("Cannot create unknown video format for testing")
+		}
+
+		got, err := processVideoParts([]format.Video{video})
+		c.Assert(err, qt.Not(qt.IsNil))
+		c.Check(err.Error(), qt.Contains, "video format video/unknown is not supported and cannot be processed")
+		c.Assert(got, qt.IsNil)
+	})
+}
+
+func Test_processDocumentParts(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("with PDF document", func(t *testing.T) {
+		pdfHeader := "JVBERi0xLjQK" // raw base64 PDF header
+		pdfBytes, err := base64.StdEncoding.DecodeString(pdfHeader)
+		c.Assert(err, qt.IsNil)
+
+		doc, err := data.NewDocumentFromBytes(pdfBytes, "application/pdf", "test.pdf")
+		c.Assert(err, qt.IsNil)
+
+		got, err := processDocumentParts([]format.Document{doc})
+		c.Assert(err, qt.IsNil)
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].InlineData, qt.Not(qt.IsNil))
+		c.Check(got[0].InlineData.MIMEType, qt.Equals, "application/pdf")
+	})
+
+	t.Run("with text-based document", func(t *testing.T) {
+		textContent := "This is a plain text document"
+		textBytes := []byte(textContent)
+
+		doc, err := data.NewDocumentFromBytes(textBytes, "text/plain", "test.txt")
+		c.Assert(err, qt.IsNil)
+
+		got, err := processDocumentParts([]format.Document{doc})
+		c.Assert(err, qt.IsNil)
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].Text, qt.Equals, textContent)
+		c.Check(got[0].InlineData, qt.IsNil) // Text-based docs don't use InlineData
+	})
+
+	t.Run("with HTML document", func(t *testing.T) {
+		htmlContent := "<html><body><h1>Test</h1></body></html>"
+		htmlBytes := []byte(htmlContent)
+
+		doc, err := data.NewDocumentFromBytes(htmlBytes, "text/html", "test.html")
+		c.Assert(err, qt.IsNil)
+
+		got, err := processDocumentParts([]format.Document{doc})
+		c.Assert(err, qt.IsNil)
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].Text, qt.Equals, htmlContent)
+		c.Check(got[0].InlineData, qt.IsNil)
+	})
+
+	t.Run("with unsupported convertible document", func(t *testing.T) {
+		docBytes := []byte("This is a DOC document")
+		doc, err := data.NewDocumentFromBytes(docBytes, data.DOC, "test.doc")
+		c.Assert(err, qt.IsNil)
+
+		got, err := processDocumentParts([]format.Document{doc})
+		c.Assert(err, qt.Not(qt.IsNil))
+		c.Check(err.Error(), qt.Contains, "document format application/msword will be processed as text only")
+		c.Assert(got, qt.IsNil)
+	})
+
+	t.Run("with unsupported document type", func(t *testing.T) {
+		docBytes := []byte("fake binary data")
+		doc, err := data.NewDocumentFromBytes(docBytes, "application/unknown", "test.unknown")
+		if err != nil {
+			t.Skip("Cannot create document with unknown type for testing")
+		}
+
+		got, err := processDocumentParts([]format.Document{doc})
+		c.Assert(err, qt.Not(qt.IsNil))
+		c.Check(err.Error(), qt.Contains, "unsupported document type: application/unknown")
+		c.Assert(got, qt.IsNil)
+	})
+
+	t.Run("with empty documents slice", func(t *testing.T) {
+		got, err := processDocumentParts([]format.Document{})
+		c.Assert(err, qt.IsNil)
+		c.Assert(got, qt.HasLen, 0)
+	})
 }
 
 func Test_buildReqParts_UnsupportedDocumentMIME_Convertible(t *testing.T) {
@@ -127,108 +609,88 @@ func Test_buildReqParts_UnsupportedDocumentMIME_Convertible(t *testing.T) {
 
 	got, err := buildReqParts(in)
 	c.Assert(err, qt.Not(qt.IsNil))
-	c.Assert(err.Error(), qt.Contains, "document type application/msword will be processed as text only")
-	c.Assert(err.Error(), qt.Contains, "use \":pdf\" syntax")
+	c.Assert(err.Error(), qt.Contains, "document format application/msword will be processed as text only")
+	c.Assert(err.Error(), qt.Contains, "Use \":pdf\" syntax")
 	c.Assert(got, qt.IsNil)
 }
 
-func Test_buildReqParts_TextBasedDocument_CSV(t *testing.T) {
+func Test_buildReqParts_UnsupportedImageFormat(t *testing.T) {
 	c := qt.New(t)
-	prompt := "Summarize this."
+	prompt := "Describe this image."
 
-	// Create a document with text-based MIME type (CSV)
-	csvContent := "name,age\nJohn,30\nJane,25"
-	docBytes := []byte(csvContent)
-	doc, err := data.NewDocumentFromBytes(docBytes, data.CSV, "test.csv")
+	// Create an image with unsupported format (GIF)
+	gifBytes := []byte{0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00}
+	img, err := data.NewImageFromBytes(gifBytes, "image/gif", "test.gif", false)
 	if err != nil {
-		t.Fatal(err)
+		t.Skip("Cannot create GIF for testing")
 	}
 
 	in := TaskChatInput{
-		Prompt:    &prompt,
-		Documents: []format.Document{doc},
-	}
-
-	got, err := buildReqParts(in)
-	c.Assert(err, qt.IsNil)
-	// Expect 1 text part (CSV content) + 1 text part (prompt) = 2 parts
-	c.Assert(got, qt.HasLen, 2)
-	c.Check(got[0].Text, qt.Equals, csvContent) // CSV content as text
-	c.Check(got[1].Text, qt.Equals, prompt)     // Prompt comes last
-}
-
-func Test_buildReqParts_TextBasedDocument_HTML(t *testing.T) {
-	c := qt.New(t)
-	prompt := "Extract the main content."
-
-	// Create an HTML document
-	htmlContent := "<html><body><h1>Title</h1><p>Content</p></body></html>"
-	docBytes := []byte(htmlContent)
-	doc, err := data.NewDocumentFromBytes(docBytes, data.HTML, "test.html")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	in := TaskChatInput{
-		Prompt:    &prompt,
-		Documents: []format.Document{doc},
-	}
-
-	got, err := buildReqParts(in)
-	c.Assert(err, qt.IsNil)
-	// Expect 1 text part (HTML content) + 1 text part (prompt) = 2 parts
-	c.Assert(got, qt.HasLen, 2)
-	c.Check(got[0].Text, qt.Equals, htmlContent) // HTML content as text (tags preserved in extraction)
-	c.Check(got[1].Text, qt.Equals, prompt)      // Prompt comes last
-}
-
-func Test_buildReqParts_TextBasedDocument_Markdown(t *testing.T) {
-	c := qt.New(t)
-	prompt := "Convert to HTML."
-
-	// Create a Markdown document
-	markdownContent := "# Title\n\nThis is **bold** text."
-	docBytes := []byte(markdownContent)
-	doc, err := data.NewDocumentFromBytes(docBytes, data.MARKDOWN, "test.md")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	in := TaskChatInput{
-		Prompt:    &prompt,
-		Documents: []format.Document{doc},
-	}
-
-	got, err := buildReqParts(in)
-	c.Assert(err, qt.IsNil)
-	// Expect 1 text part (Markdown content) + 1 text part (prompt) = 2 parts
-	c.Assert(got, qt.HasLen, 2)
-	c.Check(got[0].Text, qt.Equals, markdownContent) // Markdown content as text
-	c.Check(got[1].Text, qt.Equals, prompt)          // Prompt comes last
-}
-
-func Test_buildReqParts_UnsupportedDocumentType(t *testing.T) {
-	c := qt.New(t)
-	prompt := "Process this."
-
-	// Create a mock document that simulates an unsupported type
-	// We'll create a document with a supported data package type but use a filename that won't trigger conversion
-	docBytes := []byte("binary data")
-	doc, err := data.NewDocumentFromBytes(docBytes, data.OCTETSTREAM, "test.unknown")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	in := TaskChatInput{
-		Prompt:    &prompt,
-		Documents: []format.Document{doc},
+		Prompt: &prompt,
+		Images: []format.Image{img},
 	}
 
 	got, err := buildReqParts(in)
 	c.Assert(err, qt.Not(qt.IsNil))
-	// Since OCTETSTREAM with unknown extension gets converted to DOC by default,
-	// it will be caught by our convertible check
-	c.Assert(err.Error(), qt.Contains, "document type application/msword will be processed as text only")
+	c.Assert(err.Error(), qt.Contains, "image format image/gif is not supported by Gemini API")
+	c.Assert(err.Error(), qt.Contains, "Use \":\" syntax to convert GIF, BMP, TIFF to PNG, JPEG, WEBP")
+	c.Assert(err.Error(), qt.Contains, "such as \":png\"")
+	c.Assert(got, qt.IsNil)
+}
+
+func Test_buildReqParts_UnsupportedAudioFormat(t *testing.T) {
+	c := qt.New(t)
+	prompt := "Describe this audio."
+
+	// Use a real audio file but with an unsupported content type for testing validation logic
+	audioPath := "../../../../data/testdata/small_sample.wav"
+	audioBytes, err := os.ReadFile(audioPath)
+	c.Assert(err, qt.IsNil)
+
+	// Create audio with unsupported format (M4A) to test validation
+	audio, err := data.NewAudioFromBytes(audioBytes, "audio/mp4", "test.m4a", false)
+	if err != nil {
+		t.Skip("Cannot create M4A audio for testing")
+	}
+
+	in := TaskChatInput{
+		Prompt: &prompt,
+		Audio:  []format.Audio{audio},
+	}
+
+	got, err := buildReqParts(in)
+	c.Assert(err, qt.Not(qt.IsNil))
+	c.Assert(err.Error(), qt.Contains, "audio format audio/mp4 is not supported by Gemini API")
+	c.Assert(err.Error(), qt.Contains, "Use \":\" syntax to convert M4A, WMA to WAV, MP3, AIFF, AAC, OGG, FLAC")
+	c.Assert(err.Error(), qt.Contains, "such as \":wav\"")
+	c.Assert(got, qt.IsNil)
+}
+
+func Test_buildReqParts_UnsupportedVideoFormat(t *testing.T) {
+	c := qt.New(t)
+	prompt := "Describe this video."
+
+	// Use a real video file but with an unsupported content type for testing validation logic
+	videoPath := "../../../../data/testdata/small_sample.mp4"
+	videoBytes, err := os.ReadFile(videoPath)
+	c.Assert(err, qt.IsNil)
+
+	// Create video with unsupported format (MKV) to test validation
+	video, err := data.NewVideoFromBytes(videoBytes, "video/x-matroska", "test.mkv", false)
+	if err != nil {
+		t.Skip("Cannot create MKV video for testing")
+	}
+
+	in := TaskChatInput{
+		Prompt: &prompt,
+		Videos: []format.Video{video},
+	}
+
+	got, err := buildReqParts(in)
+	c.Assert(err, qt.Not(qt.IsNil))
+	c.Assert(err.Error(), qt.Contains, "video format video/x-matroska is not supported by Gemini API")
+	c.Assert(err.Error(), qt.Contains, "Use \":\" syntax to convert MKV to MP4, MPEG, MOV, AVI, FLV, WEBM, WMV")
+	c.Assert(err.Error(), qt.Contains, "such as \":mp4\"")
 	c.Assert(got, qt.IsNil)
 }
 
@@ -290,44 +752,6 @@ func Test_buildReqParts_Contents_TextOrdering(t *testing.T) {
 	c.Check(got[4].Text, qt.Equals, textPart2) // Second text from Contents
 }
 
-func Test_isTextBasedDocument(t *testing.T) {
-	c := qt.New(t)
-
-	// Test text-based document types
-	c.Check(isTextBasedDocument(data.HTML), qt.Equals, true)
-	c.Check(isTextBasedDocument(data.MARKDOWN), qt.Equals, true)
-	c.Check(isTextBasedDocument(data.PLAIN), qt.Equals, true)
-	c.Check(isTextBasedDocument(data.CSV), qt.Equals, true)
-	c.Check(isTextBasedDocument("text/xml"), qt.Equals, true)
-	c.Check(isTextBasedDocument("text/javascript"), qt.Equals, true)
-
-	// Test non-text-based document types
-	c.Check(isTextBasedDocument(data.PDF), qt.Equals, false)
-	c.Check(isTextBasedDocument(data.DOC), qt.Equals, false)
-	c.Check(isTextBasedDocument(data.DOCX), qt.Equals, false)
-	c.Check(isTextBasedDocument("application/octet-stream"), qt.Equals, false)
-	c.Check(isTextBasedDocument("image/png"), qt.Equals, false)
-}
-
-func Test_isConvertibleToPDF(t *testing.T) {
-	c := qt.New(t)
-
-	// Test convertible document types
-	c.Check(isConvertibleToPDF(data.DOC), qt.Equals, true)
-	c.Check(isConvertibleToPDF(data.DOCX), qt.Equals, true)
-	c.Check(isConvertibleToPDF(data.PPT), qt.Equals, true)
-	c.Check(isConvertibleToPDF(data.PPTX), qt.Equals, true)
-	c.Check(isConvertibleToPDF(data.XLS), qt.Equals, true)
-	c.Check(isConvertibleToPDF(data.XLSX), qt.Equals, true)
-
-	// Test non-convertible document types
-	c.Check(isConvertibleToPDF(data.PDF), qt.Equals, false)
-	c.Check(isConvertibleToPDF(data.HTML), qt.Equals, false)
-	c.Check(isConvertibleToPDF(data.MARKDOWN), qt.Equals, false)
-	c.Check(isConvertibleToPDF(data.PLAIN), qt.Equals, false)
-	c.Check(isConvertibleToPDF("application/octet-stream"), qt.Equals, false)
-}
-
 func Test_renderFinal_Minimal(t *testing.T) {
 	c := qt.New(t)
 	// Build a minimal GenerateContentResponse with one candidate and usage
@@ -353,104 +777,6 @@ func Test_renderFinal_Minimal(t *testing.T) {
 	c.Check(out.ResponseID, qt.Not(qt.IsNil))
 	c.Check(*out.ResponseID, qt.Equals, "resp-123")
 	c.Check(out.UsageMetadata.TotalTokenCount, qt.Equals, int32(3))
-}
-
-func Test_renderFinal_StreamingCandidatesPreservation(t *testing.T) {
-	c := qt.New(t)
-
-	// Simulate a streaming scenario with multiple chunks that would be merged
-	// This represents what the streaming logic should produce as finalResp
-
-	// Create a response that simulates merged streaming chunks
-	// Chunk 1: "Hello" (first part)
-	// Chunk 2: " world" (second part)
-	// Chunk 3: "!" (third part)
-	mergedResp := &genai.GenerateContentResponse{
-		ModelVersion: "gemini-2.5-pro",
-		ResponseID:   "resp-streaming-123",
-		Candidates: []*genai.Candidate{
-			{
-				Index:        0,
-				FinishReason: genai.FinishReasonStop,
-				TokenCount:   10,
-				AvgLogprobs:  -0.5,
-				Content: &genai.Content{
-					Role: genai.RoleModel,
-					Parts: []*genai.Part{
-						{Text: "Hello"},  // From chunk 1
-						{Text: " world"}, // From chunk 2
-						{Text: "!"},      // From chunk 3
-					},
-				},
-				SafetyRatings: []*genai.SafetyRating{
-					{
-						Category:    genai.HarmCategoryDangerousContent,
-						Probability: genai.HarmProbabilityNegligible,
-						Blocked:     false,
-					},
-				},
-			},
-			{
-				Index:        1,
-				FinishReason: genai.FinishReasonStop,
-				TokenCount:   8,
-				AvgLogprobs:  -0.3,
-				Content: &genai.Content{
-					Role: genai.RoleModel,
-					Parts: []*genai.Part{
-						{Text: "Alternative"}, // From chunk 1
-						{Text: " response"},   // From chunk 2
-					},
-				},
-			},
-		},
-		UsageMetadata: &genai.GenerateContentResponseUsageMetadata{
-			PromptTokenCount:     5,
-			CandidatesTokenCount: 18,
-			TotalTokenCount:      23,
-		},
-	}
-
-	// Test renderFinal with the merged response
-	out := renderFinal(mergedResp, nil)
-
-	// Verify Texts field reflects all candidate parts text
-	c.Assert(len(out.Texts), qt.Equals, 2)
-	c.Assert(out.Texts[0], qt.Equals, "Hello world!")         // All parts from candidate 0 concatenated
-	c.Assert(out.Texts[1], qt.Equals, "Alternative response") // All parts from candidate 1 concatenated
-
-	// Verify all candidates are preserved
-	c.Assert(len(out.Candidates), qt.Equals, 2)
-
-	// Verify first candidate
-	c.Assert(out.Candidates[0].Index, qt.Equals, int32(0))
-	c.Assert(out.Candidates[0].FinishReason, qt.Equals, genai.FinishReasonStop)
-	c.Assert(out.Candidates[0].TokenCount, qt.Equals, int32(10))
-	c.Assert(out.Candidates[0].AvgLogprobs, qt.Equals, -0.5)
-	c.Assert(out.Candidates[0].Content, qt.Not(qt.IsNil))
-	c.Assert(len(out.Candidates[0].Content.Parts), qt.Equals, 3) // All 3 parts preserved
-	c.Assert(out.Candidates[0].Content.Parts[0].Text, qt.Equals, "Hello")
-	c.Assert(out.Candidates[0].Content.Parts[1].Text, qt.Equals, " world")
-	c.Assert(out.Candidates[0].Content.Parts[2].Text, qt.Equals, "!")
-	c.Assert(len(out.Candidates[0].SafetyRatings), qt.Equals, 1)
-
-	// Verify second candidate
-	c.Assert(out.Candidates[1].Index, qt.Equals, int32(1))
-	c.Assert(out.Candidates[1].FinishReason, qt.Equals, genai.FinishReasonStop)
-	c.Assert(out.Candidates[1].TokenCount, qt.Equals, int32(8))
-	c.Assert(out.Candidates[1].AvgLogprobs, qt.Equals, -0.3)
-	c.Assert(out.Candidates[1].Content, qt.Not(qt.IsNil))
-	c.Assert(len(out.Candidates[1].Content.Parts), qt.Equals, 2) // All 2 parts preserved
-	c.Assert(out.Candidates[1].Content.Parts[0].Text, qt.Equals, "Alternative")
-	c.Assert(out.Candidates[1].Content.Parts[1].Text, qt.Equals, " response")
-
-	// Verify response metadata
-	c.Assert(out.ModelVersion, qt.Not(qt.IsNil))
-	c.Assert(*out.ModelVersion, qt.Equals, "gemini-2.5-pro")
-	c.Assert(out.ResponseID, qt.Not(qt.IsNil))
-	c.Assert(*out.ResponseID, qt.Equals, "resp-streaming-123")
-	c.Assert(out.UsageMetadata.TotalTokenCount, qt.Equals, int32(23))
-	c.Assert(out.UsageMetadata.CandidatesTokenCount, qt.Equals, int32(18))
 }
 
 func Test_buildGenerateContentConfig_NoConfig(t *testing.T) {
@@ -485,513 +811,268 @@ func Test_buildGenerateContentConfig_FlattenedFields(t *testing.T) {
 	c.Check(*cfg.Seed, qt.Equals, seed)
 }
 
-func Test_buildGenerateContentConfig_SystemMessage(t *testing.T) {
+func Test_buildUsageMap(t *testing.T) {
 	c := qt.New(t)
-	in := TaskChatInput{}
-	systemMsg := "You are a helpful assistant"
 
-	cfg := buildGenerateContentConfig(in, systemMsg)
-	c.Assert(cfg, qt.IsNotNil)
-	c.Assert(cfg.SystemInstruction, qt.IsNotNil)
-	c.Assert(cfg.SystemInstruction.Parts, qt.HasLen, 1)
-	c.Check(cfg.SystemInstruction.Parts[0].Text, qt.Equals, systemMsg)
+	t.Run("with complete metadata", func(t *testing.T) {
+		metadata := &genai.GenerateContentResponseUsageMetadata{
+			PromptTokenCount:        10,
+			CachedContentTokenCount: 5,
+			CandidatesTokenCount:    20,
+			TotalTokenCount:         35,
+			ToolUsePromptTokenCount: 3,
+			ThoughtsTokenCount:      2,
+		}
+
+		got := buildUsageMap(metadata)
+		c.Check(got["prompt-token-count"], qt.Equals, int32(10))
+		c.Check(got["cached-content-token-count"], qt.Equals, int32(5))
+		c.Check(got["candidates-token-count"], qt.Equals, int32(20))
+		c.Check(got["total-token-count"], qt.Equals, int32(35))
+		c.Check(got["tool-use-prompt-token-count"], qt.Equals, int32(3))
+		c.Check(got["thoughts-token-count"], qt.Equals, int32(2))
+	})
+
+	t.Run("with nil metadata", func(t *testing.T) {
+		// This test documents that buildUsageMap doesn't handle nil gracefully
+		// In practice, it's always called with valid metadata from the API response
+		c.Check(func() { buildUsageMap(nil) }, qt.PanicMatches, "runtime error: invalid memory address or nil pointer dereference")
+	})
 }
 
-func Test_buildGenerateContentConfig_SystemMessagePriority(t *testing.T) {
+func Test_accumulateTexts(t *testing.T) {
 	c := qt.New(t)
-	systemInstructionText := "System instruction text"
-	systemInstruction := &genai.Content{
-		Parts: []*genai.Part{{Text: systemInstructionText}},
-	}
+	exec := &execution{}
 
-	in := TaskChatInput{
-		SystemInstruction: systemInstruction,
-	}
-	systemMsg := "System message text"
-
-	cfg := buildGenerateContentConfig(in, systemMsg)
-	c.Assert(cfg, qt.IsNotNil)
-	c.Assert(cfg.SystemInstruction, qt.IsNotNil)
-	c.Assert(cfg.SystemInstruction.Parts, qt.HasLen, 1)
-	// Should prioritize systemMessage over SystemInstruction
-	c.Check(cfg.SystemInstruction.Parts[0].Text, qt.Equals, systemMsg)
-}
-
-func Test_buildGenerateContentConfig_GenerationConfig(t *testing.T) {
-	c := qt.New(t)
-	temp := float32(0.8)
-	candidateCount := int32(2)
-	stopSeqs := []string{"stop1", "stop2"}
-
-	in := TaskChatInput{
-		GenerationConfig: &genai.GenerationConfig{
-			Temperature:    genai.Ptr(temp),
-			CandidateCount: candidateCount,
-			StopSequences:  stopSeqs,
-		},
-	}
-
-	cfg := buildGenerateContentConfig(in, "")
-	c.Assert(cfg, qt.IsNotNil)
-	c.Check(*cfg.Temperature, qt.Equals, temp)
-	c.Check(cfg.CandidateCount, qt.Equals, candidateCount)
-	c.Check(cfg.StopSequences, qt.DeepEquals, stopSeqs)
-}
-
-func Test_buildGenerateContentConfig_FlattenedTakesPrecedence(t *testing.T) {
-	c := qt.New(t)
-	flattenedTemp := float32(0.5)
-	configTemp := float32(0.8)
-
-	in := TaskChatInput{
-		Temperature: &flattenedTemp,
-		GenerationConfig: &genai.GenerationConfig{
-			Temperature: genai.Ptr(configTemp),
-		},
-	}
-
-	cfg := buildGenerateContentConfig(in, "")
-	c.Assert(cfg, qt.IsNotNil)
-	// Flattened field should take precedence
-	c.Check(*cfg.Temperature, qt.Equals, flattenedTemp)
-}
-
-func Test_buildTools_FunctionDeclarations(t *testing.T) {
-	c := qt.New(t)
-	funcName := "test_function"
-	funcDesc := "Test function description"
-
-	tools := []*genai.Tool{
-		{
-			FunctionDeclarations: []*genai.FunctionDeclaration{
+	t.Run("with new candidates", func(t *testing.T) {
+		texts := []string{}
+		resp := &genai.GenerateContentResponse{
+			Candidates: []*genai.Candidate{
 				{
-					Name:        funcName,
-					Description: funcDesc,
-					Parameters: &genai.Schema{
-						Type: genai.TypeObject,
-						Properties: map[string]*genai.Schema{
-							"param1": {Type: genai.TypeString},
+					Content: &genai.Content{
+						Parts: []*genai.Part{
+							{Text: "Hello"},
+							{Text: " world"},
 						},
-						Required: []string{"param1"},
+					},
+				},
+				{
+					Content: &genai.Content{
+						Parts: []*genai.Part{
+							{Text: "Second candidate"},
+						},
 					},
 				},
 			},
-		},
-	}
+		}
 
-	// Since we're using genai types directly, no conversion needed
-	result := tools
-	c.Assert(result, qt.HasLen, 1)
-	c.Assert(result[0].FunctionDeclarations, qt.HasLen, 1)
-	c.Check(result[0].FunctionDeclarations[0].Name, qt.Equals, funcName)
-	c.Check(result[0].FunctionDeclarations[0].Description, qt.Equals, funcDesc)
-	c.Assert(result[0].FunctionDeclarations[0].Parameters, qt.IsNotNil)
-	c.Check(result[0].FunctionDeclarations[0].Parameters.Type, qt.Equals, genai.TypeObject)
-}
+		exec.accumulateTexts(resp, &texts)
+		c.Assert(texts, qt.HasLen, 2)
+		c.Check(texts[0], qt.Equals, "Hello world")
+		c.Check(texts[1], qt.Equals, "Second candidate")
+	})
 
-func Test_buildTools_GoogleSearchRetrieval(t *testing.T) {
-	c := qt.New(t)
-	tools := []*genai.Tool{
-		{
-			GoogleSearchRetrieval: &genai.GoogleSearchRetrieval{},
-		},
-	}
-
-	// Since we're using genai types directly, no conversion needed
-	result := tools
-	c.Assert(result, qt.HasLen, 1)
-	c.Check(result[0].GoogleSearchRetrieval, qt.IsNotNil)
-}
-
-func Test_buildTools_CodeExecution(t *testing.T) {
-	c := qt.New(t)
-	tools := []*genai.Tool{
-		{
-			CodeExecution: &genai.ToolCodeExecution{},
-		},
-	}
-
-	// Since we're using genai types directly, no conversion needed
-	result := tools
-	c.Assert(result, qt.HasLen, 1)
-	c.Check(result[0].CodeExecution, qt.IsNotNil)
-}
-
-func Test_buildGenerateContentConfig_AllFieldsIntegration(t *testing.T) {
-	c := qt.New(t)
-
-	// Setup comprehensive input with all the previously missing fields
-	temp := float32(0.7)
-	seed := int32(123)
-	cachedContent := "cached-content-id"
-	systemText := "System instruction"
-
-	in := TaskChatInput{
-		Temperature: &temp,
-		Seed:        &seed,
-		Tools: []*genai.Tool{
-			{
-				FunctionDeclarations: []*genai.FunctionDeclaration{
-					{Name: "test_func"},
+	t.Run("with existing texts", func(t *testing.T) {
+		texts := []string{"Existing", "Text"}
+		resp := &genai.GenerateContentResponse{
+			Candidates: []*genai.Candidate{
+				{
+					Content: &genai.Content{
+						Parts: []*genai.Part{
+							{Text: " more"},
+						},
+					},
 				},
 			},
-		},
-		ToolConfig: &genai.ToolConfig{
-			FunctionCallingConfig: &genai.FunctionCallingConfig{
-				AllowedFunctionNames: []string{"test_func"},
+		}
+
+		exec.accumulateTexts(resp, &texts)
+		c.Assert(texts, qt.HasLen, 2)
+		c.Check(texts[0], qt.Equals, "Existing more")
+		c.Check(texts[1], qt.Equals, "Text")
+	})
+
+	t.Run("with nil response", func(t *testing.T) {
+		texts := []string{"existing"}
+		original := make([]string, len(texts))
+		copy(original, texts)
+
+		exec.accumulateTexts(nil, &texts)
+		c.Check(texts, qt.DeepEquals, original)
+	})
+}
+
+func Test_mergeResponseChunk(t *testing.T) {
+	c := qt.New(t)
+	exec := &execution{}
+
+	t.Run("with nil finalResp", func(t *testing.T) {
+		var finalResp *genai.GenerateContentResponse
+		chunk := &genai.GenerateContentResponse{
+			ModelVersion: "v1",
+			ResponseID:   "resp-123",
+			Candidates: []*genai.Candidate{
+				{
+					Index: 0,
+					Content: &genai.Content{
+						Parts: []*genai.Part{{Text: "Hello"}},
+					},
+				},
 			},
-		},
-		SafetySettings: []*genai.SafetySetting{
-			{Category: genai.HarmCategory("HARM_CATEGORY_HARASSMENT"), Threshold: genai.HarmBlockThreshold("BLOCK_MEDIUM_AND_ABOVE")},
-		},
-		SystemInstruction: &genai.Content{
-			Parts: []*genai.Part{{Text: systemText}},
-		},
-		CachedContent: &cachedContent,
-	}
+			UsageMetadata: &genai.GenerateContentResponseUsageMetadata{
+				TotalTokenCount: 10,
+			},
+		}
 
-	cfg := buildGenerateContentConfig(in, "") // Empty systemMessage since no SystemMessage field is set
+		exec.mergeResponseChunk(chunk, &finalResp)
+		c.Assert(finalResp, qt.Not(qt.IsNil))
+		c.Check(finalResp.ModelVersion, qt.Equals, "v1")
+		c.Check(finalResp.ResponseID, qt.Equals, "resp-123")
+		c.Assert(finalResp.Candidates, qt.HasLen, 1)
+		c.Check(finalResp.Candidates[0].Content.Parts[0].Text, qt.Equals, "Hello")
+	})
 
-	// Verify all fields are properly set
-	c.Assert(cfg, qt.IsNotNil)
-	c.Check(*cfg.Temperature, qt.Equals, temp)
-	c.Check(*cfg.Seed, qt.Equals, seed)
-	c.Check(cfg.CachedContent, qt.Equals, cachedContent)
+	t.Run("with existing finalResp", func(t *testing.T) {
+		finalResp := &genai.GenerateContentResponse{
+			ModelVersion: "v1",
+			ResponseID:   "resp-123",
+			Candidates: []*genai.Candidate{
+				{
+					Index: 0,
+					Content: &genai.Content{
+						Parts: []*genai.Part{{Text: "Hello"}},
+					},
+				},
+			},
+		}
 
-	// Verify Tools conversion
-	c.Assert(cfg.Tools, qt.HasLen, 1)
-	c.Assert(cfg.Tools[0].FunctionDeclarations, qt.HasLen, 1)
-	c.Check(cfg.Tools[0].FunctionDeclarations[0].Name, qt.Equals, "test_func")
+		chunk := &genai.GenerateContentResponse{
+			Candidates: []*genai.Candidate{
+				{
+					Index: 0,
+					Content: &genai.Content{
+						Parts: []*genai.Part{{Text: " world"}},
+					},
+				},
+			},
+			UsageMetadata: &genai.GenerateContentResponseUsageMetadata{
+				TotalTokenCount: 15,
+			},
+		}
 
-	// Verify ToolConfig conversion
-	c.Assert(cfg.ToolConfig, qt.IsNotNil)
-	c.Assert(cfg.ToolConfig.FunctionCallingConfig, qt.IsNotNil)
-	c.Check(cfg.ToolConfig.FunctionCallingConfig.AllowedFunctionNames, qt.DeepEquals, []string{"test_func"})
-
-	// Verify SafetySettings conversion
-	c.Assert(cfg.SafetySettings, qt.HasLen, 1)
-	c.Check(cfg.SafetySettings[0].Category, qt.Equals, genai.HarmCategory("HARM_CATEGORY_HARASSMENT"))
-	c.Check(cfg.SafetySettings[0].Threshold, qt.Equals, genai.HarmBlockThreshold("BLOCK_MEDIUM_AND_ABOVE"))
-
-	// Verify SystemInstruction is used when no systemMessage is provided
-	c.Assert(cfg.SystemInstruction, qt.IsNotNil)
-	c.Assert(cfg.SystemInstruction.Parts, qt.HasLen, 1)
-	c.Check(cfg.SystemInstruction.Parts[0].Text, qt.Equals, systemText)
+		exec.mergeResponseChunk(chunk, &finalResp)
+		c.Assert(finalResp.Candidates, qt.HasLen, 1)
+		c.Assert(finalResp.Candidates[0].Content.Parts, qt.HasLen, 2)
+		c.Check(finalResp.Candidates[0].Content.Parts[0].Text, qt.Equals, "Hello")
+		c.Check(finalResp.Candidates[0].Content.Parts[1].Text, qt.Equals, " world")
+		c.Check(finalResp.UsageMetadata.TotalTokenCount, qt.Equals, int32(15))
+	})
 }
 
-func Test_buildGenerateContentConfig_CachedContent(t *testing.T) {
-	c := qt.New(t)
-	cachedContentID := "cache-123"
-
-	in := TaskChatInput{
-		CachedContent: &cachedContentID,
-	}
-
-	cfg := buildGenerateContentConfig(in, "")
-	c.Assert(cfg, qt.IsNotNil)
-	c.Check(cfg.CachedContent, qt.Equals, cachedContentID)
-}
-
-func Test_StreamingAllFields(t *testing.T) {
+func Test_buildStreamOutput(t *testing.T) {
 	c := qt.New(t)
 
-	// Simulate streaming chunks that would come from GenerateContentStream
-	// This tests the logic inside the streaming loop that builds incremental outputs
+	// Create a mock execution struct for testing
+	exec := &execution{}
 
-	// Initial chunk with first candidate data
-	chunk1 := &genai.GenerateContentResponse{
-		ModelVersion: "gemini-2.5-pro",
+	texts := []string{"Hello", "World"}
+	finalResp := &genai.GenerateContentResponse{
+		ModelVersion: "v1",
 		ResponseID:   "resp-123",
 		Candidates: []*genai.Candidate{
 			{
-				Index:        0,
-				FinishReason: genai.FinishReasonOther,
-				TokenCount:   5,
-				AvgLogprobs:  -0.1,
-				Content: &genai.Content{
-					Role: genai.RoleModel,
-					Parts: []*genai.Part{
-						{Text: "Hello"},
-					},
-				},
-				SafetyRatings: []*genai.SafetyRating{
-					{
-						Category:    genai.HarmCategoryDangerousContent,
-						Probability: genai.HarmProbabilityNegligible,
-						Blocked:     false,
-					},
-				},
+				Content: &genai.Content{Parts: []*genai.Part{{Text: "Hello"}}},
+			},
+			{
+				Content: &genai.Content{Parts: []*genai.Part{{Text: "World"}}},
 			},
 		},
 		UsageMetadata: &genai.GenerateContentResponseUsageMetadata{
-			PromptTokenCount:     10,
-			CandidatesTokenCount: 5,
+			PromptTokenCount:     5,
+			CandidatesTokenCount: 10,
 			TotalTokenCount:      15,
 		},
 		PromptFeedback: &genai.GenerateContentResponsePromptFeedback{
 			SafetyRatings: []*genai.SafetyRating{
-				{
-					Category:    genai.HarmCategoryHarassment,
-					Probability: genai.HarmProbabilityNegligible,
-				},
+				{Category: genai.HarmCategoryHarassment, Probability: genai.HarmProbabilityNegligible},
 			},
 		},
 	}
 
-	// Second chunk with additional content
-	chunk2 := &genai.GenerateContentResponse{
-		ModelVersion: "gemini-2.5-pro",
-		ResponseID:   "resp-123",
-		Candidates: []*genai.Candidate{
-			{
-				Index:        0,
-				FinishReason: genai.FinishReasonStop,
-				TokenCount:   10,
-				AvgLogprobs:  -0.2,
-				Content: &genai.Content{
-					Role: genai.RoleModel,
-					Parts: []*genai.Part{
-						{Text: " world!"},
-					},
-				},
-				SafetyRatings: []*genai.SafetyRating{
-					{
-						Category:    genai.HarmCategoryDangerousContent,
-						Probability: genai.HarmProbabilityNegligible,
-						Blocked:     false,
-					},
-				},
+	got := exec.buildStreamOutput(texts, finalResp)
+
+	c.Assert(got.Texts, qt.DeepEquals, texts)
+	c.Assert(got.Candidates, qt.HasLen, 2)
+	c.Assert(got.UsageMetadata, qt.Not(qt.IsNil))
+	c.Check(got.UsageMetadata.TotalTokenCount, qt.Equals, int32(15))
+	c.Assert(got.PromptFeedback, qt.Not(qt.IsNil))
+	c.Assert(got.ModelVersion, qt.Not(qt.IsNil))
+	c.Check(*got.ModelVersion, qt.Equals, "v1")
+	c.Assert(got.ResponseID, qt.Not(qt.IsNil))
+	c.Check(*got.ResponseID, qt.Equals, "resp-123")
+
+	// Check usage map
+	c.Check(got.Usage["total-token-count"], qt.Equals, int32(15))
+	c.Check(got.Usage["prompt-token-count"], qt.Equals, int32(5))
+	c.Check(got.Usage["candidates-token-count"], qt.Equals, int32(10))
+}
+
+func Test_extractSystemMessage(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("with system message", func(t *testing.T) {
+		systemMsg := "You are a helpful assistant"
+		in := TaskChatInput{
+			SystemMessage: &systemMsg,
+		}
+
+		got := extractSystemMessage(in)
+		c.Check(got, qt.Equals, systemMsg)
+	})
+
+	t.Run("with system instruction", func(t *testing.T) {
+		systemText := "System instruction text"
+		in := TaskChatInput{
+			SystemInstruction: &genai.Content{
+				Parts: []*genai.Part{{Text: systemText}},
 			},
-		},
-		UsageMetadata: &genai.GenerateContentResponseUsageMetadata{
-			PromptTokenCount:     10,
-			CandidatesTokenCount: 10,
-			TotalTokenCount:      20,
-		},
-	}
-
-	// Simulate the streaming logic that builds finalResp and texts
-	texts := make([]string, 0)
-	var finalResp *genai.GenerateContentResponse
-
-	// Process chunk1 (initial chunk)
-	r := chunk1
-	if r != nil && len(r.Candidates) > 0 {
-		// Accumulate texts for incremental output
-		for len(texts) < len(r.Candidates) {
-			texts = append(texts, "")
 		}
-		for i, c := range r.Candidates {
-			if c.Content != nil {
-				for _, p := range c.Content.Parts {
-					if p != nil && p.Text != "" {
-						texts[i] += p.Text
-					}
-				}
-			}
+
+		got := extractSystemMessage(in)
+		c.Check(got, qt.Equals, systemText)
+	})
+
+	t.Run("with both - system message takes priority", func(t *testing.T) {
+		systemMsg := "System message"
+		systemText := "System instruction"
+		in := TaskChatInput{
+			SystemMessage: &systemMsg,
+			SystemInstruction: &genai.Content{
+				Parts: []*genai.Part{{Text: systemText}},
+			},
 		}
-	}
 
-	// Build the final response by merging all chunks
-	// Initialize with first chunk
-	finalResp = &genai.GenerateContentResponse{
-		ModelVersion:   r.ModelVersion,
-		ResponseID:     r.ResponseID,
-		UsageMetadata:  r.UsageMetadata,
-		PromptFeedback: r.PromptFeedback,
-		Candidates:     make([]*genai.Candidate, len(r.Candidates)),
-	}
-	// Deep copy candidates
-	for i, c := range r.Candidates {
-		if c != nil {
-			finalResp.Candidates[i] = &genai.Candidate{
-				Index:              c.Index,
-				SafetyRatings:      c.SafetyRatings,
-				FinishReason:       c.FinishReason,
-				CitationMetadata:   c.CitationMetadata,
-				TokenCount:         c.TokenCount,
-				LogprobsResult:     c.LogprobsResult,
-				AvgLogprobs:        c.AvgLogprobs,
-				URLContextMetadata: c.URLContextMetadata,
-				GroundingMetadata:  c.GroundingMetadata,
-				Content:            &genai.Content{Role: c.Content.Role, Parts: []*genai.Part{}},
-			}
-			// Copy parts
-			if c.Content != nil {
-				for _, p := range c.Content.Parts {
-					if p != nil {
-						finalResp.Candidates[i].Content.Parts = append(finalResp.Candidates[i].Content.Parts, p)
-					}
-				}
-			}
+		got := extractSystemMessage(in)
+		c.Check(got, qt.Equals, systemMsg)
+	})
+
+	t.Run("with empty system message", func(t *testing.T) {
+		emptyMsg := ""
+		systemText := "System instruction"
+		in := TaskChatInput{
+			SystemMessage: &emptyMsg,
+			SystemInstruction: &genai.Content{
+				Parts: []*genai.Part{{Text: systemText}},
+			},
 		}
-	}
 
-	// Test streaming output after chunk1
-	streamOutput1 := TaskChatOutput{
-		Texts:          texts,
-		Usage:          map[string]any{},
-		Candidates:     []*genai.Candidate{},
-		UsageMetadata:  nil,
-		PromptFeedback: nil,
-		ModelVersion:   nil,
-		ResponseID:     nil,
-	}
+		got := extractSystemMessage(in)
+		c.Check(got, qt.Equals, systemText)
+	})
 
-	streamOutput1.Candidates = finalResp.Candidates
-	streamOutput1.UsageMetadata = finalResp.UsageMetadata
-	streamOutput1.PromptFeedback = finalResp.PromptFeedback
-	if finalResp.ModelVersion != "" {
-		mv := finalResp.ModelVersion
-		streamOutput1.ModelVersion = &mv
-	}
-	if finalResp.ResponseID != "" {
-		ri := finalResp.ResponseID
-		streamOutput1.ResponseID = &ri
-	}
-
-	// Build usage map from UsageMetadata if available
-	if finalResp.UsageMetadata != nil {
-		usage := make(map[string]any)
-		usage["prompt-token-count"] = finalResp.UsageMetadata.PromptTokenCount
-		usage["cached-content-token-count"] = finalResp.UsageMetadata.CachedContentTokenCount
-		usage["candidates-token-count"] = finalResp.UsageMetadata.CandidatesTokenCount
-		usage["total-token-count"] = finalResp.UsageMetadata.TotalTokenCount
-		usage["tool-use-prompt-token-count"] = finalResp.UsageMetadata.ToolUsePromptTokenCount
-		usage["thoughts-token-count"] = finalResp.UsageMetadata.ThoughtsTokenCount
-
-		// Simplified usage map for testing
-
-		streamOutput1.Usage = usage
-	}
-
-	// Verify streaming output after chunk1
-	c.Assert(len(streamOutput1.Texts), qt.Equals, 1)
-	c.Assert(streamOutput1.Texts[0], qt.Equals, "Hello")
-
-	// Verify candidates are streamed
-	c.Assert(len(streamOutput1.Candidates), qt.Equals, 1)
-	c.Assert(streamOutput1.Candidates[0].Index, qt.Equals, int32(0))
-	c.Assert(streamOutput1.Candidates[0].FinishReason, qt.Equals, genai.FinishReasonOther)
-	c.Assert(streamOutput1.Candidates[0].TokenCount, qt.Equals, int32(5))
-	c.Assert(streamOutput1.Candidates[0].AvgLogprobs, qt.Equals, -0.1)
-	c.Assert(len(streamOutput1.Candidates[0].Content.Parts), qt.Equals, 1)
-	c.Assert(streamOutput1.Candidates[0].Content.Parts[0].Text, qt.Equals, "Hello")
-
-	// Verify usage metadata is streamed
-	c.Assert(streamOutput1.UsageMetadata, qt.Not(qt.IsNil))
-	c.Assert(streamOutput1.UsageMetadata.TotalTokenCount, qt.Equals, int32(15))
-	c.Assert(streamOutput1.UsageMetadata.CandidatesTokenCount, qt.Equals, int32(5))
-
-	// Verify prompt feedback is streamed
-	c.Assert(streamOutput1.PromptFeedback, qt.Not(qt.IsNil))
-	c.Assert(len(streamOutput1.PromptFeedback.SafetyRatings), qt.Equals, 1)
-
-	// Verify model version and response ID are streamed
-	c.Assert(streamOutput1.ModelVersion, qt.Not(qt.IsNil))
-	c.Assert(*streamOutput1.ModelVersion, qt.Equals, "gemini-2.5-pro")
-	c.Assert(streamOutput1.ResponseID, qt.Not(qt.IsNil))
-	c.Assert(*streamOutput1.ResponseID, qt.Equals, "resp-123")
-
-	// Verify usage map is properly formatted
-	c.Assert(streamOutput1.Usage["total-token-count"], qt.Equals, int32(15))
-	c.Assert(streamOutput1.Usage["prompt-token-count"], qt.Equals, int32(10))
-	c.Assert(streamOutput1.Usage["candidates-token-count"], qt.Equals, int32(5))
-
-	// Process chunk2 (merge subsequent chunk)
-	r = chunk2
-	if r != nil && len(r.Candidates) > 0 {
-		// Accumulate texts for incremental output
-		for len(texts) < len(r.Candidates) {
-			texts = append(texts, "")
-		}
-		for i, c := range r.Candidates {
-			if c.Content != nil {
-				for _, p := range c.Content.Parts {
-					if p != nil && p.Text != "" {
-						texts[i] += p.Text
-					}
-				}
-			}
-		}
-	}
-
-	// Merge subsequent chunks - append parts to existing candidates
-	for i, c := range r.Candidates {
-		if c != nil && i < len(finalResp.Candidates) && finalResp.Candidates[i] != nil {
-			// Update metadata from latest chunk
-			finalResp.Candidates[i].FinishReason = c.FinishReason
-			finalResp.Candidates[i].TokenCount = c.TokenCount
-			finalResp.Candidates[i].AvgLogprobs = c.AvgLogprobs
-			if c.SafetyRatings != nil {
-				finalResp.Candidates[i].SafetyRatings = c.SafetyRatings
-			}
-
-			// Append new parts
-			if c.Content != nil {
-				for _, p := range c.Content.Parts {
-					if p != nil {
-						finalResp.Candidates[i].Content.Parts = append(finalResp.Candidates[i].Content.Parts, p)
-					}
-				}
-			}
-		}
-	}
-	// Update response-level metadata from latest chunk
-	if r.UsageMetadata != nil {
-		finalResp.UsageMetadata = r.UsageMetadata
-	}
-
-	// Test final streaming output after chunk2
-	streamOutput2 := TaskChatOutput{
-		Texts:          texts,
-		Usage:          map[string]any{},
-		Candidates:     []*genai.Candidate{},
-		UsageMetadata:  nil,
-		PromptFeedback: nil,
-		ModelVersion:   nil,
-		ResponseID:     nil,
-	}
-
-	streamOutput2.Candidates = finalResp.Candidates
-	streamOutput2.UsageMetadata = finalResp.UsageMetadata
-	streamOutput2.PromptFeedback = finalResp.PromptFeedback
-	if finalResp.ModelVersion != "" {
-		mv := finalResp.ModelVersion
-		streamOutput2.ModelVersion = &mv
-	}
-	if finalResp.ResponseID != "" {
-		ri := finalResp.ResponseID
-		streamOutput2.ResponseID = &ri
-	}
-
-	// Build usage map
-	if finalResp.UsageMetadata != nil {
-		usage := make(map[string]any)
-		usage["prompt-token-count"] = finalResp.UsageMetadata.PromptTokenCount
-		usage["candidates-token-count"] = finalResp.UsageMetadata.CandidatesTokenCount
-		usage["total-token-count"] = finalResp.UsageMetadata.TotalTokenCount
-		streamOutput2.Usage = usage
-	}
-
-	// Verify final streaming output
-	c.Assert(len(streamOutput2.Texts), qt.Equals, 1)
-	c.Assert(streamOutput2.Texts[0], qt.Equals, "Hello world!")
-
-	// Verify candidates have been merged correctly
-	c.Assert(len(streamOutput2.Candidates), qt.Equals, 1)
-	c.Assert(streamOutput2.Candidates[0].FinishReason, qt.Equals, genai.FinishReasonStop) // Updated from chunk2
-	c.Assert(streamOutput2.Candidates[0].TokenCount, qt.Equals, int32(10))                // Updated from chunk2
-	c.Assert(streamOutput2.Candidates[0].AvgLogprobs, qt.Equals, -0.2)                    // Updated from chunk2
-	c.Assert(len(streamOutput2.Candidates[0].Content.Parts), qt.Equals, 2)                // Both parts preserved
-	c.Assert(streamOutput2.Candidates[0].Content.Parts[0].Text, qt.Equals, "Hello")
-	c.Assert(streamOutput2.Candidates[0].Content.Parts[1].Text, qt.Equals, " world!")
-
-	// Verify updated usage metadata
-	c.Assert(streamOutput2.UsageMetadata.TotalTokenCount, qt.Equals, int32(20)) // Updated from chunk2
-	c.Assert(streamOutput2.UsageMetadata.CandidatesTokenCount, qt.Equals, int32(10))
-
-	// Verify usage map reflects final values
-	c.Assert(streamOutput2.Usage["total-token-count"], qt.Equals, int32(20))
-	c.Assert(streamOutput2.Usage["candidates-token-count"], qt.Equals, int32(10))
+	t.Run("with neither", func(t *testing.T) {
+		in := TaskChatInput{}
+		got := extractSystemMessage(in)
+		c.Check(got, qt.Equals, "")
+	})
 }

@@ -1513,8 +1513,22 @@ TASK_CHAT:
         type: array
         items:
           type: string
-      documents:
+      audio:
         uiOrder: 4
+        title: Audio
+        description: URI references or base64 content of input audio.
+        type: array
+        items:
+          type: string
+      videos:
+        uiOrder: 5
+        title: Videos
+        description: URI references or base64 content of input videos.
+        type: array
+        items:
+          type: string
+      documents:
+        uiOrder: 6
         title: Documents
         description: >-
           URI references or base64 content of input documents.  Different vendors might have different constraints on the document format.  For example,
@@ -1523,24 +1537,24 @@ TASK_CHAT:
         items:
           type: string
       system-message:
-        uiOrder: 5
+        uiOrder: 7
         title: System Message
         description: Instruction to set the assistant's behavior, tone, or persona. Different vendors might name this field differently.
         type: string
       chat-history:
-        uiOrder: 6
+        uiOrder: 8
         title: Chat History
         description: Conversation history, each message includes a role and content.
         type: array
         items:
           $ref: "#/$defs/content"
       max-output-tokens:
-        uiOrder: 7
+        uiOrder: 9
         title: Max Output Token
         description: The maximum number of tokens to generate in the model output.
         type: integer
       temperature:
-        uiOrder: 8
+        uiOrder: 10
         title: Temperature
         description: >-
           A parameter that controls the randomness and creativity of a large language model's output by adjusting the probability of the next
@@ -1548,7 +1562,7 @@ TASK_CHAT:
           1) leads to more creative, random, and varied output.
         type: number
       top-k:
-        uiOrder: 9
+        uiOrder: 11
         title: Top-K
         description: >-
           A text generation parameter that limits the selection of the next token to the K most probable tokens,  discarding the rest to control randomness
@@ -1568,44 +1582,44 @@ TASK_CHAT:
           choice to a smaller, more focused set of highly probable words, resulting in more factual  and conservative output.
         type: number
       seed:
-        uiOrder: 11
+        uiOrder: 12
         title: Seed
         description: A random seed used to control the stochasticity of text generation to produce repeatable outputs
         type: integer
       contents:
-        uiOrder: 12
+        uiOrder: 13
         title: Contents
         description: The input contents to the model. Each item represents a user or model turn composed of parts (text or images).
         type: array
         items:
           $ref: "#/$defs/content"
       tools:
-        uiOrder: 13
+        uiOrder: 14
         title: Tools
         description: Tools available to the model, e.g., function declarations.
         type: array
         items:
           $ref: "#/$defs/tool"
       tool-config:
-        uiOrder: 14
+        uiOrder: 15
         $ref: "#/$defs/tool-config"
       safety-settings:
-        uiOrder: 15
+        uiOrder: 16
         title: Safety Settings
         description: Safety settings for content filtering.
         type: array
         items:
           $ref: "#/$defs/safety-setting"
       system-instruction:
-        uiOrder: 16
+        uiOrder: 17
         title: System Instruction
         description: A system instruction to guide the model behavior.
         $ref: "#/$defs/content"
       generation-config:
-        uiOrder: 17
+        uiOrder: 18
         $ref: "#/$defs/generation-config"
       cached-content:
-        uiOrder: 18
+        uiOrder: 19
         title: Cached Content
         description: "The name of a cached content to use as context. Format: cachedContents/{cachedContent}."
         type: string
