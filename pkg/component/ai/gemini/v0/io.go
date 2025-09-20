@@ -11,6 +11,8 @@ type TaskChatInput struct {
 	Stream          *bool             `instill:"stream"`
 	Prompt          *string           `instill:"prompt"`
 	Images          []format.Image    `instill:"images"`
+	Audio           []format.Audio    `instill:"audio"`
+	Videos          []format.Video    `instill:"videos"`
 	Documents       []format.Document `instill:"documents"`
 	SystemMessage   *string           `instill:"system-message"`
 	ChatHistory     []*genai.Content  `instill:"chat-history"`
