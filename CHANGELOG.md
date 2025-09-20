@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.60.1](https://github.com/instill-ai/pipeline-backend/compare/v0.60.0...v0.60.1) (2025-09-20)
+
+
+### Features
+
+* **component,ai,gemini:** add multimedia support with unified format… ([#1114](https://github.com/instill-ai/pipeline-backend/issues/1114)) ([291b379](https://github.com/instill-ai/pipeline-backend/commit/291b379d4b9c29946a5f3dd566397574400b58f4))
+* **component,ai,gemini:** enhance streaming to output all fields ([#1106](https://github.com/instill-ai/pipeline-backend/issues/1106)) ([dfb6b24](https://github.com/instill-ai/pipeline-backend/commit/dfb6b247a1cad692854be45da4eed92de2b23bc8))
+
+
+### Bug Fixes
+
+* **component,ai,gemini:** correct text-based documents logic ([#1103](https://github.com/instill-ai/pipeline-backend/issues/1103)) ([ed5a111](https://github.com/instill-ai/pipeline-backend/commit/ed5a11167f6b9a39c35e3646372752bfc9af06d0))
+
+
+### Tests
+
+* **component,generic,http:** replace external httpbin.org dependency with local test server ([#1101](https://github.com/instill-ai/pipeline-backend/issues/1101)) ([a82d155](https://github.com/instill-ai/pipeline-backend/commit/a82d155cf986f23996187881abca11852b6d7283))
+
 ## [0.60.0](https://github.com/instill-ai/pipeline-backend/compare/v0.59.2...v0.60.0) (2025-09-18)
 
 
