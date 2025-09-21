@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 
 	qt "github.com/frankban/quicktest"
 
@@ -607,6 +608,318 @@ func TestUnmarshal(t *testing.T) {
 		c.Check(resultWithPascalCase.PlainField, qt.Equals, "plain-value")
 	})
 
+	c.Run("Pattern validation", func(c *qt.C) {
+		c.Run("String field pattern validation", func(c *qt.C) {
+			type PatternStruct struct {
+				Username string `instill:"username,pattern=^[a-zA-Z0-9]+$"`
+				Code     string `instill:"code,pattern=^[0-9]{4}$"`
+				Email    string `instill:"email,pattern=^[^@]+@[^@]+\\.[^@]+$"`
+				Name     string `instill:"name"` // No pattern
+			}
+
+			// Test valid patterns
+			validInput := Map{
+				"username": NewString("user123"),
+				"code":     NewString("1234"),
+				"email":    NewString("test@example.com"),
+				"name":     NewString("Any string @#$%^&*() should work!"),
+			}
+
+			var validResult PatternStruct
+			err := unmarshaler.Unmarshal(context.Background(), validInput, &validResult)
+			c.Assert(err, qt.IsNil)
+			c.Check(validResult.Username, qt.Equals, "user123")
+			c.Check(validResult.Code, qt.Equals, "1234")
+			c.Check(validResult.Email, qt.Equals, "test@example.com")
+			c.Check(validResult.Name, qt.Equals, "Any string @#$%^&*() should work!")
+
+			// Test invalid username pattern
+			invalidUsernameInput := Map{
+				"username": NewString("user-123"), // Dash not allowed
+				"name":     NewString("test"),
+			}
+			var invalidUsernameResult PatternStruct
+			err = unmarshaler.Unmarshal(context.Background(), invalidUsernameInput, &invalidUsernameResult)
+			c.Assert(err, qt.ErrorMatches, `error unmarshaling field username: pattern validation failed:.*`)
+
+			// Test invalid code pattern
+			invalidCodeInput := Map{
+				"code": NewString("12345"), // 5 digits instead of 4
+				"name": NewString("test"),
+			}
+			var invalidCodeResult PatternStruct
+			err = unmarshaler.Unmarshal(context.Background(), invalidCodeInput, &invalidCodeResult)
+			c.Assert(err, qt.ErrorMatches, `error unmarshaling field code: pattern validation failed:.*`)
+
+			// Test invalid email pattern
+			invalidEmailInput := Map{
+				"email": NewString("invalid-email"), // Missing @ and domain
+				"name":  NewString("test"),
+			}
+			var invalidEmailResult PatternStruct
+			err = unmarshaler.Unmarshal(context.Background(), invalidEmailInput, &invalidEmailResult)
+			c.Assert(err, qt.ErrorMatches, `error unmarshaling field email: pattern validation failed:.*`)
+		})
+
+		c.Run("Time.Duration field pattern validation", func(c *qt.C) {
+			type DurationStruct struct {
+				TTL            *time.Duration `instill:"ttl,pattern=^[0-9]+(\\.([0-9]{1,9}))?s$"`
+				FlexibleTTL    *time.Duration `instill:"flexible-ttl"` // No pattern
+				RegularTimeout string         `instill:"timeout,pattern=^[0-9]+ms$"`
+			}
+
+			validInput := Map{
+				"ttl":          NewString("3600s"),
+				"flexible-ttl": NewString("1h"),
+				"timeout":      NewString("5000ms"),
+			}
+
+			var validResult DurationStruct
+			err := unmarshaler.Unmarshal(context.Background(), validInput, &validResult)
+			c.Assert(err, qt.IsNil)
+			// TTL should be parsed as seconds format (3600s = 1 hour)
+			c.Assert(validResult.TTL, qt.Not(qt.IsNil))
+			c.Check(*validResult.TTL, qt.Equals, 1*time.Hour)
+			// flexible-ttl should use standard Go duration parsing
+			c.Assert(validResult.FlexibleTTL, qt.Not(qt.IsNil))
+			c.Check(*validResult.FlexibleTTL, qt.Equals, 1*time.Hour)
+			c.Check(validResult.RegularTimeout, qt.Equals, "5000ms")
+
+			fractionalInput := Map{
+				"ttl": NewString("0.123456789s"), // 9 fractional digits
+			}
+			var fractionalResult DurationStruct
+			err = unmarshaler.Unmarshal(context.Background(), fractionalInput, &fractionalResult)
+			c.Assert(err, qt.IsNil)
+			c.Assert(fractionalResult.TTL, qt.Not(qt.IsNil))
+			c.Check(*fractionalResult.TTL, qt.Equals, 123456789*time.Nanosecond)
+
+			// Test other valid Google Duration formats
+			validGoogleFormats := []struct {
+				input    string
+				expected time.Duration
+			}{
+				{"1s", 1 * time.Second},
+				{"60s", 60 * time.Second},
+				{"3.5s", 3500 * time.Millisecond},
+				{"0.001s", 1 * time.Millisecond},
+			}
+			for _, test := range validGoogleFormats {
+				input := Map{"ttl": NewString(test.input)}
+				var result DurationStruct
+				err := unmarshaler.Unmarshal(context.Background(), input, &result)
+				c.Assert(err, qt.IsNil, qt.Commentf("Failed for input: %s", test.input))
+				c.Assert(result.TTL, qt.Not(qt.IsNil))
+				c.Check(*result.TTL, qt.Equals, test.expected, qt.Commentf("Failed for input: %s", test.input))
+			}
+
+			// Test invalid TTL patterns
+			invalidTTLInputs := []string{
+				"1h",            // Hours not allowed by pattern
+				"30m",           // Minutes not allowed by pattern
+				"1.1234567890s", // Too many fractional digits (10 digits)
+				"3600",          // Missing 's' suffix
+				"s",             // Missing number
+				"3.5",           // Missing 's' suffix
+				"abc",           // Not a number
+				"",              // Empty string
+			}
+			for _, invalidTTL := range invalidTTLInputs {
+				invalidInput := Map{"ttl": NewString(invalidTTL)}
+				var invalidResult DurationStruct
+				err = unmarshaler.Unmarshal(context.Background(), invalidInput, &invalidResult)
+				c.Assert(err, qt.ErrorMatches, `error unmarshaling field ttl: pattern validation failed:.*`,
+					qt.Commentf("Should have failed for input: %s", invalidTTL))
+			}
+
+			// Test invalid timeout pattern
+			invalidTimeoutInput := Map{
+				"timeout": NewString("5s"), // Should be milliseconds
+			}
+			var invalidTimeoutResult DurationStruct
+			err = unmarshaler.Unmarshal(context.Background(), invalidTimeoutInput, &invalidTimeoutResult)
+			c.Assert(err, qt.ErrorMatches, `error unmarshaling field timeout: pattern validation failed:.*`)
+
+			// Test that JSON numbers are rejected for time.Duration fields
+			jsonNumberInput := Map{
+				"ttl": NewNumberFromInteger(60), // Should be rejected - must use string format
+			}
+			var jsonNumberResult DurationStruct
+			err = unmarshaler.Unmarshal(context.Background(), jsonNumberInput, &jsonNumberResult)
+			c.Assert(err, qt.ErrorMatches, `error unmarshaling field ttl: cannot unmarshal Number into \*time\.Duration: use string format like "60s"`)
+		})
+
+		c.Run("Time.Time field pattern validation (RFC 3339)", func(c *qt.C) {
+			type TimeStruct struct {
+				ExpireTime   *time.Time `instill:"expire-time,pattern=^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?(Z|[+-][0-9]{2}:[0-9]{2})$"`
+				FlexibleTime *time.Time `instill:"flexible-time"` // No pattern
+				CreateTime   time.Time  `instill:"create-time,pattern=^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?(Z|[+-][0-9]{2}:[0-9]{2})$"`
+			}
+
+			// Test valid RFC 3339 timestamps
+			validRFC3339Inputs := []struct {
+				input string
+				desc  string
+			}{
+				{"2014-10-02T15:01:23Z", "Basic Z-normalized format"},
+				{"2014-10-02T15:01:23.045123456Z", "With 9 fractional digits"},
+				{"2014-10-02T15:01:23.123Z", "With 3 fractional digits"},
+				{"2014-10-02T15:01:23.000000001Z", "With nanosecond precision"},
+				{"2014-10-02T15:01:23+05:30", "With positive timezone offset"},
+				{"2014-10-02T15:01:23-08:00", "With negative timezone offset"},
+				{"2024-12-31T23:59:59Z", "End of year"},
+				{"2024-01-01T00:00:00Z", "Start of year"},
+			}
+
+			for _, test := range validRFC3339Inputs {
+				validInput := Map{
+					"expire-time": NewString(test.input),
+					"create-time": NewString(test.input),
+				}
+				var validResult TimeStruct
+				err := unmarshaler.Unmarshal(context.Background(), validInput, &validResult)
+				c.Assert(err, qt.IsNil, qt.Commentf("Failed for %s: %s", test.desc, test.input))
+				c.Assert(validResult.ExpireTime, qt.Not(qt.IsNil))
+				// Verify the time was parsed correctly
+				expectedTime, parseErr := time.Parse(time.RFC3339Nano, test.input)
+				c.Assert(parseErr, qt.IsNil)
+				c.Check(validResult.ExpireTime.Equal(expectedTime), qt.IsTrue,
+					qt.Commentf("Time mismatch for %s", test.input))
+				c.Check(validResult.CreateTime.Equal(expectedTime), qt.IsTrue,
+					qt.Commentf("Time mismatch for %s", test.input))
+			}
+
+			// Test invalid RFC 3339 timestamps that should fail pattern validation
+			invalidPatternInputs := []struct {
+				input string
+				desc  string
+			}{
+				{"2024-1-1T00:00:00Z", "Single digit month/day"},
+				{"2024-01-01 00:00:00", "Missing T separator"},
+				{"2024-01-01T00:00:00", "Missing timezone"},
+				{"2024-01-01T00:00:00.1234567890Z", "Too many fractional digits (10)"},
+				{"not-a-date", "Invalid format"},
+				{"", "Empty string"},
+			}
+
+			for _, test := range invalidPatternInputs {
+				invalidInput := Map{"expire-time": NewString(test.input)}
+				var invalidResult TimeStruct
+				err := unmarshaler.Unmarshal(context.Background(), invalidInput, &invalidResult)
+				c.Assert(err, qt.ErrorMatches, `error unmarshaling field expire-time: pattern validation failed:.*`,
+					qt.Commentf("Should have failed for %s: %s", test.desc, test.input))
+			}
+
+			// Test invalid RFC 3339 timestamps that pass pattern but fail time parsing
+			// These demonstrate that pattern validation + time parsing work together
+			invalidTimeInputs := []struct {
+				input string
+				desc  string
+			}{
+				{"2024-01-01T25:00:00Z", "Invalid hour (25)"},
+				{"2024-01-01T00:60:00Z", "Invalid minute (60)"},
+				{"2024-01-01T00:00:60Z", "Invalid second (60)"},
+				{"2024-13-01T00:00:00Z", "Invalid month (13)"},
+				{"2024-01-32T00:00:00Z", "Invalid day (32)"},
+			}
+
+			for _, test := range invalidTimeInputs {
+				invalidInput := Map{"expire-time": NewString(test.input)}
+				var invalidResult TimeStruct
+				err := unmarshaler.Unmarshal(context.Background(), invalidInput, &invalidResult)
+				// These should fail during time parsing, not pattern validation
+				c.Assert(err, qt.ErrorMatches, `error unmarshaling field expire-time: cannot unmarshal string .* into time\.Time:.*`,
+					qt.Commentf("Should have failed during time parsing for %s: %s", test.desc, test.input))
+			}
+
+			// Test flexible time field (no pattern) should accept various formats
+			flexibleInput := Map{
+				"flexible-time": NewString("2024-01-01 00:00:00"), // Non-RFC3339 format
+			}
+			var flexibleResult TimeStruct
+			err := unmarshaler.Unmarshal(context.Background(), flexibleInput, &flexibleResult)
+			c.Assert(err, qt.IsNil) // Should succeed without pattern validation
+		})
+
+		c.Run("Complex pattern validation", func(c *qt.C) {
+			type ComplexPatternStruct struct {
+				Version   string `instill:"version,pattern=^\\d+\\.\\d+\\.\\d+$"`                                        // Semantic version
+				UUID      string `instill:"uuid,pattern=^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"` // UUID
+				HexColor  string `instill:"color,pattern=^#[0-9A-Fa-f]{6}$"`                                             // Hex color
+				NoPattern string `instill:"no-pattern"`                                                                  // No pattern constraint
+			}
+
+			// Test valid complex patterns
+			validInput := Map{
+				"version":    NewString("1.2.3"),
+				"uuid":       NewString("123e4567-e89b-12d3-a456-426614174000"),
+				"color":      NewString("#FF5733"),
+				"no-pattern": NewString("anything goes here! 123 @#$"),
+			}
+
+			var validResult ComplexPatternStruct
+			err := unmarshaler.Unmarshal(context.Background(), validInput, &validResult)
+			c.Assert(err, qt.IsNil)
+			c.Check(validResult.Version, qt.Equals, "1.2.3")
+			c.Check(validResult.UUID, qt.Equals, "123e4567-e89b-12d3-a456-426614174000")
+			c.Check(validResult.HexColor, qt.Equals, "#FF5733")
+			c.Check(validResult.NoPattern, qt.Equals, "anything goes here! 123 @#$")
+
+			// Test invalid version pattern
+			invalidVersionInput := Map{
+				"version": NewString("v1.2.3"), // 'v' prefix not allowed
+			}
+			var invalidVersionResult ComplexPatternStruct
+			err = unmarshaler.Unmarshal(context.Background(), invalidVersionInput, &invalidVersionResult)
+			c.Assert(err, qt.ErrorMatches, `error unmarshaling field version: pattern validation failed:.*`)
+
+			// Test invalid UUID pattern
+			invalidUUIDInput := Map{
+				"uuid": NewString("not-a-uuid"),
+			}
+			var invalidUUIDResult ComplexPatternStruct
+			err = unmarshaler.Unmarshal(context.Background(), invalidUUIDInput, &invalidUUIDResult)
+			c.Assert(err, qt.ErrorMatches, `error unmarshaling field uuid: pattern validation failed:.*`)
+
+			// Test invalid hex color pattern
+			invalidColorInput := Map{
+				"color": NewString("#GG5733"), // Invalid hex characters
+			}
+			var invalidColorResult ComplexPatternStruct
+			err = unmarshaler.Unmarshal(context.Background(), invalidColorInput, &invalidColorResult)
+			c.Assert(err, qt.ErrorMatches, `error unmarshaling field color: pattern validation failed:.*`)
+		})
+
+		c.Run("Pattern validation with other attributes", func(c *qt.C) {
+			type MixedAttributesStruct struct {
+				RequiredCode   string  `instill:"code,pattern=^[A-Z]{3}[0-9]{3}$"`
+				OptionalField  *string `instill:"optional,pattern=^[a-z]+$,default=hello"`
+				FormattedField string  `instill:"formatted,pattern=^[0-9]+$,format=number"`
+			}
+
+			// Test valid input with mixed attributes
+			validInput := Map{
+				"code":      NewString("ABC123"),
+				"formatted": NewString("12345"),
+			}
+
+			var validResult MixedAttributesStruct
+			err := unmarshaler.Unmarshal(context.Background(), validInput, &validResult)
+			c.Assert(err, qt.IsNil)
+			c.Check(validResult.RequiredCode, qt.Equals, "ABC123")
+			c.Check(*validResult.OptionalField, qt.Equals, "hello") // Default value applied
+			c.Check(validResult.FormattedField, qt.Equals, "12345")
+
+			// Test invalid code pattern
+			invalidInput := Map{
+				"code": NewString("abc123"), // Lowercase not allowed
+			}
+			var invalidResult MixedAttributesStruct
+			err = unmarshaler.Unmarshal(context.Background(), invalidInput, &invalidResult)
+			c.Assert(err, qt.ErrorMatches, `error unmarshaling field code: pattern validation failed:.*`)
+		})
+	})
+
 }
 
 func TestMarshal(t *testing.T) {
@@ -1024,6 +1337,67 @@ func TestMarshal(t *testing.T) {
 		c.Check(unmarshaled.DisplayName, qt.Equals, original.DisplayName)
 		c.Check(unmarshaled.WithInstill, qt.Equals, original.WithInstill)
 		c.Check(unmarshaled.PlainField, qt.Equals, original.PlainField)
+	})
+
+	c.Run("Time types marshaling and unmarshaling", func(c *qt.C) {
+		type TimeStruct struct {
+			CreateTime *time.Time     `instill:"create-time"`
+			UpdateTime time.Time      `instill:"update-time"`
+			TTL        *time.Duration `instill:"ttl"`
+			Timeout    time.Duration  `instill:"timeout"`
+		}
+
+		createTime := time.Date(2023, 12, 25, 10, 30, 0, 0, time.UTC)
+		updateTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		ttl := 1 * time.Hour
+		timeout := 30 * time.Second
+
+		original := TimeStruct{
+			CreateTime: &createTime,
+			UpdateTime: updateTime,
+			TTL:        &ttl,
+			Timeout:    timeout,
+		}
+
+		// Marshal to Map
+		marshaler := NewMarshaler()
+		marshaled, err := marshaler.Marshal(original)
+		c.Assert(err, qt.IsNil)
+
+		// Verify marshaled values are strings
+		marshaledMap, ok := marshaled.(Map)
+		c.Assert(ok, qt.IsTrue)
+
+		createTimeStr, ok := marshaledMap["create-time"].(format.String)
+		c.Assert(ok, qt.IsTrue)
+		c.Check(createTimeStr.String(), qt.Equals, "2023-12-25T10:30:00Z")
+
+		updateTimeStr, ok := marshaledMap["update-time"].(format.String)
+		c.Assert(ok, qt.IsTrue)
+		c.Check(updateTimeStr.String(), qt.Equals, "2024-01-01T00:00:00Z")
+
+		ttlStr, ok := marshaledMap["ttl"].(format.String)
+		c.Assert(ok, qt.IsTrue)
+		c.Check(ttlStr.String(), qt.Equals, "1h0m0s")
+
+		timeoutStr, ok := marshaledMap["timeout"].(format.String)
+		c.Assert(ok, qt.IsTrue)
+		c.Check(timeoutStr.String(), qt.Equals, "30s")
+
+		// Unmarshal back to struct
+		binaryFetcher := external.NewBinaryFetcher()
+		unmarshaler := NewUnmarshaler(binaryFetcher)
+		var unmarshaled TimeStruct
+		err = unmarshaler.Unmarshal(context.Background(), marshaled, &unmarshaled)
+		c.Assert(err, qt.IsNil)
+
+		// Verify round-trip preserves all values
+		c.Assert(unmarshaled.CreateTime, qt.Not(qt.IsNil))
+		c.Check(*unmarshaled.CreateTime, qt.Equals, createTime)
+		c.Check(unmarshaled.UpdateTime, qt.Equals, updateTime)
+		c.Assert(unmarshaled.TTL, qt.Not(qt.IsNil))
+		c.Check(*unmarshaled.TTL, qt.Equals, ttl)
+		c.Check(unmarshaled.Timeout, qt.Equals, timeout)
 	})
 }
 
