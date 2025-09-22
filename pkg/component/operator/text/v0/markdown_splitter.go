@@ -457,7 +457,7 @@ func (sp MarkdownTextSplitter) chunkPlainText(content Content, headers []Header)
 	}
 
 	rawRunes := []rune(sp.RawText)
-	startScanPosition := 0
+	startScanPosition := content.BlockStartPosition
 
 	contentChunks := []ContentChunk{}
 	for _, chunk := range chunks {

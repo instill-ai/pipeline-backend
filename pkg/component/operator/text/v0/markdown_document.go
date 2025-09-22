@@ -171,7 +171,7 @@ func buildDocument(rawRunes []rune, previousDocument *MarkdownDocument, startPos
 				currentContent.Type = "plaintext"
 				currentContent.PlainText = block
 
-				currentContent.BlockStartPosition = currentPosition - sizeOfString(block) - 1
+				currentContent.BlockStartPosition = max(currentPosition-sizeOfString(block)-1, 0)
 				currentContent.BlockEndPosition = currentPosition
 				doc.Contents = append(doc.Contents, currentContent)
 			}
