@@ -174,20 +174,20 @@ func chunkMarkdown(input ChunkTextInput) (ChunkTextOutput, error) {
 	err := sp.Validate()
 
 	if err != nil {
-		return output, fmt.Errorf("failed to validate MarkdownTextSplitter: %w", err)
+		return output, fmt.Errorf("validating MarkdownTextSplitter: %w", err)
 	}
 
 	chunks, err := sp.SplitText()
 
 	if err != nil {
-		return output, fmt.Errorf("failed to split text: %w", err)
+		return output, fmt.Errorf("splitting text: %w", err)
 	}
 
 	tkm, err := tiktoken.EncodingForModel(setting.ModelName)
 
 	mergedChunks := mergeChunks(chunks, input, tkm)
 	if err != nil {
-		return output, fmt.Errorf("failed to get encoding for model: %w", err)
+		return output, fmt.Errorf("getting encoding for model: %w", err)
 	}
 
 	totalTokenCount := 0
