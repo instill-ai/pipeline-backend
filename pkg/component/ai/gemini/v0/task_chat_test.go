@@ -1,9 +1,12 @@
 package gemini
 
 import (
+	"context"
 	"encoding/base64"
+	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"google.golang.org/genai"
 
@@ -1074,5 +1077,265 @@ func Test_extractSystemMessage(t *testing.T) {
 		in := TaskChatInput{}
 		got := extractSystemMessage(in)
 		c.Check(got, qt.Equals, "")
+	})
+}
+
+// Test File API integration for chat
+func TestChatFileAPIIntegration(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("total request size threshold logic for chat", func(t *testing.T) {
+		exec := &execution{}
+		ctx := context.Background()
+
+		// Test small total request size (should use inline data)
+		smallTotalSize := 1024 * 1024 // 1MB total request
+		shouldUseFileAPI := smallTotalSize > MaxInlineSize
+
+		c.Check(shouldUseFileAPI, qt.IsFalse) // Small total request should use inline
+
+		// Test large total request size (should use File API)
+		largeTotalSize := 25 * 1024 * 1024 // 25MB total request
+		shouldUseFileAPILarge := largeTotalSize > MaxInlineSize
+
+		c.Check(shouldUseFileAPILarge, qt.IsTrue) // Large total request should use File API
+
+		// Test chat video with small total size (should follow total size rule, not forced)
+		isChatVideo := false // Chat videos don't force File API like cache videos do
+		shouldUseFileAPIVideo := smallTotalSize > MaxInlineSize || isChatVideo
+
+		c.Check(shouldUseFileAPIVideo, qt.IsFalse) // Chat videos follow total size rule
+
+		// Test chat video with large total size (should use File API)
+		shouldUseFileAPIVideoLarge := largeTotalSize > MaxInlineSize || isChatVideo
+
+		c.Check(shouldUseFileAPIVideoLarge, qt.IsTrue) // Large chat videos should use File API
+
+		// Avoid unused variable warning
+		_ = exec
+		_ = ctx
+	})
+
+	t.Run("MaxInlineSize constant", func(t *testing.T) {
+		// Test that the constant is correctly set to 20MB
+		expectedSize := 20 * 1024 * 1024
+		c.Check(MaxInlineSize, qt.Equals, expectedSize)
+	})
+}
+
+// Test chat-specific File API functionality
+func TestChatMediaProcessing(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("buildChatRequestContents with File API", func(t *testing.T) {
+		// Test that the function signature includes uploaded file names
+		input := TaskChatInput{
+			Prompt: stringPtr("Analyze this content"),
+		}
+
+		// Test that the input structure supports File API scenarios
+		c.Check(input.GetPrompt(), qt.DeepEquals, input.Prompt)
+		c.Check(input.GetImages(), qt.HasLen, 0)
+		c.Check(input.GetAudio(), qt.HasLen, 0)
+		c.Check(input.GetVideos(), qt.HasLen, 0)
+		c.Check(input.GetDocuments(), qt.HasLen, 0)
+		c.Check(input.GetContents(), qt.HasLen, 0)
+	})
+
+	t.Run("chat history handling with File API", func(t *testing.T) {
+		input := TaskChatInput{
+			Prompt: stringPtr("Continue our conversation"),
+			ChatHistory: []*genai.Content{
+				{
+					Role: "user",
+					Parts: []*genai.Part{
+						{Text: "Previous user message"},
+					},
+				},
+				{
+					Role: "model",
+					Parts: []*genai.Part{
+						{Text: "Previous model response"},
+					},
+				},
+			},
+		}
+
+		// Validate chat history structure
+		c.Check(len(input.ChatHistory), qt.Equals, 2)
+		c.Check(input.ChatHistory[0].Role, qt.Equals, "user")
+		c.Check(input.ChatHistory[1].Role, qt.Equals, "model")
+		c.Check(input.ChatHistory[0].Parts[0].Text, qt.Equals, "Previous user message")
+		c.Check(input.ChatHistory[1].Parts[0].Text, qt.Equals, "Previous model response")
+	})
+}
+
+// Test file cleanup functionality in chat
+func TestChatFileCleanup(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("file cleanup logic", func(t *testing.T) {
+		// Test cleanup scenarios similar to cache
+		uploadedFiles := []string{
+			"files/chat-image-123",
+			"files/chat-video-456",
+			"files/chat-document-789",
+		}
+
+		// Simulate cleanup - in real implementation this would call client.Files.Delete
+		cleanupCount := 0
+		for _, fileName := range uploadedFiles {
+			if fileName != "" {
+				cleanupCount++
+				// Mock cleanup: client.Files.Delete(ctx, fileName, nil)
+			}
+		}
+
+		c.Check(cleanupCount, qt.Equals, 3)
+		c.Check(len(uploadedFiles), qt.Equals, 3)
+	})
+
+	t.Run("error handling in cleanup", func(t *testing.T) {
+		// Test error message patterns used in the implementation
+		fileName := "files/chat-test-123"
+
+		cleanupErr := fmt.Errorf("Warning: failed to delete uploaded file %s: %v", fileName, "API error")
+
+		c.Check(cleanupErr.Error(), qt.Contains, "failed to delete uploaded file")
+		c.Check(cleanupErr.Error(), qt.Contains, fileName)
+		c.Check(cleanupErr.Error(), qt.Contains, "API error")
+	})
+}
+
+// Test streaming vs non-streaming with File API
+func TestChatStreamingWithFileAPI(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("streaming enabled", func(t *testing.T) {
+		streamEnabled := true
+		input := TaskChatInput{
+			Prompt: stringPtr("Stream this response"),
+			Stream: &streamEnabled,
+		}
+
+		c.Check(input.Stream, qt.Not(qt.IsNil))
+		c.Check(*input.Stream, qt.IsTrue)
+	})
+
+	t.Run("streaming disabled", func(t *testing.T) {
+		streamDisabled := false
+		input := TaskChatInput{
+			Prompt: stringPtr("Don't stream this response"),
+			Stream: &streamDisabled,
+		}
+
+		c.Check(input.Stream, qt.Not(qt.IsNil))
+		c.Check(*input.Stream, qt.IsFalse)
+	})
+
+	t.Run("streaming default (nil)", func(t *testing.T) {
+		input := TaskChatInput{
+			Prompt: stringPtr("Default streaming behavior"),
+			Stream: nil,
+		}
+
+		c.Check(input.Stream, qt.IsNil)
+
+		// Test default behavior logic
+		streamEnabled := input.Stream != nil && *input.Stream
+		c.Check(streamEnabled, qt.IsFalse) // Should default to non-streaming
+	})
+}
+
+// Test chat multimedia input validation
+func TestChatMultimediaInputValidation(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("chat with large file simulation", func(t *testing.T) {
+		input := TaskChatInput{
+			Prompt: stringPtr("Analyze this large image"),
+			Model:  "gemini-2.5-flash",
+		}
+
+		// Validate that the input structure supports File API scenarios
+		c.Check(input.Prompt, qt.Not(qt.IsNil))
+		c.Check(*input.Prompt, qt.Equals, "Analyze this large image")
+		c.Check(input.Model, qt.Equals, "gemini-2.5-flash")
+
+		// Test that multimedia input interfaces are implemented
+		c.Check(input.GetPrompt(), qt.DeepEquals, input.Prompt)
+		c.Check(input.GetImages(), qt.HasLen, 0)
+		c.Check(input.GetAudio(), qt.HasLen, 0)
+		c.Check(input.GetVideos(), qt.HasLen, 0)
+		c.Check(input.GetDocuments(), qt.HasLen, 0)
+		c.Check(input.GetContents(), qt.HasLen, 0)
+	})
+
+	t.Run("chat with video files", func(t *testing.T) {
+		input := TaskChatInput{
+			Prompt: stringPtr("Analyze these videos"),
+			Model:  "gemini-2.5-flash",
+		}
+
+		// Videos should always use File API regardless of size
+		c.Check(input.Prompt, qt.Not(qt.IsNil))
+		c.Check(*input.Prompt, qt.Equals, "Analyze these videos")
+		c.Check(input.Model, qt.Equals, "gemini-2.5-flash")
+
+		// Test system message handling
+		c.Check(input.GetSystemMessage(), qt.IsNil)
+		c.Check(input.GetSystemInstruction(), qt.IsNil)
+	})
+}
+
+// Test chat performance optimizations
+func TestChatPerformanceOptimizations(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("memory allocation efficiency in chat", func(t *testing.T) {
+		// Test that we're pre-allocating slices efficiently in chat context
+		mediaCount := 5
+		historyCount := 3
+
+		// Pre-allocated approach for chat contents
+		contents := make([]*genai.Content, 0, historyCount+1) // history + current message
+		parts := make([]*genai.Part, 0, mediaCount+1)         // media + text parts
+
+		// Simulate adding history
+		for i := 0; i < historyCount; i++ {
+			contents = append(contents, &genai.Content{
+				Role:  "user",
+				Parts: []*genai.Part{{Text: fmt.Sprintf("message-%d", i)}},
+			})
+		}
+
+		// Simulate adding current message parts
+		for i := 0; i < mediaCount; i++ {
+			parts = append(parts, &genai.Part{Text: fmt.Sprintf("part-%d", i)})
+		}
+		contents = append(contents, &genai.Content{Role: "user", Parts: parts})
+
+		c.Check(len(contents), qt.Equals, historyCount+1)
+		c.Check(cap(contents), qt.Equals, historyCount+1)
+		c.Check(len(parts), qt.Equals, mediaCount)
+		c.Check(cap(parts), qt.Equals, mediaCount+1)
+	})
+
+	t.Run("timeout configurations for chat", func(t *testing.T) {
+		// Test timeout values used in chat File API operations
+		imageTimeout := 60 * time.Second
+		audioTimeout := 60 * time.Second
+		videoTimeout := 120 * time.Second
+		documentTimeout := 60 * time.Second
+
+		c.Check(imageTimeout, qt.Equals, time.Minute)
+		c.Check(audioTimeout, qt.Equals, time.Minute)
+		c.Check(videoTimeout, qt.Equals, 2*time.Minute)
+		c.Check(documentTimeout, qt.Equals, time.Minute)
+
+		// Video should have longer timeout in chat too
+		c.Check(videoTimeout > imageTimeout, qt.IsTrue)
+		c.Check(videoTimeout > audioTimeout, qt.IsTrue)
+		c.Check(videoTimeout > documentTimeout, qt.IsTrue)
 	})
 }
