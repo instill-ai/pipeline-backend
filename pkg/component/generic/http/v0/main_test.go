@@ -6,12 +6,12 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 
-	qt "github.com/frankban/quicktest"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
@@ -227,10 +227,6 @@ func createLocalTestServer() *httptest.Server {
 func TestComponent(t *testing.T) {
 	c := qt.New(t)
 	c.Parallel()
-
-	// Set test environment to bypass URL validation
-	os.Setenv("GO_TESTING", "true")
-	defer os.Unsetenv("GO_TESTING")
 
 	// respEquals returns a checker for equality between the received response
 	// and the expected one.
@@ -524,7 +520,8 @@ func TestComponent(t *testing.T) {
 			actualInput := tc.input
 			actualInput.EndpointURL = strings.Replace(actualInput.EndpointURL, "PLACEHOLDER_URL", server.URL, 1)
 
-			component := Init(base.Component{})
+			// Use InitForTest with localhost enabled to create component that allows localhost URLs
+			component := InitForTest(base.Component{}, nil, true)
 			c.Assert(component, qt.IsNotNil)
 
 			execution, err := component.CreateExecution(base.ComponentExecution{
