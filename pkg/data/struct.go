@@ -19,6 +19,147 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
+// Pre-computed reflection types for performance optimization
+var (
+	timeTimeType       = reflect.TypeOf(time.Time{})
+	timeDurationType   = reflect.TypeOf(time.Duration(0))
+	formatValueType    = reflect.TypeOf((*format.Value)(nil)).Elem()
+	formatStringType   = reflect.TypeOf((*format.String)(nil)).Elem()
+	formatNumberType   = reflect.TypeOf((*format.Number)(nil)).Elem()
+	formatBooleanType  = reflect.TypeOf((*format.Boolean)(nil)).Elem()
+	formatImageType    = reflect.TypeOf((*format.Image)(nil)).Elem()
+	formatAudioType    = reflect.TypeOf((*format.Audio)(nil)).Elem()
+	formatVideoType    = reflect.TypeOf((*format.Video)(nil)).Elem()
+	formatDocumentType = reflect.TypeOf((*format.Document)(nil)).Elem()
+	formatFileType     = reflect.TypeOf((*format.File)(nil)).Elem()
+)
+
+// Pre-compiled time formats for better performance
+var timeFormats = struct {
+	dateTime []string
+	general  []string
+}{
+	dateTime: []string{
+		time.RFC3339,
+		time.RFC3339Nano,
+	},
+	general: []string{
+		time.RFC3339,
+		time.RFC3339Nano,
+		"2006-01-02T15:04:05Z07:00",
+		"2006-01-02 15:04:05",
+		"2006-01-02",
+	},
+}
+
+// File types cache for performance
+var fileTypes = []reflect.Type{
+	formatImageType,
+	formatAudioType,
+	formatVideoType,
+	formatDocumentType,
+	formatFileType,
+}
+
+// Regex pattern cache
+type regexCache struct {
+	cache map[string]*regexp.Regexp
+	mu    sync.RWMutex
+}
+
+var patternCache = &regexCache{
+	cache: make(map[string]*regexp.Regexp),
+}
+
+func (rc *regexCache) getOrCompile(pattern string) (*regexp.Regexp, error) {
+	rc.mu.RLock()
+	if regex, exists := rc.cache[pattern]; exists {
+		rc.mu.RUnlock()
+		return regex, nil
+	}
+	rc.mu.RUnlock()
+
+	// Compile under write lock
+	rc.mu.Lock()
+	defer rc.mu.Unlock()
+
+	// Double-check after acquiring write lock
+	if regex, exists := rc.cache[pattern]; exists {
+		return regex, nil
+	}
+
+	regex, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	// Limit cache size to prevent memory leaks
+	if len(rc.cache) >= 100 {
+		// Clear half the cache when limit is reached
+		for k := range rc.cache {
+			delete(rc.cache, k)
+			if len(rc.cache) <= 50 {
+				break
+			}
+		}
+	}
+
+	rc.cache[pattern] = regex
+	return regex, nil
+}
+
+// Tag parsing cache
+type tagParseResult struct {
+	fieldName  string
+	format     string
+	pattern    string
+	attributes map[string]string
+}
+
+type tagCache struct {
+	cache map[string]*tagParseResult
+	mu    sync.RWMutex
+}
+
+var parsedTagCache = &tagCache{
+	cache: make(map[string]*tagParseResult),
+}
+
+func (tc *tagCache) getOrParse(tag string) *tagParseResult {
+	tc.mu.RLock()
+	if result, exists := tc.cache[tag]; exists {
+		tc.mu.RUnlock()
+		return result
+	}
+	tc.mu.RUnlock()
+
+	// Parse under write lock
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
+
+	// Double-check after acquiring write lock
+	if result, exists := tc.cache[tag]; exists {
+		return result
+	}
+
+	result := &tagParseResult{}
+	result.fieldName, result.format, result.pattern, result.attributes = parseInstillTagUncached(tag)
+
+	// Limit cache size
+	if len(tc.cache) >= 500 {
+		// Clear half the cache when limit is reached
+		for k := range tc.cache {
+			delete(tc.cache, k)
+			if len(tc.cache) <= 250 {
+				break
+			}
+		}
+	}
+
+	tc.cache[tag] = result
+	return result
+}
+
 // Package data provides functionality for marshaling and unmarshaling between
 // Go structs and a custom Map type that represents structured data.
 //
@@ -217,10 +358,8 @@ func (u *Unmarshaler) unmarshalStruct(ctx context.Context, m Map, v reflect.Valu
 			if (fieldValue.Kind() == reflect.Ptr && fieldValue.IsNil()) ||
 				fieldValue.IsZero() {
 				tag := field.Tag.Get("instill")
-				parts := strings.Split(tag, ",")
-				for _, part := range parts {
-					if strings.HasPrefix(part, "default=") {
-						defaultVal := strings.TrimPrefix(part, "default=")
+				for part := range strings.SplitSeq(tag, ",") {
+					if defaultVal, found := strings.CutPrefix(part, "default="); found {
 						if err := u.setDefaultValue(fieldValue, defaultVal); err != nil {
 							return fmt.Errorf("error setting default value for field %s: %w", fieldName, err)
 						}
@@ -301,13 +440,13 @@ func (u *Unmarshaler) setDefaultValue(field reflect.Value, defaultVal string) er
 	default:
 		// Handle special types that don't match basic kinds
 		switch field.Type() {
-		case reflect.TypeOf(time.Duration(0)):
+		case timeDurationType:
 			duration, err := time.ParseDuration(defaultVal)
 			if err != nil {
 				return fmt.Errorf("cannot parse default duration %q: %w", defaultVal, err)
 			}
 			field.Set(reflect.ValueOf(duration))
-		case reflect.TypeOf(time.Time{}):
+		case timeTimeType:
 			// Try multiple time formats for default values
 			parsedTime, err := parseTimeValue(defaultVal, "")
 			if err != nil {
@@ -358,6 +497,17 @@ func (u *Unmarshaler) unmarshalValue(ctx context.Context, val format.Value, fiel
 
 // parseInstillTag parses the instill tag and returns field name, format, pattern, and other attributes
 func parseInstillTag(tag string) (fieldName, format, pattern string, attributes map[string]string) {
+	if tag == "" {
+		return "", "", "", make(map[string]string)
+	}
+
+	// Use cached parsing for better performance
+	result := parsedTagCache.getOrParse(tag)
+	return result.fieldName, result.format, result.pattern, result.attributes
+}
+
+// parseInstillTagUncached is the actual parsing implementation (used by cache)
+func parseInstillTagUncached(tag string) (fieldName, format, pattern string, attributes map[string]string) {
 	attributes = make(map[string]string)
 	if tag == "" {
 		return
@@ -384,10 +534,10 @@ func parseInstillTag(tag string) (fieldName, format, pattern string, attributes 
 
 		switch {
 		case strings.HasPrefix(part, "default="):
-			attributes["default"] = strings.TrimPrefix(part, "default=")
+			attributes["default"], _ = strings.CutPrefix(part, "default=")
 		case strings.HasPrefix(part, "pattern="):
 			// For patterns, we may need to rejoin parts if the pattern contains commas
-			patternValue := strings.TrimPrefix(part, "pattern=")
+			patternValue, _ := strings.CutPrefix(part, "pattern=")
 			// Check if this looks like an incomplete regex (missing closing bracket/paren)
 			if strings.Contains(patternValue, "(") && !strings.Contains(patternValue, ")") && i+1 < len(parts) {
 				// Likely a pattern split by comma, rejoin with next parts until we find a closing paren or end
@@ -401,7 +551,7 @@ func parseInstillTag(tag string) (fieldName, format, pattern string, attributes 
 			}
 			pattern = patternValue
 		case strings.HasPrefix(part, "format="):
-			format = strings.TrimPrefix(part, "format=")
+			format, _ = strings.CutPrefix(part, "format=")
 		case strings.Contains(part, "/") && !strings.Contains(part, "="):
 			// Legacy format specification without "format=" prefix
 			format = part
@@ -420,7 +570,8 @@ func validatePattern(value, pattern string) error {
 	// Unescape the pattern (convert \\. to \.)
 	unescapedPattern := strings.ReplaceAll(pattern, "\\\\", "\\")
 
-	regex, err := regexp.Compile(unescapedPattern)
+	// Use cached regex compilation for better performance
+	regex, err := patternCache.getOrCompile(unescapedPattern)
 	if err != nil {
 		return fmt.Errorf("invalid pattern %q: %w", pattern, err)
 	}
@@ -434,26 +585,16 @@ func validatePattern(value, pattern string) error {
 
 // parseTimeValue parses a time string using appropriate formats based on the format hint
 func parseTimeValue(timeStr, format string) (time.Time, error) {
-	var timeFormats []string
+	var formats []string
 
-	// If format is "date-time" or similar, prioritize RFC3339 formats
+	// Use pre-compiled time formats for better performance
 	if format == "date-time" || format == "datetime" {
-		timeFormats = []string{
-			time.RFC3339,
-			time.RFC3339Nano,
-		}
+		formats = timeFormats.dateTime
 	} else {
-		// Try multiple time formats
-		timeFormats = []string{
-			time.RFC3339,
-			time.RFC3339Nano,
-			"2006-01-02T15:04:05Z07:00",
-			"2006-01-02 15:04:05",
-			"2006-01-02",
-		}
+		formats = timeFormats.general
 	}
 
-	for _, timeFormat := range timeFormats {
+	for _, timeFormat := range formats {
 		if parsedTime, err := time.Parse(timeFormat, timeStr); err == nil {
 			return parsedTime, nil
 		}
@@ -464,14 +605,7 @@ func parseTimeValue(timeStr, format string) (time.Time, error) {
 
 // isFileType checks if a type is a file-related format type
 func isFileType(t reflect.Type) bool {
-	fileTypes := []reflect.Type{
-		reflect.TypeOf((*format.Image)(nil)).Elem(),
-		reflect.TypeOf((*format.Audio)(nil)).Elem(),
-		reflect.TypeOf((*format.Video)(nil)).Elem(),
-		reflect.TypeOf((*format.Document)(nil)).Elem(),
-		reflect.TypeOf((*format.File)(nil)).Elem(),
-	}
-
+	// Use pre-computed file types for better performance
 	for _, fileType := range fileTypes {
 		if t == fileType {
 			return true
@@ -483,11 +617,12 @@ func isFileType(t reflect.Type) bool {
 // handleTimePointer handles marshaling of time pointer types
 func handleTimePointer(v reflect.Value) (format.Value, bool) {
 	elemType := v.Type().Elem()
+	// Use pre-computed types for better performance
 	switch elemType {
-	case reflect.TypeOf(time.Time{}):
+	case timeTimeType:
 		timeVal := v.Interface().(*time.Time)
 		return NewString(timeVal.Format(time.RFC3339)), true
-	case reflect.TypeOf(time.Duration(0)):
+	case timeDurationType:
 		durationVal := v.Interface().(*time.Duration)
 		return NewString(durationVal.String()), true
 	}
@@ -529,7 +664,7 @@ func (u *Unmarshaler) unmarshalString(ctx context.Context, v format.String, fiel
 
 		switch field.Type() {
 		// Handle time.Duration
-		case reflect.TypeOf(time.Duration(0)):
+		case timeDurationType:
 			// Parse instill tag for parsing hints
 			_, _, pattern, _ := parseInstillTag(structField.Tag.Get("instill"))
 
@@ -557,7 +692,7 @@ func (u *Unmarshaler) unmarshalString(ctx context.Context, v format.String, fiel
 				field.Set(reflect.ValueOf(duration))
 			}
 		// Handle time.Time
-		case reflect.TypeOf(time.Time{}):
+		case timeTimeType:
 			// Parse instill tag for format specification
 			_, format, _, _ := parseInstillTag(structField.Tag.Get("instill"))
 
@@ -581,8 +716,8 @@ func (u *Unmarshaler) unmarshalString(ctx context.Context, v format.String, fiel
 
 			// Handle format.Value types
 			if field.Type() == reflect.TypeOf(v) ||
-				field.Type() == reflect.TypeOf((*format.String)(nil)).Elem() ||
-				field.Type() == reflect.TypeOf((*format.Value)(nil)).Elem() {
+				field.Type() == formatStringType ||
+				field.Type() == formatValueType {
 				field.Set(reflect.ValueOf(v))
 				return nil
 			}
@@ -594,16 +729,17 @@ func (u *Unmarshaler) unmarshalString(ctx context.Context, v format.String, fiel
 }
 
 func (u *Unmarshaler) createFileFromURL(ctx context.Context, t reflect.Type, url string) (format.Value, error) {
+	// Use pre-computed types for better performance
 	switch t {
-	case reflect.TypeOf((*format.Image)(nil)).Elem():
+	case formatImageType:
 		return NewImageFromURL(ctx, u.binaryFetcher, url, true)
-	case reflect.TypeOf((*format.Audio)(nil)).Elem():
+	case formatAudioType:
 		return NewAudioFromURL(ctx, u.binaryFetcher, url, true)
-	case reflect.TypeOf((*format.Video)(nil)).Elem():
+	case formatVideoType:
 		return NewVideoFromURL(ctx, u.binaryFetcher, url, true)
-	case reflect.TypeOf((*format.Document)(nil)).Elem():
+	case formatDocumentType:
 		return NewDocumentFromURL(ctx, u.binaryFetcher, url)
-	case reflect.TypeOf((*format.File)(nil)).Elem():
+	case formatFileType:
 		return NewBinaryFromURL(ctx, u.binaryFetcher, url)
 	}
 	return nil, fmt.Errorf("unsupported type: %v", t)
@@ -621,9 +757,9 @@ func (u *Unmarshaler) unmarshalBoolean(v format.Boolean, field reflect.Value) er
 		return u.unmarshalBoolean(v, field.Elem())
 	default:
 		switch field.Type() {
-		case reflect.TypeOf(v), reflect.TypeOf((*format.Boolean)(nil)).Elem():
+		case reflect.TypeOf(v), formatBooleanType:
 			field.Set(reflect.ValueOf(v))
-		case reflect.TypeOf((*format.Value)(nil)).Elem():
+		case formatValueType:
 			field.Set(reflect.ValueOf(v))
 		default:
 			return fmt.Errorf("cannot unmarshal Boolean into %v", field.Type())
@@ -639,7 +775,7 @@ func (u *Unmarshaler) unmarshalNumber(v format.Number, field reflect.Value) erro
 		field.SetFloat(v.Float64())
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		// Special handling for time.Duration - should only accept string format
-		if field.Type() == reflect.TypeOf(time.Duration(0)) {
+		if field.Type() == timeDurationType {
 			return fmt.Errorf("cannot unmarshal Number into time.Duration: use string format like \"60s\"")
 		}
 		field.SetInt(int64(v.Integer()))
@@ -647,7 +783,7 @@ func (u *Unmarshaler) unmarshalNumber(v format.Number, field reflect.Value) erro
 		field.SetUint(uint64(v.Integer()))
 	case reflect.Ptr:
 		// Special handling for *time.Duration - should only accept string format
-		if field.Type().Elem() == reflect.TypeOf(time.Duration(0)) {
+		if field.Type().Elem() == timeDurationType {
 			return fmt.Errorf("cannot unmarshal Number into *time.Duration: use string format like \"60s\"")
 		}
 		if field.IsNil() {
@@ -656,9 +792,9 @@ func (u *Unmarshaler) unmarshalNumber(v format.Number, field reflect.Value) erro
 		return u.unmarshalNumber(v, field.Elem())
 	default:
 		switch field.Type() {
-		case reflect.TypeOf(v), reflect.TypeOf((*format.Number)(nil)).Elem():
+		case reflect.TypeOf(v), formatNumberType:
 			field.Set(reflect.ValueOf(v))
-		case reflect.TypeOf((*format.Value)(nil)).Elem():
+		case formatValueType:
 			field.Set(reflect.ValueOf(v))
 		default:
 			return fmt.Errorf("cannot unmarshal Number into %v", field.Type())
@@ -980,7 +1116,7 @@ func (m *Marshaler) marshalValue(v reflect.Value) (format.Value, error) {
 	case reflect.Struct:
 		// Handle special struct types before generic struct marshaling
 		switch v.Type() {
-		case reflect.TypeOf(time.Time{}):
+		case timeTimeType:
 			// Marshal time.Time as RFC3339 string
 			timeVal := v.Interface().(time.Time)
 			return NewString(timeVal.Format(time.RFC3339)), nil
@@ -998,7 +1134,7 @@ func (m *Marshaler) marshalValue(v reflect.Value) (format.Value, error) {
 		return NewNumberFromFloat(v.Float()), nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		// Handle time.Duration before generic int64 handling
-		if v.Type() == reflect.TypeOf(time.Duration(0)) {
+		if v.Type() == timeDurationType {
 			durationVal := v.Interface().(time.Duration)
 			return NewString(durationVal.String()), nil
 		}

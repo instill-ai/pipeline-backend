@@ -3,6 +3,9 @@ package data
 import (
 	"context"
 	"os"
+	"reflect"
+	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -1777,4 +1780,288 @@ func TestMarshal(t *testing.T) {
 	})
 }
 
-// Removed benchmark tests - not needed for regular unit testing
+// Performance Benchmarks
+
+// BenchmarkReflectionTypeComparison benchmarks the difference between
+// repeated reflect.TypeOf calls vs pre-computed types
+func BenchmarkReflectionTypeComparison(b *testing.B) {
+	b.Run("Old_RepeatedReflectTypeOf", func(b *testing.B) {
+		for b.Loop() {
+			// Simulate old behavior - repeated reflect.TypeOf calls
+			_ = reflect.TypeOf(time.Time{})
+			_ = reflect.TypeOf(time.Duration(0))
+			_ = reflect.TypeOf((*format.Value)(nil)).Elem()
+			_ = reflect.TypeOf((*format.String)(nil)).Elem()
+			_ = reflect.TypeOf((*format.Number)(nil)).Elem()
+		}
+	})
+
+	b.Run("New_PreComputedTypes", func(b *testing.B) {
+		for b.Loop() {
+			// Simulate new behavior - using pre-computed types
+			_ = timeTimeType
+			_ = timeDurationType
+			_ = formatValueType
+			_ = formatStringType
+			_ = formatNumberType
+		}
+	})
+}
+
+// BenchmarkRegexPatternValidation benchmarks regex compilation caching
+func BenchmarkRegexPatternValidation(b *testing.B) {
+	testValue := "test@example.com"
+	emailPattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+
+	b.Run("Old_RepeatedRegexCompile", func(b *testing.B) {
+		for b.Loop() {
+			// Simulate old behavior - compile regex every time
+			regex, err := regexp.Compile(emailPattern)
+			if err != nil {
+				b.Fatal(err)
+			}
+			_ = regex.MatchString(testValue)
+		}
+	})
+
+	b.Run("New_CachedRegex", func(b *testing.B) {
+		for b.Loop() {
+			// Use the new cached regex compilation
+			err := validatePattern(testValue, emailPattern)
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+}
+
+// BenchmarkTagParsing benchmarks instill tag parsing with and without caching
+func BenchmarkTagParsing(b *testing.B) {
+	complexTag := "field-name,format=image/jpeg,pattern=^[a-zA-Z0-9._-]+$,default=test"
+
+	b.Run("Old_RepeatedTagParsing", func(b *testing.B) {
+		for b.Loop() {
+			// Simulate old behavior - parse tag every time
+			_, _, _, _ = parseInstillTagUncached(complexTag)
+		}
+	})
+
+	b.Run("New_CachedTagParsing", func(b *testing.B) {
+		for b.Loop() {
+			// Use the new cached tag parsing
+			_, _, _, _ = parseInstillTag(complexTag)
+		}
+	})
+}
+
+// BenchmarkTimeFormatParsing benchmarks time parsing with pre-compiled formats
+func BenchmarkTimeFormatParsing(b *testing.B) {
+	timeString := "2023-12-25T15:30:45Z"
+
+	b.Run("Old_RepeatedFormatSliceCreation", func(b *testing.B) {
+		for b.Loop() {
+			// Simulate old behavior - create format slice every time
+			formats := []string{
+				time.RFC3339,
+				time.RFC3339Nano,
+				"2006-01-02T15:04:05Z07:00",
+				"2006-01-02 15:04:05",
+				"2006-01-02",
+			}
+			for _, format := range formats {
+				if _, err := time.Parse(format, timeString); err == nil {
+					break
+				}
+			}
+		}
+	})
+
+	b.Run("New_PreCompiledFormats", func(b *testing.B) {
+		for b.Loop() {
+			// Use the new pre-compiled formats
+			_, _ = parseTimeValue(timeString, "")
+		}
+	})
+}
+
+// BenchmarkFileTypeChecking benchmarks file type checking optimization
+func BenchmarkFileTypeChecking(b *testing.B) {
+	imageType := formatImageType
+
+	b.Run("Old_RepeatedFileTypeSliceCreation", func(b *testing.B) {
+		for b.Loop() {
+			// Simulate old behavior - create file types slice every time
+			fileTypes := []reflect.Type{
+				reflect.TypeOf((*format.Image)(nil)).Elem(),
+				reflect.TypeOf((*format.Audio)(nil)).Elem(),
+				reflect.TypeOf((*format.Video)(nil)).Elem(),
+				reflect.TypeOf((*format.Document)(nil)).Elem(),
+				reflect.TypeOf((*format.File)(nil)).Elem(),
+			}
+			for _, fileType := range fileTypes {
+				if imageType == fileType {
+					break
+				}
+			}
+		}
+	})
+
+	b.Run("New_PreComputedFileTypes", func(b *testing.B) {
+		for b.Loop() {
+			// Use the new pre-computed file types
+			_ = isFileType(imageType)
+		}
+	})
+}
+
+// BenchmarkCompleteStructUnmarshaling benchmarks the overall unmarshaling performance
+func BenchmarkCompleteStructUnmarshaling(b *testing.B) {
+	type TestStruct struct {
+		Name        string        `instill:"name,pattern=^[a-zA-Z ]+$"`
+		Email       string        `instill:"email,pattern=^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"`
+		Age         int           `instill:"age"`
+		Score       float64       `instill:"score"`
+		IsActive    bool          `instill:"is-active"`
+		CreatedAt   time.Time     `instill:"created-at"`
+		Duration    time.Duration `instill:"duration"`
+		Description *string       `instill:"description,default=No description"`
+	}
+
+	input := Map{
+		"name":        NewString("John Doe"),
+		"email":       NewString("john@example.com"),
+		"age":         NewNumberFromInteger(30),
+		"score":       NewNumberFromFloat(95.5),
+		"is-active":   NewBoolean(true),
+		"created-at":  NewString("2023-12-25T15:30:45Z"),
+		"duration":    NewString("1h30m"),
+		"description": NewString("Test user"),
+	}
+
+	ctx := context.Background()
+	unmarshaler := NewUnmarshaler(nil)
+
+	b.ResetTimer()
+	for b.Loop() {
+		var result TestStruct
+		err := unmarshaler.Unmarshal(ctx, input, &result)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkCompleteStructMarshaling benchmarks the overall marshaling performance
+func BenchmarkCompleteStructMarshaling(b *testing.B) {
+	type TestStruct struct {
+		Name        string        `instill:"name"`
+		Email       string        `instill:"email"`
+		Age         int           `instill:"age"`
+		Score       float64       `instill:"score"`
+		IsActive    bool          `instill:"is-active"`
+		CreatedAt   time.Time     `instill:"created-at"`
+		Duration    time.Duration `instill:"duration"`
+		Description *string       `instill:"description"`
+	}
+
+	desc := "Test user"
+	input := TestStruct{
+		Name:        "John Doe",
+		Email:       "john@example.com",
+		Age:         30,
+		Score:       95.5,
+		IsActive:    true,
+		CreatedAt:   time.Date(2023, 12, 25, 15, 30, 45, 0, time.UTC),
+		Duration:    90 * time.Minute,
+		Description: &desc,
+	}
+
+	marshaler := NewMarshaler()
+
+	b.ResetTimer()
+	for b.Loop() {
+		_, err := marshaler.Marshal(input)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkCacheContention benchmarks cache performance under concurrent access
+func BenchmarkCacheContention(b *testing.B) {
+	patterns := []string{
+		`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`,
+		`^[0-9]{3}-[0-9]{2}-[0-9]{4}$`,
+		`^[a-zA-Z ]+$`,
+		`^[0-9]+$`,
+		`^https?://[^\s]+$`,
+	}
+
+	tags := []string{
+		"field1,format=image/jpeg,pattern=^[a-zA-Z]+$",
+		"field2,format=video/mp4,default=test",
+		"field3,pattern=^[0-9]+$,format=text/plain",
+		"field4,default=value,pattern=^[a-zA-Z0-9]+$",
+		"field5,format=audio/mpeg",
+	}
+
+	b.Run("RegexCacheContention", func(b *testing.B) {
+		testValues := []string{
+			"test@example.com",
+			"123-45-6789",
+			"John Doe",
+			"12345",
+			"https://example.com",
+		}
+
+		b.RunParallel(func(pb *testing.PB) {
+			i := 0
+			for pb.Next() {
+				pattern := patterns[i%len(patterns)]
+				testValue := testValues[i%len(testValues)]
+				_ = validatePattern(testValue, pattern) // Ignore validation errors for benchmark
+				i++
+			}
+		})
+	})
+
+	b.Run("TagCacheContention", func(b *testing.B) {
+		b.RunParallel(func(pb *testing.PB) {
+			i := 0
+			for pb.Next() {
+				tag := tags[i%len(tags)]
+				_, _, _, _ = parseInstillTag(tag)
+				i++
+			}
+		})
+	})
+}
+
+// BenchmarkMemoryAllocation benchmarks memory allocation patterns
+func BenchmarkMemoryAllocation(b *testing.B) {
+	b.Run("StringOperations", func(b *testing.B) {
+		tag := "field-name,format=image/jpeg,pattern=^[a-zA-Z0-9._-]+$,default=test"
+
+		b.ResetTimer()
+		for b.Loop() {
+			// Test string operations that were optimized
+			parts := strings.Split(tag, ",")
+			for _, part := range parts {
+				if strings.HasPrefix(part, "pattern=") {
+					_ = strings.TrimPrefix(part, "pattern=")
+				}
+			}
+		}
+	})
+
+	b.Run("MapCreation", func(b *testing.B) {
+		b.ResetTimer()
+		for b.Loop() {
+			// Test map creation patterns
+			attributes := make(map[string]string)
+			attributes["default"] = "test"
+			attributes["format"] = "image/jpeg"
+			attributes["pattern"] = "^[a-zA-Z0-9._-]+$"
+		}
+	})
+}
