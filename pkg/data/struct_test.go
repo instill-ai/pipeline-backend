@@ -920,6 +920,382 @@ func TestUnmarshal(t *testing.T) {
 		})
 	})
 
+	c.Run("JSON string to struct conversion", func(c *qt.C) {
+		c.Run("Basic struct conversion", func(c *qt.C) {
+			type TargetStruct struct {
+				Name  string `json:"name"`
+				Age   int    `json:"age"`
+				Email string `json:"email"`
+			}
+
+			type TestStruct struct {
+				JSONData TargetStruct `instill:"json-data"`
+			}
+
+			// JSON string input
+			jsonString := `{
+				"name": "John Doe",
+				"age": 30,
+				"email": "john@example.com"
+			}`
+
+			input := Map{
+				"json-data": NewString(jsonString),
+			}
+
+			var result TestStruct
+			err := unmarshaler.Unmarshal(context.Background(), input, &result)
+
+			c.Assert(err, qt.IsNil)
+			c.Check(result.JSONData.Name, qt.Equals, "John Doe")
+			c.Check(result.JSONData.Age, qt.Equals, 30)
+			c.Check(result.JSONData.Email, qt.Equals, "john@example.com")
+		})
+
+		c.Run("Pointer to struct conversion", func(c *qt.C) {
+			type TargetStruct struct {
+				ID     int    `json:"id"`
+				Status string `json:"status"`
+			}
+
+			type TestStruct struct {
+				JSONData *TargetStruct `instill:"json-data"`
+			}
+
+			jsonString := `{
+				"id": 123,
+				"status": "active"
+			}`
+
+			input := Map{
+				"json-data": NewString(jsonString),
+			}
+
+			var result TestStruct
+			err := unmarshaler.Unmarshal(context.Background(), input, &result)
+
+			c.Assert(err, qt.IsNil)
+			c.Assert(result.JSONData, qt.Not(qt.IsNil))
+			c.Check(result.JSONData.ID, qt.Equals, 123)
+			c.Check(result.JSONData.Status, qt.Equals, "active")
+		})
+
+		c.Run("Nested struct conversion", func(c *qt.C) {
+			type Address struct {
+				Street string `json:"street"`
+				City   string `json:"city"`
+			}
+
+			type Person struct {
+				Name    string  `json:"name"`
+				Address Address `json:"address"`
+			}
+
+			type TestStruct struct {
+				PersonData Person `instill:"person-data"`
+			}
+
+			jsonString := `{
+				"name": "Jane Smith",
+				"address": {
+					"street": "123 Main St",
+					"city": "New York"
+				}
+			}`
+
+			input := Map{
+				"person-data": NewString(jsonString),
+			}
+
+			var result TestStruct
+			err := unmarshaler.Unmarshal(context.Background(), input, &result)
+
+			c.Assert(err, qt.IsNil)
+			c.Check(result.PersonData.Name, qt.Equals, "Jane Smith")
+			c.Check(result.PersonData.Address.Street, qt.Equals, "123 Main St")
+			c.Check(result.PersonData.Address.City, qt.Equals, "New York")
+		})
+
+		c.Run("Array/slice conversion", func(c *qt.C) {
+			type Item struct {
+				ID   int    `json:"id"`
+				Name string `json:"name"`
+			}
+
+			type ItemList struct {
+				Items []Item `json:"items"`
+			}
+
+			type TestStruct struct {
+				ItemData ItemList `instill:"item-data"`
+			}
+
+			jsonString := `{
+				"items": [
+					{"id": 1, "name": "Item 1"},
+					{"id": 2, "name": "Item 2"}
+				]
+			}`
+
+			input := Map{
+				"item-data": NewString(jsonString),
+			}
+
+			var result TestStruct
+			err := unmarshaler.Unmarshal(context.Background(), input, &result)
+
+			c.Assert(err, qt.IsNil)
+			c.Assert(result.ItemData.Items, qt.HasLen, 2)
+			c.Check(result.ItemData.Items[0].ID, qt.Equals, 1)
+			c.Check(result.ItemData.Items[0].Name, qt.Equals, "Item 1")
+			c.Check(result.ItemData.Items[1].ID, qt.Equals, 2)
+			c.Check(result.ItemData.Items[1].Name, qt.Equals, "Item 2")
+		})
+
+		c.Run("Complex nested structure with arrays", func(c *qt.C) {
+			type Property struct {
+				Type        string `json:"type"`
+				Description string `json:"description"`
+			}
+
+			type Schema struct {
+				Type       string              `json:"type"`
+				Properties map[string]Property `json:"properties"`
+				Required   []string            `json:"required"`
+			}
+
+			type TestStruct struct {
+				ResponseSchema Schema `instill:"response-schema"`
+			}
+
+			jsonString := `{
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "The name field"
+					},
+					"age": {
+						"type": "number",
+						"description": "The age field"
+					}
+				},
+				"required": ["name", "age"]
+			}`
+
+			input := Map{
+				"response-schema": NewString(jsonString),
+			}
+
+			var result TestStruct
+			err := unmarshaler.Unmarshal(context.Background(), input, &result)
+
+			c.Assert(err, qt.IsNil)
+			c.Check(result.ResponseSchema.Type, qt.Equals, "object")
+			c.Assert(result.ResponseSchema.Properties, qt.HasLen, 2)
+			c.Check(result.ResponseSchema.Properties["name"].Type, qt.Equals, "string")
+			c.Check(result.ResponseSchema.Properties["name"].Description, qt.Equals, "The name field")
+			c.Check(result.ResponseSchema.Properties["age"].Type, qt.Equals, "number")
+			c.Check(result.ResponseSchema.Properties["age"].Description, qt.Equals, "The age field")
+			c.Assert(result.ResponseSchema.Required, qt.HasLen, 2)
+			c.Check(result.ResponseSchema.Required[0], qt.Equals, "name")
+			c.Check(result.ResponseSchema.Required[1], qt.Equals, "age")
+		})
+
+		c.Run("Performance optimization - non-JSON strings", func(c *qt.C) {
+			type TestStruct struct {
+				RegularString string `instill:"regular-string"`
+				JSONData      struct {
+					Name string `json:"name"`
+				} `instill:"json-data"`
+			}
+
+			// Test that regular strings don't trigger JSON parsing
+			input := Map{
+				"regular-string": NewString("This is just a regular string, not JSON"),
+				"json-data":      NewString(`{"name": "test"}`),
+			}
+
+			var result TestStruct
+			err := unmarshaler.Unmarshal(context.Background(), input, &result)
+
+			c.Assert(err, qt.IsNil)
+			c.Check(result.RegularString, qt.Equals, "This is just a regular string, not JSON")
+			c.Check(result.JSONData.Name, qt.Equals, "test")
+		})
+
+		c.Run("Invalid JSON handling", func(c *qt.C) {
+			type TargetStruct struct {
+				Name string `json:"name"`
+			}
+
+			type TestStruct struct {
+				JSONData TargetStruct `instill:"json-data"`
+			}
+
+			// Invalid JSON string - should fall back to regular string handling
+			invalidJSONString := `{"name": "John", "invalid": }`
+
+			input := Map{
+				"json-data": NewString(invalidJSONString),
+			}
+
+			var result TestStruct
+			err := unmarshaler.Unmarshal(context.Background(), input, &result)
+
+			// Should fail because string can't be unmarshaled into struct normally
+			c.Assert(err, qt.ErrorMatches, ".*cannot unmarshal String into.*")
+		})
+
+		c.Run("JSON object vs JSON string", func(c *qt.C) {
+			type TargetStruct struct {
+				Name string `json:"name"`
+				Age  int    `json:"age"`
+			}
+
+			type TestStruct struct {
+				FromString TargetStruct `instill:"from-string"`
+				FromObject TargetStruct `instill:"from-object"`
+			}
+
+			// Test both JSON string and direct object
+			input := Map{
+				"from-string": NewString(`{"name": "John", "age": 30}`),
+				"from-object": Map{
+					"name": NewString("Jane"),
+					"age":  NewNumberFromInteger(25),
+				},
+			}
+
+			var result TestStruct
+			err := unmarshaler.Unmarshal(context.Background(), input, &result)
+
+			c.Assert(err, qt.IsNil)
+			c.Check(result.FromString.Name, qt.Equals, "John")
+			c.Check(result.FromString.Age, qt.Equals, 30)
+			c.Check(result.FromObject.Name, qt.Equals, "Jane")
+			c.Check(result.FromObject.Age, qt.Equals, 25)
+		})
+
+		c.Run("Edge cases", func(c *qt.C) {
+			type ArrayWrapper struct {
+				Items []string `json:"items"`
+			}
+
+			type PrimitiveWrapper struct {
+				BoolValue   bool    `json:"boolValue"`
+				NumberValue float64 `json:"numberValue"`
+				StringValue string  `json:"stringValue"`
+			}
+
+			type NullableWrapper struct {
+				NullableString *string `json:"nullableString"`
+			}
+
+			type TestStruct struct {
+				EmptyObject   struct{}         `instill:"empty-object"`
+				EmptyArray    ArrayWrapper     `instill:"empty-array"`
+				PrimitiveData PrimitiveWrapper `instill:"primitive-data"`
+				NullableData  NullableWrapper  `instill:"nullable-data"`
+			}
+
+			input := Map{
+				"empty-object": NewString(`{}`),
+				"empty-array":  NewString(`{"items": []}`),
+				"primitive-data": NewString(`{
+					"boolValue": true,
+					"numberValue": 42.5,
+					"stringValue": "hello world"
+				}`),
+				"nullable-data": NewString(`{"nullableString": null}`),
+			}
+
+			var result TestStruct
+			err := unmarshaler.Unmarshal(context.Background(), input, &result)
+
+			c.Assert(err, qt.IsNil)
+			c.Assert(result.EmptyArray.Items, qt.HasLen, 0)
+			c.Check(result.PrimitiveData.BoolValue, qt.Equals, true)
+			c.Check(result.PrimitiveData.NumberValue, qt.Equals, 42.5)
+			c.Check(result.PrimitiveData.StringValue, qt.Equals, "hello world")
+			c.Assert(result.NullableData.NullableString, qt.IsNil)
+		})
+
+		c.Run("Real-world Gemini API schema example", func(c *qt.C) {
+			// Simulate the genai.Schema structure
+			type Schema struct {
+				Type        string             `json:"type"`
+				Description string             `json:"description,omitempty"`
+				Properties  map[string]*Schema `json:"properties,omitempty"`
+				Items       *Schema            `json:"items,omitempty"`
+				Required    []string           `json:"required,omitempty"`
+				Enum        []string           `json:"enum,omitempty"`
+				Pattern     string             `json:"pattern,omitempty"`
+				Minimum     *float64           `json:"minimum,omitempty"`
+				Maximum     *float64           `json:"maximum,omitempty"`
+			}
+
+			type GenerationConfig struct {
+				ResponseSchema *Schema `json:"responseSchema,omitempty"`
+			}
+
+			type TestStruct struct {
+				GenConfig GenerationConfig `instill:"generation-config"`
+			}
+
+			// Complex nested schema JSON string (similar to Gemini API usage)
+			schemaString := `{
+				"responseSchema": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"time": {
+								"type": "string",
+								"pattern": "^[0-9]{2}:[0-9]{2}$",
+								"description": "Timestamp in MM:SS format"
+							},
+							"transcript": {
+								"type": "string",
+								"description": "Transcript text for this segment"
+							}
+						},
+						"required": ["time", "transcript"]
+					}
+				}
+			}`
+
+			input := Map{
+				"generation-config": NewString(schemaString),
+			}
+
+			var result TestStruct
+			err := unmarshaler.Unmarshal(context.Background(), input, &result)
+
+			c.Assert(err, qt.IsNil)
+			c.Assert(result.GenConfig.ResponseSchema, qt.Not(qt.IsNil))
+			c.Check(result.GenConfig.ResponseSchema.Type, qt.Equals, "array")
+			c.Assert(result.GenConfig.ResponseSchema.Items, qt.Not(qt.IsNil))
+			c.Check(result.GenConfig.ResponseSchema.Items.Type, qt.Equals, "object")
+			c.Assert(result.GenConfig.ResponseSchema.Items.Properties, qt.HasLen, 2)
+
+			timeProperty := result.GenConfig.ResponseSchema.Items.Properties["time"]
+			c.Assert(timeProperty, qt.Not(qt.IsNil))
+			c.Check(timeProperty.Type, qt.Equals, "string")
+			c.Check(timeProperty.Pattern, qt.Equals, "^[0-9]{2}:[0-9]{2}$")
+			c.Check(timeProperty.Description, qt.Equals, "Timestamp in MM:SS format")
+
+			transcriptProperty := result.GenConfig.ResponseSchema.Items.Properties["transcript"]
+			c.Assert(transcriptProperty, qt.Not(qt.IsNil))
+			c.Check(transcriptProperty.Type, qt.Equals, "string")
+			c.Check(transcriptProperty.Description, qt.Equals, "Transcript text for this segment")
+
+			c.Assert(result.GenConfig.ResponseSchema.Items.Required, qt.HasLen, 2)
+			c.Check(result.GenConfig.ResponseSchema.Items.Required[0], qt.Equals, "time")
+			c.Check(result.GenConfig.ResponseSchema.Items.Required[1], qt.Equals, "transcript")
+		})
+	})
+
 }
 
 func TestMarshal(t *testing.T) {

@@ -3,6 +3,7 @@ package data
 import (
 	"container/list"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -514,6 +515,18 @@ func (u *Unmarshaler) unmarshalString(ctx context.Context, v format.String, fiel
 		}
 		return u.unmarshalString(ctx, v, field.Elem(), structField)
 	default:
+		// Check if we can unmarshal JSON string into struct
+		if field.Kind() == reflect.Struct || (field.Kind() == reflect.Ptr && field.Type().Elem().Kind() == reflect.Struct) {
+			// Fast pre-check: only attempt JSON parsing if string looks like JSON
+			if len(stringValue) > 1 && (stringValue[0] == '{' || stringValue[0] == '[') {
+				// Try to parse the string as JSON and unmarshal into the struct
+				if u.tryUnmarshalJSONString(stringValue, field) == nil {
+					return nil
+				}
+			}
+			// If not JSON-like or parsing fails, continue with other type handling
+		}
+
 		switch field.Type() {
 		// Handle time.Duration
 		case reflect.TypeOf(time.Duration(0)):
@@ -1191,4 +1204,25 @@ func (m *Marshaler) marshalSlice(v reflect.Value) (Array, error) {
 		arr[i] = marshaledValue
 	}
 	return arr, nil
+}
+
+// tryUnmarshalJSONString attempts to unmarshal a JSON string directly into a struct field
+func (u *Unmarshaler) tryUnmarshalJSONString(jsonStr string, field reflect.Value) error {
+	// Create a new instance if the field is a nil pointer
+	if field.Kind() == reflect.Ptr {
+		if field.IsNil() {
+			field.Set(reflect.New(field.Type().Elem()))
+		}
+		// For pointer types, unmarshal directly into the pointed-to value
+		return json.Unmarshal([]byte(jsonStr), field.Interface())
+	}
+
+	// For non-pointer struct types, we need to unmarshal into a temporary value
+	// then set it, because we can't get the address of field directly
+	tempValue := reflect.New(field.Type())
+	if err := json.Unmarshal([]byte(jsonStr), tempValue.Interface()); err != nil {
+		return err // Not valid JSON or incompatible struct
+	}
+	field.Set(tempValue.Elem())
+	return nil
 }
