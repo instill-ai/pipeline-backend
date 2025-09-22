@@ -2,16 +2,11 @@ package gemini
 
 import (
 	"context"
-	"encoding/base64"
-	"mime"
-	"path"
-	"strings"
+	"fmt"
 
 	"google.golang.org/genai"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/pipeline-backend/pkg/data/format"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 func (e *execution) chat(ctx context.Context, job *base.Job) error {
@@ -32,7 +27,7 @@ func (e *execution) chat(ctx context.Context, job *base.Job) error {
 	// Prepare request components
 	systemMessage := extractSystemMessage(in)
 	cfg := buildGenerateContentConfig(in, systemMessage)
-	contents, err := e.buildRequestContents(in)
+	contents, uploadedFileNames, err := e.buildChatRequestContents(ctx, client, in)
 	if err != nil {
 		job.Error.Error(ctx, err)
 		return nil
@@ -40,6 +35,17 @@ func (e *execution) chat(ctx context.Context, job *base.Job) error {
 	if len(contents) == 0 {
 		return nil
 	}
+
+	// Ensure uploaded files are cleaned up after chat completion
+	defer func() {
+		for _, fileName := range uploadedFileNames {
+			if _, deleteErr := client.Files.Delete(ctx, fileName, nil); deleteErr != nil {
+				// Log the error but don't fail the operation
+				// The files will be automatically deleted after 48 hours anyway
+				fmt.Printf("Warning: failed to delete uploaded file %s: %v\n", fileName, deleteErr)
+			}
+		}
+	}()
 
 	// Execute request (streaming or non-streaming)
 	streamEnabled := in.Stream != nil && *in.Stream
@@ -55,30 +61,15 @@ func (e *execution) createGeminiClient(ctx context.Context) (*genai.Client, erro
 	return genai.NewClient(ctx, &genai.ClientConfig{APIKey: apiKey, Backend: genai.BackendGeminiAPI})
 }
 
-// extractSystemMessage extracts system message from input, prioritizing system-message over system-instruction
-func extractSystemMessage(in TaskChatInput) string {
-	if in.SystemMessage != nil && *in.SystemMessage != "" {
-		return *in.SystemMessage
-	}
-	if in.SystemInstruction != nil && len(in.SystemInstruction.Parts) > 0 {
-		for _, p := range in.SystemInstruction.Parts {
-			if p.Text != "" {
-				return p.Text
-			}
-		}
-	}
-	return ""
-}
-
-// buildRequestContents builds the complete request contents from input (history + current message)
-func (e *execution) buildRequestContents(in TaskChatInput) ([]*genai.Content, error) {
-	// Build user parts (prompt/contents + images + documents)
-	inParts, err := buildReqParts(in)
+// buildChatRequestContents builds the complete request contents from input (history + current message) using File API for large files and videos
+func (e *execution) buildChatRequestContents(ctx context.Context, client *genai.Client, in TaskChatInput) ([]*genai.Content, []string, error) {
+	// Build user parts (prompt/contents + images + documents) using File API based on total request size
+	inParts, uploadedFileNames, err := e.buildReqPartsWithFileAPI(ctx, client, in, false) // isCache = false
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if len(inParts) == 0 {
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	// Merge chat history and current message into contents
@@ -104,7 +95,7 @@ func (e *execution) buildRequestContents(in TaskChatInput) ([]*genai.Content, er
 	}
 	contents = append(contents, &genai.Content{Role: genai.RoleUser, Parts: partsPtrs})
 
-	return contents, nil
+	return contents, uploadedFileNames, nil
 }
 
 // handleStreamingRequest processes streaming requests
@@ -223,8 +214,12 @@ func (e *execution) mergeResponseChunk(r *genai.GenerateContentResponse, finalRe
 			if c != nil && i < len((*finalResp).Candidates) && (*finalResp).Candidates[i] != nil {
 				// Update metadata from latest chunk
 				(*finalResp).Candidates[i].FinishReason = c.FinishReason
-				(*finalResp).Candidates[i].TokenCount = c.TokenCount
 				(*finalResp).Candidates[i].AvgLogprobs = c.AvgLogprobs
+
+				// Due to a bug in the API, the token count is always 0
+				// ref: https://discuss.ai.google.dev/t/why-is-token-count-in-generatecontentresponse-always-0/1917
+				(*finalResp).Candidates[i].TokenCount += c.TokenCount
+
 				if c.SafetyRatings != nil {
 					(*finalResp).Candidates[i].SafetyRatings = c.SafetyRatings
 				}
@@ -396,253 +391,6 @@ func renderFinal(resp *genai.GenerateContentResponse, texts []string) TaskChatOu
 	return out
 }
 
-// Helpers for Images/Audio/Videos/Documents strings to genai.Part
-func newURIOrDataPart(s string, defaultMIME string) *genai.Part {
-	if s == "" {
-		return nil
-	}
-
-	// Handle data URIs - these need to be decoded and embedded as inline data
-	if strings.HasPrefix(s, "data:") {
-		fetcher := external.NewBinaryFetcher()
-		b, contentType, _, err := fetcher.FetchFromURL(context.Background(), s)
-		if err != nil {
-			return nil
-		}
-		mimeType := contentType
-		if mimeType == "" {
-			mimeType = defaultMIME
-		}
-		return &genai.Part{InlineData: &genai.Blob{MIMEType: mimeType, Data: b}}
-	}
-
-	// Handle remote URIs (http/https) - let Gemini API fetch these directly
-	if strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://") {
-		// Use genai.NewPartFromURI to create a fileData part that references the remote URI
-		// This leverages Gemini API's native ability to fetch remote files
-		if u := genai.NewPartFromURI(s, defaultMIME); u != nil {
-			return u
-		}
-		return nil
-	}
-
-	// Try raw base64 (no prefix) - decode and embed as inline data
-	if decoded, err := base64.StdEncoding.DecodeString(s); err == nil {
-		return &genai.Part{InlineData: &genai.Blob{MIMEType: defaultMIME, Data: decoded}}
-	}
-
-	// Handle other URI schemes (file://, gs://, etc.) - let Gemini API handle these
-	if strings.Contains(s, "://") {
-		if u := genai.NewPartFromURI(s, defaultMIME); u != nil {
-			return u
-		}
-	}
-
-	return nil
-}
-
-// detectMIMEFromPath determines MIME using the standard mime package; falls back to default when unknown.
-func detectMIMEFromPath(u string, defaultMIME string) string {
-	ext := strings.ToLower(path.Ext(u))
-	if ext != "" {
-		if t := mime.TypeByExtension(ext); t != "" {
-			return t
-		}
-	}
-	return defaultMIME
-}
-
-// processTextParts extracts text content from Contents and Prompt, returning them as genai.Part objects.
-// Text parts are processed last according to best practices.
-func processTextParts(in TaskChatInput) []genai.Part {
-	var textParts []genai.Part
-
-	// Extract text parts from Contents
-	if len(in.Contents) > 0 {
-		last := in.Contents[len(in.Contents)-1]
-		for _, part := range last.Parts {
-			if part.Text != "" {
-				textParts = append(textParts, *part)
-			}
-		}
-	}
-
-	// Add prompt as text part
-	if in.Prompt != nil && *in.Prompt != "" {
-		textParts = append(textParts, genai.Part{Text: *in.Prompt})
-	}
-
-	return textParts
-}
-
-// processNonTextContentParts extracts non-text parts from Contents (images, files, etc.).
-// These parts are processed first in the final ordering.
-func processNonTextContentParts(in TaskChatInput) []genai.Part {
-	var nonTextParts []genai.Part
-
-	if len(in.Contents) > 0 {
-		last := in.Contents[len(in.Contents)-1]
-		for _, part := range last.Parts {
-			if part.Text == "" {
-				nonTextParts = append(nonTextParts, *part)
-			}
-		}
-	}
-
-	return nonTextParts
-}
-
-// processImageParts converts image inputs to genai.Part objects with appropriate MIME types.
-func processImageParts(images []format.Image) ([]genai.Part, error) {
-	var parts []genai.Part
-
-	for _, img := range images {
-		contentType := img.ContentType().String()
-
-		// Validate image format
-		if _, err := validateFormat(contentType, "image", imageFormats, "GIF, BMP, TIFF", "PNG, JPEG, WEBP", ":png\", \":jpeg\", \":webp"); err != nil {
-			return nil, err
-		}
-
-		imgBase64, err := img.Base64()
-		if err != nil {
-			return nil, err
-		}
-		if p := newURIOrDataPart(imgBase64.String(), detectMIMEFromPath(imgBase64.String(), contentType)); p != nil {
-			parts = append(parts, *p)
-		}
-	}
-
-	return parts, nil
-}
-
-// processAudioParts converts audio inputs to genai.Part objects with appropriate MIME types.
-func processAudioParts(audio []format.Audio) ([]genai.Part, error) {
-	var parts []genai.Part
-
-	for _, audioFile := range audio {
-		contentType := audioFile.ContentType().String()
-
-		// Validate audio format
-		if _, err := validateFormat(contentType, "audio", audioFormats, "M4A, WMA", "WAV, MP3, AIFF, AAC, OGG, FLAC", ":wav\", \":mp3\", \":ogg"); err != nil {
-			return nil, err
-		}
-
-		audioBase64, err := audioFile.Base64()
-		if err != nil {
-			return nil, err
-		}
-		if p := newURIOrDataPart(audioBase64.String(), contentType); p != nil {
-			parts = append(parts, *p)
-		}
-	}
-
-	return parts, nil
-}
-
-// processVideoParts converts video inputs to genai.Part objects with appropriate MIME types.
-func processVideoParts(videos []format.Video) ([]genai.Part, error) {
-	var parts []genai.Part
-
-	for _, video := range videos {
-		contentType := video.ContentType().String()
-
-		// Validate video format
-		if _, err := validateFormat(contentType, "video", videoFormats, "MKV", "MP4, MPEG, MOV, AVI, FLV, WEBM, WMV", ":mp4\", \":mov\", \":webm"); err != nil {
-			return nil, err
-		}
-
-		videoBase64, err := video.Base64()
-		if err != nil {
-			return nil, err
-		}
-		if p := newURIOrDataPart(videoBase64.String(), contentType); p != nil {
-			parts = append(parts, *p)
-		}
-	}
-
-	return parts, nil
-}
-
-// processDocumentParts converts document inputs to genai.Part objects based on their type and capabilities.
-// - PDFs: Full document vision support (charts, diagrams, formatting preserved)
-// - Text-based: Extract as plain text (HTML tags, Markdown formatting, etc. lost)
-// - Office documents: Recommend PDF conversion for visual understanding
-func processDocumentParts(documents []format.Document) ([]genai.Part, error) {
-	var parts []genai.Part
-
-	for _, doc := range documents {
-		contentType := doc.ContentType().String()
-
-		// Validate document format and get processing mode
-		mode, err := validateFormat(contentType, "document", documentFormats, "", "", "")
-		if err != nil {
-			return nil, err
-		}
-
-		switch mode {
-		case "visual":
-			// PDFs support full document vision capabilities
-			// The model can interpret visual elements like charts, diagrams, and formatting
-			docBase64, err := doc.Base64()
-			if err != nil {
-				return nil, err
-			}
-			if p := newURIOrDataPart(docBase64.String(), detectMIMEFromPath(docBase64.String(), "application/pdf")); p != nil {
-				parts = append(parts, *p)
-			}
-		case "text":
-			// Text-based documents (TXT, Markdown, HTML, XML, etc.)
-			// Extract as plain text content
-			textContent := doc.String()
-			parts = append(parts, genai.Part{Text: textContent})
-		}
-	}
-
-	return parts, nil
-}
-
-// buildReqParts constructs the user request parts from input, including prompt/contents, images, audio, videos, and documents.
-// Following best practices: text content (from both Contents and Prompt) is placed after visual/multimedia content (images/audio/videos/documents).
-func buildReqParts(in TaskChatInput) ([]genai.Part, error) {
-	var parts []genai.Part
-
-	// Process non-text parts from Contents first (images, files, etc.)
-	nonTextContentParts := processNonTextContentParts(in)
-	parts = append(parts, nonTextContentParts...)
-
-	// Process multimedia content in optimal order: images → audio → videos → documents
-	imageParts, err := processImageParts(in.Images)
-	if err != nil {
-		return nil, err
-	}
-	parts = append(parts, imageParts...)
-
-	audioParts, err := processAudioParts(in.Audio)
-	if err != nil {
-		return nil, err
-	}
-	parts = append(parts, audioParts...)
-
-	videoParts, err := processVideoParts(in.Videos)
-	if err != nil {
-		return nil, err
-	}
-	parts = append(parts, videoParts...)
-
-	documentParts, err := processDocumentParts(in.Documents)
-	if err != nil {
-		return nil, err
-	}
-	parts = append(parts, documentParts...)
-
-	// Process text content last (as per best practices)
-	textParts := processTextParts(in)
-	parts = append(parts, textParts...)
-
-	return parts, nil
-}
-
 // buildGenerateContentConfig creates a genai.GenerateContentConfig from the input parameters
 func buildGenerateContentConfig(in TaskChatInput, systemMessage string) *genai.GenerateContentConfig {
 	// Check if any config is needed
@@ -675,34 +423,35 @@ func buildGenerateContentConfig(in TaskChatInput, systemMessage string) *genai.G
 
 	// Apply GenerationConfig if present and flattened fields don't override
 	if in.GenerationConfig != nil {
-		if cfg.Temperature == nil && in.GenerationConfig.Temperature != nil {
-			cfg.Temperature = genai.Ptr(*in.GenerationConfig.Temperature)
+		genConfig := in.GenerationConfig
+		if cfg.Temperature == nil && genConfig.Temperature != nil {
+			cfg.Temperature = genai.Ptr(*genConfig.Temperature)
 		}
-		if cfg.TopP == nil && in.GenerationConfig.TopP != nil {
-			cfg.TopP = genai.Ptr(*in.GenerationConfig.TopP)
+		if cfg.TopP == nil && genConfig.TopP != nil {
+			cfg.TopP = genai.Ptr(*genConfig.TopP)
 		}
-		if cfg.TopK == nil && in.GenerationConfig.TopK != nil {
-			cfg.TopK = genai.Ptr(*in.GenerationConfig.TopK)
+		if cfg.TopK == nil && genConfig.TopK != nil {
+			cfg.TopK = genai.Ptr(*genConfig.TopK)
 		}
-		if cfg.MaxOutputTokens == 0 && in.GenerationConfig.MaxOutputTokens != 0 {
-			cfg.MaxOutputTokens = in.GenerationConfig.MaxOutputTokens
+		if cfg.MaxOutputTokens == 0 && genConfig.MaxOutputTokens != 0 {
+			cfg.MaxOutputTokens = genConfig.MaxOutputTokens
 		}
-		if len(in.GenerationConfig.StopSequences) > 0 {
-			cfg.StopSequences = append([]string{}, in.GenerationConfig.StopSequences...)
+		if len(genConfig.StopSequences) > 0 {
+			cfg.StopSequences = append([]string{}, genConfig.StopSequences...)
 		}
-		if in.GenerationConfig.CandidateCount != 0 {
-			cfg.CandidateCount = in.GenerationConfig.CandidateCount
+		if genConfig.CandidateCount != 0 {
+			cfg.CandidateCount = genConfig.CandidateCount
 		}
-		if in.GenerationConfig.ResponseMIMEType != "" {
-			cfg.ResponseMIMEType = in.GenerationConfig.ResponseMIMEType
+		if genConfig.ResponseMIMEType != "" {
+			cfg.ResponseMIMEType = genConfig.ResponseMIMEType
 		}
-		if in.GenerationConfig.ResponseSchema != nil {
-			cfg.ResponseSchema = in.GenerationConfig.ResponseSchema
+		if genConfig.ResponseSchema != nil {
+			cfg.ResponseSchema = genConfig.ResponseSchema
 		}
-		if in.GenerationConfig.ThinkingConfig != nil {
+		if genConfig.ThinkingConfig != nil {
 			cfg.ThinkingConfig = &genai.ThinkingConfig{
-				IncludeThoughts: in.GenerationConfig.ThinkingConfig.IncludeThoughts,
-				ThinkingBudget:  in.GenerationConfig.ThinkingConfig.ThinkingBudget,
+				IncludeThoughts: genConfig.ThinkingConfig.IncludeThoughts,
+				ThinkingBudget:  genConfig.ThinkingConfig.ThinkingBudget,
 			}
 		}
 	}

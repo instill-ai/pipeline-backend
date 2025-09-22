@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	ChatTask = "TASK_CHAT"
+	ChatTask  = "TASK_CHAT"
+	CacheTask = "TASK_CACHE"
 
 	cfgAPIKey = "api-key"
 )
@@ -79,6 +80,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	switch x.Task {
 	case ChatTask:
 		e.execute = e.chat
+	case CacheTask:
+		e.execute = e.cache
 	default:
 		return nil, fmt.Errorf("unsupported task")
 	}
