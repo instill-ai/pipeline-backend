@@ -1,14 +1,63 @@
 package text
 
 import (
+	"encoding/json"
 	"os"
 	"testing"
 
 	"github.com/frankban/quicktest"
 )
 
-func TestChunkText(t *testing.T) {
+func TestChunkText_LongMD(t *testing.T) {
+	c := quicktest.New(t)
 
+	inputData, err := os.ReadFile("testdata/chunk-markdown-input.md")
+	c.Assert(err, quicktest.IsNil)
+
+	// Expectations are complex and hence stored in a file
+	expectedData, err := os.ReadFile("testdata/chunk-markdown-output.json")
+	c.Assert(err, quicktest.IsNil)
+
+	var want ChunkTextOutput
+	err = json.Unmarshal(expectedData, &want)
+	c.Assert(err, quicktest.IsNil)
+
+	input := ChunkTextInput{
+		Text: string(inputData),
+		Strategy: Strategy{
+			Setting: Setting{
+				ChunkMethod:  "Markdown",
+				ModelName:    "gpt-4",
+				ChunkSize:    1024,
+				ChunkOverlap: 200,
+			},
+		},
+	}
+
+	// Run the algorithm
+	got, err := chunkMarkdown(input)
+	c.Assert(err, quicktest.IsNil)
+
+	// Compare the results
+	c.Check(got.ChunkNum, quicktest.Equals, want.ChunkNum)
+	c.Check(got.TokenCount, quicktest.Equals, want.TokenCount)
+	c.Check(got.ChunksTokenCount, quicktest.Equals, want.ChunksTokenCount)
+	c.Check(len(got.TextChunks), quicktest.Equals, len(want.TextChunks))
+
+	// Compare each chunk (ignoring the actual text content for performance)
+	for i, chunk := range got.TextChunks {
+		// NOTE: We don't compare the Text field as it can be large and the
+		// positions/tokens are sufficient
+
+		wantChunk := want.TextChunks[i]
+		c.Check(chunk.StartPosition, quicktest.Equals, wantChunk.StartPosition)
+		c.Check(chunk.EndPosition, quicktest.Equals, wantChunk.EndPosition)
+		c.Check(chunk.TokenCount, quicktest.Equals, wantChunk.TokenCount)
+
+	}
+}
+
+func TestChunkText(t *testing.T) {
 	c := quicktest.New(t)
 
 	testCases := []struct {

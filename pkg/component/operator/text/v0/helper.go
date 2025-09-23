@@ -37,11 +37,8 @@ type mergedChunk struct {
 	ContentEndPosition int
 }
 
-// mergeChunks does the following things:
-// 1. collect the merging chunks that need to be merged
-// 2. merge the merging chunks
-//
-// The reason why we need to separate the merging process into 2 parts is that - to calculate position correctly after dealing with overlap, we need to retain the position information.
+// mergeChunks groups chunks to have a token count under the specified chunk
+// size.
 func mergeChunks(chunks []ContentChunk, inputStruct ChunkTextInput, tkm *tiktoken.Tiktoken) []mergedChunk {
 	if len(chunks) <= 1 {
 		mergedChunks := []mergedChunk{}
@@ -54,70 +51,62 @@ func mergeChunks(chunks []ContentChunk, inputStruct ChunkTextInput, tkm *tiktoke
 		}
 		return mergedChunks
 	}
-	mergingChunks := collectMergingChunks(chunks, inputStruct, tkm)
+
+	// The merging process is divided in 2 steps in order to compute the
+	// positions of each chunk taking into account the overlap.
+	mergingChunks := collectMergingChunks(chunks, inputStruct.Strategy.Setting, tkm)
 	mergedChunks := processMergingChunks(mergingChunks, inputStruct, tkm)
 
 	return mergedChunks
 }
 
-// Collect the chunks that need to be merged
-// The chunk that need to be merged is the chunk that the token size is less than the chunk size
-// We need to check with the sequence:
-// 1. if currentChunk.PrependHeader != nextChunk.PrependHeader
-//   - check currentChunk.PrependHeader + currentChunk.Chunk + diff(currentChunk.PrependHeader, nextChunk.PrependHeader) + nextChunk.Chunk < chunkSize
-//   - if yes, add nextChunk to the currentMergingChunk
-//   - if no, break
-//
-// 2. if currentChunk.PrependHeader == nextChunk.PrependHeader
-//   - check currentChunk.PrependHeader + currentChunk.Chunk + "\n" + nextChunk.Chunk < chunkSize
-//   - if yes, add nextChunk to the currentMergingChunk
-//   - if no, break
-func collectMergingChunks(chunks []ContentChunk, inputStruct ChunkTextInput, tkm *tiktoken.Tiktoken) []mergingChunks {
+// collectMergingChunks combines the chunks so their token size is less than
+// the chunk size in the settings. When adjacent chunks share part or all of
+// their headers, the token count computes only the header diff.
+func collectMergingChunks(chunks []ContentChunk, setting Setting, tkm *tiktoken.Tiktoken) []mergingChunks {
 	var collectedMergingChunks []mergingChunks
-	var currentMergingChunk mergingChunks
 
 	for i := 0; i < len(chunks); i++ {
 		currentChunk := chunks[i]
-		nextIndex := i + 1
-
-		currentMergingChunk.Chunks = append(currentMergingChunk.Chunks, currentChunk)
 		prependedChunk := currentChunk.PrependHeader + currentChunk.Chunk
-		currentMergingChunk.CollectedTokenSize += getTokenSize(prependedChunk, &inputStruct.Strategy.Setting, tkm)
 
+		currentMergingChunk := mergingChunks{
+			Chunks:             []ContentChunk{currentChunk},
+			CollectedTokenSize: getTokenSize(prependedChunk, setting, tkm),
+		}
+
+		nextIndex := i + 1
 		for nextIndex < len(chunks) {
 			nextChunk := chunks[nextIndex]
 
-			var potentialSize int
+			potentialSize := currentMergingChunk.CollectedTokenSize
 			if currentChunk.PrependHeader != nextChunk.PrependHeader {
 				diffHeader := headerDiff(currentChunk.PrependHeader, nextChunk.PrependHeader)
 				addedChunk := diffHeader + nextChunk.Chunk
-				potentialSize = currentMergingChunk.CollectedTokenSize + getTokenSize(addedChunk, &inputStruct.Strategy.Setting, tkm)
+				potentialSize += getTokenSize(addedChunk, setting, tkm)
 			} else {
-				potentialSize = currentMergingChunk.CollectedTokenSize + getTokenSize(nextChunk.Chunk, &inputStruct.Strategy.Setting, tkm)
+				potentialSize += getTokenSize(nextChunk.Chunk, setting, tkm)
 			}
 
 			// We need to leave the overlap part for the next chunk
-			var cannotOverSize int
+			cannotOverSize := setting.ChunkSize
 			if len(collectedMergingChunks) > 0 {
 				previousCollectedChunk := collectedMergingChunks[len(collectedMergingChunks)-1]
 				if len(previousCollectedChunk.Chunks) > 1 {
-					cannotOverSize = inputStruct.Strategy.Setting.ChunkSize - inputStruct.Strategy.Setting.ChunkOverlap
-				} else {
-					cannotOverSize = inputStruct.Strategy.Setting.ChunkSize
+					cannotOverSize = setting.ChunkSize - setting.ChunkOverlap
 				}
-			} else {
-				cannotOverSize = inputStruct.Strategy.Setting.ChunkSize
 			}
 
-			if potentialSize <= cannotOverSize {
-				currentMergingChunk.Chunks = append(currentMergingChunk.Chunks, nextChunk)
-				currentMergingChunk.CollectedTokenSize = potentialSize
-				nextIndex++
-			} else {
+			if potentialSize > cannotOverSize {
 				break
 			}
 
-			// If the next chunk has no header, we use the current chunk's header to avoid the duplicate header
+			currentMergingChunk.Chunks = append(currentMergingChunk.Chunks, nextChunk)
+			currentMergingChunk.CollectedTokenSize = potentialSize
+			nextIndex++
+
+			// If the next chunk has no header, we use the current chunk's
+			// header to avoid the duplicate header.
 			if nextChunk.PrependHeader == "" {
 				nextChunk.PrependHeader = currentChunk.PrependHeader
 			}
@@ -126,7 +115,6 @@ func collectMergingChunks(chunks []ContentChunk, inputStruct ChunkTextInput, tkm
 		}
 
 		collectedMergingChunks = append(collectedMergingChunks, currentMergingChunk)
-		currentMergingChunk = mergingChunks{}
 		i = nextIndex - 1
 	}
 
@@ -146,14 +134,16 @@ func processMergingChunks(mergingChunks []mergingChunks, inputStruct ChunkTextIn
 	firstMergedChunk := mergeMergingChunks(firstMergingChunk)
 	mergedChunks = append(mergedChunks, firstMergedChunk)
 
-	// merge the rest merging chunks, we need to consider the overlap part
-	mergingIdx := 1
-	for mergingIdx < len(mergingChunks) {
-		previousMergingChunk := mergingChunks[mergingIdx-1]
-		currentMergingChunk := mergingChunks[mergingIdx]
+	if len(mergingChunks) < 2 {
+		return mergedChunks
+	}
+
+	// Merge the other chunks taking into account the chunk overlap.
+	for prevIdx, currentMergingChunk := range mergingChunks[1:] {
+		previousMergingChunk := mergingChunks[prevIdx]
 
 		if len(previousMergingChunk.Chunks) > 1 {
-			overlapText, overlapPosition := getOverlapForSameHeader(previousMergingChunk, currentMergingChunk, &inputStruct.Strategy.Setting, tkm)
+			overlapText, overlapPosition := getOverlapForSameHeader(previousMergingChunk, currentMergingChunk, inputStruct.Strategy.Setting, tkm)
 			if overlapText != "" {
 				currentMergingChunk.Chunks[0].Chunk = overlapText + currentMergingChunk.Chunks[0].Chunk
 				currentMergingChunk.Chunks[0].ContentStartPosition = overlapPosition
@@ -162,8 +152,6 @@ func processMergingChunks(mergingChunks []mergingChunks, inputStruct ChunkTextIn
 
 		mergedChunk := mergeMergingChunks(currentMergingChunk)
 		mergedChunks = append(mergedChunks, mergedChunk)
-		mergingIdx++
-
 	}
 
 	return mergedChunks
@@ -197,12 +185,9 @@ func headerDiff(currentChunkHeader, nextChunkHeader string) string {
 	currentHeaders := strings.Split(strings.TrimSpace(currentChunkHeader), "\n")
 	nextHeaders := strings.Split(strings.TrimSpace(nextChunkHeader), "\n")
 
-	minLen := len(currentHeaders)
-	if len(nextHeaders) < minLen {
-		minLen = len(nextHeaders)
-	}
+	minLen := min(len(currentHeaders), len(nextHeaders))
 
-	for i := 0; i < minLen; i++ {
+	for i := range minLen {
 		if currentHeaders[i] != nextHeaders[i] {
 			return strings.Join(nextHeaders[i:], "\n")
 		}
@@ -216,7 +201,7 @@ func headerDiff(currentChunkHeader, nextChunkHeader string) string {
 	return ""
 }
 
-func getOverlapForSameHeader(previousMergingChunk mergingChunks, currentMergingChunks mergingChunks, setting *Setting, tkm *tiktoken.Tiktoken) (string, int) {
+func getOverlapForSameHeader(previousMergingChunk mergingChunks, currentMergingChunks mergingChunks, setting Setting, tkm *tiktoken.Tiktoken) (string, int) {
 	overlapText := ""
 	overlapSize := setting.ChunkOverlap
 	var overlapPosition int
@@ -241,6 +226,6 @@ func getOverlapForSameHeader(previousMergingChunk mergingChunks, currentMergingC
 }
 
 // getTokenSize returns the token size of the text
-func getTokenSize(text string, setting *Setting, tkm *tiktoken.Tiktoken) int {
+func getTokenSize(text string, setting Setting, tkm *tiktoken.Tiktoken) int {
 	return len(tkm.Encode(text, setting.AllowedSpecial, setting.DisallowedSpecial))
 }

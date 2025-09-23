@@ -41,7 +41,6 @@ func (sp *MarkdownTextSplitter) SplitText() ([]ContentChunk, error) {
 	var chunks []ContentChunk
 
 	rawRunes := []rune(sp.RawText)
-
 	docs, err := buildDocuments(rawRunes)
 
 	if err != nil {
@@ -195,11 +194,7 @@ func (sp MarkdownTextSplitter) processChunks(lists []List, headers []Header) []C
 	}
 
 	addListCount := 0
-	countI := map[int]int{}
-	for i := 0; i < len(lists); i++ {
-		countI[i] = 0
-	}
-
+	countI := make([]int, len(lists))
 	for i := 0; i < len(lists); i++ {
 		countI[i]++
 		list := lists[i]
@@ -435,14 +430,12 @@ func (sp MarkdownTextSplitter) chunkLargeList(list List, prependStringSize int) 
 }
 
 func (sp MarkdownTextSplitter) chunkPlainText(content Content, headers []Header) ([]ContentChunk, error) {
-
 	split := textsplitter.NewRecursiveCharacter(
 		textsplitter.WithChunkSize(sp.ChunkSize),
 		textsplitter.WithChunkOverlap(sp.ChunkOverlap),
 	)
 
 	chunks, err := split.SplitText(content.PlainText)
-
 	if err != nil {
 		return nil, err
 	}
@@ -457,12 +450,11 @@ func (sp MarkdownTextSplitter) chunkPlainText(content Content, headers []Header)
 	}
 
 	rawRunes := []rune(sp.RawText)
-	startScanPosition := 0
+	startScanPosition := content.BlockStartPosition
 
 	contentChunks := []ContentChunk{}
 	for _, chunk := range chunks {
 		chunkRunes := []rune(chunk)
-
 		startPosition, endPosition := getChunkPositions(rawRunes, chunkRunes, startScanPosition)
 
 		if shouldScanRawTextFromPreviousChunk(startPosition, endPosition) {
@@ -492,7 +484,6 @@ func (sp MarkdownTextSplitter) chunkPlainText(content Content, headers []Header)
 }
 
 func getChunkPositions(rawText, chunk []rune, startScanPosition int) (startPosition int, endPosition int) {
-
 	for i := startScanPosition; i < len(rawText); i++ {
 		if rawText[i] == chunk[0] {
 
