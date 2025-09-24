@@ -3,10 +3,13 @@ package gemini
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"google.golang.org/genai"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
 func (e *execution) chat(ctx context.Context, job *base.Job) error {
@@ -260,6 +263,7 @@ func (e *execution) mergeResponseChunk(r *genai.GenerateContentResponse, finalRe
 func (e *execution) buildStreamOutput(texts []string, finalResp *genai.GenerateContentResponse) TaskChatOutput {
 	streamOutput := TaskChatOutput{
 		Texts:          texts,
+		Images:         []format.Image{},
 		Usage:          map[string]any{},
 		Candidates:     []*genai.Candidate{},
 		UsageMetadata:  nil,
@@ -280,6 +284,10 @@ func (e *execution) buildStreamOutput(texts []string, finalResp *genai.GenerateC
 			ri := finalResp.ResponseID
 			streamOutput.ResponseID = &ri
 		}
+
+		// Note: Image extraction and InlineData cleanup is deferred to renderFinal()
+		// to avoid processing the same images multiple times during streaming.
+		// Streaming responses will have empty Images array until the final response.
 
 		// Build usage map from UsageMetadata if available
 		if finalResp.UsageMetadata != nil {
@@ -348,6 +356,7 @@ func buildUsageMap(metadata *genai.GenerateContentResponseUsageMetadata) map[str
 func renderFinal(resp *genai.GenerateContentResponse, texts []string) TaskChatOutput {
 	out := TaskChatOutput{
 		Texts:          []string{},
+		Images:         []format.Image{},
 		Usage:          map[string]any{},
 		Candidates:     []*genai.Candidate{},
 		UsageMetadata:  nil,
@@ -385,6 +394,31 @@ func renderFinal(resp *genai.GenerateContentResponse, texts []string) TaskChatOu
 		}
 		out.Texts = acc
 	}
+
+	// Extract generated images from candidates and clean up InlineData to prevent raw binary exposure
+	if len(resp.Candidates) > 0 {
+		images := make([]format.Image, 0)
+		for _, c := range resp.Candidates {
+			if c.Content != nil {
+				for _, p := range c.Content.Parts {
+					if p != nil && p.InlineData != nil && strings.Contains(strings.ToLower(p.InlineData.MIMEType), "image") {
+						// Convert blob data to format.Image using the standard data package approach
+						// Normalize MIME type and use the existing NewImageFromBytes function
+						normalizedMimeType := strings.ToLower(strings.TrimSpace(strings.Split(p.InlineData.MIMEType, ";")[0]))
+						img, err := data.NewImageFromBytes(p.InlineData.Data, normalizedMimeType, "", true)
+						if err == nil {
+							images = append(images, img)
+						}
+						// Clean up InlineData to prevent raw binary data from being exposed in JSON output
+						// The binary data is already extracted and converted to format.Image above
+						p.InlineData = nil
+					}
+				}
+			}
+		}
+		out.Images = images
+	}
+
 	if resp.UsageMetadata != nil {
 		out.Usage = buildUsageMap(resp.UsageMetadata)
 	}

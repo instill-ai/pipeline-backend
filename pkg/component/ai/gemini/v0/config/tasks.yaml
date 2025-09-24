@@ -1556,19 +1556,22 @@ TASK_CHAT:
           ID of the model to use.
           The value is one of the following:
             `gemini-2.5-pro`: Optimized for enhanced thinking and reasoning, multimodal understanding, advanced coding, and more.
-            `gemini-2.5-flash`: Optimized for Adaptive thinking, cost efficiency.
-            `gemini-2.0-flash-lite`: Optimized for Most cost-efficient model supporting high throughput.
+            `gemini-2.5-flash`: Optimized for adaptive thinking, cost efficiency.
+            `gemini-2.5-flash-lite`: Optimized for most cost-efficient model supporting high throughput.
+            `gemini-2.5-flash-image-preview`: Optimized for precise, conversational image generation and editing.
         type: string
         enum:
           - gemini-2.5-pro
           - gemini-2.5-flash
-          - gemini-2.0-flash-lite
+          - gemini-2.5-flash-lite
+          - gemini-2.5-flash-image-preview
         default: gemini-2.5-flash
         instillCredentialMap:
           values:
             - gemini-2.5-pro
             - gemini-2.5-flash
-            - gemini-2.0-flash-lite
+            - gemini-2.5-flash-lite
+            - gemini-2.5-flash-image-preview
           targets:
             - setup.api-key
       stream:
@@ -1709,20 +1712,31 @@ TASK_CHAT:
         title: Texts
         description: >-
           Simplified text output extracted from candidates. Each string represents the concatenated text content  from the corresponding candidate's parts,
-          including thought processes when `include-thoughts` is enabled.  This field provides easy access to the generated text without needing to traverse
+          including thought processes when `include-thoughts` is enabled. This field provides easy access to the generated text without needing to traverse
           the candidate structure.  Updated in real-time during streaming.
         type: array
         items:
           type: string
-      usage:
+      images:
         uiOrder: 1
+        title: Images
+        description: >-
+          Images output extracted and converted from candidates. This field provides easy access to the generated images as base64-encoded strings.
+          The original binary data is removed from the candidates field to prevent raw binary exposure in JSON output.  This field is only available when
+          the model supports image generation.
+        type: array
+        items:
+          title: Image
+          type: image/webp
+      usage:
+        uiOrder: 2
         title: Usage
         description: >-
           Token usage statistics: prompt tokens, completion tokens, total tokens, etc.
         type: object
         additionalProperties: true
       candidates:
-        uiOrder: 2
+        uiOrder: 3
         title: Candidates
         description: >-
           Complete candidate objects from the model containing rich metadata and structured content.  Each candidate includes safety ratings, finish reason,
@@ -1732,18 +1746,18 @@ TASK_CHAT:
         items:
           $ref: "#/$defs/candidate"
       usage-metadata:
-        uiOrder: 3
+        uiOrder: 4
         $ref: "#/$defs/usage-metadata"
       prompt-feedback:
-        uiOrder: 4
+        uiOrder: 5
         $ref: "#/$defs/prompt-feedback"
       model-version:
-        uiOrder: 5
+        uiOrder: 6
         title: Model Version
         description: The model version used to generate the response.
         type: string
       response-id:
-        uiOrder: 6
+        uiOrder: 7
         title: Response ID
         description: Identifier for this response.
         type: string
