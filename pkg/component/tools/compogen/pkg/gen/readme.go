@@ -268,14 +268,14 @@ func (p readmeParams) parseDefinition(d definition, s *objectSchema, tasks map[s
 	}
 
 	p.ID = d.ID
-	p.Title = d.Title
-	p.Vendor = d.Vendor
-	p.Description = d.Description
+	p.Title = escapeCurlyBracesForReadme(d.Title)
+	p.Vendor = escapeCurlyBracesForReadme(d.Vendor)
+	p.Description = escapeCurlyBracesForReadme(d.Description)
 	p.IsDraft = !d.Public
 	p.ReleaseStage = d.ReleaseStage
 	p.SourceURL = d.SourceURL
 
-	p.SetupConfig = setupConfig{Prerequisites: d.Prerequisites}
+	p.SetupConfig = setupConfig{Prerequisites: escapeCurlyBracesForReadme(d.Prerequisites)}
 
 	if s != nil {
 		p.SetupConfig.Properties = parseResourceProperties(s)
@@ -295,7 +295,7 @@ func parseREADMETasks(availableTasks []string, tasks map[string]task) ([]readmeT
 
 		rt := readmeTask{
 			ID:          at,
-			Description: t.Description,
+			Description: escapeCurlyBracesForReadme(t.Description),
 			Input:       parseResourceProperties(t.Input),
 			Output:      parseResourceProperties(t.Output),
 		}
@@ -307,6 +307,7 @@ func parseREADMETasks(availableTasks []string, tasks map[string]task) ([]readmeT
 		if rt.Title = t.Title; rt.Title == "" {
 			rt.Title = titleCase(componentbase.TaskIDToTitle(at))
 		}
+		rt.Title = escapeCurlyBracesForReadme(rt.Title)
 
 		readmeTasks[i] = rt
 	}
@@ -350,7 +351,7 @@ func parseResourceProperties(o *objectSchema) []resourceProperty {
 		case "":
 			prop.Type = "any"
 		}
-		prop.replaceDescription()
+		prop.escapeAllTextFields()
 
 		propMap[k] = prop
 	}
@@ -382,9 +383,9 @@ func parseResourceProperties(o *objectSchema) []resourceProperty {
 		return cmp.Compare(i.ID, j.ID)
 	})
 
-	// Ensure all descriptions are processed (handles $ref resolved properties)
+	// Ensure all text fields are processed (handles $ref resolved properties)
 	for i := range props {
-		props[i].replaceDescription()
+		props[i].escapeAllTextFields()
 	}
 
 	return props
@@ -422,7 +423,7 @@ func (rt *readmeTask) parseObjectProperties(properties map[string]property, isIn
 			continue
 		}
 
-		op.replaceDescription()
+		op.escapeAllTextFields()
 		op.replaceFormat()
 
 		if op.Type == "object" {
@@ -437,25 +438,31 @@ func (rt *readmeTask) parseObjectProperties(properties map[string]property, isIn
 
 			for _, key := range propKeys {
 				prop := op.Properties[key]
-				prop.replaceDescription()
+				prop.escapeAllTextFields()
 				prop.replaceFormat()
 				processedProperties[key] = prop
 			}
 
 			if isInput {
+				schema := objectSchema{
+					Properties:  processedProperties,
+					Description: op.Description,
+					Title:       op.Title,
+				}
+				schema.escapeAllTextFields()
 				rt.InputObjects = append(rt.InputObjects, map[string]objectSchema{
-					op.Title: {
-						Properties:  processedProperties,
-						Description: op.Description,
-					},
+					op.Title: schema,
 				})
 				rt.parseObjectProperties(processedProperties, isInput)
 			} else {
+				schema := objectSchema{
+					Properties:  processedProperties,
+					Description: op.Description,
+					Title:       op.Title,
+				}
+				schema.escapeAllTextFields()
 				rt.OutputObjects = append(rt.OutputObjects, map[string]objectSchema{
-					op.Title: {
-						Properties:  processedProperties,
-						Description: op.Description,
-					},
+					op.Title: schema,
 				})
 				rt.parseObjectProperties(processedProperties, isInput)
 			}
@@ -471,33 +478,37 @@ func (rt *readmeTask) parseObjectProperties(properties map[string]property, isIn
 
 			for _, key := range propKeys {
 				prop := props[key]
-				prop.replaceDescription()
+				prop.escapeAllTextFields()
 				prop.replaceFormat()
 				props[key] = prop
 			}
 
 			if isInput {
+				schema := objectSchema{
+					Properties:  op.Items.Properties,
+					Description: op.Description,
+					Title:       op.Title,
+				}
+				schema.escapeAllTextFields()
 				rt.InputObjects = append(rt.InputObjects, map[string]objectSchema{
-					op.Title: {
-						Properties:  op.Items.Properties,
-						Description: op.Description,
-					},
+					op.Title: schema,
 				})
 
 				rt.parseObjectProperties(op.Items.Properties, isInput)
 			} else {
+				schema := objectSchema{
+					Properties:  op.Items.Properties,
+					Description: op.Description,
+					Title:       op.Title,
+				}
+				schema.escapeAllTextFields()
 				rt.OutputObjects = append(rt.OutputObjects, map[string]objectSchema{
-					op.Title: {
-						Properties:  op.Items.Properties,
-						Description: op.Description,
-					},
+					op.Title: schema,
 				})
 				rt.parseObjectProperties(op.Items.Properties, isInput)
 			}
 		}
 	}
-
-	return
 }
 
 func sortPropertiesByOrder(properties map[string]property) []property {
@@ -600,8 +611,6 @@ func (sc *setupConfig) parseOneOfProperties(properties map[string]property) {
 			}
 		}
 	}
-
-	return
 }
 
 func firstToLower(s string) string {
@@ -738,25 +747,168 @@ func insertHeaderByConstValue(option objectSchema, taskOrString interface{}) str
 	return ""
 }
 
+// escapeCurlyBracesForReadme escapes curly braces in text for readme.com compatibility.
+// README.io treats {variable} as variable placeholders, so we need to escape them.
+func escapeCurlyBracesForReadme(text string) string {
+	if text == "" {
+		return text
+	}
+
+	// Process in order: template variables, JSON patterns, then variable placeholders
+	text = wrapTemplateVariables(text)
+	text = wrapJSONPatterns(text)
+	text = escapeVariablePlaceholders(text)
+
+	return text
+}
+
+// wrapTemplateVariables wraps Go template syntax {{variable}} in backticks
+func wrapTemplateVariables(text string) string {
+	if !strings.Contains(text, "{{") || !strings.Contains(text, "}}") {
+		return text
+	}
+
+	// Skip if already processed (contains backticks around template variables)
+	if strings.Contains(text, "`{{") {
+		return text
+	}
+
+	// Wrap template variables with backticks
+	re := regexp.MustCompile(`\{\{[^}]*\}\}`)
+	return re.ReplaceAllString(text, "`$0`")
+}
+
+// wrapJSONPatterns wraps JSON objects and arrays in backticks
+func wrapJSONPatterns(text string) string {
+	// First handle JSON arrays (they take precedence over individual objects)
+	text = wrapJSONArrays(text)
+
+	// Then handle standalone JSON objects
+	text = wrapJSONObjects(text)
+
+	return text
+}
+
+// wrapJSONArrays finds and wraps JSON arrays containing objects
+func wrapJSONArrays(text string) string {
+	arrayJsonRe := regexp.MustCompile(`\[[^[\]]*\{[^[\]]*"[^"]*"[^[\]]*:[^[\]]*\}[^[\]]*\]`)
+	matches := arrayJsonRe.FindAllString(text, -1)
+
+	for _, match := range matches {
+		if !strings.Contains(text, "`"+match+"`") {
+			text = strings.ReplaceAll(text, match, "`"+match+"`")
+		}
+	}
+
+	return text
+}
+
+// wrapJSONObjects finds and wraps standalone JSON objects using balanced brace matching
+func wrapJSONObjects(text string) string {
+	objects := findJSONObjectsWithBraceMatching(text)
+
+	for _, obj := range objects {
+		// Only wrap if not already wrapped and not part of an array
+		if !isAlreadyWrapped(text, obj) && !isPartOfArray(text, obj) {
+			text = strings.ReplaceAll(text, obj, "`"+obj+"`")
+		}
+	}
+
+	return text
+}
+
+// findJSONObjectsWithBraceMatching finds JSON objects using proper brace matching for nested structures
+func findJSONObjectsWithBraceMatching(s string) []string {
+	var matches []string
+
+	for i := 0; i < len(s); i++ {
+		if s[i] == '{' {
+			// Find the matching closing brace
+			braceCount := 1
+			start := i
+			i++
+
+			for i < len(s) && braceCount > 0 {
+				if s[i] == '{' {
+					braceCount++
+				} else if s[i] == '}' {
+					braceCount--
+				}
+				i++
+			}
+
+			if braceCount == 0 {
+				candidate := s[start:i]
+				// Check if this looks like JSON (contains quotes and colons)
+				if isJSONLike(candidate) {
+					matches = append(matches, candidate)
+				}
+			}
+			i-- // Adjust for the outer loop increment
+		}
+	}
+
+	return matches
+}
+
+// isJSONLike checks if a string looks like JSON by containing quotes and colons
+func isJSONLike(s string) bool {
+	return strings.Contains(s, `"`) && strings.Contains(s, `:`)
+}
+
+// isAlreadyWrapped checks if a pattern is already wrapped in backticks
+func isAlreadyWrapped(text, pattern string) bool {
+	return strings.Contains(text, "`"+pattern+"`")
+}
+
+// isPartOfArray checks if a JSON object is part of an array that should be wrapped as a whole
+func isPartOfArray(text, pattern string) bool {
+	return strings.Contains(text, "["+pattern) || strings.Contains(text, pattern+"]")
+}
+
+// escapeVariablePlaceholders escapes single curly braces that look like variable placeholders
+func escapeVariablePlaceholders(text string) string {
+	// Split by backticks to avoid processing text inside backticks
+	parts := strings.Split(text, "`")
+
+	for i := 0; i < len(parts); i += 2 { // Process only parts outside backticks (even indices)
+		// Match single braces containing identifiers like {cachedContent}, {cache-name}, {snake_case}
+		varRe := regexp.MustCompile(`\{([a-zA-Z_][\w\-]*)\}`)
+		parts[i] = varRe.ReplaceAllString(parts[i], "\\{$1\\}")
+	}
+
+	return strings.Join(parts, "`")
+}
+
 func (prop *property) replaceDescription() {
 	// Always replace newlines with spaces for table formatting
 	prop.Description = strings.ReplaceAll(prop.Description, "\n", " ")
 
-	// Handle template delimiters by wrapping them in backticks
-	if strings.Contains(prop.Description, "{{") && strings.Contains(prop.Description, "}}") {
-		// Skip if already processed (contains backticks around template variables)
-		if strings.Contains(prop.Description, "`{{") {
-			return
-		}
-		// Simple replacement: wrap template variables with backticks
-		re := regexp.MustCompile(`\{\{[^}]*\}\}`)
-		prop.Description = re.ReplaceAllString(prop.Description, "`$0`")
-	} else {
-		prop.Description = strings.ReplaceAll(prop.Description, "\n", " ")
-	}
+	// Escape curly braces for readme.com compatibility
+	prop.Description = escapeCurlyBracesForReadme(prop.Description)
 
 	// Trim trailing whitespace for consistent formatting
 	prop.Description = strings.TrimSpace(prop.Description)
+}
+
+// escapeAllTextFields escapes curly braces in all text fields of a property
+func (prop *property) escapeAllTextFields() {
+	prop.replaceDescription()
+	prop.Title = escapeCurlyBracesForReadme(prop.Title)
+	prop.Const = escapeCurlyBracesForReadme(prop.Const)
+
+	// Escape enum values
+	for i, enum := range prop.Enum {
+		prop.Enum[i] = escapeCurlyBracesForReadme(enum)
+	}
+}
+
+// escapeAllTextFields escapes curly braces in all text fields of an object schema
+func (schema *objectSchema) escapeAllTextFields() {
+	schema.Description = strings.ReplaceAll(schema.Description, "\n", " ")
+	schema.Description = escapeCurlyBracesForReadme(schema.Description)
+	schema.Description = strings.TrimSpace(schema.Description)
+	schema.Title = escapeCurlyBracesForReadme(schema.Title)
 }
 
 func (prop *property) replaceFormat() {

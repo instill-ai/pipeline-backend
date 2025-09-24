@@ -57,7 +57,7 @@ OpenAI's text generation models (often called generative pre-trained transformer
 | Prompt (required) | `prompt` | string | The prompt text. |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model's behavior is using a generic message as "You are a helpful assistant.". |
 | Image | `images` | array[string] | The images. |
-| [Chat History](#text-generation-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format {"role": "The message role, i.e. ''system'', ''user'' or ''assistant''", "content": "message content"}. |
+| [Chat History](#text-generation-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format `{"role": "The message role, i.e. ''system'', ''user'' or ''assistant''", "content": "message content"}`. |
 | Temperature | `temperature` | number | What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. We generally recommend altering this or `top-p` but not both. |
 | N | `n` | integer | How many chat completion choices to generate for each input message. Note that you will be charged based on the number of generated tokens across all of the choices. Keep `n` as `1` to minimize costs. |
 | Max Tokens | `max-tokens` | integer | The maximum number of tokens that can be generated in the chat completion. The total length of input tokens and generated tokens is limited by the model's context length. |
@@ -77,7 +77,7 @@ OpenAI's text generation models (often called generative pre-trained transformer
 
 <h4 id="text-generation-chat-history">Chat History</h4>
 
-Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format {"role": "The message role, i.e. ''system'', ''user'' or ''assistant''", "content": "message content"}.
+Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format `{"role": "The message role, i.e. ''system'', ''user'' or ''assistant''", "content": "message content"}`.
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>

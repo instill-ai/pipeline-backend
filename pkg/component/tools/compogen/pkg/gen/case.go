@@ -34,6 +34,7 @@ var uppercaseWords = map[string]bool{
 	"sha":  true, // Secure hashing algorithm
 	"pdf":  true, // Portable document format
 	"fps":  true, // Frames per second
+	"ttl":  true, // Time to live
 }
 
 // List of words to keep in lowercase (articles, conjunctions, prepositions)
