@@ -55,7 +55,7 @@ Cohere's text generation models (often called generative pre-trained transformer
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model's behavior is using a generic message as "You are a helpful assistant.". |
 | Documents | `documents` | array[string] | The documents to be used for the model, for optimal performance, the length of each document should be less than 300 words. |
 | Prompt Images | `prompt-images` | array[string] | The prompt images (Note: As for 2024-06-24 Cohere models are not multimodal, so images will be ignored.). |
-| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Each message should adhere to the format: : {"role": "The message role, i.e. `USER` or `CHATBOT`", "content": "message content"}. |
+| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Each message should adhere to the format: : `{"role": "The message role, i.e. `USER` or `CHATBOT`", "content": "message content"}`. |
 | Seed | `seed` | integer | The seed (default=42). |
 | Temperature | `temperature` | number | The temperature for sampling (default=0.7). |
 | Top K | `top-k` | integer | Top k for sampling (default=10). |
@@ -67,7 +67,7 @@ Cohere's text generation models (often called generative pre-trained transformer
 
 <h4 id="text-generation-chat-chat-history">Chat History</h4>
 
-Incorporate external chat history, specifically previous messages within the conversation. Each message should adhere to the format: : {"role": "The message role, i.e. `USER` or `CHATBOT`", "content": "message content"}.
+Incorporate external chat history, specifically previous messages within the conversation. Each message should adhere to the format: : `{"role": "The message role, i.e. `USER` or `CHATBOT`", "content": "message content"}`.
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>

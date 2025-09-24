@@ -458,7 +458,7 @@ TASK_CREATE_INDEX:
         title: Index Name
       mappings:
         description: >-
-          Index mappings which starts with {"mappings":{"properties"}} field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html)
+          Index mappings which starts with {"mappings": {"properties"}} field, please refer to [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/dense-vector.html)
           for vector search and [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html) for other mappings.
         type: object
         uiOrder: 1

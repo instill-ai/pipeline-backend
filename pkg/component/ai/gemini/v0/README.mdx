@@ -49,7 +49,7 @@ Gemini's multimodal models understand text and images. They generate text output
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CHAT` |
-| Model (required) | `model` | string | ID of the model to use. The value is one of the following:   `gemini-2.5-pro`: Optimized for enhanced thinking and reasoning, multimodal understanding, advanced coding, and more.   `gemini-2.5-flash`: Optimized for Adaptive thinking, cost efficiency.   `gemini-2.0-flash-lite`: Optimized for Most cost-efficient model supporting high throughput. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`gemini-2.5-pro`</li><li>`gemini-2.5-flash`</li><li>`gemini-2.0-flash-lite`</li></ul></details> |
+| Model (required) | `model` | string | ID of the model to use. The value is one of the following:   `gemini-2.5-pro`: Optimized for enhanced thinking and reasoning, multimodal understanding, advanced coding, and more.   `gemini-2.5-flash`: Optimized for adaptive thinking, cost efficiency.   `gemini-2.5-flash-lite`: Optimized for most cost-efficient model supporting high throughput.   `gemini-2.5-flash-image-preview`: Optimized for precise, conversational image generation and editing. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`gemini-2.5-pro`</li><li>`gemini-2.5-flash`</li><li>`gemini-2.5-flash-lite`</li><li>`gemini-2.5-flash-image-preview`</li></ul></details> |
 | Stream | `stream` | boolean | Whether to incrementally stream the response using server-sent events (SSE). |
 | Prompt | `prompt` | string | The main text instruction or query for the model. |
 | Images | `images` | array[string] | URI references or base64 content of input images. |
@@ -69,7 +69,7 @@ Gemini's multimodal models understand text and images. They generate text output
 | [Safety Settings](#chat-safety-settings) | `safety-settings` | array[object] | Safety settings for content filtering. |
 | [System Instruction](#chat-system-instruction) | `system-instruction` | object | A system instruction to guide the model behavior. |
 | [Generation Config](#chat-generation-config) | `generation-config` | object | Generation configuration for the request. |
-| Cached Content | `cached-content` | string | The name of a cached content to use as context. Format: cachedContents/{cachedContent}. |
+| Cached Content | `cached-content` | string | The name of a cached content to use as context. Format: cachedContents/\{cachedContent\}. |
 
 </div>
 <details>
@@ -518,7 +518,8 @@ Config for thinking features.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Texts (optional) | `texts` | array[string] | Simplified text output extracted from candidates. Each string represents the concatenated text content  from the corresponding candidate's parts, including thought processes when `include-thoughts` is enabled.  This field provides easy access to the generated text without needing to traverse the candidate structure.  Updated in real-time during streaming. |
+| Texts (optional) | `texts` | array[string] | Simplified text output extracted from candidates. Each string represents the concatenated text content  from the corresponding candidate's parts, including thought processes when `include-thoughts` is enabled. This field provides easy access to the generated text without needing to traverse the candidate structure.  Updated in real-time during streaming. |
+| Images (optional) | `images` | array[image/webp] | Images output extracted and converted from candidates. This field provides easy access to the generated images as base64-encoded strings. The original binary data is removed from the candidates field to prevent raw binary exposure in JSON output.  This field is only available when the model supports image generation. |
 | Usage (optional) | `usage` | object | Token usage statistics: prompt tokens, completion tokens, total tokens, etc. |
 | [Candidates](#chat-candidates) (optional) | `candidates` | array[object] | Complete candidate objects from the model containing rich metadata and structured content.  Each candidate includes safety ratings, finish reason, token counts, citations, content parts  (including thought processes when include-thoughts is enabled), and other detailed information.  This provides full access to all response data beyond just text. Updated incrementally during  streaming with accumulated content and latest metadata. |
 | [Usage Metadata](#chat-usage-metadata) (optional) | `usage-metadata` | object | Metadata on the generation request's token usage. |
@@ -924,7 +925,7 @@ Context caching allows you to cache input tokens and reference them in subsequen
 | Task ID (required) | `task` | string | `TASK_CACHE` |
 | Operation (required) | `operation` | string | The cache operation to perform. The value is one of the following:   `create`: Create a new cached content.   `list`: List all cached contents.   `get`: Retrieve a specific cached content.   `update`: Update an existing cached content (only expiration time can be updated).   `delete`: Delete a cached content. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`create`</li><li>`list`</li><li>`get`</li><li>`update`</li><li>`delete`</li></ul></details> |
 | Model (required) | `model` | string | ID of the model to use for caching. Required for create operations. The model is immutable after creation. The value is one of the following:   `gemini-2.5-pro`: Optimized for enhanced thinking and reasoning, multimodal understanding, advanced coding, and more.   `gemini-2.5-flash`: Optimized for Adaptive thinking, cost efficiency.   `gemini-2.0-flash-lite`: Optimized for Most cost-efficient model supporting high throughput. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`gemini-2.5-pro`</li><li>`gemini-2.5-flash`</li><li>`gemini-2.0-flash-lite`</li></ul></details> |
-| Cache Name | `cache-name` | string | [**GET**, **UPDATE**, **DELETE**] The name of the cached content for get, update, or delete operations.  Format: cachedContents/{cachedContent}. Required for get, update, and delete operations. |
+| Cache Name | `cache-name` | string | [**GET**, **UPDATE**, **DELETE**] The name of the cached content for get, update, or delete operations.  Format: cachedContents/\{cachedContent\}. Required for get, update, and delete operations. |
 | Prompt | `prompt` | string | [**CREATE**] The main text instruction or query to be cached for create operations. |
 | Images | `images` | array[string] | [**CREATE**] URI references or base64 content of input images to be cached for create operations. |
 | Audio | `audio` | array[string] | [**CREATE**] URI references or base64 content of input audio to be cached for create operations. |
@@ -1252,7 +1253,7 @@ Configuration for specifying function calling behavior.
 | Display Name | `display-name` | string | Optional. The user-provided name of the cached content. |
 | Expire Time | `expire-time` | string | Expiration time of the cached content in RFC3339 format. |
 | Model | `model` | string | The name of the Model to use for cached content. |
-| Name | `name` | string | The resource name referring to the cached content. Format: cachedContents/{cachedContent} |
+| Name | `name` | string | The resource name referring to the cached content. Format: cachedContents/\{cachedContent\} |
 | Update Time | `update-time` | string | Last update time of the cached content in RFC3339 format. |
 | [Usage Metadata](#cache-usage-metadata) | `usage-metadata` | object | Token usage statistics for the cached content. |
 
@@ -1282,7 +1283,7 @@ Configuration for specifying function calling behavior.
 | Display Name | `display-name` | string | Optional. The user-provided name of the cached content. |
 | Expire Time | `expire-time` | string | Expiration time of the cached content in RFC3339 format. |
 | Model | `model` | string | The name of the Model to use for cached content. |
-| Name | `name` | string | The resource name referring to the cached content. Format: cachedContents/{cachedContent} |
+| Name | `name` | string | The resource name referring to the cached content. Format: cachedContents/\{cachedContent\} |
 | Update Time | `update-time` | string | Last update time of the cached content in RFC3339 format. |
 | [Usage Metadata](#cache-usage-metadata) | `usage-metadata` | object | Token usage statistics for the cached content. |
 
