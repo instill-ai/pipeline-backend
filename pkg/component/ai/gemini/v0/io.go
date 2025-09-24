@@ -59,8 +59,9 @@ func (t TaskChatInput) GetSystemInstruction() *genai.Content { return t.SystemIn
 // TaskChatOutput is the output for the TASK_CHAT task.
 type TaskChatOutput struct {
 	// Flattened chat output properties
-	Texts []string       `instill:"texts"`
-	Usage map[string]any `instill:"usage"`
+	Texts  []string       `instill:"texts"`
+	Images []format.Image `instill:"images"`
+	Usage  map[string]any `instill:"usage"`
 
 	// Use genai types directly with instill tags
 	Candidates     []*genai.Candidate                           `instill:"candidates"`

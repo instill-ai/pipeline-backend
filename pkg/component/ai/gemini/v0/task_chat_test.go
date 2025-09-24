@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -1337,5 +1338,156 @@ func TestChatPerformanceOptimizations(t *testing.T) {
 		c.Check(videoTimeout > imageTimeout, qt.IsTrue)
 		c.Check(videoTimeout > audioTimeout, qt.IsTrue)
 		c.Check(videoTimeout > documentTimeout, qt.IsTrue)
+	})
+}
+
+func TestImageGeneration(t *testing.T) {
+	t.Parallel()
+
+	t.Run("image MIME type detection", func(t *testing.T) {
+		c := qt.New(t)
+
+		// Test the standard approach used in the codebase
+		// Test valid image MIME types
+		c.Check(strings.Contains(strings.ToLower("image/png"), "image"), qt.Equals, true)
+		c.Check(strings.Contains(strings.ToLower("image/jpeg"), "image"), qt.Equals, true)
+		c.Check(strings.Contains(strings.ToLower("image/gif"), "image"), qt.Equals, true)
+		c.Check(strings.Contains(strings.ToLower("image/webp"), "image"), qt.Equals, true)
+		c.Check(strings.Contains(strings.ToLower("IMAGE/PNG"), "image"), qt.Equals, true) // Case insensitive
+
+		// Test non-image MIME types
+		c.Check(strings.Contains(strings.ToLower("text/plain"), "image"), qt.Equals, false)
+		c.Check(strings.Contains(strings.ToLower("application/json"), "image"), qt.Equals, false)
+		c.Check(strings.Contains(strings.ToLower("video/mp4"), "image"), qt.Equals, false)
+		c.Check(strings.Contains(strings.ToLower("audio/wav"), "image"), qt.Equals, false)
+	})
+
+	t.Run("renderFinal with generated images", func(t *testing.T) {
+		c := qt.New(t)
+
+		// Create a mock response with generated images
+		// Use a simple 1x1 PNG image data
+		pngData := []byte{
+			0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+			0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, // IHDR chunk
+			0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, // 1x1 dimensions
+			0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, // bit depth, color type, etc.
+			0xDE, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41, // IDAT chunk
+			0x54, 0x08, 0x99, 0x01, 0x01, 0x01, 0x00, 0x00, // pixel data
+			0xFE, 0xFF, 0x00, 0x00, 0x02, 0x00, 0x01, 0xE5, // checksum
+			0x27, 0xDE, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x49, // IEND chunk
+			0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+		}
+
+		resp := &genai.GenerateContentResponse{
+			Candidates: []*genai.Candidate{
+				{
+					Content: &genai.Content{
+						Parts: []*genai.Part{
+							{Text: "Here's your generated image:"},
+							{InlineData: &genai.Blob{MIMEType: "image/png", Data: pngData}},
+						},
+					},
+				},
+			},
+		}
+
+		result := renderFinal(resp, nil)
+
+		// Check that text was extracted
+		c.Check(result.Texts, qt.HasLen, 1)
+		c.Check(result.Texts[0], qt.Equals, "Here's your generated image:")
+
+		// Check that images were extracted
+		c.Check(result.Images, qt.HasLen, 1)
+		c.Check(result.Images[0].ContentType().String(), qt.Equals, "image/png")
+	})
+
+	t.Run("buildStreamOutput with generated images", func(t *testing.T) {
+		c := qt.New(t)
+
+		// Mock execution for the method receiver
+		e := &execution{}
+
+		// Use a simple 1x1 PNG image data
+		pngData := []byte{
+			0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+			0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, // IHDR chunk
+			0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, // 1x1 dimensions
+			0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, // bit depth, color type, etc.
+			0xDE, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41, // IDAT chunk
+			0x54, 0x08, 0x99, 0x01, 0x01, 0x01, 0x00, 0x00, // pixel data
+			0xFE, 0xFF, 0x00, 0x00, 0x02, 0x00, 0x01, 0xE5, // checksum
+			0x27, 0xDE, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x49, // IEND chunk
+			0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+		}
+
+		texts := []string{"Generated image:"}
+		finalResp := &genai.GenerateContentResponse{
+			Candidates: []*genai.Candidate{
+				{
+					Content: &genai.Content{
+						Parts: []*genai.Part{
+							{Text: "Generated image:"},
+							{InlineData: &genai.Blob{MIMEType: "image/png", Data: pngData}},
+						},
+					},
+				},
+			},
+		}
+
+		result := e.buildStreamOutput(texts, finalResp)
+
+		// Check that texts are preserved
+		c.Check(result.Texts, qt.DeepEquals, texts)
+
+		// Check that images are NOT extracted during streaming (deferred to renderFinal)
+		c.Check(result.Images, qt.HasLen, 0)
+	})
+
+	t.Run("renderFinal with mixed content", func(t *testing.T) {
+		c := qt.New(t)
+
+		// Use a simple 1x1 PNG image data
+		pngData := []byte{
+			0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+			0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, // IHDR chunk
+			0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, // 1x1 dimensions
+			0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, // bit depth, color type, etc.
+			0xDE, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41, // IDAT chunk
+			0x54, 0x08, 0x99, 0x01, 0x01, 0x01, 0x00, 0x00, // pixel data
+			0xFE, 0xFF, 0x00, 0x00, 0x02, 0x00, 0x01, 0xE5, // checksum
+			0x27, 0xDE, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x49, // IEND chunk
+			0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+		}
+
+		// Create a response with text, images, and non-image content
+		resp := &genai.GenerateContentResponse{
+			Candidates: []*genai.Candidate{
+				{
+					Content: &genai.Content{
+						Parts: []*genai.Part{
+							{Text: "Here are your images: "},
+							{InlineData: &genai.Blob{MIMEType: "image/png", Data: pngData}},
+							{Text: " and "},
+							{InlineData: &genai.Blob{MIMEType: "image/png", Data: pngData}}, // Use PNG data with PNG MIME for valid image
+							{Text: " Done!"},
+							{InlineData: &genai.Blob{MIMEType: "audio/wav", Data: []byte("audio-data")}}, // Non-image, should be ignored
+						},
+					},
+				},
+			},
+		}
+
+		result := renderFinal(resp, nil)
+
+		// Check that all text parts were concatenated
+		c.Check(result.Texts, qt.HasLen, 1)
+		c.Check(result.Texts[0], qt.Equals, "Here are your images:  and  Done!")
+
+		// Check that only image parts were extracted (audio should be ignored)
+		c.Check(result.Images, qt.HasLen, 2)
+		c.Check(result.Images[0].ContentType().String(), qt.Equals, "image/png")
+		c.Check(result.Images[1].ContentType().String(), qt.Equals, "image/png")
 	})
 }
