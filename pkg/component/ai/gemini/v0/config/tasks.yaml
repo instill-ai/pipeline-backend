@@ -1649,7 +1649,7 @@ TASK_CHAT:
           to fine-tune the LLM's output.  Note that OpenAI and Mistral models don't have the `top-k` exposed.
         type: integer
       top-p:
-        uiOrder: 10
+        uiOrder: 12
         title: Top-P
         description: >-
           A parameter, also known as nucleus sampling, that controls the randomness and creativity of  the generated text by selecting a dynamic subset
@@ -1660,44 +1660,44 @@ TASK_CHAT:
           choice to a smaller, more focused set of highly probable words, resulting in more factual  and conservative output.
         type: number
       seed:
-        uiOrder: 12
+        uiOrder: 13
         title: Seed
         description: A random seed used to control the stochasticity of text generation to produce repeatable outputs
         type: integer
       contents:
-        uiOrder: 13
+        uiOrder: 14
         title: Contents
         description: The input contents to the model. Each item represents a user or model turn composed of parts (text or images).
         type: array
         items:
           $ref: "#/$defs/content"
       tools:
-        uiOrder: 14
+        uiOrder: 15
         title: Tools
         description: Tools available to the model, e.g., function declarations.
         type: array
         items:
           $ref: "#/$defs/tool"
       tool-config:
-        uiOrder: 15
+        uiOrder: 16
         $ref: "#/$defs/tool-config"
       safety-settings:
-        uiOrder: 16
+        uiOrder: 17
         title: Safety Settings
         description: Safety settings for content filtering.
         type: array
         items:
           $ref: "#/$defs/safety-setting"
       system-instruction:
-        uiOrder: 17
+        uiOrder: 18
         title: System Instruction
         description: A system instruction to guide the model behavior.
         $ref: "#/$defs/content"
       generation-config:
-        uiOrder: 18
+        uiOrder: 19
         $ref: "#/$defs/generation-config"
       cached-content:
-        uiOrder: 19
+        uiOrder: 20
         title: Cached Content
         description: "The name of a cached content to use as context. Format: cachedContents/{cachedContent}."
         type: string
@@ -1732,9 +1732,9 @@ TASK_CHAT:
         uiOrder: 2
         title: Usage
         description: >-
-          Token usage statistics: prompt tokens, completion tokens, total tokens, etc.
-        type: object
-        additionalProperties: true
+          Token usage statistics: prompt tokens, completion tokens, total tokens, etc. This field is a proxy of the original usage-metadata field in Gemini
+          API.
+        $ref: "#/$defs/usage-metadata"
       candidates:
         uiOrder: 3
         title: Candidates
@@ -1745,19 +1745,16 @@ TASK_CHAT:
         type: array
         items:
           $ref: "#/$defs/candidate"
-      usage-metadata:
-        uiOrder: 4
-        $ref: "#/$defs/usage-metadata"
       prompt-feedback:
-        uiOrder: 5
+        uiOrder: 4
         $ref: "#/$defs/prompt-feedback"
       model-version:
-        uiOrder: 6
+        uiOrder: 5
         title: Model Version
         description: The model version used to generate the response.
         type: string
       response-id:
-        uiOrder: 7
+        uiOrder: 6
         title: Response ID
         description: Identifier for this response.
         type: string

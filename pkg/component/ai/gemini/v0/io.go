@@ -65,7 +65,6 @@ type TaskChatOutput struct {
 
 	// Use genai types directly with instill tags
 	Candidates     []*genai.Candidate                           `instill:"candidates"`
-	UsageMetadata  *genai.GenerateContentResponseUsageMetadata  `instill:"usage-metadata"`
 	PromptFeedback *genai.GenerateContentResponsePromptFeedback `instill:"prompt-feedback"`
 	ModelVersion   *string                                      `instill:"model-version"`
 	ResponseID     *string                                      `instill:"response-id"`
