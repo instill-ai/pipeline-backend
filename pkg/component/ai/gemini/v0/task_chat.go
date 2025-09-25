@@ -263,7 +263,6 @@ func (e *execution) mergeResponseChunk(r *genai.GenerateContentResponse, finalRe
 func (e *execution) buildStreamOutput(texts []string, finalResp *genai.GenerateContentResponse) TaskChatOutput {
 	streamOutput := TaskChatOutput{
 		Texts:          texts,
-		Images:         []format.Image{},
 		Usage:          map[string]any{},
 		Candidates:     []*genai.Candidate{},
 		UsageMetadata:  nil,
@@ -285,9 +284,9 @@ func (e *execution) buildStreamOutput(texts []string, finalResp *genai.GenerateC
 			streamOutput.ResponseID = &ri
 		}
 
-		// Note: Image extraction and InlineData cleanup is deferred to renderFinal()
-		// to avoid processing the same images multiple times during streaming.
-		// Streaming responses will have empty Images array until the final response.
+		// Extract images and clean up InlineData in streaming responses
+		// This ensures users see images in streaming responses while preventing binary data exposure
+		streamOutput.Images = processInlineDataInCandidates(finalResp.Candidates, true)
 
 		// Build usage map from UsageMetadata if available
 		if finalResp.UsageMetadata != nil {
@@ -298,15 +297,49 @@ func (e *execution) buildStreamOutput(texts []string, finalResp *genai.GenerateC
 	return streamOutput
 }
 
+// processInlineDataInCandidates handles InlineData processing in candidates with unified logic.
+// If extractImages is true, it extracts image data and converts to format.Image.
+// Always cleans up InlineData to prevent binary data exposure in JSON output.
+func processInlineDataInCandidates(candidates []*genai.Candidate, extractImages bool) []format.Image {
+	var images []format.Image
+	if extractImages {
+		images = make([]format.Image, 0)
+	}
+
+	for _, c := range candidates {
+		if c != nil && c.Content != nil {
+			for _, p := range c.Content.Parts {
+				if p != nil && p.InlineData != nil {
+					// Extract image if requested and the data is an image
+					if extractImages && strings.Contains(strings.ToLower(p.InlineData.MIMEType), "image") {
+						// Convert blob data to format.Image using the standard data package approach
+						// Normalize MIME type and use the existing NewImageFromBytes function
+						normalizedMimeType := strings.ToLower(strings.TrimSpace(strings.Split(p.InlineData.MIMEType, ";")[0]))
+						img, err := data.NewImageFromBytes(p.InlineData.Data, normalizedMimeType, "", true)
+						if err == nil {
+							images = append(images, img)
+						}
+					}
+					// Always clean up InlineData to prevent raw binary data from being exposed in JSON output
+					// The binary data is already extracted and converted to format.Image above (if requested)
+					p.InlineData = nil
+				}
+			}
+		}
+	}
+
+	return images
+}
+
 // buildUsageMap creates a usage map from UsageMetadata with kebab-case keys
 func buildUsageMap(metadata *genai.GenerateContentResponseUsageMetadata) map[string]any {
 	usage := make(map[string]any)
 	usage["prompt-token-count"] = metadata.PromptTokenCount
 	usage["cached-content-token-count"] = metadata.CachedContentTokenCount
 	usage["candidates-token-count"] = metadata.CandidatesTokenCount
-	usage["total-token-count"] = metadata.TotalTokenCount
 	usage["tool-use-prompt-token-count"] = metadata.ToolUsePromptTokenCount
 	usage["thoughts-token-count"] = metadata.ThoughtsTokenCount
+	usage["total-token-count"] = metadata.TotalTokenCount
 
 	if len(metadata.PromptTokensDetails) > 0 {
 		arr := make([]map[string]any, 0, len(metadata.PromptTokensDetails))
@@ -396,28 +429,7 @@ func renderFinal(resp *genai.GenerateContentResponse, texts []string) TaskChatOu
 	}
 
 	// Extract generated images from candidates and clean up InlineData to prevent raw binary exposure
-	if len(resp.Candidates) > 0 {
-		images := make([]format.Image, 0)
-		for _, c := range resp.Candidates {
-			if c.Content != nil {
-				for _, p := range c.Content.Parts {
-					if p != nil && p.InlineData != nil && strings.Contains(strings.ToLower(p.InlineData.MIMEType), "image") {
-						// Convert blob data to format.Image using the standard data package approach
-						// Normalize MIME type and use the existing NewImageFromBytes function
-						normalizedMimeType := strings.ToLower(strings.TrimSpace(strings.Split(p.InlineData.MIMEType, ";")[0]))
-						img, err := data.NewImageFromBytes(p.InlineData.Data, normalizedMimeType, "", true)
-						if err == nil {
-							images = append(images, img)
-						}
-						// Clean up InlineData to prevent raw binary data from being exposed in JSON output
-						// The binary data is already extracted and converted to format.Image above
-						p.InlineData = nil
-					}
-				}
-			}
-		}
-		out.Images = images
-	}
+	out.Images = processInlineDataInCandidates(resp.Candidates, true)
 
 	if resp.UsageMetadata != nil {
 		out.Usage = buildUsageMap(resp.UsageMetadata)
