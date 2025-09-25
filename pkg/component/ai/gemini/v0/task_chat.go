@@ -265,7 +265,6 @@ func (e *execution) buildStreamOutput(texts []string, finalResp *genai.GenerateC
 		Texts:          texts,
 		Usage:          map[string]any{},
 		Candidates:     []*genai.Candidate{},
-		UsageMetadata:  nil,
 		PromptFeedback: nil,
 		ModelVersion:   nil,
 		ResponseID:     nil,
@@ -273,7 +272,6 @@ func (e *execution) buildStreamOutput(texts []string, finalResp *genai.GenerateC
 
 	if finalResp != nil {
 		streamOutput.Candidates = finalResp.Candidates
-		streamOutput.UsageMetadata = finalResp.UsageMetadata
 		streamOutput.PromptFeedback = finalResp.PromptFeedback
 		if finalResp.ModelVersion != "" {
 			mv := finalResp.ModelVersion
@@ -392,14 +390,12 @@ func renderFinal(resp *genai.GenerateContentResponse, texts []string) TaskChatOu
 		Images:         []format.Image{},
 		Usage:          map[string]any{},
 		Candidates:     []*genai.Candidate{},
-		UsageMetadata:  nil,
 		PromptFeedback: nil,
 	}
 	if resp == nil {
 		return out
 	}
 	out.Candidates = resp.Candidates
-	out.UsageMetadata = resp.UsageMetadata
 	out.PromptFeedback = resp.PromptFeedback
 	if resp.ModelVersion != "" {
 		mv := resp.ModelVersion

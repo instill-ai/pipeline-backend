@@ -780,7 +780,7 @@ func Test_renderFinal_Minimal(t *testing.T) {
 	c.Check(*out.ModelVersion, qt.Equals, "v1")
 	c.Check(out.ResponseID, qt.Not(qt.IsNil))
 	c.Check(*out.ResponseID, qt.Equals, "resp-123")
-	c.Check(out.UsageMetadata.TotalTokenCount, qt.Equals, int32(3))
+	c.Check(out.Usage["total-token-count"], qt.Equals, int32(3))
 }
 
 func Test_buildGenerateContentConfig_NoConfig(t *testing.T) {
@@ -1007,8 +1007,8 @@ func Test_buildStreamOutput(t *testing.T) {
 
 	c.Assert(got.Texts, qt.DeepEquals, texts)
 	c.Assert(got.Candidates, qt.HasLen, 2)
-	c.Assert(got.UsageMetadata, qt.Not(qt.IsNil))
-	c.Check(got.UsageMetadata.TotalTokenCount, qt.Equals, int32(15))
+	c.Assert(got.Usage, qt.Not(qt.IsNil))
+	c.Check(got.Usage["total-token-count"], qt.Equals, int32(15))
 	c.Assert(got.PromptFeedback, qt.Not(qt.IsNil))
 	c.Assert(got.ModelVersion, qt.Not(qt.IsNil))
 	c.Check(*got.ModelVersion, qt.Equals, "v1")
@@ -1082,7 +1082,7 @@ func Test_buildStreamOutput_InlineDataCleanup(t *testing.T) {
 	c.Check(got.Candidates[0].Content.Parts[0].Text, qt.Equals, "Here's an image")
 
 	// Verify other metadata is preserved
-	c.Check(got.UsageMetadata.TotalTokenCount, qt.Equals, int32(15))
+	c.Check(got.Usage["total-token-count"], qt.Equals, int32(15))
 	c.Assert(got.ModelVersion, qt.Not(qt.IsNil))
 	c.Check(*got.ModelVersion, qt.Equals, "v1")
 	c.Assert(got.ResponseID, qt.Not(qt.IsNil))
@@ -1254,7 +1254,7 @@ func Test_renderFinal_WithInlineData(t *testing.T) {
 	c.Check(got.Texts[0], qt.Equals, "Here's an image")
 
 	// Verify other metadata is preserved
-	c.Check(got.UsageMetadata.TotalTokenCount, qt.Equals, int32(15))
+	c.Check(got.Usage["total-token-count"], qt.Equals, int32(15))
 	c.Assert(got.ModelVersion, qt.Not(qt.IsNil))
 	c.Check(*got.ModelVersion, qt.Equals, "v1")
 	c.Assert(got.ResponseID, qt.Not(qt.IsNil))
@@ -1757,8 +1757,8 @@ func TestImageGeneration(t *testing.T) {
 		// Check that texts are preserved
 		c.Check(result.Texts, qt.DeepEquals, texts)
 
-		// Check that images are NOT extracted during streaming (deferred to renderFinal)
-		c.Check(result.Images, qt.HasLen, 0)
+		// Check that images are extracted during streaming
+		c.Check(result.Images, qt.HasLen, 1)
 	})
 
 	t.Run("renderFinal with mixed content", func(t *testing.T) {
