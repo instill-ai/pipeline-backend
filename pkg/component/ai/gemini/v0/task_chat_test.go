@@ -1021,6 +1021,322 @@ func Test_buildStreamOutput(t *testing.T) {
 	c.Check(got.Usage["candidates-token-count"], qt.Equals, int32(10))
 }
 
+func Test_buildStreamOutput_InlineDataCleanup(t *testing.T) {
+	c := qt.New(t)
+
+	// Create a mock execution struct for testing
+	exec := &execution{}
+
+	// Create test image data (1x1 transparent PNG)
+	pngB64 := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+	imageData, err := base64.StdEncoding.DecodeString(pngB64)
+	c.Assert(err, qt.IsNil)
+	texts := []string{"Here's an image"}
+
+	// Create a response with InlineData that should be cleaned up during streaming
+	finalResp := &genai.GenerateContentResponse{
+		ModelVersion: "v1",
+		ResponseID:   "resp-123",
+		Candidates: []*genai.Candidate{
+			{
+				Content: &genai.Content{
+					Parts: []*genai.Part{
+						{Text: "Here's an image"},
+						{
+							InlineData: &genai.Blob{
+								MIMEType: "image/png",
+								Data:     imageData,
+							},
+						},
+					},
+				},
+			},
+		},
+		UsageMetadata: &genai.GenerateContentResponseUsageMetadata{
+			PromptTokenCount:     5,
+			CandidatesTokenCount: 10,
+			TotalTokenCount:      15,
+		},
+	}
+
+	// Verify InlineData exists before calling buildStreamOutput
+	c.Assert(finalResp.Candidates[0].Content.Parts[1].InlineData, qt.Not(qt.IsNil))
+	c.Check(finalResp.Candidates[0].Content.Parts[1].InlineData.Data, qt.DeepEquals, imageData)
+
+	// Call buildStreamOutput
+	got := exec.buildStreamOutput(texts, finalResp)
+
+	// Verify the streaming output structure
+	c.Assert(got.Texts, qt.DeepEquals, texts)
+	c.Assert(got.Candidates, qt.HasLen, 1)
+	c.Assert(got.Candidates[0].Content.Parts, qt.HasLen, 2)
+
+	// Verify that InlineData has been cleaned up in the streaming response
+	c.Check(got.Candidates[0].Content.Parts[1].InlineData, qt.IsNil, qt.Commentf("InlineData should be cleaned up in streaming mode"))
+
+	// Verify that the original finalResp also has InlineData cleaned up
+	// (since candidates are passed by reference)
+	c.Check(finalResp.Candidates[0].Content.Parts[1].InlineData, qt.IsNil, qt.Commentf("InlineData should be cleaned up in original response"))
+
+	// Verify that text parts are preserved
+	c.Check(got.Candidates[0].Content.Parts[0].Text, qt.Equals, "Here's an image")
+
+	// Verify other metadata is preserved
+	c.Check(got.UsageMetadata.TotalTokenCount, qt.Equals, int32(15))
+	c.Assert(got.ModelVersion, qt.Not(qt.IsNil))
+	c.Check(*got.ModelVersion, qt.Equals, "v1")
+	c.Assert(got.ResponseID, qt.Not(qt.IsNil))
+	c.Check(*got.ResponseID, qt.Equals, "resp-123")
+
+	// Verify that Images array now contains the extracted image during streaming
+	c.Check(got.Images, qt.HasLen, 1, qt.Commentf("Images should be extracted and shown during streaming"))
+}
+
+func Test_processInlineDataInCandidates(t *testing.T) {
+	c := qt.New(t)
+
+	t.Run("cleanup only (streaming mode)", func(t *testing.T) {
+		// Create test data
+		imageData1 := []byte("fake-image-data-1")
+		imageData2 := []byte("fake-image-data-2")
+
+		candidates := []*genai.Candidate{
+			{
+				Content: &genai.Content{
+					Parts: []*genai.Part{
+						{Text: "Text part"},
+						{
+							InlineData: &genai.Blob{
+								MIMEType: "image/png",
+								Data:     imageData1,
+							},
+						},
+					},
+				},
+			},
+			{
+				Content: &genai.Content{
+					Parts: []*genai.Part{
+						{
+							InlineData: &genai.Blob{
+								MIMEType: "image/jpeg",
+								Data:     imageData2,
+							},
+						},
+						{Text: "Another text part"},
+					},
+				},
+			},
+			// Test nil candidate
+			nil,
+			// Test candidate with nil content
+			{Content: nil},
+		}
+
+		// Verify InlineData exists before cleanup
+		c.Assert(candidates[0].Content.Parts[1].InlineData, qt.Not(qt.IsNil))
+		c.Assert(candidates[1].Content.Parts[0].InlineData, qt.Not(qt.IsNil))
+
+		// Call cleanup function without image extraction
+		images := processInlineDataInCandidates(candidates, false)
+
+		// Verify no images were extracted
+		c.Check(images, qt.IsNil)
+
+		// Verify InlineData has been cleaned up
+		c.Check(candidates[0].Content.Parts[1].InlineData, qt.IsNil)
+		c.Check(candidates[1].Content.Parts[0].InlineData, qt.IsNil)
+
+		// Verify text parts are preserved
+		c.Check(candidates[0].Content.Parts[0].Text, qt.Equals, "Text part")
+		c.Check(candidates[1].Content.Parts[1].Text, qt.Equals, "Another text part")
+
+		// Verify function handles nil candidates gracefully
+		c.Assert(len(candidates), qt.Equals, 4) // No panic occurred
+	})
+
+	t.Run("extract images and cleanup (final mode)", func(t *testing.T) {
+		// Create test image data (1x1 transparent PNG)
+		pngB64 := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+		imageData, err := base64.StdEncoding.DecodeString(pngB64)
+		c.Assert(err, qt.IsNil)
+
+		candidates := []*genai.Candidate{
+			{
+				Content: &genai.Content{
+					Parts: []*genai.Part{
+						{Text: "Here's an image"},
+						{
+							InlineData: &genai.Blob{
+								MIMEType: "image/png",
+								Data:     imageData,
+							},
+						},
+						{
+							InlineData: &genai.Blob{
+								MIMEType: "text/plain", // Non-image data
+								Data:     []byte("some text"),
+							},
+						},
+					},
+				},
+			},
+		}
+
+		// Verify InlineData exists before processing
+		c.Assert(candidates[0].Content.Parts[1].InlineData, qt.Not(qt.IsNil))
+		c.Assert(candidates[0].Content.Parts[2].InlineData, qt.Not(qt.IsNil))
+
+		// Call function with image extraction
+		images := processInlineDataInCandidates(candidates, true)
+
+		// Verify one image was extracted (only the PNG, not the text data)
+		c.Assert(images, qt.HasLen, 1)
+
+		// Verify all InlineData has been cleaned up (both image and non-image)
+		c.Check(candidates[0].Content.Parts[1].InlineData, qt.IsNil)
+		c.Check(candidates[0].Content.Parts[2].InlineData, qt.IsNil)
+
+		// Verify text parts are preserved
+		c.Check(candidates[0].Content.Parts[0].Text, qt.Equals, "Here's an image")
+	})
+}
+
+func Test_renderFinal_WithInlineData(t *testing.T) {
+	c := qt.New(t)
+
+	// Create test image data (1x1 transparent PNG)
+	pngB64 := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+	imageData, err := base64.StdEncoding.DecodeString(pngB64)
+	c.Assert(err, qt.IsNil)
+
+	// Create a response with InlineData that should be extracted and cleaned up
+	resp := &genai.GenerateContentResponse{
+		ModelVersion: "v1",
+		ResponseID:   "resp-123",
+		Candidates: []*genai.Candidate{
+			{
+				Content: &genai.Content{
+					Parts: []*genai.Part{
+						{Text: "Here's an image"},
+						{
+							InlineData: &genai.Blob{
+								MIMEType: "image/png",
+								Data:     imageData,
+							},
+						},
+					},
+				},
+			},
+		},
+		UsageMetadata: &genai.GenerateContentResponseUsageMetadata{
+			PromptTokenCount:     5,
+			CandidatesTokenCount: 10,
+			TotalTokenCount:      15,
+		},
+	}
+
+	// Verify InlineData exists before calling renderFinal
+	c.Assert(resp.Candidates[0].Content.Parts[1].InlineData, qt.Not(qt.IsNil))
+	c.Check(resp.Candidates[0].Content.Parts[1].InlineData.Data, qt.DeepEquals, imageData)
+
+	// Call renderFinal
+	got := renderFinal(resp, nil)
+
+	// Verify that images were extracted
+	c.Assert(got.Images, qt.HasLen, 1, qt.Commentf("One image should be extracted"))
+
+	// Verify that InlineData has been cleaned up
+	c.Check(resp.Candidates[0].Content.Parts[1].InlineData, qt.IsNil, qt.Commentf("InlineData should be cleaned up"))
+
+	// Verify that text parts are preserved
+	c.Check(got.Texts, qt.HasLen, 1)
+	c.Check(got.Texts[0], qt.Equals, "Here's an image")
+
+	// Verify other metadata is preserved
+	c.Check(got.UsageMetadata.TotalTokenCount, qt.Equals, int32(15))
+	c.Assert(got.ModelVersion, qt.Not(qt.IsNil))
+	c.Check(*got.ModelVersion, qt.Equals, "v1")
+	c.Assert(got.ResponseID, qt.Not(qt.IsNil))
+	c.Check(*got.ResponseID, qt.Equals, "resp-123")
+}
+
+func Test_StreamingAndFinalImageConsistency(t *testing.T) {
+	c := qt.New(t)
+
+	// Create a mock execution struct for testing
+	exec := &execution{}
+
+	// Create test image data (1x1 transparent PNG)
+	pngB64 := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+	imageData, err := base64.StdEncoding.DecodeString(pngB64)
+	c.Assert(err, qt.IsNil)
+
+	// Create a response with InlineData
+	resp := &genai.GenerateContentResponse{
+		ModelVersion: "v1",
+		ResponseID:   "resp-123",
+		Candidates: []*genai.Candidate{
+			{
+				Content: &genai.Content{
+					Parts: []*genai.Part{
+						{Text: "Here's an image"},
+						{
+							InlineData: &genai.Blob{
+								MIMEType: "image/png",
+								Data:     imageData,
+							},
+						},
+					},
+				},
+			},
+		},
+		UsageMetadata: &genai.GenerateContentResponseUsageMetadata{
+			TotalTokenCount: 15,
+		},
+	}
+
+	// Test streaming output
+	streamingOutput := exec.buildStreamOutput([]string{"Here's an image"}, resp)
+
+	// Test final output (need to create a new response since InlineData gets cleaned up)
+	resp2 := &genai.GenerateContentResponse{
+		ModelVersion: "v1",
+		ResponseID:   "resp-123",
+		Candidates: []*genai.Candidate{
+			{
+				Content: &genai.Content{
+					Parts: []*genai.Part{
+						{Text: "Here's an image"},
+						{
+							InlineData: &genai.Blob{
+								MIMEType: "image/png",
+								Data:     imageData,
+							},
+						},
+					},
+				},
+			},
+		},
+		UsageMetadata: &genai.GenerateContentResponseUsageMetadata{
+			TotalTokenCount: 15,
+		},
+	}
+	finalOutput := renderFinal(resp2, nil)
+
+	// Verify both outputs have the same number of images
+	c.Check(streamingOutput.Images, qt.HasLen, 1, qt.Commentf("Streaming should extract images"))
+	c.Check(finalOutput.Images, qt.HasLen, 1, qt.Commentf("Final should extract images"))
+
+	// Verify both outputs have cleaned up InlineData
+	c.Check(resp.Candidates[0].Content.Parts[1].InlineData, qt.IsNil, qt.Commentf("Streaming should clean up InlineData"))
+	c.Check(resp2.Candidates[0].Content.Parts[1].InlineData, qt.IsNil, qt.Commentf("Final should clean up InlineData"))
+
+	// Verify text content is preserved in both
+	c.Check(streamingOutput.Texts[0], qt.Equals, "Here's an image")
+	c.Check(finalOutput.Texts[0], qt.Equals, "Here's an image")
+}
+
 func Test_extractSystemMessage(t *testing.T) {
 	c := qt.New(t)
 
