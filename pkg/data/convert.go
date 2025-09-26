@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/color"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
@@ -17,9 +18,19 @@ import (
 	"golang.org/x/image/bmp"
 	"golang.org/x/image/tiff"
 	"golang.org/x/image/webp"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/cgo"
 )
 
 func convertImage(raw []byte, sourceContentType, targetContentType string) ([]byte, error) {
+	// Handle HEIC/HEIF formats specially
+	if sourceContentType == HEIC || sourceContentType == HEIF {
+		return convertFromHEIF(raw, targetContentType)
+	}
+	if targetContentType == HEIC || targetContentType == HEIF {
+		return convertToHEIF(raw, sourceContentType, targetContentType)
+	}
+
 	// Define supported formats and their corresponding decode/encode functions
 	formats := map[string]struct {
 		decode func(io.Reader) (image.Image, error)
@@ -53,6 +64,106 @@ func convertImage(raw []byte, sourceContentType, targetContentType string) ([]by
 	}
 
 	return buf.Bytes(), nil
+}
+
+// convertFromHEIF converts HEIC/HEIF to other image formats
+func convertFromHEIF(raw []byte, targetContentType string) ([]byte, error) {
+	// Decode HEIF to RGB
+	rgbData, width, height, err := cgo.DecodeHEIF(raw)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode HEIF: %w", err)
+	}
+
+	// Convert RGB data to Go image
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	for y := range height {
+		for x := range width {
+			i := (y*width + x) * 3
+			if i+2 < len(rgbData) {
+				img.Set(x, y, color.RGBA{
+					R: rgbData[i],
+					G: rgbData[i+1],
+					B: rgbData[i+2],
+					A: 255,
+				})
+			}
+		}
+	}
+
+	// Encode to target format
+	buf := new(bytes.Buffer)
+	switch targetContentType {
+	case PNG:
+		err = png.Encode(buf, img)
+	case JPEG:
+		err = jpeg.Encode(buf, img, nil)
+	case GIF:
+		err = gif.Encode(buf, img, nil)
+	case TIFF:
+		err = tiff.Encode(buf, img, nil)
+	case BMP:
+		err = bmp.Encode(buf, img)
+	default:
+		return nil, fmt.Errorf("unsupported target format: %s", targetContentType)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode to %s: %w", targetContentType, err)
+	}
+
+	return buf.Bytes(), nil
+}
+
+// convertToHEIF converts other image formats to HEIC/HEIF
+func convertToHEIF(raw []byte, sourceContentType, _ string) ([]byte, error) {
+	// First decode source format to Go image
+	var img image.Image
+	var err error
+
+	switch sourceContentType {
+	case PNG:
+		img, err = png.Decode(bytes.NewReader(raw))
+	case JPEG:
+		img, err = jpeg.Decode(bytes.NewReader(raw))
+	case GIF:
+		img, err = gif.Decode(bytes.NewReader(raw))
+	case WEBP:
+		img, err = webp.Decode(bytes.NewReader(raw))
+	case TIFF:
+		img, err = tiff.Decode(bytes.NewReader(raw))
+	case BMP:
+		img, err = bmp.Decode(bytes.NewReader(raw))
+	default:
+		return nil, fmt.Errorf("unsupported source format: %s", sourceContentType)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode source image: %w", err)
+	}
+
+	// Convert Go image to RGB data
+	bounds := img.Bounds()
+	width, height := bounds.Dx(), bounds.Dy()
+	rgbData := make([]byte, width*height*3)
+
+	for y := range height {
+		for x := range width {
+			r, g, b, _ := img.At(x, y).RGBA()
+			i := (y*width + x) * 3
+			rgbData[i] = byte(r >> 8)
+			rgbData[i+1] = byte(g >> 8)
+			rgbData[i+2] = byte(b >> 8)
+		}
+	}
+
+	// Encode to HEIF
+	quality := 100 // Default quality
+	heifData, err := cgo.EncodeHEIF(rgbData, width, height, quality)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode HEIF: %w", err)
+	}
+
+	return heifData, nil
 }
 
 func convertAudio(raw []byte, sourceContentType, targetContentType string) ([]byte, error) {

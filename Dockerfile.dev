@@ -28,6 +28,12 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libtesseract-dev \
     libreoffice \
     libsoxr-dev \
+    libheif-dev \
+    libde265-dev \
+    libx265-dev \
+    libaom-dev \
+    libdav1d-dev \
+    pkg-config \
     chromium \
     qpdf \
     jq
