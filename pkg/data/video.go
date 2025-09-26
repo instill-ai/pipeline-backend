@@ -63,13 +63,15 @@ func NewVideoFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, 
 }
 
 func createVideoData(b []byte, contentType, filename string, isUnified bool) (*videoData, error) {
-	finalContentType := contentType
+	// Normalize MIME type first
+	normalizedContentType := normalizeMIMEType(contentType)
+	finalContentType := normalizedContentType
 
 	// If the video should be unified, convert it to MP4 (the internal unified video format)
 	if isUnified {
-		if contentType != MP4 {
+		if normalizedContentType != MP4 {
 			var err error
-			b, err = convertVideo(b, contentType, MP4)
+			b, err = convertVideo(b, normalizedContentType, MP4)
 			if err != nil {
 				return nil, fmt.Errorf("failed to convert video to MP4: %w", err)
 			}

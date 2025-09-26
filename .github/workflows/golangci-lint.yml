@@ -25,10 +25,10 @@ jobs:
         with:
           go-version: ${{ env.GOLANG_VERSION }}
           cache: false
-      - name: Install sorx
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libsoxr-dev
+          sudo apt-get install -y libsoxr-dev libheif-dev libde265-dev libx265-dev libaom-dev libdav1d-dev
       - name: Install onnxruntime library and headers
         run: |
           export ONNXRUNTIME_ROOT_PATH=$GITHUB_WORKSPACE/onnxruntime

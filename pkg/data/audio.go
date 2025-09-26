@@ -61,13 +61,15 @@ func NewAudioFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, 
 }
 
 func createAudioData(b []byte, contentType, filename string, isUnified bool) (*audioData, error) {
-	finalContentType := contentType
+	// Normalize MIME type first
+	normalizedContentType := normalizeMIMEType(contentType)
+	finalContentType := normalizedContentType
 
 	// If the audio should be unified, convert it to OGG (the internal unified audio format)
 	if isUnified {
-		if contentType != OGG {
+		if normalizedContentType != OGG {
 			var err error
-			b, err = convertAudio(b, contentType, OGG)
+			b, err = convertAudio(b, normalizedContentType, OGG)
 			if err != nil {
 				return nil, err
 			}

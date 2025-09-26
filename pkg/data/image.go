@@ -15,6 +15,7 @@ import (
 
 	goimage "image"
 
+	"github.com/instill-ai/pipeline-backend/pkg/data/cgo"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
@@ -35,6 +36,8 @@ const (
 	WEBP = "image/webp"
 	TIFF = "image/tiff"
 	BMP  = "image/bmp"
+	HEIC = "image/heic"
+	HEIF = "image/heif"
 )
 
 var imageGetters = map[string]func(*imageData) (format.Value, error){
@@ -46,6 +49,8 @@ var imageGetters = map[string]func(*imageData) (format.Value, error){
 	"webp":   func(i *imageData) (format.Value, error) { return i.Convert(WEBP) },
 	"tiff":   func(i *imageData) (format.Value, error) { return i.Convert(TIFF) },
 	"bmp":    func(i *imageData) (format.Value, error) { return i.Convert(BMP) },
+	"heic":   func(i *imageData) (format.Value, error) { return i.Convert(HEIC) },
+	"heif":   func(i *imageData) (format.Value, error) { return i.Convert(HEIF) },
 }
 
 // NewImageFromBytes creates a new imageData from byte slice
@@ -64,14 +69,16 @@ func NewImageFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, 
 
 // createImageData is a helper function to create imageData
 func createImageData(b []byte, contentType, filename string, isUnified bool) (*imageData, error) {
+	// Normalize MIME type first
+	normalizedContentType := normalizeMIMEType(contentType)
 
 	var err error
-	finalContentType := contentType
+	finalContentType := normalizedContentType
 
 	// If the image should be unified, convert it to PNG (the internal unified image format)
 	if isUnified {
-		if contentType != PNG {
-			b, err = convertImage(b, contentType, PNG)
+		if normalizedContentType != PNG {
+			b, err = convertImage(b, normalizedContentType, PNG)
 			if err != nil {
 				return nil, err
 			}
@@ -127,6 +134,9 @@ func getImageProperties(raw []byte, contentType string) (width, height int) {
 		if img, err = bmp.Decode(bytes.NewReader(raw)); err != nil {
 			return
 		}
+	case HEIC, HEIF:
+		width, height = cgo.GetHEIFImageProperties(raw)
+		return
 	}
 	if img == nil {
 		return

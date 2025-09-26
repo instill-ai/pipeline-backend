@@ -6,7 +6,8 @@
 include .env
 export
 
-GOTEST_FLAGS := CFG_DATABASE_HOST=${TEST_DBHOST} CFG_DATABASE_NAME=${TEST_DBNAME}
+# Default network for local development, can be overridden
+DOCKER_NETWORK ?= instill-network
 
 #============================================================================
 
@@ -70,7 +71,15 @@ go-gen: ## Generate codes
 
 .PHONY: dbtest-pre
 dbtest-pre:
-	@${GOTEST_FLAGS} go run ./cmd/migration
+	@docker run --rm \
+		-v $(PWD):/${SERVICE_NAME} \
+		--user $(id -u):$(id -g) \
+		-e CFG_DATABASE_HOST=${TEST_DBHOST} \
+		-e CFG_DATABASE_NAME=${TEST_DBNAME} \
+		--network ${DOCKER_NETWORK} \
+		--entrypoint= \
+		instill/${SERVICE_NAME}:dev \
+			go run ./cmd/migration
 
 .PHONY: coverage
 coverage: ## Generate coverage report
@@ -78,7 +87,9 @@ coverage: ## Generate coverage report
 	@docker run --rm \
 		-v $(PWD):/${SERVICE_NAME} \
 		--user $(id -u):$(id -g) \
-		-e GOTEST_FLAGS="${GOTEST_FLAGS}" \
+		-e CFG_DATABASE_HOST=${TEST_DBHOST} \
+		-e CFG_DATABASE_NAME=${TEST_DBNAME} \
+		--network ${DOCKER_NETWORK} \
 		--entrypoint= \
 		instill/${SERVICE_NAME}:dev \
 			go test -v -race ${GOTEST_TAGS} -coverpkg=./... -coverprofile=coverage.out -covermode=atomic -timeout 30m ./...
