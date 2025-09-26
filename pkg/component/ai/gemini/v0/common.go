@@ -18,98 +18,70 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
-// formatSupport defines format support levels for different media types
-type formatSupport struct {
-	gemini  []string
-	instill []string
-}
-
 var (
-	imageFormats = formatSupport{
-		gemini: []string{
-			data.PNG,     // PNG
-			data.JPEG,    // JPEG
-			data.WEBP,    // WEBP
-			"image/heic", // HEIC
-			"image/heif", // HEIF
-		},
-		instill: []string{
-			data.PNG,  // PNG
-			data.JPEG, // JPEG
-			data.WEBP, // WEBP
-			data.GIF,  // GIF
-			data.BMP,  // BMP
-			data.TIFF, // TIFF
-		},
+	// Gemini-supported formats - these can be sent directly without conversion
+	geminiImageFormats = []string{
+		data.PNG,  // PNG
+		data.JPEG, // JPEG
+		data.WEBP, // WEBP
+		data.HEIC, // HEIC
+		data.HEIF, // HEIF
 	}
 
-	audioFormats = formatSupport{
-		gemini: []string{
-			data.WAV,    // WAV
-			"audio/mp3", // MP3
-			data.MP3,    // MP3 (audio/mpeg - alternative MIME type)
-			data.AIFF,   // AIFF
-			data.AAC,    // AAC
-			data.OGG,    // OGG Vorbis
-			data.FLAC,   // FLAC
-		},
-		instill: []string{
-			data.MP3,  // MP3 (audio/mpeg)
-			data.WAV,  // WAV
-			data.AAC,  // AAC
-			data.OGG,  // OGG
-			data.FLAC, // FLAC
-			data.M4A,  // M4A (audio/mp4)
-			data.WMA,  // WMA (audio/x-ms-wma)
-			data.AIFF, // AIFF
-		},
+	// Instill-supported formats that can be converted to Gemini-supported formats
+	convertibleImageFormats = []string{
+		data.GIF,  // GIF
+		data.BMP,  // BMP
+		data.TIFF, // TIFF
 	}
 
-	videoFormats = formatSupport{
-		gemini: []string{
-			data.MP4,     // MP4
-			data.MPEG,    // MPEG
-			data.MOV,     // MOV (video/quicktime)
-			"video/mov",  // MOV (standard MIME type)
-			data.AVI,     // AVI (video/x-msvideo)
-			"video/avi",  // AVI (standard MIME type)
-			data.FLV,     // FLV (video/x-flv)
-			"video/mpg",  // MPG - supported by Gemini but not defined in video.go
-			data.WEBM,    // WEBM
-			data.WMV,     // WMV (video/x-ms-wmv)
-			"video/wmv",  // WMV (standard MIME type)
-			"video/3gpp", // 3GPP - supported by Gemini but not defined in video.go
-		},
-		instill: []string{
-			data.MP4,  // MP4
-			data.AVI,  // AVI (video/x-msvideo)
-			data.MOV,  // MOV (video/quicktime)
-			data.WEBM, // WEBM
-			data.MKV,  // MKV (video/x-matroska)
-			data.FLV,  // FLV (video/x-flv)
-			data.WMV,  // WMV (video/x-ms-wmv)
-			data.MPEG, // MPEG
-		},
+	geminiAudioFormats = []string{
+		data.WAV,  // WAV
+		data.MP3,  // MP3
+		data.AIFF, // AIFF
+		data.AAC,  // AAC
+		data.OGG,  // OGG Vorbis
+		data.FLAC, // FLAC
 	}
 
-	documentFormats = formatSupport{
-		gemini: []string{
-			data.PDF, // PDF - only visual document format supported by Gemini
-		},
-		instill: []string{
-			data.PDF,      // PDF
-			data.DOC,      // DOC
-			data.DOCX,     // DOCX
-			data.PPT,      // PPT
-			data.PPTX,     // PPTX
-			data.XLS,      // XLS
-			data.XLSX,     // XLSX
-			data.HTML,     // HTML
-			data.MARKDOWN, // Markdown
-			data.TEXT,     // Plain text
-			data.PLAIN,    // Plain text
-			data.CSV,      // CSV
-		},
+	convertibleAudioFormats = []string{
+		data.M4A, // M4A (audio/mp4)
+		data.WMA, // WMA (audio/x-ms-wma)
+	}
+
+	geminiVideoFormats = []string{
+		data.MP4,  // MP4
+		data.MPEG, // MPEG
+		data.MOV,  // MOV (video/quicktime)
+		data.AVI,  // AVI (video/x-msvideo)
+		data.FLV,  // FLV (video/x-flv)
+		data.WEBM, // WEBM
+		data.WMV,  // WMV (video/x-ms-wmv)
+	}
+
+	convertibleVideoFormats = []string{
+		data.MKV, // MKV (video/x-matroska)
+	}
+
+	geminiDocumentFormats = []string{
+		data.PDF, // PDF - only visual document format supported by Gemini
+	}
+
+	convertibleDocumentFormats = []string{
+		data.DOC,  // DOC
+		data.DOCX, // DOCX
+		data.PPT,  // PPT
+		data.PPTX, // PPTX
+		data.XLS,  // XLS
+		data.XLSX, // XLSX
+	}
+
+	textBasedDocumentFormats = []string{
+		data.HTML,     // HTML
+		data.MARKDOWN, // Markdown
+		data.TEXT,     // Plain text
+		data.PLAIN,    // Plain text
+		data.CSV,      // CSV
 	}
 )
 
@@ -127,50 +99,6 @@ type MultimediaInput interface {
 type SystemMessageInput interface {
 	GetSystemMessage() *string
 	GetSystemInstruction() *genai.Content
-}
-
-// validateFormat checks if a format is supported and returns appropriate error messages
-// For documents, it also returns the processing mode ("visual", "text", or "" for error)
-func validateFormat(contentType, mediaType string, formats formatSupport, convertibleFormats, supportedTargets, examples string) (string, error) {
-	// Check if the format is supported by Gemini API
-	if slices.Contains(formats.gemini, contentType) {
-		// Special handling for documents to determine processing mode
-		if mediaType == "document" {
-			if contentType == data.PDF {
-				return "visual", nil // PDF supports visual processing
-			}
-			// Text-based documents supported by Gemini (currently none, but future-proof)
-			return "text", nil
-		}
-		return "", nil // Other media types don't need mode
-	}
-
-	// Check if it's a known Instill Core format that can be converted
-	if slices.Contains(formats.instill, contentType) {
-		// Special handling for documents
-		if mediaType == "document" {
-			// Text-based documents: Process as plain text
-			textBasedTypes := []string{data.HTML, data.MARKDOWN, data.TEXT, data.PLAIN, data.CSV}
-			if slices.Contains(textBasedTypes, contentType) || strings.HasPrefix(contentType, "text/") {
-				return "text", nil
-			}
-
-			// Office documents: Need PDF conversion for visual elements
-			officeTypes := []string{data.DOC, data.DOCX, data.PPT, data.PPTX, data.XLS, data.XLSX}
-			if slices.Contains(officeTypes, contentType) {
-				return "", fmt.Errorf("document format %s will be processed as text only, losing visual elements like charts and formatting. Use \":pdf\" syntax to convert to PDF for document vision capabilities", contentType)
-			}
-
-			// Other known document formats
-			return "", fmt.Errorf("document format %s is not supported by Gemini API. Use \":pdf\" syntax to convert DOC, DOCX, PPT, PPTX, XLS, XLSX to PDF (supported by both Gemini and Instill Core), such as \":pdf\"", contentType)
-		}
-
-		// Non-document media types
-		return "", fmt.Errorf("%s format %s is not supported by Gemini API. Use \":\" syntax to convert %s to %s (supported by both Gemini and Instill Core), such as \"%s\"", mediaType, contentType, convertibleFormats, supportedTargets, examples)
-	}
-
-	// Unknown format - can't be processed at all
-	return "", fmt.Errorf("%s format %s is not supported and cannot be processed", mediaType, contentType)
 }
 
 // newURIOrDataPart creates a genai.Part from a URI or base64 data string
@@ -275,13 +203,25 @@ func processImageParts(images []format.Image) ([]genai.Part, error) {
 
 	for _, img := range images {
 		contentType := img.ContentType().String()
+		processedImg := img
 
-		// Validate image format
-		if _, err := validateFormat(contentType, "image", imageFormats, "GIF, BMP, TIFF", "PNG, JPEG, WEBP", ":png\", \":jpeg\", \":webp"); err != nil {
-			return nil, err
+		// Check if format is supported by Gemini, if not, try to convert
+		if !slices.Contains(geminiImageFormats, contentType) {
+			if slices.Contains(convertibleImageFormats, contentType) {
+				// Convert unsupported format to PNG (widely supported by Gemini)
+				convertedImg, err := img.Convert(data.PNG)
+				if err != nil {
+					return nil, fmt.Errorf("failed to convert image from %s to PNG: %w", contentType, err)
+				}
+				processedImg = convertedImg
+				contentType = data.PNG
+			} else {
+				// Unknown format - cannot be processed
+				return nil, fmt.Errorf("image format %s is not supported and cannot be processed", contentType)
+			}
 		}
 
-		imgBase64, err := img.Base64()
+		imgBase64, err := processedImg.Base64()
 		if err != nil {
 			return nil, err
 		}
@@ -299,13 +239,25 @@ func processAudioParts(audio []format.Audio) ([]genai.Part, error) {
 
 	for _, audioFile := range audio {
 		contentType := audioFile.ContentType().String()
+		processedAudio := audioFile
 
-		// Validate audio format
-		if _, err := validateFormat(contentType, "audio", audioFormats, "M4A, WMA", "WAV, MP3, AIFF, AAC, OGG, FLAC", ":wav\", \":mp3\", \":ogg"); err != nil {
-			return nil, err
+		// Check if format is supported by Gemini, if not, try to convert
+		if !slices.Contains(geminiAudioFormats, contentType) {
+			if slices.Contains(convertibleAudioFormats, contentType) {
+				// Convert unsupported format to FLAC (widely supported by Gemini)
+				convertedAudio, err := audioFile.Convert(data.FLAC)
+				if err != nil {
+					return nil, fmt.Errorf("failed to convert audio from %s to FLAC: %w", contentType, err)
+				}
+				processedAudio = convertedAudio
+				contentType = data.FLAC
+			} else {
+				// Unknown format - cannot be processed
+				return nil, fmt.Errorf("audio format %s is not supported and cannot be processed", contentType)
+			}
 		}
 
-		audioBase64, err := audioFile.Base64()
+		audioBase64, err := processedAudio.Base64()
 		if err != nil {
 			return nil, err
 		}
@@ -323,13 +275,25 @@ func processVideoParts(videos []format.Video) ([]genai.Part, error) {
 
 	for _, video := range videos {
 		contentType := video.ContentType().String()
+		processedVideo := video
 
-		// Validate video format
-		if _, err := validateFormat(contentType, "video", videoFormats, "MKV", "MP4, MPEG, MOV, AVI, FLV, WEBM, WMV", ":mp4\", \":mov\", \":webm"); err != nil {
-			return nil, err
+		// Check if format is supported by Gemini, if not, try to convert
+		if !slices.Contains(geminiVideoFormats, contentType) {
+			if slices.Contains(convertibleVideoFormats, contentType) {
+				// Convert unsupported format to MP4 (widely supported by Gemini)
+				convertedVideo, err := video.Convert(data.MP4)
+				if err != nil {
+					return nil, fmt.Errorf("failed to convert video from %s to MP4: %w", contentType, err)
+				}
+				processedVideo = convertedVideo
+				contentType = data.MP4
+			} else {
+				// Unknown format - cannot be processed
+				return nil, fmt.Errorf("video format %s is not supported and cannot be processed", contentType)
+			}
 		}
 
-		videoBase64, err := video.Base64()
+		videoBase64, err := processedVideo.Base64()
 		if err != nil {
 			return nil, err
 		}
@@ -344,35 +308,48 @@ func processVideoParts(videos []format.Video) ([]genai.Part, error) {
 // processDocumentParts converts document inputs to genai.Part objects based on their type and capabilities.
 // - PDFs: Full document vision support (charts, diagrams, formatting preserved)
 // - Text-based: Extract as plain text (HTML tags, Markdown formatting, etc. lost)
-// - Office documents: Recommend PDF conversion for visual understanding
+// - Office documents: Automatically converted to PDF for visual understanding
 func processDocumentParts(documents []format.Document) ([]genai.Part, error) {
 	var parts []genai.Part
 
 	for _, doc := range documents {
 		contentType := doc.ContentType().String()
+		processedDoc := doc
 
-		// Validate document format and get processing mode
-		mode, err := validateFormat(contentType, "document", documentFormats, "", "", "")
-		if err != nil {
-			return nil, err
+		// Check if format is supported by Gemini, if not, try to convert
+		if !slices.Contains(geminiDocumentFormats, contentType) {
+			// Text-based documents: Process as plain text
+			if slices.Contains(textBasedDocumentFormats, contentType) || strings.HasPrefix(contentType, "text/") {
+				// Extract as plain text content
+				textContent := doc.String()
+				parts = append(parts, genai.Part{Text: textContent})
+				continue
+			}
+			// Office documents: Convert to PDF for visual elements
+			if slices.Contains(convertibleDocumentFormats, contentType) {
+				convertedDoc, err := doc.PDF()
+				if err != nil {
+					return nil, fmt.Errorf("failed to convert document from %s to PDF: %w", contentType, err)
+				}
+				processedDoc = convertedDoc
+				contentType = data.PDF
+			} else {
+				// Other unknown document formats
+				return nil, fmt.Errorf("document format %s is not supported and cannot be processed", contentType)
+			}
 		}
 
-		switch mode {
-		case "visual":
+		// Process the document (either original PDF or converted)
+		if contentType == data.PDF {
 			// PDFs support full document vision capabilities
 			// The model can interpret visual elements like charts, diagrams, and formatting
-			docBase64, err := doc.Base64()
+			docBase64, err := processedDoc.Base64()
 			if err != nil {
 				return nil, err
 			}
 			if p := newURIOrDataPart(docBase64.String(), detectMIMEFromPath(docBase64.String(), "application/pdf")); p != nil {
 				parts = append(parts, *p)
 			}
-		case "text":
-			// Text-based documents (TXT, Markdown, HTML, XML, etc.)
-			// Extract as plain text content
-			textContent := doc.String()
-			parts = append(parts, genai.Part{Text: textContent})
 		}
 	}
 
@@ -670,14 +647,26 @@ func (e *execution) processImagePartsWithTotalSize(ctx context.Context, client *
 
 	for _, img := range images {
 		contentType := img.ContentType().String()
+		processedImg := img
 
-		// Validate image format
-		if _, err := validateFormat(contentType, "image", imageFormats, "GIF, BMP, TIFF", "PNG, JPEG, WEBP", ":png\", \":jpeg\", \":webp"); err != nil {
-			return nil, nil, err
+		// Check if format is supported by Gemini, if not, try to convert
+		if !slices.Contains(geminiImageFormats, contentType) {
+			if slices.Contains(convertibleImageFormats, contentType) {
+				// Convert unsupported format to PNG (widely supported by Gemini)
+				convertedImg, err := img.Convert(data.PNG)
+				if err != nil {
+					return nil, nil, fmt.Errorf("failed to convert image from %s to PNG: %w", contentType, err)
+				}
+				processedImg = convertedImg
+				contentType = data.PNG
+			} else {
+				// Unknown format - cannot be processed
+				return nil, nil, fmt.Errorf("image format %s is not supported and cannot be processed", contentType)
+			}
 		}
 
 		// Get binary data
-		binary, err := img.Binary()
+		binary, err := processedImg.Binary()
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to get image binary: %w", err)
 		}
@@ -708,14 +697,26 @@ func (e *execution) processAudioPartsWithTotalSize(ctx context.Context, client *
 
 	for _, audioFile := range audio {
 		contentType := audioFile.ContentType().String()
+		processedAudio := audioFile
 
-		// Validate audio format
-		if _, err := validateFormat(contentType, "audio", audioFormats, "M4A, WMA", "WAV, MP3, AIFF, AAC, OGG, FLAC", ":wav\", \":mp3\", \":ogg"); err != nil {
-			return nil, nil, err
+		// Check if format is supported by Gemini, if not, try to convert
+		if !slices.Contains(geminiAudioFormats, contentType) {
+			if slices.Contains(convertibleAudioFormats, contentType) {
+				// Convert unsupported format to FLAC (widely supported by Gemini)
+				convertedAudio, err := audioFile.Convert(data.FLAC)
+				if err != nil {
+					return nil, nil, fmt.Errorf("failed to convert audio from %s to FLAC: %w", contentType, err)
+				}
+				processedAudio = convertedAudio
+				contentType = data.FLAC
+			} else {
+				// Unknown format - cannot be processed
+				return nil, nil, fmt.Errorf("audio format %s is not supported and cannot be processed", contentType)
+			}
 		}
 
 		// Get binary data
-		binary, err := audioFile.Binary()
+		binary, err := processedAudio.Binary()
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to get audio binary: %w", err)
 		}
@@ -746,14 +747,26 @@ func (e *execution) processVideoPartsWithTotalSize(ctx context.Context, client *
 
 	for _, video := range videos {
 		contentType := video.ContentType().String()
+		processedVideo := video
 
-		// Validate video format
-		if _, err := validateFormat(contentType, "video", videoFormats, "MKV", "MP4, MPEG, MOV, AVI, FLV, WEBM, WMV", ":mp4\", \":mov\", \":webm"); err != nil {
-			return nil, nil, err
+		// Check if format is supported by Gemini, if not, try to convert
+		if !slices.Contains(geminiVideoFormats, contentType) {
+			if slices.Contains(convertibleVideoFormats, contentType) {
+				// Convert unsupported format to MP4 (widely supported by Gemini)
+				convertedVideo, err := video.Convert(data.MP4)
+				if err != nil {
+					return nil, nil, fmt.Errorf("failed to convert video from %s to MP4: %w", contentType, err)
+				}
+				processedVideo = convertedVideo
+				contentType = data.MP4
+			} else {
+				// Unknown format - cannot be processed
+				return nil, nil, fmt.Errorf("video format %s is not supported and cannot be processed", contentType)
+			}
 		}
 
 		// Get binary data
-		binary, err := video.Binary()
+		binary, err := processedVideo.Binary()
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to get video binary: %w", err)
 		}
@@ -784,17 +797,35 @@ func (e *execution) processDocumentPartsWithTotalSize(ctx context.Context, clien
 
 	for _, doc := range documents {
 		contentType := doc.ContentType().String()
+		processedDoc := doc
 
-		// Validate document format and get processing mode
-		mode, err := validateFormat(contentType, "document", documentFormats, "", "", "")
-		if err != nil {
-			return nil, nil, err
+		// Check if format is supported by Gemini, if not, try to convert
+		if !slices.Contains(geminiDocumentFormats, contentType) {
+			// Text-based documents: Process as plain text
+			if slices.Contains(textBasedDocumentFormats, contentType) || strings.HasPrefix(contentType, "text/") {
+				// Extract as plain text content (no File API needed)
+				textContent := doc.String()
+				parts = append(parts, genai.Part{Text: textContent})
+				continue
+			}
+			// Office documents: Convert to PDF for visual elements
+			if slices.Contains(convertibleDocumentFormats, contentType) {
+				convertedDoc, err := doc.PDF()
+				if err != nil {
+					return nil, nil, fmt.Errorf("failed to convert document from %s to PDF: %w", contentType, err)
+				}
+				processedDoc = convertedDoc
+				contentType = data.PDF
+			} else {
+				// Other unknown document formats
+				return nil, nil, fmt.Errorf("document format %s is not supported and cannot be processed", contentType)
+			}
 		}
 
-		switch mode {
-		case "visual":
+		// Process PDFs (either original or converted)
+		if contentType == data.PDF {
 			// PDFs support full document vision capabilities
-			binary, err := doc.Binary()
+			binary, err := processedDoc.Binary()
 			if err != nil {
 				return nil, nil, fmt.Errorf("failed to get document binary: %w", err)
 			}
@@ -809,10 +840,6 @@ func (e *execution) processDocumentPartsWithTotalSize(ctx context.Context, clien
 			if fileName != "" {
 				uploadedFiles = append(uploadedFiles, fileName)
 			}
-		case "text":
-			// Text-based documents: Extract as plain text content (no File API needed)
-			textContent := doc.String()
-			parts = append(parts, genai.Part{Text: textContent})
 		}
 	}
 

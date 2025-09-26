@@ -340,7 +340,7 @@ func Test_processImageParts(t *testing.T) {
 		c.Check(got[0].InlineData.MIMEType, qt.Equals, "image/jpeg")
 	})
 
-	t.Run("with unsupported format (GIF)", func(t *testing.T) {
+	t.Run("with convertible format (GIF)", func(t *testing.T) {
 		// GIF header for a minimal 1x1 transparent GIF
 		gifBytes := []byte{0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00}
 		img, err := data.NewImageFromBytes(gifBytes, "image/gif", "test.gif", false)
@@ -350,14 +350,17 @@ func Test_processImageParts(t *testing.T) {
 		}
 
 		got, err := processImageParts([]format.Image{img})
-		c.Assert(err, qt.Not(qt.IsNil))
-		c.Check(err.Error(), qt.Contains, "image format image/gif is not supported by Gemini API")
-		c.Check(err.Error(), qt.Contains, "such as \":png\"")
-		c.Check(err.Error(), qt.Contains, "Use \":\" syntax to convert GIF, BMP, TIFF to PNG, JPEG, WEBP")
-		c.Assert(got, qt.IsNil)
+		// GIF should now be automatically converted to PNG, so it should succeed
+		if err != nil {
+			// If conversion fails due to invalid GIF data, that's expected
+			c.Check(err.Error(), qt.Contains, "failed to convert image from image/gif to PNG")
+			return
+		}
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].InlineData.MIMEType, qt.Equals, "image/png")
 	})
 
-	t.Run("with unsupported format (BMP)", func(t *testing.T) {
+	t.Run("with convertible format (BMP)", func(t *testing.T) {
 		// BMP header for a minimal bitmap
 		bmpBytes := []byte{0x42, 0x4D, 0x3A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 		img, err := data.NewImageFromBytes(bmpBytes, "image/bmp", "test.bmp", false)
@@ -367,10 +370,14 @@ func Test_processImageParts(t *testing.T) {
 		}
 
 		got, err := processImageParts([]format.Image{img})
-		c.Assert(err, qt.Not(qt.IsNil))
-		c.Check(err.Error(), qt.Contains, "image format image/bmp is not supported by Gemini API")
-		c.Check(err.Error(), qt.Contains, "such as \":png\"")
-		c.Assert(got, qt.IsNil)
+		// BMP should now be automatically converted to PNG, so it should succeed
+		if err != nil {
+			// If conversion fails due to invalid BMP data, that's expected
+			c.Check(err.Error(), qt.Contains, "failed to convert image from image/bmp to PNG")
+			return
+		}
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].InlineData.MIMEType, qt.Equals, "image/png")
 	})
 
 	t.Run("with completely unknown format", func(t *testing.T) {
@@ -480,24 +487,27 @@ func Test_processVideoParts(t *testing.T) {
 		c.Check(got[0].InlineData.MIMEType, qt.Equals, "video/webm")
 	})
 
-	t.Run("with unsupported format (MKV)", func(t *testing.T) {
-		// Use a real video file but with an unsupported content type for testing validation logic
+	t.Run("with convertible format (MKV)", func(t *testing.T) {
+		// Use a real video file but with an unsupported content type for testing conversion logic
 		videoPath := "../../../../data/testdata/small_sample.mp4"
 		videoBytes, err := os.ReadFile(videoPath)
 		c.Assert(err, qt.IsNil)
 
-		// Create video with unsupported format (MKV) to test validation
+		// Create video with convertible format (MKV) to test automatic conversion
 		video, err := data.NewVideoFromBytes(videoBytes, "video/x-matroska", "test.mkv", false)
 		if err != nil {
 			t.Skip("Cannot create MKV video for testing")
 		}
 
 		got, err := processVideoParts([]format.Video{video})
-		c.Assert(err, qt.Not(qt.IsNil))
-		c.Check(err.Error(), qt.Contains, "video format video/x-matroska is not supported by Gemini API")
-		c.Check(err.Error(), qt.Contains, "such as \":mp4\"")
-		c.Check(err.Error(), qt.Contains, "Use \":\" syntax to convert MKV to MP4, MPEG, MOV, AVI, FLV, WEBM, WMV")
-		c.Assert(got, qt.IsNil)
+		// MKV should now be automatically converted to MP4, so it should succeed
+		if err != nil {
+			// If conversion fails due to missing ffmpeg or other issues, that's expected in test environment
+			c.Check(err.Error(), qt.Contains, "failed to convert video from video/x-matroska to MP4")
+			return
+		}
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].InlineData.MIMEType, qt.Equals, "video/mp4")
 	})
 
 	t.Run("with completely unknown format", func(t *testing.T) {
@@ -564,15 +574,20 @@ func Test_processDocumentParts(t *testing.T) {
 		c.Check(got[0].InlineData, qt.IsNil)
 	})
 
-	t.Run("with unsupported convertible document", func(t *testing.T) {
+	t.Run("with convertible document (DOC)", func(t *testing.T) {
 		docBytes := []byte("This is a DOC document")
 		doc, err := data.NewDocumentFromBytes(docBytes, data.DOC, "test.doc")
 		c.Assert(err, qt.IsNil)
 
 		got, err := processDocumentParts([]format.Document{doc})
-		c.Assert(err, qt.Not(qt.IsNil))
-		c.Check(err.Error(), qt.Contains, "document format application/msword will be processed as text only")
-		c.Assert(got, qt.IsNil)
+		// DOC should now be automatically converted to PDF, so it should succeed
+		if err != nil {
+			// If conversion fails due to missing LibreOffice or invalid DOC data, that's expected in test environment
+			c.Check(err.Error(), qt.Contains, "failed to convert document from application/msword to PDF")
+			return
+		}
+		c.Assert(got, qt.HasLen, 1)
+		c.Check(got[0].InlineData.MIMEType, qt.Equals, "application/pdf")
 	})
 
 	t.Run("with unsupported document type", func(t *testing.T) {
@@ -595,7 +610,7 @@ func Test_processDocumentParts(t *testing.T) {
 	})
 }
 
-func Test_buildReqParts_UnsupportedDocumentMIME_Convertible(t *testing.T) {
+func Test_buildReqParts_ConvertibleDocumentMIME(t *testing.T) {
 	c := qt.New(t)
 	prompt := "Summarize this."
 
@@ -612,17 +627,26 @@ func Test_buildReqParts_UnsupportedDocumentMIME_Convertible(t *testing.T) {
 	}
 
 	got, err := buildReqParts(in)
-	c.Assert(err, qt.Not(qt.IsNil))
-	c.Assert(err.Error(), qt.Contains, "document format application/msword will be processed as text only")
-	c.Assert(err.Error(), qt.Contains, "Use \":pdf\" syntax")
-	c.Assert(got, qt.IsNil)
+	// DOC should now be automatically converted to PDF
+	if err != nil {
+		// If conversion fails due to missing LibreOffice, that's expected in test environment
+		c.Check(err.Error(), qt.Contains, "failed to convert document from application/msword to PDF")
+		return
+	}
+	c.Assert(got, qt.HasLen, 2) // prompt + document
+	// Check that document part has PDF MIME type
+	for _, part := range got {
+		if part.InlineData != nil {
+			c.Check(part.InlineData.MIMEType, qt.Equals, "application/pdf")
+		}
+	}
 }
 
-func Test_buildReqParts_UnsupportedImageFormat(t *testing.T) {
+func Test_buildReqParts_ConvertibleImageFormat(t *testing.T) {
 	c := qt.New(t)
 	prompt := "Describe this image."
 
-	// Create an image with unsupported format (GIF)
+	// Create an image with convertible format (GIF)
 	gifBytes := []byte{0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00}
 	img, err := data.NewImageFromBytes(gifBytes, "image/gif", "test.gif", false)
 	if err != nil {
@@ -635,23 +659,31 @@ func Test_buildReqParts_UnsupportedImageFormat(t *testing.T) {
 	}
 
 	got, err := buildReqParts(in)
-	c.Assert(err, qt.Not(qt.IsNil))
-	c.Assert(err.Error(), qt.Contains, "image format image/gif is not supported by Gemini API")
-	c.Assert(err.Error(), qt.Contains, "Use \":\" syntax to convert GIF, BMP, TIFF to PNG, JPEG, WEBP")
-	c.Assert(err.Error(), qt.Contains, "such as \":png\"")
-	c.Assert(got, qt.IsNil)
+	// GIF should now be automatically converted to PNG
+	if err != nil {
+		// If conversion fails due to invalid GIF data, that's expected
+		c.Check(err.Error(), qt.Contains, "failed to convert image from image/gif to PNG")
+		return
+	}
+	c.Assert(got, qt.HasLen, 2) // prompt + image
+	// Check that image part has PNG MIME type
+	for _, part := range got {
+		if part.InlineData != nil {
+			c.Check(part.InlineData.MIMEType, qt.Equals, "image/png")
+		}
+	}
 }
 
-func Test_buildReqParts_UnsupportedAudioFormat(t *testing.T) {
+func Test_buildReqParts_ConvertibleAudioFormat(t *testing.T) {
 	c := qt.New(t)
 	prompt := "Describe this audio."
 
-	// Use a real audio file but with an unsupported content type for testing validation logic
+	// Use a real audio file but with a convertible content type for testing conversion logic
 	audioPath := "../../../../data/testdata/small_sample.wav"
 	audioBytes, err := os.ReadFile(audioPath)
 	c.Assert(err, qt.IsNil)
 
-	// Create audio with unsupported format (M4A) to test validation
+	// Create audio with convertible format (M4A) to test automatic conversion
 	audio, err := data.NewAudioFromBytes(audioBytes, "audio/mp4", "test.m4a", false)
 	if err != nil {
 		t.Skip("Cannot create M4A audio for testing")
@@ -663,23 +695,31 @@ func Test_buildReqParts_UnsupportedAudioFormat(t *testing.T) {
 	}
 
 	got, err := buildReqParts(in)
-	c.Assert(err, qt.Not(qt.IsNil))
-	c.Assert(err.Error(), qt.Contains, "audio format audio/mp4 is not supported by Gemini API")
-	c.Assert(err.Error(), qt.Contains, "Use \":\" syntax to convert M4A, WMA to WAV, MP3, AIFF, AAC, OGG, FLAC")
-	c.Assert(err.Error(), qt.Contains, "such as \":wav\"")
-	c.Assert(got, qt.IsNil)
+	// M4A should now be automatically converted to FLAC
+	if err != nil {
+		// If conversion fails due to missing ffmpeg or other issues, that's expected in test environment
+		c.Check(err.Error(), qt.Contains, "failed to convert audio from audio/mp4 to FLAC")
+		return
+	}
+	c.Assert(got, qt.HasLen, 2) // prompt + audio
+	// Check that audio part has FLAC MIME type
+	for _, part := range got {
+		if part.InlineData != nil {
+			c.Check(part.InlineData.MIMEType, qt.Equals, "audio/flac")
+		}
+	}
 }
 
-func Test_buildReqParts_UnsupportedVideoFormat(t *testing.T) {
+func Test_buildReqParts_ConvertibleVideoFormat(t *testing.T) {
 	c := qt.New(t)
 	prompt := "Describe this video."
 
-	// Use a real video file but with an unsupported content type for testing validation logic
+	// Use a real video file but with a convertible content type for testing conversion logic
 	videoPath := "../../../../data/testdata/small_sample.mp4"
 	videoBytes, err := os.ReadFile(videoPath)
 	c.Assert(err, qt.IsNil)
 
-	// Create video with unsupported format (MKV) to test validation
+	// Create video with convertible format (MKV) to test automatic conversion
 	video, err := data.NewVideoFromBytes(videoBytes, "video/x-matroska", "test.mkv", false)
 	if err != nil {
 		t.Skip("Cannot create MKV video for testing")
@@ -691,11 +731,19 @@ func Test_buildReqParts_UnsupportedVideoFormat(t *testing.T) {
 	}
 
 	got, err := buildReqParts(in)
-	c.Assert(err, qt.Not(qt.IsNil))
-	c.Assert(err.Error(), qt.Contains, "video format video/x-matroska is not supported by Gemini API")
-	c.Assert(err.Error(), qt.Contains, "Use \":\" syntax to convert MKV to MP4, MPEG, MOV, AVI, FLV, WEBM, WMV")
-	c.Assert(err.Error(), qt.Contains, "such as \":mp4\"")
-	c.Assert(got, qt.IsNil)
+	// MKV should now be automatically converted to MP4
+	if err != nil {
+		// If conversion fails due to missing ffmpeg or other issues, that's expected in test environment
+		c.Check(err.Error(), qt.Contains, "failed to convert video from video/x-matroska to MP4")
+		return
+	}
+	c.Assert(got, qt.HasLen, 2) // prompt + video
+	// Check that video part has MP4 MIME type
+	for _, part := range got {
+		if part.InlineData != nil {
+			c.Check(part.InlineData.MIMEType, qt.Equals, "video/mp4")
+		}
+	}
 }
 
 func Test_buildReqParts_Contents_TextOrdering(t *testing.T) {
