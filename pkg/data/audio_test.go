@@ -28,6 +28,7 @@ func TestNewAudioFromBytes(t *testing.T) {
 		{"Valid AAC audio", "small_sample.aac", "audio/aac", 1.0},
 		{"Valid FLAC audio", "small_sample.flac", "audio/flac", 1.0},
 		{"Valid M4A audio", "small_sample.m4a", "audio/mp4", 1.0},
+		{"Valid M4A audio (non-standard MIME)", "small_sample.m4a", "audio/x-m4a", 1.0},
 		{"Valid WMA audio", "small_sample.wma", "audio/x-ms-wma", 1.0},
 		{"Valid AIFF audio", "small_sample.aiff", "audio/aiff", 1.0},
 		{"Invalid file type", "sample_640_426.png", "", 0.0},
@@ -104,6 +105,7 @@ func TestAudioProperties(t *testing.T) {
 		{"AAC audio", "small_sample.aac", "audio/aac", 1.0},
 		{"FLAC audio", "small_sample.flac", "audio/flac", 1.0},
 		{"M4A audio", "small_sample.m4a", "audio/mp4", 1.0},
+		{"M4A audio (non-standard MIME)", "small_sample.m4a", "audio/x-m4a", 1.0},
 		{"WMA audio", "small_sample.wma", "audio/x-ms-wma", 1.0},
 		{"AIFF audio", "small_sample.aiff", "audio/aiff", 1.0},
 	}
@@ -191,6 +193,7 @@ func TestNewAudioFromBytesUnified(t *testing.T) {
 		{"AAC as unified", "small_sample.aac", "audio/aac", 1.0},
 		{"FLAC as unified", "small_sample.flac", "audio/flac", 1.0},
 		{"M4A as unified", "small_sample.m4a", "audio/mp4", 1.0},
+		{"M4A as unified (non-standard MIME)", "small_sample.m4a", "audio/x-m4a", 1.0},
 		{"WMA as unified", "small_sample.wma", "audio/x-ms-wma", 1.0},
 		{"AIFF as unified", "small_sample.aiff", "audio/aiff", 1.0},
 	}
@@ -206,10 +209,15 @@ func TestNewAudioFromBytesUnified(t *testing.T) {
 			c.Assert(audio.ContentType().String(), qt.Equals, "audio/ogg")
 			c.Assert(audio.Duration().Float64(), qt.CmpEquals(cmpopts.EquateApprox(0, 0.1)), tc.duration)
 
-			// Test as non-unified (should preserve original format)
+			// Test as non-unified (should preserve original format, but normalized)
 			audioOriginal, err := NewAudioFromBytes(audioBytes, tc.contentType, tc.filename, false)
 			c.Assert(err, qt.IsNil)
-			c.Assert(audioOriginal.ContentType().String(), qt.Equals, tc.contentType)
+			expectedContentType := tc.contentType
+			// Handle MIME type normalization for non-standard types
+			if tc.contentType == "audio/x-m4a" {
+				expectedContentType = "audio/mp4"
+			}
+			c.Assert(audioOriginal.ContentType().String(), qt.Equals, expectedContentType)
 			c.Assert(audioOriginal.Duration().Float64(), qt.CmpEquals(cmpopts.EquateApprox(0, 0.1)), tc.duration)
 		})
 	}
@@ -305,4 +313,55 @@ func TestAllSupportedAudioFormats(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAudioMIMETypeNormalization(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	// Test that audio/x-m4a is properly normalized to audio/mp4
+	c.Run("audio/x-m4a normalization", func(c *qt.C) {
+		audioBytes, err := os.ReadFile("testdata/small_sample.m4a")
+		c.Assert(err, qt.IsNil)
+
+		// Create audio with non-standard MIME type
+		audioXM4A, err := NewAudioFromBytes(audioBytes, "audio/x-m4a", "test.m4a", false)
+		c.Assert(err, qt.IsNil)
+
+		// Create audio with standard MIME type
+		audioMP4, err := NewAudioFromBytes(audioBytes, "audio/mp4", "test.m4a", false)
+		c.Assert(err, qt.IsNil)
+
+		// Both should have the same normalized content type
+		c.Assert(audioXM4A.ContentType().String(), qt.Equals, "audio/mp4")
+		c.Assert(audioMP4.ContentType().String(), qt.Equals, "audio/mp4")
+		c.Assert(audioXM4A.ContentType().String(), qt.Equals, audioMP4.ContentType().String())
+
+		// Both should have the same duration and properties
+		c.Assert(audioXM4A.Duration().Float64(), qt.CmpEquals(cmpopts.EquateApprox(0, 0.1)), audioMP4.Duration().Float64())
+		c.Assert(audioXM4A.SampleRate().Integer(), qt.Equals, audioMP4.SampleRate().Integer())
+	})
+
+	// Test that audio/mp3 is properly normalized to audio/mpeg
+	c.Run("audio/mp3 normalization", func(c *qt.C) {
+		audioBytes, err := os.ReadFile("testdata/small_sample.mp3")
+		c.Assert(err, qt.IsNil)
+
+		// Create audio with non-standard MIME type
+		audioMP3, err := NewAudioFromBytes(audioBytes, "audio/mp3", "test.mp3", false)
+		c.Assert(err, qt.IsNil)
+
+		// Create audio with standard MIME type
+		audioMPEG, err := NewAudioFromBytes(audioBytes, "audio/mpeg", "test.mp3", false)
+		c.Assert(err, qt.IsNil)
+
+		// Both should have the same normalized content type
+		c.Assert(audioMP3.ContentType().String(), qt.Equals, "audio/mpeg")
+		c.Assert(audioMPEG.ContentType().String(), qt.Equals, "audio/mpeg")
+		c.Assert(audioMP3.ContentType().String(), qt.Equals, audioMPEG.ContentType().String())
+
+		// Both should have the same duration and properties
+		c.Assert(audioMP3.Duration().Float64(), qt.CmpEquals(cmpopts.EquateApprox(0, 0.1)), audioMPEG.Duration().Float64())
+		c.Assert(audioMP3.SampleRate().Integer(), qt.Equals, audioMPEG.SampleRate().Integer())
+	})
 }

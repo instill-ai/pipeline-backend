@@ -333,3 +333,77 @@ func TestAllSupportedVideoFormats(t *testing.T) {
 		})
 	}
 }
+
+func TestVideoMIMETypeNormalization(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	// Test that video/mov is properly normalized to video/quicktime
+	c.Run("video/mov normalization", func(c *qt.C) {
+		videoBytes, err := os.ReadFile("testdata/small_sample.mov")
+		c.Assert(err, qt.IsNil)
+
+		// Create video with non-standard MIME type
+		videoMOV, err := NewVideoFromBytes(videoBytes, "video/mov", "test.mov", false)
+		c.Assert(err, qt.IsNil)
+
+		// Create video with standard MIME type
+		videoQuicktime, err := NewVideoFromBytes(videoBytes, "video/quicktime", "test.mov", false)
+		c.Assert(err, qt.IsNil)
+
+		// Both should have the same normalized content type
+		c.Assert(videoMOV.ContentType().String(), qt.Equals, "video/quicktime")
+		c.Assert(videoQuicktime.ContentType().String(), qt.Equals, "video/quicktime")
+		c.Assert(videoMOV.ContentType().String(), qt.Equals, videoQuicktime.ContentType().String())
+
+		// Both should have the same properties
+		c.Assert(videoMOV.Width().Integer(), qt.Equals, videoQuicktime.Width().Integer())
+		c.Assert(videoMOV.Height().Integer(), qt.Equals, videoQuicktime.Height().Integer())
+	})
+
+	// Test that video/avi is properly normalized to video/x-msvideo
+	c.Run("video/avi normalization", func(c *qt.C) {
+		videoBytes, err := os.ReadFile("testdata/small_sample.avi")
+		c.Assert(err, qt.IsNil)
+
+		// Create video with non-standard MIME type
+		videoAVI, err := NewVideoFromBytes(videoBytes, "video/avi", "test.avi", false)
+		c.Assert(err, qt.IsNil)
+
+		// Create video with standard MIME type
+		videoXMSVideo, err := NewVideoFromBytes(videoBytes, "video/x-msvideo", "test.avi", false)
+		c.Assert(err, qt.IsNil)
+
+		// Both should have the same normalized content type
+		c.Assert(videoAVI.ContentType().String(), qt.Equals, "video/x-msvideo")
+		c.Assert(videoXMSVideo.ContentType().String(), qt.Equals, "video/x-msvideo")
+		c.Assert(videoAVI.ContentType().String(), qt.Equals, videoXMSVideo.ContentType().String())
+
+		// Both should have the same properties
+		c.Assert(videoAVI.Width().Integer(), qt.Equals, videoXMSVideo.Width().Integer())
+		c.Assert(videoAVI.Height().Integer(), qt.Equals, videoXMSVideo.Height().Integer())
+	})
+
+	// Test that video/3gpp is properly normalized to video/mp4
+	c.Run("video/3gpp normalization", func(c *qt.C) {
+		videoBytes, err := os.ReadFile("testdata/small_sample.mp4")
+		c.Assert(err, qt.IsNil)
+
+		// Create video with non-standard MIME type (3GPP)
+		video3GPP, err := NewVideoFromBytes(videoBytes, "video/3gpp", "test.3gp", false)
+		c.Assert(err, qt.IsNil)
+
+		// Create video with standard MIME type
+		videoMP4, err := NewVideoFromBytes(videoBytes, "video/mp4", "test.mp4", false)
+		c.Assert(err, qt.IsNil)
+
+		// Both should have the same normalized content type (MP4)
+		c.Assert(video3GPP.ContentType().String(), qt.Equals, "video/mp4")
+		c.Assert(videoMP4.ContentType().String(), qt.Equals, "video/mp4")
+		c.Assert(video3GPP.ContentType().String(), qt.Equals, videoMP4.ContentType().String())
+
+		// Both should have the same properties
+		c.Assert(video3GPP.Width().Integer(), qt.Equals, videoMP4.Width().Integer())
+		c.Assert(video3GPP.Height().Integer(), qt.Equals, videoMP4.Height().Integer())
+	})
+}

@@ -18,28 +18,47 @@ func encodeDataURI(b []byte, contentType string) (s string, err error) {
 	return
 }
 
-func StandardizePath(path string) (newPath string, err error) {
-	splits := strings.FieldsFunc(path, func(s rune) bool {
-		return s == '.' || s == '['
-	})
-	for _, split := range splits {
-		if strings.HasSuffix(split, "]") {
-			// Array Index
-			newPath += fmt.Sprintf("[%s", split)
-		} else {
-			// Map Key
-			newPath += fmt.Sprintf("[\"%s\"]", split)
-		}
+// normalizeMIMEType maps non-standard MIME types to their standard equivalents
+func normalizeMIMEType(contentType string) string {
+	switch contentType {
+	// Audio normalizations
+	case "audio/mp3":
+		return MP3 // Maps to "audio/mpeg"
+	case "audio/x-m4a":
+		return M4A // Maps to "audio/mp4"
+
+	// Video normalizations
+	case "video/mov":
+		return MOV // Maps to "video/quicktime"
+	case "video/avi":
+		return AVI // Maps to "video/x-msvideo"
+	case "video/wmv":
+		return WMV // Maps to "video/x-ms-wmv"
+	case "video/mpg":
+		return MPEG // Maps to "video/mpeg"
+	case "video/3gpp":
+		return MP4 // 3GPP files are typically MP4 containers
+
+	// Image normalizations
+	case "image/x-heic":
+		return HEIC // Maps to "image/heic"
+	case "image/x-heif":
+		return HEIF // Maps to "image/heif"
+
+	default:
+		return contentType
 	}
-	return newPath, err
 }
 
+// NewBinaryFromBytes creates a new binary from a byte slice.
 func NewBinaryFromBytes(b []byte, contentType, filename string) (format.Value, error) {
 	if contentType == "" {
 		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
 	} else {
 		// Normalize provided content type: strip parameters and lowercase
 		contentType = strings.ToLower(strings.TrimSpace(strings.Split(contentType, ";")[0]))
+		// Normalize non-standard MIME types to standard ones
+		contentType = normalizeMIMEType(contentType)
 	}
 
 	switch {
@@ -56,6 +75,7 @@ func NewBinaryFromBytes(b []byte, contentType, filename string) (format.Value, e
 	}
 }
 
+// NewBinaryFromURL creates a new binary from a URL.
 func NewBinaryFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, urlStr string) (format.Value, error) {
 	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, urlStr)
 	if err != nil {
@@ -83,6 +103,8 @@ func NewBinaryFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher,
 	} else {
 		// Normalize provided content type: strip parameters and lowercase
 		contentType = strings.ToLower(strings.TrimSpace(strings.Split(contentType, ";")[0]))
+		// Normalize non-standard MIME types to standard ones
+		contentType = normalizeMIMEType(contentType)
 	}
 
 	switch {
@@ -105,7 +127,9 @@ func isImageContentType(contentType string) bool {
 		contentType == GIF ||
 		contentType == BMP ||
 		contentType == WEBP ||
-		contentType == TIFF
+		contentType == TIFF ||
+		contentType == HEIC ||
+		contentType == HEIF
 }
 
 func isAudioContentType(contentType string) bool {

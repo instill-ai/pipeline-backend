@@ -13,6 +13,12 @@ RUN apt-get update && apt-get install -y \
     libleptonica-dev \
     libtesseract-dev \
     libsoxr-dev \
+    libheif-dev \
+    libde265-dev \
+    libx265-dev \
+    libaom-dev \
+    libdav1d-dev \
+    pkg-config \
     wget \
     jq \
     && rm -rf /var/lib/apt/lists/*
@@ -110,6 +116,11 @@ RUN apt update && \
     libtesseract-dev \
     libreoffice \
     libsoxr-dev \
+    libheif1 \
+    libde265-0 \
+    libx265-199 \
+    libaom3 \
+    libdav1d5 \
     chromium \
     qpdf && \
     rm -rf /var/lib/apt/lists/*

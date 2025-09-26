@@ -27,6 +27,8 @@ func TestNewImageFromBytes(t *testing.T) {
 		{"Valid GIF image", "small_sample.gif", "image/gif", 320, 240},
 		{"Valid BMP image", "small_sample.bmp", "image/bmp", 320, 240},
 		{"Valid WEBP image", "small_sample.webp", "image/webp", 320, 240},
+		{"Valid HEIC image", "small_sample.heic", "image/heic", 1280, 854},
+		{"Valid HEIF image", "small_sample.heif", "image/heif", 320, 240},
 		{"Invalid file type", "small_sample.mp3", "", 0, 0},
 		{"Empty image bytes", "", "", 0, 0},
 	}
@@ -296,4 +298,73 @@ func TestAllSupportedImageFormats(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestHEIFImageSupport(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	// Test HEIC image processing
+	c.Run("HEIC image processing", func(c *qt.C) {
+		imageBytes, err := os.ReadFile("testdata/small_sample.heic")
+		c.Assert(err, qt.IsNil)
+
+		// Test creating image from HEIC
+		image, err := NewImageFromBytes(imageBytes, "image/heic", "test.heic", false)
+		c.Assert(err, qt.IsNil)
+		c.Assert(image.ContentType().String(), qt.Equals, "image/heic")
+		c.Assert(image.Width().Integer(), qt.Equals, 1280)
+		c.Assert(image.Height().Integer(), qt.Equals, 854)
+
+		// Test conversion from HEIC to other formats
+		pngImage, err := image.Convert("image/png")
+		c.Assert(err, qt.IsNil)
+		c.Assert(pngImage.ContentType().String(), qt.Equals, "image/png")
+		c.Assert(pngImage.Width().Integer(), qt.Equals, 1280)
+		c.Assert(pngImage.Height().Integer(), qt.Equals, 854)
+
+		jpegImage, err := image.Convert("image/jpeg")
+		c.Assert(err, qt.IsNil)
+		c.Assert(jpegImage.ContentType().String(), qt.Equals, "image/jpeg")
+	})
+
+	// Test HEIF image processing
+	c.Run("HEIF image processing", func(c *qt.C) {
+		imageBytes, err := os.ReadFile("testdata/small_sample.heif")
+		c.Assert(err, qt.IsNil)
+
+		// Test creating image from HEIF
+		image, err := NewImageFromBytes(imageBytes, "image/heif", "test.heif", false)
+		c.Assert(err, qt.IsNil)
+		c.Assert(image.ContentType().String(), qt.Equals, "image/heif")
+		c.Assert(image.Width().Integer(), qt.Equals, 320)
+		c.Assert(image.Height().Integer(), qt.Equals, 240)
+
+		// Test conversion from HEIF to PNG
+		pngImage, err := image.Convert("image/png")
+		c.Assert(err, qt.IsNil)
+		c.Assert(pngImage.ContentType().String(), qt.Equals, "image/png")
+	})
+
+	// Test conversion TO HEIC/HEIF from other formats
+	c.Run("Convert to HEIC/HEIF", func(c *qt.C) {
+		// Load a JPEG image
+		jpegBytes, err := os.ReadFile("testdata/small_sample.jpeg")
+		c.Assert(err, qt.IsNil)
+
+		jpegImage, err := NewImageFromBytes(jpegBytes, "image/jpeg", "test.jpeg", false)
+		c.Assert(err, qt.IsNil)
+
+		// Convert JPEG to HEIC
+		heicImage, err := jpegImage.Convert("image/heic")
+		c.Assert(err, qt.IsNil)
+		c.Assert(heicImage.ContentType().String(), qt.Equals, "image/heic")
+		c.Assert(heicImage.Width().Integer(), qt.Equals, jpegImage.Width().Integer())
+		c.Assert(heicImage.Height().Integer(), qt.Equals, jpegImage.Height().Integer())
+
+		// Convert JPEG to HEIF
+		heifImage, err := jpegImage.Convert("image/heif")
+		c.Assert(err, qt.IsNil)
+		c.Assert(heifImage.ContentType().String(), qt.Equals, "image/heif")
+	})
 }
