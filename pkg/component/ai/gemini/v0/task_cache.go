@@ -17,6 +17,13 @@ func (e *execution) cache(ctx context.Context, job *base.Job) error {
 		return nil
 	}
 
+	// Check if operation is specified
+	if in.Operation == "" {
+		err := fmt.Errorf("caching operation is not specified")
+		job.Error.Error(ctx, err)
+		return nil
+	}
+
 	// Create Gemini client
 	client, err := e.createGeminiClient(ctx)
 	if err != nil {
