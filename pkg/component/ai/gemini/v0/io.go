@@ -127,3 +127,17 @@ type TaskCacheOutput struct {
 	CachedContents []*genai.CachedContent `instill:"cached-contents"`
 	NextPageToken  *string                `instill:"next-page-token"`
 }
+
+// TaskTextEmbeddingsInput is the input for the TASK_TEXT_EMBEDDINGS task.
+type TaskTextEmbeddingsInput struct {
+	Model                string `instill:"model"`
+	Text                 string `instill:"text"`
+	TaskType             string `instill:"task-type"`
+	Title                string `instill:"title"`
+	OutputDimensionality *int32 `instill:"output-dimensionality"`
+}
+
+// TaskTextEmbeddingsOutput is the output for the TASK_TEXT_EMBEDDINGS task.
+type TaskTextEmbeddingsOutput struct {
+	Embedding []float64 `instill:"embedding"`
+}

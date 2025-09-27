@@ -1,6 +1,7 @@
 availableTasks:
   - TASK_CHAT
   - TASK_CACHE
+  - TASK_TEXT_EMBEDDINGS
 custom: false
 icon: assets/gemini.svg
 iconUrl: ""

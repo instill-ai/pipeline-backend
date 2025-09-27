@@ -9,6 +9,7 @@ The Gemini component is an AI component that allows users to connect to Google's
 It can carry out the following tasks:
 - [Chat](#chat)
 - [Cache](#cache)
+- [Text Embeddings](#text-embeddings)
 
 ## Release Stage
 
@@ -60,8 +61,8 @@ Gemini's multimodal models understand text and images. They generate text output
 | [Chat History](#chat-chat-history) | `chat-history` | array[object] | Conversation history, each message includes a role and content. |
 | Max Output Token | `max-output-tokens` | integer | The maximum number of tokens to generate in the model output. |
 | Temperature | `temperature` | number | A parameter that controls the randomness and creativity of a large language model's output by adjusting the probability of the next word it chooses. A low temperature (e.g., near 0) produces more deterministic, focused, and consistent text, while a high temperature (e.g., near 1) leads to more creative, random, and varied output. |
-| Top-P | `top-p` | number | A parameter, also known as nucleus sampling, that controls the randomness and creativity of  the generated text by selecting a dynamic subset of tokens. It works by sorting all possible  next tokens by their probability, and then summing their probabilities from highest to lowest  until the cumulative sum reaches the specified `top-p` value (a number between 0 and 1). The model then randomly selects the next token only from this "nucleus" of high-probability  tokens. A higher `top-p` value creates a larger, more diverse set of possible words, leading  to more creative and potentially unpredictable output, while a lower `top-p` value restricts  the choice to a smaller, more focused set of highly probable words, resulting in more factual  and conservative output. |
 | Top-K | `top-k` | integer | A text generation parameter that limits the selection of the next token to the K most probable tokens,  discarding the rest to control randomness and maintain coherence. By specifying a fixed number of top tokens,  `top-k` acts as a "safety net," preventing nonsensical choices, but a small K can also stifle creativity  and lead to repetitive outputs. It is often used in conjunction with other parameters like temperature and  `top-p` to fine-tune the LLM's output.  Note that OpenAI and Mistral models don't have the `top-k` exposed. |
+| Top-P | `top-p` | number | A parameter, also known as nucleus sampling, that controls the randomness and creativity of  the generated text by selecting a dynamic subset of tokens. It works by sorting all possible  next tokens by their probability, and then summing their probabilities from highest to lowest  until the cumulative sum reaches the specified `top-p` value (a number between 0 and 1). The model then randomly selects the next token only from this "nucleus" of high-probability  tokens. A higher `top-p` value creates a larger, more diverse set of possible words, leading  to more creative and potentially unpredictable output, while a lower `top-p` value restricts  the choice to a smaller, more focused set of highly probable words, resulting in more factual  and conservative output. |
 | Seed | `seed` | integer | A random seed used to control the stochasticity of text generation to produce repeatable outputs |
 | [Contents](#chat-contents) | `contents` | array[object] | The input contents to the model. Each item represents a user or model turn composed of parts (text or images). |
 | [Tools](#chat-tools) | `tools` | array[object] | Tools available to the model, e.g., function declarations. |
@@ -520,9 +521,8 @@ Config for thinking features.
 | :--- | :--- | :--- | :--- |
 | Texts (optional) | `texts` | array[string] | Simplified text output extracted from candidates. Each string represents the concatenated text content  from the corresponding candidate's parts, including thought processes when `include-thoughts` is enabled. This field provides easy access to the generated text without needing to traverse the candidate structure.  Updated in real-time during streaming. |
 | Images (optional) | `images` | array[image/webp] | Images output extracted and converted from candidates. This field provides easy access to the generated images as base64-encoded strings. The original binary data is removed from the candidates field to prevent raw binary exposure in JSON output.  This field is only available when the model supports image generation. |
-| Usage (optional) | `usage` | object | Token usage statistics: prompt tokens, completion tokens, total tokens, etc. |
+| [Usage](#chat-usage) (optional) | `usage` | object | Token usage statistics: prompt tokens, completion tokens, total tokens, etc. This field is a proxy of the original usage-metadata field in Gemini API. |
 | [Candidates](#chat-candidates) (optional) | `candidates` | array[object] | Complete candidate objects from the model containing rich metadata and structured content.  Each candidate includes safety ratings, finish reason, token counts, citations, content parts  (including thought processes when include-thoughts is enabled), and other detailed information.  This provides full access to all response data beyond just text. Updated incrementally during  streaming with accumulated content and latest metadata. |
-| [Usage Metadata](#chat-usage-metadata) (optional) | `usage-metadata` | object | Metadata on the generation request's token usage. |
 | [Prompt Feedback](#chat-prompt-feedback) (optional) | `prompt-feedback` | object | Feedback on the prompt including any safety blocking information. |
 | Model Version (optional) | `model-version` | string | The model version used to generate the response. |
 | Response ID (optional) | `response-id` | string | Identifier for this response. |
@@ -532,6 +532,69 @@ Config for thinking features.
 
 <details>
 <summary> Output Objects in Chat</summary>
+
+<h4 id="chat-usage">Usage</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Cache Tokens Details](#chat-cache-tokens-details) | `cache-tokens-details` | array | Output only. List of modalities of the cached content in the request input. |
+| Cached Content Token Count | `cached-content-token-count` | integer | Number of tokens in the cached part of the prompt (the cached content) |
+| Candidates Token Count | `candidates-token-count` | integer | Total number of tokens across all the generated response candidates. |
+| [Candidates Tokens Details](#chat-candidates-tokens-details) | `candidates-tokens-details` | array | List of modalities that were returned in the response. |
+| Prompt Token Count | `prompt-token-count` | integer | Number of tokens in the prompt. When cachedContent is set, this is still the total effective prompt size meaning this includes the number of tokens in the cached content. |
+| [Prompt Tokens Details](#chat-prompt-tokens-details) | `prompt-tokens-details` | array | List of modalities that were processed in the request input. |
+| Thoughts Token Count | `thoughts-token-count` | integer | Number of tokens of thoughts for thinking models. |
+| Tool-use Prompt Token Count | `tool-use-prompt-token-count` | integer | Number of tokens present in tool-use prompt(s). |
+| [Tool-use Prompt Tokens Details](#chat-tool-use-prompt-tokens-details) | `tool-use-prompt-tokens-details` | array | List of modalities that were processed for tool-use request inputs. |
+| Total Token Count | `total-token-count` | integer | Total token count for the generation request (prompt + response candidates). |
+
+</div>
+
+<h4 id="chat-prompt-tokens-details">Prompt Tokens Details</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Modality | `modality` | string | Content Part modality. Indicates the media type of a content part. The value is one of the following:   `MODALITY_UNSPECIFIED`:	Unspecified modality.   `TEXT`:	Plain text.   `IMAGE`:	Image.   `VIDEO`:	Video.   `AUDIO`:	Audio.   `DOCUMENT`:	Document, e.g. PDF. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MODALITY_UNSPECIFIED`</li><li>`TEXT`</li><li>`IMAGE`</li><li>`VIDEO`</li><li>`AUDIO`</li><li>`DOCUMENT`</li></ul></details> |
+| Token Count | `token-count` | integer | Number of tokens. |
+
+</div>
+
+<h4 id="chat-cache-tokens-details">Cache Tokens Details</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Modality | `modality` | string | Content Part modality. Indicates the media type of a content part. The value is one of the following:   `MODALITY_UNSPECIFIED`:	Unspecified modality.   `TEXT`:	Plain text.   `IMAGE`:	Image.   `VIDEO`:	Video.   `AUDIO`:	Audio.   `DOCUMENT`:	Document, e.g. PDF. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MODALITY_UNSPECIFIED`</li><li>`TEXT`</li><li>`IMAGE`</li><li>`VIDEO`</li><li>`AUDIO`</li><li>`DOCUMENT`</li></ul></details> |
+| Token Count | `token-count` | integer | Number of tokens. |
+
+</div>
+
+<h4 id="chat-candidates-tokens-details">Candidates Tokens Details</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Modality | `modality` | string | Content Part modality. Indicates the media type of a content part. The value is one of the following:   `MODALITY_UNSPECIFIED`:	Unspecified modality.   `TEXT`:	Plain text.   `IMAGE`:	Image.   `VIDEO`:	Video.   `AUDIO`:	Audio.   `DOCUMENT`:	Document, e.g. PDF. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MODALITY_UNSPECIFIED`</li><li>`TEXT`</li><li>`IMAGE`</li><li>`VIDEO`</li><li>`AUDIO`</li><li>`DOCUMENT`</li></ul></details> |
+| Token Count | `token-count` | integer | Number of tokens. |
+
+</div>
+
+<h4 id="chat-tool-use-prompt-tokens-details">Tool Use Prompt Tokens Details</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Modality | `modality` | string | Content Part modality. Indicates the media type of a content part. The value is one of the following:   `MODALITY_UNSPECIFIED`:	Unspecified modality.   `TEXT`:	Plain text.   `IMAGE`:	Image.   `VIDEO`:	Video.   `AUDIO`:	Audio.   `DOCUMENT`:	Document, e.g. PDF. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MODALITY_UNSPECIFIED`</li><li>`TEXT`</li><li>`IMAGE`</li><li>`VIDEO`</li><li>`AUDIO`</li><li>`DOCUMENT`</li></ul></details> |
+| Token Count | `token-count` | integer | Number of tokens. |
+
+</div>
 
 <h4 id="chat-candidates">Candidates</h4>
 
@@ -826,69 +889,6 @@ Config for thinking features.
 
 </div>
 
-<h4 id="chat-usage-metadata">Usage Metadata</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Cache Tokens Details](#chat-cache-tokens-details) | `cache-tokens-details` | array | Output only. List of modalities of the cached content in the request input. |
-| Cached Content Token Count | `cached-content-token-count` | integer | Number of tokens in the cached part of the prompt (the cached content) |
-| Candidates Token Count | `candidates-token-count` | integer | Total number of tokens across all the generated response candidates. |
-| [Candidates Tokens Details](#chat-candidates-tokens-details) | `candidates-tokens-details` | array | List of modalities that were returned in the response. |
-| Prompt Token Count | `prompt-token-count` | integer | Number of tokens in the prompt. When cachedContent is set, this is still the total effective prompt size meaning this includes the number of tokens in the cached content. |
-| [Prompt Tokens Details](#chat-prompt-tokens-details) | `prompt-tokens-details` | array | List of modalities that were processed in the request input. |
-| Thoughts Token Count | `thoughts-token-count` | integer | Number of tokens of thoughts for thinking models. |
-| Tool-use Prompt Token Count | `tool-use-prompt-token-count` | integer | Number of tokens present in tool-use prompt(s). |
-| [Tool-use Prompt Tokens Details](#chat-tool-use-prompt-tokens-details) | `tool-use-prompt-tokens-details` | array | List of modalities that were processed for tool-use request inputs. |
-| Total Token Count | `total-token-count` | integer | Total token count for the generation request (prompt + response candidates). |
-
-</div>
-
-<h4 id="chat-prompt-tokens-details">Prompt Tokens Details</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Modality | `modality` | string | Content Part modality. Indicates the media type of a content part. The value is one of the following:   `MODALITY_UNSPECIFIED`:	Unspecified modality.   `TEXT`:	Plain text.   `IMAGE`:	Image.   `VIDEO`:	Video.   `AUDIO`:	Audio.   `DOCUMENT`:	Document, e.g. PDF. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MODALITY_UNSPECIFIED`</li><li>`TEXT`</li><li>`IMAGE`</li><li>`VIDEO`</li><li>`AUDIO`</li><li>`DOCUMENT`</li></ul></details> |
-| Token Count | `token-count` | integer | Number of tokens. |
-
-</div>
-
-<h4 id="chat-cache-tokens-details">Cache Tokens Details</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Modality | `modality` | string | Content Part modality. Indicates the media type of a content part. The value is one of the following:   `MODALITY_UNSPECIFIED`:	Unspecified modality.   `TEXT`:	Plain text.   `IMAGE`:	Image.   `VIDEO`:	Video.   `AUDIO`:	Audio.   `DOCUMENT`:	Document, e.g. PDF. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MODALITY_UNSPECIFIED`</li><li>`TEXT`</li><li>`IMAGE`</li><li>`VIDEO`</li><li>`AUDIO`</li><li>`DOCUMENT`</li></ul></details> |
-| Token Count | `token-count` | integer | Number of tokens. |
-
-</div>
-
-<h4 id="chat-candidates-tokens-details">Candidates Tokens Details</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Modality | `modality` | string | Content Part modality. Indicates the media type of a content part. The value is one of the following:   `MODALITY_UNSPECIFIED`:	Unspecified modality.   `TEXT`:	Plain text.   `IMAGE`:	Image.   `VIDEO`:	Video.   `AUDIO`:	Audio.   `DOCUMENT`:	Document, e.g. PDF. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MODALITY_UNSPECIFIED`</li><li>`TEXT`</li><li>`IMAGE`</li><li>`VIDEO`</li><li>`AUDIO`</li><li>`DOCUMENT`</li></ul></details> |
-| Token Count | `token-count` | integer | Number of tokens. |
-
-</div>
-
-<h4 id="chat-tool-use-prompt-tokens-details">Tool Use Prompt Tokens Details</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Modality | `modality` | string | Content Part modality. Indicates the media type of a content part. The value is one of the following:   `MODALITY_UNSPECIFIED`:	Unspecified modality.   `TEXT`:	Plain text.   `IMAGE`:	Image.   `VIDEO`:	Video.   `AUDIO`:	Audio.   `DOCUMENT`:	Document, e.g. PDF. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MODALITY_UNSPECIFIED`</li><li>`TEXT`</li><li>`IMAGE`</li><li>`VIDEO`</li><li>`AUDIO`</li><li>`DOCUMENT`</li></ul></details> |
-| Token Count | `token-count` | integer | Number of tokens. |
-
-</div>
-
 <h4 id="chat-prompt-feedback">Prompt Feedback</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -937,7 +937,7 @@ Context caching allows you to cache input tokens and reference them in subsequen
 | [Contents](#cache-contents) | `contents` | array[object] | The input contents to cache for create operations. Each item represents a user or model turn composed of parts (text or images). This is the main content that will be cached for reuse in subsequent requests. |
 | [Tools](#cache-tools) | `tools` | array[object] | [**CREATE**] Optional. Tools available to the model for create operations, e.g., function declarations. |
 | [Tool Config](#cache-tool-config) | `tool-config` | object | Configuration for tool usage and function calling. |
-| Ttl | `ttl` | string | [**CREATE**, **UPDATE**] Time to live duration for the cached content in Google Duration format. A duration in seconds with up to nine fractional digits, ending with 's'. Example: "3.5s". Must be at least 60 seconds. Maximum is 7 days (604800 seconds). |
+| TTL | `ttl` | string | [**CREATE**, **UPDATE**] Time to live duration for the cached content in Google Duration format. A duration in seconds with up to nine fractional digits, ending with 's'. Example: "3.5s". Must be at least 60 seconds. Maximum is 7 days (604800 seconds). |
 | Expire Time | `expire-time` | string | [**CREATE**, **UPDATE**] Absolute expiration time for the cached content in RFC3339 format. Uses RFC 3339, where generated output will always be Z-normalized and use 0, 3, 6 or 9 fractional digits. Examples: "2014-10-02T15:01:23Z", "2014-10-02T15:01:23.045123456Z" or "2014-10-02T15:01:23+05:30". |
 | Page Size | `page-size` | integer | [**LIST**] Optional. The maximum number of cached contents to return for list operations. Default is 50. |
 | Page Token | `page-token` | string | [**LIST**] Optional. A page token from a previous list operation for pagination. |
@@ -1304,7 +1304,35 @@ Configuration for specifying function calling behavior.
 </div>
 </details>
 
+
+### Text Embeddings
+
+Turn text into numbers, unlocking use cases like search.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
+| Model (required) | `model` | string | The Gemini embedding model, gemini-embedding-001, is trained using the Matryoshka Representation Learning (MRL)  technique which teaches a model to learn high-dimensional embeddings that have initial segments (or prefixes)  which are also useful, simpler versions of the same data. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`gemini-embedding-001`</li></ul></details> |
+| Text (required) | `text` | string | The text to generate embeddings for. |
+| Task Type (required) | `task-type` | string | The type of task to perform for optimal embedding generation. The value is one of the following:   `SEMANTIC_SIMILARITY`: (Default) Embeddings optimized to assess text similarity. Examples: Recommendation systems, duplicate detection.   `CLASSIFICATION`: Embeddings optimized to classify texts according to preset labels. Examples: Sentiment analysis, spam detection.   `CLUSTERING`: Embeddings optimized to group similar texts together. Examples: Document organization, market research, anomaly detection.   `RETRIEVAL_DOCUMENT`: Embeddings optimized for document search. Examples: Indexing articles, books, or web pages for search.   `RETRIEVAL_QUERY`: Embeddings optimized for general search queries. Use `RETRIEVAL_QUERY` for queries; `RETRIEVAL_DOCUMENT` for documents to be retrieved. Examples: General search queries for custom search applications.   `CODE_RETRIEVAL_QUERY`: Embeddings optimized for retrieval of code blocks based on natural language queries. Use `CODE_RETRIEVAL_QUERY` for queries; `RETRIEVAL_DOCUMENT` for code blocks to be retrieved. Examples: Natural language queries about code for code suggestions and search.   `QUESTION_ANSWERING`: Embeddings for questions in a question-answering system, optimized for finding documents that answer the question. Use `QUESTION_ANSWERING` for questions; `RETRIEVAL_DOCUMENT` for documents to be retrieved. Examples: Questions in Q&A systems, chatbots, knowledge bases.   `FACT_VERIFICATION`: Embeddings for statements that need to be verified, optimized for retrieving documents that contain evidence supporting or refuting the statement. Use `FACT_VERIFICATION` for the target text; `RETRIEVAL_DOCUMENT` for documents to be retrieved. Examples: Statements that need verification for automated fact-checking systems. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`SEMANTIC_SIMILARITY`</li><li>`CLASSIFICATION`</li><li>`CLUSTERING`</li><li>`RETRIEVAL_DOCUMENT`</li><li>`RETRIEVAL_QUERY`</li><li>`CODE_RETRIEVAL_QUERY`</li><li>`QUESTION_ANSWERING`</li><li>`FACT_VERIFICATION`</li></ul></details> |
+| Title | `title` | string | Title for the text. Only applicable when TaskType is `RETRIEVAL_DOCUMENT`. |
+| Output Dimensionality | `output-dimensionality` | integer | Use this parameter to control the size of the output embedding vector. Selecting a smaller  output dimensionality can save storage space and increase computational efficiency for  downstream applications, while sacrificing little in terms of quality. By default, it  outputs a 3072-dimensional embedding, but you can truncate it to a smaller size without  losing quality to save storage space. We recommend using 768, 1536, or 3072 output dimensions. |
+
+</div>
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | Field ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Embedding | `embedding` | array[number] | The embedding of the text. |
+
+</div>
 ## Example Recipes
+
+### Chat with multimodality inputs
 
 ```yaml
 version: v1beta
@@ -1363,4 +1391,56 @@ output:
   response-id:
     title: response-id
     value: ${gemini.output.response-id}
+```
+
+### Cache a document
+
+```yaml
+version: v1beta
+component:
+  gemini:
+    type: gemini
+    task: TASK_CACHE
+    input:
+      model: gemini-2.5-flash
+      operation: create
+      ttl: 60s
+      documents:
+        - ${variable.document}
+      system-message: You are a helpful assistant.
+variable:
+  document:
+    title: Document
+    description: Document to convert to Markdown
+    type: document
+  stream:
+    title: Enable Stream
+    description: whether to enable streaming
+    type: boolean
+output:
+  cached-content:
+    title: cached content
+    value: ${gemini.output.cached-content}
+```
+
+### Embed a text input
+
+```yaml
+version: v1beta
+component:
+  gemini:
+    type: gemini
+    task: TASK_TEXT_EMBEDDINGS
+    input:
+      model: gemini-embedding-001
+      text: ${variable.text}
+variable:
+  text:
+    title: Text
+    description: Text to embed
+    type: string
+output:
+  embedding:
+    title: Embedding result
+    value: ${gemini.output.embedding}
 ```
