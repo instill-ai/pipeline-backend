@@ -13,11 +13,13 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/resources/schemas"
 )
 
 const (
-	ChatTask  = "TASK_CHAT"
-	CacheTask = "TASK_CACHE"
+	ChatTask           = "TASK_CHAT"
+	CacheTask          = "TASK_CACHE"
+	TextEmbeddingsTask = "TASK_TEXT_EMBEDDINGS"
 
 	cfgAPIKey = "api-key"
 )
@@ -45,7 +47,10 @@ type component struct {
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionYAML, setupYAML, tasksYAML, nil, nil)
+		additionalYAMLBytes := map[string][]byte{
+			"schema.yaml": schemas.SchemaYAML,
+		}
+		err := comp.LoadDefinition(definitionYAML, setupYAML, tasksYAML, nil, additionalYAMLBytes)
 		if err != nil {
 			panic(err)
 		}
@@ -82,6 +87,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 		e.execute = e.chat
 	case CacheTask:
 		e.execute = e.cache
+	case TextEmbeddingsTask:
+		e.execute = e.textEmbeddings
 	default:
 		return nil, fmt.Errorf("unsupported task")
 	}

@@ -1,5 +1,7 @@
 ## Example Recipes
 
+### Chat with multimodality inputs
+
 ```yaml
 version: v1beta
 component:
@@ -57,4 +59,56 @@ output:
   response-id:
     title: response-id
     value: ${gemini.output.response-id}
+```
+
+### Cache a document
+
+```yaml
+version: v1beta
+component:
+  gemini:
+    type: gemini
+    task: TASK_CACHE
+    input:
+      model: gemini-2.5-flash
+      operation: create
+      ttl: 60s
+      documents:
+        - ${variable.document}
+      system-message: You are a helpful assistant.
+variable:
+  document:
+    title: Document
+    description: Document to convert to Markdown
+    type: document
+  stream:
+    title: Enable Stream
+    description: whether to enable streaming
+    type: boolean
+output:
+  cached-content:
+    title: cached content
+    value: ${gemini.output.cached-content}
+```
+
+### Embed a text input
+
+```yaml
+version: v1beta
+component:
+  gemini:
+    type: gemini
+    task: TASK_TEXT_EMBEDDINGS
+    input:
+      model: gemini-embedding-001
+      text: ${variable.text}
+variable:
+  text:
+    title: Text
+    description: Text to embed
+    type: string
+output:
+  embedding:
+    title: Embedding result
+    value: ${gemini.output.embedding}
 ```

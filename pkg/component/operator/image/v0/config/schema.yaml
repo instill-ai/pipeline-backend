@@ -35,7 +35,7 @@ $defs:
       items:
         properties:
           content:
-            $ref: '#/$defs/instill-types/multi-modal-content'
+            $ref: "#/$defs/instill-types/multi-modal-content"
             description: The message content
             uiOrder: 1
             title: Content
@@ -84,7 +84,7 @@ $defs:
             additionalProperties: false
             properties:
               bounding-box:
-                $ref: '#/$defs/instill-types/bounding-box'
+                $ref: "#/$defs/instill-types/bounding-box"
                 uiOrder: 1
                 title: Bounding box
               category:
@@ -109,11 +109,12 @@ $defs:
         - objects
       type: object
     embedding:
-      items:
-        title: Embedding
-        type: number
+      uiOrder: 0
       title: Embedding
+      description: Embedding vector of the input modality.
       type: array
+      items:
+        type: number
     instance-segmentation:
       additionalProperties: false
       properties:
@@ -123,7 +124,7 @@ $defs:
           items:
             properties:
               bounding-box:
-                $ref: '#/$defs/instill-types/bounding-box'
+                $ref: "#/$defs/instill-types/bounding-box"
                 uiOrder: 1
                 title: Bounding Box
               category:
@@ -162,7 +163,7 @@ $defs:
           items:
             properties:
               bounding-box:
-                $ref: '#/$defs/instill-types/bounding-box'
+                $ref: "#/$defs/instill-types/bounding-box"
                 uiOrder: 2
                 title: Bounding Box
               keypoints:
@@ -252,7 +253,7 @@ $defs:
           items:
             properties:
               bounding-box:
-                $ref: '#/$defs/instill-types/bounding-box'
+                $ref: "#/$defs/instill-types/bounding-box"
                 uiOrder: 0
                 title: Bounding Box
               score:
