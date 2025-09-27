@@ -1968,3 +1968,96 @@ TASK_CACHE:
         description: >-
           [**LIST**] Token for retrieving the next page of results for list operations.
         type: string
+TASK_TEXT_EMBEDDINGS:
+  shortDescription: Turn text into numbers, unlocking use cases like search.
+  input:
+    uiOrder: 0
+    title: Input
+    description: Input schema of the text embeddings task.
+    type: object
+    required:
+      - text
+      - model
+      - task-type
+    properties:
+      model:
+        uiOrder: 0
+        title: Model
+        shortDescription: ID of the model to use
+        description: >
+          The Gemini embedding model, gemini-embedding-001, is trained using the Matryoshka Representation Learning (MRL)  technique which teaches a model
+          to learn high-dimensional embeddings that have initial segments (or prefixes)  which are also useful, simpler versions of the same data.
+        type: string
+        enum:
+          - gemini-embedding-001
+        instillCredentialMap:
+          values:
+            - gemini-embedding-001
+          targets:
+            - setup.api-key
+      text:
+        uiOrder: 1
+        title: Text
+        description: The text to generate embeddings for.
+        type: string
+      task-type:
+        uiOrder: 2
+        title: Task Type
+        description: >-
+          The type of task to perform for optimal embedding generation.
+          The value is one of the following:
+            `SEMANTIC_SIMILARITY`: (Default) Embeddings optimized to assess text similarity. Examples: Recommendation systems, duplicate detection.
+            `CLASSIFICATION`: Embeddings optimized to classify texts according to preset labels. Examples: Sentiment analysis, spam detection.
+            `CLUSTERING`: Embeddings optimized to group similar texts together. Examples: Document organization, market research, anomaly detection.
+            `RETRIEVAL_DOCUMENT`: Embeddings optimized for document search. Examples: Indexing articles, books, or web pages for search.
+            `RETRIEVAL_QUERY`: Embeddings optimized for general search queries. Use `RETRIEVAL_QUERY` for queries; `RETRIEVAL_DOCUMENT` for documents to
+          be retrieved. Examples: General search queries for custom search applications.
+            `CODE_RETRIEVAL_QUERY`: Embeddings optimized for retrieval of code blocks based on natural language queries. Use `CODE_RETRIEVAL_QUERY` for
+          queries; `RETRIEVAL_DOCUMENT` for code blocks to be retrieved. Examples: Natural language queries about code for code suggestions and search.
+            `QUESTION_ANSWERING`: Embeddings for questions in a question-answering system, optimized for finding documents that answer the question. Use
+          `QUESTION_ANSWERING` for questions; `RETRIEVAL_DOCUMENT` for documents to be retrieved. Examples: Questions in Q&A systems, chatbots, knowledge
+          bases.
+            `FACT_VERIFICATION`: Embeddings for statements that need to be verified, optimized for retrieving documents that contain evidence supporting
+          or refuting the statement. Use `FACT_VERIFICATION` for the target text; `RETRIEVAL_DOCUMENT` for documents to be retrieved. Examples: Statements
+          that need verification for automated fact-checking systems.
+        type: string
+        enum:
+          - SEMANTIC_SIMILARITY
+          - CLASSIFICATION
+          - CLUSTERING
+          - RETRIEVAL_DOCUMENT
+          - RETRIEVAL_QUERY
+          - CODE_RETRIEVAL_QUERY
+          - QUESTION_ANSWERING
+          - FACT_VERIFICATION
+        default: SEMANTIC_SIMILARITY
+      title:
+        uiOrder: 3
+        title: Title
+        description: >-
+          Title for the text. Only applicable when TaskType is `RETRIEVAL_DOCUMENT`.
+        type: string
+      output-dimensionality:
+        uiOrder: 4
+        title: Output Dimensionality
+        description: >-
+          Use this parameter to control the size of the output embedding vector. Selecting a smaller  output dimensionality can save storage space and increase
+          computational efficiency for  downstream applications, while sacrificing little in terms of quality. By default, it  outputs a 3072-dimensional
+          embedding, but you can truncate it to a smaller size without  losing quality to save storage space. We recommend using 768, 1536, or 3072 output
+          dimensions.
+        type: integer
+        minimum: 1
+        maximum: 3072
+  output:
+    uiOrder: 0
+    title: Output
+    description: Output schema of the text embeddings task.
+    type: object
+    required:
+      - embedding
+    properties:
+      embedding:
+        uiOrder: 0
+        title: Embedding
+        description: The embedding of the text.
+        $ref: schema.yaml#/$defs/instill-types/embedding
