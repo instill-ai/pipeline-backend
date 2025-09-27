@@ -28,15 +28,6 @@ func NewURLValidator() URLValidator {
 	return &urlValidator{allowPrivateIPs: false}
 }
 
-// NewTestURLValidator creates a validator for testing
-func NewTestURLValidator(whitelistedEndpoints []string, allowLocalhost bool) URLValidator {
-	return &urlValidator{
-		whitelistedEndpoints: whitelistedEndpoints,
-		allowLocalhost:       allowLocalhost,
-		allowPrivateIPs:      true, // Test mode allows external URLs by default
-	}
-}
-
 // ValidateInput implements the consolidated validation logic
 func (v *urlValidator) ValidateInput(input *httpInput) error {
 	if input == nil {

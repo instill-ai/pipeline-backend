@@ -83,21 +83,6 @@ func Init(bc base.Component) *component {
 	return comp
 }
 
-// InitForTest creates a component instance for testing with configurable validation
-// whitelist: URLs to allow (nil/empty = allow all external URLs)
-// allowLocalhost: whether to allow localhost/127.x.x.x URLs
-func InitForTest(bc base.Component, whitelist []string, allowLocalhost bool) *component {
-	c := &component{
-		Component:    bc,
-		urlValidator: NewTestURLValidator(whitelist, allowLocalhost),
-	}
-	err := c.LoadDefinition(definitionYAML, setupYAML, tasksYAML, nil, nil)
-	if err != nil {
-		panic(err)
-	}
-	return c
-}
-
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 
 	// We may have different url in batch.

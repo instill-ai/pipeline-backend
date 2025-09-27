@@ -8,6 +8,30 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
+// NewTestURLValidator creates a validator for testing
+func NewTestURLValidator(whitelistedEndpoints []string, allowLocalhost bool) URLValidator {
+	return &urlValidator{
+		whitelistedEndpoints: whitelistedEndpoints,
+		allowLocalhost:       allowLocalhost,
+		allowPrivateIPs:      true, // Test mode allows external URLs by default
+	}
+}
+
+// InitForTest creates a component instance for testing with configurable validation
+// whitelist: URLs to allow (nil/empty = allow all external URLs)
+// allowLocalhost: whether to allow localhost/127.x.x.x URLs
+func InitForTest(bc base.Component, whitelist []string, allowLocalhost bool) *component {
+	c := &component{
+		Component:    bc,
+		urlValidator: NewTestURLValidator(whitelist, allowLocalhost),
+	}
+	err := c.LoadDefinition(definitionYAML, setupYAML, tasksYAML, nil, nil)
+	if err != nil {
+		panic(err)
+	}
+	return c
+}
+
 // TestURLValidation tests the URL validation logic comprehensively
 func TestURLValidation(t *testing.T) {
 	c := qt.New(t)
@@ -89,14 +113,17 @@ func TestURLValidation(t *testing.T) {
 				// The actual result depends on config values and DNS resolution
 				if tc.expectBlock {
 					c.Assert(err, qt.IsNotNil, qt.Commentf("Should be blocked: %s (%s)", tc.url, tc.reason))
-				} else {
-					// These might fail due to DNS in test environment, but that's expected
-					// The important thing is that the whitelist logic is in place
-					if err != nil {
-						// If it fails, it should be due to DNS, not whitelist logic
-						c.Assert(err.Error(), qt.Contains, "lookup", qt.Commentf("If blocked, should be due to DNS lookup, not whitelist logic"))
-					}
+					return
 				}
+
+				// These might fail due to DNS in test environment, but that's expected
+				// The important thing is that the whitelist logic is in place
+				if err == nil {
+					return
+				}
+
+				// If it fails, it should be due to DNS, not whitelist logic
+				c.Assert(err.Error(), qt.Contains, "lookup", qt.Commentf("If blocked, should be due to DNS lookup, not whitelist logic"))
 			})
 		}
 	})
