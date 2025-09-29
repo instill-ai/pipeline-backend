@@ -50,11 +50,9 @@ func (f *binaryFetcher) FetchFromURL(ctx context.Context, url string) (body []by
 	body = resp.Body()
 	contentType = strings.Split(mimetype.Detect(body).String(), ";")[0]
 
-	if disposition := resp.Header().Get("Content-Disposition"); disposition == "" {
-		if strings.HasPrefix(disposition, "attachment") {
-			if _, params, err := mime.ParseMediaType(disposition); err == nil {
-				filename = params["filename"]
-			}
+	if disposition := resp.Header().Get("Content-Disposition"); disposition != "" {
+		if _, params, err := mime.ParseMediaType(disposition); err == nil {
+			filename = params["filename"]
 		}
 	}
 
