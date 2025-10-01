@@ -139,5 +139,5 @@ type TaskTextEmbeddingsInput struct {
 
 // TaskTextEmbeddingsOutput is the output for the TASK_TEXT_EMBEDDINGS task.
 type TaskTextEmbeddingsOutput struct {
-	Embedding []float64 `instill:"embedding"`
+	Embedding *genai.ContentEmbedding `instill:"embedding"`
 }
