@@ -641,12 +641,17 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 
 	if view > pipelinepb.Pipeline_VIEW_BASIC {
 		if dbPipeline.Metadata != nil {
-			str := structpb.Struct{}
-			err := str.UnmarshalJSON(dbPipeline.Metadata)
-			if err != nil {
-				logger.Error(err.Error())
+
+			// Check if metadata is not null JSON value
+			if string(dbPipeline.Metadata) != "null" {
+				str := structpb.Struct{}
+				err := str.UnmarshalJSON(dbPipeline.Metadata)
+				if err != nil {
+					logger.Error(err.Error())
+				} else {
+					pbPipeline.Metadata = &str
+				}
 			}
-			pbPipeline.Metadata = &str
 		}
 	}
 
@@ -813,12 +818,16 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 
 	if view > pipelinepb.Pipeline_VIEW_BASIC {
 		if dbPipelineRelease.Metadata != nil {
-			str := structpb.Struct{}
-			err := str.UnmarshalJSON(dbPipelineRelease.Metadata)
-			if err != nil {
-				logger.Error(err.Error())
+			// Check if metadata is not null JSON value
+			if string(dbPipelineRelease.Metadata) != "null" {
+				str := structpb.Struct{}
+				err := str.UnmarshalJSON(dbPipelineRelease.Metadata)
+				if err != nil {
+					logger.Error(err.Error())
+				} else {
+					pbPipelineRelease.Metadata = &str
+				}
 			}
-			pbPipelineRelease.Metadata = &str
 		}
 	}
 
