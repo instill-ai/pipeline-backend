@@ -415,6 +415,9 @@ func extractSystemMessage(in SystemMessageInput) string {
 // MaxInlineSize is the 20MB threshold for determining when to use File API based on total request size
 const MaxInlineSize = 20 * 1024 * 1024
 
+// FileAPITimeout is the timeout for File API operations (upload and processing)
+const FileAPITimeout = 300 * time.Second
+
 // uploadedFile represents a file that was uploaded and needs to be waited for
 type uploadedFile struct {
 	name     string
@@ -672,7 +675,7 @@ func (e *execution) processImagePartsWithTotalSize(ctx context.Context, client *
 		}
 
 		// Process using File API decision based on total request size
-		part, fileName, err := e.processMediaFile(ctx, client, binary.ByteArray(), contentType, 0, 60*time.Second, useFileAPI)
+		part, fileName, err := e.processMediaFile(ctx, client, binary.ByteArray(), contentType, 0, FileAPITimeout, useFileAPI)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to process image: %w", err)
 		}
@@ -722,7 +725,7 @@ func (e *execution) processAudioPartsWithTotalSize(ctx context.Context, client *
 		}
 
 		// Process using File API decision based on total request size
-		part, fileName, err := e.processMediaFile(ctx, client, binary.ByteArray(), contentType, 0, 60*time.Second, useFileAPI)
+		part, fileName, err := e.processMediaFile(ctx, client, binary.ByteArray(), contentType, 0, FileAPITimeout, useFileAPI)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to process audio: %w", err)
 		}
@@ -772,7 +775,7 @@ func (e *execution) processVideoPartsWithTotalSize(ctx context.Context, client *
 		}
 
 		// Use File API based on decision (longer timeout for videos)
-		part, fileName, err := e.processMediaFile(ctx, client, binary.ByteArray(), contentType, 0, 120*time.Second, useFileAPI)
+		part, fileName, err := e.processMediaFile(ctx, client, binary.ByteArray(), contentType, 0, FileAPITimeout, useFileAPI)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to process video: %w", err)
 		}
@@ -831,7 +834,7 @@ func (e *execution) processDocumentPartsWithTotalSize(ctx context.Context, clien
 			}
 
 			// Process using File API decision based on total request size
-			part, fileName, err := e.processMediaFile(ctx, client, binary.ByteArray(), "application/pdf", 0, 60*time.Second, useFileAPI)
+			part, fileName, err := e.processMediaFile(ctx, client, binary.ByteArray(), "application/pdf", 0, FileAPITimeout, useFileAPI)
 			if err != nil {
 				return nil, nil, fmt.Errorf("failed to process PDF: %w", err)
 			}

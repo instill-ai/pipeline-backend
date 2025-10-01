@@ -57,15 +57,9 @@ func (e *execution) textEmbeddings(ctx context.Context, job *base.Job) error {
 		return nil
 	}
 
-	// Convert from []float32 to []float64 for consistency with other components
-	embeddingFloat64 := make([]float64, len(embedding.Values))
-	for i, v := range embedding.Values {
-		embeddingFloat64[i] = float64(v)
-	}
-
-	// Prepare output
+	// Prepare output using the genai ContentEmbedding directly
 	output := TaskTextEmbeddingsOutput{
-		Embedding: embeddingFloat64,
+		Embedding: embedding,
 	}
 
 	// Write output
