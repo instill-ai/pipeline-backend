@@ -3,7 +3,7 @@ ARG GOLANG_VERSION=1.24.4
 # ===============================
 # Stage 1: Build dependencies
 # ===============================
-FROM golang:${GOLANG_VERSION}-bullseye AS build-deps
+FROM golang:${GOLANG_VERSION}-bookworm AS build-deps
 
 ARG TARGETOS TARGETARCH
 
@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     libx265-dev \
     libaom-dev \
     libdav1d-dev \
+    libavif-dev \
     pkg-config \
     wget \
     jq \
@@ -94,7 +95,7 @@ RUN --mount=type=bind,target=. \
 # ===============================
 # Stage 4: Runtime dependencies
 # ===============================
-FROM debian:bullseye-slim AS runtime-deps
+FROM debian:bookworm-slim AS runtime-deps
 
 # Install all runtime dependencies in one layer
 RUN apt update && \
@@ -112,6 +113,8 @@ RUN apt update && \
     wv \
     unrtf \
     tidy \
+    libavif-dev \
+    libavif15 \
     tesseract-ocr \
     libtesseract-dev \
     libreoffice \

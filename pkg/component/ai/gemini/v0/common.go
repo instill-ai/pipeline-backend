@@ -33,6 +33,7 @@ var (
 		data.GIF,  // GIF
 		data.BMP,  // BMP
 		data.TIFF, // TIFF
+		data.AVIF, // AVIF
 	}
 
 	geminiAudioFormats = []string{

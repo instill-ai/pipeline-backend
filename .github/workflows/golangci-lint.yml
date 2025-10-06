@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libsoxr-dev libheif-dev libde265-dev libx265-dev libaom-dev libdav1d-dev
+          sudo apt-get install -y libsoxr-dev libheif-dev libde265-dev libx265-dev libaom-dev libdav1d-dev libavif-dev
       - name: Install onnxruntime library and headers
         run: |
           export ONNXRUNTIME_ROOT_PATH=$GITHUB_WORKSPACE/onnxruntime

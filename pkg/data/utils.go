@@ -44,6 +44,8 @@ func normalizeMIMEType(contentType string) string {
 		return HEIC // Maps to "image/heic"
 	case "image/x-heif":
 		return HEIF // Maps to "image/heif"
+	case "image/x-avif":
+		return AVIF // Maps to "image/avif"
 
 	default:
 		return contentType
@@ -129,7 +131,8 @@ func isImageContentType(contentType string) bool {
 		contentType == WEBP ||
 		contentType == TIFF ||
 		contentType == HEIC ||
-		contentType == HEIF
+		contentType == HEIF ||
+		contentType == AVIF
 }
 
 func isAudioContentType(contentType string) bool {
