@@ -38,6 +38,7 @@ const (
 	BMP  = "image/bmp"
 	HEIC = "image/heic"
 	HEIF = "image/heif"
+	AVIF = "image/avif"
 )
 
 var imageGetters = map[string]func(*imageData) (format.Value, error){
@@ -51,6 +52,7 @@ var imageGetters = map[string]func(*imageData) (format.Value, error){
 	"bmp":    func(i *imageData) (format.Value, error) { return i.Convert(BMP) },
 	"heic":   func(i *imageData) (format.Value, error) { return i.Convert(HEIC) },
 	"heif":   func(i *imageData) (format.Value, error) { return i.Convert(HEIF) },
+	"avif":   func(i *imageData) (format.Value, error) { return i.Convert(AVIF) },
 }
 
 // NewImageFromBytes creates a new imageData from byte slice
@@ -137,6 +139,9 @@ func getImageProperties(raw []byte, contentType string) (width, height int) {
 	case HEIC, HEIF:
 		width, height = cgo.GetHEIFImageProperties(raw)
 		return
+	case AVIF:
+		width, height = cgo.GetAVIFImageProperties(raw)
+		return
 	}
 	if img == nil {
 		return
@@ -155,11 +160,11 @@ func (i *imageData) Height() format.Number {
 func (i *imageData) Convert(contentType string) (format.Image, error) {
 	b, err := convertImage(i.raw, i.contentType, contentType)
 	if err != nil {
-		return nil, fmt.Errorf("can not convert data from %s to %s", i.contentType, contentType)
+		return nil, fmt.Errorf("can not convert data from %s to %s: %w", i.contentType, contentType, err)
 	}
 	f, err := NewFileFromBytes(b, contentType, "")
 	if err != nil {
-		return nil, fmt.Errorf("can not convert data from %s to %s", i.contentType, contentType)
+		return nil, fmt.Errorf("can not convert data from %s to %s: %w", i.contentType, contentType, err)
 	}
 	return newImage(f)
 }

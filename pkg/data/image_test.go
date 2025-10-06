@@ -206,6 +206,10 @@ func TestImageConvert(t *testing.T) {
 		{"GIF to PNG", "small_sample.gif", "image/gif", "image/png"},
 		{"BMP to PNG", "small_sample.bmp", "image/bmp", "image/png"},
 		{"WEBP to JPEG", "small_sample.webp", "image/webp", "image/jpeg"},
+		{"JPEG to AVIF", "small_sample.jpeg", "image/jpeg", "image/avif"},
+		{"PNG to AVIF", "small_sample.png", "image/png", "image/avif"},
+		{"AVIF to JPEG", "small_sample.avif", "image/avif", "image/jpeg"},
+		{"AVIF to PNG", "small_sample.avif", "image/avif", "image/png"},
 	}
 
 	for _, tc := range testCases {
@@ -257,6 +261,7 @@ func TestAllSupportedImageFormats(t *testing.T) {
 		{"BMP", "small_sample.bmp", "image/bmp", 320, 240},
 		{"WEBP", "small_sample.webp", "image/webp", 320, 240},
 		{"TIFF", "small_sample.tiff", "image/tiff", 320, 240},
+		{"AVIF", "small_sample.avif", "image/avif", 320, 240},
 	}
 
 	for _, format := range supportedFormats {
@@ -366,5 +371,59 @@ func TestHEIFImageSupport(t *testing.T) {
 		heifImage, err := jpegImage.Convert("image/heif")
 		c.Assert(err, qt.IsNil)
 		c.Assert(heifImage.ContentType().String(), qt.Equals, "image/heif")
+	})
+}
+
+func TestAVIFImageSupport(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	// Test AVIF constant
+	c.Assert(AVIF, qt.Equals, "image/avif")
+
+	// Test AVIF in imageGetters map
+	_, exists := imageGetters["avif"]
+	c.Assert(exists, qt.Equals, true)
+
+	// Test AVIF in isImageContentType
+	c.Assert(isImageContentType(AVIF), qt.Equals, true)
+
+	// Test AVIF MIME type normalization
+	c.Assert(normalizeMIMEType("image/x-avif"), qt.Equals, AVIF)
+
+	// Test AVIF conversion functionality
+	c.Run("AVIF conversion support", func(c *qt.C) {
+		// Load a JPEG image to test conversion TO AVIF
+		jpegBytes, err := os.ReadFile("testdata/small_sample.jpeg")
+		c.Assert(err, qt.IsNil)
+
+		jpegImage, err := NewImageFromBytes(jpegBytes, "image/jpeg", "test.jpeg", false)
+		c.Assert(err, qt.IsNil)
+
+		// Test AVIF conversion
+		avifImage, err := jpegImage.Convert("image/avif")
+		c.Assert(err, qt.IsNil)
+		c.Assert(avifImage.ContentType().String(), qt.Equals, "image/avif")
+		c.Assert(avifImage.Width().Integer(), qt.Equals, jpegImage.Width().Integer())
+		c.Assert(avifImage.Height().Integer(), qt.Equals, jpegImage.Height().Integer())
+
+		// Test converting back from AVIF to JPEG
+		jpegFromAvif, err := avifImage.Convert("image/jpeg")
+		c.Assert(err, qt.IsNil)
+		c.Assert(jpegFromAvif.ContentType().String(), qt.Equals, "image/jpeg")
+		c.Assert(jpegFromAvif.Width().Integer(), qt.Equals, jpegImage.Width().Integer())
+		c.Assert(jpegFromAvif.Height().Integer(), qt.Equals, jpegImage.Height().Integer())
+	})
+
+	// Test loading AVIF files directly
+	c.Run("AVIF file loading", func(c *qt.C) {
+		avifBytes, err := os.ReadFile("testdata/small_sample.avif")
+		c.Assert(err, qt.IsNil)
+
+		avifImage, err := NewImageFromBytes(avifBytes, "image/avif", "test.avif", false)
+		c.Assert(err, qt.IsNil)
+		c.Assert(avifImage.ContentType().String(), qt.Equals, "image/avif")
+		c.Assert(avifImage.Width().Integer(), qt.Equals, 320)
+		c.Assert(avifImage.Height().Integer(), qt.Equals, 240)
 	})
 }
