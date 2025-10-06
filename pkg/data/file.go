@@ -51,7 +51,7 @@ func NewFileFromBytes(b []byte, contentType, filename string) (bin *fileData, er
 
 	if filename == "" {
 		fileUID, _ := uuid.NewV4()
-		filename = fmt.Sprintf("%s.%s", fileUID, strings.ToLower(mimetype.Detect(b).Extension()))
+		filename = fmt.Sprintf("%s%s", fileUID, strings.ToLower(mimetype.Detect(b).Extension()))
 	}
 
 	f := &fileData{
