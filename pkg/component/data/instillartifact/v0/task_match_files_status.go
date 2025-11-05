@@ -28,15 +28,18 @@ func (e *execution) matchFileStatus(input *structpb.Struct) (*structpb.Struct, e
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
 	for {
-		matchRes, err := artifactClient.ListCatalogFiles(ctx, &artifactpb.ListCatalogFilesRequest{
-			NamespaceId: inputStruct.Namespace,
-			CatalogId:   inputStruct.CatalogID,
-			Filter: &artifactpb.ListCatalogFilesFilter{
-				FileUids: []string{inputStruct.FileUID},
-			},
+		filter := fmt.Sprintf(`id="%s"`, inputStruct.FileUID)
+		matchRes, err := artifactClient.ListFiles(ctx, &artifactpb.ListFilesRequest{
+			NamespaceId:     inputStruct.Namespace,
+			KnowledgeBaseId: inputStruct.KnowledgeBaseID,
+			Filter:          &filter,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to match file status: %w", err)
+		}
+
+		if len(matchRes.Files) == 0 {
+			return nil, fmt.Errorf("file not found")
 		}
 
 		if matchRes.Files[0].ProcessStatus == artifactpb.FileProcessStatus_FILE_PROCESS_STATUS_COMPLETED {

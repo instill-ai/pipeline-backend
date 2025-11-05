@@ -28,40 +28,40 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 	defer cancel()
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
-	var fileMediaType artifactpb.FileMediaType
-	var contentType artifactpb.ContentType
+	var fileMediaType artifactpb.File_FileMediaType
+	var chunkType artifactpb.Chunk_Type
 
 	switch inputStruct.FileMediaType {
 	case "document":
-		fileMediaType = artifactpb.FileMediaType_FILE_MEDIA_TYPE_DOCUMENT
+		fileMediaType = artifactpb.File_FILE_MEDIA_TYPE_DOCUMENT
 	case "image":
-		fileMediaType = artifactpb.FileMediaType_FILE_MEDIA_TYPE_IMAGE
+		fileMediaType = artifactpb.File_FILE_MEDIA_TYPE_IMAGE
 	case "audio":
-		fileMediaType = artifactpb.FileMediaType_FILE_MEDIA_TYPE_AUDIO
+		fileMediaType = artifactpb.File_FILE_MEDIA_TYPE_AUDIO
 	case "video":
-		fileMediaType = artifactpb.FileMediaType_FILE_MEDIA_TYPE_VIDEO
+		fileMediaType = artifactpb.File_FILE_MEDIA_TYPE_VIDEO
 	default:
-		fileMediaType = artifactpb.FileMediaType_FILE_MEDIA_TYPE_UNSPECIFIED
+		fileMediaType = artifactpb.File_FILE_MEDIA_TYPE_UNSPECIFIED
 	}
 
-	switch inputStruct.ContentType {
-	case "chunk":
-		contentType = artifactpb.ContentType_CONTENT_TYPE_CHUNK
+	switch inputStruct.ChunkType {
+	case "content":
+		chunkType = artifactpb.Chunk_TYPE_CONTENT
 	case "summary":
-		contentType = artifactpb.ContentType_CONTENT_TYPE_SUMMARY
+		chunkType = artifactpb.Chunk_TYPE_SUMMARY
 	case "augmented":
-		contentType = artifactpb.ContentType_CONTENT_TYPE_AUGMENTED
+		chunkType = artifactpb.Chunk_TYPE_AUGMENTED
 	default:
-		contentType = artifactpb.ContentType_CONTENT_TYPE_UNSPECIFIED
+		chunkType = artifactpb.Chunk_TYPE_UNSPECIFIED
 	}
 
-	req := &artifactpb.SimilarityChunksSearchRequest{
-		NamespaceId:   inputStruct.Namespace,
-		CatalogId:     inputStruct.CatalogID,
-		TextPrompt:    inputStruct.TextPrompt,
-		TopK:          inputStruct.TopK,
-		FileMediaType: fileMediaType,
-		ContentType:   contentType,
+	req := &artifactpb.SearchChunksRequest{
+		NamespaceId:     inputStruct.Namespace,
+		KnowledgeBaseId: inputStruct.KnowledgeBaseID,
+		TextPrompt:      inputStruct.TextPrompt,
+		TopK:            inputStruct.TopK,
+		FileMediaType:   fileMediaType,
+		Type:            chunkType,
 	}
 
 	// Validate file UID param. Empty UIDs will be filtered out, other invalid
@@ -80,10 +80,10 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 	}
 
 	if len(fileUIDs) > 0 {
-		req.FileUids = fileUIDs
+		req.FileIds = fileUIDs
 	}
 
-	searchRes, err := artifactClient.SimilarityChunksSearch(ctx, req)
+	searchRes, err := artifactClient.SearchChunks(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search chunks: %w", err)
 	}
@@ -94,23 +94,23 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 
 	for _, chunkPB := range searchRes.GetSimilarChunks() {
 		chunk := SimilarityChunk{
-			ChunkUID:        chunkPB.GetChunkUid(),
+			ChunkUID:        chunkPB.GetChunkId(),
 			SimilarityScore: chunkPB.GetSimilarityScore(),
 			TextContent:     chunkPB.GetTextContent(),
 			SourceFileName:  chunkPB.GetSourceFile(),
-			SourceFileUID:   chunkPB.GetChunkMetadata().GetOriginalFileUid(),
-			ContentType:     chunkPB.GetChunkMetadata().GetContentType().String(),
+			SourceFileUID:   chunkPB.GetChunkMetadata().GetOriginalFileId(),
+			ContentType:     chunkPB.GetChunkMetadata().GetType().String(),
 		}
 
-		ref := chunkPB.GetChunkMetadata().GetReference()
+		ref := chunkPB.GetChunkMetadata().GetMarkdownReference()
 		if ref != nil {
 			chunk.Reference = &ChunkReference{
 				Start: FilePosition{
-					Unit:        strings.TrimPrefix(ref.GetStart().GetUnit().String(), "UNIT_"),
+					Unit:        strings.TrimPrefix(ref.GetStart().GetUnit().String(), "REFERENCE_UNIT_"),
 					Coordinates: ref.GetStart().GetCoordinates(),
 				},
 				End: FilePosition{
-					Unit:        strings.TrimPrefix(ref.GetEnd().GetUnit().String(), "UNIT_"),
+					Unit:        strings.TrimPrefix(ref.GetEnd().GetUnit().String(), "REFERENCE_UNIT_"),
 					Coordinates: ref.GetEnd().GetCoordinates(),
 				},
 			}

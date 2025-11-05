@@ -125,7 +125,7 @@ func (f *artifactBinaryFetcher) FetchFromURL(ctx context.Context, fileURL string
 }
 
 func (f *artifactBinaryFetcher) fetchFromBlobStorage(ctx context.Context, urlUID uuid.UUID) (b []byte, contentType string, filename string, err error) {
-	objectURLRes, err := f.artifactClient.GetObjectURL(ctx, &artifactpb.GetObjectURLRequest{
+	objectURLRes, err := f.artifactClient.GetObjectURLAdmin(ctx, &artifactpb.GetObjectURLAdminRequest{
 		Uid: urlUID.String(),
 	})
 	if err != nil {
@@ -134,7 +134,7 @@ func (f *artifactBinaryFetcher) fetchFromBlobStorage(ctx context.Context, urlUID
 
 	objectUID := objectURLRes.ObjectUrl.ObjectUid
 
-	objectRes, err := f.artifactClient.GetObject(ctx, &artifactpb.GetObjectRequest{
+	objectRes, err := f.artifactClient.GetObjectAdmin(ctx, &artifactpb.GetObjectAdminRequest{
 		Uid: objectUID,
 	})
 

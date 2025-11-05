@@ -16,14 +16,13 @@ import (
 )
 
 const (
-	taskUploadFile        string = "TASK_UPLOAD_FILE"
-	taskUploadFiles       string = "TASK_UPLOAD_FILES"
+	taskCreateFile        string = "TASK_CREATE_FILE"
+	taskCreateFiles       string = "TASK_CREATE_FILES"
 	taskGetFilesMetadata  string = "TASK_GET_FILES_METADATA"
 	taskGetChunksMetadata string = "TASK_GET_CHUNKS_METADATA"
 	taskGetFileInMarkdown string = "TASK_GET_FILE_IN_MARKDOWN"
 	taskMatchFileStatus   string = "TASK_MATCH_FILE_STATUS"
-	taskSearchChunks      string = "TASK_RETRIEVE"
-	taskQuery             string = "TASK_ASK"
+	taskSearchChunks      string = "TASK_SEARCH"
 	taskSyncFiles         string = "TASK_SYNC_FILES"
 )
 
@@ -73,9 +72,9 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	e.client, e.connection = client, connection
 
 	switch x.Task {
-	case taskUploadFile:
+	case taskCreateFile:
 		e.execute = e.uploadFile
-	case taskUploadFiles:
+	case taskCreateFiles:
 		e.execute = e.uploadFiles
 	case taskGetFilesMetadata:
 		e.execute = e.getFilesMetadata
@@ -87,8 +86,6 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 		e.execute = e.matchFileStatus
 	case taskSearchChunks:
 		e.execute = e.searchChunks
-	case taskQuery:
-		e.execute = e.query
 	case taskSyncFiles:
 		e.execute = e.syncFiles
 	default:

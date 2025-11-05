@@ -29,13 +29,13 @@ func (e *execution) getFilesMetadata(input *structpb.Struct) (*structpb.Struct, 
 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
-	filesRes, err := artifactClient.ListCatalogFiles(ctx, &artifactpb.ListCatalogFilesRequest{
-		NamespaceId: inputStruct.Namespace,
-		CatalogId:   inputStruct.CatalogID,
+	filesRes, err := artifactClient.ListFiles(ctx, &artifactpb.ListFilesRequest{
+		NamespaceId:     inputStruct.Namespace,
+		KnowledgeBaseId: inputStruct.KnowledgeBaseID,
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to list catalog files: %w", err)
+		return nil, fmt.Errorf("failed to list files: %w", err)
 	}
 
 	output := GetFilesMetadataOutput{
@@ -45,14 +45,14 @@ func (e *execution) getFilesMetadata(input *structpb.Struct) (*structpb.Struct, 
 	output.setOutput(filesRes)
 
 	for filesRes != nil && filesRes.NextPageToken != "" {
-		filesRes, err = artifactClient.ListCatalogFiles(ctx, &artifactpb.ListCatalogFilesRequest{
-			NamespaceId: inputStruct.Namespace,
-			CatalogId:   inputStruct.CatalogID,
-			PageToken:   filesRes.NextPageToken,
+		filesRes, err = artifactClient.ListFiles(ctx, &artifactpb.ListFilesRequest{
+			NamespaceId:     inputStruct.Namespace,
+			KnowledgeBaseId: inputStruct.KnowledgeBaseID,
+			PageToken:       &filesRes.NextPageToken,
 		})
 
 		if err != nil {
-			return nil, fmt.Errorf("failed to list catalog files: %w", err)
+			return nil, fmt.Errorf("failed to list files: %w", err)
 		}
 
 		output.setOutput(filesRes)
@@ -61,12 +61,12 @@ func (e *execution) getFilesMetadata(input *structpb.Struct) (*structpb.Struct, 
 	return base.ConvertToStructpb(output)
 }
 
-func (output *GetFilesMetadataOutput) setOutput(filesRes *artifactpb.ListCatalogFilesResponse) {
+func (output *GetFilesMetadataOutput) setOutput(filesRes *artifactpb.ListFilesResponse) {
 	for _, filePB := range filesRes.Files {
 		output.Files = append(output.Files, FileOutput{
-			FileUID:    filePB.FileUid,
-			FileName:   filePB.Name,
-			FileType:   artifactpb.FileType_name[int32(filePB.Type)],
+			FileUID:    filePB.Uid,
+			FileName:   filePB.Filename,
+			FileType:   filePB.Type.String(),
 			CreateTime: filePB.CreateTime.AsTime().Format(time.RFC3339),
 			UpdateTime: filePB.UpdateTime.AsTime().Format(time.RFC3339),
 			Size:       filePB.Size,

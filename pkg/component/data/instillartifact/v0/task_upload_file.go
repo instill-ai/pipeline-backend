@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"google.golang.org/grpc/metadata"
@@ -16,7 +15,7 @@ import (
 	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 )
 
-func (input *UploadFileInput) isNewCatalog() bool {
+func (input *UploadFileInput) isNewKnowledgeBase() bool {
 	return input.Options.Option == "create new catalog"
 }
 
@@ -36,35 +35,35 @@ func (e *execution) uploadFile(input *structpb.Struct) (*structpb.Struct, error)
 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
-	if inputStruct.isNewCatalog() {
+	if inputStruct.isNewKnowledgeBase() {
 
-		catalogs, err := artifactClient.ListCatalogs(ctx, &artifactpb.ListCatalogsRequest{
+		knowledgeBases, err := artifactClient.ListKnowledgeBases(ctx, &artifactpb.ListKnowledgeBasesRequest{
 			NamespaceId: inputStruct.Options.Namespace,
 		})
 
 		if err != nil {
-			return nil, fmt.Errorf("failed to list catalogs: %w", err)
+			return nil, fmt.Errorf("failed to list knowledge bases: %w", err)
 		}
 
 		found := false
-		for _, catalog := range catalogs.Catalogs {
-			if catalog.Name == inputStruct.Options.CatalogID {
+		for _, kb := range knowledgeBases.KnowledgeBases {
+			if kb.Id == inputStruct.Options.KnowledgeBaseID {
 				found = true
-				log.Println("Catalog already exists, skipping creation")
+				log.Println("Knowledge base already exists, skipping creation")
 			}
 		}
 
 		if !found {
-			_, err = artifactClient.CreateCatalog(ctx, &artifactpb.CreateCatalogRequest{
+			_, err = artifactClient.CreateKnowledgeBase(ctx, &artifactpb.CreateKnowledgeBaseRequest{
 				NamespaceId: inputStruct.Options.Namespace,
-				Name:        inputStruct.Options.CatalogID,
+				Id:          inputStruct.Options.KnowledgeBaseID,
 				Description: inputStruct.Options.Description,
 				Tags:        inputStruct.Options.Tags,
 			})
 		}
 
 		if err != nil {
-			return nil, fmt.Errorf("failed to create new catalog: %w", err)
+			return nil, fmt.Errorf("failed to create new knowledge base: %w", err)
 		}
 	}
 
@@ -73,50 +72,41 @@ func (e *execution) uploadFile(input *structpb.Struct) (*structpb.Struct, error)
 	}
 	file := inputStruct.Options.File
 
-	fileType, err := util.GetFileType(file, inputStruct.Options.FileName)
+	_, err = util.GetFileType(file, inputStruct.Options.FileName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get file type: %w", err)
 	}
-	typeString := "FILE_TYPE_" + strings.ToUpper(fileType)
 
 	content := util.GetFileBase64Content(file)
 
-	typePB := artifactpb.FileType_value[typeString]
-	filePB := &artifactpb.File{
-		Name:    inputStruct.Options.FileName,
-		Type:    artifactpb.FileType(typePB),
-		Content: content,
-	}
-	uploadRes, err := artifactClient.UploadCatalogFile(ctx, &artifactpb.UploadCatalogFileRequest{
-		NamespaceId: inputStruct.Options.Namespace,
-		CatalogId:   inputStruct.Options.CatalogID,
-		File:        filePB,
+	// CreateFile now handles upload and auto-triggers processing
+	createRes, err := artifactClient.CreateFile(ctx, &artifactpb.CreateFileRequest{
+		NamespaceId:     inputStruct.Options.Namespace,
+		KnowledgeBaseId: inputStruct.Options.KnowledgeBaseID,
+		File: &artifactpb.File{
+			Filename: inputStruct.Options.FileName,
+			Content:  content,
+		},
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to upload file: %w", err)
+		return nil, fmt.Errorf("failed to create file: %w", err)
 	}
 
-	uploadedFilePB := uploadRes.File
+	createdFilePB := createRes.File
 
 	output.File = FileOutput{
-		FileUID:    uploadedFilePB.FileUid,
-		FileName:   uploadedFilePB.Name,
-		FileType:   artifactpb.FileType_name[int32(uploadedFilePB.Type)],
-		CreateTime: uploadedFilePB.CreateTime.AsTime().Format(time.RFC3339),
-		UpdateTime: uploadedFilePB.UpdateTime.AsTime().Format(time.RFC3339),
-		Size:       uploadedFilePB.Size,
-		CatalogID:  inputStruct.Options.CatalogID,
+		FileUID:         createdFilePB.Uid,
+		FileName:        createdFilePB.Filename,
+		FileType:        createdFilePB.Type.String(),
+		CreateTime:      createdFilePB.CreateTime.AsTime().Format(time.RFC3339),
+		UpdateTime:      createdFilePB.UpdateTime.AsTime().Format(time.RFC3339),
+		Size:            createdFilePB.Size,
+		KnowledgeBaseID: inputStruct.Options.KnowledgeBaseID,
 	}
 
-	// TODO: chuang, will need to process again in another task.
-	_, err = artifactClient.ProcessCatalogFiles(ctx, &artifactpb.ProcessCatalogFilesRequest{
-		FileUids: []string{uploadedFilePB.FileUid},
-	})
-
-	if err == nil {
-		output.Status = true
-	}
+	// Files now auto-process, no need for separate ProcessCatalogFiles call
+	output.Status = true
 
 	return base.ConvertToStructpb(output)
 }

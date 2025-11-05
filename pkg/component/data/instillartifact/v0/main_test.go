@@ -3,6 +3,7 @@ package instillartifact
 // TODO: Make the test against the fake server rather than mocking the client interface.
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/frankban/quicktest"
@@ -37,26 +38,26 @@ func Test_getFilesMetadata(t *testing.T) {
 		e.execute = e.getFilesMetadata
 
 		input := GetFilesMetadataInput{
-			Namespace: "fakeNs",
-			CatalogID: "fakeID",
+			Namespace:       "fakeNs",
+			KnowledgeBaseID: "fakeID",
 		}
 
 		inputStruct, _ := base.ConvertToStructpb(input)
 
 		clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
-		clientMock.ListCatalogFilesMock.
-			Expect(minimock.AnyContext, &artifactpb.ListCatalogFilesRequest{
-				NamespaceId: "fakeNs",
-				CatalogId:   "fakeID"}).
+		clientMock.ListFilesMock.
+			Expect(minimock.AnyContext, &artifactpb.ListFilesRequest{
+				NamespaceId:     "fakeNs",
+				KnowledgeBaseId: "fakeID"}).
 			Times(1).
-			Return(&artifactpb.ListCatalogFilesResponse{
+			Return(&artifactpb.ListFilesResponse{
 				Files: []*artifactpb.File{
 					{
-						FileUid: "fakeFileID",
-						Name:    "fakeFileName",
-						Type:    artifactpb.FileType_FILE_TYPE_PDF,
-						Size:    1,
+						Uid:      "fakeFileID",
+						Filename: "fakeFileName",
+						Type:     artifactpb.File_TYPE_PDF,
+						Size:     1,
 						CreateTime: &timestamppb.Timestamp{
 							Seconds: 1,
 							Nanos:   1,
@@ -83,7 +84,7 @@ func Test_getFilesMetadata(t *testing.T) {
 
 		c.Assert(len(outputStruct.Files), quicktest.Equals, 1)
 		c.Assert(outputStruct.Files[0].FileUID, quicktest.Equals, "fakeFileID")
-		c.Assert(outputStruct.Files[0].FileType, quicktest.Equals, "FILE_TYPE_PDF")
+		c.Assert(outputStruct.Files[0].FileType, quicktest.Equals, "TYPE_PDF")
 		c.Assert(outputStruct.Files[0].FileName, quicktest.Equals, "fakeFileName")
 		c.Assert(outputStruct.Files[0].Size, quicktest.Equals, int64(1))
 		c.Assert(outputStruct.Files[0].CreateTime, quicktest.Equals, "1970-01-01T00:00:01Z")
@@ -112,9 +113,9 @@ func Test_getChunksMetadata(t *testing.T) {
 		e.execute = e.getChunksMetadata
 
 		input := GetChunksMetadataInput{
-			Namespace: "fakeNs",
-			CatalogID: "fakeID",
-			FileUID:   "fakeFileID",
+			Namespace:       "fakeNs",
+			KnowledgeBaseID: "fakeID",
+			FileUID:         "fakeFileID",
 		}
 
 		inputStruct, _ := base.ConvertToStructpb(input)
@@ -122,22 +123,20 @@ func Test_getChunksMetadata(t *testing.T) {
 		clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
 		clientMock.ListChunksMock.Expect(minimock.AnyContext, &artifactpb.ListChunksRequest{
-			NamespaceId: "fakeNs",
-			CatalogId:   "fakeID",
-			FileUid:     "fakeFileID",
+			NamespaceId:     "fakeNs",
+			KnowledgeBaseId: "fakeID",
+			FileId:          "fakeFileID",
 		}).Times(1).Return(&artifactpb.ListChunksResponse{
 			Chunks: []*artifactpb.Chunk{
 				{
-					ChunkUid:    "fakeChunkID",
+					Uid:         "fakeChunkID",
 					Retrievable: true,
-					StartPos:    0,
-					EndPos:      1,
 					Tokens:      1,
 					CreateTime: &timestamppb.Timestamp{
 						Seconds: 1,
 						Nanos:   1,
 					},
-					OriginalFileUid: "fakeFileID",
+					OriginalFileId: "fakeFileID",
 				},
 			},
 		}, nil)
@@ -159,7 +158,7 @@ func Test_getChunksMetadata(t *testing.T) {
 		c.Assert(outputStruct.Chunks[0].ChunkUID, quicktest.Equals, "fakeChunkID")
 		c.Assert(outputStruct.Chunks[0].Retrievable, quicktest.Equals, true)
 		c.Assert(outputStruct.Chunks[0].StartPosition, quicktest.Equals, uint32(0))
-		c.Assert(outputStruct.Chunks[0].EndPosition, quicktest.Equals, uint32(1))
+		c.Assert(outputStruct.Chunks[0].EndPosition, quicktest.Equals, uint32(0))
 		c.Assert(outputStruct.Chunks[0].TokenCount, quicktest.Equals, uint32(1))
 		c.Assert(outputStruct.Chunks[0].CreateTime, quicktest.Equals, "1970-01-01T00:00:01Z")
 		c.Assert(outputStruct.Chunks[0].OriginalFileUID, quicktest.Equals, "fakeFileID")
@@ -188,23 +187,26 @@ func Test_getFileInMarkdown(t *testing.T) {
 		e.execute = e.getFileInMarkdown
 
 		input := GetFileInMarkdownInput{
-			Namespace: "fakeNs",
-			CatalogID: "fakeID",
-			FileUID:   "fakeFileID",
+			Namespace:       "fakeNs",
+			KnowledgeBaseID: "fakeID",
+			FileUID:         "fakeFileID",
 		}
 
 		inputStruct, _ := base.ConvertToStructpb(input)
 
 		clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
-		clientMock.GetSourceFileMock.Expect(minimock.AnyContext, &artifactpb.GetSourceFileRequest{
-			NamespaceId: "fakeNs",
-			CatalogId:   "fakeID",
-			FileUid:     "fakeFileID",
-		}).Times(1).Return(&artifactpb.GetSourceFileResponse{
-			SourceFile: &artifactpb.SourceFile{
-				OriginalFileUid: "fakeFileID",
-				Content:         "fakeContent",
+		// Mock GetFile to return file metadata with empty derived_resource_uri
+		// (in real usage, it would have a MinIO URL, but for test we'll return empty content)
+		clientMock.GetFileMock.Expect(minimock.AnyContext, &artifactpb.GetFileRequest{
+			NamespaceId:     "fakeNs",
+			KnowledgeBaseId: "fakeID",
+			FileId:          "fakeFileID",
+			View:            artifactpb.File_VIEW_CONTENT.Enum(),
+		}).Times(1).Return(&artifactpb.GetFileResponse{
+			File: &artifactpb.File{
+				Uid:      "fakeFileID",
+				Filename: "fakeFileName",
 				CreateTime: &timestamppb.Timestamp{
 					Seconds: 1,
 					Nanos:   1,
@@ -214,6 +216,7 @@ func Test_getFileInMarkdown(t *testing.T) {
 					Nanos:   1,
 				},
 			},
+			DerivedResourceUri: new(string),
 		}, nil)
 
 		e.client = clientMock
@@ -230,7 +233,7 @@ func Test_getFileInMarkdown(t *testing.T) {
 		c.Assert(err, quicktest.IsNil)
 
 		c.Assert(outputStruct.OriginalFileUID, quicktest.Equals, "fakeFileID")
-		c.Assert(outputStruct.Content, quicktest.Equals, "fakeContent")
+		c.Assert(outputStruct.Content, quicktest.Equals, "") // Empty since no derived_resource_uri
 		c.Assert(outputStruct.CreateTime, quicktest.Equals, "1970-01-01T00:00:01Z")
 		c.Assert(outputStruct.UpdateTime, quicktest.Equals, "1970-01-01T00:00:01Z")
 
@@ -258,10 +261,10 @@ func Test_searchChunks(t *testing.T) {
 		e.execute = e.searchChunks
 
 		input := SearchChunksInput{
-			Namespace:  "fakeNs",
-			CatalogID:  "fakeID",
-			TextPrompt: "fakePrompt",
-			TopK:       1,
+			Namespace:       "fakeNs",
+			KnowledgeBaseID: "fakeID",
+			TextPrompt:      "fakePrompt",
+			TopK:            1,
 		}
 
 		inputStruct, _ := base.ConvertToStructpb(input)
@@ -274,24 +277,24 @@ func Test_searchChunks(t *testing.T) {
 			Coordinates: []uint32{2},
 		}
 
-		clientMock.SimilarityChunksSearchMock.
-			Expect(minimock.AnyContext, &artifactpb.SimilarityChunksSearchRequest{
-				NamespaceId: "fakeNs",
-				CatalogId:   "fakeID",
-				TextPrompt:  "fakePrompt",
-				TopK:        1,
+		clientMock.SearchChunksMock.
+			Expect(minimock.AnyContext, &artifactpb.SearchChunksRequest{
+				NamespaceId:     "fakeNs",
+				KnowledgeBaseId: "fakeID",
+				TextPrompt:      "fakePrompt",
+				TopK:            1,
 			}).
 			Times(1).
-			Return(&artifactpb.SimilarityChunksSearchResponse{
+			Return(&artifactpb.SearchChunksResponse{
 				SimilarChunks: []*artifactpb.SimilarityChunk{
 					{
-						ChunkUid:        "fakeChunkID",
+						ChunkId:         "fakeChunkID",
 						SimilarityScore: float32(1),
 						TextContent:     "fakeContent",
 						SourceFile:      "fakeFile",
 						ChunkMetadata: &artifactpb.Chunk{
-							OriginalFileUid: fileUID.String(),
-							Reference: &artifactpb.Chunk_Reference{
+							OriginalFileId: fileUID.String(),
+							MarkdownReference: &artifactpb.Chunk_Reference{
 								Start: pageTwo,
 								End:   pageTwo,
 							},
@@ -318,83 +321,11 @@ func Test_searchChunks(t *testing.T) {
 		c.Assert(outputStruct.Chunks[0].SimilarityScore, quicktest.Equals, float32(1))
 		c.Assert(outputStruct.Chunks[0].TextContent, quicktest.Equals, "fakeContent")
 		c.Assert(outputStruct.Chunks[0].SourceFileName, quicktest.Equals, "fakeFile")
-		c.Assert(outputStruct.Chunks[0].Reference.Start.Unit, quicktest.Equals, "PAGE")
+		c.Assert(outputStruct.Chunks[0].Reference.Start.Unit, quicktest.Equals, "UNIT_PAGE")
 		c.Assert(outputStruct.Chunks[0].Reference.Start.Coordinates, quicktest.ContentEquals, pageTwo.Coordinates)
-		c.Assert(outputStruct.Chunks[0].Reference.End.Unit, quicktest.Equals, "PAGE")
+		c.Assert(outputStruct.Chunks[0].Reference.End.Unit, quicktest.Equals, "UNIT_PAGE")
 		c.Assert(outputStruct.Chunks[0].Reference.End.Coordinates, quicktest.ContentEquals, pageTwo.Coordinates)
 	})
-}
-
-func Test_query(t *testing.T) {
-	c := quicktest.New(t)
-	mc := minimock.NewController(t)
-
-	c.Run("query", func(c *quicktest.C) {
-		component := Init(base.Component{})
-
-		sysVar := map[string]interface{}{
-			"__ARTIFACT_BACKEND":       "http://localhost:8082",
-			"__PIPELINE_USER_UID":      "fakeUser",
-			"__PIPELINE_REQUESTER_UID": "fakeRequester",
-		}
-
-		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: sysVar, Setup: nil, Task: taskQuery},
-		}
-
-		e.execute = e.query
-
-		input := QueryInput{
-			Namespace: "fakeNs",
-			CatalogID: "fakeID",
-			Question:  "fakeQuestion",
-			TopK:      1,
-		}
-
-		inputStruct, _ := base.ConvertToStructpb(input)
-
-		clientMock := mock.NewArtifactPublicServiceClientMock(mc)
-
-		clientMock.QuestionAnsweringMock.
-			Expect(minimock.AnyContext, &artifactpb.QuestionAnsweringRequest{
-				NamespaceId: "fakeNs",
-				CatalogId:   "fakeID",
-				Question:    "fakeQuestion",
-				TopK:        1,
-			}).
-			Times(1).
-			Return(&artifactpb.QuestionAnsweringResponse{
-				Answer: "fakeAnswer",
-				SimilarChunks: []*artifactpb.SimilarityChunk{
-					{
-						ChunkUid:        "fakeChunkID",
-						SimilarityScore: float32(1),
-						TextContent:     "fakeContent",
-						SourceFile:      "fakeFile",
-					},
-				},
-			}, nil)
-
-		e.client = clientMock
-		e.connection = fakeConnection{}
-
-		output, err := e.execute(inputStruct)
-
-		c.Assert(err, quicktest.IsNil)
-
-		var outputStruct QueryOutput
-		err = base.ConvertFromStructpb(output, &outputStruct)
-
-		c.Assert(err, quicktest.IsNil)
-
-		c.Assert(outputStruct.Answer, quicktest.Equals, "fakeAnswer")
-		c.Assert(outputStruct.Chunks[0].ChunkUID, quicktest.Equals, "fakeChunkID")
-		c.Assert(outputStruct.Chunks[0].SimilarityScore, quicktest.Equals, float32(1))
-		c.Assert(outputStruct.Chunks[0].TextContent, quicktest.Equals, "fakeContent")
-		c.Assert(outputStruct.Chunks[0].SourceFileName, quicktest.Equals, "fakeFile")
-
-	})
-
 }
 
 func Test_matchFileStatus(t *testing.T) {
@@ -436,25 +367,24 @@ func Test_matchFileStatus(t *testing.T) {
 			e.execute = e.matchFileStatus
 
 			input := MatchFileStatusInput{
-				Namespace: "fakeNs",
-				CatalogID: "fakeID",
-				FileUID:   "fakeFileID",
+				Namespace:       "fakeNs",
+				KnowledgeBaseID: "fakeID",
+				FileUID:         "fakeFileID",
 			}
 
 			inputStruct, _ := base.ConvertToStructpb(input)
 
 			clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
-			clientMock.ListCatalogFilesMock.
-				Expect(minimock.AnyContext, &artifactpb.ListCatalogFilesRequest{
-					NamespaceId: "fakeNs",
-					CatalogId:   "fakeID",
-					Filter: &artifactpb.ListCatalogFilesFilter{
-						FileUids: []string{"fakeFileID"},
-					},
+			filter := fmt.Sprintf(`id="%s"`, "fakeFileID")
+			clientMock.ListFilesMock.
+				Expect(minimock.AnyContext, &artifactpb.ListFilesRequest{
+					NamespaceId:     "fakeNs",
+					KnowledgeBaseId: "fakeID",
+					Filter:          &filter,
 				}).
 				Times(1).
-				Return(&artifactpb.ListCatalogFilesResponse{
+				Return(&artifactpb.ListFilesResponse{
 					Files: []*artifactpb.File{
 						{
 							ProcessStatus: tc.status,

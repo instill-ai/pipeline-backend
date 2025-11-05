@@ -7,14 +7,13 @@ description: "Learn about how to set up a Instill Artifact component https://git
 
 The Instill Artifact component is a data component that allows users to access files and perform RAG-based search and retrieval through catalogs in the Instill Core platform.
 It can carry out the following tasks:
-- [Upload File](#upload-file)
-- [Upload Files](#upload-files)
+- [Create File](#create-file)
+- [Create Files](#create-files)
 - [Get Files Metadata](#get-files-metadata)
 - [Get Chunks Metadata](#get-chunks-metadata)
 - [Get File in Markdown](#get-file-in-markdown)
 - [Match File Status](#match-file-status)
-- [Retrieve](#retrieve)
-- [Ask](#ask)
+- [Search](#search)
 
 To use Artifact Component, you will need to set up the OpenAI API key for self-hosted deployment of Instill Core.
 You can do this by setting the `OPENAI_API_KEY` environment variable.
@@ -32,7 +31,7 @@ The component definition and tasks are defined in the [definition.yaml](https://
 
 ## Supported Tasks
 
-### Upload File
+### Create File
 
 Upload and process the files into chunks into Catalog.
 
@@ -40,19 +39,19 @@ Upload and process the files into chunks into Catalog.
 
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_UPLOAD_FILE` |
-| [Options](#upload-file-options) (required) | `options` | object | Choose to upload the files to existing catalog or create a new catalog. |
+| Task ID (required) | `task` | string | `TASK_CREATE_FILE` |
+| [Options](#create-file-options) (required) | `options` | object | Choose to upload the files to existing catalog or create a new catalog. |
 
 </div>
 
 <details>
 <summary>The <code>options</code> Object </summary>
 
-<h4 id="upload-file-options">Options</h4>
+<h4 id="create-file-options">Options</h4>
 
 `options` must fulfill one of the following schemas:
 
-<h5 id="upload-file-existing-catalog"><code>Existing Catalog</code></h5>
+<h5 id="create-file-existing-catalog"><code>Existing Catalog</code></h5>
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -66,7 +65,7 @@ Upload and process the files into chunks into Catalog.
 | Option | `option` | string | Must be `"existing catalog"` |
 </div>
 
-<h5 id="upload-file-create-new-catalog"><code>Create New Catalog</code></h5>
+<h5 id="create-file-create-new-catalog"><code>Create New Catalog</code></h5>
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -86,16 +85,16 @@ Upload and process the files into chunks into Catalog.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [File](#upload-file-file) | `file` | object | Result of uploading file into catalog. |
+| [File](#create-file-file) | `file` | object | Result of uploading file into catalog. |
 | Status | `status` | boolean | The status of trigger file processing, if succeeded, return true. |
 
 </div>
 
 
 <details>
-<summary> Output Objects in Upload File</summary>
+<summary> Output Objects in Create File</summary>
 
-<h4 id="upload-file-file">File</h4>
+<h4 id="create-file-file">File</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -113,7 +112,7 @@ Upload and process the files into chunks into Catalog.
 </details>
 
 
-### Upload Files
+### Create Files
 
 Upload and process the files into chunks into Catalog.
 
@@ -121,19 +120,19 @@ Upload and process the files into chunks into Catalog.
 
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_UPLOAD_FILES` |
-| [Options](#upload-files-options) (required) | `options` | object | Choose to upload the files to existing catalog or create a new catalog. |
+| Task ID (required) | `task` | string | `TASK_CREATE_FILES` |
+| [Options](#create-files-options) (required) | `options` | object | Choose to upload the files to existing catalog or create a new catalog. |
 
 </div>
 
 <details>
 <summary>The <code>options</code> Object </summary>
 
-<h4 id="upload-files-options">Options</h4>
+<h4 id="create-files-options">Options</h4>
 
 `options` must fulfill one of the following schemas:
 
-<h5 id="upload-files-existing-catalog"><code>Existing Catalog</code></h5>
+<h5 id="create-files-existing-catalog"><code>Existing Catalog</code></h5>
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -147,7 +146,7 @@ Upload and process the files into chunks into Catalog.
 | Option | `option` | string | Must be `"existing catalog"` |
 </div>
 
-<h5 id="upload-files-create-new-catalog"><code>Create New Catalog</code></h5>
+<h5 id="create-files-create-new-catalog"><code>Create New Catalog</code></h5>
 
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
@@ -167,16 +166,16 @@ Upload and process the files into chunks into Catalog.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Files](#upload-files-files) | `files` | array[object] | Files metadata in catalog. |
+| [Files](#create-files-files) | `files` | array[object] | Files metadata in catalog. |
 | Status | `status` | boolean | The status of trigger file processing, if ALL succeeded, return true. |
 
 </div>
 
 
 <details>
-<summary> Output Objects in Upload Files</summary>
+<summary> Output Objects in Create Files</summary>
 
-<h4 id="upload-files-files">Files</h4>
+<h4 id="create-files-files">Files</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -336,22 +335,22 @@ Check if the specified file's processing status is done.
 
 </div>
 
-### Retrieve
+### Search
 
-search the chunks in the catalog.
+search the chunks in the knowledge base.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_RETRIEVE` |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
+| Task ID (required) | `task` | string | `TASK_SEARCH` |
+| Knowledge Base ID (required) | `knowledge-base-id` | string | Knowledge Base ID that you input to search files in the Knowledge Base. |
 | Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
 | Text Prompt (required) | `text-prompt` | string | The prompt string to search the chunks. |
 | Top K | `top-k` | integer | The number of top chunks to return. The range is from 1~20, and default is 5. |
 | File UIDs | `file-uids` | array[string] | Optional list of file UIDs to filter the results by. The elements of the list must be UUID-formatted strings. |
 | File Media Type | `file-media-type` | string | The media type to filter, empty for all. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`document`</li><li>`image`</li><li>`audio`</li><li>`video`</li></ul></details> |
-| Content Type | `content-type` | string | The content type to filter, empty for all. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`chunk`</li><li>`summary`</li><li>`augmented`</li></ul></details> |
+| Chunk Type | `chunk-type` | string | The chunk type to filter, empty for all. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`content`</li><li>`summary`</li><li>`augmented`</li></ul></details> |
 
 </div>
 
@@ -360,22 +359,22 @@ search the chunks in the catalog.
 
 | Output | Field ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Chunks](#retrieve-chunks) | `chunks` | array[object] | Chunks data from smart search. |
+| [Chunks](#search-chunks) | `chunks` | array[object] | Chunks data from smart search. |
 
 </div>
 
 
 <details>
-<summary> Output Objects in Retrieve</summary>
+<summary> Output Objects in Search</summary>
 
-<h4 id="retrieve-chunks">Chunks</h4>
+<h4 id="search-chunks">Chunks</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
-| [Chunk Reference](#retrieve-chunk-reference) | `reference` | object | Reference to the position of the chunk within the original file. |
+| [Chunk Reference](#search-chunk-reference) | `reference` | object | Reference to the position of the chunk within the original file. |
 | Similarity | `similarity-score` | number | The similarity score of the chunk. |
 | Source File Name | `source-file-name` | string | The name of the source file. |
 | Source File UID | `source-file-uid` | string | The UID of the source file. |
@@ -383,99 +382,18 @@ search the chunks in the catalog.
 
 </div>
 
-<h4 id="retrieve-chunk-reference">Chunk Reference</h4>
+<h4 id="search-chunk-reference">Chunk Reference</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [File Position](#retrieve-file-position) | `end` | object | Position within a file as coordinates ina specific unit. The number of dimensions of the coordinates depends on the unit type. |
-| [File Position](#retrieve-file-position) | `start` | object | Position within a file as coordinates ina specific unit. The number of dimensions of the coordinates depends on the unit type. |
+| [File Position](#search-file-position) | `end` | object | Position within a file as coordinates ina specific unit. The number of dimensions of the coordinates depends on the unit type. |
+| [File Position](#search-file-position) | `start` | object | Position within a file as coordinates ina specific unit. The number of dimensions of the coordinates depends on the unit type. |
 
 </div>
 
-<h4 id="retrieve-file-position">File Position</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Coordinates | `coordinates` | array | Position value. |
-| Unit | `unit` | string | Unit of measurement for a position within a file. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`UNIT_CHARACTER`</li><li>`UNIT_PAGE`</li><li>`UNIT_TIME_MS`</li><li>`UNIT_PIXEL`</li></ul></details> |
-
-</div>
-
-<h4 id="retrieve-file-position">File Position</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Coordinates | `coordinates` | array | Position value. |
-| Unit | `unit` | string | Unit of measurement for a position within a file. <br/><details><summary><strong>Enum values</strong></summary><ul><li>`UNIT_CHARACTER`</li><li>`UNIT_PAGE`</li><li>`UNIT_TIME_MS`</li><li>`UNIT_PIXEL`</li></ul></details> |
-
-</div>
-</details>
-
-
-### Ask
-
-Reply the questions based on the files in the catalog.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_ASK` |
-| Catalog ID (required) | `catalog-id` | string | Catalog ID that you input to search files in the Catalog. |
-| Namespace (required) | `namespace` | string | Fill in your namespace, you can get namespace through the tab of switching namespace. |
-| Question (required) | `question` | string | The question to reply. |
-| Top K | `top-k` | integer | The number of top answers to return. The range is from 1~20, and default is 5. |
-| File UIDs | `file-uids` | array[string] | Optional list of file UIDs to filter the results by. The elements of the list must be UUID-formatted strings. |
-
-</div>
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | Field ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Answer | `answer` | string | Answers data from smart search. |
-| [Chunks](#ask-chunks) (optional) | `chunks` | array[object] | Chunks data to answer question. |
-
-</div>
-
-
-<details>
-<summary> Output Objects in Ask</summary>
-
-<h4 id="ask-chunks">Chunks</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Chunk UID | `chunk-uid` | string | The unique identifier of the chunk. |
-| [Chunk Reference](#ask-chunk-reference) | `reference` | object | Reference to the position of the chunk within the original file. |
-| Similarity | `similarity-score` | number | The similarity score of the chunk. |
-| Source File Name | `source-file-name` | string | The name of the source file. |
-| Source File UID | `source-file-uid` | string | The UID of the source file. |
-| Text Content | `text-content` | string | The text content of the chunk. |
-
-</div>
-
-<h4 id="ask-chunk-reference">Chunk Reference</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [File Position](#ask-file-position) | `end` | object | Position within a file as coordinates ina specific unit. The number of dimensions of the coordinates depends on the unit type. |
-| [File Position](#ask-file-position) | `start` | object | Position within a file as coordinates ina specific unit. The number of dimensions of the coordinates depends on the unit type. |
-
-</div>
-
-<h4 id="ask-file-position">File Position</h4>
+<h4 id="search-file-position">File Position</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -486,7 +404,7 @@ Reply the questions based on the files in the catalog.
 
 </div>
 
-<h4 id="ask-file-position">File Position</h4>
+<h4 id="search-file-position">File Position</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
