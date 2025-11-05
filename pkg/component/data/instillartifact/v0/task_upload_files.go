@@ -37,18 +37,18 @@ func (e *execution) uploadFiles(input *structpb.Struct) (*structpb.Struct, error
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
 	if inputStruct.Options.Option == "create new catalog" {
-		_, err = artifactClient.CreateCatalog(ctx, &artifactpb.CreateCatalogRequest{
+		_, err = artifactClient.CreateKnowledgeBase(ctx, &artifactpb.CreateKnowledgeBaseRequest{
 			NamespaceId: inputStruct.Options.Namespace,
-			Name:        inputStruct.Options.CatalogID,
+			Id:          inputStruct.Options.KnowledgeBaseID,
 			Description: inputStruct.Options.Description,
 			Tags:        inputStruct.Options.Tags,
 		})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "knowledge base name already exists") {
-				log.Println("Catalog already exists, skipping creation")
+				log.Println("Knowledge base already exists, skipping creation")
 			} else {
-				return nil, fmt.Errorf("failed to create new catalog: %w", err)
+				return nil, fmt.Errorf("failed to create new knowledge base: %w", err)
 			}
 		}
 	}
@@ -57,54 +57,43 @@ func (e *execution) uploadFiles(input *structpb.Struct) (*structpb.Struct, error
 		Files: []FileOutput{},
 	}
 
-	fileUIDs := []string{}
 	for i, file := range inputStruct.Options.Files {
-		fileType, err := util.GetFileType(file, inputStruct.Options.FileNames[i])
+		_, err := util.GetFileType(file, inputStruct.Options.FileNames[i])
 		if err != nil {
 			return nil, fmt.Errorf("failed to get file type: %w", err)
 		}
-		typeString := "FILE_TYPE_" + strings.ToUpper(fileType)
 
 		content := util.GetFileBase64Content(file)
 
-		typePB := artifactpb.FileType_value[typeString]
-		filePB := &artifactpb.File{
-			Name:    inputStruct.Options.FileNames[i],
-			Type:    artifactpb.FileType(typePB),
-			Content: content,
-		}
-		uploadRes, err := artifactClient.UploadCatalogFile(ctx, &artifactpb.UploadCatalogFileRequest{
-			NamespaceId: inputStruct.Options.Namespace,
-			CatalogId:   inputStruct.Options.CatalogID,
-			File:        filePB,
+		// CreateFile now handles upload and auto-triggers processing
+		createRes, err := artifactClient.CreateFile(ctx, &artifactpb.CreateFileRequest{
+			NamespaceId:     inputStruct.Options.Namespace,
+			KnowledgeBaseId: inputStruct.Options.KnowledgeBaseID,
+			File: &artifactpb.File{
+				Filename: inputStruct.Options.FileNames[i],
+				Content:  content,
+			},
 		})
 
 		if err != nil {
-			return nil, fmt.Errorf("failed to upload file: %w", err)
+			return nil, fmt.Errorf("failed to create file: %w", err)
 		}
 
-		uploadedFilePB := uploadRes.File
-
-		fileUIDs = append(fileUIDs, uploadedFilePB.FileUid)
+		createdFilePB := createRes.File
 
 		output.Files = append(output.Files, FileOutput{
-			FileUID:    uploadedFilePB.FileUid,
-			FileName:   uploadedFilePB.Name,
-			FileType:   artifactpb.FileType_name[int32(uploadedFilePB.Type)],
-			CreateTime: uploadedFilePB.CreateTime.AsTime().Format(time.RFC3339),
-			UpdateTime: uploadedFilePB.UpdateTime.AsTime().Format(time.RFC3339),
-			Size:       uploadedFilePB.Size,
-			CatalogID:  inputStruct.Options.CatalogID,
+			FileUID:         createdFilePB.Uid,
+			FileName:        createdFilePB.Filename,
+			FileType:        createdFilePB.Type.String(),
+			CreateTime:      createdFilePB.CreateTime.AsTime().Format(time.RFC3339),
+			UpdateTime:      createdFilePB.UpdateTime.AsTime().Format(time.RFC3339),
+			Size:            createdFilePB.Size,
+			KnowledgeBaseID: inputStruct.Options.KnowledgeBaseID,
 		})
 	}
 
-	_, err = artifactClient.ProcessCatalogFiles(ctx, &artifactpb.ProcessCatalogFilesRequest{
-		FileUids: fileUIDs,
-	})
-
-	if err == nil {
-		output.Status = true
-	}
+	// Files now auto-process, no need for separate ProcessCatalogFiles call
+	output.Status = true
 
 	return base.ConvertToStructpb(output)
 }

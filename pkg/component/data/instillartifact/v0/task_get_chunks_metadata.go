@@ -28,9 +28,9 @@ func (e *execution) getChunksMetadata(input *structpb.Struct) (*structpb.Struct,
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
 	chunksRes, err := artifactClient.ListChunks(ctx, &artifactpb.ListChunksRequest{
-		NamespaceId: inputStruct.Namespace,
-		CatalogId:   inputStruct.CatalogID,
-		FileUid:     inputStruct.FileUID,
+		NamespaceId:     inputStruct.Namespace,
+		KnowledgeBaseId: inputStruct.KnowledgeBaseID,
+		FileId:          inputStruct.FileUID,
 	})
 
 	if err != nil {
@@ -43,13 +43,13 @@ func (e *execution) getChunksMetadata(input *structpb.Struct) (*structpb.Struct,
 
 	for _, chunkPB := range chunksRes.Chunks {
 		output.Chunks = append(output.Chunks, ChunkOutput{
-			ChunkUID:        chunkPB.ChunkUid,
+			ChunkUID:        chunkPB.Uid,
 			Retrievable:     chunkPB.Retrievable,
-			StartPosition:   chunkPB.StartPos,
-			EndPosition:     chunkPB.EndPos,
+			StartPosition:   0, // deprecated field
+			EndPosition:     0, // deprecated field
 			TokenCount:      chunkPB.Tokens,
 			CreateTime:      chunkPB.CreateTime.AsTime().Format(time.RFC3339),
-			OriginalFileUID: chunkPB.OriginalFileUid,
+			OriginalFileUID: chunkPB.OriginalFileId,
 		})
 	}
 

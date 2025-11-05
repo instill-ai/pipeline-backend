@@ -82,7 +82,7 @@ $defs:
       reference:
         description: Reference to the position of the chunk within the original file.
         uiOrder: 5
-        $ref: '#/$defs/chunk-reference'
+        $ref: "#/$defs/chunk-reference"
     required:
       - chunk-uid
       - similarity-score
@@ -179,9 +179,9 @@ $defs:
     type: object
     properties:
       start:
-        $ref: '#/$defs/file-position'
+        $ref: "#/$defs/file-position"
       end:
-        $ref: '#/$defs/file-position'
+        $ref: "#/$defs/file-position"
     required:
       - start
       - end
@@ -214,7 +214,7 @@ $defs:
       - unit
       - coordinates
     uiOrder: 0
-TASK_UPLOAD_FILE:
+TASK_CREATE_FILE:
   shortDescription: Upload and process the files into chunks into Catalog.
   input:
     description: Input.
@@ -331,7 +331,7 @@ TASK_UPLOAD_FILE:
       - status
     title: Output
     type: object
-TASK_UPLOAD_FILES:
+TASK_CREATE_FILES:
   shortDescription: Upload and process the files into chunks into Catalog.
   input:
     description: Input.
@@ -613,18 +613,18 @@ TASK_GET_FILE_IN_MARKDOWN:
       - update-time
     title: Output
     type: object
-TASK_RETRIEVE:
-  shortDescription: search the chunks in the catalog.
+TASK_SEARCH:
+  shortDescription: search the chunks in the knowledge base.
   input:
     uiOrder: 0
     properties:
       namespace:
         $ref: "#/$defs/namespace"
-      catalog-id:
-        description: Catalog ID that you input to search files in the Catalog.
+      knowledge-base-id:
+        description: Knowledge Base ID that you input to search files in the Knowledge Base.
         uiOrder: 0
         type: string
-        title: Catalog ID
+        title: Knowledge Base ID
       text-prompt:
         description: The prompt string to search the chunks.
         uiOrder: 1
@@ -655,18 +655,18 @@ TASK_RETRIEVE:
           - audio
           - video
         title: File media type
-      content-type:
-        description: The content type to filter, empty for all.
+      chunk-type:
+        description: The chunk type to filter, empty for all.
         uiOrder: 5
         type: string
         enum:
-          - chunk
+          - content
           - summary
           - augmented
-        title: Content type
+        title: Chunk type
     required:
       - namespace
-      - catalog-id
+      - knowledge-base-id
       - text-prompt
     title: Input
     type: object

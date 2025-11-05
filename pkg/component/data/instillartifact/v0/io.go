@@ -14,8 +14,8 @@ type UploadData struct {
 	Option string `json:"option"`
 	// Namespace for uploading a file
 	Namespace string `json:"namespace"`
-	// Catalog ID for uploading a file
-	CatalogID string `json:"catalog-id"`
+	// Knowledge Base ID for uploading a file
+	KnowledgeBaseID string `json:"knowledge-base-id"`
 	// Base64 encoded file content
 	File string `json:"file"`
 	// File name
@@ -49,7 +49,7 @@ type FileOutput struct {
 	// Size of the file
 	Size int64 `json:"size"`
 	// Catalog ID
-	CatalogID string `json:"catalog-id"`
+	KnowledgeBaseID string `json:"knowledge-base-id"`
 }
 
 // GetFilesMetadataInput is the input for getting files metadata
@@ -64,8 +64,8 @@ type UploadMultipleData struct {
 	Option string `json:"option"`
 	// Namespace for uploading multiple files
 	Namespace string `json:"namespace"`
-	// Catalog ID for uploading multiple files
-	CatalogID string `json:"catalog-id"`
+	// Knowledge Base ID for uploading multiple files
+	KnowledgeBaseID string `json:"knowledge-base-id"`
 	// Base64 encoded files
 	Files []string `json:"files"`
 	// File names
@@ -88,8 +88,8 @@ type UploadFilesOutput struct {
 type GetFilesMetadataInput struct {
 	// Namespace for getting files metadata
 	Namespace string `json:"namespace"`
-	// Catalog ID for getting files metadata
-	CatalogID string `json:"catalog-id"`
+	// Knowledge Base ID for getting files metadata
+	KnowledgeBaseID string `json:"knowledge-base-id"`
 }
 
 // GetFilesMetadataOutput is the output for getting files metadata
@@ -102,8 +102,8 @@ type GetFilesMetadataOutput struct {
 type GetChunksMetadataInput struct {
 	// Namespace for getting chunks metadata
 	Namespace string `json:"namespace"`
-	// Catalog ID for getting chunks metadata
-	CatalogID string `json:"catalog-id"`
+	// Knowledge Base ID for getting chunks metadata
+	KnowledgeBaseID string `json:"knowledge-base-id"`
 	// File UID for getting chunks metadata
 	FileUID string `json:"file-uid"`
 }
@@ -136,8 +136,8 @@ type ChunkOutput struct {
 type GetFileInMarkdownInput struct {
 	// Namespace for getting a file in markdown
 	Namespace string `json:"namespace"`
-	// Catalog ID for getting a file in markdown
-	CatalogID string `json:"catalog-id"`
+	// Knowledge Base ID for getting a file in markdown
+	KnowledgeBaseID string `json:"knowledge-base-id"`
 	// File UID for getting a file in markdown
 	FileUID string `json:"file-uid"`
 }
@@ -158,8 +158,8 @@ type GetFileInMarkdownOutput struct {
 type SearchChunksInput struct {
 	// Namespace for searching chunks
 	Namespace string `json:"namespace"`
-	// Catalog ID for searching chunks
-	CatalogID string `json:"catalog-id"`
+	// Knowledge Base ID for searching chunks
+	KnowledgeBaseID string `json:"knowledge-base-id"`
 	// Text prompt for searching chunks
 	TextPrompt string `json:"text-prompt"`
 	// TopK for searching chunks
@@ -168,8 +168,8 @@ type SearchChunksInput struct {
 	FileUIDs []string `json:"file-uids"`
 	// The media type to filter
 	FileMediaType string `json:"file-media-type"`
-	// The content type to filter
-	ContentType string `json:"content-type"`
+	// The chunk type to filter
+	ChunkType string `json:"chunk-type"`
 }
 
 // SearchChunksOutput is the output for searching chunks
@@ -212,8 +212,8 @@ type SimilarityChunk struct {
 type QueryInput struct {
 	// Namespace for querying
 	Namespace string `json:"namespace"`
-	// Catalog ID for querying
-	CatalogID string `json:"catalog-id"`
+	// Knowledge Base ID for querying
+	KnowledgeBaseID string `json:"knowledge-base-id"`
 	// Question for querying
 	Question string `json:"question"`
 	// TopK for querying
@@ -234,8 +234,8 @@ type QueryOutput struct {
 type MatchFileStatusInput struct {
 	// Namespace for matching file status
 	Namespace string `json:"namespace"`
-	// Catalog ID for matching file status
-	CatalogID string `json:"catalog-id"`
+	// Knowledge Base ID for matching file status
+	KnowledgeBaseID string `json:"knowledge-base-id"`
 	// File UID for matching file status
 	FileUID string `json:"file-uid"`
 }
@@ -250,8 +250,8 @@ type MatchFileStatusOutput struct {
 type SyncFilesInput struct {
 	// Namespace for syncing files
 	Namespace string `json:"namespace"`
-	// Catalog ID for syncing files
-	CatalogID string `json:"catalog-id"`
+	// Knowledge Base ID for syncing files
+	KnowledgeBaseID string `json:"knowledge-base-id"`
 	// Files for syncing from the third party system
 	ThirdPartyFiles []ThirdPartyFile `json:"third-party-files"`
 }
