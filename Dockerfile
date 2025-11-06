@@ -118,6 +118,7 @@ RUN apt update && \
     tesseract-ocr \
     libtesseract-dev \
     libreoffice \
+    wkhtmltopdf \
     libsoxr-dev \
     libheif1 \
     chromium \

@@ -282,7 +282,7 @@ func convertToAVIF(raw []byte, sourceContentType string) ([]byte, error) {
 }
 
 func convertAudio(raw []byte, sourceContentType, targetContentType string) ([]byte, error) {
-	supportedFormats := []string{MP3, WAV, AAC, OGG, FLAC, M4A, WMA, AIFF, OCTETSTREAM}
+	supportedFormats := []string{MP3, WAV, AAC, OGG, FLAC, M4A, WMA, AIFF, OCTETSTREAM, "video/x-ms-asf", "video/mp4"}
 	if !slices.Contains(supportedFormats, sourceContentType) || !slices.Contains(supportedFormats, targetContentType) {
 		return nil, fmt.Errorf("convert audio: unsupported format: source=%s, target=%s", sourceContentType, targetContentType)
 	}
@@ -317,7 +317,7 @@ func convertAudio(raw []byte, sourceContentType, targetContentType string) ([]by
 }
 
 func convertVideo(raw []byte, sourceContentType, targetContentType string) ([]byte, error) {
-	supportedFormats := []string{MP4, AVI, MOV, WEBM, MKV, FLV, WMV, MPEG, OCTETSTREAM}
+	supportedFormats := []string{MP4, AVI, MOV, WEBM, MKV, FLV, WMV, MPEG, OCTETSTREAM, "video/x-ms-asf"}
 	if !slices.Contains(supportedFormats, sourceContentType) || !slices.Contains(supportedFormats, targetContentType) {
 		return nil, fmt.Errorf("convert video: unsupported format: source=%s, target=%s", sourceContentType, targetContentType)
 	}

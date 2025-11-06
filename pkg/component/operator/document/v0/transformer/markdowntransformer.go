@@ -88,14 +88,11 @@ func (t *pdfToMarkdownTransformer) transform() (converterOutput, error) {
 	}
 	benchmarkLog = benchmarkLog.With(zap.Time("repair", time.Now()))
 
-	paramsJSON, err := json.Marshal(map[string]interface{}{
+	params := map[string]interface{}{
 		"PDF":                    pdfBase64,
 		"display-image-tag":      t.pdfToMarkdownStruct.displayImageTag,
 		"display-all-page-image": t.pdfToMarkdownStruct.displayAllPageImage,
 		"resolution":             t.pdfToMarkdownStruct.resolution,
-	})
-	if err != nil {
-		return output, fmt.Errorf("marshalling conversion params: %w", err)
 	}
 
 	var pythonCode string
@@ -105,34 +102,12 @@ func (t *pdfToMarkdownTransformer) transform() (converterOutput, error) {
 	default:
 		pythonCode = pageImageProcessor + pdfTransformer + pdfPlumberPDFToMDConverter
 	}
-	cmdRunner := exec.Command(pythonInterpreter, "-c", pythonCode)
-	stdin, err := cmdRunner.StdinPipe()
-	if err != nil {
-		return output, fmt.Errorf("creating stdin pipe: %w", err)
-	}
 
-	errChan := make(chan error, 1)
-	go func() {
-		defer stdin.Close()
-		_, err := stdin.Write(paramsJSON)
-		if err != nil {
-			errChan <- fmt.Errorf("writing to stdin: %w", err)
-			return
-		}
-		errChan <- nil
-	}()
-
-	outputBytes, err := cmdRunner.CombinedOutput()
+	outputBytes, err := util.ExecutePythonCode(pythonCode, params)
 
 	benchmarkLog = benchmarkLog.With(zap.Time("convert", time.Now()))
 	if err != nil {
-		errorStr := string(outputBytes)
-		return output, fmt.Errorf("running Python script: %w, %s", err, errorStr)
-	}
-
-	err = <-errChan
-	if err != nil {
-		return output, err
+		return output, fmt.Errorf("running Python script: %w", err)
 	}
 
 	err = json.Unmarshal(outputBytes, &output)
@@ -388,27 +363,27 @@ func encodeFileToBase64(inputPath string) (string, error) {
 	return base64.StdEncoding.EncodeToString(data), nil
 }
 
-// ConvertToPDF converts a base64 encoded document to a PDF using LibreOffice.
-// It uses a mutex to ensure only one LibreOffice process runs at a time, preventing
+// ConvertToPDF converts a base64 encoded document to a PDF using LibreOffice or wkhtmltopdf.
+// It uses a mutex to ensure only one conversion process runs at a time, preventing
 // race conditions and permission issues.
 func ConvertToPDF(base64Encoded, fileExtension string) (string, error) {
-	// Serialize LibreOffice operations to prevent race conditions
+	// Serialize operations to prevent race conditions
 	libreOfficeMutex.Lock()
 	defer libreOfficeMutex.Unlock()
 
-	tempPpt, err := os.CreateTemp("", "temp_document.*."+fileExtension)
+	tempFile, err := os.CreateTemp("", "temp_document.*."+fileExtension)
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary document: %w", err)
 	}
-	inputFileName := tempPpt.Name()
+	inputFileName := tempFile.Name()
 	defer os.Remove(inputFileName)
 
-	err = writeDecodeToFile(base64Encoded, tempPpt)
+	err = writeDecodeToFile(base64Encoded, tempFile)
 	if err != nil {
 		return "", fmt.Errorf("failed to decode base64 to file: %w", err)
 	}
 
-	tempDir, err := os.MkdirTemp("", "libreoffice")
+	tempDir, err := os.MkdirTemp("", "conversion")
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary directory: %w", err)
 	}
@@ -419,24 +394,54 @@ func ConvertToPDF(base64Encoded, fileExtension string) (string, error) {
 		return "", fmt.Errorf("failed to set permissions on temporary directory: %w", err)
 	}
 
-	cmd := exec.Command("libreoffice", "--headless", "--convert-to", "pdf", "--outdir", tempDir, inputFileName)
-	cmd.Env = append(os.Environ(), "HOME="+tempDir)
+	var cmd *exec.Cmd
+	var outputFileName string
+
+	// Use wkhtmltopdf for HTML files if available, otherwise use LibreOffice
+	if fileExtension == "html" {
+		// Try wkhtmltopdf first for HTML files (better HTML rendering)
+		outputFileName = filepath.Join(tempDir, strings.TrimSuffix(filepath.Base(inputFileName), ".html")+".pdf")
+
+		// Check if wkhtmltopdf is available
+		if _, err := exec.LookPath("wkhtmltopdf"); err == nil {
+			// wkhtmltopdf is available, use it
+			cmd = exec.Command("wkhtmltopdf", inputFileName, outputFileName)
+		} else {
+			// wkhtmltopdf not available, use LibreOffice for HTML with specific HTML import filter
+			cmd = exec.Command("libreoffice", "--headless", "--infilter=HTML", "--convert-to", "pdf", "--outdir", tempDir, inputFileName)
+			cmd.Env = append(os.Environ(), "HOME="+tempDir)
+			outputFileName = filepath.Join(tempDir, strings.TrimSuffix(filepath.Base(inputFileName), ".html")+".pdf")
+		}
+	} else {
+		// Use LibreOffice for all other document types
+		cmd = exec.Command("libreoffice", "--headless", "--convert-to", "pdf", "--outdir", tempDir, inputFileName)
+		cmd.Env = append(os.Environ(), "HOME="+tempDir)
+		outputFileName = filepath.Join(tempDir, strings.TrimSuffix(filepath.Base(inputFileName), "."+fileExtension)+".pdf")
+	}
 
 	// Capture both stdout and stderr for better error reporting
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("failed to execute LibreOffice command: %s (output: %s)", err.Error(), string(output))
+		return "", fmt.Errorf("failed to execute conversion command: %s (output: %s)", err.Error(), string(output))
 	}
 
-	// With --outdir option, the generated PDF will be in the temp directory
-	noPathFileName := filepath.Base(inputFileName)
-	tempPDFName := filepath.Join(tempDir, strings.TrimSuffix(noPathFileName, filepath.Ext(inputFileName))+".pdf")
-	defer os.Remove(tempPDFName)
+	// Check if the output file exists
+	if _, err := os.Stat(outputFileName); os.IsNotExist(err) {
+		// For LibreOffice fallback, try the standard LibreOffice output location
+		noPathFileName := filepath.Base(inputFileName)
+		standardPDFName := filepath.Join(tempDir, strings.TrimSuffix(noPathFileName, filepath.Ext(inputFileName))+".pdf")
+		if _, err := os.Stat(standardPDFName); err == nil {
+			outputFileName = standardPDFName
+		} else {
+			return "", fmt.Errorf("output PDF file not found at expected location: %s", outputFileName)
+		}
+	}
 
-	base64PDF, err := encodeFileToBase64(tempPDFName)
+	defer os.Remove(outputFileName)
+
+	base64PDF, err := encodeFileToBase64(outputFileName)
 	if err != nil {
-		// In the different containers, we have the different versions of LibreOffice, which means the behavior of LibreOffice may be different.
-		// So, we need to handle the case when the generated PDF is not in the temp directory.
+		// Handle the case when the input is already a PDF
 		if fileExtension == "pdf" {
 			base64PDF, err := encodeFileToBase64(inputFileName)
 			if err != nil {
