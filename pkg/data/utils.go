@@ -143,18 +143,19 @@ func isAudioContentType(contentType string) bool {
 		contentType == OGG ||
 		contentType == FLAC ||
 		contentType == M4A ||
-		contentType == WMA
+		contentType == WMA ||
+		contentType == WEBMAUDIO
 }
 
 func isVideoContentType(contentType string) bool {
 	return contentType == MPEG ||
 		contentType == AVI ||
 		contentType == MOV ||
-		contentType == WEBM ||
 		contentType == MKV ||
 		contentType == FLV ||
 		contentType == WMV ||
-		contentType == MP4
+		contentType == MP4 ||
+		contentType == WEBMVIDEO
 }
 
 func isDocumentContentType(contentType string) bool {

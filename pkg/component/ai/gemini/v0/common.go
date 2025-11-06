@@ -51,13 +51,13 @@ var (
 	}
 
 	geminiVideoFormats = []string{
-		data.MP4,  // MP4
-		data.MPEG, // MPEG
-		data.MOV,  // MOV (video/quicktime)
-		data.AVI,  // AVI (video/x-msvideo)
-		data.FLV,  // FLV (video/x-flv)
-		data.WEBM, // WEBM
-		data.WMV,  // WMV (video/x-ms-wmv)
+		data.MP4,       // MP4
+		data.MPEG,      // MPEG
+		data.MOV,       // MOV (video/quicktime)
+		data.AVI,       // AVI (video/x-msvideo)
+		data.FLV,       // FLV (video/x-flv)
+		data.WEBMVIDEO, // WEBM
+		data.WMV,       // WMV (video/x-ms-wmv)
 	}
 
 	convertibleVideoFormats = []string{

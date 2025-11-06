@@ -25,14 +25,15 @@ type audioData struct {
 func (audioData) IsValue() {}
 
 const (
-	MP3  = "audio/mpeg"
-	WAV  = "audio/wav"
-	AAC  = "audio/aac"
-	OGG  = "audio/ogg"
-	FLAC = "audio/flac"
-	M4A  = "audio/mp4"
-	WMA  = "audio/x-ms-wma"
-	AIFF = "audio/aiff"
+	MP3       = "audio/mpeg"
+	WAV       = "audio/wav"
+	AAC       = "audio/aac"
+	OGG       = "audio/ogg"
+	FLAC      = "audio/flac"
+	M4A       = "audio/mp4"
+	WMA       = "audio/x-ms-wma"
+	AIFF      = "audio/aiff"
+	WEBMAUDIO = "audio/webm"
 )
 
 var audioGetter = map[string]func(*audioData) (format.Value, error){
@@ -46,6 +47,7 @@ var audioGetter = map[string]func(*audioData) (format.Value, error){
 	"m4a":         func(a *audioData) (format.Value, error) { return a.Convert(M4A) },
 	"wma":         func(a *audioData) (format.Value, error) { return a.Convert(WMA) },
 	"aiff":        func(a *audioData) (format.Value, error) { return a.Convert(AIFF) },
+	"webm":        func(a *audioData) (format.Value, error) { return a.Convert(WEBMAUDIO) },
 }
 
 func NewAudioFromBytes(b []byte, contentType, filename string, isUnified bool) (*audioData, error) {
@@ -63,6 +65,12 @@ func NewAudioFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, 
 func createAudioData(b []byte, contentType, filename string, isUnified bool) (*audioData, error) {
 	// Normalize MIME type first
 	normalizedContentType := normalizeMIMEType(contentType)
+
+	// Special handling: if video/webm is passed for audio, convert to audio/webm
+	if normalizedContentType == "video/webm" {
+		normalizedContentType = WEBMAUDIO
+	}
+
 	finalContentType := normalizedContentType
 
 	// If the audio should be unified, convert it to OGG (the internal unified audio format)

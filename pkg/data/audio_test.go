@@ -31,6 +31,7 @@ func TestNewAudioFromBytes(t *testing.T) {
 		{"Valid M4A audio (non-standard MIME)", "small_sample.m4a", "audio/x-m4a", 1.0},
 		{"Valid WMA audio", "small_sample.wma", "audio/x-ms-wma", 1.0},
 		{"Valid AIFF audio", "small_sample.aiff", "audio/aiff", 1.0},
+		{"Valid WebM audio", "small_sample_audio.webm", "audio/webm", 1.0},
 		{"Invalid file type", "sample_640_426.png", "", 0.0},
 		{"Invalid audio format", "", "", 0.0},
 		{"Empty audio bytes", "", "", 0.0},
@@ -142,6 +143,9 @@ func TestAudioConvert(t *testing.T) {
 		{"FLAC to OGG", "small_sample.flac", "audio/flac", "audio/ogg"},
 		{"M4A to WAV", "small_sample.m4a", "audio/mp4", "audio/wav"},
 		{"AIFF to MP3", "small_sample.aiff", "audio/aiff", "audio/mpeg"},
+		{"WAV to WebM", "small_sample.wav", "audio/wav", "audio/webm"},
+		{"WebM to MP3", "small_sample_audio.webm", "audio/webm", "audio/mpeg"},
+		{"MP3 to WebM", "small_sample.mp3", "audio/mpeg", "audio/webm"},
 	}
 
 	for _, tc := range testCases {
