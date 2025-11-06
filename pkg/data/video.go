@@ -27,15 +27,15 @@ type videoData struct {
 func (videoData) IsValue() {}
 
 const (
-	MP4  = "video/mp4"
-	AVI  = "video/x-msvideo"
-	MOV  = "video/quicktime"
-	WEBM = "video/webm"
-	MKV  = "video/x-matroska"
-	FLV  = "video/x-flv"
-	WMV  = "video/x-ms-wmv"
-	ASF  = "video/x-ms-asf"
-	MPEG = "video/mpeg"
+	MP4       = "video/mp4"
+	AVI       = "video/x-msvideo"
+	MOV       = "video/quicktime"
+	MKV       = "video/x-matroska"
+	FLV       = "video/x-flv"
+	WMV       = "video/x-ms-wmv"
+	ASF       = "video/x-ms-asf"
+	MPEG      = "video/mpeg"
+	WEBMVIDEO = "video/webm"
 )
 
 var videoGetters = map[string]func(*videoData) (format.Value, error){
@@ -49,7 +49,7 @@ var videoGetters = map[string]func(*videoData) (format.Value, error){
 	"wmv":        func(v *videoData) (format.Value, error) { return v.Convert(WMV) },
 	"asf":        func(v *videoData) (format.Value, error) { return v.Convert(ASF) },
 	"flv":        func(v *videoData) (format.Value, error) { return v.Convert(FLV) },
-	"webm":       func(v *videoData) (format.Value, error) { return v.Convert(WEBM) },
+	"webm":       func(v *videoData) (format.Value, error) { return v.Convert(WEBMVIDEO) },
 }
 
 func NewVideoFromBytes(b []byte, contentType, filename string, isUnified bool) (video *videoData, err error) {
