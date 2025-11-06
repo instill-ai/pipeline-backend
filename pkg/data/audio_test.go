@@ -177,6 +177,49 @@ func TestAudioConvert(t *testing.T) {
 	})
 }
 
+func TestConvertAudioSupportedFormats(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	// Test that video/x-ms-asf and video/mp4 are now supported as source formats
+	// We can't actually convert without real audio data, but we can test
+	// that the format validation passes
+	testCases := []struct {
+		name        string
+		sourceType  string
+		targetType  string
+		shouldError bool
+	}{
+		{"MP3 to OGG", "audio/mpeg", "audio/ogg", false},
+		{"ASF to OGG", "video/x-ms-asf", "audio/ogg", false},
+		{"ASF to MP3", "video/x-ms-asf", "audio/mpeg", false},
+		{"MP4 to OGG", "video/mp4", "audio/ogg", false},
+		{"MP4 to MP3", "video/mp4", "audio/mpeg", false},
+		{"Unsupported source", "unsupported/format", "audio/ogg", true},
+		{"Unsupported target", "audio/mpeg", "unsupported/format", true},
+	}
+
+	for _, tc := range testCases {
+		c.Run(tc.name, func(c *qt.C) {
+			// Create dummy audio data (this would normally be real audio bytes)
+			dummyData := []byte("dummy audio data")
+
+			_, err := convertAudio(dummyData, tc.sourceType, tc.targetType)
+
+			if tc.shouldError {
+				c.Assert(err, qt.Not(qt.IsNil))
+				c.Assert(err.Error(), qt.Contains, "unsupported format")
+			} else {
+				// For supported formats, we expect either success or FFmpeg failure
+				// (not format validation failure)
+				if err != nil {
+					c.Assert(err.Error(), qt.Not(qt.Contains), "unsupported format")
+				}
+			}
+		})
+	}
+}
+
 func TestNewAudioFromBytesUnified(t *testing.T) {
 	t.Parallel()
 	c := qt.New(t)

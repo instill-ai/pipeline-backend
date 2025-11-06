@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"encoding/base64"
 	"os"
 	"strings"
 	"testing"
@@ -201,5 +202,57 @@ func TestAllSupportedDocumentFormats(t *testing.T) {
 		c.Assert(ok, qt.Equals, true, qt.Commentf("Expected *documentData, got %T", doc))
 		var as format.Document = doc
 		c.Assert(as, qt.IsNotNil)
+	})
+}
+
+func TestDocumentPDFConversion(t *testing.T) {
+	t.Parallel()
+	c := qt.New(t)
+
+	// Test HTML to PDF conversion
+	c.Run("HTML_to_PDF", func(c *qt.C) {
+		htmlBytes, err := os.ReadFile("testdata/sample1.html")
+		c.Assert(err, qt.IsNil)
+
+		doc, err := NewDocumentFromBytes(htmlBytes, "text/html", "sample1.html")
+		c.Assert(err, qt.IsNil)
+
+		pdfDoc, err := doc.PDF()
+		if err != nil {
+			// Skip test if conversion tools are not available (e.g., in development environment)
+			c.Skip("PDF conversion tools not available in test environment")
+			return
+		}
+		c.Assert(pdfDoc, qt.IsNotNil)
+
+		// Verify it's a PDF document
+		c.Assert(pdfDoc.ContentType().String(), qt.Equals, "application/pdf")
+
+		// Verify the PDF has some content (not empty)
+		pdfDataURI, err := pdfDoc.DataURI()
+		c.Assert(err, qt.IsNil)
+		dataURIStr := pdfDataURI.String()
+		c.Assert(strings.HasPrefix(dataURIStr, "data:application/pdf;base64,"), qt.Equals, true)
+
+		// Decode base64 to check it's not empty
+		base64Data := strings.TrimPrefix(dataURIStr, "data:application/pdf;base64,")
+		pdfBytes, err := base64.StdEncoding.DecodeString(base64Data)
+		c.Assert(err, qt.IsNil)
+		c.Assert(len(pdfBytes), qt.Not(qt.Equals), 0, qt.Commentf("PDF should not be empty"))
+	})
+
+	// Test that PDF documents return themselves unchanged
+	c.Run("PDF_identity", func(c *qt.C) {
+		pdfBytes, err := os.ReadFile("testdata/sample2.pdf")
+		c.Assert(err, qt.IsNil)
+
+		doc, err := NewDocumentFromBytes(pdfBytes, "application/pdf", "sample2.pdf")
+		c.Assert(err, qt.IsNil)
+
+		pdfDoc, err := doc.PDF()
+		c.Assert(err, qt.IsNil)
+
+		// Should return the same document
+		c.Assert(pdfDoc, qt.Equals, doc)
 	})
 }

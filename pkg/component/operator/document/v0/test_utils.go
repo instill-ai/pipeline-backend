@@ -26,6 +26,12 @@ func checkExternalDependency(cmd string) bool {
 		return checkLibreOfficeHealth()
 	}
 
+	// For Python, also check if the virtual environment Python exists
+	if cmd == "python3" || cmd == "python" {
+		_, err := exec.LookPath("/opt/venv/bin/python")
+		return err == nil
+	}
+
 	return true
 }
 

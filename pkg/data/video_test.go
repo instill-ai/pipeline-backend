@@ -30,6 +30,8 @@ func TestNewVideoFromBytes(t *testing.T) {
 		{"Valid MKV video", "small_sample.mkv", "video/mp4", false},
 		{"Valid FLV video", "small_sample.flv", "video/mp4", false},
 		{"Valid MPEG video", "small_sample.mpeg", "video/mp4", false},
+		{"Valid WMV video", "small_sample.wmv", "video/mp4", false},
+		{"Valid ASF video", "small_sample.asf", "video/mp4", false},
 		{"Invalid file type", "small_sample.wav", "audio/wav", true},
 	}
 
@@ -116,6 +118,8 @@ func TestVideoProperties(t *testing.T) {
 		{"MKV video", "small_sample.mkv", "video/x-matroska", 320, 240, 1.0, 15.0},
 		{"FLV video", "small_sample.flv", "video/x-flv", 320, 240, 1.0, 15.0},
 		{"MPEG video", "small_sample.mpeg", "video/mpeg", 320, 240, 1.0, 25.0},
+		{"WMV video", "small_sample.wmv", "video/x-ms-wmv", 320, 240, 1.0, 15.0},
+		{"ASF video", "small_sample.asf", "video/x-ms-asf", 320, 240, 1.0, 15.0},
 	}
 
 	for _, tc := range testCases {
@@ -153,6 +157,8 @@ func TestVideoConvert(t *testing.T) {
 		{"WebM to MP4", "small_sample.webm", "video/webm", "video/mp4"},
 		{"MKV to WebM", "small_sample.mkv", "video/x-matroska", "video/webm"},
 		{"FLV to MP4", "small_sample.flv", "video/x-flv", "video/mp4"},
+		{"WMV to MP4", "small_sample.wmv", "video/x-ms-wmv", "video/mp4"},
+		{"ASF to MP4", "small_sample.asf", "video/x-ms-asf", "video/mp4"},
 	}
 
 	for _, tc := range testCases {
@@ -211,6 +217,8 @@ func TestNewVideoFromBytesUnified(t *testing.T) {
 		{"MKV as unified", "small_sample.mkv", "video/x-matroska", 320, 240, 1.0, 15.0},
 		{"FLV as unified", "small_sample.flv", "video/x-flv", 320, 240, 1.0, 15.0},
 		{"MPEG as unified", "small_sample.mpeg", "video/mpeg", 320, 240, 1.0, 25.0},
+		{"WMV as unified", "small_sample.wmv", "video/x-ms-wmv", 320, 240, 1.0, 15.0},
+		{"ASF as unified", "small_sample.asf", "video/x-ms-asf", 320, 240, 1.0, 15.0},
 	}
 
 	for _, tc := range testCases {
@@ -287,6 +295,8 @@ func TestAllSupportedVideoFormats(t *testing.T) {
 		{"MKV", "small_sample.mkv", "video/x-matroska", 320, 240, 1.0, 15.0},
 		{"FLV", "small_sample.flv", "video/x-flv", 320, 240, 1.0, 15.0},
 		{"MPEG", "small_sample.mpeg", "video/mpeg", 320, 240, 1.0, 25.0},
+		{"WMV", "small_sample.wmv", "video/x-ms-wmv", 320, 240, 1.0, 15.0},
+		{"ASF", "small_sample.asf", "video/x-ms-asf", 320, 240, 1.0, 15.0},
 	}
 
 	for _, format := range supportedFormats {

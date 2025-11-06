@@ -34,6 +34,7 @@ const (
 	MKV  = "video/x-matroska"
 	FLV  = "video/x-flv"
 	WMV  = "video/x-ms-wmv"
+	ASF  = "video/x-ms-asf"
 	MPEG = "video/mpeg"
 )
 
@@ -46,6 +47,7 @@ var videoGetters = map[string]func(*videoData) (format.Value, error){
 	"avi":        func(v *videoData) (format.Value, error) { return v.Convert(AVI) },
 	"mov":        func(v *videoData) (format.Value, error) { return v.Convert(MOV) },
 	"wmv":        func(v *videoData) (format.Value, error) { return v.Convert(WMV) },
+	"asf":        func(v *videoData) (format.Value, error) { return v.Convert(ASF) },
 	"flv":        func(v *videoData) (format.Value, error) { return v.Convert(FLV) },
 	"webm":       func(v *videoData) (format.Value, error) { return v.Convert(WEBM) },
 }

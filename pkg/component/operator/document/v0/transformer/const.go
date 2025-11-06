@@ -4,10 +4,6 @@ import (
 	_ "embed"
 )
 
-const (
-	pythonInterpreter string = "/opt/venv/bin/python"
-)
-
 var (
 	//go:embed pdf_to_markdown/pdf_transformer.py
 	pdfTransformer string
