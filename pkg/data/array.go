@@ -104,3 +104,16 @@ func (a Array) ToJSONValue() (v any, err error) {
 	}
 	return jsonArr, nil
 }
+
+// Copy creates a deep copy of the Array to prevent concurrent access issues.
+// This is essential when passing array data across goroutine boundaries.
+func (a Array) Copy() Array {
+	if a == nil {
+		return nil
+	}
+	copied := make(Array, len(a))
+	for i, v := range a {
+		copied[i] = copyValue(v)
+	}
+	return copied
+}
