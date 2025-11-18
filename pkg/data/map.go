@@ -93,3 +93,34 @@ func (m Map) ToJSONValue() (v any, err error) {
 	}
 	return jsonMap, nil
 }
+
+// Copy creates a deep copy of the Map to prevent concurrent access issues.
+// This is essential when passing map data across goroutine boundaries.
+func (m Map) Copy() Map {
+	if m == nil {
+		return nil
+	}
+	copied := make(Map, len(m))
+	for k, v := range m {
+		copied[k] = copyValue(v)
+	}
+	return copied
+}
+
+// copyValue creates a deep copy of any format.Value type.
+func copyValue(v format.Value) format.Value {
+	if v == nil {
+		return nil
+	}
+
+	switch val := v.(type) {
+	case Map:
+		return val.Copy()
+	case Array:
+		return val.Copy()
+	default:
+		// For primitive types (string, number, boolean, etc.) which are
+		// either immutable or contain no shared mutable state, return as-is.
+		return v
+	}
+}

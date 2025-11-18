@@ -340,8 +340,23 @@ func (wfm *WorkflowMemory) Get(ctx context.Context, batchIdx int, p string) (mem
 	if err != nil {
 		return nil, err
 	}
-	return wfm.data[batchIdx].Get(pt)
+	value, err := wfm.data[batchIdx].Get(pt)
+	if err != nil {
+		return nil, err
+	}
 
+	// Return a deep copy to prevent concurrent map access issues.
+	// This is critical because the returned value may be accessed outside
+	// the mutex lock (e.g., in recipe.Eval -> ToJSONValue).
+	switch v := value.(type) {
+	case data.Map:
+		return v.Copy(), nil
+	case data.Array:
+		return v.Copy(), nil
+	default:
+		// Primitive types are safe to return as-is
+		return value, nil
+	}
 }
 
 func (wfm *WorkflowMemory) GetBatchSize() int {
