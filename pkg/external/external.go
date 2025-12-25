@@ -11,12 +11,6 @@ import (
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-resty/resty/v2"
-	"github.com/gofrs/uuid"
-
-	"github.com/instill-ai/x/minio"
-	"github.com/instill-ai/x/resource"
-
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 )
 
 // BinaryFetcher is an interface that fetches binary data from a URL.
@@ -59,46 +53,31 @@ func (f *binaryFetcher) FetchFromURL(ctx context.Context, url string) (body []by
 	return
 }
 
-// Pattern matches: https://{domain}/v1alpha/namespaces/{namespace}/blob-urls/{uid}
-// This is a deprecated pattern, we should use the presigned pattern instead.
-var minioURLPattern = regexp.MustCompile(`https?://[^/]+/v1alpha/namespaces/[^/]+/blob-urls/([^/]+)$`)
-
 // Pattern matches: https://{domain}/v1alpha/blob-urls/{encoded_presigned_url}
-// This is the new pattern, we should use this instead of the deprecated pattern.
-// The new design totally rely on the presigned URL provided by MinIO, without the need to get object URL from table.
+// The presigned URL is base64 encoded and self-contained, no database lookup needed.
 var minioURLPresignedPattern = regexp.MustCompile(`https?://[^/]+/v1alpha/blob-urls/([^/]+)$`)
 
 // ArtifactBinaryFetcher fetches binary data from a URL.
 // If that URL comes from an object uploaded on Instill Artifact,
-// it uses the blob storage client directly to avoid egress costs.
+// it decodes the presigned URL and fetches directly.
 type artifactBinaryFetcher struct {
-	binaryFetcher  *binaryFetcher
-	artifactClient artifactpb.ArtifactPrivateServiceClient // By having this injected, main.go is responsible of closing the connection.
-	fileGetter     *minio.FileGetter
+	binaryFetcher *binaryFetcher
 }
 
 // NewArtifactBinaryFetcher creates a new ArtifactBinaryFetcher instance.
-func NewArtifactBinaryFetcher(ac artifactpb.ArtifactPrivateServiceClient, fg *minio.FileGetter) BinaryFetcher {
+// Note: The ac and fg parameters are kept for backward compatibility but are no longer used
+// since the presigned URL pattern is self-contained and doesn't require database lookups.
+func NewArtifactBinaryFetcher(_ interface{}, _ interface{}) BinaryFetcher {
 	return &artifactBinaryFetcher{
 		binaryFetcher: &binaryFetcher{
 			httpClient: resty.New().SetRetryCount(3),
 		},
-		artifactClient: ac,
-		fileGetter:     fg,
 	}
 }
 
 func (f *artifactBinaryFetcher) FetchFromURL(ctx context.Context, fileURL string) (b []byte, contentType string, filename string, err error) {
 	if strings.HasPrefix(fileURL, "data:") {
 		return f.binaryFetcher.convertDataURIToBytes(fileURL)
-	}
-	if matches := minioURLPattern.FindStringSubmatch(fileURL); matches != nil {
-		if len(matches) < 2 {
-			err = fmt.Errorf("invalid blob storage url: %s", fileURL)
-			return
-		}
-
-		return f.fetchFromBlobStorage(ctx, uuid.FromStringOrNil(matches[1]))
 	}
 	if matches := minioURLPresignedPattern.FindStringSubmatch(fileURL); matches != nil {
 		if len(matches) < 1 {
@@ -122,47 +101,6 @@ func (f *artifactBinaryFetcher) FetchFromURL(ctx context.Context, fileURL string
 		return f.binaryFetcher.FetchFromURL(ctx, string(base64Decoded))
 	}
 	return f.binaryFetcher.FetchFromURL(ctx, fileURL)
-}
-
-func (f *artifactBinaryFetcher) fetchFromBlobStorage(ctx context.Context, urlUID uuid.UUID) (b []byte, contentType string, filename string, err error) {
-	objectURLRes, err := f.artifactClient.GetObjectURLAdmin(ctx, &artifactpb.GetObjectURLAdminRequest{
-		Uid: urlUID.String(),
-	})
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	objectUID := objectURLRes.ObjectUrl.ObjectUid
-
-	objectRes, err := f.artifactClient.GetObjectAdmin(ctx, &artifactpb.GetObjectAdminRequest{
-		Uid: objectUID,
-	})
-
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	// TODO: we have agreed on to add the bucket name in pipelinepb.Object
-	// After the contract is updated, we have to replace it
-	bucketName := "core-blob"
-	objectPath := *objectRes.Object.Path
-
-	// TODO this won't always produce a valid user UID (e.g. the jobs in the
-	// worker don't have this in the context).
-	// If we want a full audit of the MinIO actions (or if we want to check
-	// object permissions), we need to update the signature to pass the user
-	// UID explicitly.
-	_, userUID := resource.GetRequesterUIDAndUserUID(ctx)
-	b, _, err = f.fileGetter.GetFile(ctx, minio.GetFileParams{
-		BucketName: bucketName,
-		Path:       objectPath,
-		UserUID:    userUID,
-	})
-	if err != nil {
-		return nil, "", "", err
-	}
-	contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
-	return b, contentType, objectRes.Object.Name, nil
 }
 
 func (f *binaryFetcher) convertDataURIToBytes(dataURI string) (b []byte, contentType string, filename string, err error) {

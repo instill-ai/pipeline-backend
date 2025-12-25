@@ -285,40 +285,36 @@ func TestMinioURLPatterns(t *testing.T) {
 	tests := []struct {
 		name        string
 		url         string
-		pattern     string
 		shouldMatch bool
 		expectedUID string
 	}{
 		{
-			name:        "deprecated pattern match",
-			url:         "https://example.com/v1alpha/namespaces/test/blob-urls/123e4567-e89b-12d3-a456-426614174000",
-			pattern:     "deprecated",
-			shouldMatch: true,
-			expectedUID: "123e4567-e89b-12d3-a456-426614174000",
-		},
-		{
 			name:        "presigned pattern match",
 			url:         "https://example.com/v1alpha/blob-urls/aHR0cHM6Ly9leGFtcGxlLmNvbS9maWxl",
-			pattern:     "presigned",
 			shouldMatch: true,
 			expectedUID: "aHR0cHM6Ly9leGFtcGxlLmNvbS9maWxl",
 		},
 		{
-			name:        "no match",
+			name:        "presigned pattern with different domain",
+			url:         "http://localhost:8080/v1alpha/blob-urls/dGVzdC1wcmVzaWduZWQtdXJs",
+			shouldMatch: true,
+			expectedUID: "dGVzdC1wcmVzaWduZWQtdXJs",
+		},
+		{
+			name:        "no match - different path",
 			url:         "https://example.com/some/other/path",
-			pattern:     "deprecated",
+			shouldMatch: false,
+		},
+		{
+			name:        "no match - old deprecated format not supported",
+			url:         "https://example.com/v1alpha/namespaces/test/blob-urls/123e4567-e89b-12d3-a456-426614174000",
 			shouldMatch: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var matches []string
-			if tt.pattern == "deprecated" {
-				matches = minioURLPattern.FindStringSubmatch(tt.url)
-			} else {
-				matches = minioURLPresignedPattern.FindStringSubmatch(tt.url)
-			}
+			matches := minioURLPresignedPattern.FindStringSubmatch(tt.url)
 
 			if tt.shouldMatch {
 				assert.NotNil(t, matches)
