@@ -161,6 +161,13 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 		}
 	}
 
+	// Set the creator UID from the authenticated user
+	creatorUIDStr := resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)
+	if creatorUIDStr != "" {
+		creatorUID := uuid.FromStringOrNil(creatorUIDStr)
+		dbPipeline.CreatorUID = &creatorUID
+	}
+
 	dbPipeline.ShareCode = generateShareCode()
 
 	if err := s.repository.CreateNamespacePipeline(ctx, dbPipeline); err != nil {

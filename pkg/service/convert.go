@@ -615,6 +615,20 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		return nil, err
 	}
 	pbPipeline.Owner = owner
+	pbPipeline.OwnerUid = dbPipeline.OwnerUID().String()
+
+	// Populate creator fields if creator_uid is set
+	if dbPipeline.CreatorUID != nil {
+		creatorUIDStr := dbPipeline.CreatorUID.String()
+		pbPipeline.CreatorUid = &creatorUIDStr
+		creator, err := c.fetchUserByUID(ctx, creatorUIDStr)
+		if err != nil {
+			// Log but don't fail - creator may have been deleted
+			logger.Warn("Failed to fetch creator user", zap.String("creator_uid", creatorUIDStr), zap.Error(err))
+		} else {
+			pbPipeline.Creator = creator
+		}
+	}
 
 	pbPipeline.Permission = &pipelinepb.Permission{}
 	if checkPermission {
@@ -1194,4 +1208,27 @@ func (c *converter) fetchOwnerByPermalink(ctx context.Context, permalink string)
 	}
 
 	return nil, fmt.Errorf("fetchOwnerByPermalink error")
+}
+
+func (c *converter) fetchUserByUID(ctx context.Context, uid string) (*mgmtpb.User, error) {
+	key := fmt.Sprintf("user_profile:%s", uid)
+	if b, err := c.redisClient.Get(ctx, key).Bytes(); err == nil {
+		user := &mgmtpb.User{}
+		if protojson.Unmarshal(b, user) == nil {
+			return user, nil
+		}
+	}
+
+	resp, err := c.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtpb.LookUpUserAdminRequest{
+		UserUid: uid,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("LookUpUserAdmin error: %w", err)
+	}
+
+	user := resp.GetUser()
+	if b, err := protojson.Marshal(user); err == nil {
+		c.redisClient.Set(ctx, key, b, 5*time.Minute)
+	}
+	return user, nil
 }
