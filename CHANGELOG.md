@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.61.1](https://github.com/instill-ai/pipeline-backend/compare/v0.61.0...v0.61.1) (2025-12-26)
+
+
+### Features
+
+* **component,data,artifact:** update instillartifact component to latest protobuf ([#1139](https://github.com/instill-ai/pipeline-backend/issues/1139)) ([4c1f508](https://github.com/instill-ai/pipeline-backend/commit/4c1f50807b2220fc67a926f6c91ab7414ccb0ace))
+* **data:** add WebM audio support and improve constant naming ([#1142](https://github.com/instill-ai/pipeline-backend/issues/1142)) ([bd4e10e](https://github.com/instill-ai/pipeline-backend/commit/bd4e10e5b8c3582f74b6b17d5c0697b145fa17ab))
+* **pipeline:** add creator tracking to pipeline resource ([#1147](https://github.com/instill-ai/pipeline-backend/issues/1147)) ([a5ddeed](https://github.com/instill-ai/pipeline-backend/commit/a5ddeed1ecb9546331d34befa8edccc2b8bed5ec))
+
+
+### Bug Fixes
+
+* **document:** resolve audio/video format conversion and HTML-to-PDF issues ([#1141](https://github.com/instill-ai/pipeline-backend/issues/1141)) ([683de3a](https://github.com/instill-ai/pipeline-backend/commit/683de3a3f25c536130b1ee0cbbf2de7c6bccff46))
+* **worker:** prevent concurrent map access race condition ([#1143](https://github.com/instill-ai/pipeline-backend/issues/1143)) ([e24a0b6](https://github.com/instill-ai/pipeline-backend/commit/e24a0b676ee7f4ad124b68f73450dad93aad7af7))
+
 ## [0.61.0](https://github.com/instill-ai/pipeline-backend/compare/v0.60.0...v0.61.0) (2025-10-07)
 
 
