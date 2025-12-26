@@ -37,8 +37,14 @@ export function CheckCreate(data) {
         r.json().pipeline.description === reqBody.description,
       "POST /v1beta/${constant.namespace}/pipelines response pipeline recipe is valid": (r) =>
         helper.validateRecipe(r.json().pipeline.recipe, false),
-      "POST /v1beta/${constant.namespace}/pipelines response pipeline owner isinvalid": (r) =>
+      "POST /v1beta/${constant.namespace}/pipelines response pipeline owner is valid": (r) =>
         helper.isValidOwner(r.json().pipeline.owner, data.expectedOwner),
+      "POST /v1beta/${constant.namespace}/pipelines response pipeline ownerUid is valid UUID": (r) =>
+        helper.isUUID(r.json().pipeline.ownerUid),
+      "POST /v1beta/${constant.namespace}/pipelines response pipeline creatorUid is valid UUID": (r) =>
+        helper.isUUID(r.json().pipeline.creatorUid),
+      "POST /v1beta/${constant.namespace}/pipelines response pipeline creator is valid": (r) =>
+        helper.isValidCreator(r.json().pipeline.creator),
       "POST /v1beta/${constant.namespace}/pipelines response pipeline createTime": (r) =>
         new Date(r.json().pipeline.createTime).getTime() >
         new Date().setTime(0),
@@ -258,6 +264,15 @@ export function CheckList(data) {
           r.json().pipelines[0].recipe === null,
         [`GET /v1beta/${constant.namespace}/pipelines response totalSize == 200`]: (r) =>
           r.json().totalSize == 200,
+        // Owner/Creator checks on LIST
+        [`GET /v1beta/${constant.namespace}/pipelines response pipelines[0].owner is valid`]: (r) =>
+          helper.isValidOwner(r.json().pipelines[0].owner, data.expectedOwner),
+        [`GET /v1beta/${constant.namespace}/pipelines response pipelines[0].ownerUid is valid UUID`]: (r) =>
+          helper.isUUID(r.json().pipelines[0].ownerUid),
+        [`GET /v1beta/${constant.namespace}/pipelines response pipelines[0].creatorUid is valid UUID`]: (r) =>
+          helper.isUUID(r.json().pipelines[0].creatorUid),
+        [`GET /v1beta/${constant.namespace}/pipelines response pipelines[0].creator is valid`]: (r) =>
+          helper.isValidCreator(r.json().pipelines[0].creator),
       }
     );
 
@@ -445,8 +460,14 @@ export function CheckGet(data) {
           r.status === 200,
         [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline recipe is not null`]:
           (r) => r.json().pipeline.recipe !== null,
-        [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline owner isvalid`]:
+        [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline owner is valid`]:
           (r) => helper.isValidOwner(r.json().pipeline.owner, data.expectedOwner),
+        [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline ownerUid is valid UUID`]:
+          (r) => helper.isUUID(r.json().pipeline.ownerUid),
+        [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline creatorUid is valid UUID`]:
+          (r) => helper.isUUID(r.json().pipeline.creatorUid),
+        [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline creator is valid`]:
+          (r) => helper.isValidCreator(r.json().pipeline.creator),
       }
     );
 

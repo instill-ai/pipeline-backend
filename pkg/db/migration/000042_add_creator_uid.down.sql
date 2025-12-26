@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE pipeline DROP COLUMN IF EXISTS creator_uid;
+
+COMMIT;

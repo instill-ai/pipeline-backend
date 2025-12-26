@@ -30,6 +30,13 @@ export function isValidOwner(owner, expectedOwner) {
   return deepEqual(owner.user.profile, expectedOwner.profile)
 }
 
+export function isValidCreator(creator) {
+  if (creator === null || creator === undefined) return false;
+  if (!isUUID(creator.uid)) return false;
+  if (creator.id === null || creator.id === undefined || creator.id === "") return false;
+  return true;
+}
+
 export function validateRecipe(recipe, isPrivate) {
   // TODO: fix this
   return true

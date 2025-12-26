@@ -94,6 +94,11 @@ type Pipeline struct {
 	NamespaceID       string `gorm:"type:namespace_id"`
 	NamespaceType     string `gorm:"type:namespace_type"`
 
+	// CreatorUID is the UID of the user who created this pipeline.
+	// This is nullable because pipelines created before this field was added
+	// will not have a creator_uid.
+	CreatorUID *uuid.UUID `gorm:"type:uuid"`
+
 	// Note:
 	// We store the NumberOfRuns, NumberOfClones and LastRunTime in this table
 	// to make it easier to sort the pipelines. We should develop an approach to

@@ -45,11 +45,11 @@ require (
 	github.com/h2non/filetype v1.1.3
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.14.0
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20251103134954-719cc9a5a07d
-	github.com/instill-ai/usage-client v0.4.0
-	github.com/instill-ai/x v0.10.0-alpha
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20251225065653-d614d07472ce
+	github.com/instill-ai/usage-client v0.4.1-0.20251120123627-e91a3e75f28a
+	github.com/instill-ai/x v0.10.1-alpha.0.20251124025741-686e0983cf51
 	github.com/itchyny/gojq v0.12.17
-	github.com/jackc/pgx/v5 v5.7.5
+	github.com/jackc/pgx/v5 v5.7.6
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/json-iterator/go v1.1.12
 	github.com/k3a/html2text v1.2.1
@@ -122,10 +122,6 @@ require (
 	github.com/hhrutter/lzw v1.0.0 // indirect
 	github.com/hhrutter/pkcs7 v0.2.0 // indirect
 	github.com/hhrutter/tiff v1.0.2 // indirect
-	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
-	github.com/jackc/pgconn v1.14.3 // indirect
-	github.com/jackc/pgio v1.0.0 // indirect
-	github.com/jackc/pgproto3/v2 v2.3.3 // indirect
 	github.com/minio/crc64nvme v1.0.2 // indirect
 	github.com/minio/minio-go/v7 v7.0.92 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
