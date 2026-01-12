@@ -138,19 +138,6 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 
 	ownerPermalink := ns.Permalink()
 
-	// TODO: optimize ACL model
-	if ns.NsType == "organizations" {
-		granted, err := s.aclClient.CheckPermission(ctx, "organization", ns.NsUID, "member")
-		if err != nil {
-			return nil, err
-		}
-		if !granted {
-			return nil, errorsx.ErrUnauthorized
-		}
-	} else if ns.NsUID != uuid.FromStringOrNil(resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)) {
-		return nil, errorsx.ErrUnauthorized
-	}
-
 	dbPipeline, err := s.converter.ConvertPipelineToDB(ctx, ns, pbPipeline)
 	if err != nil {
 		return nil, err
