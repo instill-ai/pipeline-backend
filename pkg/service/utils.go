@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
@@ -41,19 +42,14 @@ func generateShareCode() string {
 }
 
 func (s *service) checkNamespacePermission(ctx context.Context, ns resource.Namespace) error {
-	// TODO: optimize ACL model
-	if ns.NsType == "organizations" {
-		granted, err := s.aclClient.CheckPermission(ctx, "organization", ns.NsUID, "member")
-		if err != nil {
-			return err
-		}
-		if !granted {
-			return errorsx.ErrUnauthorized
-		}
-	} else {
-		if ns.NsUID != uuid.FromStringOrNil(resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)) {
-			return errorsx.ErrUnauthorized
-		}
+	// Bypass permission check for internal service calls
+	if resourcex.GetRequestSingleHeader(ctx, constant.HeaderServiceKey) == "instill" {
+		return nil
+	}
+
+	// Check if the requesting user owns the namespace
+	if ns.NsUID != uuid.FromStringOrNil(resourcex.GetRequestSingleHeader(ctx, constantx.HeaderUserUIDKey)) {
+		return errorsx.ErrUnauthorized
 	}
 	return nil
 }
