@@ -6,6 +6,11 @@
 include .env
 export
 
+# Integration test defaults (for running from host)
+API_GATEWAY_PROTOCOL ?= http
+API_GATEWAY_URL ?= localhost:8080
+DB_HOST ?= localhost
+
 # Default network for local development, can be overridden
 DOCKER_NETWORK ?= instill-network
 
@@ -146,18 +151,24 @@ test: ## Run unit test
 
 .PHONY: integration-test
 integration-test: ## Run integration test
-	@ # DB_HOST points to localhost by default. Override this variable if
-	@ # ${SERVICE_NAME}'s database isn't accessible at that host.
-	@TEST_FOLDER_ABS_PATH=${PWD} k6 run \
+	@if [ -n "${API_GATEWAY_URL}" ]; then \
+		echo "✓ Running tests through API Gateway: ${API_GATEWAY_URL}"; \
+	else \
+		echo "⚠ WARNING: No API_GATEWAY_URL set - using default localhost:8080"; \
+	fi
+	@echo "  DB_HOST: ${DB_HOST}"
+	@echo "Running integration tests..."
+	@rm -f /tmp/pipeline-integration-test.log
+	@TEST_FOLDER_ABS_PATH=${PWD} k6 run --address="" \
 		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} \
 		-e API_GATEWAY_URL=${API_GATEWAY_URL} \
 		-e DB_HOST=${DB_HOST} \
-		integration-test/pipeline/grpc.js --no-usage-report --quiet
-	@TEST_FOLDER_ABS_PATH=${PWD} k6 run \
+		integration-test/pipeline/grpc.js --no-usage-report 2>&1 | tee -a /tmp/pipeline-integration-test.log
+	@TEST_FOLDER_ABS_PATH=${PWD} k6 run --address="" \
 		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} \
 		-e API_GATEWAY_URL=${API_GATEWAY_URL} \
 		-e DB_HOST=${DB_HOST} \
-		integration-test/pipeline/rest.js --no-usage-report --quiet
+		integration-test/pipeline/rest.js --no-usage-report 2>&1 | tee -a /tmp/pipeline-integration-test.log
 
 .PHONY: gen-mock
 gen-mock: ## Generate mock files
