@@ -125,7 +125,7 @@ jobs:
           make coverage DBTEST=true OCR=true ONNX=true DOCKER_NETWORK=host TEST_DBHOST=localhost TEST_DBNAME=pipeline_test
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v5
         with:
           file: ./coverage.out
           flags: unittests
