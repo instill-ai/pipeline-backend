@@ -12,7 +12,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
 )
 
 func (e *execution) getFileInMarkdown(input *structpb.Struct) (*structpb.Struct, error) {
@@ -31,10 +31,8 @@ func (e *execution) getFileInMarkdown(input *structpb.Struct) (*structpb.Struct,
 
 	// Get file with VIEW_CONTENT to get the markdown content URL
 	fileRes, err := artifactClient.GetFile(ctx, &artifactpb.GetFileRequest{
-		NamespaceId:     inputStruct.Namespace,
-		KnowledgeBaseId: inputStruct.KnowledgeBaseID,
-		FileId:          inputStruct.FileUID,
-		View:            artifactpb.File_VIEW_CONTENT.Enum(),
+		Name: fmt.Sprintf("namespaces/%s/files/%s", inputStruct.Namespace, inputStruct.FileUID),
+		View: artifactpb.File_VIEW_CONTENT.Enum(),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get file: %w", err)
@@ -57,7 +55,7 @@ func (e *execution) getFileInMarkdown(input *structpb.Struct) (*structpb.Struct,
 	}
 
 	output := GetFileInMarkdownOutput{
-		OriginalFileUID: fileRes.File.Uid,
+		OriginalFileUID: fileRes.File.Id,
 		Content:         content,
 		CreateTime:      fileRes.File.CreateTime.AsTime().Format(time.RFC3339),
 		UpdateTime:      fileRes.File.UpdateTime.AsTime().Format(time.RFC3339),

@@ -1,7 +1,7 @@
 package gen
 
 import (
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 )
 
 // ComponentType holds the possible subtypes of a component (e.g.

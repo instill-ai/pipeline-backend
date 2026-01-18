@@ -11,7 +11,7 @@ import (
 	"gorm.io/datatypes"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 )
 
 // Pipeline is the data model of the pipeline table

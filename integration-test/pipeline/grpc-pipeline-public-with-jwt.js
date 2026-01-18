@@ -5,7 +5,7 @@ import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 import * as constant from "./const.js";
 
 const client = new grpc.Client();
-client.load(["../proto/pipeline/pipeline/v1beta"], "pipeline_public_service.proto");
+client.load(["../proto/pipeline/v1beta"], "pipeline_public_service.proto");
 
 export function CheckCreate(data) {
   group(
@@ -15,9 +15,9 @@ export function CheckCreate(data) {
         plaintext: true,
       });
 
+      // Note: id is now OUTPUT_ONLY (server-generated), so we don't send it
       var reqBody = Object.assign(
         {
-          id: constant.dbIDPrefix + randomString(10),
           description: randomString(50),
         },
         constant.simplePipelineWithYAMLRecipe
@@ -75,36 +75,37 @@ export function CheckGet(data) {
       plaintext: true,
     });
 
+    // Note: id is now OUTPUT_ONLY (server-generated), so we don't send it
     var reqBody = Object.assign(
       {
-        id: constant.dbIDPrefix + randomString(10),
         description: randomString(50),
       },
       constant.simplePipelineWithYAMLRecipe
     );
 
-    check(
-      client.invoke(
-        "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
-        {
-          parent: `${constant.namespace}`,
-          pipeline: reqBody,
-        },
-        data.metadata
-      ),
+    var createRes = client.invoke(
+      "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
       {
-        [`pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-      }
+        parent: `${constant.namespace}`,
+        pipeline: reqBody,
+      },
+      data.metadata
     );
 
+    check(createRes, {
+      [`pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response StatusOK`]:
+        (r) => r.status === grpc.StatusOK,
+    });
+
+    // Get the server-generated pipeline ID
+    var pipelineId = createRes.message.pipeline.id;
 
     // Cannot get a pipeline of a non-exist user
     check(
       client.invoke(
         "pipeline.pipeline.v1beta.PipelinePublicService/GetUserPipeline",
         {
-          name: `${constant.namespace}/pipelines/${reqBody.id}`,
+          name: `${constant.namespace}/pipelines/${pipelineId}`,
         },
         constant.paramsGRPCWithJwt
       ),
@@ -119,7 +120,7 @@ export function CheckGet(data) {
       client.invoke(
         `pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
         {
-          name: `${constant.namespace}/pipelines/${reqBody.id}`,
+          name: `${constant.namespace}/pipelines/${pipelineId}`,
         },
         data.metadata
       ),
@@ -141,10 +142,9 @@ export function CheckUpdate(data) {
         plaintext: true,
       });
 
+      // Note: id is now OUTPUT_ONLY (server-generated), so we don't send it
       var reqBody = Object.assign(
-        {
-          id: constant.dbIDPrefix + randomString(10),
-        },
+        {},
         constant.simplePipelineWithYAMLRecipe
       );
 
@@ -163,11 +163,12 @@ export function CheckUpdate(data) {
           (r) => r.status === grpc.StatusOK,
       });
 
+      // Get the server-generated pipeline ID
+      var pipelineId = resOrigin.message.pipeline.id;
 
+      // Note: uid no longer exists in the proto, removed from update request
       var reqBodyUpdate = Object.assign({
-        id: reqBody.id,
-        name: `${constant.namespace}/pipelines/${reqBody.id}`,
-        uid: "output-only-to-be-ignored",
+        name: `${constant.namespace}/pipelines/${pipelineId}`,
         description: randomString(50),
       });
 
@@ -192,7 +193,7 @@ export function CheckUpdate(data) {
         client.invoke(
           `pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
           {
-            name: `${constant.namespace}/pipelines/${reqBody.id}`,
+            name: `${constant.namespace}/pipelines/${pipelineId}`,
           },
           data.metadata
         ),
@@ -215,10 +216,9 @@ export function CheckRename(data) {
         plaintext: true,
       });
 
+      // Note: id is now OUTPUT_ONLY (server-generated), so we don't send it
       var reqBody = Object.assign(
-        {
-          id: constant.dbIDPrefix + randomString(10),
-        },
+        {},
         constant.simplePipelineWithYAMLRecipe
       );
 
@@ -232,11 +232,14 @@ export function CheckRename(data) {
         data.metadata
       );
 
+      // Get the server-generated pipeline ID
+      var pipelineId = res.message.pipeline.id;
+
       check(res, {
         [`pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
         [`pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline name`]:
-          (r) => r.message.pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
+          (r) => r.message.pipeline.name === `${constant.namespace}/pipelines/${pipelineId}`,
       });
 
 
@@ -247,7 +250,7 @@ export function CheckRename(data) {
         client.invoke(
           "pipeline.pipeline.v1beta.PipelinePublicService/RenameUserPipeline",
           {
-            name: `${constant.namespace}/pipelines/${reqBody.id}`,
+            name: `${constant.namespace}/pipelines/${pipelineId}`,
             new_pipeline_id: new_pipeline_id,
           },
           constant.paramsGRPCWithJwt
@@ -263,7 +266,7 @@ export function CheckRename(data) {
         client.invoke(
           `pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
           {
-            name: `${constant.namespace}/pipelines/${reqBody.id}`,
+            name: `${constant.namespace}/pipelines/${pipelineId}`,
           },
           data.metadata
         ),
@@ -280,16 +283,15 @@ export function CheckRename(data) {
 
 export function CheckLookUp(data) {
   group(
-    `Pipelines API: Look up a pipeline by uid [with random "Instill-User-Uid" header]`,
+    `Pipelines API: Look up a pipeline by id [with random "Instill-User-Uid" header]`,
     () => {
       client.connect(constant.pipelineGRPCPublicHost, {
         plaintext: true,
       });
 
+      // Note: id is now OUTPUT_ONLY (server-generated), so we don't send it
       var reqBody = Object.assign(
-        {
-          id: constant.dbIDPrefix + randomString(10),
-        },
+        {},
         constant.simplePipelineWithYAMLRecipe
       );
 
@@ -308,13 +310,16 @@ export function CheckLookUp(data) {
           (r) => r.status === grpc.StatusOK,
       });
 
+      // Get the server-generated pipeline ID
+      var pipelineId = res.message.pipeline.id;
 
+      // Note: LookUpPipeline now uses id instead of uid (uid no longer exists in proto)
       // Cannot look up a pipeline of a non-exist user
       check(
         client.invoke(
           "pipeline.pipeline.v1beta.PipelinePublicService/LookUpPipeline",
           {
-            permalink: `pipelines/${res.message.pipeline.uid}`,
+            permalink: `pipelines/${pipelineId}`,
           },
           constant.paramsGRPCWithJwt
         ),
@@ -329,7 +334,7 @@ export function CheckLookUp(data) {
         client.invoke(
           `pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
           {
-            name: `${constant.namespace}/pipelines/${reqBody.id}`,
+            name: `${constant.namespace}/pipelines/${pipelineId}`,
           },
           data.metadata
         ),

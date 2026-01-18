@@ -8,7 +8,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 
-	modelpb "github.com/instill-ai/protogen-go/model/model/v1alpha"
+	modelpb "github.com/instill-ai/protogen-go/model/v1alpha"
 )
 
 func (e *execution) executeVisionTask(grpcClient modelpb.ModelPublicServiceClient, nsID string, modelID string, version string, inputs []*structpb.Struct) ([]*structpb.Struct, error) {

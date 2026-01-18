@@ -7,7 +7,7 @@ import * as constant from "./const.js";
 import * as helper from "./helper.js";
 
 const client = new grpc.Client();
-client.load(["../proto/pipeline/pipeline/v1beta"], "pipeline_public_service.proto");
+client.load(["../proto/pipeline/v1beta"], "pipeline_public_service.proto");
 
 export function CheckCreate(data) {
   group("Pipelines API: Create a pipeline", () => {
@@ -15,9 +15,9 @@ export function CheckCreate(data) {
       plaintext: true,
     });
 
+    // Note: id is now OUTPUT_ONLY (server-generated), so we don't send it
     var reqBody = Object.assign(
       {
-        id: constant.dbIDPrefix + randomString(10),
         description: randomString(50),
       },
       constant.simplePipelineWithYAMLRecipe
@@ -33,15 +33,17 @@ export function CheckCreate(data) {
       data.metadata
     );
 
+    // Get the server-generated pipeline ID
+    var pipelineId = resOrigin.message.pipeline.id;
+
     check(resOrigin, {
       "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response StatusOK":
         (r) => r.status === grpc.StatusOK,
       "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline name":
-        (r) => r.message.pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
-      "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline uid":
-        (r) => helper.isUUID(r.message.pipeline.uid),
-      "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline id":
-        (r) => r.message.pipeline.id === reqBody.id,
+        (r) => r.message.pipeline.name === `${constant.namespace}/pipelines/${pipelineId}`,
+      // Note: uid no longer exists in the proto
+      "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline id exists":
+        (r) => r.message.pipeline.id && r.message.pipeline.id.length > 0,
       "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline description":
         (r) => r.message.pipeline.description === reqBody.description,
       "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline recipe is valid":
@@ -87,17 +89,19 @@ export function CheckCreate(data) {
       }
     );
 
+    // Note: The duplicate creation test no longer applies since ID is server-generated
+    // Skip the StatusAlreadyExists check
+
     check(
       client.invoke(
-        "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
+        "pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline",
         {
-          parent: `${constant.namespace}`,
-          pipeline: reqBody,
+          name: `${constant.namespace}/pipelines/${pipelineId}`,
         },
         data.metadata
       ),
       {
-        "pipeline.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response StatusAlreadyExists":
+        "pipeline.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK":
           (r) => r.status === grpc.StatusAlreadyExists,
       }
     );

@@ -15,7 +15,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
 )
 
 func Test_getFilesMetadata(t *testing.T) {
@@ -46,18 +46,19 @@ func Test_getFilesMetadata(t *testing.T) {
 
 		clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
+		filter := `knowledgeBaseId="fakeID"`
 		clientMock.ListFilesMock.
 			Expect(minimock.AnyContext, &artifactpb.ListFilesRequest{
-				NamespaceId:     "fakeNs",
-				KnowledgeBaseId: "fakeID"}).
+				Parent: "namespaces/fakeNs",
+				Filter: &filter}).
 			Times(1).
 			Return(&artifactpb.ListFilesResponse{
 				Files: []*artifactpb.File{
 					{
-						Uid:      "fakeFileID",
-						Filename: "fakeFileName",
-						Type:     artifactpb.File_TYPE_PDF,
-						Size:     1,
+						Id:          "fakeFileID",
+						DisplayName: "fakeFileName",
+						Type:        artifactpb.File_TYPE_PDF,
+						Size:        1,
 						CreateTime: &timestamppb.Timestamp{
 							Seconds: 1,
 							Nanos:   1,
@@ -123,13 +124,11 @@ func Test_getChunksMetadata(t *testing.T) {
 		clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
 		clientMock.ListChunksMock.Expect(minimock.AnyContext, &artifactpb.ListChunksRequest{
-			NamespaceId:     "fakeNs",
-			KnowledgeBaseId: "fakeID",
-			FileId:          "fakeFileID",
+			Parent: "namespaces/fakeNs/files/fakeFileID",
 		}).Times(1).Return(&artifactpb.ListChunksResponse{
 			Chunks: []*artifactpb.Chunk{
 				{
-					Uid:         "fakeChunkID",
+					Id:          "fakeChunkID",
 					Retrievable: true,
 					Tokens:      1,
 					CreateTime: &timestamppb.Timestamp{
@@ -199,14 +198,12 @@ func Test_getFileInMarkdown(t *testing.T) {
 		// Mock GetFile to return file metadata with empty derived_resource_uri
 		// (in real usage, it would have a MinIO URL, but for test we'll return empty content)
 		clientMock.GetFileMock.Expect(minimock.AnyContext, &artifactpb.GetFileRequest{
-			NamespaceId:     "fakeNs",
-			KnowledgeBaseId: "fakeID",
-			FileId:          "fakeFileID",
-			View:            artifactpb.File_VIEW_CONTENT.Enum(),
+			Name: "namespaces/fakeNs/files/fakeFileID",
+			View: artifactpb.File_VIEW_CONTENT.Enum(),
 		}).Times(1).Return(&artifactpb.GetFileResponse{
 			File: &artifactpb.File{
-				Uid:      "fakeFileID",
-				Filename: "fakeFileName",
+				Id:          "fakeFileID",
+				DisplayName: "fakeFileName",
 				CreateTime: &timestamppb.Timestamp{
 					Seconds: 1,
 					Nanos:   1,
@@ -279,7 +276,7 @@ func Test_searchChunks(t *testing.T) {
 
 		clientMock.SearchChunksMock.
 			Expect(minimock.AnyContext, &artifactpb.SearchChunksRequest{
-				NamespaceId:     "fakeNs",
+				Parent:          "namespaces/fakeNs",
 				KnowledgeBaseId: "fakeID",
 				TextPrompt:      "fakePrompt",
 				TopK:            1,
@@ -376,12 +373,11 @@ func Test_matchFileStatus(t *testing.T) {
 
 			clientMock := mock.NewArtifactPublicServiceClientMock(mc)
 
-			filter := fmt.Sprintf(`id="%s"`, "fakeFileID")
+			filter := fmt.Sprintf(`id="%s" AND knowledgeBaseId="%s"`, "fakeFileID", "fakeID")
 			clientMock.ListFilesMock.
 				Expect(minimock.AnyContext, &artifactpb.ListFilesRequest{
-					NamespaceId:     "fakeNs",
-					KnowledgeBaseId: "fakeID",
-					Filter:          &filter,
+					Parent: "namespaces/fakeNs",
+					Filter: &filter,
 				}).
 				Times(1).
 				Return(&artifactpb.ListFilesResponse{

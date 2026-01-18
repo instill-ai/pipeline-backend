@@ -11,7 +11,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 
 	errorsx "github.com/instill-ai/x/errors"
 )

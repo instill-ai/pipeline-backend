@@ -27,8 +27,8 @@ import (
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	mgmtpb "github.com/instill-ai/protogen-go/mgmt/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 	miniomock "github.com/instill-ai/x/mock/minio"
 )
 

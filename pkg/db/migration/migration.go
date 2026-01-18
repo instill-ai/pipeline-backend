@@ -23,11 +23,11 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000040"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	mgmtpb "github.com/instill-ai/protogen-go/mgmt/v1beta"
 )
 
 // TargetSchemaVersion determines the database schema version.
-const TargetSchemaVersion uint = 42
+const TargetSchemaVersion uint = 50
 
 type migration interface {
 	Migrate() error

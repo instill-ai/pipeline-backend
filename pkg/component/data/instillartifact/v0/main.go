@@ -12,7 +12,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
 )
 
 const (

@@ -22,9 +22,9 @@ import (
 	"github.com/instill-ai/x/minio"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
+	mgmtpb "github.com/instill-ai/protogen-go/mgmt/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 )
 
 func fakeNamespace() resource.Namespace {

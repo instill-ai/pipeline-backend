@@ -20,9 +20,9 @@ import (
 	"github.com/instill-ai/x/minio"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
+	mgmtpb "github.com/instill-ai/protogen-go/mgmt/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 	logx "github.com/instill-ai/x/log"
 )
 
@@ -34,6 +34,7 @@ type Service interface {
 	CreateNamespacePipeline(ctx context.Context, ns resource.Namespace, pipeline *pipelinepb.Pipeline) (*pipelinepb.Pipeline, error)
 	ListNamespacePipelines(ctx context.Context, ns resource.Namespace, pageSize int32, pageToken string, view pipelinepb.Pipeline_View, visibility *pipelinepb.Pipeline_Visibility, filter filtering.Filter, showDeleted bool, order ordering.OrderBy) ([]*pipelinepb.Pipeline, int32, string, error)
 	GetNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, view pipelinepb.Pipeline_View) (*pipelinepb.Pipeline, error)
+	GetNamespacePipelineUIDByID(ctx context.Context, ns resource.Namespace, id string) (uuid.UUID, error)
 	UpdateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, updatedPipeline *pipelinepb.Pipeline) (*pipelinepb.Pipeline, error)
 	UpdateNamespacePipelineIDByID(ctx context.Context, ns resource.Namespace, id string, newID string) (*pipelinepb.Pipeline, error)
 	DeleteNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) error

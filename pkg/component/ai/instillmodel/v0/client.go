@@ -14,7 +14,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 
-	modelpb "github.com/instill-ai/protogen-go/model/model/v1alpha"
+	modelpb "github.com/instill-ai/protogen-go/model/v1alpha"
 )
 
 const maxPayloadSize int = 1024 * 1024 * 32

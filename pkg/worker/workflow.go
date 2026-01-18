@@ -33,8 +33,8 @@ import (
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	mgmtpb "github.com/instill-ai/protogen-go/mgmt/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 	errorsx "github.com/instill-ai/x/errors"
 	logx "github.com/instill-ai/x/log"
 )
@@ -458,7 +458,8 @@ groupLoop:
 
 		if err := workflow.ExecuteActivity(ctx, w.UploadOutputsToMinIOActivity, &MinIOUploadMetadata{
 			UserUID:           param.SystemVariables.PipelineUserUID,
-			PipelineTriggerID: workflowID,
+			WorkflowID:        workflowID,
+			PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
 			ExpiryRuleTag:     param.SystemVariables.ExpiryRule.Tag,
 		}).Get(ctx, nil); err != nil {
 			return err

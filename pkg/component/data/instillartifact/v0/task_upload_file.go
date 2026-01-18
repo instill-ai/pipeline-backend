@@ -12,7 +12,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
 )
 
 func (input *UploadFileInput) isNewKnowledgeBase() bool {
@@ -38,7 +38,7 @@ func (e *execution) uploadFile(input *structpb.Struct) (*structpb.Struct, error)
 	if inputStruct.isNewKnowledgeBase() {
 
 		knowledgeBases, err := artifactClient.ListKnowledgeBases(ctx, &artifactpb.ListKnowledgeBasesRequest{
-			NamespaceId: inputStruct.Options.Namespace,
+			Parent: fmt.Sprintf("namespaces/%s", inputStruct.Options.Namespace),
 		})
 
 		if err != nil {
@@ -55,10 +55,12 @@ func (e *execution) uploadFile(input *structpb.Struct) (*structpb.Struct, error)
 
 		if !found {
 			_, err = artifactClient.CreateKnowledgeBase(ctx, &artifactpb.CreateKnowledgeBaseRequest{
-				NamespaceId: inputStruct.Options.Namespace,
-				Id:          inputStruct.Options.KnowledgeBaseID,
-				Description: inputStruct.Options.Description,
-				Tags:        inputStruct.Options.Tags,
+				Parent: fmt.Sprintf("namespaces/%s", inputStruct.Options.Namespace),
+				KnowledgeBase: &artifactpb.KnowledgeBase{
+					DisplayName: inputStruct.Options.KnowledgeBaseID,
+					Description: inputStruct.Options.Description,
+					Tags:        inputStruct.Options.Tags,
+				},
 			})
 		}
 
@@ -81,12 +83,12 @@ func (e *execution) uploadFile(input *structpb.Struct) (*structpb.Struct, error)
 
 	// CreateFile now handles upload and auto-triggers processing
 	createRes, err := artifactClient.CreateFile(ctx, &artifactpb.CreateFileRequest{
-		NamespaceId:     inputStruct.Options.Namespace,
-		KnowledgeBaseId: inputStruct.Options.KnowledgeBaseID,
+		Parent: fmt.Sprintf("namespaces/%s", inputStruct.Options.Namespace),
 		File: &artifactpb.File{
-			Filename: inputStruct.Options.FileName,
-			Content:  content,
+			DisplayName: inputStruct.Options.FileName,
+			Content:     content,
 		},
+		KnowledgeBaseId: inputStruct.Options.KnowledgeBaseID,
 	})
 
 	if err != nil {
@@ -96,8 +98,8 @@ func (e *execution) uploadFile(input *structpb.Struct) (*structpb.Struct, error)
 	createdFilePB := createRes.File
 
 	output.File = FileOutput{
-		FileUID:         createdFilePB.Uid,
-		FileName:        createdFilePB.Filename,
+		FileUID:         createdFilePB.Id,
+		FileName:        createdFilePB.DisplayName,
 		FileType:        createdFilePB.Type.String(),
 		CreateTime:      createdFilePB.CreateTime.AsTime().Format(time.RFC3339),
 		UpdateTime:      createdFilePB.UpdateTime.AsTime().Format(time.RFC3339),

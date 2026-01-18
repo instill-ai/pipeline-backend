@@ -23,7 +23,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 )
 
 const conditionJSON = `
@@ -307,16 +307,6 @@ const taskPrefix = "TASK_"
 // key in the task definition isn't present.
 func TaskIDToTitle(id string) string {
 	title := strings.ReplaceAll(id, taskPrefix, "")
-	title = strings.ReplaceAll(title, "_", " ")
-	return cases.Title(language.English).String(title)
-}
-
-const eventPrefix = "EVENT_"
-
-// EventIDToTitle builds a Event title from its ID. This is used when the `title`
-// key in the task definition isn't present.
-func EventIDToTitle(id string) string {
-	title := strings.ReplaceAll(id, eventPrefix, "")
 	title = strings.ReplaceAll(title, "_", " ")
 	return cases.Title(language.English).String(title)
 }

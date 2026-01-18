@@ -6,7 +6,9 @@
 include .env
 export
 
-# Integration test defaults (for running from host)
+# Integration test configuration
+# - From host: make integration-test (uses localhost:8080)
+# - In container: make integration-test API_GATEWAY_URL=api-gateway:8080 DB_HOST=pg_sql
 API_GATEWAY_PROTOCOL ?= http
 API_GATEWAY_URL ?= localhost:8080
 DB_HOST ?= localhost
@@ -151,24 +153,19 @@ test: ## Run unit test
 
 .PHONY: integration-test
 integration-test: ## Run integration test
-	@if [ -n "${API_GATEWAY_URL}" ]; then \
-		echo "✓ Running tests through API Gateway: ${API_GATEWAY_URL}"; \
-	else \
-		echo "⚠ WARNING: No API_GATEWAY_URL set - using default localhost:8080"; \
-	fi
+	@echo "✓ Running tests via API Gateway: ${API_GATEWAY_URL}"
 	@echo "  DB_HOST: ${DB_HOST}"
-	@echo "Running integration tests..."
 	@rm -f /tmp/pipeline-integration-test.log
 	@TEST_FOLDER_ABS_PATH=${PWD} k6 run --address="" \
 		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} \
 		-e API_GATEWAY_URL=${API_GATEWAY_URL} \
 		-e DB_HOST=${DB_HOST} \
-		integration-test/pipeline/grpc.js --no-usage-report 2>&1 | tee -a /tmp/pipeline-integration-test.log
+		integration-test/grpc.js --no-usage-report 2>&1 | tee -a /tmp/pipeline-integration-test.log
 	@TEST_FOLDER_ABS_PATH=${PWD} k6 run --address="" \
 		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} \
 		-e API_GATEWAY_URL=${API_GATEWAY_URL} \
 		-e DB_HOST=${DB_HOST} \
-		integration-test/pipeline/rest.js --no-usage-report 2>&1 | tee -a /tmp/pipeline-integration-test.log
+		integration-test/rest.js --no-usage-report 2>&1 | tee -a /tmp/pipeline-integration-test.log
 
 .PHONY: gen-mock
 gen-mock: ## Generate mock files

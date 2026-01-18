@@ -129,8 +129,6 @@ github.com/bsm/ginkgo/v2 v2.12.0/go.mod h1:SwYbGRRDovPVboqFv0tPTcG1sN61LM1Z4ARdb
 github.com/bsm/gomega v1.27.10 h1:yeMWxP2pV2fG3FgAODIY8EiRE3dy0aeFYt4l7wh6yKA=
 github.com/bsm/gomega v1.27.10/go.mod h1:JyEr/xRbxbtgWNi8tIEVPUYZ5Dzef52k01W3YH0H+O0=
 github.com/cactus/go-statsd-client/statsd v0.0.0-20200423205355-cb0885a1018c/go.mod h1:l/bIBLeOl9eX+wxJAzxS4TveKRtAqlyDpHjhkfO0MEI=
-github.com/catalinc/hashcash v1.0.0 h1:DiI2kBNCczy7y3xJnLddIl7KGx0yP4B7irFZZ+yzzwc=
-github.com/catalinc/hashcash v1.0.0/go.mod h1:ldWL6buwYCK4VqIkLbZuFbGUoJceSafm8duCEQYw9Jw=
 github.com/cenkalti/backoff/v5 v5.0.2 h1:rIfFVxEf1QsI7E1ZHfp/B4DF/6QBAUhmgkxc0H7Zss8=
 github.com/cenkalti/backoff/v5 v5.0.2/go.mod h1:rkhZdG3JZukswDf7f0cwqPNk4K0sa+F97BxZthm/crw=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
@@ -460,12 +458,10 @@ github.com/influxdata/influxdb-client-go/v2 v2.14.0 h1:AjbBfJuq+QoaXNcrova8smSjw
 github.com/influxdata/influxdb-client-go/v2 v2.14.0/go.mod h1:Ahpm3QXKMJslpXl3IftVLVezreAUtBOTZssDrjZEFHI=
 github.com/influxdata/line-protocol v0.0.0-20210922203350-b1ad95c89adf h1:7JTmneyiNEwVBOHSjoMxiWAqB992atOeepeFYegn5RU=
 github.com/influxdata/line-protocol v0.0.0-20210922203350-b1ad95c89adf/go.mod h1:xaLFMmpvUxqXtVkUJfg9QmT88cDaCJ3ZKgdZ78oO8Qo=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20251225065653-d614d07472ce h1:d+PLETe/9DCHQe7cB56JbERnY9uWzDApqXn+lIAc1Hg=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20251225065653-d614d07472ce/go.mod h1:bCnBosofpaUxKBuTTJM3/I3thAK37kvfBnKByjnLsl4=
-github.com/instill-ai/usage-client v0.4.1-0.20251120123627-e91a3e75f28a h1:1DbZ96/ISzQXL7bQZLdRXx0daMB/H1cbTYzsPPqe82s=
-github.com/instill-ai/usage-client v0.4.1-0.20251120123627-e91a3e75f28a/go.mod h1:MxmU1Dyl+rCb/QNAHtz1XDj5ACX6z0ouGVhffrEL148=
-github.com/instill-ai/x v0.10.1-alpha.0.20251124025741-686e0983cf51 h1:2CsfgnA7ghjdjCYl/whUrUh9sdUFCKKHPEo8ynk1cL4=
-github.com/instill-ai/x v0.10.1-alpha.0.20251124025741-686e0983cf51/go.mod h1:hv7MqODkKt4EW2M700ymNvHgXOFWxH9eXp2+acUf0vI=
+github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260118041154-8f06ba4d527d h1:nQTNxSL0sakFtObb6tnZqXcB/LF1dqGFoaRfX5ywDfA=
+github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260118041154-8f06ba4d527d/go.mod h1:bCnBosofpaUxKBuTTJM3/I3thAK37kvfBnKByjnLsl4=
+github.com/instill-ai/x v0.10.1-alpha.0.20260118004501-5221537d0a1d h1:YUOzft7m56Jj+FUohdmn36d8gFnDcDo/tO2ij1zrzhw=
+github.com/instill-ai/x v0.10.1-alpha.0.20260118004501-5221537d0a1d/go.mod h1:NZwVnFLteR6JvV35pCYOOO75YMzTABefbrBC6YWDF/E=
 github.com/itchyny/gojq v0.12.17 h1:8av8eGduDb5+rvEdaOO+zQUjA04MS0m3Ps8HiD+fceg=
 github.com/itchyny/gojq v0.12.17/go.mod h1:WBrEMkgAfAGO1LUcGOckBl5O726KPp+OlkKug0I/FEY=
 github.com/itchyny/timefmt-go v0.1.6 h1:ia3s54iciXDdzWzwaVKXZPbiXzxxnv1SPGFfM/myJ5Q=

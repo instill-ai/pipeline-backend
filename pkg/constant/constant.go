@@ -51,4 +51,7 @@ const GlobalSecretKey = "INSTILL_SECRET"
 // mgmt and pipeline-backend.
 const (
 	PresetNamespaceID = "preset"
+	// PresetNamespaceUID is the UUID for the preset namespace organization.
+	// This must match the UID in the mgmt-backend database.
+	PresetNamespaceUID = "63616e63-6f6d-7065-7465-796f75726461"
 )

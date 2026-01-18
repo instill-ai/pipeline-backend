@@ -26,7 +26,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/paginate"
 
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 	constantx "github.com/instill-ai/x/constant"
 	errorsx "github.com/instill-ai/x/errors"
 	resourcex "github.com/instill-ai/x/resource"
@@ -467,9 +467,11 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 }
 
 func (r *repository) GetNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error) {
+	// Support lookup by either canonical ID or slug for backward compatibility
+	// After AIP refactoring: id is immutable (e.g., "pip-abc123"), slug is derived from display_name
 	return r.getNamespacePipeline(ctx,
-		"(id = ? AND owner = ? )",
-		[]interface{}{id, ownerPermalink},
+		"((id = ? OR slug = ?) AND owner = ?)",
+		[]interface{}{id, id, ownerPermalink},
 		isBasicView,
 		embedReleases,
 	)
@@ -486,9 +488,10 @@ func (r *repository) GetPipelineByUID(ctx context.Context, uid uuid.UUID, isBasi
 }
 
 func (r *repository) GetPipelineByIDAdmin(ctx context.Context, id string, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error) {
+	// Support lookup by either canonical ID or slug for backward compatibility
 	return r.getNamespacePipeline(ctx,
-		"(id = ?)",
-		[]interface{}{id},
+		"(id = ? OR slug = ?)",
+		[]interface{}{id, id},
 		isBasicView,
 		embedReleases,
 	)

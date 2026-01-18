@@ -2,7 +2,6 @@ package data
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -14,7 +13,6 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/data/path"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 )
 
 const (
@@ -61,24 +59,6 @@ func NewFileFromBytes(b []byte, contentType, filename string) (bin *fileData, er
 	}
 
 	return f, nil
-}
-
-// NewFileFromURL creates a new fileData from a URL.
-// The binaryFetcher is used to fetch the binary data from the URL.
-// If the contentType is not provided, it will be detected from the byte slice.
-// If the filename is not provided, it will be generated from the byte slice.
-func NewFileFromURL(ctx context.Context, binaryFetcher external.BinaryFetcher, url string) (bin *fileData, err error) {
-	b, contentType, filename, err := binaryFetcher.FetchFromURL(ctx, url)
-	if err != nil {
-		return nil, err
-	}
-
-	bin, err = NewFileFromBytes(b, contentType, filename)
-	if err != nil {
-		return nil, err
-	}
-	bin.sourceURL = url
-	return bin, nil
 }
 
 func (f *fileData) String() string {

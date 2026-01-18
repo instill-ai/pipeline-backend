@@ -45,9 +45,8 @@ require (
 	github.com/h2non/filetype v1.1.3
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.14.0
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20251225065653-d614d07472ce
-	github.com/instill-ai/usage-client v0.4.1-0.20251120123627-e91a3e75f28a
-	github.com/instill-ai/x v0.10.1-alpha.0.20251124025741-686e0983cf51
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260118041154-8f06ba4d527d
+	github.com/instill-ai/x v0.10.1-alpha.0.20260118004501-5221537d0a1d
 	github.com/itchyny/gojq v0.12.17
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/jmoiron/sqlx v1.4.0
@@ -180,7 +179,6 @@ require (
 	github.com/aws/aws-sdk-go v1.55.7 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.36.3 // indirect
 	github.com/aws/smithy-go v1.22.3 // indirect
-	github.com/catalinc/hashcash v1.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chromedp/cdproto v0.0.0-20250527225801-8f9bc3ce9e31 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect

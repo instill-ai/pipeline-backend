@@ -10,7 +10,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
 )
 
 func (e *execution) getFilesMetadata(input *structpb.Struct) (*structpb.Struct, error) {
@@ -29,9 +29,10 @@ func (e *execution) getFilesMetadata(input *structpb.Struct) (*structpb.Struct, 
 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
+	filter := fmt.Sprintf("knowledgeBaseId=\"%s\"", inputStruct.KnowledgeBaseID)
 	filesRes, err := artifactClient.ListFiles(ctx, &artifactpb.ListFilesRequest{
-		NamespaceId:     inputStruct.Namespace,
-		KnowledgeBaseId: inputStruct.KnowledgeBaseID,
+		Parent: fmt.Sprintf("namespaces/%s", inputStruct.Namespace),
+		Filter: &filter,
 	})
 
 	if err != nil {
@@ -45,10 +46,11 @@ func (e *execution) getFilesMetadata(input *structpb.Struct) (*structpb.Struct, 
 	output.setOutput(filesRes)
 
 	for filesRes != nil && filesRes.NextPageToken != "" {
+		nextToken := filesRes.NextPageToken
 		filesRes, err = artifactClient.ListFiles(ctx, &artifactpb.ListFilesRequest{
-			NamespaceId:     inputStruct.Namespace,
-			KnowledgeBaseId: inputStruct.KnowledgeBaseID,
-			PageToken:       &filesRes.NextPageToken,
+			Parent:    fmt.Sprintf("namespaces/%s", inputStruct.Namespace),
+			Filter:    &filter,
+			PageToken: &nextToken,
 		})
 
 		if err != nil {
@@ -64,8 +66,8 @@ func (e *execution) getFilesMetadata(input *structpb.Struct) (*structpb.Struct, 
 func (output *GetFilesMetadataOutput) setOutput(filesRes *artifactpb.ListFilesResponse) {
 	for _, filePB := range filesRes.Files {
 		output.Files = append(output.Files, FileOutput{
-			FileUID:    filePB.Uid,
-			FileName:   filePB.Filename,
+			FileUID:    filePB.Id,
+			FileName:   filePB.DisplayName,
 			FileType:   filePB.Type.String(),
 			CreateTime: filePB.CreateTime.AsTime().Format(time.RFC3339),
 			UpdateTime: filePB.UpdateTime.AsTime().Format(time.RFC3339),

@@ -2,15 +2,29 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 )
+
+// parseConnectionFromName extracts namespace ID and connection ID from name string.
+// Format: namespaces/{namespace}/connections/{connection}
+func parseConnectionFromName(name string) (namespaceID, connectionID string, err error) {
+	parts := strings.Split(name, "/")
+	if len(parts) < 4 || parts[0] != "namespaces" || parts[2] != "connections" {
+		return "", "", fmt.Errorf("invalid connection name format: %s", name)
+	}
+	return parts[1], parts[3], nil
+}
 
 // GetIntegration returns the details of an integration.
 func (h *PublicHandler) GetIntegration(ctx context.Context, req *pipelinepb.GetIntegrationRequest) (*pipelinepb.GetIntegrationResponse, error) {
@@ -85,7 +99,13 @@ func (h *PublicHandler) DeleteNamespaceConnection(ctx context.Context, req *pipe
 		return nil, err
 	}
 
-	err := h.service.DeleteNamespaceConnection(ctx, req.GetNamespaceId(), req.GetConnectionId())
+	// Parse namespace ID and connection ID from name: namespaces/{namespace}/connections/{connection}
+	namespaceID, connectionID, err := parseConnectionFromName(req.GetName())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	err = h.service.DeleteNamespaceConnection(ctx, namespaceID, connectionID)
 	if err != nil {
 		return nil, err
 	}
@@ -155,14 +175,22 @@ func (h *PublicHandler) ListNamespaceConnections(ctx context.Context, req *pipel
 	return resp, nil
 }
 
-// LookUpConnectionAdmin fetches a connection by UID.
+// LookUpConnectionAdmin fetches a connection by permalink.
+// Permalink format: connections/{connection.uid}
 func (h *PrivateHandler) LookUpConnectionAdmin(ctx context.Context, req *pipelinepb.LookUpConnectionAdminRequest) (*pipelinepb.LookUpConnectionAdminResponse, error) {
 	view := pipelinepb.View_VIEW_BASIC
 	if req.GetView() != pipelinepb.View_VIEW_UNSPECIFIED {
 		view = req.GetView()
 	}
 
-	uid := uuid.FromStringOrNil(req.GetUid())
+	// Parse UID from permalink: connections/{connection.uid}
+	permalink := req.GetPermalink()
+	if !strings.HasPrefix(permalink, "connections/") {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid permalink format, expected connections/{uid}")
+	}
+	uidStr := strings.TrimPrefix(permalink, "connections/")
+	uid := uuid.FromStringOrNil(uidStr)
+
 	conn, err := h.service.GetConnectionByUIDAdmin(ctx, uid, view)
 	if err != nil {
 		return nil, err

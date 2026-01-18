@@ -12,7 +12,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
 )
 
 const (
@@ -61,7 +61,7 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
 	knowledgeBases, err := artifactClient.ListKnowledgeBases(ctx, &artifactpb.ListKnowledgeBasesRequest{
-		NamespaceId: inputStruct.Namespace,
+		Parent: fmt.Sprintf("namespaces/%s", inputStruct.Namespace),
 	})
 
 	if err != nil {
@@ -78,8 +78,10 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 
 	if !found {
 		_, err = artifactClient.CreateKnowledgeBase(ctx, &artifactpb.CreateKnowledgeBaseRequest{
-			NamespaceId: inputStruct.Namespace,
-			Id:          inputStruct.KnowledgeBaseID,
+			Parent: fmt.Sprintf("namespaces/%s", inputStruct.Namespace),
+			KnowledgeBase: &artifactpb.KnowledgeBase{
+				DisplayName: inputStruct.KnowledgeBaseID,
+			},
 		})
 
 		if err != nil {
@@ -92,11 +94,16 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 
 	syncSource := getSource(inputStruct.ThirdPartyFiles[0].WebViewLink)
 
+	kbFilter := fmt.Sprintf("knowledgeBaseId=\"%s\"", inputStruct.KnowledgeBaseID)
 	for {
+		var pageTokenPtr *string
+		if nextToken != "" {
+			pageTokenPtr = &nextToken
+		}
 		filesRes, err := artifactClient.ListFiles(ctx, &artifactpb.ListFilesRequest{
-			NamespaceId:     inputStruct.Namespace,
-			KnowledgeBaseId: inputStruct.KnowledgeBaseID,
-			PageToken:       &nextToken,
+			Parent:    fmt.Sprintf("namespaces/%s", inputStruct.Namespace),
+			Filter:    &kbFilter,
+			PageToken: pageTokenPtr,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("list files: %w", err)
@@ -136,7 +143,7 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 		thirdPartyFile, ok := thirdPartyFilesMap[fileUID]
 
 		if !ok {
-			toBeDeleteFileIDs = append(toBeDeleteFileIDs, file.Uid)
+			toBeDeleteFileIDs = append(toBeDeleteFileIDs, file.Id)
 			continue
 		}
 
@@ -154,7 +161,7 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 
 		// It means overwrite the file here.
 		if thirdPartyModifiedTime.After(fileModifiedTime) {
-			toBeDeleteFileIDs = append(toBeDeleteFileIDs, file.Uid)
+			toBeDeleteFileIDs = append(toBeDeleteFileIDs, file.Id)
 			toBeUpdateFiles = append(toBeUpdateFiles, thirdPartyFile)
 		}
 	}
@@ -170,9 +177,7 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 
 	for _, fileID := range toBeDeleteFileIDs {
 		_, err = artifactClient.DeleteFile(ctx, &artifactpb.DeleteFileRequest{
-			NamespaceId:     inputStruct.Namespace,
-			KnowledgeBaseId: inputStruct.KnowledgeBaseID,
-			FileId:          fileID,
+			Name: fmt.Sprintf("namespaces/%s/files/%s", inputStruct.Namespace, fileID),
 		})
 		if err != nil {
 			return nil, fmt.Errorf("delete file uid %s: %w", fileID, err)
@@ -197,13 +202,13 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 		}
 
 		createRes, err := artifactClient.CreateFile(ctx, &artifactpb.CreateFileRequest{
-			NamespaceId:     inputStruct.Namespace,
-			KnowledgeBaseId: inputStruct.KnowledgeBaseID,
+			Parent: fmt.Sprintf("namespaces/%s", inputStruct.Namespace),
 			File: &artifactpb.File{
-				Filename:         uploadingFile.Filename,
+				DisplayName:      uploadingFile.Filename,
 				Content:          uploadingFile.Content,
 				ExternalMetadata: uploadingFile.ExternalMetadata,
 			},
+			KnowledgeBaseId: inputStruct.KnowledgeBaseID,
 		})
 
 		if err != nil {
@@ -213,8 +218,8 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 		}
 
 		outputStruct.UploadedFiles = append(outputStruct.UploadedFiles, FileOutput{
-			FileUID:         createRes.File.Uid,
-			FileName:        createRes.File.Filename,
+			FileUID:         createRes.File.Id,
+			FileName:        createRes.File.DisplayName,
 			FileType:        createRes.File.Type.String(),
 			CreateTime:      util.FormatToISO8601(createRes.File.CreateTime),
 			UpdateTime:      util.FormatToISO8601(createRes.File.UpdateTime),
@@ -232,13 +237,13 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 		}
 
 		createRes, err := artifactClient.CreateFile(ctx, &artifactpb.CreateFileRequest{
-			NamespaceId:     inputStruct.Namespace,
-			KnowledgeBaseId: inputStruct.KnowledgeBaseID,
+			Parent: fmt.Sprintf("namespaces/%s", inputStruct.Namespace),
 			File: &artifactpb.File{
-				Filename:         uploadingFile.Filename,
+				DisplayName:      uploadingFile.Filename,
 				Content:          uploadingFile.Content,
 				ExternalMetadata: uploadingFile.ExternalMetadata,
 			},
+			KnowledgeBaseId: inputStruct.KnowledgeBaseID,
 		})
 
 		if err != nil {
@@ -248,8 +253,8 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 		}
 
 		outputStruct.UpdatedFiles = append(outputStruct.UpdatedFiles, FileOutput{
-			FileUID:         createRes.File.Uid,
-			FileName:        createRes.File.Filename,
+			FileUID:         createRes.File.Id,
+			FileName:        createRes.File.DisplayName,
 			FileType:        createRes.File.Type.String(),
 			CreateTime:      util.FormatToISO8601(createRes.File.CreateTime),
 			UpdateTime:      util.FormatToISO8601(createRes.File.UpdateTime),

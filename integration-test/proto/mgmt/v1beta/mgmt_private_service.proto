@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package mgmt.v1beta;
+
+import "mgmt/v1beta/mgmt.proto";
+
+// Mgmt service responds to internal access
+service MgmtPrivateService {
+  // ListUsersAdmin method receives a ListUsersAdminRequest message and returns
+  // a ListUsersAdminResponse message.
+  rpc ListUsersAdmin(ListUsersAdminRequest) returns (ListUsersAdminResponse) {}
+
+  // GetUserAdmin method receives a GetUserAdminRequest message and returns
+  // a GetUserAdminResponse message.
+  rpc GetUserAdmin(GetUserAdminRequest) returns (GetUserAdminResponse) {}
+
+  // LookUpUserAdmin method receives a LookUpUserAdminRequest message and
+  // returns a LookUpUserAdminResponse
+  rpc LookUpUserAdmin(LookUpUserAdminRequest) returns (LookUpUserAdminResponse) {}
+
+  // ListOrganizationsAdmin method receives a ListOrganizationsAdminRequest message and returns
+  // a ListOrganizationsAdminResponse message.
+  rpc ListOrganizationsAdmin(ListOrganizationsAdminRequest) returns (ListOrganizationsAdminResponse) {}
+
+  // GetOrganizationAdmin method receives a GetOrganizationAdminRequest message and returns
+  // a GetOrganizationAdminResponse message.
+  rpc GetOrganizationAdmin(GetOrganizationAdminRequest) returns (GetOrganizationAdminResponse) {}
+
+  // LookUpOrganizationAdmin method receives a LookUpOrganizationAdminRequest message and
+  // returns a LookUpOrganizationAdminResponse
+  rpc LookUpOrganizationAdmin(LookUpOrganizationAdminRequest) returns (LookUpOrganizationAdminResponse) {}
+
+  // Check if a namespace is in use
+  //
+  // Returns the availability of a namespace or, alternatively, the type of
+  // resource that is using it.
+  rpc CheckNamespaceAdmin(CheckNamespaceAdminRequest) returns (CheckNamespaceAdminResponse) {}
+
+  // Check if a namespace is in use by UID
+  //
+  // Returns the availability of a namespace or, alternatively, the type of
+  // resource that is using it.
+  rpc CheckNamespaceByUIDAdmin(CheckNamespaceByUIDAdminRequest) returns (CheckNamespaceByUIDAdminResponse) {}
+}

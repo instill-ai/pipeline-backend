@@ -11,7 +11,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert"
 
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	mgmtpb "github.com/instill-ai/protogen-go/mgmt/v1beta"
 )
 
 const batchSize = 100

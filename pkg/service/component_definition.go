@@ -12,7 +12,7 @@ import (
 
 	component "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	errorsx "github.com/instill-ai/x/errors"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 )
 
 func (s *service) pageSizeInRange(pageSize int32) int {

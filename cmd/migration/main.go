@@ -20,7 +20,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	mgmtpb "github.com/instill-ai/protogen-go/mgmt/v1beta"
 	clientgrpcx "github.com/instill-ai/x/client/grpc"
 	logx "github.com/instill-ai/x/log"
 )

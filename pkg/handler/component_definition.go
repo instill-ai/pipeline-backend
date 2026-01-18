@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 )
 
 // ListComponentDefinitions returns a paginated list of component definitions.
