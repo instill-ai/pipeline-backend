@@ -1,4 +1,4 @@
-ARG GOLANG_VERSION=1.24.4
+ARG GOLANG_VERSION=1.25.6
 
 # ===============================
 # Stage 1: Build dependencies
