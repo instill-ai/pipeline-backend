@@ -5,18 +5,7 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
-
-// GetRscNameID returns the resource ID given a resource name
-func GetRscNameID(path string) (string, error) {
-	id := path[strings.LastIndex(path, "/")+1:]
-	if id == "" {
-		return "", fmt.Errorf("error when extract resource id from resource name '%s'", path)
-	}
-	return id, nil
-}
 
 // GetRscPermalinkUID returns the resource UID given a resource permalink
 func GetRscPermalinkUID(path string) (uuid.UUID, error) {
@@ -50,12 +39,4 @@ func (ns Namespace) Name() string {
 }
 func (ns Namespace) Permalink() string {
 	return fmt.Sprintf("%s/%s", ns.NsType, ns.NsUID.String())
-}
-
-func GetOperationID(name string) (string, error) {
-	id := strings.TrimPrefix(name, "operations/")
-	if !strings.HasPrefix(name, "operations/") || id == "" {
-		return "", status.Error(codes.InvalidArgument, "Error when extract operations resource id")
-	}
-	return id, nil
 }

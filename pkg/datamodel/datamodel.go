@@ -16,8 +16,9 @@ import (
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	taskpb "github.com/instill-ai/protogen-go/common/task/v1alpha"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 )
 
 const Iterator = "iterator"
@@ -67,11 +68,20 @@ type HubStats struct {
 }
 
 // Pipeline is the data model of the pipeline table
+// Field ordering follows AIP standard: name (derived), id, display_name, slug, aliases, description
 type Pipeline struct {
 	BaseDynamic
-	ID          string
-	Owner       string
+	// Field 2: Immutable canonical ID with prefix (e.g., "pip-8f3A2k9E7c1")
+	ID string `gorm:"column:id;not null"`
+	// Field 3: Human-readable display name for UI
+	DisplayName string `gorm:"column:display_name"`
+	// Field 4: URL-friendly slug without prefix
+	Slug string `gorm:"column:slug"`
+	// Field 5: Previous slugs for backward compatibility
+	Aliases pq.StringArray `gorm:"column:aliases;type:text[]"`
+	// Field 6: Optional description
 	Description sql.NullString
+	Owner       string
 
 	// The Recipe field in the database is deprecated. It will only be used for
 	// the structural representation of the recipe instead of as data in the
@@ -124,6 +134,24 @@ func (p Pipeline) OwnerUID() uuid.UUID {
 	return uuid.FromStringOrNil(strings.Split(p.Owner, "/")[1])
 }
 
+// BeforeCreate ensures hash-based ID and slug are generated before insertion.
+func (p *Pipeline) BeforeCreate(db *gorm.DB) error {
+	if err := p.BaseDynamic.BeforeCreate(db); err != nil {
+		return err
+	}
+	// Generate prefixed canonical ID if not provided (AIP standard)
+	if p.ID == "" {
+		p.ID = utils.GeneratePrefixedResourceID(utils.PrefixPipeline, p.UID)
+		db.Statement.SetColumn("ID", p.ID)
+	}
+	// Generate slug from display name if not provided
+	if p.Slug == "" && p.DisplayName != "" {
+		p.Slug = utils.GenerateSlug(p.DisplayName)
+		db.Statement.SetColumn("Slug", p.Slug)
+	}
+	return nil
+}
+
 type Tag struct {
 	PipelineUID uuid.UUID
 	TagName     string
@@ -132,11 +160,20 @@ type Tag struct {
 }
 
 // PipelineRelease is the data model of the pipeline release table
+// Field ordering follows AIP standard: name (derived), id, display_name, slug, aliases, description
 type PipelineRelease struct {
 	BaseDynamic
-	ID          string
-	PipelineUID uuid.UUID
+	// Field 2: Immutable canonical ID with prefix (e.g., "rel-8f3A2k9E7c1")
+	ID string `gorm:"column:id;not null"`
+	// Field 3: Human-readable display name for UI
+	DisplayName string `gorm:"column:display_name"`
+	// Field 4: URL-friendly slug without prefix
+	Slug string `gorm:"column:slug"`
+	// Field 5: Previous slugs for backward compatibility
+	Aliases pq.StringArray `gorm:"column:aliases;type:text[]"`
+	// Field 6: Optional description
 	Description sql.NullString
+	PipelineUID uuid.UUID
 
 	// The Recipe field in the database is deprecated. It will only be used for
 	// the structural representation of the recipe instead of as data in the
@@ -147,6 +184,24 @@ type PipelineRelease struct {
 
 	Metadata datatypes.JSON `gorm:"type:jsonb"`
 	Readme   string
+}
+
+// BeforeCreate ensures hash-based ID and slug are generated before insertion.
+func (r *PipelineRelease) BeforeCreate(db *gorm.DB) error {
+	if err := r.BaseDynamic.BeforeCreate(db); err != nil {
+		return err
+	}
+	// Generate prefixed canonical ID if not provided (AIP standard)
+	if r.ID == "" {
+		r.ID = utils.GeneratePrefixedResourceID(utils.PrefixPipelineRelease, r.UID)
+		db.Statement.SetColumn("ID", r.ID)
+	}
+	// Generate slug from display name if not provided
+	if r.Slug == "" && r.DisplayName != "" {
+		r.Slug = utils.GenerateSlug(r.DisplayName)
+		db.Statement.SetColumn("Slug", r.Slug)
+	}
+	return nil
 }
 
 type ComponentMap map[string]*Component
@@ -237,14 +292,14 @@ func (p *Pipeline) BeforeSave(db *gorm.DB) (err error) {
 	return nil
 }
 
-func (p *PipelineRelease) BeforeSave(db *gorm.DB) (err error) {
+func (r *PipelineRelease) BeforeSave(db *gorm.DB) (err error) {
 
 	// In the future, we'll make YAML the only input data type for pipeline
 	// recipes. Until then, if the YAML recipe is empty, we'll use the JSON
 	// recipe as the input data. Once the JSON recipe becomes output-only, this
 	// condition will no longer be necessary.
-	if p.RecipeYAML == "" {
-		p.RecipeYAML, err = convertRecipeToRecipeYAML(p.Recipe)
+	if r.RecipeYAML == "" {
+		r.RecipeYAML, err = convertRecipeToRecipeYAML(r.Recipe)
 		if err != nil {
 			return err
 		}
@@ -264,15 +319,15 @@ func (p *Pipeline) AfterFind(tx *gorm.DB) (err error) {
 	return
 }
 
-func (p *PipelineRelease) AfterFind(tx *gorm.DB) (err error) {
-	if p.RecipeYAML == "" {
-		p.Recipe = nil
+func (r *PipelineRelease) AfterFind(tx *gorm.DB) (err error) {
+	if r.RecipeYAML == "" {
+		r.Recipe = nil
 		return
 	}
 
 	// For an invalid YAML recipe, we ignore the error and return a `nil`
 	// structured recipe.
-	p.Recipe, _ = convertRecipeYAMLToRecipe(p.RecipeYAML)
+	r.Recipe, _ = convertRecipeYAMLToRecipe(r.RecipeYAML)
 	return
 }
 
@@ -593,14 +648,46 @@ func (c ReleaseStage) Value() (driver.Value, error) {
 	return pipelinepb.ComponentDefinition_ReleaseStage(c).String(), nil
 }
 
+// Secret is the data model for the secret table
+// Field ordering follows AIP standard: name (derived), id, display_name, slug, aliases, description
 type Secret struct {
 	BaseDynamicHardDelete
-	ID            string
-	Owner         string
+	// Field 2: Immutable canonical ID with prefix (e.g., "sec-8f3A2k9E7c1")
+	ID string `gorm:"column:id;not null"`
+	// Field 3: Human-readable display name for UI (e.g., "OpenAI API Key")
+	DisplayName string `gorm:"column:display_name"`
+	// Field 4: URL-friendly slug without prefix (e.g., "openai-api-key")
+	Slug string `gorm:"column:slug"`
+	// Field 5: Previous slugs for backward compatibility
+	Aliases pq.StringArray `gorm:"column:aliases;type:text[]"`
+	// Field 6: Optional description
 	Description   string
+	Owner         string
 	Value         *string
 	NamespaceID   string `gorm:"type:namespace_id"`
 	NamespaceType string `gorm:"type:namespace_type"`
+}
+
+// BeforeCreate generates a prefixed hash-based ID for the Secret if not provided
+func (s *Secret) BeforeCreate(db *gorm.DB) error {
+	// Call parent's BeforeCreate to generate UID
+	if err := s.BaseDynamicHardDelete.BeforeCreate(db); err != nil {
+		return err
+	}
+
+	// Generate prefixed canonical ID if not provided (AIP standard)
+	if s.ID == "" {
+		s.ID = utils.GeneratePrefixedResourceID(utils.PrefixSecret, s.UID)
+		db.Statement.SetColumn("ID", s.ID)
+	}
+
+	// Generate slug from display name if not provided
+	if s.Slug == "" && s.DisplayName != "" {
+		s.Slug = utils.GenerateSlug(s.DisplayName)
+		db.Statement.SetColumn("Slug", s.Slug)
+	}
+
+	return nil
 }
 
 // ConnectionMethod is an alias type for the proto enum that allows us to use its string value in the database.
@@ -618,9 +705,19 @@ func (m ConnectionMethod) Value() (driver.Value, error) {
 }
 
 // Connection is the data model for the `integration` table
+// Field ordering follows AIP standard: name (derived), id, display_name, slug, aliases, description
 type Connection struct {
 	BaseDynamic
-	ID                 string
+	// Field 2: Immutable canonical ID with prefix (e.g., "con-8f3A2k9E7c1")
+	ID string `gorm:"column:id;not null"`
+	// Field 3: Human-readable display name for UI (e.g., "My Google Drive")
+	DisplayName string `gorm:"column:display_name"`
+	// Field 4: URL-friendly slug without prefix (e.g., "my-google-drive")
+	Slug string `gorm:"column:slug"`
+	// Field 5: Previous slugs for backward compatibility
+	Aliases pq.StringArray `gorm:"column:aliases;type:text[]"`
+	// Field 6: Optional description
+	Description        string `gorm:"column:description"`
 	NamespaceUID       uuid.UUID
 	IntegrationUID     uuid.UUID
 	Method             ConnectionMethod
@@ -629,6 +726,28 @@ type Connection struct {
 	Scopes             pq.StringArray      `gorm:"type:text[]"`
 	OAuthAccessDetails datatypes.JSON      `gorm:"type:jsonb"`
 	Integration        ComponentDefinition `gorm:"foreignKey:IntegrationUID;references:UID"`
+}
+
+// BeforeCreate generates a prefixed hash-based ID for the Connection if not provided
+func (c *Connection) BeforeCreate(db *gorm.DB) error {
+	// Call parent's BeforeCreate to generate UID
+	if err := c.BaseDynamic.BeforeCreate(db); err != nil {
+		return err
+	}
+
+	// Generate prefixed canonical ID if not provided (AIP standard)
+	if c.ID == "" {
+		c.ID = utils.GeneratePrefixedResourceID(utils.PrefixConnection, c.UID)
+		db.Statement.SetColumn("ID", c.ID)
+	}
+
+	// Generate slug from display name if not provided
+	if c.Slug == "" && c.DisplayName != "" {
+		c.Slug = utils.GenerateSlug(c.DisplayName)
+		db.Statement.SetColumn("Slug", c.Slug)
+	}
+
+	return nil
 }
 
 // PipelineRunOn is the data model for the `pipeline_run_on` table

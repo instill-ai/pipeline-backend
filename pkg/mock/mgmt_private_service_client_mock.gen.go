@@ -9,7 +9,7 @@ import (
 	mm_time "time"
 
 	"github.com/gojuno/minimock/v3"
-	mm_mgmtv1beta "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	mm_mgmtv1beta "github.com/instill-ai/protogen-go/mgmt/v1beta"
 	grpc "google.golang.org/grpc"
 )
 

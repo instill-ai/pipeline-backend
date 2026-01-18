@@ -10,7 +10,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
 )
 
 func (e *execution) getChunksMetadata(input *structpb.Struct) (*structpb.Struct, error) {
@@ -28,9 +28,7 @@ func (e *execution) getChunksMetadata(input *structpb.Struct) (*structpb.Struct,
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
 	chunksRes, err := artifactClient.ListChunks(ctx, &artifactpb.ListChunksRequest{
-		NamespaceId:     inputStruct.Namespace,
-		KnowledgeBaseId: inputStruct.KnowledgeBaseID,
-		FileId:          inputStruct.FileUID,
+		Parent: fmt.Sprintf("namespaces/%s/files/%s", inputStruct.Namespace, inputStruct.FileUID),
 	})
 
 	if err != nil {
@@ -43,7 +41,7 @@ func (e *execution) getChunksMetadata(input *structpb.Struct) (*structpb.Struct,
 
 	for _, chunkPB := range chunksRes.Chunks {
 		output.Chunks = append(output.Chunks, ChunkOutput{
-			ChunkUID:        chunkPB.Uid,
+			ChunkUID:        chunkPB.Id,
 			Retrievable:     chunkPB.Retrievable,
 			StartPosition:   0, // deprecated field
 			EndPosition:     0, // deprecated field

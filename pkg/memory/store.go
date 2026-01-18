@@ -3,6 +3,7 @@ package memory
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/gofrs/uuid"
@@ -77,8 +78,13 @@ func (s *Store) GetWorkflowMemory(_ context.Context, workflowID string) (*Workfl
 	return wfm.(*WorkflowMemory), nil
 }
 
+// wfmFilePath returns the MinIO path for storing workflow memory.
+// It extracts the UUID from the workflow ID, stripping the "trigger-pipeline-" prefix if present.
+// This decouples the Temporal workflow ID format from the storage path.
 func wfmFilePath(workflowID string) string {
-	return fmt.Sprintf("pipeline-runs/wfm/%s.json", workflowID)
+	// Extract UUID from workflow ID (strip "trigger-pipeline-" prefix if present)
+	id := strings.TrimPrefix(workflowID, "trigger-pipeline-")
+	return fmt.Sprintf("pipeline-runs/wfm/%s.json", id)
 }
 
 // CleanupWorkflowMemory removes the worfklow memory data from the in-memory
@@ -130,12 +136,25 @@ func (s *Store) CommitWorkflowData(ctx context.Context, userUID uuid.UUID, wfm *
 	return nil
 }
 
+// ErrWorkflowMemoryNotFound indicates the workflow memory data doesn't exist in MinIO.
+// This can happen when:
+// - The workflow memory expired (via WorkflowMemoryExpiryRuleTag)
+// - MinIO bucket was cleared/reset
+// - Stale Temporal workflows retry after system restart
+var ErrWorkflowMemoryNotFound = fmt.Errorf("workflow memory not found in storage")
+
 // FetchWorkflowMemory loads the workflow data into memory. This relies on
 // the workflow memory being stored via the CommitWorkflowData method,
 // and is used when separate processes want to share the workflow data.
 func (s *Store) FetchWorkflowMemory(ctx context.Context, userUID uuid.UUID, workflowID string) (*WorkflowMemory, error) {
 	b, err := s.minioClient.GetFile(ctx, userUID, wfmFilePath(workflowID))
 	if err != nil {
+		// Check if the error is due to the key not existing in MinIO
+		// This can happen when workflow memory expires or is deleted
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "does not exist") || strings.Contains(errMsg, "NoSuchKey") || strings.Contains(errMsg, "not found") {
+			return nil, fmt.Errorf("%w: %s", ErrWorkflowMemoryNotFound, workflowID)
+		}
 		return nil, fmt.Errorf("downloading workflow memory from MinIO: %w", err)
 	}
 

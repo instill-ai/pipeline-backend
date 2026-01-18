@@ -19,8 +19,8 @@ import (
 	"github.com/instill-ai/x/resource"
 
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	mgmtpb "github.com/instill-ai/protogen-go/mgmt/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 )
 
 const defaultPipelineReleaseID = "latest"

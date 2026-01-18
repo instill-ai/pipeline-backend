@@ -21,15 +21,21 @@ enum Task {
   // Text to Image - generate images from input text prompts.
   TASK_TEXT_TO_IMAGE = 7;
   // Text Generation - generate texts from input text prompts.
-  TASK_TEXT_GENERATION = 8;
+  reserved 8;
   // Conversational Text Generation - generate text as responses to a dialog input.
-  TASK_TEXT_GENERATION_CHAT = 9;
+  reserved 9;
   // Visual Question Answering - generate text as a response to a visual prompt.
-  TASK_VISUAL_QUESTION_ANSWERING = 10;
+  reserved 10;
   // Image to Image - generate an image from another image.
   TASK_IMAGE_TO_IMAGE = 11;
-  // Text Embeddings - generate an embedding (a representation as coordinates) from a text input.
-  TASK_TEXT_EMBEDDINGS = 12;
+  // Embedding - generate an embedding (a representation as coordinates) from a multimodal input.
+  TASK_EMBEDDING = 12;
   // Speech Recognition - transcribe the words in an audio input.
   TASK_SPEECH_RECOGNITION = 13;
+  // Conversational Text Generation - generate text as responses to a dialog input.
+  TASK_CHAT = 14;
+  // Completion Text Generation - generate text following the input prompt.
+  TASK_COMPLETION = 15;
+  // Custom - custom task type for free form input/output.
+  TASK_CUSTOM = 16;
 }

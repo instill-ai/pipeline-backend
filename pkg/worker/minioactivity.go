@@ -76,7 +76,8 @@ func (w *worker) UploadRecipeToMinIOActivity(ctx context.Context, param UploadRe
 // MinIO.
 type MinIOUploadMetadata struct {
 	UserUID           uuid.UUID
-	PipelineTriggerID string
+	WorkflowID        string // Temporal workflow ID (e.g., "trigger-pipeline-{uuid}")
+	PipelineTriggerID string // Pipeline trigger UUID for database operations
 	ExpiryRuleTag     string
 }
 
@@ -87,7 +88,7 @@ func (w *worker) UploadOutputsToMinIOActivity(ctx context.Context, param *MinIOU
 
 	objectName := fmt.Sprintf("pipeline-runs/output/%s.json", param.PipelineTriggerID)
 
-	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.PipelineTriggerID)
+	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
 	if err != nil {
 		return err
 	}

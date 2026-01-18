@@ -10,7 +10,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
 )
 
 func (e *execution) matchFileStatus(input *structpb.Struct) (*structpb.Struct, error) {
@@ -28,11 +28,10 @@ func (e *execution) matchFileStatus(input *structpb.Struct) (*structpb.Struct, e
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
 	for {
-		filter := fmt.Sprintf(`id="%s"`, inputStruct.FileUID)
+		filter := fmt.Sprintf(`id="%s" AND knowledgeBaseId="%s"`, inputStruct.FileUID, inputStruct.KnowledgeBaseID)
 		matchRes, err := artifactClient.ListFiles(ctx, &artifactpb.ListFilesRequest{
-			NamespaceId:     inputStruct.Namespace,
-			KnowledgeBaseId: inputStruct.KnowledgeBaseID,
-			Filter:          &filter,
+			Parent: fmt.Sprintf("namespaces/%s", inputStruct.Namespace),
+			Filter: &filter,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to match file status: %w", err)

@@ -1,0 +1,374 @@
+syntax = "proto3";
+
+package mgmt.v1beta;
+
+// Core definitions
+import "mgmt/v1beta/metric.proto";
+import "mgmt/v1beta/mgmt.proto";
+import "google/api/annotations.proto";
+// Google API
+import "google/api/visibility.proto";
+// OpenAPI definition
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+// MGMT
+//
+// MgmtPublicService exposes the public Core endpoints that allow clients to
+// manage user resources.
+service MgmtPublicService {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_tag) = {description: "Public Mgmt endpoints"};
+
+  // Check if the MGMT server is alive
+  //
+  // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md.
+  rpc Liveness(LivenessRequest) returns (LivenessResponse) {
+    option (google.api.http) = {
+      get: "/v1beta/__liveness"
+      additional_bindings: [
+        {get: "/v1beta/health/mgmt"}]
+    };
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Check if the pipeline server is ready
+  //
+  // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+  rpc Readiness(ReadinessRequest) returns (ReadinessResponse) {
+    option (google.api.http) = {
+      get: "/v1beta/__readiness"
+      additional_bindings: [
+        {get: "/v1beta/ready/mgmt"}]
+    };
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Get the authenticated user
+  //
+  // Returns the details of the authenticated user.
+  rpc GetAuthenticatedUser(GetAuthenticatedUserRequest) returns (GetAuthenticatedUserResponse) {
+    option (google.api.http) = {get: "/v1beta/user"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Namespace"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+  }
+
+  // Update the authenticated user
+  //
+  // Updates the information of the authenticated user.
+  //
+  // In REST requests, only the supplied user fields will be taken into account
+  // when updating the resource.
+  rpc PatchAuthenticatedUser(PatchAuthenticatedUserRequest) returns (PatchAuthenticatedUserResponse) {
+    option (google.api.http) = {
+      patch: "/v1beta/user"
+      body: "user"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Namespace"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+  }
+
+  // List users
+  //
+  // Returns a paginated list of users.
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option (google.api.http) = {get: "/v1beta/users"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Namespace"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+  }
+
+  // Get a user
+  //
+  // Returns the details of a user by their ID.
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=users/*}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Namespace"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+  }
+
+  // Create an API token
+  //
+  // Creates an API token for the authenticated user.
+  rpc CreateToken(CreateTokenRequest) returns (CreateTokenResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/tokens"
+      body: "token"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Namespace"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+  }
+
+  // List API tokens
+  //
+  // Returns a paginated list of the API tokens of the authenticated user.
+  rpc ListTokens(ListTokensRequest) returns (ListTokensResponse) {
+    option (google.api.http) = {get: "/v1beta/tokens"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Namespace"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+  }
+
+  // Get an API token
+  //
+  // Returns the details of an API token.
+  rpc GetToken(GetTokenRequest) returns (GetTokenResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=tokens/*}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Namespace"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+  }
+
+  // Delete an API token
+  //
+  // Deletes an API token.
+  rpc DeleteToken(DeleteTokenRequest) returns (DeleteTokenResponse) {
+    option (google.api.http) = {delete: "/v1beta/{name=tokens/*}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Namespace"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+  }
+
+  // Validate an API token
+  //
+  // Validates an API token.
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse) {
+    option (google.api.http) = {post: "/v1beta/validate_token"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Namespace"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+  }
+
+  // Check if a namespace is in use
+  //
+  // Returns the availability of a namespace or, alternatively, the type of
+  // resource that is using it.
+  rpc CheckNamespace(CheckNamespaceRequest) returns (CheckNamespaceResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/check-namespace"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Namespace"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+  }
+
+  // Get pipeline trigger count
+  //
+  // Returns the pipeline trigger count of a given requester within a timespan.
+  // Results are grouped by trigger status.
+  rpc GetPipelineTriggerCount(GetPipelineTriggerCountRequest) returns (GetPipelineTriggerCountResponse) {
+    option (google.api.http) = {get: "/v1beta/pipeline-runs/count"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Metrics"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+    // This endpoint will remain hidden until the new dashboard is implemented
+    // in the frontend. Until then, the server might return empty data.
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Get model trigger count
+  //
+  // Returns the model trigger count of a given requester within a timespan.
+  // Results are grouped by trigger status.
+  rpc GetModelTriggerCount(GetModelTriggerCountRequest) returns (GetModelTriggerCountResponse) {
+    option (google.api.http) = {get: "/v1beta/model-runs/count"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Metrics"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+    // This endpoint will remain hidden until the new dashboard is implemented
+    // in the frontend. Until then, the server might return empty data.
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // List pipeline trigger time charts
+  //
+  // Returns a timeline of pipeline trigger counts for a given requester. The
+  // response will contain one set of records (datapoints), representing the
+  // amount of triggers in a time bucket.
+  rpc ListPipelineTriggerChartRecords(ListPipelineTriggerChartRecordsRequest) returns (ListPipelineTriggerChartRecordsResponse) {
+    option (google.api.http) = {get: "/v1beta/pipeline-runs/query-charts"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Metrics"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+  }
+
+  // List model trigger time charts
+  //
+  // Returns a timeline of model trigger counts for a given requester. The
+  // response will contain one set of records (datapoints), representing the
+  // amount of triggers in a time bucket.
+  rpc ListModelTriggerChartRecords(ListModelTriggerChartRecordsRequest) returns (ListModelTriggerChartRecordsResponse) {
+    option (google.api.http) = {get: "/v1beta/model-runs/query-charts"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Metrics"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+  }
+
+  // Auth endpoints are only used in the community edition and the OpenAPI
+  // documentation references Instill Cloud. Therefore, these endpoints are
+  // hidden.
+
+  // Get Auth token issuer
+  //
+  // Returns the auth token issuer details. This operation requires admin
+  // permissions.
+  rpc AuthTokenIssuer(AuthTokenIssuerRequest) returns (AuthTokenIssuerResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/auth/token_issuer"
+      body: "*"
+    };
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Log in a user
+  //
+  // Authenticates a user and returns an access token.
+  rpc AuthLogin(AuthLoginRequest) returns (AuthLoginResponse) {
+    option (google.api.http) = {post: "/v1beta/auth/login"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Log out a user
+  //
+  // Logs out an authenticated user.
+  rpc AuthLogout(AuthLogoutRequest) returns (AuthLogoutResponse) {
+    option (google.api.http) = {post: "/v1beta/auth/logout"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Change password
+  //
+  // Updates the password of a user.
+  rpc AuthChangePassword(AuthChangePasswordRequest) returns (AuthChangePasswordResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/auth/change_password"
+      body: "*"
+    };
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Validate an access token
+  //
+  // Checks the validity of an access token.
+  rpc AuthValidateAccessToken(AuthValidateAccessTokenRequest) returns (AuthValidateAccessTokenResponse) {
+    option (google.api.http) = {post: "/v1beta/auth/validate_access_token"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // ===========================================================================
+  // Deprecated endpoints, to be retired after new pipeline dashboard is rolled
+  // out.
+  // ===========================================================================
+
+  // List pipeline triggers
+  //
+  // Returns a paginated list of pipeline executions.
+  // NOTE: This method is deprecated and will be retired soon.
+  rpc ListPipelineTriggerRecords(ListPipelineTriggerRecordsRequest) returns (ListPipelineTriggerRecordsResponse) {
+    option (google.api.http) = {get: "/v1beta/metrics/vdp/pipeline/triggers"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Metrics"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+    option deprecated = true;
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // List pipeline trigger metrics
+  //
+  // Returns a paginated list of pipeline executions aggregated by pipeline ID.
+  // NOTE: This method is deprecated and will be retired soon.
+  rpc ListPipelineTriggerTableRecords(ListPipelineTriggerTableRecordsRequest) returns (ListPipelineTriggerTableRecordsResponse) {
+    option (google.api.http) = {get: "/v1beta/metrics/vdp/pipeline/tables"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Metrics"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+    option deprecated = true;
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // List pipeline trigger time charts
+  //
+  // Returns a timeline of pipeline trigger counts for the pipelines of a given
+  // owner.
+  // NOTE: This method will soon be retired and replaced by
+  // ListPipelineTriggerChartRecords.
+  rpc ListPipelineTriggerChartRecordsV0(ListPipelineTriggerChartRecordsV0Request) returns (ListPipelineTriggerChartRecordsV0Response) {
+    option (google.api.http) = {get: "/v1beta/metrics/vdp/pipeline/charts"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Metrics"
+      extensions: {
+        key: "x-stage"
+        value: {string_value: "beta"}
+      }
+    };
+    option deprecated = true;
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+}

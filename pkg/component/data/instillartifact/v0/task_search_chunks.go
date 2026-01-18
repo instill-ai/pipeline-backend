@@ -12,7 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
 )
 
 func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, error) {
@@ -56,7 +56,7 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 	}
 
 	req := &artifactpb.SearchChunksRequest{
-		NamespaceId:     inputStruct.Namespace,
+		Parent:          fmt.Sprintf("namespaces/%s", inputStruct.Namespace),
 		KnowledgeBaseId: inputStruct.KnowledgeBaseID,
 		TextPrompt:      inputStruct.TextPrompt,
 		TopK:            inputStruct.TopK,

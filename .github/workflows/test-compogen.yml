@@ -29,6 +29,11 @@ jobs:
         with:
           go-version: ${{ env.GOLANG_VERSION }}
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libavif-dev libheif-dev libtesseract-dev libleptonica-dev
+
       - name: Test compogen
         run: |
           cd pkg/component/tools/compogen

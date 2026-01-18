@@ -30,12 +30,32 @@ import (
 	"github.com/instill-ai/x/constant"
 	"github.com/instill-ai/x/resource"
 
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	mgmtpb "github.com/instill-ai/protogen-go/mgmt/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 	errorsx "github.com/instill-ai/x/errors"
 )
 
 var errIntegrationNotFound = errorsx.AddMessage(errorsx.ErrNotFound, "Integration does not exist.")
+
+// parseNamespaceFromParent extracts namespace ID from parent string.
+// Format: namespaces/{namespace}
+func parseNamespaceFromParent(parent string) (string, error) {
+	parts := strings.Split(parent, "/")
+	if len(parts) < 2 || parts[0] != "namespaces" {
+		return "", fmt.Errorf("invalid parent format: %s", parent)
+	}
+	return parts[1], nil
+}
+
+// parseConnectionFromName extracts namespace ID and connection ID from name string.
+// Format: namespaces/{namespace}/connections/{connection}
+func parseConnectionFromName(name string) (namespaceID, connectionID string, err error) {
+	parts := strings.Split(name, "/")
+	if len(parts) < 4 || parts[0] != "namespaces" || parts[2] != "connections" {
+		return "", "", fmt.Errorf("invalid connection name format: %s", name)
+	}
+	return parts[1], parts[3], nil
+}
 
 func (s *service) GetIntegration(ctx context.Context, id string, view pipelinepb.View) (*pipelinepb.Integration, error) {
 	cd, err := s.getComponentDefinitionByID(ctx, id)
@@ -131,7 +151,6 @@ func (s *service) componentDefinitionToIntegration(
 	// TODO add HelpLink
 
 	integration := &pipelinepb.Integration{
-		Uid:         cd.GetUid(),
 		Id:          cd.GetId(),
 		Title:       cd.GetTitle(),
 		Description: cd.GetDescription(),
@@ -147,7 +166,8 @@ func (s *service) componentDefinitionToIntegration(
 	integration.SetupSchema = setup.GetStructValue()
 	schemaFields := integration.SetupSchema.GetFields()
 
-	supportsOAuth, err := s.component.SupportsOAuth(uuid.FromStringOrNil(integration.Uid))
+	// Use component definition UID for OAuth support check
+	supportsOAuth, err := s.component.SupportsOAuth(uuid.FromStringOrNil(cd.GetUid()))
 	if err != nil {
 		return nil, fmt.Errorf("checking OAuth support: %w", err)
 	}
@@ -388,7 +408,13 @@ func (s *service) validateConnectionUpdate(
 }
 
 func (s *service) CreateNamespaceConnection(ctx context.Context, req *pipelinepb.CreateNamespaceConnectionRequest) (*pipelinepb.Connection, error) {
-	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
+	// Parse namespace ID from parent: namespaces/{namespace}
+	namespaceID, err := parseNamespaceFromParent(req.GetParent())
+	if err != nil {
+		return nil, fmt.Errorf("invalid parent: %w", err)
+	}
+
+	ns, err := s.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
 	}
@@ -430,10 +456,16 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, req *pipelinepb
 		identity.String = *conn.Identity
 	}
 
+	// Get integration UID from component definition
+	cd, err := s.component.GetDefinitionByID(conn.GetIntegrationId(), nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("fetching component definition: %w", err)
+	}
+
 	inserted, err := s.repository.CreateNamespaceConnection(ctx, &datamodel.Connection{
 		ID:                 conn.GetId(),
 		NamespaceUID:       ns.NsUID,
-		IntegrationUID:     uuid.FromStringOrNil(integration.GetUid()),
+		IntegrationUID:     uuid.FromStringOrNil(cd.GetUid()),
 		Method:             datamodel.ConnectionMethod(conn.GetMethod()),
 		Setup:              datatypes.JSON(jsonSetup),
 		Identity:           identity,
@@ -444,11 +476,17 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, req *pipelinepb
 		return nil, fmt.Errorf("persisting connection: %w", err)
 	}
 
-	return s.connectionToPB(inserted, conn.GetNamespaceId(), pipelinepb.View_VIEW_FULL)
+	return s.connectionToPB(inserted, namespaceID, pipelinepb.View_VIEW_FULL)
 }
 
 func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pipelinepb.UpdateNamespaceConnectionRequest) (*pipelinepb.Connection, error) {
-	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
+	// Parse namespace ID and connection ID from connection.name: namespaces/{namespace}/connections/{connection}
+	namespaceID, connectionID, err := parseConnectionFromName(req.GetConnection().GetName())
+	if err != nil {
+		return nil, fmt.Errorf("invalid connection name: %w", err)
+	}
+
+	ns, err := s.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
 	}
@@ -457,7 +495,7 @@ func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pipelinepb
 		return nil, fmt.Errorf("checking namespace permissions: %w", err)
 	}
 
-	inDB, err := s.repository.GetNamespaceConnectionByID(ctx, ns.NsUID, req.GetConnectionId())
+	inDB, err := s.repository.GetNamespaceConnectionByID(ctx, ns.NsUID, connectionID)
 	if err != nil {
 		return nil, fmt.Errorf("fetching connection: %w", err)
 	}
@@ -516,7 +554,7 @@ func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pipelinepb
 		return nil, fmt.Errorf("persisting connection: %w", err)
 	}
 
-	return s.connectionToPB(updated, destConn.GetNamespaceId(), pipelinepb.View_VIEW_FULL)
+	return s.connectionToPB(updated, namespaceID, pipelinepb.View_VIEW_FULL)
 }
 
 func (s *service) GetNamespaceConnection(ctx context.Context, req *pipelinepb.GetNamespaceConnectionRequest) (*pipelinepb.Connection, error) {
@@ -525,7 +563,13 @@ func (s *service) GetNamespaceConnection(ctx context.Context, req *pipelinepb.Ge
 		view = pipelinepb.View_VIEW_BASIC
 	}
 
-	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
+	// Parse namespace ID and connection ID from name: namespaces/{namespace}/connections/{connection}
+	namespaceID, connectionID, err := parseConnectionFromName(req.GetName())
+	if err != nil {
+		return nil, fmt.Errorf("invalid connection name: %w", err)
+	}
+
+	ns, err := s.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
 	}
@@ -534,18 +578,21 @@ func (s *service) GetNamespaceConnection(ctx context.Context, req *pipelinepb.Ge
 		return nil, fmt.Errorf("checking namespace permissions: %w", err)
 	}
 
-	inDB, err := s.repository.GetNamespaceConnectionByID(ctx, ns.NsUID, req.GetConnectionId())
+	inDB, err := s.repository.GetNamespaceConnectionByID(ctx, ns.NsUID, connectionID)
 	if err != nil {
 		return nil, fmt.Errorf("fetching connection: %w", err)
 	}
 
-	return s.connectionToPB(inDB, req.GetNamespaceId(), view)
+	return s.connectionToPB(inDB, namespaceID, view)
 }
 
 func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view pipelinepb.View) (*pipelinepb.Connection, error) {
 	pbConn := &pipelinepb.Connection{
-		Uid:              conn.UID.String(),
+		Name:             fmt.Sprintf("namespaces/%s/connections/%s", nsID, conn.ID),
 		Id:               conn.ID,
+		DisplayName:      conn.DisplayName,
+		Slug:             conn.Slug,
+		Aliases:          conn.Aliases,
 		NamespaceId:      nsID,
 		IntegrationId:    conn.Integration.ID,
 		IntegrationTitle: conn.Integration.Title,
@@ -582,7 +629,13 @@ func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view p
 }
 
 func (s *service) ListNamespaceConnections(ctx context.Context, req *pipelinepb.ListNamespaceConnectionsRequest) (*pipelinepb.ListNamespaceConnectionsResponse, error) {
-	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
+	// Parse namespace ID from parent: namespaces/{namespace}
+	namespaceID, err := parseNamespaceFromParent(req.GetParent())
+	if err != nil {
+		return nil, fmt.Errorf("invalid parent: %w", err)
+	}
+
+	ns, err := s.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
 	}
@@ -623,7 +676,7 @@ func (s *service) ListNamespaceConnections(ctx context.Context, req *pipelinepb.
 	}
 
 	for i, inDB := range dbConns.Connections {
-		resp.Connections[i], err = s.connectionToPB(inDB, req.GetNamespaceId(), pipelinepb.View_VIEW_BASIC)
+		resp.Connections[i], err = s.connectionToPB(inDB, namespaceID, pipelinepb.View_VIEW_BASIC)
 		if err != nil {
 			return nil, fmt.Errorf("building proto connection: %w", err)
 		}

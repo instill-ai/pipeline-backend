@@ -18,7 +18,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
 )
 
 var (
@@ -200,12 +200,12 @@ var (
 
 func setListCatalogsMock(s *mock.ArtifactPublicServiceServerMock) {
 	s.ListKnowledgeBasesMock.Set(func(ctx context.Context, in *artifactpb.ListKnowledgeBasesRequest) (*artifactpb.ListKnowledgeBasesResponse, error) {
-		mock.Equal(in.NamespaceId, namespace)
+		mock.Equal(in.Parent, "namespaces/"+namespace)
 		return &artifactpb.ListKnowledgeBasesResponse{
 			KnowledgeBases: []*artifactpb.KnowledgeBase{
 				{
 					Id:   catalogID,
-					Name: catalogID,
+					Name: "namespaces/" + namespace + "/knowledge-bases/" + catalogID,
 				},
 			},
 		}, nil
@@ -214,7 +214,7 @@ func setListCatalogsMock(s *mock.ArtifactPublicServiceServerMock) {
 
 func setListCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock) {
 	s.ListFilesMock.Set(func(ctx context.Context, in *artifactpb.ListFilesRequest) (*artifactpb.ListFilesResponse, error) {
-		mock.Equal(in.KnowledgeBaseId, catalogID)
+		mock.Equal(in.Parent, "namespaces/"+namespace)
 
 		metadataStruct2 := new(structpb.Struct)
 		jsonData, err := json.Marshal(fakeMetadata2)
@@ -231,11 +231,11 @@ func setListCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock) {
 		return &artifactpb.ListFilesResponse{
 			Files: []*artifactpb.File{
 				{
-					Uid:              catalogFileUID2,
+					Id:               catalogFileUID2,
 					ExternalMetadata: metadataStruct2,
 				},
 				{
-					Uid:              catalogFileUID3,
+					Id:               catalogFileUID3,
 					ExternalMetadata: metadataStruct3,
 				},
 			},
@@ -245,7 +245,12 @@ func setListCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock) {
 
 func setDeleteCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 	s.DeleteFileMock.Times(2).Set(func(ctx context.Context, in *artifactpb.DeleteFileRequest) (*artifactpb.DeleteFileResponse, error) {
-		mock.Contains([]string{catalogFileUID2, catalogFileUID3}, in.FileId)
+		// Extract file ID from resource name: namespaces/{namespace}/files/{file}
+		expectedNames := []string{
+			"namespaces/" + namespace + "/files/" + catalogFileUID2,
+			"namespaces/" + namespace + "/files/" + catalogFileUID3,
+		}
+		mock.Contains(expectedNames, in.Name)
 
 		return &artifactpb.DeleteFileResponse{}, nil
 	})
@@ -254,14 +259,13 @@ func setDeleteCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 
 func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 	s.CreateFileMock.Times(2).Set(func(ctx context.Context, in *artifactpb.CreateFileRequest) (*artifactpb.CreateFileResponse, error) {
-		mock.Equal(in.NamespaceId, namespace)
-		mock.Equal(in.KnowledgeBaseId, catalogID)
+		mock.Equal(in.Parent, "namespaces/"+namespace)
 		mock.NotNil(in.File)
 		mock.NotNil(in.File.Content)
 		mock.NotNil(in.File.ExternalMetadata)
 
 		var mockFileUID string
-		switch in.File.Filename {
+		switch in.File.DisplayName {
 		case fileName:
 			mockFileUID = catalogFileUID
 		case fileName2:
@@ -272,8 +276,8 @@ func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 
 		return &artifactpb.CreateFileResponse{
 			File: &artifactpb.File{
-				Uid:              mockFileUID,
-				Filename:         in.File.Filename,
+				Id:               mockFileUID,
+				DisplayName:      in.File.DisplayName,
 				Type:             artifactpb.File_TYPE_PDF,
 				CreateTime:       nil,
 				UpdateTime:       nil,

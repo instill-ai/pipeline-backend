@@ -37,15 +37,13 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/pubsub"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-	"github.com/instill-ai/pipeline-backend/pkg/usage"
 	"github.com/instill-ai/x/temporal"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	usagepb "github.com/instill-ai/protogen-go/core/usage/v1beta"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
+	mgmtpb "github.com/instill-ai/protogen-go/mgmt/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 	clientx "github.com/instill-ai/x/client"
 	clientgrpcx "github.com/instill-ai/x/client/grpc"
 	logx "github.com/instill-ai/x/log"
@@ -197,39 +195,6 @@ func main() {
 		}),
 	)
 
-	// Start usage reporter
-	var usg usage.Usage
-	if config.Config.Server.Usage.Enabled {
-		usageServiceClient, usageServiceClientClose, err := clientgrpcx.NewClient[usagepb.UsageServiceClient](
-			clientgrpcx.WithServiceConfig(clientx.ServiceConfig{
-				Host:       config.Config.Server.Usage.Host,
-				PublicPort: config.Config.Server.Usage.Port,
-			}),
-			clientgrpcx.WithSetOTELClientHandler(config.Config.OTELCollector.Enable),
-		)
-		if err != nil {
-			logger.Error("failed to create usage service client", zap.Error(err))
-		}
-		defer func() {
-			if err := usageServiceClientClose(); err != nil {
-				logger.Error("failed to close usage service client", zap.Error(err))
-			}
-		}()
-		logger.Info("try to start usage reporter")
-		go func() {
-			for {
-				usg = usage.NewUsage(ctx, repo, mgmtPrivateServiceClient, redisClient, usageServiceClient, serviceVersion)
-				if usg != nil {
-					usg.StartReporter(ctx)
-					logger.Info("usage reporter started")
-					break
-				}
-				logger.Warn("retry to start usage reporter after 5 minutes")
-				time.Sleep(5 * time.Minute)
-			}
-		}()
-	}
-
 	dialOpts, err := clientgrpcx.NewClientOptionsAndCreds(
 		clientgrpcx.WithServiceConfig(clientx.ServiceConfig{
 			HTTPS: clientx.HTTPSConfig{
@@ -331,9 +296,6 @@ func main() {
 		logger.Info("Shutting down server...")
 		logger.Info("Stop receiving request...")
 		time.Sleep(gracefulShutdownWaitPeriod)
-		if config.Config.Server.Usage.Enabled && usg != nil {
-			usg.TriggerSingleReporter(ctx)
-		}
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), gracefulShutdownTimeout)
 		defer shutdownCancel()
 

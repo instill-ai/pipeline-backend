@@ -266,23 +266,6 @@ func InSlice(slice []string, item string) bool {
 	return false
 }
 
-func GetDataURL(base64Image string) string {
-
-	if hasDataPrefix(base64Image) {
-		return base64Image
-	}
-
-	b, err := base64.StdEncoding.DecodeString(TrimBase64Mime(base64Image))
-
-	if err != nil {
-		return base64Image
-	}
-
-	dataURL := fmt.Sprintf("data:%s;base64,%s", mimetype.Detect(b).String(), TrimBase64Mime(base64Image))
-
-	return dataURL
-}
-
 func hasDataPrefix(base64Image string) bool {
 	return strings.HasPrefix(base64Image, "data:")
 }

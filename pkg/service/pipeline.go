@@ -38,8 +38,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
 	"github.com/instill-ai/x/minio"
 
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	mgmtpb "github.com/instill-ai/protogen-go/mgmt/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 	constantx "github.com/instill-ai/x/constant"
 	errorsx "github.com/instill-ai/x/errors"
 	logx "github.com/instill-ai/x/log"
@@ -100,11 +100,7 @@ func (s *service) ListPipelines(ctx context.Context, pageSize int32, pageToken s
 		}
 	}
 
-	presetOrgResp, err := s.mgmtPrivateServiceClient.GetOrganizationAdmin(ctx, &mgmtpb.GetOrganizationAdminRequest{OrganizationId: constant.PresetNamespaceID})
-	if err != nil {
-		return nil, 0, "", err
-	}
-	presetNamespaceUID := uuid.FromStringOrNil(presetOrgResp.Organization.Uid)
+	presetNamespaceUID := uuid.FromStringOrNil(constant.PresetNamespaceUID)
 	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, int64(pageSize), pageToken, view <= pipelinepb.Pipeline_VIEW_BASIC, filter, uidAllowList, showDeleted, true, order, presetNamespaceUID)
 	if err != nil {
 		return nil, 0, "", err
@@ -288,6 +284,25 @@ func (s *service) GetNamespacePipelineByID(ctx context.Context, ns resource.Name
 	}
 
 	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, view, true, true)
+}
+
+// GetNamespacePipelineUIDByID returns the internal UID for a pipeline given its ID.
+// This is needed for internal operations that require the UID (e.g., permission checks, releases).
+func (s *service) GetNamespacePipelineUIDByID(ctx context.Context, ns resource.Namespace, id string) (uuid.UUID, error) {
+	ownerPermalink := ns.Permalink()
+
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true, true)
+	if err != nil {
+		return uuid.Nil, errorsx.ErrNotFound
+	}
+
+	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
+		return uuid.Nil, err
+	} else if !granted {
+		return uuid.Nil, errorsx.ErrNotFound
+	}
+
+	return dbPipeline.UID, nil
 }
 
 func (s *service) GetNamespacePipelineLatestReleaseUID(ctx context.Context, ns resource.Namespace, id string) (uuid.UUID, error) {
@@ -515,33 +530,38 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	ownerPermalink := ns.Permalink()
 
-	dbPipeline, err := s.converter.ConvertPipelineToDB(ctx, ns, toUpdPipeline)
-	if err != nil {
-		return nil, err
+	// First, get the existing pipeline to get its UID for ACL checks
+	existingPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, false)
+	if err != nil || existingPipeline == nil {
+		return nil, errorsx.ErrNotFound
 	}
 
-	if dbPipeline.Recipe != nil {
-		if err := s.checkSecret(ctx, dbPipeline.Recipe.Component); err != nil {
-			return nil, fmt.Errorf("checking referenced secrets: %w", err)
-		}
-	}
-
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
+	// Check ACL permissions using the existing pipeline's UID
+	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", existingPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", existingPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, errorsx.ErrUnauthorized
 	}
 
-	var existingPipeline *datamodel.Pipeline
-	// Validation: Pipeline existence
-	if existingPipeline, _ = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, false); existingPipeline == nil {
+	// Convert the update request to DB model
+	dbPipeline, err := s.converter.ConvertPipelineToDB(ctx, ns, toUpdPipeline)
+	if err != nil {
 		return nil, err
+	}
+
+	// Use the existing pipeline's UID for the update
+	dbPipeline.UID = existingPipeline.UID
+
+	if dbPipeline.Recipe != nil {
+		if err := s.checkSecret(ctx, dbPipeline.Recipe.Component); err != nil {
+			return nil, fmt.Errorf("checking referenced secrets: %w", err)
+		}
 	}
 
 	if existingPipeline.ShareCode == "" {
@@ -713,6 +733,13 @@ func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namesp
 	if err != nil {
 		return nil, err
 	}
+
+	// Get the source pipeline UID from the repository for clone tracking
+	dbSourcePipeline, err := s.repository.GetNamespacePipelineByID(ctx, ns.Permalink(), id, true, true)
+	if err != nil {
+		return nil, err
+	}
+
 	targetNS, err := s.generateCloneTargetNamespace(ctx, targetNamespaceID)
 	if err != nil {
 		return nil, err
@@ -730,7 +757,7 @@ func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namesp
 	if err != nil {
 		return nil, err
 	}
-	err = s.repository.AddPipelineClones(ctx, uuid.FromStringOrNil(sourcePipeline.Uid))
+	err = s.repository.AddPipelineClones(ctx, dbSourcePipeline.UID)
 	if err != nil {
 		return nil, err
 	}
@@ -908,12 +935,16 @@ func (s *service) preTriggerPipeline(
 		return fmt.Errorf("[Pipeline Trigger Data Error] %s", strings.Join(errors, "; "))
 	}
 
-	wfm, err := s.memory.NewWorkflowMemory(ctx, pipelineTriggerID, len(pipelineData))
+	// Use the full Temporal workflow ID format for workflow memory operations.
+	// This must match the ID used when starting the Temporal workflow in triggerSyncPipelineWorkflow.
+	workflowID := fmt.Sprintf("trigger-pipeline-%s", pipelineTriggerID)
+
+	wfm, err := s.memory.NewWorkflowMemory(ctx, workflowID, len(pipelineData))
 	if err != nil {
 		return err
 	}
 
-	defer s.memory.PurgeWorkflowMemory(pipelineTriggerID)
+	defer s.memory.PurgeWorkflowMemory(workflowID)
 
 	types := map[string][]string{}
 	for k, v := range typeMap {
@@ -1622,17 +1653,14 @@ func (s *service) DeleteNamespacePipelineReleaseByID(ctx context.Context, ns res
 func (s *service) RestoreNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string) error {
 	ownerPermalink := ns.Permalink()
 
-	pipeline, err := s.GetPipelineByUID(ctx, pipelineUID, pipelinepb.Pipeline_VIEW_BASIC)
+	// Verify pipeline exists
+	_, err := s.GetPipelineByUID(ctx, pipelineUID, pipelinepb.Pipeline_VIEW_BASIC)
 	if err != nil {
 		return errorsx.ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", uuid.FromStringOrNil(pipeline.GetUid()), "admin"); err != nil {
-		return err
-	} else if !granted {
-		return errorsx.ErrNotFound
-	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", uuid.FromStringOrNil(pipeline.GetUid()), "admin"); err != nil {
+	// Check permission using the provided pipelineUID
+	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", pipelineUID, "admin"); err != nil {
 		return err
 	} else if !granted {
 		return errorsx.ErrUnauthorized
@@ -1665,12 +1693,16 @@ func (s *service) triggerPipeline(
 
 	logger, _ := logx.GetZapLogger(ctx)
 
+	// Use the full Temporal workflow ID format for workflow memory operations.
+	// This must match the ID used in preTriggerPipeline.
+	workflowID := fmt.Sprintf("trigger-pipeline-%s", triggerParams.pipelineTriggerID)
+
 	defer func() {
-		_ = s.memory.CleanupWorkflowMemory(context.Background(), triggerParams.userUID, triggerParams.pipelineTriggerID)
+		_ = s.memory.CleanupWorkflowMemory(context.Background(), triggerParams.userUID, workflowID)
 	}()
 
 	workflowOptions := client.StartWorkflowOptions{
-		ID:                       triggerParams.pipelineTriggerID,
+		ID:                       workflowID,
 		TaskQueue:                worker.TaskQueue,
 		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -1763,8 +1795,12 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 	logger, _ := logx.GetZapLogger(ctx)
 	logger.Info("triggerAsyncPipeline", zap.String("triggerID", params.pipelineTriggerID))
 
+	// Use the full Temporal workflow ID format for workflow memory operations.
+	// This must match the ID used in preTriggerPipeline.
+	workflowID := fmt.Sprintf("trigger-pipeline-%s", params.pipelineTriggerID)
+
 	workflowOptions := client.StartWorkflowOptions{
-		ID:                       params.pipelineTriggerID,
+		ID:                       workflowID,
 		TaskQueue:                worker.TaskQueue,
 		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -1773,7 +1809,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 	}
 
 	cleanupOptions := workflowOptions
-	cleanupOptions.ID = "cleanupMemory:" + params.pipelineTriggerID
+	cleanupOptions.ID = "cleanupMemory:" + workflowID
 
 	// We only retain the memory for a maximum of 60 minutes. This should be
 	// enough to allow clients to fetch the result via the long-running
@@ -1784,7 +1820,7 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, params triggerParams
 	// execution is created.
 	cleanupOptions.WorkflowExecutionTimeout = cleanupOptions.StartDelay + cleanupOptions.WorkflowExecutionTimeout
 
-	_, err := s.temporalClient.ExecuteWorkflow(ctx, cleanupOptions, "CleanupMemoryWorkflow", params.userUID, params.pipelineTriggerID)
+	_, err := s.temporalClient.ExecuteWorkflow(ctx, cleanupOptions, "CleanupMemoryWorkflow", params.userUID, workflowID)
 	if err != nil {
 		return nil, fmt.Errorf("launching cleanup workflow: %w", err)
 	}
@@ -2238,10 +2274,13 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 
 	switch workflowExecutionInfo.Status {
 	case enums.WORKFLOW_EXECUTION_STATUS_COMPLETED:
-		pipelineTriggerID := workflowExecutionInfo.Execution.WorkflowId
+		workflowID := workflowExecutionInfo.Execution.WorkflowId
+		// Extract the pipeline trigger UUID from the Temporal workflow ID for database lookups
+		pipelineTriggerID := strings.TrimPrefix(workflowID, "trigger-pipeline-")
 		_, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
 		defer func() {
-			_ = s.memory.CleanupWorkflowMemory(context.Background(), userUID, pipelineTriggerID)
+			// Can use either workflowID or pipelineTriggerID - memory store normalizes the ID
+			_ = s.memory.CleanupWorkflowMemory(context.Background(), userUID, workflowID)
 		}()
 
 		recipe, err := s.fetchRecipeSnapshot(ctx, pipelineTriggerID)
@@ -2264,7 +2303,7 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 		if err != nil {
 			return nil, err
 		}
-		resp.TypeUrl = "buf.build/instill-ai/protobufs/pipeline.pipeline.v1beta.TriggerNamespacePipelineResponse"
+		resp.TypeUrl = "buf.build/instill-ai/protobufs/pipeline.v1beta.TriggerNamespacePipelineResponse"
 		operation = longrunningpb.Operation{
 			Done: true,
 			Result: &longrunningpb.Operation_Response{

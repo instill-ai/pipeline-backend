@@ -17,7 +17,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
 	logx "github.com/instill-ai/x/log"
 )
 
@@ -62,8 +62,8 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 	objectName := fmt.Sprintf("%s/%s", param.SystemVariables.PipelineRequesterUID.String(), value.Filename())
 
 	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
-		NamespaceId:      requesterID,
-		ObjectName:       objectName,
+		Parent:           fmt.Sprintf("namespaces/%s", requesterID),
+		DisplayName:      objectName,
 		ObjectExpireDays: int32(param.SystemVariables.ExpiryRule.ExpirationDays),
 	})
 
@@ -84,8 +84,7 @@ func (w *worker) uploadBlobDataAndGetDownloadURL(ctx context.Context, param *Com
 	}
 
 	respDownloadURL, err := artifactClient.GetObjectDownloadURL(ctx, &artifactpb.GetObjectDownloadURLRequest{
-		NamespaceId: requesterID,
-		ObjectUid:   resp.GetObject().GetUid(),
+		Name: fmt.Sprintf("namespaces/%s/objects/%s", requesterID, resp.GetObject().GetId()),
 	})
 	if err != nil {
 		return "", fmt.Errorf("get object download url: %w", err)

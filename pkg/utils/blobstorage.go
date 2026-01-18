@@ -22,7 +22,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/x/blobstorage"
 
-	artifactpb "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	artifactpb "github.com/instill-ai/protogen-go/artifact/v1alpha"
 	miniox "github.com/instill-ai/x/minio"
 )
 
@@ -125,8 +125,8 @@ func uploadBlobAndGetDownloadURL(ctx context.Context, data string, params Upload
 
 	artifactClient := *params.ArtifactClient
 	resp, err := artifactClient.GetObjectUploadURL(ctx, &artifactpb.GetObjectUploadURLRequest{
-		NamespaceId:      params.NamespaceID,
-		ObjectName:       objectName,
+		Parent:           fmt.Sprintf("namespaces/%s", params.NamespaceID),
+		DisplayName:      objectName,
 		ObjectExpireDays: int32(params.ExpiryRule.ExpirationDays),
 	})
 
@@ -147,8 +147,7 @@ func uploadBlobAndGetDownloadURL(ctx context.Context, data string, params Upload
 	}
 
 	respDownloadURL, err := artifactClient.GetObjectDownloadURL(ctx, &artifactpb.GetObjectDownloadURLRequest{
-		NamespaceId: params.NamespaceID,
-		ObjectUid:   resp.GetObject().GetUid(),
+		Name: fmt.Sprintf("namespaces/%s/objects/%s", params.NamespaceID, resp.GetObject().GetId()),
 	})
 	if err != nil {
 		return "", fmt.Errorf("get object download url: %w", err)

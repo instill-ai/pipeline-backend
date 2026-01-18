@@ -1,20 +1,20 @@
 package utils
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
-	"github.com/instill-ai/pipeline-backend/pkg/resource"
-
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	mgmtpb "github.com/instill-ai/protogen-go/mgmt/v1beta"
 )
 
 const (
@@ -32,21 +32,61 @@ const (
 	pipelineMeasurement = "pipeline.trigger.v1"
 )
 
-func IsAuditEvent(eventName string) bool {
-	return strings.HasPrefix(eventName, CreateEvent) ||
-		strings.HasPrefix(eventName, UpdateEvent) ||
-		strings.HasPrefix(eventName, DeleteEvent) ||
-		strings.HasPrefix(eventName, ActivateEvent) ||
-		strings.HasPrefix(eventName, DeactivateEvent) ||
-		strings.HasPrefix(eventName, ConnectEvent) ||
-		strings.HasPrefix(eventName, DisconnectEvent) ||
-		strings.HasPrefix(eventName, TriggerEvent) ||
-		strings.HasPrefix(eventName, RenameEvent) ||
-		strings.HasPrefix(eventName, ExecuteEvent)
+// ResourcePrefix represents the prefix for different resource types in AIP-compliant IDs
+type ResourcePrefix string
+
+const (
+	PrefixPipeline        ResourcePrefix = "pip"
+	PrefixPipelineRelease ResourcePrefix = "rel"
+	PrefixSecret          ResourcePrefix = "sec"
+	PrefixConnection      ResourcePrefix = "con"
+	PrefixTag             ResourcePrefix = "tag"
+)
+
+// base62Chars contains the characters used for base62 encoding (URL-safe without special chars)
+const base62Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
+// encodeBase62 encodes a byte slice to a base62 string
+func encodeBase62(data []byte) string {
+	if len(data) == 0 {
+		return ""
+	}
+
+	var result strings.Builder
+	for _, b := range data {
+		if b == 0 {
+			result.WriteByte(base62Chars[0])
+		} else {
+			for b > 0 {
+				result.WriteByte(base62Chars[b%62])
+				b /= 62
+			}
+		}
+	}
+	return result.String()
 }
 
-func IsBillableEvent(eventName string) bool {
-	return strings.HasPrefix(eventName, TriggerEvent)
+// GeneratePrefixedResourceID creates an AIP-compliant prefixed resource ID from a UUID.
+// The format is: {prefix}-{base62(sha256(uid)[:10])}
+// This provides 80 bits of entropy in a URL-safe format.
+func GeneratePrefixedResourceID(prefix ResourcePrefix, uid uuid.UUID) string {
+	hash := sha256.Sum256([]byte(uid.String()))
+	encoded := encodeBase62(hash[:10])
+	return fmt.Sprintf("%s-%s", prefix, encoded)
+}
+
+// GenerateSlug converts a display name to a URL-safe slug.
+// Example: "My Data Pipeline" -> "my-data-pipeline"
+func GenerateSlug(displayName string) string {
+	slug := strings.ToLower(displayName)
+	slug = strings.ReplaceAll(slug, " ", "-")
+	slug = strings.ReplaceAll(slug, "_", "-")
+	re := regexp.MustCompile(`[^a-z0-9-]`)
+	slug = re.ReplaceAllString(slug, "")
+	multiDashRegex := regexp.MustCompile(`-+`)
+	slug = multiDashRegex.ReplaceAllString(slug, "-")
+	slug = strings.Trim(slug, "-")
+	return slug
 }
 
 type PipelineUsageMetricData struct {
@@ -129,49 +169,6 @@ func DeprecatedNewPipelineDatapoint(data PipelineUsageMetricData) *write.Point {
 			"pipeline_trigger_id":   data.PipelineTriggerUID,
 			"trigger_time":          data.TriggerTime,
 			"compute_time_duration": data.ComputeTimeDuration,
-		},
-		time.Now(),
-	)
-}
-
-type ConnectorUsageMetricData struct {
-	OwnerUID               string
-	OwnerType              mgmtpb.OwnerType
-	UserUID                string
-	UserType               mgmtpb.OwnerType
-	Status                 mgmtpb.Status
-	ConnectorID            string
-	ConnectorUID           string
-	ConnectorExecuteUID    string
-	ConnectorDefinitionUID string
-	ExecuteTime            string
-	ComputeTimeDuration    float64
-}
-
-func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *structpb.Value) *write.Point {
-	pipelineOwnerUUID, _ := resource.GetRscPermalinkUID(pipelineMetadata.GetStructValue().GetFields()["owner"].GetStringValue())
-	return influxdb2.NewPoint(
-		"connector.execute",
-		map[string]string{
-			"status": data.Status.String(),
-		},
-		map[string]any{
-			"pipeline_id":              pipelineMetadata.GetStructValue().GetFields()["id"].GetStringValue(),
-			"pipeline_uid":             pipelineMetadata.GetStructValue().GetFields()["uid"].GetStringValue(),
-			"pipeline_release_id":      pipelineMetadata.GetStructValue().GetFields()["release_id"].GetStringValue(),
-			"pipeline_release_uid":     pipelineMetadata.GetStructValue().GetFields()["release_uid"].GetStringValue(),
-			"pipeline_owner":           pipelineOwnerUUID,
-			"pipeline_trigger_id":      pipelineMetadata.GetStructValue().GetFields()["trigger_id"].GetStringValue(),
-			"connector_owner_uid":      data.OwnerUID,
-			"connector_owner_type":     data.OwnerType,
-			"connector_user_uid":       data.UserUID,
-			"connector_user_type":      data.UserType,
-			"connector_id":             data.ConnectorID,
-			"connector_uid":            data.ConnectorUID,
-			"connector_definition_uid": data.ConnectorDefinitionUID,
-			"connector_execute_id":     data.ConnectorExecuteUID,
-			"execute_time":             data.ExecuteTime,
-			"compute_time_duration":    data.ComputeTimeDuration,
 		},
 		time.Now(),
 	)

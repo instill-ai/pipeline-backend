@@ -1,0 +1,198 @@
+syntax = "proto3";
+
+package pipeline.v1beta;
+
+// Google API
+import "google/api/field_behavior.proto";
+// Protocol Buffers Well-Known Types
+import "google/protobuf/struct.proto";
+// Pipeline definitions
+import "pipeline/v1beta/common.proto";
+
+///////////////////////////////////////////////////////////////////////
+// Domain types
+///////////////////////////////////////////////////////////////////////
+
+// ComponentDefinition describes a certain type of Component.
+message ComponentDefinition {
+  // View defines how a component definition is presented.
+  enum View {
+    // Unspecified, equivalent to BASIC.
+    VIEW_UNSPECIFIED = 0;
+    // Default view, only includes basic information (removes the `spec`
+    // field).
+    VIEW_BASIC = 1;
+    // Full representation.
+    VIEW_FULL = 2;
+  }
+
+  // ReleaseStage defines the release stage of a component. This is used to
+  // group components with the same pre-relase groups (e.g. `0.1.0-beta`,
+  // `0.1.0-beta.1` -> `RELEASE_STAGE_BETA`) and to include other "in progress"
+  // (i.e. coming soon, open for contributions) stages that may not be relevant
+  // within semantic versioning.
+  // See the documentation of each value for potential constraints between
+  // `version` and `release_stage` fields.`
+  enum ReleaseStage {
+    // Unspecified.
+    RELEASE_STAGE_UNSPECIFIED = 0;
+    // This component is unimplemented and community contributions are welcome
+    // for this component.
+    //
+    // It is recommended that the major and minor versions for definitions at
+    // this release stage is kept at 0, e.g., `0.0.1`, `0.0.4`, etc.
+    RELEASE_STAGE_OPEN_FOR_CONTRIBUTION = 1;
+    // The implementation of this component is planned and will be tackled by
+    // the Instill AI team.
+    //
+    // It is recommended that the major and minor versions for definitions at
+    // this release stage is kept at 0, e.g., `0.0.1`, `0.0.4`, etc.
+    RELEASE_STAGE_COMING_SOON = 2;
+    // Initial implementation intended to gather feedback and issues from early
+    // adopters. Alpha releases are discouraged for production use cases.
+    //
+    // The `version` field in the definition must have `alpha` as its first
+    // pre-release identifier, e.g., `0.1.0-alpha`, `0.1.3-alpha.1`.
+    RELEASE_STAGE_ALPHA = 3;
+    // The component has reached stability and no backwards incompatible
+    // changes are expected. Before reaching general availability, it should be
+    // validated by a broader group of users. Some fixes might be added during
+    // this process.
+    //
+    // The `version` field in the definition must have `beta` as its first
+    // pre-release identifier, e.g., `0.1.0-beta`, `0.1.3-beta.1`.
+    RELEASE_STAGE_BETA = 4;
+    // Generally available - ready for use in production and fully supported by
+    // Instill AI.
+    RELEASE_STAGE_GA = 5;
+  }
+
+  // Spec represents a specification data model.
+  message Spec {
+    // Component specification.
+    google.protobuf.Struct component_specification = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Data specifications.
+    // The key represents the task, and the value is the corresponding data_specification.
+    // Note: This field will be renamed to task_specifications in the future.
+    map<string, DataSpecification> data_specifications = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Event specifications.
+    // The key represents the event, and the value is the corresponding event_specification.
+    map<string, EventSpecification> event_specifications = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  }
+
+  // The name of the component definition, defined by its ID.
+  // - Format: `component-definitions/{id}`
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition UUID.
+  string uid = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition resource ID (used in `name` as the last segment). This
+  // conforms to RFC-1034, which restricts to letters, numbers, and hyphen,
+  // with the first character a letter, the last a letter or a number, and a 63
+  // character maximum.
+  string id = 3 [(google.api.field_behavior) = IMMUTABLE];
+  // Component definition title.
+  string title = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition documentation URL.
+  string documentation_url = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition icon. This is a path that's relative to the root of
+  // the component implementation (see `source_url`) and that allows
+  // frontend applications to pull and locate the icons.
+  string icon = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition specification.
+  Spec spec = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition type.
+  ComponentType type = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition tombstone. If true, this configuration is permanently
+  // off. Otherwise, the configuration is active.
+  bool tombstone = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The public flag determines whether this connector definition is available
+  // to all workspaces.
+  bool public = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition custom flag, i.e., whether this is a custom
+  // component definition.
+  bool custom = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition vendor name.
+  string vendor = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Vendor-specific attributes.
+  google.protobuf.Struct vendor_attributes = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Source code URL. This points to the source code where the component is
+  // implemented.
+  string source_url = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition version. This is a string that fulfills the SemVer
+  // specification (e.g. `1.0.0-beta`).
+  string version = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // List of tasks that can be executed by the component.
+  repeated ComponentTask tasks = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Short description of the component.
+  string description = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release stage.
+  ComponentDefinition.ReleaseStage release_stage = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // List of events that can be produced by the component.
+  repeated ComponentEvent events = 19 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// DataSpecification describes the JSON schema of component input and output.
+// Note: This message will be renamed to TaskSpecifications in the future.
+message DataSpecification {
+  // JSON schema describing the component input data.
+  google.protobuf.Struct input = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // JSON schema describing the component output data.
+  google.protobuf.Struct output = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// EventSpecification describes the JSON schema of component event setup and examples.
+message EventSpecification {
+  // Event title.
+  string title = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Event description.
+  string description = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // JSON schema describing the component event config data.
+  google.protobuf.Struct config_schema = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // JSON schema describing the component event message data.
+  google.protobuf.Struct message_schema = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // JSON schema describing the component event examples.
+  repeated google.protobuf.Struct message_examples = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+///////////////////////////////////////////////////////////////////////
+// API messages
+///////////////////////////////////////////////////////////////////////
+
+// ListComponentDefinitionsRequest represents a request to list component
+// definitions.
+message ListComponentDefinitionsRequest {
+  // The maximum number of component definitions to return. If this parameter
+  // is unspecified, at most 10 definitions will be returned. The cap value for
+  // this parameter is 100 (i.e. any value above that will be coerced to 100).
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Field 2 is reserved for `page_token`. This endpoint initially implemented
+  // cursor-based pagination but it switched to order-based pagination in order
+  // to allow users to grasp the number of components that are implemented by
+  // Instill AI and accessing an arbitrary page without knowing the token or
+  // cursor information from the server.
+  reserved 2;
+  // View allows clients to specify the desired resource view in the response.
+  optional ComponentDefinition.View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // - Example: `component_type="COMPONENT_TYPE_AI"`.
+  // - Example: `tasks:"TASK_TEXT_GENERATION"`.
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Page number.
+  optional int32 page = 5 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListComponentDefinitionsResponse contains a list of component definitions.
+message ListComponentDefinitionsResponse {
+  // A list of component definition resources.
+  repeated ComponentDefinition component_definitions = 1;
+  // Field 2 is reserved for `next_page_token`, which stopped being served
+  // after the endpoint switched to offset-based pagination.
+  reserved 2;
+  // Total number of component definitions.
+  int32 total_size = 3;
+  // The requested page size.
+  int32 page_size = 4;
+  // The requested page offset.
+  int32 page = 5;
+}

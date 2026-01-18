@@ -18,8 +18,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 	"github.com/instill-ai/pipeline-backend/pkg/component/resources/schemas"
 
-	modelpb "github.com/instill-ai/protogen-go/model/model/v1alpha"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	modelpb "github.com/instill-ai/protogen-go/model/v1alpha"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 )
 
 // TODO: The Instill Model component will be refactored soon to align the data

@@ -2,15 +2,12 @@ package handler
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	healthcheckpb "github.com/instill-ai/protogen-go/common/healthcheck/v1beta"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
-	errorsx "github.com/instill-ai/x/errors"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 )
 
 // TODO: in the public_handler, we should convert all id to uuid when calling service
@@ -95,34 +92,4 @@ func (h *PrivateHandler) GetService() service.Service {
 // SetService sets the service
 func (h *PrivateHandler) SetService(s service.Service) {
 	h.service = s
-}
-
-// CheckName checks if a name is available.
-func (h *PublicHandler) CheckName(ctx context.Context, req *pipelinepb.CheckNameRequest) (resp *pipelinepb.CheckNameResponse, err error) {
-	name := req.GetName()
-
-	ns, err := h.service.GetNamespaceByID(ctx, name)
-	if err != nil {
-		return nil, err
-	}
-	if err := authenticateUser(ctx, false); err != nil {
-		return nil, err
-	}
-	rscType := strings.Split(name, "/")[2]
-
-	if rscType == "pipelines" {
-		_, err := h.service.GetNamespacePipelineByID(ctx, ns, name, pipelinepb.Pipeline_VIEW_BASIC)
-		if err != nil && errors.Is(err, errorsx.ErrNotFound) {
-			return &pipelinepb.CheckNameResponse{
-				Availability: pipelinepb.CheckNameResponse_NAME_AVAILABLE,
-			}, nil
-		}
-	} else {
-		return &pipelinepb.CheckNameResponse{
-			Availability: pipelinepb.CheckNameResponse_NAME_UNAVAILABLE,
-		}, nil
-	}
-	return &pipelinepb.CheckNameResponse{
-		Availability: pipelinepb.CheckNameResponse_NAME_UNAVAILABLE,
-	}, nil
 }

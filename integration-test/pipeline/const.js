@@ -93,6 +93,8 @@ component:
 
 export const simplePipelineWithYAMLRecipe = {
   rawRecipe: yamlRecipe,
+  displayName: "Integration Test Pipeline",
+  visibility: "VISIBILITY_PRIVATE",
 };
 
 export const simplePayload = {

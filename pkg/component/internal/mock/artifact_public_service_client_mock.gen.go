@@ -9,7 +9,7 @@ import (
 	mm_time "time"
 
 	"github.com/gojuno/minimock/v3"
-	mm_artifactv1alpha "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	mm_artifactv1alpha "github.com/instill-ai/protogen-go/artifact/v1alpha"
 	grpc "google.golang.org/grpc"
 )
 
@@ -46,6 +46,13 @@ type ArtifactPublicServiceClientMock struct {
 	beforeDeleteKnowledgeBaseCounter uint64
 	DeleteKnowledgeBaseMock          mArtifactPublicServiceClientMockDeleteKnowledgeBase
 
+	funcDeleteObject          func(ctx context.Context, in *mm_artifactv1alpha.DeleteObjectRequest, opts ...grpc.CallOption) (dp1 *mm_artifactv1alpha.DeleteObjectResponse, err error)
+	funcDeleteObjectOrigin    string
+	inspectFuncDeleteObject   func(ctx context.Context, in *mm_artifactv1alpha.DeleteObjectRequest, opts ...grpc.CallOption)
+	afterDeleteObjectCounter  uint64
+	beforeDeleteObjectCounter uint64
+	DeleteObjectMock          mArtifactPublicServiceClientMockDeleteObject
+
 	funcGetChunk          func(ctx context.Context, in *mm_artifactv1alpha.GetChunkRequest, opts ...grpc.CallOption) (gp1 *mm_artifactv1alpha.GetChunkResponse, err error)
 	funcGetChunkOrigin    string
 	inspectFuncGetChunk   func(ctx context.Context, in *mm_artifactv1alpha.GetChunkRequest, opts ...grpc.CallOption)
@@ -66,6 +73,13 @@ type ArtifactPublicServiceClientMock struct {
 	afterGetKnowledgeBaseCounter  uint64
 	beforeGetKnowledgeBaseCounter uint64
 	GetKnowledgeBaseMock          mArtifactPublicServiceClientMockGetKnowledgeBase
+
+	funcGetObject          func(ctx context.Context, in *mm_artifactv1alpha.GetObjectRequest, opts ...grpc.CallOption) (gp1 *mm_artifactv1alpha.GetObjectResponse, err error)
+	funcGetObjectOrigin    string
+	inspectFuncGetObject   func(ctx context.Context, in *mm_artifactv1alpha.GetObjectRequest, opts ...grpc.CallOption)
+	afterGetObjectCounter  uint64
+	beforeGetObjectCounter uint64
+	GetObjectMock          mArtifactPublicServiceClientMockGetObject
 
 	funcGetObjectDownloadURL          func(ctx context.Context, in *mm_artifactv1alpha.GetObjectDownloadURLRequest, opts ...grpc.CallOption) (gp1 *mm_artifactv1alpha.GetObjectDownloadURLResponse, err error)
 	funcGetObjectDownloadURLOrigin    string
@@ -157,6 +171,13 @@ type ArtifactPublicServiceClientMock struct {
 	afterUpdateKnowledgeBaseCounter  uint64
 	beforeUpdateKnowledgeBaseCounter uint64
 	UpdateKnowledgeBaseMock          mArtifactPublicServiceClientMockUpdateKnowledgeBase
+
+	funcUpdateObject          func(ctx context.Context, in *mm_artifactv1alpha.UpdateObjectRequest, opts ...grpc.CallOption) (up1 *mm_artifactv1alpha.UpdateObjectResponse, err error)
+	funcUpdateObjectOrigin    string
+	inspectFuncUpdateObject   func(ctx context.Context, in *mm_artifactv1alpha.UpdateObjectRequest, opts ...grpc.CallOption)
+	afterUpdateObjectCounter  uint64
+	beforeUpdateObjectCounter uint64
+	UpdateObjectMock          mArtifactPublicServiceClientMockUpdateObject
 }
 
 // NewArtifactPublicServiceClientMock returns a mock for mm_artifactv1alpha.ArtifactPublicServiceClient
@@ -179,6 +200,9 @@ func NewArtifactPublicServiceClientMock(t minimock.Tester) *ArtifactPublicServic
 	m.DeleteKnowledgeBaseMock = mArtifactPublicServiceClientMockDeleteKnowledgeBase{mock: m}
 	m.DeleteKnowledgeBaseMock.callArgs = []*ArtifactPublicServiceClientMockDeleteKnowledgeBaseParams{}
 
+	m.DeleteObjectMock = mArtifactPublicServiceClientMockDeleteObject{mock: m}
+	m.DeleteObjectMock.callArgs = []*ArtifactPublicServiceClientMockDeleteObjectParams{}
+
 	m.GetChunkMock = mArtifactPublicServiceClientMockGetChunk{mock: m}
 	m.GetChunkMock.callArgs = []*ArtifactPublicServiceClientMockGetChunkParams{}
 
@@ -187,6 +211,9 @@ func NewArtifactPublicServiceClientMock(t minimock.Tester) *ArtifactPublicServic
 
 	m.GetKnowledgeBaseMock = mArtifactPublicServiceClientMockGetKnowledgeBase{mock: m}
 	m.GetKnowledgeBaseMock.callArgs = []*ArtifactPublicServiceClientMockGetKnowledgeBaseParams{}
+
+	m.GetObjectMock = mArtifactPublicServiceClientMockGetObject{mock: m}
+	m.GetObjectMock.callArgs = []*ArtifactPublicServiceClientMockGetObjectParams{}
 
 	m.GetObjectDownloadURLMock = mArtifactPublicServiceClientMockGetObjectDownloadURL{mock: m}
 	m.GetObjectDownloadURLMock.callArgs = []*ArtifactPublicServiceClientMockGetObjectDownloadURLParams{}
@@ -226,6 +253,9 @@ func NewArtifactPublicServiceClientMock(t minimock.Tester) *ArtifactPublicServic
 
 	m.UpdateKnowledgeBaseMock = mArtifactPublicServiceClientMockUpdateKnowledgeBase{mock: m}
 	m.UpdateKnowledgeBaseMock.callArgs = []*ArtifactPublicServiceClientMockUpdateKnowledgeBaseParams{}
+
+	m.UpdateObjectMock = mArtifactPublicServiceClientMockUpdateObject{mock: m}
+	m.UpdateObjectMock.callArgs = []*ArtifactPublicServiceClientMockUpdateObjectParams{}
 
 	t.Cleanup(m.MinimockFinish)
 
@@ -1728,6 +1758,380 @@ func (m *ArtifactPublicServiceClientMock) MinimockDeleteKnowledgeBaseInspect() {
 	}
 }
 
+type mArtifactPublicServiceClientMockDeleteObject struct {
+	optional           bool
+	mock               *ArtifactPublicServiceClientMock
+	defaultExpectation *ArtifactPublicServiceClientMockDeleteObjectExpectation
+	expectations       []*ArtifactPublicServiceClientMockDeleteObjectExpectation
+
+	callArgs []*ArtifactPublicServiceClientMockDeleteObjectParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// ArtifactPublicServiceClientMockDeleteObjectExpectation specifies expectation struct of the ArtifactPublicServiceClient.DeleteObject
+type ArtifactPublicServiceClientMockDeleteObjectExpectation struct {
+	mock               *ArtifactPublicServiceClientMock
+	params             *ArtifactPublicServiceClientMockDeleteObjectParams
+	paramPtrs          *ArtifactPublicServiceClientMockDeleteObjectParamPtrs
+	expectationOrigins ArtifactPublicServiceClientMockDeleteObjectExpectationOrigins
+	results            *ArtifactPublicServiceClientMockDeleteObjectResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// ArtifactPublicServiceClientMockDeleteObjectParams contains parameters of the ArtifactPublicServiceClient.DeleteObject
+type ArtifactPublicServiceClientMockDeleteObjectParams struct {
+	ctx  context.Context
+	in   *mm_artifactv1alpha.DeleteObjectRequest
+	opts []grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockDeleteObjectParamPtrs contains pointers to parameters of the ArtifactPublicServiceClient.DeleteObject
+type ArtifactPublicServiceClientMockDeleteObjectParamPtrs struct {
+	ctx  *context.Context
+	in   **mm_artifactv1alpha.DeleteObjectRequest
+	opts *[]grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockDeleteObjectResults contains results of the ArtifactPublicServiceClient.DeleteObject
+type ArtifactPublicServiceClientMockDeleteObjectResults struct {
+	dp1 *mm_artifactv1alpha.DeleteObjectResponse
+	err error
+}
+
+// ArtifactPublicServiceClientMockDeleteObjectOrigins contains origins of expectations of the ArtifactPublicServiceClient.DeleteObject
+type ArtifactPublicServiceClientMockDeleteObjectExpectationOrigins struct {
+	origin     string
+	originCtx  string
+	originIn   string
+	originOpts string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmDeleteObject *mArtifactPublicServiceClientMockDeleteObject) Optional() *mArtifactPublicServiceClientMockDeleteObject {
+	mmDeleteObject.optional = true
+	return mmDeleteObject
+}
+
+// Expect sets up expected params for ArtifactPublicServiceClient.DeleteObject
+func (mmDeleteObject *mArtifactPublicServiceClientMockDeleteObject) Expect(ctx context.Context, in *mm_artifactv1alpha.DeleteObjectRequest, opts ...grpc.CallOption) *mArtifactPublicServiceClientMockDeleteObject {
+	if mmDeleteObject.mock.funcDeleteObject != nil {
+		mmDeleteObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.DeleteObject mock is already set by Set")
+	}
+
+	if mmDeleteObject.defaultExpectation == nil {
+		mmDeleteObject.defaultExpectation = &ArtifactPublicServiceClientMockDeleteObjectExpectation{}
+	}
+
+	if mmDeleteObject.defaultExpectation.paramPtrs != nil {
+		mmDeleteObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.DeleteObject mock is already set by ExpectParams functions")
+	}
+
+	mmDeleteObject.defaultExpectation.params = &ArtifactPublicServiceClientMockDeleteObjectParams{ctx, in, opts}
+	mmDeleteObject.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmDeleteObject.expectations {
+		if minimock.Equal(e.params, mmDeleteObject.defaultExpectation.params) {
+			mmDeleteObject.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmDeleteObject.defaultExpectation.params)
+		}
+	}
+
+	return mmDeleteObject
+}
+
+// ExpectCtxParam1 sets up expected param ctx for ArtifactPublicServiceClient.DeleteObject
+func (mmDeleteObject *mArtifactPublicServiceClientMockDeleteObject) ExpectCtxParam1(ctx context.Context) *mArtifactPublicServiceClientMockDeleteObject {
+	if mmDeleteObject.mock.funcDeleteObject != nil {
+		mmDeleteObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.DeleteObject mock is already set by Set")
+	}
+
+	if mmDeleteObject.defaultExpectation == nil {
+		mmDeleteObject.defaultExpectation = &ArtifactPublicServiceClientMockDeleteObjectExpectation{}
+	}
+
+	if mmDeleteObject.defaultExpectation.params != nil {
+		mmDeleteObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.DeleteObject mock is already set by Expect")
+	}
+
+	if mmDeleteObject.defaultExpectation.paramPtrs == nil {
+		mmDeleteObject.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockDeleteObjectParamPtrs{}
+	}
+	mmDeleteObject.defaultExpectation.paramPtrs.ctx = &ctx
+	mmDeleteObject.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmDeleteObject
+}
+
+// ExpectInParam2 sets up expected param in for ArtifactPublicServiceClient.DeleteObject
+func (mmDeleteObject *mArtifactPublicServiceClientMockDeleteObject) ExpectInParam2(in *mm_artifactv1alpha.DeleteObjectRequest) *mArtifactPublicServiceClientMockDeleteObject {
+	if mmDeleteObject.mock.funcDeleteObject != nil {
+		mmDeleteObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.DeleteObject mock is already set by Set")
+	}
+
+	if mmDeleteObject.defaultExpectation == nil {
+		mmDeleteObject.defaultExpectation = &ArtifactPublicServiceClientMockDeleteObjectExpectation{}
+	}
+
+	if mmDeleteObject.defaultExpectation.params != nil {
+		mmDeleteObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.DeleteObject mock is already set by Expect")
+	}
+
+	if mmDeleteObject.defaultExpectation.paramPtrs == nil {
+		mmDeleteObject.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockDeleteObjectParamPtrs{}
+	}
+	mmDeleteObject.defaultExpectation.paramPtrs.in = &in
+	mmDeleteObject.defaultExpectation.expectationOrigins.originIn = minimock.CallerInfo(1)
+
+	return mmDeleteObject
+}
+
+// ExpectOptsParam3 sets up expected param opts for ArtifactPublicServiceClient.DeleteObject
+func (mmDeleteObject *mArtifactPublicServiceClientMockDeleteObject) ExpectOptsParam3(opts ...grpc.CallOption) *mArtifactPublicServiceClientMockDeleteObject {
+	if mmDeleteObject.mock.funcDeleteObject != nil {
+		mmDeleteObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.DeleteObject mock is already set by Set")
+	}
+
+	if mmDeleteObject.defaultExpectation == nil {
+		mmDeleteObject.defaultExpectation = &ArtifactPublicServiceClientMockDeleteObjectExpectation{}
+	}
+
+	if mmDeleteObject.defaultExpectation.params != nil {
+		mmDeleteObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.DeleteObject mock is already set by Expect")
+	}
+
+	if mmDeleteObject.defaultExpectation.paramPtrs == nil {
+		mmDeleteObject.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockDeleteObjectParamPtrs{}
+	}
+	mmDeleteObject.defaultExpectation.paramPtrs.opts = &opts
+	mmDeleteObject.defaultExpectation.expectationOrigins.originOpts = minimock.CallerInfo(1)
+
+	return mmDeleteObject
+}
+
+// Inspect accepts an inspector function that has same arguments as the ArtifactPublicServiceClient.DeleteObject
+func (mmDeleteObject *mArtifactPublicServiceClientMockDeleteObject) Inspect(f func(ctx context.Context, in *mm_artifactv1alpha.DeleteObjectRequest, opts ...grpc.CallOption)) *mArtifactPublicServiceClientMockDeleteObject {
+	if mmDeleteObject.mock.inspectFuncDeleteObject != nil {
+		mmDeleteObject.mock.t.Fatalf("Inspect function is already set for ArtifactPublicServiceClientMock.DeleteObject")
+	}
+
+	mmDeleteObject.mock.inspectFuncDeleteObject = f
+
+	return mmDeleteObject
+}
+
+// Return sets up results that will be returned by ArtifactPublicServiceClient.DeleteObject
+func (mmDeleteObject *mArtifactPublicServiceClientMockDeleteObject) Return(dp1 *mm_artifactv1alpha.DeleteObjectResponse, err error) *ArtifactPublicServiceClientMock {
+	if mmDeleteObject.mock.funcDeleteObject != nil {
+		mmDeleteObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.DeleteObject mock is already set by Set")
+	}
+
+	if mmDeleteObject.defaultExpectation == nil {
+		mmDeleteObject.defaultExpectation = &ArtifactPublicServiceClientMockDeleteObjectExpectation{mock: mmDeleteObject.mock}
+	}
+	mmDeleteObject.defaultExpectation.results = &ArtifactPublicServiceClientMockDeleteObjectResults{dp1, err}
+	mmDeleteObject.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmDeleteObject.mock
+}
+
+// Set uses given function f to mock the ArtifactPublicServiceClient.DeleteObject method
+func (mmDeleteObject *mArtifactPublicServiceClientMockDeleteObject) Set(f func(ctx context.Context, in *mm_artifactv1alpha.DeleteObjectRequest, opts ...grpc.CallOption) (dp1 *mm_artifactv1alpha.DeleteObjectResponse, err error)) *ArtifactPublicServiceClientMock {
+	if mmDeleteObject.defaultExpectation != nil {
+		mmDeleteObject.mock.t.Fatalf("Default expectation is already set for the ArtifactPublicServiceClient.DeleteObject method")
+	}
+
+	if len(mmDeleteObject.expectations) > 0 {
+		mmDeleteObject.mock.t.Fatalf("Some expectations are already set for the ArtifactPublicServiceClient.DeleteObject method")
+	}
+
+	mmDeleteObject.mock.funcDeleteObject = f
+	mmDeleteObject.mock.funcDeleteObjectOrigin = minimock.CallerInfo(1)
+	return mmDeleteObject.mock
+}
+
+// When sets expectation for the ArtifactPublicServiceClient.DeleteObject which will trigger the result defined by the following
+// Then helper
+func (mmDeleteObject *mArtifactPublicServiceClientMockDeleteObject) When(ctx context.Context, in *mm_artifactv1alpha.DeleteObjectRequest, opts ...grpc.CallOption) *ArtifactPublicServiceClientMockDeleteObjectExpectation {
+	if mmDeleteObject.mock.funcDeleteObject != nil {
+		mmDeleteObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.DeleteObject mock is already set by Set")
+	}
+
+	expectation := &ArtifactPublicServiceClientMockDeleteObjectExpectation{
+		mock:               mmDeleteObject.mock,
+		params:             &ArtifactPublicServiceClientMockDeleteObjectParams{ctx, in, opts},
+		expectationOrigins: ArtifactPublicServiceClientMockDeleteObjectExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmDeleteObject.expectations = append(mmDeleteObject.expectations, expectation)
+	return expectation
+}
+
+// Then sets up ArtifactPublicServiceClient.DeleteObject return parameters for the expectation previously defined by the When method
+func (e *ArtifactPublicServiceClientMockDeleteObjectExpectation) Then(dp1 *mm_artifactv1alpha.DeleteObjectResponse, err error) *ArtifactPublicServiceClientMock {
+	e.results = &ArtifactPublicServiceClientMockDeleteObjectResults{dp1, err}
+	return e.mock
+}
+
+// Times sets number of times ArtifactPublicServiceClient.DeleteObject should be invoked
+func (mmDeleteObject *mArtifactPublicServiceClientMockDeleteObject) Times(n uint64) *mArtifactPublicServiceClientMockDeleteObject {
+	if n == 0 {
+		mmDeleteObject.mock.t.Fatalf("Times of ArtifactPublicServiceClientMock.DeleteObject mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmDeleteObject.expectedInvocations, n)
+	mmDeleteObject.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmDeleteObject
+}
+
+func (mmDeleteObject *mArtifactPublicServiceClientMockDeleteObject) invocationsDone() bool {
+	if len(mmDeleteObject.expectations) == 0 && mmDeleteObject.defaultExpectation == nil && mmDeleteObject.mock.funcDeleteObject == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmDeleteObject.mock.afterDeleteObjectCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmDeleteObject.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// DeleteObject implements mm_artifactv1alpha.ArtifactPublicServiceClient
+func (mmDeleteObject *ArtifactPublicServiceClientMock) DeleteObject(ctx context.Context, in *mm_artifactv1alpha.DeleteObjectRequest, opts ...grpc.CallOption) (dp1 *mm_artifactv1alpha.DeleteObjectResponse, err error) {
+	mm_atomic.AddUint64(&mmDeleteObject.beforeDeleteObjectCounter, 1)
+	defer mm_atomic.AddUint64(&mmDeleteObject.afterDeleteObjectCounter, 1)
+
+	mmDeleteObject.t.Helper()
+
+	if mmDeleteObject.inspectFuncDeleteObject != nil {
+		mmDeleteObject.inspectFuncDeleteObject(ctx, in, opts...)
+	}
+
+	mm_params := ArtifactPublicServiceClientMockDeleteObjectParams{ctx, in, opts}
+
+	// Record call args
+	mmDeleteObject.DeleteObjectMock.mutex.Lock()
+	mmDeleteObject.DeleteObjectMock.callArgs = append(mmDeleteObject.DeleteObjectMock.callArgs, &mm_params)
+	mmDeleteObject.DeleteObjectMock.mutex.Unlock()
+
+	for _, e := range mmDeleteObject.DeleteObjectMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.dp1, e.results.err
+		}
+	}
+
+	if mmDeleteObject.DeleteObjectMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmDeleteObject.DeleteObjectMock.defaultExpectation.Counter, 1)
+		mm_want := mmDeleteObject.DeleteObjectMock.defaultExpectation.params
+		mm_want_ptrs := mmDeleteObject.DeleteObjectMock.defaultExpectation.paramPtrs
+
+		mm_got := ArtifactPublicServiceClientMockDeleteObjectParams{ctx, in, opts}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmDeleteObject.t.Errorf("ArtifactPublicServiceClientMock.DeleteObject got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteObject.DeleteObjectMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.in != nil && !minimock.Equal(*mm_want_ptrs.in, mm_got.in) {
+				mmDeleteObject.t.Errorf("ArtifactPublicServiceClientMock.DeleteObject got unexpected parameter in, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteObject.DeleteObjectMock.defaultExpectation.expectationOrigins.originIn, *mm_want_ptrs.in, mm_got.in, minimock.Diff(*mm_want_ptrs.in, mm_got.in))
+			}
+
+			if mm_want_ptrs.opts != nil && !minimock.Equal(*mm_want_ptrs.opts, mm_got.opts) {
+				mmDeleteObject.t.Errorf("ArtifactPublicServiceClientMock.DeleteObject got unexpected parameter opts, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteObject.DeleteObjectMock.defaultExpectation.expectationOrigins.originOpts, *mm_want_ptrs.opts, mm_got.opts, minimock.Diff(*mm_want_ptrs.opts, mm_got.opts))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmDeleteObject.t.Errorf("ArtifactPublicServiceClientMock.DeleteObject got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmDeleteObject.DeleteObjectMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmDeleteObject.DeleteObjectMock.defaultExpectation.results
+		if mm_results == nil {
+			mmDeleteObject.t.Fatal("No results are set for the ArtifactPublicServiceClientMock.DeleteObject")
+		}
+		return (*mm_results).dp1, (*mm_results).err
+	}
+	if mmDeleteObject.funcDeleteObject != nil {
+		return mmDeleteObject.funcDeleteObject(ctx, in, opts...)
+	}
+	mmDeleteObject.t.Fatalf("Unexpected call to ArtifactPublicServiceClientMock.DeleteObject. %v %v %v", ctx, in, opts)
+	return
+}
+
+// DeleteObjectAfterCounter returns a count of finished ArtifactPublicServiceClientMock.DeleteObject invocations
+func (mmDeleteObject *ArtifactPublicServiceClientMock) DeleteObjectAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteObject.afterDeleteObjectCounter)
+}
+
+// DeleteObjectBeforeCounter returns a count of ArtifactPublicServiceClientMock.DeleteObject invocations
+func (mmDeleteObject *ArtifactPublicServiceClientMock) DeleteObjectBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteObject.beforeDeleteObjectCounter)
+}
+
+// Calls returns a list of arguments used in each call to ArtifactPublicServiceClientMock.DeleteObject.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmDeleteObject *mArtifactPublicServiceClientMockDeleteObject) Calls() []*ArtifactPublicServiceClientMockDeleteObjectParams {
+	mmDeleteObject.mutex.RLock()
+
+	argCopy := make([]*ArtifactPublicServiceClientMockDeleteObjectParams, len(mmDeleteObject.callArgs))
+	copy(argCopy, mmDeleteObject.callArgs)
+
+	mmDeleteObject.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockDeleteObjectDone returns true if the count of the DeleteObject invocations corresponds
+// the number of defined expectations
+func (m *ArtifactPublicServiceClientMock) MinimockDeleteObjectDone() bool {
+	if m.DeleteObjectMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.DeleteObjectMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.DeleteObjectMock.invocationsDone()
+}
+
+// MinimockDeleteObjectInspect logs each unmet expectation
+func (m *ArtifactPublicServiceClientMock) MinimockDeleteObjectInspect() {
+	for _, e := range m.DeleteObjectMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.DeleteObject at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterDeleteObjectCounter := mm_atomic.LoadUint64(&m.afterDeleteObjectCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.DeleteObjectMock.defaultExpectation != nil && afterDeleteObjectCounter < 1 {
+		if m.DeleteObjectMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.DeleteObject at\n%s", m.DeleteObjectMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.DeleteObject at\n%s with params: %#v", m.DeleteObjectMock.defaultExpectation.expectationOrigins.origin, *m.DeleteObjectMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcDeleteObject != nil && afterDeleteObjectCounter < 1 {
+		m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.DeleteObject at\n%s", m.funcDeleteObjectOrigin)
+	}
+
+	if !m.DeleteObjectMock.invocationsDone() && afterDeleteObjectCounter > 0 {
+		m.t.Errorf("Expected %d calls to ArtifactPublicServiceClientMock.DeleteObject at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.DeleteObjectMock.expectedInvocations), m.DeleteObjectMock.expectedInvocationsOrigin, afterDeleteObjectCounter)
+	}
+}
+
 type mArtifactPublicServiceClientMockGetChunk struct {
 	optional           bool
 	mock               *ArtifactPublicServiceClientMock
@@ -2847,6 +3251,380 @@ func (m *ArtifactPublicServiceClientMock) MinimockGetKnowledgeBaseInspect() {
 	if !m.GetKnowledgeBaseMock.invocationsDone() && afterGetKnowledgeBaseCounter > 0 {
 		m.t.Errorf("Expected %d calls to ArtifactPublicServiceClientMock.GetKnowledgeBase at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.GetKnowledgeBaseMock.expectedInvocations), m.GetKnowledgeBaseMock.expectedInvocationsOrigin, afterGetKnowledgeBaseCounter)
+	}
+}
+
+type mArtifactPublicServiceClientMockGetObject struct {
+	optional           bool
+	mock               *ArtifactPublicServiceClientMock
+	defaultExpectation *ArtifactPublicServiceClientMockGetObjectExpectation
+	expectations       []*ArtifactPublicServiceClientMockGetObjectExpectation
+
+	callArgs []*ArtifactPublicServiceClientMockGetObjectParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// ArtifactPublicServiceClientMockGetObjectExpectation specifies expectation struct of the ArtifactPublicServiceClient.GetObject
+type ArtifactPublicServiceClientMockGetObjectExpectation struct {
+	mock               *ArtifactPublicServiceClientMock
+	params             *ArtifactPublicServiceClientMockGetObjectParams
+	paramPtrs          *ArtifactPublicServiceClientMockGetObjectParamPtrs
+	expectationOrigins ArtifactPublicServiceClientMockGetObjectExpectationOrigins
+	results            *ArtifactPublicServiceClientMockGetObjectResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// ArtifactPublicServiceClientMockGetObjectParams contains parameters of the ArtifactPublicServiceClient.GetObject
+type ArtifactPublicServiceClientMockGetObjectParams struct {
+	ctx  context.Context
+	in   *mm_artifactv1alpha.GetObjectRequest
+	opts []grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockGetObjectParamPtrs contains pointers to parameters of the ArtifactPublicServiceClient.GetObject
+type ArtifactPublicServiceClientMockGetObjectParamPtrs struct {
+	ctx  *context.Context
+	in   **mm_artifactv1alpha.GetObjectRequest
+	opts *[]grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockGetObjectResults contains results of the ArtifactPublicServiceClient.GetObject
+type ArtifactPublicServiceClientMockGetObjectResults struct {
+	gp1 *mm_artifactv1alpha.GetObjectResponse
+	err error
+}
+
+// ArtifactPublicServiceClientMockGetObjectOrigins contains origins of expectations of the ArtifactPublicServiceClient.GetObject
+type ArtifactPublicServiceClientMockGetObjectExpectationOrigins struct {
+	origin     string
+	originCtx  string
+	originIn   string
+	originOpts string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetObject *mArtifactPublicServiceClientMockGetObject) Optional() *mArtifactPublicServiceClientMockGetObject {
+	mmGetObject.optional = true
+	return mmGetObject
+}
+
+// Expect sets up expected params for ArtifactPublicServiceClient.GetObject
+func (mmGetObject *mArtifactPublicServiceClientMockGetObject) Expect(ctx context.Context, in *mm_artifactv1alpha.GetObjectRequest, opts ...grpc.CallOption) *mArtifactPublicServiceClientMockGetObject {
+	if mmGetObject.mock.funcGetObject != nil {
+		mmGetObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObject mock is already set by Set")
+	}
+
+	if mmGetObject.defaultExpectation == nil {
+		mmGetObject.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectExpectation{}
+	}
+
+	if mmGetObject.defaultExpectation.paramPtrs != nil {
+		mmGetObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObject mock is already set by ExpectParams functions")
+	}
+
+	mmGetObject.defaultExpectation.params = &ArtifactPublicServiceClientMockGetObjectParams{ctx, in, opts}
+	mmGetObject.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetObject.expectations {
+		if minimock.Equal(e.params, mmGetObject.defaultExpectation.params) {
+			mmGetObject.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetObject.defaultExpectation.params)
+		}
+	}
+
+	return mmGetObject
+}
+
+// ExpectCtxParam1 sets up expected param ctx for ArtifactPublicServiceClient.GetObject
+func (mmGetObject *mArtifactPublicServiceClientMockGetObject) ExpectCtxParam1(ctx context.Context) *mArtifactPublicServiceClientMockGetObject {
+	if mmGetObject.mock.funcGetObject != nil {
+		mmGetObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObject mock is already set by Set")
+	}
+
+	if mmGetObject.defaultExpectation == nil {
+		mmGetObject.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectExpectation{}
+	}
+
+	if mmGetObject.defaultExpectation.params != nil {
+		mmGetObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObject mock is already set by Expect")
+	}
+
+	if mmGetObject.defaultExpectation.paramPtrs == nil {
+		mmGetObject.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockGetObjectParamPtrs{}
+	}
+	mmGetObject.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetObject.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetObject
+}
+
+// ExpectInParam2 sets up expected param in for ArtifactPublicServiceClient.GetObject
+func (mmGetObject *mArtifactPublicServiceClientMockGetObject) ExpectInParam2(in *mm_artifactv1alpha.GetObjectRequest) *mArtifactPublicServiceClientMockGetObject {
+	if mmGetObject.mock.funcGetObject != nil {
+		mmGetObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObject mock is already set by Set")
+	}
+
+	if mmGetObject.defaultExpectation == nil {
+		mmGetObject.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectExpectation{}
+	}
+
+	if mmGetObject.defaultExpectation.params != nil {
+		mmGetObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObject mock is already set by Expect")
+	}
+
+	if mmGetObject.defaultExpectation.paramPtrs == nil {
+		mmGetObject.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockGetObjectParamPtrs{}
+	}
+	mmGetObject.defaultExpectation.paramPtrs.in = &in
+	mmGetObject.defaultExpectation.expectationOrigins.originIn = minimock.CallerInfo(1)
+
+	return mmGetObject
+}
+
+// ExpectOptsParam3 sets up expected param opts for ArtifactPublicServiceClient.GetObject
+func (mmGetObject *mArtifactPublicServiceClientMockGetObject) ExpectOptsParam3(opts ...grpc.CallOption) *mArtifactPublicServiceClientMockGetObject {
+	if mmGetObject.mock.funcGetObject != nil {
+		mmGetObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObject mock is already set by Set")
+	}
+
+	if mmGetObject.defaultExpectation == nil {
+		mmGetObject.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectExpectation{}
+	}
+
+	if mmGetObject.defaultExpectation.params != nil {
+		mmGetObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObject mock is already set by Expect")
+	}
+
+	if mmGetObject.defaultExpectation.paramPtrs == nil {
+		mmGetObject.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockGetObjectParamPtrs{}
+	}
+	mmGetObject.defaultExpectation.paramPtrs.opts = &opts
+	mmGetObject.defaultExpectation.expectationOrigins.originOpts = minimock.CallerInfo(1)
+
+	return mmGetObject
+}
+
+// Inspect accepts an inspector function that has same arguments as the ArtifactPublicServiceClient.GetObject
+func (mmGetObject *mArtifactPublicServiceClientMockGetObject) Inspect(f func(ctx context.Context, in *mm_artifactv1alpha.GetObjectRequest, opts ...grpc.CallOption)) *mArtifactPublicServiceClientMockGetObject {
+	if mmGetObject.mock.inspectFuncGetObject != nil {
+		mmGetObject.mock.t.Fatalf("Inspect function is already set for ArtifactPublicServiceClientMock.GetObject")
+	}
+
+	mmGetObject.mock.inspectFuncGetObject = f
+
+	return mmGetObject
+}
+
+// Return sets up results that will be returned by ArtifactPublicServiceClient.GetObject
+func (mmGetObject *mArtifactPublicServiceClientMockGetObject) Return(gp1 *mm_artifactv1alpha.GetObjectResponse, err error) *ArtifactPublicServiceClientMock {
+	if mmGetObject.mock.funcGetObject != nil {
+		mmGetObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObject mock is already set by Set")
+	}
+
+	if mmGetObject.defaultExpectation == nil {
+		mmGetObject.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectExpectation{mock: mmGetObject.mock}
+	}
+	mmGetObject.defaultExpectation.results = &ArtifactPublicServiceClientMockGetObjectResults{gp1, err}
+	mmGetObject.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetObject.mock
+}
+
+// Set uses given function f to mock the ArtifactPublicServiceClient.GetObject method
+func (mmGetObject *mArtifactPublicServiceClientMockGetObject) Set(f func(ctx context.Context, in *mm_artifactv1alpha.GetObjectRequest, opts ...grpc.CallOption) (gp1 *mm_artifactv1alpha.GetObjectResponse, err error)) *ArtifactPublicServiceClientMock {
+	if mmGetObject.defaultExpectation != nil {
+		mmGetObject.mock.t.Fatalf("Default expectation is already set for the ArtifactPublicServiceClient.GetObject method")
+	}
+
+	if len(mmGetObject.expectations) > 0 {
+		mmGetObject.mock.t.Fatalf("Some expectations are already set for the ArtifactPublicServiceClient.GetObject method")
+	}
+
+	mmGetObject.mock.funcGetObject = f
+	mmGetObject.mock.funcGetObjectOrigin = minimock.CallerInfo(1)
+	return mmGetObject.mock
+}
+
+// When sets expectation for the ArtifactPublicServiceClient.GetObject which will trigger the result defined by the following
+// Then helper
+func (mmGetObject *mArtifactPublicServiceClientMockGetObject) When(ctx context.Context, in *mm_artifactv1alpha.GetObjectRequest, opts ...grpc.CallOption) *ArtifactPublicServiceClientMockGetObjectExpectation {
+	if mmGetObject.mock.funcGetObject != nil {
+		mmGetObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObject mock is already set by Set")
+	}
+
+	expectation := &ArtifactPublicServiceClientMockGetObjectExpectation{
+		mock:               mmGetObject.mock,
+		params:             &ArtifactPublicServiceClientMockGetObjectParams{ctx, in, opts},
+		expectationOrigins: ArtifactPublicServiceClientMockGetObjectExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetObject.expectations = append(mmGetObject.expectations, expectation)
+	return expectation
+}
+
+// Then sets up ArtifactPublicServiceClient.GetObject return parameters for the expectation previously defined by the When method
+func (e *ArtifactPublicServiceClientMockGetObjectExpectation) Then(gp1 *mm_artifactv1alpha.GetObjectResponse, err error) *ArtifactPublicServiceClientMock {
+	e.results = &ArtifactPublicServiceClientMockGetObjectResults{gp1, err}
+	return e.mock
+}
+
+// Times sets number of times ArtifactPublicServiceClient.GetObject should be invoked
+func (mmGetObject *mArtifactPublicServiceClientMockGetObject) Times(n uint64) *mArtifactPublicServiceClientMockGetObject {
+	if n == 0 {
+		mmGetObject.mock.t.Fatalf("Times of ArtifactPublicServiceClientMock.GetObject mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetObject.expectedInvocations, n)
+	mmGetObject.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetObject
+}
+
+func (mmGetObject *mArtifactPublicServiceClientMockGetObject) invocationsDone() bool {
+	if len(mmGetObject.expectations) == 0 && mmGetObject.defaultExpectation == nil && mmGetObject.mock.funcGetObject == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetObject.mock.afterGetObjectCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetObject.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetObject implements mm_artifactv1alpha.ArtifactPublicServiceClient
+func (mmGetObject *ArtifactPublicServiceClientMock) GetObject(ctx context.Context, in *mm_artifactv1alpha.GetObjectRequest, opts ...grpc.CallOption) (gp1 *mm_artifactv1alpha.GetObjectResponse, err error) {
+	mm_atomic.AddUint64(&mmGetObject.beforeGetObjectCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetObject.afterGetObjectCounter, 1)
+
+	mmGetObject.t.Helper()
+
+	if mmGetObject.inspectFuncGetObject != nil {
+		mmGetObject.inspectFuncGetObject(ctx, in, opts...)
+	}
+
+	mm_params := ArtifactPublicServiceClientMockGetObjectParams{ctx, in, opts}
+
+	// Record call args
+	mmGetObject.GetObjectMock.mutex.Lock()
+	mmGetObject.GetObjectMock.callArgs = append(mmGetObject.GetObjectMock.callArgs, &mm_params)
+	mmGetObject.GetObjectMock.mutex.Unlock()
+
+	for _, e := range mmGetObject.GetObjectMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.gp1, e.results.err
+		}
+	}
+
+	if mmGetObject.GetObjectMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetObject.GetObjectMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetObject.GetObjectMock.defaultExpectation.params
+		mm_want_ptrs := mmGetObject.GetObjectMock.defaultExpectation.paramPtrs
+
+		mm_got := ArtifactPublicServiceClientMockGetObjectParams{ctx, in, opts}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetObject.t.Errorf("ArtifactPublicServiceClientMock.GetObject got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetObject.GetObjectMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.in != nil && !minimock.Equal(*mm_want_ptrs.in, mm_got.in) {
+				mmGetObject.t.Errorf("ArtifactPublicServiceClientMock.GetObject got unexpected parameter in, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetObject.GetObjectMock.defaultExpectation.expectationOrigins.originIn, *mm_want_ptrs.in, mm_got.in, minimock.Diff(*mm_want_ptrs.in, mm_got.in))
+			}
+
+			if mm_want_ptrs.opts != nil && !minimock.Equal(*mm_want_ptrs.opts, mm_got.opts) {
+				mmGetObject.t.Errorf("ArtifactPublicServiceClientMock.GetObject got unexpected parameter opts, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetObject.GetObjectMock.defaultExpectation.expectationOrigins.originOpts, *mm_want_ptrs.opts, mm_got.opts, minimock.Diff(*mm_want_ptrs.opts, mm_got.opts))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetObject.t.Errorf("ArtifactPublicServiceClientMock.GetObject got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetObject.GetObjectMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetObject.GetObjectMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetObject.t.Fatal("No results are set for the ArtifactPublicServiceClientMock.GetObject")
+		}
+		return (*mm_results).gp1, (*mm_results).err
+	}
+	if mmGetObject.funcGetObject != nil {
+		return mmGetObject.funcGetObject(ctx, in, opts...)
+	}
+	mmGetObject.t.Fatalf("Unexpected call to ArtifactPublicServiceClientMock.GetObject. %v %v %v", ctx, in, opts)
+	return
+}
+
+// GetObjectAfterCounter returns a count of finished ArtifactPublicServiceClientMock.GetObject invocations
+func (mmGetObject *ArtifactPublicServiceClientMock) GetObjectAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetObject.afterGetObjectCounter)
+}
+
+// GetObjectBeforeCounter returns a count of ArtifactPublicServiceClientMock.GetObject invocations
+func (mmGetObject *ArtifactPublicServiceClientMock) GetObjectBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetObject.beforeGetObjectCounter)
+}
+
+// Calls returns a list of arguments used in each call to ArtifactPublicServiceClientMock.GetObject.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetObject *mArtifactPublicServiceClientMockGetObject) Calls() []*ArtifactPublicServiceClientMockGetObjectParams {
+	mmGetObject.mutex.RLock()
+
+	argCopy := make([]*ArtifactPublicServiceClientMockGetObjectParams, len(mmGetObject.callArgs))
+	copy(argCopy, mmGetObject.callArgs)
+
+	mmGetObject.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetObjectDone returns true if the count of the GetObject invocations corresponds
+// the number of defined expectations
+func (m *ArtifactPublicServiceClientMock) MinimockGetObjectDone() bool {
+	if m.GetObjectMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetObjectMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetObjectMock.invocationsDone()
+}
+
+// MinimockGetObjectInspect logs each unmet expectation
+func (m *ArtifactPublicServiceClientMock) MinimockGetObjectInspect() {
+	for _, e := range m.GetObjectMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.GetObject at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetObjectCounter := mm_atomic.LoadUint64(&m.afterGetObjectCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetObjectMock.defaultExpectation != nil && afterGetObjectCounter < 1 {
+		if m.GetObjectMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.GetObject at\n%s", m.GetObjectMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.GetObject at\n%s with params: %#v", m.GetObjectMock.defaultExpectation.expectationOrigins.origin, *m.GetObjectMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetObject != nil && afterGetObjectCounter < 1 {
+		m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.GetObject at\n%s", m.funcGetObjectOrigin)
+	}
+
+	if !m.GetObjectMock.invocationsDone() && afterGetObjectCounter > 0 {
+		m.t.Errorf("Expected %d calls to ArtifactPublicServiceClientMock.GetObject at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetObjectMock.expectedInvocations), m.GetObjectMock.expectedInvocationsOrigin, afterGetObjectCounter)
 	}
 }
 
@@ -7712,6 +8490,380 @@ func (m *ArtifactPublicServiceClientMock) MinimockUpdateKnowledgeBaseInspect() {
 	}
 }
 
+type mArtifactPublicServiceClientMockUpdateObject struct {
+	optional           bool
+	mock               *ArtifactPublicServiceClientMock
+	defaultExpectation *ArtifactPublicServiceClientMockUpdateObjectExpectation
+	expectations       []*ArtifactPublicServiceClientMockUpdateObjectExpectation
+
+	callArgs []*ArtifactPublicServiceClientMockUpdateObjectParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// ArtifactPublicServiceClientMockUpdateObjectExpectation specifies expectation struct of the ArtifactPublicServiceClient.UpdateObject
+type ArtifactPublicServiceClientMockUpdateObjectExpectation struct {
+	mock               *ArtifactPublicServiceClientMock
+	params             *ArtifactPublicServiceClientMockUpdateObjectParams
+	paramPtrs          *ArtifactPublicServiceClientMockUpdateObjectParamPtrs
+	expectationOrigins ArtifactPublicServiceClientMockUpdateObjectExpectationOrigins
+	results            *ArtifactPublicServiceClientMockUpdateObjectResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// ArtifactPublicServiceClientMockUpdateObjectParams contains parameters of the ArtifactPublicServiceClient.UpdateObject
+type ArtifactPublicServiceClientMockUpdateObjectParams struct {
+	ctx  context.Context
+	in   *mm_artifactv1alpha.UpdateObjectRequest
+	opts []grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockUpdateObjectParamPtrs contains pointers to parameters of the ArtifactPublicServiceClient.UpdateObject
+type ArtifactPublicServiceClientMockUpdateObjectParamPtrs struct {
+	ctx  *context.Context
+	in   **mm_artifactv1alpha.UpdateObjectRequest
+	opts *[]grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockUpdateObjectResults contains results of the ArtifactPublicServiceClient.UpdateObject
+type ArtifactPublicServiceClientMockUpdateObjectResults struct {
+	up1 *mm_artifactv1alpha.UpdateObjectResponse
+	err error
+}
+
+// ArtifactPublicServiceClientMockUpdateObjectOrigins contains origins of expectations of the ArtifactPublicServiceClient.UpdateObject
+type ArtifactPublicServiceClientMockUpdateObjectExpectationOrigins struct {
+	origin     string
+	originCtx  string
+	originIn   string
+	originOpts string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdateObject *mArtifactPublicServiceClientMockUpdateObject) Optional() *mArtifactPublicServiceClientMockUpdateObject {
+	mmUpdateObject.optional = true
+	return mmUpdateObject
+}
+
+// Expect sets up expected params for ArtifactPublicServiceClient.UpdateObject
+func (mmUpdateObject *mArtifactPublicServiceClientMockUpdateObject) Expect(ctx context.Context, in *mm_artifactv1alpha.UpdateObjectRequest, opts ...grpc.CallOption) *mArtifactPublicServiceClientMockUpdateObject {
+	if mmUpdateObject.mock.funcUpdateObject != nil {
+		mmUpdateObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.UpdateObject mock is already set by Set")
+	}
+
+	if mmUpdateObject.defaultExpectation == nil {
+		mmUpdateObject.defaultExpectation = &ArtifactPublicServiceClientMockUpdateObjectExpectation{}
+	}
+
+	if mmUpdateObject.defaultExpectation.paramPtrs != nil {
+		mmUpdateObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.UpdateObject mock is already set by ExpectParams functions")
+	}
+
+	mmUpdateObject.defaultExpectation.params = &ArtifactPublicServiceClientMockUpdateObjectParams{ctx, in, opts}
+	mmUpdateObject.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUpdateObject.expectations {
+		if minimock.Equal(e.params, mmUpdateObject.defaultExpectation.params) {
+			mmUpdateObject.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdateObject.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdateObject
+}
+
+// ExpectCtxParam1 sets up expected param ctx for ArtifactPublicServiceClient.UpdateObject
+func (mmUpdateObject *mArtifactPublicServiceClientMockUpdateObject) ExpectCtxParam1(ctx context.Context) *mArtifactPublicServiceClientMockUpdateObject {
+	if mmUpdateObject.mock.funcUpdateObject != nil {
+		mmUpdateObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.UpdateObject mock is already set by Set")
+	}
+
+	if mmUpdateObject.defaultExpectation == nil {
+		mmUpdateObject.defaultExpectation = &ArtifactPublicServiceClientMockUpdateObjectExpectation{}
+	}
+
+	if mmUpdateObject.defaultExpectation.params != nil {
+		mmUpdateObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.UpdateObject mock is already set by Expect")
+	}
+
+	if mmUpdateObject.defaultExpectation.paramPtrs == nil {
+		mmUpdateObject.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockUpdateObjectParamPtrs{}
+	}
+	mmUpdateObject.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUpdateObject.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUpdateObject
+}
+
+// ExpectInParam2 sets up expected param in for ArtifactPublicServiceClient.UpdateObject
+func (mmUpdateObject *mArtifactPublicServiceClientMockUpdateObject) ExpectInParam2(in *mm_artifactv1alpha.UpdateObjectRequest) *mArtifactPublicServiceClientMockUpdateObject {
+	if mmUpdateObject.mock.funcUpdateObject != nil {
+		mmUpdateObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.UpdateObject mock is already set by Set")
+	}
+
+	if mmUpdateObject.defaultExpectation == nil {
+		mmUpdateObject.defaultExpectation = &ArtifactPublicServiceClientMockUpdateObjectExpectation{}
+	}
+
+	if mmUpdateObject.defaultExpectation.params != nil {
+		mmUpdateObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.UpdateObject mock is already set by Expect")
+	}
+
+	if mmUpdateObject.defaultExpectation.paramPtrs == nil {
+		mmUpdateObject.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockUpdateObjectParamPtrs{}
+	}
+	mmUpdateObject.defaultExpectation.paramPtrs.in = &in
+	mmUpdateObject.defaultExpectation.expectationOrigins.originIn = minimock.CallerInfo(1)
+
+	return mmUpdateObject
+}
+
+// ExpectOptsParam3 sets up expected param opts for ArtifactPublicServiceClient.UpdateObject
+func (mmUpdateObject *mArtifactPublicServiceClientMockUpdateObject) ExpectOptsParam3(opts ...grpc.CallOption) *mArtifactPublicServiceClientMockUpdateObject {
+	if mmUpdateObject.mock.funcUpdateObject != nil {
+		mmUpdateObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.UpdateObject mock is already set by Set")
+	}
+
+	if mmUpdateObject.defaultExpectation == nil {
+		mmUpdateObject.defaultExpectation = &ArtifactPublicServiceClientMockUpdateObjectExpectation{}
+	}
+
+	if mmUpdateObject.defaultExpectation.params != nil {
+		mmUpdateObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.UpdateObject mock is already set by Expect")
+	}
+
+	if mmUpdateObject.defaultExpectation.paramPtrs == nil {
+		mmUpdateObject.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockUpdateObjectParamPtrs{}
+	}
+	mmUpdateObject.defaultExpectation.paramPtrs.opts = &opts
+	mmUpdateObject.defaultExpectation.expectationOrigins.originOpts = minimock.CallerInfo(1)
+
+	return mmUpdateObject
+}
+
+// Inspect accepts an inspector function that has same arguments as the ArtifactPublicServiceClient.UpdateObject
+func (mmUpdateObject *mArtifactPublicServiceClientMockUpdateObject) Inspect(f func(ctx context.Context, in *mm_artifactv1alpha.UpdateObjectRequest, opts ...grpc.CallOption)) *mArtifactPublicServiceClientMockUpdateObject {
+	if mmUpdateObject.mock.inspectFuncUpdateObject != nil {
+		mmUpdateObject.mock.t.Fatalf("Inspect function is already set for ArtifactPublicServiceClientMock.UpdateObject")
+	}
+
+	mmUpdateObject.mock.inspectFuncUpdateObject = f
+
+	return mmUpdateObject
+}
+
+// Return sets up results that will be returned by ArtifactPublicServiceClient.UpdateObject
+func (mmUpdateObject *mArtifactPublicServiceClientMockUpdateObject) Return(up1 *mm_artifactv1alpha.UpdateObjectResponse, err error) *ArtifactPublicServiceClientMock {
+	if mmUpdateObject.mock.funcUpdateObject != nil {
+		mmUpdateObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.UpdateObject mock is already set by Set")
+	}
+
+	if mmUpdateObject.defaultExpectation == nil {
+		mmUpdateObject.defaultExpectation = &ArtifactPublicServiceClientMockUpdateObjectExpectation{mock: mmUpdateObject.mock}
+	}
+	mmUpdateObject.defaultExpectation.results = &ArtifactPublicServiceClientMockUpdateObjectResults{up1, err}
+	mmUpdateObject.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUpdateObject.mock
+}
+
+// Set uses given function f to mock the ArtifactPublicServiceClient.UpdateObject method
+func (mmUpdateObject *mArtifactPublicServiceClientMockUpdateObject) Set(f func(ctx context.Context, in *mm_artifactv1alpha.UpdateObjectRequest, opts ...grpc.CallOption) (up1 *mm_artifactv1alpha.UpdateObjectResponse, err error)) *ArtifactPublicServiceClientMock {
+	if mmUpdateObject.defaultExpectation != nil {
+		mmUpdateObject.mock.t.Fatalf("Default expectation is already set for the ArtifactPublicServiceClient.UpdateObject method")
+	}
+
+	if len(mmUpdateObject.expectations) > 0 {
+		mmUpdateObject.mock.t.Fatalf("Some expectations are already set for the ArtifactPublicServiceClient.UpdateObject method")
+	}
+
+	mmUpdateObject.mock.funcUpdateObject = f
+	mmUpdateObject.mock.funcUpdateObjectOrigin = minimock.CallerInfo(1)
+	return mmUpdateObject.mock
+}
+
+// When sets expectation for the ArtifactPublicServiceClient.UpdateObject which will trigger the result defined by the following
+// Then helper
+func (mmUpdateObject *mArtifactPublicServiceClientMockUpdateObject) When(ctx context.Context, in *mm_artifactv1alpha.UpdateObjectRequest, opts ...grpc.CallOption) *ArtifactPublicServiceClientMockUpdateObjectExpectation {
+	if mmUpdateObject.mock.funcUpdateObject != nil {
+		mmUpdateObject.mock.t.Fatalf("ArtifactPublicServiceClientMock.UpdateObject mock is already set by Set")
+	}
+
+	expectation := &ArtifactPublicServiceClientMockUpdateObjectExpectation{
+		mock:               mmUpdateObject.mock,
+		params:             &ArtifactPublicServiceClientMockUpdateObjectParams{ctx, in, opts},
+		expectationOrigins: ArtifactPublicServiceClientMockUpdateObjectExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUpdateObject.expectations = append(mmUpdateObject.expectations, expectation)
+	return expectation
+}
+
+// Then sets up ArtifactPublicServiceClient.UpdateObject return parameters for the expectation previously defined by the When method
+func (e *ArtifactPublicServiceClientMockUpdateObjectExpectation) Then(up1 *mm_artifactv1alpha.UpdateObjectResponse, err error) *ArtifactPublicServiceClientMock {
+	e.results = &ArtifactPublicServiceClientMockUpdateObjectResults{up1, err}
+	return e.mock
+}
+
+// Times sets number of times ArtifactPublicServiceClient.UpdateObject should be invoked
+func (mmUpdateObject *mArtifactPublicServiceClientMockUpdateObject) Times(n uint64) *mArtifactPublicServiceClientMockUpdateObject {
+	if n == 0 {
+		mmUpdateObject.mock.t.Fatalf("Times of ArtifactPublicServiceClientMock.UpdateObject mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdateObject.expectedInvocations, n)
+	mmUpdateObject.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUpdateObject
+}
+
+func (mmUpdateObject *mArtifactPublicServiceClientMockUpdateObject) invocationsDone() bool {
+	if len(mmUpdateObject.expectations) == 0 && mmUpdateObject.defaultExpectation == nil && mmUpdateObject.mock.funcUpdateObject == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdateObject.mock.afterUpdateObjectCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdateObject.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdateObject implements mm_artifactv1alpha.ArtifactPublicServiceClient
+func (mmUpdateObject *ArtifactPublicServiceClientMock) UpdateObject(ctx context.Context, in *mm_artifactv1alpha.UpdateObjectRequest, opts ...grpc.CallOption) (up1 *mm_artifactv1alpha.UpdateObjectResponse, err error) {
+	mm_atomic.AddUint64(&mmUpdateObject.beforeUpdateObjectCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdateObject.afterUpdateObjectCounter, 1)
+
+	mmUpdateObject.t.Helper()
+
+	if mmUpdateObject.inspectFuncUpdateObject != nil {
+		mmUpdateObject.inspectFuncUpdateObject(ctx, in, opts...)
+	}
+
+	mm_params := ArtifactPublicServiceClientMockUpdateObjectParams{ctx, in, opts}
+
+	// Record call args
+	mmUpdateObject.UpdateObjectMock.mutex.Lock()
+	mmUpdateObject.UpdateObjectMock.callArgs = append(mmUpdateObject.UpdateObjectMock.callArgs, &mm_params)
+	mmUpdateObject.UpdateObjectMock.mutex.Unlock()
+
+	for _, e := range mmUpdateObject.UpdateObjectMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.up1, e.results.err
+		}
+	}
+
+	if mmUpdateObject.UpdateObjectMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdateObject.UpdateObjectMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdateObject.UpdateObjectMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdateObject.UpdateObjectMock.defaultExpectation.paramPtrs
+
+		mm_got := ArtifactPublicServiceClientMockUpdateObjectParams{ctx, in, opts}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpdateObject.t.Errorf("ArtifactPublicServiceClientMock.UpdateObject got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateObject.UpdateObjectMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.in != nil && !minimock.Equal(*mm_want_ptrs.in, mm_got.in) {
+				mmUpdateObject.t.Errorf("ArtifactPublicServiceClientMock.UpdateObject got unexpected parameter in, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateObject.UpdateObjectMock.defaultExpectation.expectationOrigins.originIn, *mm_want_ptrs.in, mm_got.in, minimock.Diff(*mm_want_ptrs.in, mm_got.in))
+			}
+
+			if mm_want_ptrs.opts != nil && !minimock.Equal(*mm_want_ptrs.opts, mm_got.opts) {
+				mmUpdateObject.t.Errorf("ArtifactPublicServiceClientMock.UpdateObject got unexpected parameter opts, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateObject.UpdateObjectMock.defaultExpectation.expectationOrigins.originOpts, *mm_want_ptrs.opts, mm_got.opts, minimock.Diff(*mm_want_ptrs.opts, mm_got.opts))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdateObject.t.Errorf("ArtifactPublicServiceClientMock.UpdateObject got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUpdateObject.UpdateObjectMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdateObject.UpdateObjectMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdateObject.t.Fatal("No results are set for the ArtifactPublicServiceClientMock.UpdateObject")
+		}
+		return (*mm_results).up1, (*mm_results).err
+	}
+	if mmUpdateObject.funcUpdateObject != nil {
+		return mmUpdateObject.funcUpdateObject(ctx, in, opts...)
+	}
+	mmUpdateObject.t.Fatalf("Unexpected call to ArtifactPublicServiceClientMock.UpdateObject. %v %v %v", ctx, in, opts)
+	return
+}
+
+// UpdateObjectAfterCounter returns a count of finished ArtifactPublicServiceClientMock.UpdateObject invocations
+func (mmUpdateObject *ArtifactPublicServiceClientMock) UpdateObjectAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateObject.afterUpdateObjectCounter)
+}
+
+// UpdateObjectBeforeCounter returns a count of ArtifactPublicServiceClientMock.UpdateObject invocations
+func (mmUpdateObject *ArtifactPublicServiceClientMock) UpdateObjectBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateObject.beforeUpdateObjectCounter)
+}
+
+// Calls returns a list of arguments used in each call to ArtifactPublicServiceClientMock.UpdateObject.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdateObject *mArtifactPublicServiceClientMockUpdateObject) Calls() []*ArtifactPublicServiceClientMockUpdateObjectParams {
+	mmUpdateObject.mutex.RLock()
+
+	argCopy := make([]*ArtifactPublicServiceClientMockUpdateObjectParams, len(mmUpdateObject.callArgs))
+	copy(argCopy, mmUpdateObject.callArgs)
+
+	mmUpdateObject.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdateObjectDone returns true if the count of the UpdateObject invocations corresponds
+// the number of defined expectations
+func (m *ArtifactPublicServiceClientMock) MinimockUpdateObjectDone() bool {
+	if m.UpdateObjectMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdateObjectMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdateObjectMock.invocationsDone()
+}
+
+// MinimockUpdateObjectInspect logs each unmet expectation
+func (m *ArtifactPublicServiceClientMock) MinimockUpdateObjectInspect() {
+	for _, e := range m.UpdateObjectMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.UpdateObject at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUpdateObjectCounter := mm_atomic.LoadUint64(&m.afterUpdateObjectCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdateObjectMock.defaultExpectation != nil && afterUpdateObjectCounter < 1 {
+		if m.UpdateObjectMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.UpdateObject at\n%s", m.UpdateObjectMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.UpdateObject at\n%s with params: %#v", m.UpdateObjectMock.defaultExpectation.expectationOrigins.origin, *m.UpdateObjectMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdateObject != nil && afterUpdateObjectCounter < 1 {
+		m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.UpdateObject at\n%s", m.funcUpdateObjectOrigin)
+	}
+
+	if !m.UpdateObjectMock.invocationsDone() && afterUpdateObjectCounter > 0 {
+		m.t.Errorf("Expected %d calls to ArtifactPublicServiceClientMock.UpdateObject at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdateObjectMock.expectedInvocations), m.UpdateObjectMock.expectedInvocationsOrigin, afterUpdateObjectCounter)
+	}
+}
+
 // MinimockFinish checks that all mocked methods have been called the expected number of times
 func (m *ArtifactPublicServiceClientMock) MinimockFinish() {
 	m.finishOnce.Do(func() {
@@ -7724,11 +8876,15 @@ func (m *ArtifactPublicServiceClientMock) MinimockFinish() {
 
 			m.MinimockDeleteKnowledgeBaseInspect()
 
+			m.MinimockDeleteObjectInspect()
+
 			m.MinimockGetChunkInspect()
 
 			m.MinimockGetFileInspect()
 
 			m.MinimockGetKnowledgeBaseInspect()
+
+			m.MinimockGetObjectInspect()
 
 			m.MinimockGetObjectDownloadURLInspect()
 
@@ -7755,6 +8911,8 @@ func (m *ArtifactPublicServiceClientMock) MinimockFinish() {
 			m.MinimockUpdateFileInspect()
 
 			m.MinimockUpdateKnowledgeBaseInspect()
+
+			m.MinimockUpdateObjectInspect()
 		}
 	})
 }
@@ -7782,9 +8940,11 @@ func (m *ArtifactPublicServiceClientMock) minimockDone() bool {
 		m.MinimockCreateKnowledgeBaseDone() &&
 		m.MinimockDeleteFileDone() &&
 		m.MinimockDeleteKnowledgeBaseDone() &&
+		m.MinimockDeleteObjectDone() &&
 		m.MinimockGetChunkDone() &&
 		m.MinimockGetFileDone() &&
 		m.MinimockGetKnowledgeBaseDone() &&
+		m.MinimockGetObjectDone() &&
 		m.MinimockGetObjectDownloadURLDone() &&
 		m.MinimockGetObjectUploadURLDone() &&
 		m.MinimockListChunksDone() &&
@@ -7797,5 +8957,6 @@ func (m *ArtifactPublicServiceClientMock) minimockDone() bool {
 		m.MinimockSearchChunksDone() &&
 		m.MinimockUpdateChunkDone() &&
 		m.MinimockUpdateFileDone() &&
-		m.MinimockUpdateKnowledgeBaseDone()
+		m.MinimockUpdateKnowledgeBaseDone() &&
+		m.MinimockUpdateObjectDone()
 }

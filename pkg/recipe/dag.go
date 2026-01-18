@@ -16,7 +16,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
-	pipelinepb "github.com/instill-ai/protogen-go/pipeline/pipeline/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 	errorsx "github.com/instill-ai/x/errors"
 )
 
@@ -48,16 +48,6 @@ func (uf *unionFind) Union(x, y int) {
 		uf.roots[rootY] = rootX
 	}
 }
-func (uf *unionFind) Count() int {
-	count := 0
-	for idx := range uf.roots {
-		if idx == uf.roots[idx] {
-			count++
-		}
-	}
-	return count
-}
-
 type dag struct {
 	compMap          datamodel.ComponentMap
 	compsIdx         map[string]int
