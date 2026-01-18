@@ -73,7 +73,7 @@ require (
 	github.com/tmc/langchaingo v0.1.13
 	github.com/u2takey/ffmpeg-go v0.5.0
 	github.com/warmans/ffmpeg-go v1.0.0
-	github.com/weaviate/weaviate v1.26.0-rc.1
+	github.com/weaviate/weaviate v1.30.20
 	github.com/weaviate/weaviate-go-client/v4 v4.15.0
 	github.com/xuri/excelize/v2 v2.9.1
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
