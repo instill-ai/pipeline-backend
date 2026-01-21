@@ -285,10 +285,10 @@ func Test_searchChunks(t *testing.T) {
 			Return(&artifactpb.SearchChunksResponse{
 				SimilarChunks: []*artifactpb.SimilarityChunk{
 					{
-						ChunkId:         "fakeChunkID",
+						Chunk:           "namespaces/fakeNs/files/fakeFileID/chunks/fakeChunkID",
 						SimilarityScore: float32(1),
 						TextContent:     "fakeContent",
-						SourceFile:      "fakeFile",
+						File:            "namespaces/fakeNs/files/fakeFileID",
 						ChunkMetadata: &artifactpb.Chunk{
 							OriginalFileId: fileUID.String(),
 							MarkdownReference: &artifactpb.Chunk_Reference{
@@ -314,10 +314,10 @@ func Test_searchChunks(t *testing.T) {
 
 		c.Assert(len(outputStruct.Chunks), quicktest.Equals, 1)
 
-		c.Assert(outputStruct.Chunks[0].ChunkUID, quicktest.Equals, "fakeChunkID")
+		c.Assert(outputStruct.Chunks[0].ChunkUID, quicktest.Equals, "namespaces/fakeNs/files/fakeFileID/chunks/fakeChunkID")
 		c.Assert(outputStruct.Chunks[0].SimilarityScore, quicktest.Equals, float32(1))
 		c.Assert(outputStruct.Chunks[0].TextContent, quicktest.Equals, "fakeContent")
-		c.Assert(outputStruct.Chunks[0].SourceFileName, quicktest.Equals, "fakeFile")
+		c.Assert(outputStruct.Chunks[0].SourceFileName, quicktest.Equals, "namespaces/fakeNs/files/fakeFileID")
 		c.Assert(outputStruct.Chunks[0].Reference.Start.Unit, quicktest.Equals, "UNIT_PAGE")
 		c.Assert(outputStruct.Chunks[0].Reference.Start.Coordinates, quicktest.ContentEquals, pageTwo.Coordinates)
 		c.Assert(outputStruct.Chunks[0].Reference.End.Unit, quicktest.Equals, "UNIT_PAGE")

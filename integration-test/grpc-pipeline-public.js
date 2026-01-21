@@ -619,16 +619,16 @@ export function CheckRename(data) {
 
     var new_pipeline_id = randomString(10);
 
+    var renameRes = client.invoke(
+      "pipeline.v1beta.PipelinePublicService/RenameNamespacePipeline",
+      {
+        name: `${constant.namespace}/pipelines/${pipelineId}`,
+        new_pipeline_id: new_pipeline_id,
+      },
+      data.metadata
+    );
     check(
-      client.invoke(
-        "pipeline.v1beta.PipelinePublicService/RenameNamespacePipeline",
-        {
-          namespace_id: "admin",
-          pipeline_id: pipelineId,
-          new_pipeline_id: new_pipeline_id,
-        },
-        data.metadata
-      ),
+      renameRes,
       {
         [`pipeline.v1beta.PipelinePublicService/RenameNamespacePipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
@@ -657,12 +657,5 @@ export function CheckRename(data) {
     );
 
     client.close();
-  });
-}
-
-export function CheckLookUp(data) {
-  // TODO: SKIPPED - LookUp uses UID which is no longer exposed in the API
-  group("Pipelines API: Look up a pipeline (SKIPPED)", () => {
-    console.log("SKIPPED: CheckLookUp test - lookUp uses UID which is no longer exposed");
   });
 }

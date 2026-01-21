@@ -93,11 +93,13 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 	}
 
 	for _, chunkPB := range searchRes.GetSimilarChunks() {
+		// chunkPB.GetChunk() returns full resource name: namespaces/{namespace}/files/{file}/chunks/{chunk}
+		// chunkPB.GetFile() returns full resource name: namespaces/{namespace}/files/{file}
 		chunk := SimilarityChunk{
-			ChunkUID:        chunkPB.GetChunkId(),
+			ChunkUID:        chunkPB.GetChunk(),
 			SimilarityScore: chunkPB.GetSimilarityScore(),
 			TextContent:     chunkPB.GetTextContent(),
-			SourceFileName:  chunkPB.GetSourceFile(),
+			SourceFileName:  chunkPB.GetFile(),
 			SourceFileUID:   chunkPB.GetChunkMetadata().GetOriginalFileId(),
 			ContentType:     chunkPB.GetChunkMetadata().GetType().String(),
 		}

@@ -65,34 +65,6 @@ message Permission {
   bool can_release = 3;
 }
 
-// CheckNameRequest represents a request to verify if a name is
-// available.
-message CheckNameRequest {
-  // The name of the resource to be checked. For the moment, only pipeline and
-  // connector names can be checked. The following formats are accepted:
-  // - `users/{user.id}/pipelines/{pipeline.id}`
-  // - `users/{user.id}/connectors/{connector.id}`
-  // - `organizations/{organization.id}/pipelines/{pipeline.id}`
-  // - `organizations/{organization.id}/connectors/{connector.id}`
-  string name = 1 [(google.api.field_behavior) = REQUIRED];
-}
-
-// CheckNameResponse contains the availability of a resource name.
-message CheckNameResponse {
-  // Name defines the availability of a resource name.
-  enum Name {
-    // Unspecified.
-    NAME_UNSPECIFIED = 0;
-    // Available.
-    NAME_AVAILABLE = 1;
-    // Unavailable.
-    NAME_UNAVAILABLE = 2;
-  }
-
-  // The availability of the requested name.
-  Name availability = 1;
-}
-
 // ComponentTask contains information about a task that a component can
 // perform.
 message ComponentTask {

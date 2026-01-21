@@ -41,8 +41,8 @@ export function CheckCreate(data) {
         helper.validateRecipe(r.json().pipeline.recipe, false),
       "POST /v1beta/${constant.namespace}/pipelines response pipeline owner is valid": (r) =>
         helper.isValidOwner(r.json().pipeline.owner, data.expectedOwner),
-      "POST /v1beta/${constant.namespace}/pipelines response pipeline creatorUid is valid UUID": (r) =>
-        helper.isUUID(r.json().pipeline.creatorUid),
+      "POST /v1beta/${constant.namespace}/pipelines response pipeline creatorName is valid": (r) =>
+        r.json().pipeline.creatorName && r.json().pipeline.creatorName.startsWith("users/"),
       "POST /v1beta/${constant.namespace}/pipelines response pipeline createTime": (r) =>
         new Date(r.json().pipeline.createTime).getTime() >
         new Date().setTime(0),
@@ -132,9 +132,9 @@ export function CheckList(data) {
         data.header
       );
       check(createRes, {
-          [`POST /v1beta/${constant.namespace}/pipelines x${numPipelines} response status is 201`]:
-            (r) => r.status === 201,
-        }
+        [`POST /v1beta/${constant.namespace}/pipelines x${numPipelines} response status is 201`]:
+          (r) => r.status === 201,
+      }
       );
       if (createRes.status === 201) {
         createdPipelineIds.push(createRes.json().pipeline.id);
@@ -160,8 +160,8 @@ export function CheckList(data) {
         // Owner/Creator checks on LIST
         [`GET /v1beta/${constant.namespace}/pipelines response pipelines[0].owner is valid`]: (r) =>
           helper.isValidOwner(r.json().pipelines[0].owner, data.expectedOwner),
-        [`GET /v1beta/${constant.namespace}/pipelines response pipelines[0].creatorUid is valid UUID`]: (r) =>
-          helper.isUUID(r.json().pipelines[0].creatorUid),
+        [`GET /v1beta/${constant.namespace}/pipelines response pipelines[0].creatorName is valid`]: (r) =>
+          r.json().pipelines[0].creatorName && r.json().pipelines[0].creatorName.startsWith("users/"),
       }
     );
 
@@ -304,9 +304,9 @@ export function CheckGet(data) {
       data.header
     );
     check(createRes, {
-        "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) =>
-          r.status === 201,
-      }
+      "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) =>
+        r.status === 201,
+    }
     );
 
     // Get the server-generated pipeline id
@@ -347,8 +347,8 @@ export function CheckGet(data) {
           (r) => r.json().pipeline.recipe !== null,
         [`GET /v1beta/${constant.namespace}/pipelines/{id}?view=VIEW_FULL response pipeline owner is valid`]:
           (r) => helper.isValidOwner(r.json().pipeline.owner, data.expectedOwner),
-        [`GET /v1beta/${constant.namespace}/pipelines/{id}?view=VIEW_FULL response pipeline creatorUid is valid UUID`]:
-          (r) => helper.isUUID(r.json().pipeline.creatorUid),
+        [`GET /v1beta/${constant.namespace}/pipelines/{id}?view=VIEW_FULL response pipeline creatorName is valid`]:
+          (r) => r.json().pipeline.creatorName && r.json().pipeline.creatorName.startsWith("users/"),
       }
     );
 
@@ -563,20 +563,20 @@ export function CheckRename(data) {
     };
 
     var renameRes = http.request(
-        "POST",
-        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${pipelineId}/rename`,
-        JSON.stringify(renameBody),
-        data.header
-      );
+      "POST",
+      `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${pipelineId}/rename`,
+      JSON.stringify(renameBody),
+      data.header
+    );
     check(
       renameRes,
       {
         [`POST /v1beta/${constant.namespace}/pipelines/{id}/rename response status is 200`]: (r) => r.status === 200,
         // Note: Backend may return either users/admin or namespaces/admin format during transition
         [`POST /v1beta/${constant.namespace}/pipelines/{id}/rename response pipeline new name`]: (r) =>
-            r.json().pipeline.name && r.json().pipeline.name.endsWith(`/pipelines/${newPipelineId}`),
+          r.json().pipeline.name && r.json().pipeline.name.endsWith(`/pipelines/${newPipelineId}`),
         [`POST /v1beta/${constant.namespace}/pipelines/{id}/rename response pipeline new id`]: (r) =>
-            r.json().pipeline.id === newPipelineId,
+          r.json().pipeline.id === newPipelineId,
       }
     );
 
@@ -591,66 +591,6 @@ export function CheckRename(data) {
       {
         [`DELETE /v1beta/${constant.namespace}/pipelines/{newId} response status 204`]:
           (r) => r.status === 204,
-      }
-    );
-  });
-}
-
-export function CheckLookUp(data) {
-  // TODO: SKIPPED - LookUp endpoint uses UID permalink (/v1beta/pipelines/{uid}/lookUp)
-  // but UID is no longer exposed in the API response after AIP refactoring.
-  // This endpoint may need to be deprecated or changed to use ID.
-  group("Pipelines API: Look up a pipeline (SKIPPED)", () => {
-    console.log("SKIPPED: CheckLookUp test - lookUp uses UID which is no longer exposed");
-  });
-  return;
-
-  group("Pipelines API: Look up a pipeline by id", () => {
-    var reqBody = Object.assign(
-      {},
-      constant.simplePipelineWithYAMLRecipe
-    );
-
-    // Create a pipeline
-    var res = http.request(
-      "POST",
-      `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
-      JSON.stringify(reqBody),
-      data.header
-    );
-
-    check(res, {
-      "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) => r.status === 201,
-    });
-
-    var pipelineId = res.json().pipeline.id;
-
-    // Note: lookUp endpoint now uses pipeline id instead of uid
-    check(
-      http.request(
-        "GET",
-        `${pipelinePublicHost}/v1beta/pipelines/${pipelineId}/lookUp`,
-        null,
-        data.header
-      ),
-      {
-        [`GET /v1beta/pipelines/{id}/lookUp response status is 200`]: (r) => r.status === 200,
-        [`GET /v1beta/pipelines/{id}/lookUp response pipeline name`]: (r) =>
-            r.json().pipeline.name && r.json().pipeline.name.includes("/pipelines/"),
-      }
-    );
-
-    // Delete the pipeline
-    check(
-      http.request(
-        "DELETE",
-        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${pipelineId}`,
-        null,
-        data.header
-      ),
-      {
-        [`DELETE /v1beta/${constant.namespace}/pipelines/{id} response status 204`]: (r) =>
-          r.status === 204,
       }
     );
   });

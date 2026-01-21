@@ -25,7 +25,7 @@ export function CheckTrigger(data) {
       );
 
       var createRes = client.invoke(
-        "pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
+        "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
         {
           parent: `${constant.namespace}`,
           pipeline: reqBody,
@@ -34,12 +34,12 @@ export function CheckTrigger(data) {
       );
 
       check(createRes, {
-        "pipeline.v1beta.PipelinePublicService/CreateUserPipeline Async GRPC pipeline response StatusOK":
+        "CreateNamespacePipeline Async response StatusOK":
           (r) => r.status === grpc.StatusOK,
       });
 
       if (createRes.status !== grpc.StatusOK || !createRes.message || !createRes.message.pipeline) {
-        console.log("SKIPPED: CheckTriggerAsync - pipeline creation failed due to schema issues");
+        console.log("SKIPPED: CheckTriggerAsync - pipeline creation failed");
         client.close();
         return;
       }
@@ -47,7 +47,7 @@ export function CheckTrigger(data) {
 
 
       check(client.invoke(
-        "pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline",
+        "pipeline.v1beta.PipelinePublicService/TriggerAsyncNamespacePipeline",
         {
           name: `${constant.namespace}/pipelines/${pipelineId}`,
           data: constant.simplePayload.data,
@@ -55,9 +55,9 @@ export function CheckTrigger(data) {
         data.metadata
       ),
         {
-          [`pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response StatusOK`]:
+          "TriggerAsyncNamespacePipeline response StatusOK":
             (r) => r.status === grpc.StatusOK,
-          [`pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response has operation id`]:
+          "TriggerAsyncNamespacePipeline response has operation id":
             (r) => r.message.operation.name.startsWith("operations/"),
         }
       );
@@ -65,14 +65,14 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          `pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
+          "pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline",
           {
             name: `${constant.namespace}/pipelines/${pipelineId}`,
           },
           data.metadata
         ),
         {
-          [`pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
+          "DeleteNamespacePipeline Async response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -96,7 +96,7 @@ export function CheckTrigger(data) {
       );
 
       var createRes = client.invoke(
-        "pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
+        "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
         {
           parent: `${constant.namespace}`,
           pipeline: reqBody,
@@ -105,12 +105,12 @@ export function CheckTrigger(data) {
       );
 
       check(createRes, {
-        "pipeline.v1beta.PipelinePublicService/CreateUserPipeline Async GRPC pipeline response StatusOK":
+        "CreateNamespacePipeline Async YAML response StatusOK":
           (r) => r.status === grpc.StatusOK,
       });
 
       if (createRes.status !== grpc.StatusOK || !createRes.message || !createRes.message.pipeline) {
-        console.log("SKIPPED: CheckTriggerAsync YAML - pipeline creation failed due to schema issues");
+        console.log("SKIPPED: CheckTriggerAsync YAML - pipeline creation failed");
         client.close();
         return;
       }
@@ -118,7 +118,7 @@ export function CheckTrigger(data) {
 
 
       check(client.invoke(
-        "pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline",
+        "pipeline.v1beta.PipelinePublicService/TriggerAsyncNamespacePipeline",
         {
           name: `${constant.namespace}/pipelines/${pipelineId}`,
           data: constant.simplePayload.data,
@@ -126,9 +126,9 @@ export function CheckTrigger(data) {
         data.metadata
       ),
         {
-          [`pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response StatusOK`]:
+          "TriggerAsyncNamespacePipeline YAML response StatusOK":
             (r) => r.status === grpc.StatusOK,
-          [`pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response has operation id`]:
+          "TriggerAsyncNamespacePipeline YAML response has operation id":
             (r) => r.message.operation.name.startsWith("operations/"),
         }
       );
@@ -136,14 +136,14 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          `pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
+          "pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline",
           {
             name: `${constant.namespace}/pipelines/${pipelineId}`,
           },
           data.metadata
         ),
         {
-          [`pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
+          "DeleteNamespacePipeline Async YAML response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );

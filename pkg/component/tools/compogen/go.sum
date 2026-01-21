@@ -115,10 +115,10 @@ github.com/iancoleman/strcase v0.3.0 h1:nTXanmYxhfFAMjZL34Ov6gkzEsSJZ5DbhxWjvSAS
 github.com/iancoleman/strcase v0.3.0/go.mod h1:iwCmte+B7n89clKwxIoIXy/HfoL7AsD47ZCWhYzw7ho=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260118041154-8f06ba4d527d h1:nQTNxSL0sakFtObb6tnZqXcB/LF1dqGFoaRfX5ywDfA=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260118041154-8f06ba4d527d/go.mod h1:bCnBosofpaUxKBuTTJM3/I3thAK37kvfBnKByjnLsl4=
-github.com/instill-ai/x v0.10.1-alpha.0.20260118004501-5221537d0a1d h1:YUOzft7m56Jj+FUohdmn36d8gFnDcDo/tO2ij1zrzhw=
-github.com/instill-ai/x v0.10.1-alpha.0.20260118004501-5221537d0a1d/go.mod h1:NZwVnFLteR6JvV35pCYOOO75YMzTABefbrBC6YWDF/E=
+github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260121105057-e8e7f1a4ac1f h1:8GYg7QC7zVQlYfDak63+z6F1qc6rvTASf8O97tPNBrI=
+github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260121105057-e8e7f1a4ac1f/go.mod h1:bCnBosofpaUxKBuTTJM3/I3thAK37kvfBnKByjnLsl4=
+github.com/instill-ai/x v0.10.1-alpha.0.20260121080139-2e854df73509 h1:sVodrc+jwN/q1XOV0UJPv+DBoEDXep4IK5khxj+7hCI=
+github.com/instill-ai/x v0.10.1-alpha.0.20260121080139-2e854df73509/go.mod h1:YiJG0vfsXUZxDg9Fnc6wxVhpOXMpa/gR7ELaaQM+5tQ=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
 github.com/jackc/pgpassfile v1.0.0/go.mod h1:CEx0iS5ambNFdcRtxPj5JhEz+xB6uRky5eyVu/W2HEg=
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=

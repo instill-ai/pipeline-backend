@@ -633,7 +633,8 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 	// Populate creator fields if creator_uid is set
 	if dbPipeline.CreatorUID != nil {
 		creatorUIDStr := dbPipeline.CreatorUID.String()
-		pbPipeline.CreatorUid = &creatorUIDStr
+		creatorName := fmt.Sprintf("users/%s", creatorUIDStr)
+		pbPipeline.CreatorName = &creatorName
 		creator, err := c.fetchUserByUID(ctx, creatorUIDStr)
 		if err != nil {
 			// Log but don't fail - creator may have been deleted

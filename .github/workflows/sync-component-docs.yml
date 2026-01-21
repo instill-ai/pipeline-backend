@@ -24,6 +24,11 @@ jobs:
           ref: v0-dev
           path: "readme"
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libavif-dev libheif-dev libtesseract-dev libleptonica-dev
+
       - name: Install compogen and generate docs
         working-directory: pipeline-backend
         run: |

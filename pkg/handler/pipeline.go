@@ -451,38 +451,20 @@ func (h *PublicHandler) DeleteNamespacePipeline(ctx context.Context, req *pipeli
 	return &pipelinepb.DeleteNamespacePipelineResponse{}, nil
 }
 
-// LookUpPipeline returns the details of a pipeline.
-func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinepb.LookUpPipelineRequest) (*pipelinepb.LookUpPipelineResponse, error) {
-
-	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
-	if err := checkfield.CheckRequiredFields(req, lookUpPipelineRequiredFields); err != nil {
-		return nil, errorsx.ErrCheckRequiredFields
-	}
-
-	uid, err := resource.GetRscPermalinkUID(req.Permalink)
-	if err != nil {
-		return nil, err
-	}
-	if err := authenticateUser(ctx, false); err != nil {
-		return nil, err
-	}
-
-	pbPipeline, err := h.service.GetPipelineByUID(ctx, uid, req.GetView())
-	if err != nil {
-		return nil, err
-	}
-
-	resp := pipelinepb.LookUpPipelineResponse{
-		Pipeline: pbPipeline,
-	}
-
-	return &resp, nil
-}
-
 // ValidateNamespacePipeline validates a pipeline for a namespace.
 func (h *PublicHandler) ValidateNamespacePipeline(ctx context.Context, req *pipelinepb.ValidateNamespacePipelineRequest) (*pipelinepb.ValidateNamespacePipelineResponse, error) {
 
-	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
+	// Parse namespace_id and pipeline_id from name resource name
+	// Format: namespaces/{namespace}/pipelines/{pipeline}
+	name := req.GetName()
+	parts := strings.Split(name, "/")
+	if len(parts) < 4 {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid resource name: %s", name))
+	}
+	namespaceID := parts[1]
+	pipelineID := parts[3]
+
+	ns, err := h.service.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -490,7 +472,7 @@ func (h *PublicHandler) ValidateNamespacePipeline(ctx context.Context, req *pipe
 		return nil, err
 	}
 
-	validationErrors, err := h.service.ValidateNamespacePipelineByID(ctx, ns, req.PipelineId)
+	validationErrors, err := h.service.ValidateNamespacePipelineByID(ctx, ns, pipelineID)
 	if err != nil {
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
 	}
@@ -506,7 +488,17 @@ func (h *PublicHandler) RenameNamespacePipeline(ctx context.Context, req *pipeli
 		return nil, errorsx.ErrCheckRequiredFields
 	}
 
-	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
+	// Parse namespace_id and pipeline_id from name resource name
+	// Format: namespaces/{namespace}/pipelines/{pipeline}
+	name := req.GetName()
+	parts := strings.Split(name, "/")
+	if len(parts) < 4 {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid resource name: %s", name))
+	}
+	namespaceID := parts[1]
+	pipelineID := parts[3]
+
+	ns, err := h.service.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -519,7 +511,7 @@ func (h *PublicHandler) RenameNamespacePipeline(ctx context.Context, req *pipeli
 		return nil, fmt.Errorf("%w: invalid pipeline ID: %w", errorsx.ErrInvalidArgument, err)
 	}
 
-	pbPipeline, err := h.service.UpdateNamespacePipelineIDByID(ctx, ns, req.PipelineId, newID)
+	pbPipeline, err := h.service.UpdateNamespacePipelineIDByID(ctx, ns, pipelineID, newID)
 	if err != nil {
 		return nil, err
 	}
@@ -530,7 +522,27 @@ func (h *PublicHandler) RenameNamespacePipeline(ctx context.Context, req *pipeli
 // CloneNamespacePipeline clones a pipeline for a namespace.
 func (h *PublicHandler) CloneNamespacePipeline(ctx context.Context, req *pipelinepb.CloneNamespacePipelineRequest) (*pipelinepb.CloneNamespacePipelineResponse, error) {
 
-	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
+	// Parse namespace_id and pipeline_id from name resource name (source)
+	// Format: namespaces/{namespace}/pipelines/{pipeline}
+	name := req.GetName()
+	parts := strings.Split(name, "/")
+	if len(parts) < 4 {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid source resource name: %s", name))
+	}
+	namespaceID := parts[1]
+	pipelineID := parts[3]
+
+	// Parse target namespace_id and pipeline_id from target resource name
+	// Format: namespaces/{namespace}/pipelines/{pipeline}
+	target := req.GetTarget()
+	targetParts := strings.Split(target, "/")
+	if len(targetParts) < 4 {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid target resource name: %s", target))
+	}
+	targetNamespaceID := targetParts[1]
+	targetPipelineID := targetParts[3]
+
+	ns, err := h.service.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -541,9 +553,9 @@ func (h *PublicHandler) CloneNamespacePipeline(ctx context.Context, req *pipelin
 	_, err = h.service.CloneNamespacePipeline(
 		ctx,
 		ns,
-		req.PipelineId,
-		req.GetTargetNamespaceId(),
-		req.GetTargetPipelineId(),
+		pipelineID,
+		targetNamespaceID,
+		targetPipelineID,
 		req.GetDescription(),
 		req.GetSharing(),
 	)
@@ -557,14 +569,35 @@ func (h *PublicHandler) CloneNamespacePipeline(ctx context.Context, req *pipelin
 // CloneNamespacePipelineRelease clones a pipeline release for a namespace.
 func (h *PublicHandler) CloneNamespacePipelineRelease(ctx context.Context, req *pipelinepb.CloneNamespacePipelineReleaseRequest) (*pipelinepb.CloneNamespacePipelineReleaseResponse, error) {
 
-	ns, err := h.service.GetNamespaceByID(ctx, req.NamespaceId)
+	// Parse namespace_id, pipeline_id, and release_id from name resource name (source)
+	// Format: namespaces/{namespace}/pipelines/{pipeline}/releases/{release}
+	name := req.GetName()
+	parts := strings.Split(name, "/")
+	if len(parts) < 6 {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid source resource name: %s", name))
+	}
+	namespaceID := parts[1]
+	pipelineID := parts[3]
+	releaseID := parts[5]
+
+	// Parse target namespace_id and pipeline_id from target resource name
+	// Format: namespaces/{namespace}/pipelines/{pipeline}
+	target := req.GetTarget()
+	targetParts := strings.Split(target, "/")
+	if len(targetParts) < 4 {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid target resource name: %s", target))
+	}
+	targetNamespaceID := targetParts[1]
+	targetPipelineID := targetParts[3]
+
+	ns, err := h.service.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
 		return nil, err
 	}
-	pipelineUID, err := h.service.GetNamespacePipelineUIDByID(ctx, ns, req.PipelineId)
+	pipelineUID, err := h.service.GetNamespacePipelineUIDByID(ctx, ns, pipelineID)
 	if err != nil {
 		return nil, err
 	}
@@ -573,9 +606,9 @@ func (h *PublicHandler) CloneNamespacePipelineRelease(ctx context.Context, req *
 		ctx,
 		ns,
 		pipelineUID,
-		req.ReleaseId,
-		req.GetTargetNamespaceId(),
-		req.GetTargetPipelineId(),
+		releaseID,
+		targetNamespaceID,
+		targetPipelineID,
 		req.GetDescription(),
 		req.GetSharing(),
 	)
@@ -594,18 +627,27 @@ func (h *PublicHandler) preTriggerNamespacePipeline(ctx context.Context, req Tri
 		return resource.Namespace{}, "", nil, false, errorsx.ErrCheckRequiredFields
 	}
 
-	id := req.GetPipelineId()
-	ns, err := h.service.GetNamespaceByID(ctx, req.GetNamespaceId())
+	// Parse namespace_id and pipeline_id from name resource name
+	// Format: namespaces/{namespace}/pipelines/{pipeline}
+	name := req.GetName()
+	parts := strings.Split(name, "/")
+	if len(parts) < 4 {
+		return resource.Namespace{}, "", nil, false, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid resource name: %s", name))
+	}
+	namespaceID := parts[1]
+	pipelineID := parts[3]
+
+	ns, err := h.service.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
-		return ns, id, nil, false, err
+		return ns, pipelineID, nil, false, err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
-		return ns, id, nil, false, err
+		return ns, pipelineID, nil, false, err
 	}
 
-	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, req.GetPipelineId(), pipelinepb.Pipeline_VIEW_FULL)
+	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pipelinepb.Pipeline_VIEW_FULL)
 	if err != nil {
-		return ns, id, nil, false, err
+		return ns, pipelineID, nil, false, err
 	}
 	// _, err = h.service.ValidateNamespacePipelineByID(ctx, ns,  id)
 	// if err != nil {
@@ -613,7 +655,7 @@ func (h *PublicHandler) preTriggerNamespacePipeline(ctx context.Context, req Tri
 	// }
 	returnTraces := resourcex.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true"
 
-	return ns, id, pbPipeline, returnTraces, nil
+	return ns, pipelineID, pbPipeline, returnTraces, nil
 
 }
 
@@ -662,7 +704,7 @@ func (h *PublicHandler) CreateNamespacePipelineRelease(ctx context.Context, req 
 
 	// Set all OUTPUT_ONLY fields to zero value on the requested payload pipeline resource
 	if err := checkfield.CheckCreateOutputOnlyFields(req.GetRelease(), releaseOutputOnlyFields); err != nil {
-		return nil, errorsx.ErrCheckOutputOnlyFields
+		return nil, fmt.Errorf("%w: %v", errorsx.ErrCheckOutputOnlyFields, err)
 	}
 
 	// Return error if resource ID does not a semantic version
@@ -925,7 +967,18 @@ func (h *PublicHandler) preTriggerNamespacePipelineRelease(ctx context.Context, 
 		return resource.Namespace{}, "", uuid.Nil, nil, false, errorsx.ErrCheckRequiredFields
 	}
 
-	ns, err := h.service.GetNamespaceByID(ctx, req.GetNamespaceId())
+	// Parse namespace_id, pipeline_id, and release_id from name resource name
+	// Format: namespaces/{namespace}/pipelines/{pipeline}/releases/{release}
+	name := req.GetName()
+	parts := strings.Split(name, "/")
+	if len(parts) < 6 {
+		return resource.Namespace{}, "", uuid.Nil, nil, false, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid resource name: %s", name))
+	}
+	namespaceID := parts[1]
+	pipelineID := parts[3]
+	releaseID := parts[5]
+
+	ns, err := h.service.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return ns, "", uuid.Nil, nil, false, err
 	}
@@ -933,18 +986,18 @@ func (h *PublicHandler) preTriggerNamespacePipelineRelease(ctx context.Context, 
 		return ns, "", uuid.Nil, nil, false, err
 	}
 
-	pipelineUID, err := h.service.GetNamespacePipelineUIDByID(ctx, ns, req.GetPipelineId())
+	pipelineUID, err := h.service.GetNamespacePipelineUIDByID(ctx, ns, pipelineID)
 	if err != nil {
 		return ns, "", uuid.Nil, nil, false, err
 	}
 
-	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, pipelineUID, req.GetReleaseId(), pipelinepb.Pipeline_VIEW_FULL)
+	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, pipelineUID, releaseID, pipelinepb.Pipeline_VIEW_FULL)
 	if err != nil {
 		return ns, "", uuid.Nil, nil, false, err
 	}
 	returnTraces := resourcex.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true"
 
-	return ns, req.GetReleaseId(), pipelineUID, pbPipelineRelease, returnTraces, nil
+	return ns, releaseID, pipelineUID, pbPipelineRelease, returnTraces, nil
 
 }
 

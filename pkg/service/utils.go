@@ -121,15 +121,21 @@ func (s *service) GetNamespaceByID(ctx context.Context, namespaceID string) (res
 
 // Helper methods
 func (s *service) convertPipelineRunToPB(run datamodel.PipelineRun) (*pipelinepb.PipelineRun, error) {
+	// Build full resource name for pipeline run and pipeline
+	runName := fmt.Sprintf("namespaces/%s/pipelines/%s/runs/%s",
+		run.Pipeline.NamespaceID, run.Pipeline.ID, run.PipelineTriggerUID.String())
+	pipelineName := fmt.Sprintf("namespaces/%s/pipelines/%s",
+		run.Pipeline.NamespaceID, run.Pipeline.ID)
+
 	result := &pipelinepb.PipelineRun{
-		PipelineId:          &run.Pipeline.ID,
-		PipelineNamespaceId: run.Pipeline.NamespaceID,
-		PipelineRunUid:      run.PipelineTriggerUID.String(),
-		PipelineVersion:     run.PipelineVersion,
-		Status:              runpb.RunStatus(run.Status),
-		Source:              runpb.RunSource(run.Source),
-		StartTime:           timestamppb.New(run.StartedTime),
-		Error:               run.Error.Ptr(),
+		Name:            runName,
+		Id:              run.PipelineTriggerUID.String(),
+		Pipeline:        &pipelineName,
+		PipelineVersion: run.PipelineVersion,
+		Status:          runpb.RunStatus(run.Status),
+		Source:          runpb.RunSource(run.Source),
+		StartTime:       timestamppb.New(run.StartedTime),
+		Error:           run.Error.Ptr(),
 	}
 
 	if run.CompletedTime.Valid {
@@ -146,12 +152,19 @@ func (s *service) convertPipelineRunToPB(run datamodel.PipelineRun) (*pipelinepb
 }
 
 func (s *service) convertComponentRunToPB(run datamodel.ComponentRun) (*pipelinepb.ComponentRun, error) {
+	// Build full resource name for component run and pipeline run
+	// Note: we don't have direct access to namespace/pipeline IDs here, so we use placeholders
+	// The actual name would need to be constructed by the caller with proper context
+	pipelineRunName := fmt.Sprintf("runs/%s", run.PipelineTriggerUID.String())
+	componentName := fmt.Sprintf("%s/components/%s", pipelineRunName, run.ComponentID)
+
 	result := &pipelinepb.ComponentRun{
-		PipelineRunUid: run.PipelineTriggerUID.String(),
-		ComponentId:    run.ComponentID,
-		Status:         runpb.RunStatus(run.Status),
-		StartTime:      timestamppb.New(run.StartedTime),
-		Error:          run.Error.Ptr(),
+		Name:        componentName,
+		Id:          run.ComponentID,
+		PipelineRun: pipelineRunName,
+		Status:      runpb.RunStatus(run.Status),
+		StartTime:   timestamppb.New(run.StartedTime),
+		Error:       run.Error.Ptr(),
 	}
 
 	if run.CompletedTime.Valid {

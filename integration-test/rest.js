@@ -1,5 +1,6 @@
 import http from "k6/http";
 import grpc from "k6/net/grpc";
+import encoding from "k6/encoding";
 
 import {
   check,
@@ -12,7 +13,7 @@ import * as componentDefinition from "./rest-component-definition.js";
 import * as constant from "./const.js";
 import * as integration from "./rest-integration.js";
 import * as pipelinePublic from './rest-pipeline-public.js';
-import * as pipelinePublicWithJwt from './rest-pipeline-public-with-jwt.js';
+import * as pipelinePublicWithBasicAuth from './rest-pipeline-public-with-basic-auth.js';
 import * as trigger from './rest-trigger.js';
 import * as triggerAsync from './rest-trigger-async.js';
 
@@ -25,27 +26,18 @@ export let options = {
 };
 
 export function setup() {
-
-  var loginResp = http.request("POST", `${constant.mgmtPublicHost}/v1beta/auth/login`, JSON.stringify({
-    "username": constant.defaultUsername,
-    "password": constant.defaultPassword,
-  }))
-
-
-  check(loginResp, {
-    [`POST ${constant.mgmtPublicHost}/v1beta//auth/login response status is 200`]: (
-      r
-    ) => r.status === 200,
-  });
+  // CE edition uses Basic Auth for all authenticated requests
+  const basicAuth = encoding.b64encode(`${constant.defaultUsername}:${constant.defaultPassword}`);
 
   var header = {
     "headers": {
-      "Authorization": `Bearer ${loginResp.json().accessToken}`
+      "Authorization": `Basic ${basicAuth}`,
+      "Content-Type": "application/json",
     },
     "timeout": "600s",
   }
 
-  var resp = http.request("GET", `${constant.mgmtPublicHost}/v1beta/user`, {}, { headers: { "Authorization": `Bearer ${loginResp.json().accessToken}` } })
+  var resp = http.request("GET", `${constant.mgmtPublicHost}/v1beta/user`, {}, { headers: { "Authorization": `Basic ${basicAuth}` } })
   return { header: header, expectedOwner: resp.json().user }
 }
 
@@ -64,18 +56,18 @@ export default function (data) {
     });
   }
 
-  pipelinePublicWithJwt.CheckCreate(data);
-  pipelinePublicWithJwt.CheckList(data);
-  pipelinePublicWithJwt.CheckGet(data);
-  pipelinePublicWithJwt.CheckUpdate(data);
-  pipelinePublicWithJwt.CheckRename(data);
-  pipelinePublicWithJwt.CheckLookUp(data);
+  // Tests with invalid Basic Auth credentials (should be rejected)
+  pipelinePublicWithBasicAuth.CheckCreate(data);
+  pipelinePublicWithBasicAuth.CheckList(data);
+  pipelinePublicWithBasicAuth.CheckGet(data);
+  pipelinePublicWithBasicAuth.CheckUpdate(data);
+  pipelinePublicWithBasicAuth.CheckRename(data);
+
   pipelinePublic.CheckCreate(data);
   pipelinePublic.CheckList(data);
   pipelinePublic.CheckGet(data);
   pipelinePublic.CheckUpdate(data);
   pipelinePublic.CheckRename(data);
-  pipelinePublic.CheckLookUp(data);
 
   trigger.CheckTrigger(data);
   trigger.CheckPipelineRuns(data);
@@ -83,7 +75,7 @@ export default function (data) {
 
   componentDefinition.CheckList(data);
 
-  integration.CheckIntegrations();
+  integration.CheckIntegrations(data);
   integration.CheckConnections(data);
 }
 
@@ -100,11 +92,11 @@ export function teardown(data) {
 
   group("Integration API: Delete data created by this test", () => {
     var q = `DELETE FROM connection WHERE id LIKE '${constant.dbIDPrefix}%';`;
-    constant.db.exec(q);
+    constant.pipelinedb.exec(q);
 
     q = `DELETE FROM pipeline WHERE id LIKE '${constant.dbIDPrefix}%';`;
-    constant.db.exec(q);
+    constant.pipelinedb.exec(q);
 
-    constant.db.close();
+    constant.pipelinedb.close();
   });
 }

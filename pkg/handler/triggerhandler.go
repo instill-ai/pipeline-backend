@@ -412,7 +412,7 @@ func requestPipelinePublicServiceTriggerNamespacePipeline0(ctx context.Context, 
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespaceID")
 	}
-	protoReq.NamespaceId, err = runtime.String(val)
+	namespaceID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_id", err)
 	}
@@ -421,17 +421,19 @@ func requestPipelinePublicServiceTriggerNamespacePipeline0(ctx context.Context, 
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "pipelineID")
 	}
-	protoReq.PipelineId, err = runtime.String(val)
+	pipelineID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "pipeline_id", err)
 	}
 
+	// Construct full resource name
+	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s", namespaceID, pipelineID)
+
 	if sh != nil {
 		asyncReq := pipelinepb.TriggerAsyncNamespacePipelineRequest{
-			NamespaceId: protoReq.NamespaceId,
-			PipelineId:  protoReq.PipelineId,
-			Inputs:      protoReq.Inputs,
-			Data:        protoReq.Data,
+			Name:   protoReq.Name,
+			Inputs: protoReq.Inputs,
+			Data:   protoReq.Data,
 		}
 		resp, err := client.TriggerAsyncNamespacePipeline(ctx, &asyncReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 		if err != nil {
@@ -470,7 +472,7 @@ func requestPipelinePublicServiceTriggerNamespacePipeline0form(ctx context.Conte
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespaceID")
 	}
-	protoReq.NamespaceId, err = runtime.String(val)
+	namespaceID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_id", err)
 	}
@@ -479,10 +481,13 @@ func requestPipelinePublicServiceTriggerNamespacePipeline0form(ctx context.Conte
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "pipelineID")
 	}
-	protoReq.PipelineId, err = runtime.String(val)
+	pipelineID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "pipeline_id", err)
 	}
+
+	// Construct full resource name
+	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s", namespaceID, pipelineID)
 
 	msg, err := client.TriggerNamespacePipeline(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -512,7 +517,7 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipeline0(ctx context.Cont
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespaceID")
 	}
-	protoReq.NamespaceId, err = runtime.String(val)
+	namespaceID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_id", err)
 	}
@@ -521,10 +526,13 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipeline0(ctx context.Cont
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "pipelineID")
 	}
-	protoReq.PipelineId, err = runtime.String(val)
+	pipelineID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "pipeline_id", err)
 	}
+
+	// Construct full resource name
+	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s", namespaceID, pipelineID)
 
 	msg, err := client.TriggerAsyncNamespacePipeline(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -555,7 +563,7 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipeline0form(ctx context.
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespaceID")
 	}
-	protoReq.NamespaceId, err = runtime.String(val)
+	namespaceID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_id", err)
 	}
@@ -564,10 +572,13 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipeline0form(ctx context.
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "pipelineID")
 	}
-	protoReq.PipelineId, err = runtime.String(val)
+	pipelineID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "pipeline_id", err)
 	}
+
+	// Construct full resource name
+	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s", namespaceID, pipelineID)
 
 	msg, err := client.TriggerAsyncNamespacePipeline(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -598,7 +609,7 @@ func requestPipelinePublicServiceTriggerNamespacePipelineRelease0(ctx context.Co
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespaceID")
 	}
-	protoReq.NamespaceId, err = runtime.String(val)
+	namespaceID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_id", err)
 	}
@@ -607,7 +618,7 @@ func requestPipelinePublicServiceTriggerNamespacePipelineRelease0(ctx context.Co
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "pipelineID")
 	}
-	protoReq.PipelineId, err = runtime.String(val)
+	pipelineID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "pipeline_id", err)
 	}
@@ -616,18 +627,19 @@ func requestPipelinePublicServiceTriggerNamespacePipelineRelease0(ctx context.Co
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "releaseID")
 	}
-	protoReq.ReleaseId, err = runtime.String(val)
+	releaseID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "release_id", err)
 	}
 
+	// Construct full resource name
+	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s/releases/%s", namespaceID, pipelineID, releaseID)
+
 	if sh != nil {
 		asyncReq := pipelinepb.TriggerAsyncNamespacePipelineReleaseRequest{
-			NamespaceId: protoReq.NamespaceId,
-			PipelineId:  protoReq.PipelineId,
-			ReleaseId:   protoReq.ReleaseId,
-			Inputs:      protoReq.Inputs,
-			Data:        protoReq.Data,
+			Name:   protoReq.Name,
+			Inputs: protoReq.Inputs,
+			Data:   protoReq.Data,
 		}
 		resp, err := client.TriggerAsyncNamespacePipelineRelease(ctx, &asyncReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 		if err != nil {
@@ -667,7 +679,7 @@ func requestPipelinePublicServiceTriggerNamespacePipelineRelease0form(ctx contex
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespaceID")
 	}
-	protoReq.NamespaceId, err = runtime.String(val)
+	namespaceID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_id", err)
 	}
@@ -676,7 +688,7 @@ func requestPipelinePublicServiceTriggerNamespacePipelineRelease0form(ctx contex
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "pipelineID")
 	}
-	protoReq.PipelineId, err = runtime.String(val)
+	pipelineID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "pipeline_id", err)
 	}
@@ -685,10 +697,13 @@ func requestPipelinePublicServiceTriggerNamespacePipelineRelease0form(ctx contex
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "releaseID")
 	}
-	protoReq.ReleaseId, err = runtime.String(val)
+	releaseID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "release_id", err)
 	}
+
+	// Construct full resource name
+	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s/releases/%s", namespaceID, pipelineID, releaseID)
 
 	msg, err := client.TriggerNamespacePipelineRelease(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -718,7 +733,7 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipelineRelease0(ctx conte
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespaceID")
 	}
-	protoReq.NamespaceId, err = runtime.String(val)
+	namespaceID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_id", err)
 	}
@@ -727,7 +742,7 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipelineRelease0(ctx conte
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "pipelineID")
 	}
-	protoReq.PipelineId, err = runtime.String(val)
+	pipelineID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "pipeline_id", err)
 	}
@@ -736,10 +751,13 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipelineRelease0(ctx conte
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "releaseID")
 	}
-	protoReq.ReleaseId, err = runtime.String(val)
+	releaseID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "release_id", err)
 	}
+
+	// Construct full resource name
+	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s/releases/%s", namespaceID, pipelineID, releaseID)
 
 	msg, err := client.TriggerAsyncNamespacePipelineRelease(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -769,7 +787,7 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipelineRelease0form(ctx c
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespaceID")
 	}
-	protoReq.NamespaceId, err = runtime.String(val)
+	namespaceID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_id", err)
 	}
@@ -778,7 +796,7 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipelineRelease0form(ctx c
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "pipelineID")
 	}
-	protoReq.PipelineId, err = runtime.String(val)
+	pipelineID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "pipeline_id", err)
 	}
@@ -787,10 +805,13 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipelineRelease0form(ctx c
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "releaseID")
 	}
-	protoReq.ReleaseId, err = runtime.String(val)
+	releaseID, err := runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "release_id", err)
 	}
+
+	// Construct full resource name
+	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s/releases/%s", namespaceID, pipelineID, releaseID)
 
 	msg, err := client.TriggerAsyncNamespacePipelineRelease(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
