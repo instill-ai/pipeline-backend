@@ -71,12 +71,22 @@ func (s *service) logPipelineRunError(ctx context.Context, pipelineTriggerID str
 }
 
 func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipelineRunsRequest, filter filtering.Filter) (*pipelinepb.ListPipelineRunsResponse, error) {
-	ns, err := s.GetNamespaceByID(ctx, req.GetNamespaceId())
+	// Parse namespace_id and pipeline_id from parent resource name
+	// Format: namespaces/{namespace}/pipelines/{pipeline}
+	parent := req.GetParent()
+	parts := strings.Split(parent, "/")
+	if len(parts) < 4 {
+		return nil, fmt.Errorf("invalid parent resource name: %s", parent)
+	}
+	namespaceID := parts[1]
+	pipelineID := parts[3]
+
+	ns, err := s.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid namespace: %w", err)
 	}
 
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ns.Permalink(), req.GetPipelineId(), true, false)
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ns.Permalink(), pipelineID, true, false)
 	if err != nil {
 		return nil, err
 	}
@@ -143,13 +153,20 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 	// Convert datamodel.PipelineRun to pipelinepb.PipelineRun
 	pbPipelineRuns := make([]*pipelinepb.PipelineRun, len(pipelineRuns))
 	for i, run := range pipelineRuns {
+		// Set the Pipeline relationship for proper name construction
+		run.Pipeline = *dbPipeline
 		pbRun, err := s.convertPipelineRunToPB(run)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert pipeline run: %w", err)
 		}
-		pbRun.RunnerId = userIDMap[run.RunnerUID.String()]
+		// Set runner as full resource name: users/{user}
+		if runnerID, ok := userIDMap[run.RunnerUID.String()]; ok && runnerID != nil {
+			runner := fmt.Sprintf("users/%s", *runnerID)
+			pbRun.Runner = &runner
+		}
+		// Set requester as full resource name: namespaces/{namespace}
 		if requesterID, ok := userIDMap[run.RequesterUID.String()]; ok && requesterID != nil {
-			pbRun.RequesterId = *requesterID
+			pbRun.Requester = fmt.Sprintf("namespaces/%s", *requesterID)
 		}
 
 		if canViewPrivateData(run.RequesterUID, requesterUID) {
@@ -202,9 +219,18 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 		return nil, err
 	}
 
-	dbPipelineRun, err := s.repository.GetPipelineRunByUID(ctx, uuid.FromStringOrNil(req.GetPipelineRunId()))
+	// Parse pipeline run ID from parent resource name
+	// Format: namespaces/{namespace}/pipelines/{pipeline}/runs/{run}
+	parent := req.GetParent()
+	parts := strings.Split(parent, "/")
+	if len(parts) < 6 {
+		return nil, fmt.Errorf("invalid parent resource name: %s", parent)
+	}
+	pipelineRunID := parts[5]
+
+	dbPipelineRun, err := s.repository.GetPipelineRunByUID(ctx, uuid.FromStringOrNil(pipelineRunID))
 	if err != nil {
-		return nil, fmt.Errorf("failed to get pipeline run by run ID: %s. error: %s", req.GetPipelineRunId(), err.Error())
+		return nil, fmt.Errorf("failed to get pipeline run by run ID: %s. error: %s", pipelineRunID, err.Error())
 	}
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, dbPipelineRun.PipelineUID, true, false)
 	if err != nil {
@@ -217,7 +243,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 		return nil, fmt.Errorf("requester is not pipeline owner/credit owner. they are not allowed to view these component runs")
 	}
 
-	componentRuns, totalCount, err := s.repository.GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx, req.GetPipelineRunId(), page, pageSize, filter, orderBy)
+	componentRuns, totalCount, err := s.repository.GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx, pipelineRunID, page, pageSize, filter, orderBy)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get component runs: %w", err)
 	}
@@ -288,7 +314,16 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pipeline
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 
-	ns, err := s.GetNamespaceByID(ctx, req.GetRequesterId())
+	// Parse requester namespace ID from full resource name
+	// Format: namespaces/{namespace}
+	requesterName := req.GetRequester()
+	requesterParts := strings.Split(requesterName, "/")
+	if len(requesterParts) < 2 {
+		return nil, fmt.Errorf("invalid requester resource name: %s", requesterName)
+	}
+	requesterID := requesterParts[1]
+
+	ns, err := s.GetNamespaceByID(ctx, requesterID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid namespace: %w", err)
 	}
@@ -366,9 +401,14 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pipeline
 		if err != nil {
 			return nil, fmt.Errorf("converting pipeline run: %w", err)
 		}
-		pbRun.RunnerId = userIDMap[run.RunnerUID.String()]
+		// Set runner as full resource name: users/{user}
+		if runnerID, ok := userIDMap[run.RunnerUID.String()]; ok && runnerID != nil {
+			runner := fmt.Sprintf("users/%s", *runnerID)
+			pbRun.Runner = &runner
+		}
+		// Set requester as full resource name: namespaces/{namespace}
 		if requesterID, ok := userIDMap[run.RequesterUID.String()]; ok && requesterID != nil {
-			pbRun.RequesterId = *requesterID
+			pbRun.Requester = fmt.Sprintf("namespaces/%s", *requesterID)
 		}
 
 		pbPipelineRuns[i] = pbRun

@@ -12,22 +12,22 @@ import { deepEqual } from "./helper.js";
 
 const defaultPageSize = 10;
 
-export function CheckIntegrations() {
+export function CheckIntegrations(data) {
   group("Integration API: Get integration", () => {
     // Inexistent component
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations/restapio`, null, null), {
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations/restapio`, null, data.header), {
       "GET /v1beta/integrations/restapio response status is 404": (r) => r.status === 404,
       "GET /v1beta/integrations/restapio response contains end-user message": (r) => r.json().message === "Integration does not exist.",
     });
 
     // Component without setup
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations/document`, null, null), {
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations/document`, null, data.header), {
       "GET /v1beta/integrations/document response status is 404": (r) => r.status === 404,
       "GET /v1beta/integrations/document response contains end-user message": (r) => r.json().message === "Integration does not exist.",
     });
 
     var id = "github";
-    var cdefs = http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?filter=qTitle="GitHub"`, null, null).
+    var cdefs = http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?filter=qTitle="GitHub"`, null, data.header).
       json().componentDefinitions;
 
     var cdef = null;
@@ -56,7 +56,7 @@ export function CheckIntegrations() {
     };
 
     // Basic view
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations/${id}`, null, null), {
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations/${id}`, null, data.header), {
       [`GET /v1beta/integrations/${id} response status is 200`]: (r) => r.status === 200,
       // Note: deepEqual comparison may fail due to API response changes, check key fields instead
       [`GET /v1beta/integrations/${id} response contains expected id`]: (r) => r.json().integration && r.json().integration.id === id,
@@ -64,7 +64,7 @@ export function CheckIntegrations() {
     });
 
     // Full view
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations/${id}?view=VIEW_FULL`, null, null), {
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations/${id}?view=VIEW_FULL`, null, data.header), {
       [`GET /v1beta/integrations/${id}?view=VIEW_FULL response status is 200`]: (r) => r.status === 200,
       [`GET /v1beta/integrations/${id}?view=VIEW_FULL response contains schema`]: (r) => r.json().integration.setupSchema.required[0] === "token",
       [`GET /v1beta/integrations/${id}?view=VIEW_FULL response contains OAuth config`]: (r) => deepEqual(r.json().integration.oAuthConfig, oAuthConfig),
@@ -73,7 +73,7 @@ export function CheckIntegrations() {
 
   group("Integration API: List integrations", () => {
     // Default pagination.
-    var firstPage = http.request("GET", `${pipelinePublicHost}/v1beta/integrations`, null, null);
+    var firstPage = http.request("GET", `${pipelinePublicHost}/v1beta/integrations`, null, data.header);
     check(firstPage, {
       "GET /v1beta/integrations response status is 200": (r) => r.status === 200,
       "GET /v1beta/integrations response totalSize > 0": (r) => r.json().totalSize > 0,
@@ -82,7 +82,7 @@ export function CheckIntegrations() {
 
     // Non-default pagination, non-first page
     var tokenPageTwo = firstPage.json().nextPageToken;
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo}`, null, null), {
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo}`, null, data.header), {
       [`GET /v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo} response status is 200`]: (r) => r.status === 200,
       [`GET /v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo} has page size 2"`]: (r) => r.json().integrations.length === 2,
       [`GET /v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo} has different elements than page 1"`]: (r) =>
@@ -90,14 +90,14 @@ export function CheckIntegrations() {
     });
 
     // Filter fuzzy title
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations?filter=qIntegration="que"`, null, null), {
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations?filter=qIntegration="que"`, null, data.header), {
       [`GET /v1beta/integrations?filter=qIntegration="que" response status is 200`]: (r) => r.status === 200,
       [`GET /v1beta/integrations?filter=qIntegration="que" response totalSize > 0`]: (r) => r.json().totalSize === 1,
       [`GET /v1beta/integrations?filter=qIntegration="que" returns BigQuery integration`]: (r) => r.json().integrations[0].title === "BigQuery",
     });
 
     // Filter fuzzy vendor
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations?filter=qIntegration="labs"`, null, null), {
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations?filter=qIntegration="labs"`, null, data.header), {
       [`GET /v1beta/integrations?filter=qIntegration="labs" response status is 200`]: (r) => r.status === 200,
       [`GET /v1beta/integrations?filter=qIntegration="labs" response totalSize > 0`]: (r) => r.json().totalSize === 1,
       [`GET /v1beta/integrations?filter=qIntegration="labs" returns Redis integration`]: (r) => r.json().integrations[0].title === "Redis",

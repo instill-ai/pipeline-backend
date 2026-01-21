@@ -1,11 +1,7 @@
 package utils
 
 import (
-	"crypto/sha256"
-	"fmt"
 	"reflect"
-	"regexp"
-	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -32,62 +28,14 @@ const (
 	pipelineMeasurement = "pipeline.trigger.v1"
 )
 
-// ResourcePrefix represents the prefix for different resource types in AIP-compliant IDs
-type ResourcePrefix string
-
+// Resource prefix constants for pipeline-backend AIP-compliant IDs
 const (
-	PrefixPipeline        ResourcePrefix = "pip"
-	PrefixPipelineRelease ResourcePrefix = "rel"
-	PrefixSecret          ResourcePrefix = "sec"
-	PrefixConnection      ResourcePrefix = "con"
-	PrefixTag             ResourcePrefix = "tag"
+	PrefixPipeline        = "pip"
+	PrefixPipelineRelease = "rel"
+	PrefixSecret          = "sec"
+	PrefixConnection      = "con"
+	PrefixTag             = "tag"
 )
-
-// base62Chars contains the characters used for base62 encoding (URL-safe without special chars)
-const base62Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-
-// encodeBase62 encodes a byte slice to a base62 string
-func encodeBase62(data []byte) string {
-	if len(data) == 0 {
-		return ""
-	}
-
-	var result strings.Builder
-	for _, b := range data {
-		if b == 0 {
-			result.WriteByte(base62Chars[0])
-		} else {
-			for b > 0 {
-				result.WriteByte(base62Chars[b%62])
-				b /= 62
-			}
-		}
-	}
-	return result.String()
-}
-
-// GeneratePrefixedResourceID creates an AIP-compliant prefixed resource ID from a UUID.
-// The format is: {prefix}-{base62(sha256(uid)[:10])}
-// This provides 80 bits of entropy in a URL-safe format.
-func GeneratePrefixedResourceID(prefix ResourcePrefix, uid uuid.UUID) string {
-	hash := sha256.Sum256([]byte(uid.String()))
-	encoded := encodeBase62(hash[:10])
-	return fmt.Sprintf("%s-%s", prefix, encoded)
-}
-
-// GenerateSlug converts a display name to a URL-safe slug.
-// Example: "My Data Pipeline" -> "my-data-pipeline"
-func GenerateSlug(displayName string) string {
-	slug := strings.ToLower(displayName)
-	slug = strings.ReplaceAll(slug, " ", "-")
-	slug = strings.ReplaceAll(slug, "_", "-")
-	re := regexp.MustCompile(`[^a-z0-9-]`)
-	slug = re.ReplaceAllString(slug, "")
-	multiDashRegex := regexp.MustCompile(`-+`)
-	slug = multiDashRegex.ReplaceAllString(slug, "-")
-	slug = strings.Trim(slug, "-")
-	return slug
-}
 
 type PipelineUsageMetricData struct {
 	OwnerUID  string

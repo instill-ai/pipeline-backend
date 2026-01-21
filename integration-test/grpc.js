@@ -1,10 +1,12 @@
 import grpc from "k6/net/grpc";
 import http from "k6/http";
+import encoding from "k6/encoding";
 
 import { check, group } from "k6";
 
 import * as pipeline from "./grpc-pipeline-public.js";
-import * as pipelineWithJwt from "./grpc-pipeline-public-with-jwt.js";
+import * as pipelineWithBasicAuth from "./grpc-pipeline-public-with-basic-auth.js";
+import * as pipelinePrivate from "./grpc-pipeline-private.js";
 import * as trigger from "./grpc-trigger.js";
 import * as triggerAsync from "./grpc-trigger-async.js";
 
@@ -34,20 +36,12 @@ export function setup() {
     timeout: "300s",
   });
 
-  var loginResp = http.request("POST", `${constant.mgmtPublicHost}/v1beta/auth/login`, JSON.stringify({
-    "username": constant.defaultUsername,
-    "password": constant.defaultPassword,
-  }))
-
-  check(loginResp, {
-    [`POST ${constant.mgmtPublicHost}/v1beta/auth/login response status is 200`]: (
-      r
-    ) => r.status === 200,
-  });
+  // CE edition uses Basic Auth for all authenticated requests
+  const basicAuth = encoding.b64encode(`${constant.defaultUsername}:${constant.defaultPassword}`);
 
   var metadata = {
     "metadata": {
-      "Authorization": `Bearer ${loginResp.json().accessToken}`
+      "Authorization": `Basic ${basicAuth}`
     },
     "timeout": "600s",
   }
@@ -89,23 +83,26 @@ export default function (data) {
   }
 
   // Test all public APIs with JWT authentication
-  pipelineWithJwt.CheckCreate(data);
-  pipelineWithJwt.CheckList(data);
-  pipelineWithJwt.CheckGet(data);
-  pipelineWithJwt.CheckUpdate(data);
-  pipelineWithJwt.CheckRename(data);
-  pipelineWithJwt.CheckLookUp(data);
+  // Tests with invalid Basic Auth credentials (should be rejected)
+  pipelineWithBasicAuth.CheckCreate(data);
+  pipelineWithBasicAuth.CheckList(data);
+  pipelineWithBasicAuth.CheckGet(data);
+  pipelineWithBasicAuth.CheckUpdate(data);
+  pipelineWithBasicAuth.CheckRename(data);
+
   pipeline.CheckCreate(data);
   pipeline.CheckList(data);
   pipeline.CheckGet(data);
   pipeline.CheckUpdate(data);
   pipeline.CheckRename(data);
-  pipeline.CheckLookUp(data);
 
-  // TODO: SKIPPED - Trigger tests failing due to underlying schema issues
-  // (missing display_name columns in secret/connection tables)
-  // trigger.CheckTrigger(data);
-  // triggerAsync.CheckTrigger(data);
+  // Private Service API tests (service-to-service communication)
+  pipelinePrivate.CheckLookUpPipelineAdmin(data);
+  pipelinePrivate.CheckListPipelinesAdmin(data);
+
+  // Trigger tests (updated to use new Namespace APIs)
+  trigger.CheckTrigger(data);
+  triggerAsync.CheckTrigger(data);
 }
 
 export function teardown(data) {
@@ -115,7 +112,7 @@ export function teardown(data) {
     });
 
     var listRes = pipelineClient.invoke(
-      "pipeline.v1beta.PipelinePublicService/ListUserPipelines",
+      "pipeline.v1beta.PipelinePublicService/ListNamespacePipelines",
       {
         parent: `${constant.namespace}`,
         pageSize: 1000,
@@ -126,7 +123,7 @@ export function teardown(data) {
     if (listRes.message && listRes.message.pipelines) {
       for (const pipeline of listRes.message.pipelines) {
         var deleteRes = pipelineClient.invoke(
-          `pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
+          `pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline`,
           {
             name: `${constant.namespace}/pipelines/${pipeline.id}`,
           },
@@ -145,7 +142,7 @@ export function teardown(data) {
 
   group("Integration API: Delete data created by this test", () => {
     var q = `DELETE FROM pipeline WHERE id LIKE '${constant.dbIDPrefix}%';`;
-    constant.db.exec(q);
-    constant.db.close();
+    constant.pipelinedb.exec(q);
+    constant.pipelinedb.close();
   });
 }

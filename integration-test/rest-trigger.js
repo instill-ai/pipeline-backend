@@ -40,13 +40,6 @@ function triggerPath(id) {
 }
 
 export function CheckTrigger(data) {
-  // TODO: SKIPPED - Trigger tests fail due to missing schema columns (secret.display_name, connection.display_name)
-  // These are unrelated to AIP refactoring and need separate schema migrations to fix.
-  group("Pipelines API: Trigger a pipeline (SKIPPED)", () => {
-    console.log("SKIPPED: Trigger tests - missing schema columns for secrets/connections");
-  });
-  return;
-
   group("Pipelines API: Trigger a pipeline", () => {
     var reqHTTP = Object.assign(
       {
@@ -186,12 +179,6 @@ output:
 `;
 
 export function CheckPipelineRuns(data) {
-  // TODO: SKIPPED - Pipeline runs tests fail due to missing schema columns
-  group("Pipelines API: View pipeline and component runs (SKIPPED)", () => {
-    console.log("SKIPPED: Pipeline runs tests - missing schema columns");
-  });
-  return;
-
   group("Pipelines API: View pipeline and component runs", () => {
     const creationReq = {
       description: randomString(50),
@@ -283,40 +270,44 @@ export function CheckPipelineRuns(data) {
         r.json().pipelineRuns[1].status === "RUN_STATUS_FAILED",
     });
 
-    const okPipelineRunUID = pipelineRuns.json().pipelineRuns[0].pipelineRunUid;
+    // Use the run id to construct the component-runs endpoint URL
+    const okPipelineRunId = pipelineRuns.json().pipelineRuns[0].id;
+    const okComponentRunsPath = `${resourcePath(pipelineId)}/runs/${okPipelineRunId}/component-runs`;
 
     const okComponentRuns = http.request(
       "GET",
-      `${pipelinePublicHost}/v1beta/pipeline-runs/${okPipelineRunUID}/component-runs`,
+      pipelinePublicHost + okComponentRunsPath,
       null,
       data.header
     );
     check(okComponentRuns, {
-      [`GET /v1beta/pipeline-runs/{uid}/component-runs response status is 200`]: (r) =>
+      [`GET ${okComponentRunsPath} response status is 200`]: (r) =>
         r.status === 200,
-      [`GET /v1beta/pipeline-runs/{uid}/component-runs contains component runs`]: (r) =>
-        r.json().componentRuns.length === 1,
-      [`GET /v1beta/pipeline-runs/{uid}/component-runs matches the component ID`]: (r) =>
-        r.json().componentRuns[0].componentId === "jq",
-      [`GET /v1beta/pipeline-runs/{uid}/component-runs has a successful component run`]: (r) =>
+      [`GET ${okComponentRunsPath} contains component runs`]: (r) =>
+        r.json().componentRuns && r.json().componentRuns.length === 1,
+      [`GET ${okComponentRunsPath} matches the component ID`]: (r) =>
+        r.json().componentRuns[0].id === "jq",
+      [`GET ${okComponentRunsPath} has a successful component run`]: (r) =>
         r.json().componentRuns[0].status === "RUN_STATUS_COMPLETED",
     });
 
-    const nokPipelineRunUID = pipelineRuns.json().pipelineRuns[1].pipelineRunUid;
+    // Use the run id to construct the component-runs endpoint URL
+    const nokPipelineRunId = pipelineRuns.json().pipelineRuns[1].id;
+    const nokComponentRunsPath = `${resourcePath(pipelineId)}/runs/${nokPipelineRunId}/component-runs`;
     const nokComponentRuns = http.request(
       "GET",
-      `${pipelinePublicHost}/v1beta/pipeline-runs/${nokPipelineRunUID}/component-runs`,
+      pipelinePublicHost + nokComponentRunsPath,
       null,
       data.header
     );
     check(nokComponentRuns, {
-      [`GET /v1beta/pipeline-runs/{uid}/component-runs (NOK) response status is 200`]: (r) =>
+      [`GET ${nokComponentRunsPath} (NOK) response status is 200`]: (r) =>
         r.status === 200,
-      [`GET /v1beta/pipeline-runs/{uid}/component-runs (NOK) contains component runs`]: (r) =>
-        r.json().componentRuns.length === 1,
-      [`GET /v1beta/pipeline-runs/{uid}/component-runs (NOK) matches the component ID`]: (r) =>
-        r.json().componentRuns[0].componentId === "jq",
-      [`GET /v1beta/pipeline-runs/{uid}/component-runs (NOK) has a failed component run`]: (r) =>
+      [`GET ${nokComponentRunsPath} (NOK) contains component runs`]: (r) =>
+        r.json().componentRuns && r.json().componentRuns.length === 1,
+      [`GET ${nokComponentRunsPath} (NOK) matches the component ID`]: (r) =>
+        r.json().componentRuns[0].id === "jq",
+      [`GET ${nokComponentRunsPath} (NOK) has a failed component run`]: (r) =>
         r.json().componentRuns[0].status === "RUN_STATUS_FAILED",
     });
 

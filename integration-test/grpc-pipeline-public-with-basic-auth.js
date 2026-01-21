@@ -9,7 +9,7 @@ client.load(["proto"], "pipeline/v1beta/pipeline_public_service.proto");
 
 export function CheckCreate(data) {
   group(
-    `Pipelines API: Create a pipeline [with random "Instill-User-Uid" header]`,
+    `Pipelines API: Create a pipeline [with invalid auth]`,
     () => {
       client.connect(constant.pipelineGRPCPublicHost, {
         plaintext: true,
@@ -30,12 +30,12 @@ export function CheckCreate(data) {
           parent: `${constant.namespace}`,
           pipeline: reqBody,
         },
-        constant.paramsGRPCWithJwt
+        constant.paramsGRPCWithInvalidAuth
       );
-      console.log(`[DEBUG] CreateNamespacePipeline with random JWT - status: ${createRes.status}, error: ${createRes.error}`);
+      console.log(`[DEBUG] CreateNamespacePipeline with invalid auth - status: ${createRes.status}, error: ${createRes.error}`);
       check(createRes,
         {
-          [`[with random "Instill-User-Uid" header] pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response StatusUnauthenticated`]:
+          [`[with invalid auth] pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response StatusUnauthenticated`]:
             (r) => r.status === grpc.StatusUnauthenticated,
         }
       );
@@ -46,23 +46,23 @@ export function CheckCreate(data) {
 }
 
 export function CheckList(data) {
-  group(`Pipelines API: List pipelines [with random "Instill-User-Uid" header]`, () => {
+  group(`Pipelines API: List pipelines [with invalid auth]`, () => {
     client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true,
     });
 
-    // Cannot list pipelines of a non-exist user
+    // Cannot list pipelines with invalid auth
     check(
       client.invoke(
         "pipeline.v1beta.PipelinePublicService/ListNamespacePipelines",
         {
           parent: `${constant.namespace}`,
         },
-        constant.paramsGRPCWithJwt
+        constant.paramsGRPCWithInvalidAuth
       ),
       {
-        [`[with random "Instill-User-Uid" header] pipeline.v1beta.PipelinePublicService/ListNamespacePipelines response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
+        [`[with invalid auth] pipeline.v1beta.PipelinePublicService/ListNamespacePipelines response StatusUnauthenticated`]:
+          (r) => r.status === grpc.StatusUnauthenticated,
       }
     );
 
@@ -71,7 +71,7 @@ export function CheckList(data) {
 }
 
 export function CheckGet(data) {
-  group(`Pipelines API: Get a pipeline [with random "Instill-User-Uid" header]`, () => {
+  group(`Pipelines API: Get a pipeline [with invalid auth]`, () => {
     client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true,
     });
@@ -108,18 +108,18 @@ export function CheckGet(data) {
     }
     var pipelineId = createRes.message.pipeline.id;
 
-    // Cannot get a pipeline of a non-exist user
+    // Cannot get a pipeline with invalid auth
     check(
       client.invoke(
         "pipeline.v1beta.PipelinePublicService/GetNamespacePipeline",
         {
           name: `${constant.namespace}/pipelines/${pipelineId}`,
         },
-        constant.paramsGRPCWithJwt
+        constant.paramsGRPCWithInvalidAuth
       ),
       {
-        [`[with random "Instill-User-Uid" header] pipeline.v1beta.PipelinePublicService/GetNamespacePipeline response StatusNotFound`]:
-          (r) => r.status === grpc.StatusNotFound,
+        [`[with invalid auth] pipeline.v1beta.PipelinePublicService/GetNamespacePipeline response StatusUnauthenticated`]:
+          (r) => r.status === grpc.StatusUnauthenticated,
       }
     );
 
@@ -144,7 +144,7 @@ export function CheckGet(data) {
 
 export function CheckUpdate(data) {
   group(
-    `Pipelines API: Update a pipeline [with random "Instill-User-Uid" header]`,
+    `Pipelines API: Update a pipeline [with invalid auth]`,
     () => {
       client.connect(constant.pipelineGRPCPublicHost, {
         plaintext: true,
@@ -193,10 +193,10 @@ export function CheckUpdate(data) {
             pipeline: reqBodyUpdate,
             update_mask: "description",
           },
-          constant.paramsGRPCWithJwt
+          constant.paramsGRPCWithInvalidAuth
         ),
         {
-          [`[with random "Instill-User-Uid" header] pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline response StatusUnauthenticated`]:
+          [`[with invalid auth] pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline response StatusUnauthenticated`]:
             (r) => r.status === grpc.StatusUnauthenticated,
         }
       );
@@ -223,7 +223,7 @@ export function CheckUpdate(data) {
 
 export function CheckRename(data) {
   group(
-    `Pipelines API: Rename a pipeline [with random "Instill-User-Uid" header]`,
+    `Pipelines API: Rename a pipeline [with invalid auth]`,
     () => {
       client.connect(constant.pipelineGRPCPublicHost, {
         plaintext: true,
@@ -267,92 +267,18 @@ export function CheckRename(data) {
 
       var new_pipeline_id = randomString(10);
 
-      // Cannot rename a pipeline of a non-exist user
+      // Cannot rename a pipeline with invalid auth
       check(
         client.invoke(
           "pipeline.v1beta.PipelinePublicService/RenameNamespacePipeline",
           {
-            namespace_id: "admin",
-            pipeline_id: pipelineId,
+            name: `${constant.namespace}/pipelines/${pipelineId}`,
             new_pipeline_id: new_pipeline_id,
           },
-          constant.paramsGRPCWithJwt
+          constant.paramsGRPCWithInvalidAuth
         ),
         {
-          [`[with random "Instill-User-Uid" header] pipeline.v1beta.PipelinePublicService/RenameNamespacePipeline response StatusUnauthenticated`]:
-            (r) => r.status === grpc.StatusUnauthenticated,
-        }
-      );
-
-      // Delete the pipeline
-      check(
-        client.invoke(
-          `pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline`,
-          {
-            name: `${constant.namespace}/pipelines/${pipelineId}`,
-          },
-          data.metadata
-        ),
-        {
-          [`pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline response StatusOK`]:
-            (r) => r.status === grpc.StatusOK,
-        }
-      );
-
-      client.close();
-    }
-  );
-}
-
-export function CheckLookUp(data) {
-  group(
-    `Pipelines API: Look up a pipeline by id [with random "Instill-User-Uid" header]`,
-    () => {
-      client.connect(constant.pipelineGRPCPublicHost, {
-        plaintext: true,
-      });
-
-      // Note: id is now OUTPUT_ONLY (server-generated), so we don't send it
-      var reqBody = Object.assign(
-        {},
-        constant.simplePipelineWithYAMLRecipe
-      );
-
-      // Create a pipeline
-      var res = client.invoke(
-        "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
-        {
-          parent: `${constant.namespace}`,
-          pipeline: reqBody,
-        },
-        data.metadata
-      );
-
-      check(res, {
-        [`pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-      });
-
-      // Get the server-generated pipeline ID
-      if (res.status !== grpc.StatusOK || !res.message || !res.message.pipeline) {
-        console.log("Failed to create pipeline in CheckLookUp, skipping remaining tests");
-        client.close();
-        return;
-      }
-      var pipelineId = res.message.pipeline.id;
-
-      // Note: LookUpPipeline now uses id instead of uid (uid no longer exists in proto)
-      // Cannot look up a pipeline of a non-exist user
-      check(
-        client.invoke(
-          "pipeline.v1beta.PipelinePublicService/LookUpPipeline",
-          {
-            permalink: `pipelines/${pipelineId}`,
-          },
-          constant.paramsGRPCWithJwt
-        ),
-        {
-          [`[with random "Instill-User-Uid" header] pipeline.v1beta.PipelinePublicService/LookUpPipeline response StatusUnauthenticated`]:
+          [`[with invalid auth] pipeline.v1beta.PipelinePublicService/RenameNamespacePipeline response StatusUnauthenticated`]:
             (r) => r.status === grpc.StatusUnauthenticated,
         }
       );

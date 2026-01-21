@@ -8,7 +8,7 @@ import * as constant from "./const.js";
 
 export function CheckCreate(data) {
   group(
-    `Pipelines API: Create a pipeline [with random "Instill-User-Uid" header]`,
+    `Pipelines API: Create a pipeline [with invalid auth]`,
     () => {
       var reqBody = Object.assign(
         {
@@ -23,10 +23,10 @@ export function CheckCreate(data) {
           "POST",
           `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
           JSON.stringify(reqBody),
-          constant.paramsHTTPWithJwt
+          constant.paramsHTTPWithInvalidAuth
         ),
         {
-          [`[with random "Instill-User-Uid" header] POST /v1beta/${constant.namespace}/pipelines response status is 401`]:
+          [`[with invalid auth] POST /v1beta/${constant.namespace}/pipelines response status is 401`]:
             (r) => r.status === 401,
         }
       );
@@ -35,25 +35,25 @@ export function CheckCreate(data) {
 }
 
 export function CheckList(data) {
-  group(`Pipelines API: List pipelines [with random "Instill-User-Uid" header]`, () => {
-    // Cannot list pipelines of a non-exist user
+  group(`Pipelines API: List pipelines [with invalid auth]`, () => {
+    // Cannot list pipelines with invalid auth
     check(
       http.request(
         "GET",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         null,
-        constant.paramsHTTPWithJwt
+        constant.paramsHTTPWithInvalidAuth
       ),
       {
-        [`[with random "Instill-User-Uid" header] GET /v1beta/${constant.namespace}/pipelines response status is 200`]:
-          (r) => r.status === 200,
+        [`[with invalid auth] GET /v1beta/${constant.namespace}/pipelines response status is 401`]:
+          (r) => r.status === 401,
       }
     );
   });
 }
 
 export function CheckGet(data) {
-  group(`Pipelines API: Get a pipeline [with random "Instill-User-Uid" header]`, () => {
+  group(`Pipelines API: Get a pipeline [with invalid auth]`, () => {
     var reqBody = Object.assign(
       {
         description: randomString(50),
@@ -69,9 +69,9 @@ export function CheckGet(data) {
       data.header
     );
     check(createRes, {
-        "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) =>
-          r.status === 201,
-      }
+      "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) =>
+        r.status === 201,
+    }
     );
 
     if (createRes.status !== 201 || !createRes.json().pipeline) {
@@ -80,17 +80,17 @@ export function CheckGet(data) {
     }
     var pipelineId = createRes.json().pipeline.id;
 
-    // Cannot get a pipeline of a non-exist user
+    // Cannot get a pipeline with invalid auth
     check(
       http.request(
         "GET",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${pipelineId}`,
         null,
-        constant.paramsHTTPWithJwt
+        constant.paramsHTTPWithInvalidAuth
       ),
       {
-        [`[with random "Instill-User-Uid" header] GET /v1beta/${constant.namespace}/pipelines/{id} response status is 404`]:
-          (r) => r.status === 404,
+        [`[with invalid auth] GET /v1beta/${constant.namespace}/pipelines/{id} response status is 401`]:
+          (r) => r.status === 401,
       }
     );
 
@@ -112,7 +112,7 @@ export function CheckGet(data) {
 
 export function CheckUpdate(data) {
   group(
-    `Pipelines API: Update a pipeline [with random "Instill-User-Uid" header]`,
+    `Pipelines API: Update a pipeline [with invalid auth]`,
     () => {
       var reqBody = Object.assign(
         {},
@@ -145,10 +145,10 @@ export function CheckUpdate(data) {
           "PATCH",
           `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${pipelineId}`,
           JSON.stringify(reqBodyUpdate),
-          constant.paramsHTTPWithJwt
+          constant.paramsHTTPWithInvalidAuth
         ),
         {
-          [`[with random "Instill-User-Uid" header] PATCH /v1beta/${constant.namespace}/pipelines/{id} response status is 401`]:
+          [`[with invalid auth] PATCH /v1beta/${constant.namespace}/pipelines/{id} response status is 401`]:
             (r) => r.status === 401,
         }
       );
@@ -173,7 +173,7 @@ export function CheckUpdate(data) {
 
 export function CheckRename(data) {
   group(
-    `Pipelines API: Rename a pipeline [with random "Instill-User-Uid" header]`,
+    `Pipelines API: Rename a pipeline [with invalid auth]`,
     () => {
       var reqBody = Object.assign(
         {},
@@ -207,10 +207,10 @@ export function CheckRename(data) {
           "POST",
           `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${pipelineId}/rename`,
           JSON.stringify(renameBody),
-          constant.paramsHTTPWithJwt
+          constant.paramsHTTPWithInvalidAuth
         ),
         {
-          [`[with random "Instill-User-Uid" header] POST /v1beta/${constant.namespace}/pipelines/{id}/rename response status is 401`]: (r) => r.status === 401,
+          [`[with invalid auth] POST /v1beta/${constant.namespace}/pipelines/{id}/rename response status is 401`]: (r) => r.status === 401,
         }
       );
 
@@ -225,61 +225,6 @@ export function CheckRename(data) {
         {
           [`DELETE /v1beta/${constant.namespace}/pipelines/{id} response status 204`]: (r) =>
             r.status === 204,
-        }
-      );
-    }
-  );
-}
-
-export function CheckLookUp(data) {
-  group(
-    `Pipelines API: Look up a pipeline by uid [with random "Instill-User-Uid" header]`,
-    () => {
-      var reqBody = Object.assign(
-        {},
-        constant.simplePipelineWithYAMLRecipe
-      );
-
-      // Create a pipeline
-      var res = http.request(
-        "POST",
-        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
-        JSON.stringify(reqBody),
-        data.header
-      );
-
-      check(res, {
-        "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) =>
-          r.status === 201,
-      });
-
-      var pipelineId = res.json().pipeline.id;
-
-      // Cannot look up a pipeline of a non-exist user
-      check(
-        http.request(
-          "GET",
-          `${pipelinePublicHost}/v1beta/pipelines/${pipelineId}/lookUp`,
-          null,
-          constant.paramsHTTPWithJwt
-        ),
-        {
-          [`[with random "Instill-User-Uid" header] POST /v1beta/pipelines/{id}/lookUp response status is 401`]: (r) => r.status === 401,
-        }
-      );
-
-      // Delete the pipeline
-      check(
-        http.request(
-          "DELETE",
-          `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${pipelineId}`,
-          null,
-          data.header
-        ),
-        {
-          [`DELETE /v1beta/${constant.namespace}/pipelines/{id} response status 204`]: (
-            r
-          ) => r.status === 204,
         }
       );
     }

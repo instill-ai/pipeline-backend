@@ -52,10 +52,8 @@ func (e *execution) executeEmbedding(grpcClient modelpb.ModelPublicServiceClient
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
 	res, err := grpcClient.TriggerNamespaceModel(ctx, &modelpb.TriggerNamespaceModelRequest{
-		NamespaceId: nsID,
-		ModelId:     modelID,
-		Version:     version,
-		TaskInputs:  taskInputs,
+		Name:       fmt.Sprintf("namespaces/%s/models/%s/versions/%s", nsID, modelID, version),
+		TaskInputs: taskInputs,
 	})
 
 	if err != nil || res == nil {

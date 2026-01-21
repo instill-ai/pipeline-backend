@@ -21,13 +21,10 @@ type PublicHandler struct {
 }
 
 type TriggerPipelineRequestInterface interface {
-	GetNamespaceId() string
-	GetPipelineId() string
+	GetName() string
 }
 type TriggerPipelineReleaseRequestInterface interface {
-	GetNamespaceId() string
-	GetPipelineId() string
-	GetReleaseId() string
+	GetName() string
 }
 
 // NewPublicHandler initiates a handler instance

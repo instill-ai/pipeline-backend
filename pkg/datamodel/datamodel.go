@@ -19,6 +19,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	taskpb "github.com/instill-ai/protogen-go/common/task/v1alpha"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
+	"github.com/instill-ai/x/resource"
 )
 
 const Iterator = "iterator"
@@ -141,12 +142,12 @@ func (p *Pipeline) BeforeCreate(db *gorm.DB) error {
 	}
 	// Generate prefixed canonical ID if not provided (AIP standard)
 	if p.ID == "" {
-		p.ID = utils.GeneratePrefixedResourceID(utils.PrefixPipeline, p.UID)
+		p.ID = resource.GeneratePrefixedID(utils.PrefixPipeline, p.UID)
 		db.Statement.SetColumn("ID", p.ID)
 	}
 	// Generate slug from display name if not provided
 	if p.Slug == "" && p.DisplayName != "" {
-		p.Slug = utils.GenerateSlug(p.DisplayName)
+		p.Slug = resource.GenerateSlug(p.DisplayName, 0)
 		db.Statement.SetColumn("Slug", p.Slug)
 	}
 	return nil
@@ -193,12 +194,12 @@ func (r *PipelineRelease) BeforeCreate(db *gorm.DB) error {
 	}
 	// Generate prefixed canonical ID if not provided (AIP standard)
 	if r.ID == "" {
-		r.ID = utils.GeneratePrefixedResourceID(utils.PrefixPipelineRelease, r.UID)
+		r.ID = resource.GeneratePrefixedID(utils.PrefixPipelineRelease, r.UID)
 		db.Statement.SetColumn("ID", r.ID)
 	}
 	// Generate slug from display name if not provided
 	if r.Slug == "" && r.DisplayName != "" {
-		r.Slug = utils.GenerateSlug(r.DisplayName)
+		r.Slug = resource.GenerateSlug(r.DisplayName, 0)
 		db.Statement.SetColumn("Slug", r.Slug)
 	}
 	return nil
@@ -677,13 +678,13 @@ func (s *Secret) BeforeCreate(db *gorm.DB) error {
 
 	// Generate prefixed canonical ID if not provided (AIP standard)
 	if s.ID == "" {
-		s.ID = utils.GeneratePrefixedResourceID(utils.PrefixSecret, s.UID)
+		s.ID = resource.GeneratePrefixedID(utils.PrefixSecret, s.UID)
 		db.Statement.SetColumn("ID", s.ID)
 	}
 
 	// Generate slug from display name if not provided
 	if s.Slug == "" && s.DisplayName != "" {
-		s.Slug = utils.GenerateSlug(s.DisplayName)
+		s.Slug = resource.GenerateSlug(s.DisplayName, 0)
 		db.Statement.SetColumn("Slug", s.Slug)
 	}
 
@@ -737,13 +738,13 @@ func (c *Connection) BeforeCreate(db *gorm.DB) error {
 
 	// Generate prefixed canonical ID if not provided (AIP standard)
 	if c.ID == "" {
-		c.ID = utils.GeneratePrefixedResourceID(utils.PrefixConnection, c.UID)
+		c.ID = resource.GeneratePrefixedID(utils.PrefixConnection, c.UID)
 		db.Statement.SetColumn("ID", c.ID)
 	}
 
 	// Generate slug from display name if not provided
 	if c.Slug == "" && c.DisplayName != "" {
-		c.Slug = utils.GenerateSlug(c.DisplayName)
+		c.Slug = resource.GenerateSlug(c.DisplayName, 0)
 		db.Statement.SetColumn("Slug", c.Slug)
 	}
 
