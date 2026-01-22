@@ -63,6 +63,10 @@ type OpenFGAConfig struct {
 		Port                 int    `koanf:"port"`
 		ReplicationTimeFrame int    `koanf:"replicationtimeframe"` // in seconds
 	} `koanf:"replica"`
+	Cache struct {
+		Enabled bool `koanf:"enabled"` // Enable permission caching
+		TTL     int  `koanf:"ttl"`     // Cache TTL in seconds (default: 60)
+	} `koanf:"cache"`
 }
 
 // ServerConfig defines HTTP server configurations
