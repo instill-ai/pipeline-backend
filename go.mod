@@ -46,7 +46,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.14.0
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260121105057-e8e7f1a4ac1f
-	github.com/instill-ai/x v0.10.1-alpha.0.20260121080139-2e854df73509
+	github.com/instill-ai/x v0.10.1-alpha.0.20260122090555-bea4f728b22c
 	github.com/itchyny/gojq v0.12.17
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/jmoiron/sqlx v1.4.0
@@ -63,7 +63,7 @@ require (
 	github.com/mennanov/fieldmask-utils v1.1.2
 	github.com/nakagami/firebirdsql v0.9.15
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-	github.com/openfga/api/proto v0.0.0-20240318145204-66b9e5cb403c
+	github.com/openfga/api/proto v0.0.0-20240723155248-7e5be7b65c27
 	github.com/pdfcpu/pdfcpu v0.11.0
 	github.com/pkoukk/tiktoken-go v0.1.7
 	github.com/redis/go-redis/v9 v9.9.0

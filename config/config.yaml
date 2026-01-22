@@ -76,6 +76,9 @@ artifactbackend:
 openfga:
   host: openfga
   port: 8081
+  cache:
+    enabled: false
+    ttl: 60
 minio:
   host: minio
   port: 9000
