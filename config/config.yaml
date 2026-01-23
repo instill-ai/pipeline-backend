@@ -77,7 +77,7 @@ openfga:
   host: openfga
   port: 8081
   cache:
-    enabled: false
+    enabled: true
     ttl: 60
 minio:
   host: minio

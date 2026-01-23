@@ -56,8 +56,8 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 	}
 
 	req := &artifactpb.SearchChunksRequest{
-		Parent:          fmt.Sprintf("namespaces/%s", inputStruct.Namespace),
-		KnowledgeBaseId: inputStruct.KnowledgeBaseID,
+		Parent:        fmt.Sprintf("namespaces/%s", inputStruct.Namespace),
+		KnowledgeBase: inputStruct.KnowledgeBaseID,
 		TextPrompt:      inputStruct.TextPrompt,
 		TopK:            inputStruct.TopK,
 		FileMediaType:   fileMediaType,
@@ -80,7 +80,7 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 	}
 
 	if len(fileUIDs) > 0 {
-		req.FileIds = fileUIDs
+		req.Files = fileUIDs
 	}
 
 	searchRes, err := artifactClient.SearchChunks(ctx, req)
@@ -100,7 +100,7 @@ func (e *execution) searchChunks(input *structpb.Struct) (*structpb.Struct, erro
 			SimilarityScore: chunkPB.GetSimilarityScore(),
 			TextContent:     chunkPB.GetTextContent(),
 			SourceFileName:  chunkPB.GetFile(),
-			SourceFileUID:   chunkPB.GetChunkMetadata().GetOriginalFileId(),
+			SourceFileUID:   chunkPB.GetChunkMetadata().GetOriginalFile(),
 			ContentType:     chunkPB.GetChunkMetadata().GetType().String(),
 		}
 

@@ -135,7 +135,7 @@ func Test_getChunksMetadata(t *testing.T) {
 						Seconds: 1,
 						Nanos:   1,
 					},
-					OriginalFileId: "fakeFileID",
+					OriginalFile: "fakeFileID",
 				},
 			},
 		}, nil)
@@ -276,8 +276,8 @@ func Test_searchChunks(t *testing.T) {
 
 		clientMock.SearchChunksMock.
 			Expect(minimock.AnyContext, &artifactpb.SearchChunksRequest{
-				Parent:          "namespaces/fakeNs",
-				KnowledgeBaseId: "fakeID",
+				Parent:        "namespaces/fakeNs",
+				KnowledgeBase: "fakeID",
 				TextPrompt:      "fakePrompt",
 				TopK:            1,
 			}).
@@ -290,7 +290,7 @@ func Test_searchChunks(t *testing.T) {
 						TextContent:     "fakeContent",
 						File:            "namespaces/fakeNs/files/fakeFileID",
 						ChunkMetadata: &artifactpb.Chunk{
-							OriginalFileId: fileUID.String(),
+							OriginalFile: fileUID.String(),
 							MarkdownReference: &artifactpb.Chunk_Reference{
 								Start: pageTwo,
 								End:   pageTwo,
