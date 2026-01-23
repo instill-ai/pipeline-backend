@@ -88,7 +88,7 @@ func (e *execution) uploadFile(input *structpb.Struct) (*structpb.Struct, error)
 			DisplayName: inputStruct.Options.FileName,
 			Content:     content,
 		},
-		KnowledgeBaseId: inputStruct.Options.KnowledgeBaseID,
+		KnowledgeBase: inputStruct.Options.KnowledgeBaseID,
 	})
 
 	if err != nil {

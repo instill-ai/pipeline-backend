@@ -57,7 +57,7 @@ func fakeRecipe() datamodel.Recipe {
 	return datamodel.Recipe{}
 }
 
-func TestService_UpdateNamespacePipelineByID(t *testing.T) {
+func TestService_UpdatePipelineByID(t *testing.T) {
 	c := quicktest.New(t)
 	mc := minimock.NewController(t)
 	ctx := context.Background()
@@ -94,8 +94,8 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 	dataPipeline := newDataPipeline(uid, [2]string{"tag1", "tag3"})
 	newDataPipeline := newDataPipeline(uid, [2]string{"tag1", "tag2"})
 
-	repo.GetNamespacePipelineByIDMock.Return(&dataPipeline, nil)
-	repo.UpdateNamespacePipelineByUIDMock.Return(nil)
+	repo.GetPipelineByIDMock.Return(&dataPipeline, nil)
+	repo.UpdatePipelineByUIDMock.Return(nil)
 	repo.GetPipelineByUIDMock.Return(&dataPipeline, nil)
 	repo.DeletePipelineTagsMock.Expect(ctx, uid, []string{"tag3"}).Return(nil)
 	repo.CreatePipelineTagsMock.Expect(ctx, uid, []string{"tag2"}).Return(nil)
@@ -110,7 +110,7 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 	}
 	converter.ConvertPipelineToPBMock.Return(&pbPipeline, nil)
 
-	updatedPbPipeline, err := service.UpdateNamespacePipelineByID(
+	updatedPbPipeline, err := service.UpdatePipelineByID(
 		ctx,
 		fakeNamespace(),
 		"pipelineID",

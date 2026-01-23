@@ -24,7 +24,7 @@ export function CheckTrigger(data) {
       );
 
       var createRes = client.invoke(
-        "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/CreatePipeline",
         {
           parent: `${constant.namespace}`,
           pipeline: reqGRPC,
@@ -33,7 +33,7 @@ export function CheckTrigger(data) {
       );
 
       check(createRes, {
-        "CreateNamespacePipeline response StatusOK":
+        "CreatePipeline response StatusOK":
           (r) => r.status === grpc.StatusOK,
       });
 
@@ -46,7 +46,7 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          "pipeline.v1beta.PipelinePublicService/TriggerNamespacePipeline",
+          "pipeline.v1beta.PipelinePublicService/TriggerPipeline",
           {
             name: `${constant.namespace}/pipelines/${pipelineId}`,
             data: constant.simplePayload.data,
@@ -54,7 +54,7 @@ export function CheckTrigger(data) {
           data.metadata
         ),
         {
-          "TriggerNamespacePipeline response StatusOK":
+          "TriggerPipeline response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -62,14 +62,14 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          "pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline",
+          "pipeline.v1beta.PipelinePublicService/DeletePipeline",
           {
             name: `${constant.namespace}/pipelines/${pipelineId}`,
           },
           data.metadata
         ),
         {
-          "DeleteNamespacePipeline response StatusOK":
+          "DeletePipeline response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -93,7 +93,7 @@ export function CheckTrigger(data) {
       );
 
       var createRes = client.invoke(
-        "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/CreatePipeline",
         {
           parent: `${constant.namespace}`,
           pipeline: reqGRPC,
@@ -102,7 +102,7 @@ export function CheckTrigger(data) {
       );
 
       check(createRes, {
-        "CreateNamespacePipeline YAML response StatusOK":
+        "CreatePipeline YAML response StatusOK":
           (r) => r.status === grpc.StatusOK,
       });
 
@@ -115,7 +115,7 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          "pipeline.v1beta.PipelinePublicService/TriggerNamespacePipeline",
+          "pipeline.v1beta.PipelinePublicService/TriggerPipeline",
           {
             name: `${constant.namespace}/pipelines/${pipelineId}`,
             data: constant.simplePayload.data,
@@ -123,7 +123,7 @@ export function CheckTrigger(data) {
           data.metadata
         ),
         {
-          "TriggerNamespacePipeline YAML response StatusOK":
+          "TriggerPipeline YAML response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -131,14 +131,14 @@ export function CheckTrigger(data) {
 
       check(
         client.invoke(
-          "pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline",
+          "pipeline.v1beta.PipelinePublicService/DeletePipeline",
           {
             name: `${constant.namespace}/pipelines/${pipelineId}`,
           },
           data.metadata
         ),
         {
-          "DeleteNamespacePipeline YAML response StatusOK":
+          "DeletePipeline YAML response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );

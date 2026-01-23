@@ -28,7 +28,7 @@ func TestExecuteVisionTask(t *testing.T) {
 	// Test case 1: Successful vision task execution (classification)
 	t.Run("successful classification", func(t *testing.T) {
 		// Create mock response for classification
-		mockResponse := &modelpb.TriggerNamespaceModelResponse{
+		mockResponse := &modelpb.TriggerModelResponse{
 			TaskOutputs: []*structpb.Struct{
 				{
 					Fields: map[string]*structpb.Value{
@@ -89,7 +89,7 @@ func TestExecuteVisionTask(t *testing.T) {
 	// Test case 2: Successful detection task
 	t.Run("successful detection", func(t *testing.T) {
 		// Create mock response for detection
-		mockResponse := &modelpb.TriggerNamespaceModelResponse{
+		mockResponse := &modelpb.TriggerModelResponse{
 			TaskOutputs: []*structpb.Struct{
 				{
 					Fields: map[string]*structpb.Value{
@@ -195,7 +195,7 @@ func TestExecuteVisionTask(t *testing.T) {
 
 	// Test case 6: Empty task outputs
 	t.Run("empty task outputs", func(t *testing.T) {
-		mockResponse := &modelpb.TriggerNamespaceModelResponse{
+		mockResponse := &modelpb.TriggerModelResponse{
 			TaskOutputs: []*structpb.Struct{},
 		}
 

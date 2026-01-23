@@ -25,7 +25,7 @@ export function CheckCreate(data) {
 
     // Create a pipeline
     var resOrigin = client.invoke(
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline",
       {
         parent: `${constant.namespace}`,
         pipeline: reqBody,
@@ -34,7 +34,7 @@ export function CheckCreate(data) {
     );
 
     check(resOrigin, {
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response StatusOK":
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline response StatusOK":
         (r) => r.status === grpc.StatusOK,
     });
 
@@ -48,26 +48,26 @@ export function CheckCreate(data) {
 
     check(resOrigin, {
       // Note: Backend may return either users/admin or namespaces/admin format during transition
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response pipeline name":
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline response pipeline name":
         (r) => r.message.pipeline.name && r.message.pipeline.name.endsWith(`/pipelines/${pipelineId}`),
       // Note: uid no longer exists in the proto
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response pipeline id exists":
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline response pipeline id exists":
         (r) => r.message.pipeline.id && r.message.pipeline.id.length > 0,
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response pipeline displayName":
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline response pipeline displayName":
         (r) => r.message.pipeline.displayName === reqBody.displayName,
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response pipeline slug derived from displayName":
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline response pipeline slug derived from displayName":
         (r) => r.message.pipeline.slug === "integration-test-pipeline",
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response pipeline description":
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline response pipeline description":
         (r) => r.message.pipeline.description === reqBody.description,
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response pipeline recipe is valid":
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline response pipeline recipe is valid":
         (r) => helper.validateRecipeGRPC(r.message.pipeline.recipe, false),
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response pipeline owner is valid":
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline response pipeline owner is valid":
         (r) => helper.isValidOwner(r.message.pipeline.owner, data.expectedOwner),
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response pipeline createTime":
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline response pipeline createTime":
         (r) =>
           new Date(r.message.pipeline.createTime).getTime() >
           new Date().setTime(0),
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response pipeline updateTime":
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline response pipeline updateTime":
         (r) =>
           new Date(r.message.pipeline.updateTime).getTime() >
           new Date().setTime(0),
@@ -76,34 +76,34 @@ export function CheckCreate(data) {
 
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/CreatePipeline",
         {
           parent: `${constant.namespace}`,
         },
         data.metadata
       ),
       {
-        "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response StatusInvalidArgument":
+        "pipeline.v1beta.PipelinePublicService/CreatePipeline response StatusInvalidArgument":
           (r) => r.status === grpc.StatusInvalidArgument,
       }
     );
 
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/CreatePipeline",
         {
           parent: `${constant.namespace}`,
         },
         data.metadata
       ),
       {
-        "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response StatusInvalidArgument":
+        "pipeline.v1beta.PipelinePublicService/CreatePipeline response StatusInvalidArgument":
           (r) => r.status === grpc.StatusInvalidArgument,
       }
     );
 
     // Note: The duplicate creation test no longer applies since ID is server-generated
-    // Each CreateNamespacePipeline call generates a unique ID, so StatusAlreadyExists won't happen
+    // Each CreatePipeline call generates a unique ID, so StatusAlreadyExists won't happen
 
     // NOTE: ID validation tests removed - id is now OUTPUT_ONLY (server-generated)
     // Invalid ID tests (null, non-RFC-1034, >32 char, non-ASCII) are no longer applicable.
@@ -111,14 +111,14 @@ export function CheckCreate(data) {
     // Delete the pipeline
     check(
       client.invoke(
-        `pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline`,
+        `pipeline.v1beta.PipelinePublicService/DeletePipeline`,
         {
           name: `${constant.namespace}/pipelines/${resOrigin.message.pipeline.id}`,
         },
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/DeletePipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
@@ -135,7 +135,7 @@ export function CheckList(data) {
 
     // Record initial pipeline count (database might not be clean)
     var initialRes = client.invoke(
-      "pipeline.v1beta.PipelinePublicService/ListNamespacePipelines",
+      "pipeline.v1beta.PipelinePublicService/ListPipelines",
       {
         parent: `${constant.namespace}`,
       },
@@ -143,7 +143,7 @@ export function CheckList(data) {
     );
 
     check(initialRes, {
-      [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines initial response StatusOK`]:
+      [`pipeline.v1beta.PipelinePublicService/ListPipelines initial response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
     });
 
@@ -162,7 +162,7 @@ export function CheckList(data) {
       );
 
       var createRes = client.invoke(
-        "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/CreatePipeline",
         {
           parent: `${constant.namespace}`,
           pipeline: reqBody,
@@ -171,7 +171,7 @@ export function CheckList(data) {
       );
 
       check(createRes, {
-        [`pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline x${numPipelines} response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/CreatePipeline x${numPipelines} response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       });
 
@@ -183,28 +183,28 @@ export function CheckList(data) {
 
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/ListNamespacePipelines",
+        "pipeline.v1beta.PipelinePublicService/ListPipelines",
         {
           parent: `${constant.namespace}`,
         },
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines response pipelines.length == 10`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines response pipelines.length == 10`]:
           (r) => r.message.pipelines.length === 10,
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines response pipelines[0].recipe is null`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines response pipelines[0].recipe is null`]:
           (r) => r.message.pipelines[0].recipe === null,
         // totalSize should be initial + 200 created pipelines
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines response totalSize >= 200`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines response totalSize >= 200`]:
           (r) => r.message.totalSize >= numPipelines,
       }
     );
 
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/ListNamespacePipelines",
+        "pipeline.v1beta.PipelinePublicService/ListPipelines",
         {
           parent: `${constant.namespace}`,
           view: "VIEW_FULL",
@@ -212,9 +212,9 @@ export function CheckList(data) {
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines view=VIEW_FULL response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines view=VIEW_FULL response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines view=VIEW_FULL response pipelines[0].recipe is valid`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines view=VIEW_FULL response pipelines[0].recipe is valid`]:
           (r) =>
             helper.validateRecipeGRPC(r.message.pipelines[0].recipe, false),
       }
@@ -222,7 +222,7 @@ export function CheckList(data) {
 
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/ListNamespacePipelines",
+        "pipeline.v1beta.PipelinePublicService/ListPipelines",
         {
           parent: `${constant.namespace}`,
           view: "VIEW_BASIC",
@@ -230,16 +230,16 @@ export function CheckList(data) {
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines view=VIEW_BASIC response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines view=VIEW_BASIC response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines view=VIEW_BASIC response pipelines[0].recipe is null`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines view=VIEW_BASIC response pipelines[0].recipe is null`]:
           (r) => r.message.pipelines[0].recipe === null,
       }
     );
 
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/ListNamespacePipelines",
+        "pipeline.v1beta.PipelinePublicService/ListPipelines",
         {
           parent: `${constant.namespace}`,
           pageSize: 3,
@@ -247,14 +247,14 @@ export function CheckList(data) {
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines response pipelines.length == 3`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines response pipelines.length == 3`]:
           (r) => r.message.pipelines.length === 3,
       }
     );
 
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/ListNamespacePipelines",
+        "pipeline.v1beta.PipelinePublicService/ListPipelines",
         {
           parent: `${constant.namespace}`,
           pageSize: 101,
@@ -262,13 +262,13 @@ export function CheckList(data) {
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines response pipelines.length == 100`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines response pipelines.length == 100`]:
           (r) => r.message.pipelines.length === 100,
       }
     );
 
     var resFirst100 = client.invoke(
-      "pipeline.v1beta.PipelinePublicService/ListNamespacePipelines",
+      "pipeline.v1beta.PipelinePublicService/ListPipelines",
       {
         parent: `${constant.namespace}`,
         pageSize: 100,
@@ -277,15 +277,15 @@ export function CheckList(data) {
     );
 
     check(resFirst100, {
-      [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines pageSize=100 response StatusOK`]:
+      [`pipeline.v1beta.PipelinePublicService/ListPipelines pageSize=100 response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
-      [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines pageSize=100 response has results`]:
+      [`pipeline.v1beta.PipelinePublicService/ListPipelines pageSize=100 response has results`]:
         (r) => r.message.pipelines.length > 0,
     });
 
     if (resFirst100.message && resFirst100.message.nextPageToken) {
       var resSecond100 = client.invoke(
-        "pipeline.v1beta.PipelinePublicService/ListNamespacePipelines",
+        "pipeline.v1beta.PipelinePublicService/ListPipelines",
         {
           parent: `${constant.namespace}`,
           pageSize: 100,
@@ -294,9 +294,9 @@ export function CheckList(data) {
         data.metadata
       );
       check(resSecond100, {
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines pageSize=100 page 2 response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines pageSize=100 page 2 response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines pageSize=100 page 2 response has results`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines pageSize=100 page 2 response has results`]:
           (r) => r.message.pipelines.length > 0,
       });
     }
@@ -305,7 +305,7 @@ export function CheckList(data) {
 
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/ListNamespacePipelines",
+        "pipeline.v1beta.PipelinePublicService/ListPipelines",
         {
           parent: `${constant.namespace}`,
           filter:
@@ -314,9 +314,9 @@ export function CheckList(data) {
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines filter: state=createTime>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines filter: state=createTime>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`pipeline.v1beta.PipelinePublicService/ListNamespacePipelines filter: state=createTime>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
+        [`pipeline.v1beta.PipelinePublicService/ListPipelines filter: state=createTime>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
           (r) => r.message.pipelines.length > 0,
       }
     );
@@ -325,14 +325,14 @@ export function CheckList(data) {
     for (const pipelineId of createdPipelineIds) {
       check(
         client.invoke(
-          `pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline`,
+          `pipeline.v1beta.PipelinePublicService/DeletePipeline`,
           {
             name: `${constant.namespace}/pipelines/${pipelineId}`,
           },
           data.metadata
         ),
         {
-          [`pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline response StatusOK`]:
+          [`pipeline.v1beta.PipelinePublicService/DeletePipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -356,7 +356,7 @@ export function CheckGet(data) {
     );
 
     var createRes = client.invoke(
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline",
       {
         parent: `${constant.namespace}`,
         pipeline: reqBody,
@@ -365,7 +365,7 @@ export function CheckGet(data) {
     );
 
     check(createRes, {
-      [`pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response StatusOK`]:
+      [`pipeline.v1beta.PipelinePublicService/CreatePipeline response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
     });
 
@@ -378,24 +378,24 @@ export function CheckGet(data) {
 
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/GetNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/GetPipeline",
         {
           name: `${constant.namespace}/pipelines/${pipelineId}`,
         },
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/GetNamespacePipeline response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/GetPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
         // Note: Backend may return either users/admin or namespaces/admin format during transition
-        [`pipeline.v1beta.PipelinePublicService/GetNamespacePipeline response pipeline name`]:
+        [`pipeline.v1beta.PipelinePublicService/GetPipeline response pipeline name`]:
           (r) => r.message.pipeline.name && r.message.pipeline.name.endsWith(`/pipelines/${pipelineId}`),
         // Note: uid is no longer exposed in the API
-        [`pipeline.v1beta.PipelinePublicService/GetNamespacePipeline response pipeline id`]:
+        [`pipeline.v1beta.PipelinePublicService/GetPipeline response pipeline id`]:
           (r) => r.message.pipeline.id === pipelineId,
-        [`pipeline.v1beta.PipelinePublicService/GetNamespacePipeline response pipeline description`]:
+        [`pipeline.v1beta.PipelinePublicService/GetPipeline response pipeline description`]:
           (r) => r.message.pipeline.description === reqBody.description,
-        [`pipeline.v1beta.PipelinePublicService/GetNamespacePipeline response pipeline recipe is null`]:
+        [`pipeline.v1beta.PipelinePublicService/GetPipeline response pipeline recipe is null`]:
           (r) => r.message.pipeline.recipe === null,
       }
     );
@@ -403,7 +403,7 @@ export function CheckGet(data) {
 
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/GetNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/GetPipeline",
         {
           name: `${constant.namespace}/pipelines/${pipelineId}`,
           view: "VIEW_FULL",
@@ -411,25 +411,25 @@ export function CheckGet(data) {
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/GetNamespacePipeline view: "VIEW_FULL" response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/GetPipeline view: "VIEW_FULL" response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`pipeline.v1beta.PipelinePublicService/GetNamespacePipeline view: "VIEW_FULL" response pipeline recipe is not null`]:
+        [`pipeline.v1beta.PipelinePublicService/GetPipeline view: "VIEW_FULL" response pipeline recipe is not null`]:
           (r) => r.message.pipeline.recipe !== null,
-        [`pipeline.v1beta.PipelinePublicService/GetNamespacePipeline view: "VIEW_FULL" response pipeline owner is valid`]:
+        [`pipeline.v1beta.PipelinePublicService/GetPipeline view: "VIEW_FULL" response pipeline owner is valid`]:
           (r) => helper.isValidOwner(r.message.pipeline.owner, data.expectedOwner),
       }
     );
 
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/GetNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/GetPipeline",
         {
           name: `${constant.namespace}/pipelines/this-id-does-not-exist`,
         },
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/GetNamespacePipeline this-id-does-not-exist response StatusNotFound`]:
+        [`pipeline.v1beta.PipelinePublicService/GetPipeline this-id-does-not-exist response StatusNotFound`]:
           (r) => r.status === grpc.StatusNotFound,
       }
     );
@@ -437,14 +437,14 @@ export function CheckGet(data) {
     // Delete the pipeline
     check(
       client.invoke(
-        `pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline`,
+        `pipeline.v1beta.PipelinePublicService/DeletePipeline`,
         {
           name: `${constant.namespace}/pipelines/${pipelineId}`,
         },
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/DeletePipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
@@ -466,7 +466,7 @@ export function CheckUpdate(data) {
 
     // Create a pipeline
     var resOrigin = client.invoke(
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline",
       {
         parent: `${constant.namespace}`,
         pipeline: reqBody,
@@ -475,7 +475,7 @@ export function CheckUpdate(data) {
     );
 
     check(resOrigin, {
-      [`pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response StatusOK`]:
+      [`pipeline.v1beta.PipelinePublicService/CreatePipeline response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
     });
 
@@ -493,7 +493,7 @@ export function CheckUpdate(data) {
 
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/UpdatePipeline",
         {
           pipeline: reqBodyUpdate,
           update_mask: "description",
@@ -501,28 +501,28 @@ export function CheckUpdate(data) {
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/UpdatePipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline response pipeline name (OUTPUT_ONLY)`]:
+        [`pipeline.v1beta.PipelinePublicService/UpdatePipeline response pipeline name (OUTPUT_ONLY)`]:
           (r) =>
             r.message.pipeline.name ===
             `${constant.namespace}/pipelines/${pipelineId}`,
         // Note: uid is no longer exposed in the API
-        [`pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline response pipeline id (OUTPUT_ONLY)`]:
+        [`pipeline.v1beta.PipelinePublicService/UpdatePipeline response pipeline id (OUTPUT_ONLY)`]:
           (r) => r.message.pipeline.id === pipelineId,
-        [`pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline response pipeline description (OPTIONAL)`]:
+        [`pipeline.v1beta.PipelinePublicService/UpdatePipeline response pipeline description (OPTIONAL)`]:
           (r) => r.message.pipeline.description === reqBodyUpdate.description,
-        [`pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline response pipeline recipe (IMMUTABLE)`]:
+        [`pipeline.v1beta.PipelinePublicService/UpdatePipeline response pipeline recipe (IMMUTABLE)`]:
           (r) => r.message.pipeline.recipe !== null,
-        [`pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline response pipeline createTime (OUTPUT_ONLY)`]:
+        [`pipeline.v1beta.PipelinePublicService/UpdatePipeline response pipeline createTime (OUTPUT_ONLY)`]:
           (r) =>
             new Date(r.message.pipeline.createTime).getTime() >
             new Date().setTime(0),
-        [`pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline response pipeline updateTime (OUTPUT_ONLY)`]:
+        [`pipeline.v1beta.PipelinePublicService/UpdatePipeline response pipeline updateTime (OUTPUT_ONLY)`]:
           (r) =>
             new Date(r.message.pipeline.updateTime).getTime() >
             new Date().setTime(0),
-        [`pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline response pipeline updateTime > createTime`]:
+        [`pipeline.v1beta.PipelinePublicService/UpdatePipeline response pipeline updateTime > createTime`]:
           (r) =>
             new Date(r.message.pipeline.updateTime).getTime() >
             new Date(r.message.pipeline.createTime).getTime(),
@@ -532,7 +532,7 @@ export function CheckUpdate(data) {
     reqBodyUpdate.description = "";
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/UpdatePipeline",
         {
           pipeline: reqBodyUpdate,
           update_mask: "description",
@@ -540,7 +540,7 @@ export function CheckUpdate(data) {
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline response pipeline description empty`]:
+        [`pipeline.v1beta.PipelinePublicService/UpdatePipeline response pipeline description empty`]:
           (r) => r.message.pipeline.description === "",
       }
     );
@@ -548,7 +548,7 @@ export function CheckUpdate(data) {
     reqBodyUpdate.description = randomString(10);
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/UpdatePipeline",
         {
           pipeline: reqBodyUpdate,
           update_mask: "description",
@@ -556,7 +556,7 @@ export function CheckUpdate(data) {
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline response pipeline description non-empty`]:
+        [`pipeline.v1beta.PipelinePublicService/UpdatePipeline response pipeline description non-empty`]:
           (r) => r.message.pipeline.description === reqBodyUpdate.description,
       }
     );
@@ -567,14 +567,14 @@ export function CheckUpdate(data) {
     // Delete the pipeline
     check(
       client.invoke(
-        `pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline`,
+        `pipeline.v1beta.PipelinePublicService/DeletePipeline`,
         {
           name: `${constant.namespace}/pipelines/${pipelineId}`,
         },
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/DeletePipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
@@ -597,7 +597,7 @@ export function CheckRename(data) {
 
     // Create a pipeline
     var res = client.invoke(
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline",
       {
         parent: `${constant.namespace}`,
         pipeline: reqBody,
@@ -606,7 +606,7 @@ export function CheckRename(data) {
     );
 
     check(res, {
-      [`pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response StatusOK`]:
+      [`pipeline.v1beta.PipelinePublicService/CreatePipeline response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
     });
 
@@ -620,7 +620,7 @@ export function CheckRename(data) {
     var new_pipeline_id = randomString(10);
 
     var renameRes = client.invoke(
-      "pipeline.v1beta.PipelinePublicService/RenameNamespacePipeline",
+      "pipeline.v1beta.PipelinePublicService/RenamePipeline",
       {
         name: `${constant.namespace}/pipelines/${pipelineId}`,
         new_pipeline_id: new_pipeline_id,
@@ -630,13 +630,13 @@ export function CheckRename(data) {
     check(
       renameRes,
       {
-        [`pipeline.v1beta.PipelinePublicService/RenameNamespacePipeline response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/RenamePipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
         // Note: Backend may return either users/admin or namespaces/admin format during transition
-        [`pipeline.v1beta.PipelinePublicService/RenameNamespacePipeline response pipeline new name`]:
+        [`pipeline.v1beta.PipelinePublicService/RenamePipeline response pipeline new name`]:
           (r) =>
             r.message.pipeline.name && r.message.pipeline.name.endsWith(`/pipelines/${new_pipeline_id}`),
-        [`pipeline.v1beta.PipelinePublicService/RenameNamespacePipeline response pipeline new id`]:
+        [`pipeline.v1beta.PipelinePublicService/RenamePipeline response pipeline new id`]:
           (r) => r.message.pipeline.id === new_pipeline_id,
       }
     );
@@ -644,14 +644,14 @@ export function CheckRename(data) {
     // Delete the pipeline
     check(
       client.invoke(
-        `pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline`,
+        `pipeline.v1beta.PipelinePublicService/DeletePipeline`,
         {
           name: `${constant.namespace}/pipelines/${new_pipeline_id}`,
         },
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/DeletePipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );

@@ -53,26 +53,26 @@ type RepositoryMock struct {
 	beforeCreateNamespaceConnectionCounter uint64
 	CreateNamespaceConnectionMock          mRepositoryMockCreateNamespaceConnection
 
-	funcCreateNamespacePipeline          func(ctx context.Context, pipeline *datamodel.Pipeline) (err error)
-	funcCreateNamespacePipelineOrigin    string
-	inspectFuncCreateNamespacePipeline   func(ctx context.Context, pipeline *datamodel.Pipeline)
-	afterCreateNamespacePipelineCounter  uint64
-	beforeCreateNamespacePipelineCounter uint64
-	CreateNamespacePipelineMock          mRepositoryMockCreateNamespacePipeline
-
-	funcCreateNamespacePipelineRelease          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) (err error)
-	funcCreateNamespacePipelineReleaseOrigin    string
-	inspectFuncCreateNamespacePipelineRelease   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease)
-	afterCreateNamespacePipelineReleaseCounter  uint64
-	beforeCreateNamespacePipelineReleaseCounter uint64
-	CreateNamespacePipelineReleaseMock          mRepositoryMockCreateNamespacePipelineRelease
-
 	funcCreateNamespaceSecret          func(ctx context.Context, ownerPermalink string, secret *datamodel.Secret) (err error)
 	funcCreateNamespaceSecretOrigin    string
 	inspectFuncCreateNamespaceSecret   func(ctx context.Context, ownerPermalink string, secret *datamodel.Secret)
 	afterCreateNamespaceSecretCounter  uint64
 	beforeCreateNamespaceSecretCounter uint64
 	CreateNamespaceSecretMock          mRepositoryMockCreateNamespaceSecret
+
+	funcCreatePipeline          func(ctx context.Context, pipeline *datamodel.Pipeline) (err error)
+	funcCreatePipelineOrigin    string
+	inspectFuncCreatePipeline   func(ctx context.Context, pipeline *datamodel.Pipeline)
+	afterCreatePipelineCounter  uint64
+	beforeCreatePipelineCounter uint64
+	CreatePipelineMock          mRepositoryMockCreatePipeline
+
+	funcCreatePipelineRelease          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) (err error)
+	funcCreatePipelineReleaseOrigin    string
+	inspectFuncCreatePipelineRelease   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease)
+	afterCreatePipelineReleaseCounter  uint64
+	beforeCreatePipelineReleaseCounter uint64
+	CreatePipelineReleaseMock          mRepositoryMockCreatePipelineRelease
 
 	funcCreatePipelineRunOn          func(ctx context.Context, pp1 *datamodel.PipelineRunOn) (err error)
 	funcCreatePipelineRunOnOrigin    string
@@ -102,26 +102,26 @@ type RepositoryMock struct {
 	beforeDeleteNamespaceConnectionByIDCounter uint64
 	DeleteNamespaceConnectionByIDMock          mRepositoryMockDeleteNamespaceConnectionByID
 
-	funcDeleteNamespacePipelineByID          func(ctx context.Context, ownerPermalink string, id string) (err error)
-	funcDeleteNamespacePipelineByIDOrigin    string
-	inspectFuncDeleteNamespacePipelineByID   func(ctx context.Context, ownerPermalink string, id string)
-	afterDeleteNamespacePipelineByIDCounter  uint64
-	beforeDeleteNamespacePipelineByIDCounter uint64
-	DeleteNamespacePipelineByIDMock          mRepositoryMockDeleteNamespacePipelineByID
-
-	funcDeleteNamespacePipelineReleaseByID          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string) (err error)
-	funcDeleteNamespacePipelineReleaseByIDOrigin    string
-	inspectFuncDeleteNamespacePipelineReleaseByID   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string)
-	afterDeleteNamespacePipelineReleaseByIDCounter  uint64
-	beforeDeleteNamespacePipelineReleaseByIDCounter uint64
-	DeleteNamespacePipelineReleaseByIDMock          mRepositoryMockDeleteNamespacePipelineReleaseByID
-
 	funcDeleteNamespaceSecretByID          func(ctx context.Context, ownerPermalink string, id string) (err error)
 	funcDeleteNamespaceSecretByIDOrigin    string
 	inspectFuncDeleteNamespaceSecretByID   func(ctx context.Context, ownerPermalink string, id string)
 	afterDeleteNamespaceSecretByIDCounter  uint64
 	beforeDeleteNamespaceSecretByIDCounter uint64
 	DeleteNamespaceSecretByIDMock          mRepositoryMockDeleteNamespaceSecretByID
+
+	funcDeletePipelineByID          func(ctx context.Context, ownerPermalink string, id string) (err error)
+	funcDeletePipelineByIDOrigin    string
+	inspectFuncDeletePipelineByID   func(ctx context.Context, ownerPermalink string, id string)
+	afterDeletePipelineByIDCounter  uint64
+	beforeDeletePipelineByIDCounter uint64
+	DeletePipelineByIDMock          mRepositoryMockDeletePipelineByID
+
+	funcDeletePipelineReleaseByID          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string) (err error)
+	funcDeletePipelineReleaseByIDOrigin    string
+	inspectFuncDeletePipelineReleaseByID   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string)
+	afterDeletePipelineReleaseByIDCounter  uint64
+	beforeDeletePipelineReleaseByIDCounter uint64
+	DeletePipelineReleaseByIDMock          mRepositoryMockDeletePipelineReleaseByID
 
 	funcDeletePipelineRunOn          func(ctx context.Context, uid uuid.UUID) (err error)
 	funcDeletePipelineRunOnOrigin    string
@@ -158,12 +158,12 @@ type RepositoryMock struct {
 	beforeGetHubStatsCounter uint64
 	GetHubStatsMock          mRepositoryMockGetHubStats
 
-	funcGetLatestNamespacePipelineRelease          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool) (pp1 *datamodel.PipelineRelease, err error)
-	funcGetLatestNamespacePipelineReleaseOrigin    string
-	inspectFuncGetLatestNamespacePipelineRelease   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool)
-	afterGetLatestNamespacePipelineReleaseCounter  uint64
-	beforeGetLatestNamespacePipelineReleaseCounter uint64
-	GetLatestNamespacePipelineReleaseMock          mRepositoryMockGetLatestNamespacePipelineRelease
+	funcGetLatestPipelineRelease          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool) (pp1 *datamodel.PipelineRelease, err error)
+	funcGetLatestPipelineReleaseOrigin    string
+	inspectFuncGetLatestPipelineRelease   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool)
+	afterGetLatestPipelineReleaseCounter  uint64
+	beforeGetLatestPipelineReleaseCounter uint64
+	GetLatestPipelineReleaseMock          mRepositoryMockGetLatestPipelineRelease
 
 	funcGetNamespaceConnectionByID          func(ctx context.Context, nsUID uuid.UUID, id string) (cp1 *datamodel.Connection, err error)
 	funcGetNamespaceConnectionByIDOrigin    string
@@ -171,20 +171,6 @@ type RepositoryMock struct {
 	afterGetNamespaceConnectionByIDCounter  uint64
 	beforeGetNamespaceConnectionByIDCounter uint64
 	GetNamespaceConnectionByIDMock          mRepositoryMockGetNamespaceConnectionByID
-
-	funcGetNamespacePipelineByID          func(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) (pp1 *datamodel.Pipeline, err error)
-	funcGetNamespacePipelineByIDOrigin    string
-	inspectFuncGetNamespacePipelineByID   func(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool)
-	afterGetNamespacePipelineByIDCounter  uint64
-	beforeGetNamespacePipelineByIDCounter uint64
-	GetNamespacePipelineByIDMock          mRepositoryMockGetNamespacePipelineByID
-
-	funcGetNamespacePipelineReleaseByID          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool) (pp1 *datamodel.PipelineRelease, err error)
-	funcGetNamespacePipelineReleaseByIDOrigin    string
-	inspectFuncGetNamespacePipelineReleaseByID   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool)
-	afterGetNamespacePipelineReleaseByIDCounter  uint64
-	beforeGetNamespacePipelineReleaseByIDCounter uint64
-	GetNamespacePipelineReleaseByIDMock          mRepositoryMockGetNamespacePipelineReleaseByID
 
 	funcGetNamespaceSecretByID          func(ctx context.Context, ownerPermalink string, id string) (sp1 *datamodel.Secret, err error)
 	funcGetNamespaceSecretByIDOrigin    string
@@ -214,6 +200,13 @@ type RepositoryMock struct {
 	beforeGetPaginatedPipelineRunsWithPermissionsCounter uint64
 	GetPaginatedPipelineRunsWithPermissionsMock          mRepositoryMockGetPaginatedPipelineRunsWithPermissions
 
+	funcGetPipelineByID          func(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) (pp1 *datamodel.Pipeline, err error)
+	funcGetPipelineByIDOrigin    string
+	inspectFuncGetPipelineByID   func(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool)
+	afterGetPipelineByIDCounter  uint64
+	beforeGetPipelineByIDCounter uint64
+	GetPipelineByIDMock          mRepositoryMockGetPipelineByID
+
 	funcGetPipelineByIDAdmin          func(ctx context.Context, id string, isBasicView bool, embedReleases bool) (pp1 *datamodel.Pipeline, err error)
 	funcGetPipelineByIDAdminOrigin    string
 	inspectFuncGetPipelineByIDAdmin   func(ctx context.Context, id string, isBasicView bool, embedReleases bool)
@@ -227,6 +220,13 @@ type RepositoryMock struct {
 	afterGetPipelineByUIDCounter  uint64
 	beforeGetPipelineByUIDCounter uint64
 	GetPipelineByUIDMock          mRepositoryMockGetPipelineByUID
+
+	funcGetPipelineReleaseByID          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool) (pp1 *datamodel.PipelineRelease, err error)
+	funcGetPipelineReleaseByIDOrigin    string
+	inspectFuncGetPipelineReleaseByID   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool)
+	afterGetPipelineReleaseByIDCounter  uint64
+	beforeGetPipelineReleaseByIDCounter uint64
+	GetPipelineReleaseByIDMock          mRepositoryMockGetPipelineReleaseByID
 
 	funcGetPipelineReleaseByUIDAdmin          func(ctx context.Context, uid uuid.UUID, isBasicView bool) (pp1 *datamodel.PipelineRelease, err error)
 	funcGetPipelineReleaseByUIDAdminOrigin    string
@@ -270,20 +270,6 @@ type RepositoryMock struct {
 	beforeListNamespaceConnectionsCounter uint64
 	ListNamespaceConnectionsMock          mRepositoryMockListNamespaceConnections
 
-	funcListNamespacePipelineReleases          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) (ppa1 []*datamodel.PipelineRelease, i1 int64, s1 string, err error)
-	funcListNamespacePipelineReleasesOrigin    string
-	inspectFuncListNamespacePipelineReleases   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool)
-	afterListNamespacePipelineReleasesCounter  uint64
-	beforeListNamespacePipelineReleasesCounter uint64
-	ListNamespacePipelineReleasesMock          mRepositoryMockListNamespacePipelineReleases
-
-	funcListNamespacePipelines          func(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error)
-	funcListNamespacePipelinesOrigin    string
-	inspectFuncListNamespacePipelines   func(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy)
-	afterListNamespacePipelinesCounter  uint64
-	beforeListNamespacePipelinesCounter uint64
-	ListNamespacePipelinesMock          mRepositoryMockListNamespacePipelines
-
 	funcListNamespaceSecrets          func(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, filter filtering.Filter) (spa1 []*datamodel.Secret, i1 int64, s1 string, err error)
 	funcListNamespaceSecretsOrigin    string
 	inspectFuncListNamespaceSecrets   func(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, filter filtering.Filter)
@@ -297,6 +283,13 @@ type RepositoryMock struct {
 	afterListPipelineIDsByConnectionIDCounter  uint64
 	beforeListPipelineIDsByConnectionIDCounter uint64
 	ListPipelineIDsByConnectionIDMock          mRepositoryMockListPipelineIDsByConnectionID
+
+	funcListPipelineReleases          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) (ppa1 []*datamodel.PipelineRelease, i1 int64, s1 string, err error)
+	funcListPipelineReleasesOrigin    string
+	inspectFuncListPipelineReleases   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool)
+	afterListPipelineReleasesCounter  uint64
+	beforeListPipelineReleasesCounter uint64
+	ListPipelineReleasesMock          mRepositoryMockListPipelineReleases
 
 	funcListPipelineRunOns          func(ctx context.Context, pipelineUID uuid.UUID) (p1 mm_repository.PipelineRunOnList, err error)
 	funcListPipelineRunOnsOrigin    string
@@ -319,9 +312,9 @@ type RepositoryMock struct {
 	beforeListPipelineTagsCounter uint64
 	ListPipelineTagsMock          mRepositoryMockListPipelineTags
 
-	funcListPipelines          func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error)
+	funcListPipelines          func(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error)
 	funcListPipelinesOrigin    string
-	inspectFuncListPipelines   func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID)
+	inspectFuncListPipelines   func(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy)
 	afterListPipelinesCounter  uint64
 	beforeListPipelinesCounter uint64
 	ListPipelinesMock          mRepositoryMockListPipelines
@@ -332,6 +325,13 @@ type RepositoryMock struct {
 	afterListPipelinesAdminCounter  uint64
 	beforeListPipelinesAdminCounter uint64
 	ListPipelinesAdminMock          mRepositoryMockListPipelinesAdmin
+
+	funcListPublicPipelines          func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error)
+	funcListPublicPipelinesOrigin    string
+	inspectFuncListPublicPipelines   func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID)
+	afterListPublicPipelinesCounter  uint64
+	beforeListPublicPipelinesCounter uint64
+	ListPublicPipelinesMock          mRepositoryMockListPublicPipelines
 
 	funcPinUser          func(ctx context.Context, table string)
 	funcPinUserOrigin    string
@@ -361,40 +361,40 @@ type RepositoryMock struct {
 	beforeUpdateNamespaceConnectionByUIDCounter uint64
 	UpdateNamespaceConnectionByUIDMock          mRepositoryMockUpdateNamespaceConnectionByUID
 
-	funcUpdateNamespacePipelineByUID          func(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) (err error)
-	funcUpdateNamespacePipelineByUIDOrigin    string
-	inspectFuncUpdateNamespacePipelineByUID   func(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline)
-	afterUpdateNamespacePipelineByUIDCounter  uint64
-	beforeUpdateNamespacePipelineByUIDCounter uint64
-	UpdateNamespacePipelineByUIDMock          mRepositoryMockUpdateNamespacePipelineByUID
-
-	funcUpdateNamespacePipelineIDByID          func(ctx context.Context, ownerPermalink string, id string, newID string) (err error)
-	funcUpdateNamespacePipelineIDByIDOrigin    string
-	inspectFuncUpdateNamespacePipelineIDByID   func(ctx context.Context, ownerPermalink string, id string, newID string)
-	afterUpdateNamespacePipelineIDByIDCounter  uint64
-	beforeUpdateNamespacePipelineIDByIDCounter uint64
-	UpdateNamespacePipelineIDByIDMock          mRepositoryMockUpdateNamespacePipelineIDByID
-
-	funcUpdateNamespacePipelineReleaseByID          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) (err error)
-	funcUpdateNamespacePipelineReleaseByIDOrigin    string
-	inspectFuncUpdateNamespacePipelineReleaseByID   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease)
-	afterUpdateNamespacePipelineReleaseByIDCounter  uint64
-	beforeUpdateNamespacePipelineReleaseByIDCounter uint64
-	UpdateNamespacePipelineReleaseByIDMock          mRepositoryMockUpdateNamespacePipelineReleaseByID
-
-	funcUpdateNamespacePipelineReleaseIDByID          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string) (err error)
-	funcUpdateNamespacePipelineReleaseIDByIDOrigin    string
-	inspectFuncUpdateNamespacePipelineReleaseIDByID   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string)
-	afterUpdateNamespacePipelineReleaseIDByIDCounter  uint64
-	beforeUpdateNamespacePipelineReleaseIDByIDCounter uint64
-	UpdateNamespacePipelineReleaseIDByIDMock          mRepositoryMockUpdateNamespacePipelineReleaseIDByID
-
 	funcUpdateNamespaceSecretByID          func(ctx context.Context, ownerPermalink string, id string, secret *datamodel.Secret) (err error)
 	funcUpdateNamespaceSecretByIDOrigin    string
 	inspectFuncUpdateNamespaceSecretByID   func(ctx context.Context, ownerPermalink string, id string, secret *datamodel.Secret)
 	afterUpdateNamespaceSecretByIDCounter  uint64
 	beforeUpdateNamespaceSecretByIDCounter uint64
 	UpdateNamespaceSecretByIDMock          mRepositoryMockUpdateNamespaceSecretByID
+
+	funcUpdatePipelineByUID          func(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) (err error)
+	funcUpdatePipelineByUIDOrigin    string
+	inspectFuncUpdatePipelineByUID   func(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline)
+	afterUpdatePipelineByUIDCounter  uint64
+	beforeUpdatePipelineByUIDCounter uint64
+	UpdatePipelineByUIDMock          mRepositoryMockUpdatePipelineByUID
+
+	funcUpdatePipelineIDByID          func(ctx context.Context, ownerPermalink string, id string, newID string) (err error)
+	funcUpdatePipelineIDByIDOrigin    string
+	inspectFuncUpdatePipelineIDByID   func(ctx context.Context, ownerPermalink string, id string, newID string)
+	afterUpdatePipelineIDByIDCounter  uint64
+	beforeUpdatePipelineIDByIDCounter uint64
+	UpdatePipelineIDByIDMock          mRepositoryMockUpdatePipelineIDByID
+
+	funcUpdatePipelineReleaseByID          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) (err error)
+	funcUpdatePipelineReleaseByIDOrigin    string
+	inspectFuncUpdatePipelineReleaseByID   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease)
+	afterUpdatePipelineReleaseByIDCounter  uint64
+	beforeUpdatePipelineReleaseByIDCounter uint64
+	UpdatePipelineReleaseByIDMock          mRepositoryMockUpdatePipelineReleaseByID
+
+	funcUpdatePipelineReleaseIDByID          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string) (err error)
+	funcUpdatePipelineReleaseIDByIDOrigin    string
+	inspectFuncUpdatePipelineReleaseIDByID   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string)
+	afterUpdatePipelineReleaseIDByIDCounter  uint64
+	beforeUpdatePipelineReleaseIDByIDCounter uint64
+	UpdatePipelineReleaseIDByIDMock          mRepositoryMockUpdatePipelineReleaseIDByID
 
 	funcUpdatePipelineRun          func(ctx context.Context, pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun) (err error)
 	funcUpdatePipelineRunOrigin    string
@@ -445,14 +445,14 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 	m.CreateNamespaceConnectionMock = mRepositoryMockCreateNamespaceConnection{mock: m}
 	m.CreateNamespaceConnectionMock.callArgs = []*RepositoryMockCreateNamespaceConnectionParams{}
 
-	m.CreateNamespacePipelineMock = mRepositoryMockCreateNamespacePipeline{mock: m}
-	m.CreateNamespacePipelineMock.callArgs = []*RepositoryMockCreateNamespacePipelineParams{}
-
-	m.CreateNamespacePipelineReleaseMock = mRepositoryMockCreateNamespacePipelineRelease{mock: m}
-	m.CreateNamespacePipelineReleaseMock.callArgs = []*RepositoryMockCreateNamespacePipelineReleaseParams{}
-
 	m.CreateNamespaceSecretMock = mRepositoryMockCreateNamespaceSecret{mock: m}
 	m.CreateNamespaceSecretMock.callArgs = []*RepositoryMockCreateNamespaceSecretParams{}
+
+	m.CreatePipelineMock = mRepositoryMockCreatePipeline{mock: m}
+	m.CreatePipelineMock.callArgs = []*RepositoryMockCreatePipelineParams{}
+
+	m.CreatePipelineReleaseMock = mRepositoryMockCreatePipelineRelease{mock: m}
+	m.CreatePipelineReleaseMock.callArgs = []*RepositoryMockCreatePipelineReleaseParams{}
 
 	m.CreatePipelineRunOnMock = mRepositoryMockCreatePipelineRunOn{mock: m}
 	m.CreatePipelineRunOnMock.callArgs = []*RepositoryMockCreatePipelineRunOnParams{}
@@ -466,14 +466,14 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 	m.DeleteNamespaceConnectionByIDMock = mRepositoryMockDeleteNamespaceConnectionByID{mock: m}
 	m.DeleteNamespaceConnectionByIDMock.callArgs = []*RepositoryMockDeleteNamespaceConnectionByIDParams{}
 
-	m.DeleteNamespacePipelineByIDMock = mRepositoryMockDeleteNamespacePipelineByID{mock: m}
-	m.DeleteNamespacePipelineByIDMock.callArgs = []*RepositoryMockDeleteNamespacePipelineByIDParams{}
-
-	m.DeleteNamespacePipelineReleaseByIDMock = mRepositoryMockDeleteNamespacePipelineReleaseByID{mock: m}
-	m.DeleteNamespacePipelineReleaseByIDMock.callArgs = []*RepositoryMockDeleteNamespacePipelineReleaseByIDParams{}
-
 	m.DeleteNamespaceSecretByIDMock = mRepositoryMockDeleteNamespaceSecretByID{mock: m}
 	m.DeleteNamespaceSecretByIDMock.callArgs = []*RepositoryMockDeleteNamespaceSecretByIDParams{}
+
+	m.DeletePipelineByIDMock = mRepositoryMockDeletePipelineByID{mock: m}
+	m.DeletePipelineByIDMock.callArgs = []*RepositoryMockDeletePipelineByIDParams{}
+
+	m.DeletePipelineReleaseByIDMock = mRepositoryMockDeletePipelineReleaseByID{mock: m}
+	m.DeletePipelineReleaseByIDMock.callArgs = []*RepositoryMockDeletePipelineReleaseByIDParams{}
 
 	m.DeletePipelineRunOnMock = mRepositoryMockDeletePipelineRunOn{mock: m}
 	m.DeletePipelineRunOnMock.callArgs = []*RepositoryMockDeletePipelineRunOnParams{}
@@ -490,17 +490,11 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 	m.GetHubStatsMock = mRepositoryMockGetHubStats{mock: m}
 	m.GetHubStatsMock.callArgs = []*RepositoryMockGetHubStatsParams{}
 
-	m.GetLatestNamespacePipelineReleaseMock = mRepositoryMockGetLatestNamespacePipelineRelease{mock: m}
-	m.GetLatestNamespacePipelineReleaseMock.callArgs = []*RepositoryMockGetLatestNamespacePipelineReleaseParams{}
+	m.GetLatestPipelineReleaseMock = mRepositoryMockGetLatestPipelineRelease{mock: m}
+	m.GetLatestPipelineReleaseMock.callArgs = []*RepositoryMockGetLatestPipelineReleaseParams{}
 
 	m.GetNamespaceConnectionByIDMock = mRepositoryMockGetNamespaceConnectionByID{mock: m}
 	m.GetNamespaceConnectionByIDMock.callArgs = []*RepositoryMockGetNamespaceConnectionByIDParams{}
-
-	m.GetNamespacePipelineByIDMock = mRepositoryMockGetNamespacePipelineByID{mock: m}
-	m.GetNamespacePipelineByIDMock.callArgs = []*RepositoryMockGetNamespacePipelineByIDParams{}
-
-	m.GetNamespacePipelineReleaseByIDMock = mRepositoryMockGetNamespacePipelineReleaseByID{mock: m}
-	m.GetNamespacePipelineReleaseByIDMock.callArgs = []*RepositoryMockGetNamespacePipelineReleaseByIDParams{}
 
 	m.GetNamespaceSecretByIDMock = mRepositoryMockGetNamespaceSecretByID{mock: m}
 	m.GetNamespaceSecretByIDMock.callArgs = []*RepositoryMockGetNamespaceSecretByIDParams{}
@@ -514,11 +508,17 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 	m.GetPaginatedPipelineRunsWithPermissionsMock = mRepositoryMockGetPaginatedPipelineRunsWithPermissions{mock: m}
 	m.GetPaginatedPipelineRunsWithPermissionsMock.callArgs = []*RepositoryMockGetPaginatedPipelineRunsWithPermissionsParams{}
 
+	m.GetPipelineByIDMock = mRepositoryMockGetPipelineByID{mock: m}
+	m.GetPipelineByIDMock.callArgs = []*RepositoryMockGetPipelineByIDParams{}
+
 	m.GetPipelineByIDAdminMock = mRepositoryMockGetPipelineByIDAdmin{mock: m}
 	m.GetPipelineByIDAdminMock.callArgs = []*RepositoryMockGetPipelineByIDAdminParams{}
 
 	m.GetPipelineByUIDMock = mRepositoryMockGetPipelineByUID{mock: m}
 	m.GetPipelineByUIDMock.callArgs = []*RepositoryMockGetPipelineByUIDParams{}
+
+	m.GetPipelineReleaseByIDMock = mRepositoryMockGetPipelineReleaseByID{mock: m}
+	m.GetPipelineReleaseByIDMock.callArgs = []*RepositoryMockGetPipelineReleaseByIDParams{}
 
 	m.GetPipelineReleaseByUIDAdminMock = mRepositoryMockGetPipelineReleaseByUIDAdmin{mock: m}
 	m.GetPipelineReleaseByUIDAdminMock.callArgs = []*RepositoryMockGetPipelineReleaseByUIDAdminParams{}
@@ -538,17 +538,14 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 	m.ListNamespaceConnectionsMock = mRepositoryMockListNamespaceConnections{mock: m}
 	m.ListNamespaceConnectionsMock.callArgs = []*RepositoryMockListNamespaceConnectionsParams{}
 
-	m.ListNamespacePipelineReleasesMock = mRepositoryMockListNamespacePipelineReleases{mock: m}
-	m.ListNamespacePipelineReleasesMock.callArgs = []*RepositoryMockListNamespacePipelineReleasesParams{}
-
-	m.ListNamespacePipelinesMock = mRepositoryMockListNamespacePipelines{mock: m}
-	m.ListNamespacePipelinesMock.callArgs = []*RepositoryMockListNamespacePipelinesParams{}
-
 	m.ListNamespaceSecretsMock = mRepositoryMockListNamespaceSecrets{mock: m}
 	m.ListNamespaceSecretsMock.callArgs = []*RepositoryMockListNamespaceSecretsParams{}
 
 	m.ListPipelineIDsByConnectionIDMock = mRepositoryMockListPipelineIDsByConnectionID{mock: m}
 	m.ListPipelineIDsByConnectionIDMock.callArgs = []*RepositoryMockListPipelineIDsByConnectionIDParams{}
+
+	m.ListPipelineReleasesMock = mRepositoryMockListPipelineReleases{mock: m}
+	m.ListPipelineReleasesMock.callArgs = []*RepositoryMockListPipelineReleasesParams{}
 
 	m.ListPipelineRunOnsMock = mRepositoryMockListPipelineRunOns{mock: m}
 	m.ListPipelineRunOnsMock.callArgs = []*RepositoryMockListPipelineRunOnsParams{}
@@ -565,6 +562,9 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 	m.ListPipelinesAdminMock = mRepositoryMockListPipelinesAdmin{mock: m}
 	m.ListPipelinesAdminMock.callArgs = []*RepositoryMockListPipelinesAdminParams{}
 
+	m.ListPublicPipelinesMock = mRepositoryMockListPublicPipelines{mock: m}
+	m.ListPublicPipelinesMock.callArgs = []*RepositoryMockListPublicPipelinesParams{}
+
 	m.PinUserMock = mRepositoryMockPinUser{mock: m}
 	m.PinUserMock.callArgs = []*RepositoryMockPinUserParams{}
 
@@ -577,20 +577,20 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 	m.UpdateNamespaceConnectionByUIDMock = mRepositoryMockUpdateNamespaceConnectionByUID{mock: m}
 	m.UpdateNamespaceConnectionByUIDMock.callArgs = []*RepositoryMockUpdateNamespaceConnectionByUIDParams{}
 
-	m.UpdateNamespacePipelineByUIDMock = mRepositoryMockUpdateNamespacePipelineByUID{mock: m}
-	m.UpdateNamespacePipelineByUIDMock.callArgs = []*RepositoryMockUpdateNamespacePipelineByUIDParams{}
-
-	m.UpdateNamespacePipelineIDByIDMock = mRepositoryMockUpdateNamespacePipelineIDByID{mock: m}
-	m.UpdateNamespacePipelineIDByIDMock.callArgs = []*RepositoryMockUpdateNamespacePipelineIDByIDParams{}
-
-	m.UpdateNamespacePipelineReleaseByIDMock = mRepositoryMockUpdateNamespacePipelineReleaseByID{mock: m}
-	m.UpdateNamespacePipelineReleaseByIDMock.callArgs = []*RepositoryMockUpdateNamespacePipelineReleaseByIDParams{}
-
-	m.UpdateNamespacePipelineReleaseIDByIDMock = mRepositoryMockUpdateNamespacePipelineReleaseIDByID{mock: m}
-	m.UpdateNamespacePipelineReleaseIDByIDMock.callArgs = []*RepositoryMockUpdateNamespacePipelineReleaseIDByIDParams{}
-
 	m.UpdateNamespaceSecretByIDMock = mRepositoryMockUpdateNamespaceSecretByID{mock: m}
 	m.UpdateNamespaceSecretByIDMock.callArgs = []*RepositoryMockUpdateNamespaceSecretByIDParams{}
+
+	m.UpdatePipelineByUIDMock = mRepositoryMockUpdatePipelineByUID{mock: m}
+	m.UpdatePipelineByUIDMock.callArgs = []*RepositoryMockUpdatePipelineByUIDParams{}
+
+	m.UpdatePipelineIDByIDMock = mRepositoryMockUpdatePipelineIDByID{mock: m}
+	m.UpdatePipelineIDByIDMock.callArgs = []*RepositoryMockUpdatePipelineIDByIDParams{}
+
+	m.UpdatePipelineReleaseByIDMock = mRepositoryMockUpdatePipelineReleaseByID{mock: m}
+	m.UpdatePipelineReleaseByIDMock.callArgs = []*RepositoryMockUpdatePipelineReleaseByIDParams{}
+
+	m.UpdatePipelineReleaseIDByIDMock = mRepositoryMockUpdatePipelineReleaseIDByID{mock: m}
+	m.UpdatePipelineReleaseIDByIDMock.callArgs = []*RepositoryMockUpdatePipelineReleaseIDByIDParams{}
 
 	m.UpdatePipelineRunMock = mRepositoryMockUpdatePipelineRun{mock: m}
 	m.UpdatePipelineRunMock.callArgs = []*RepositoryMockUpdatePipelineRunParams{}
@@ -2009,752 +2009,6 @@ func (m *RepositoryMock) MinimockCreateNamespaceConnectionInspect() {
 	}
 }
 
-type mRepositoryMockCreateNamespacePipeline struct {
-	optional           bool
-	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockCreateNamespacePipelineExpectation
-	expectations       []*RepositoryMockCreateNamespacePipelineExpectation
-
-	callArgs []*RepositoryMockCreateNamespacePipelineParams
-	mutex    sync.RWMutex
-
-	expectedInvocations       uint64
-	expectedInvocationsOrigin string
-}
-
-// RepositoryMockCreateNamespacePipelineExpectation specifies expectation struct of the Repository.CreateNamespacePipeline
-type RepositoryMockCreateNamespacePipelineExpectation struct {
-	mock               *RepositoryMock
-	params             *RepositoryMockCreateNamespacePipelineParams
-	paramPtrs          *RepositoryMockCreateNamespacePipelineParamPtrs
-	expectationOrigins RepositoryMockCreateNamespacePipelineExpectationOrigins
-	results            *RepositoryMockCreateNamespacePipelineResults
-	returnOrigin       string
-	Counter            uint64
-}
-
-// RepositoryMockCreateNamespacePipelineParams contains parameters of the Repository.CreateNamespacePipeline
-type RepositoryMockCreateNamespacePipelineParams struct {
-	ctx      context.Context
-	pipeline *datamodel.Pipeline
-}
-
-// RepositoryMockCreateNamespacePipelineParamPtrs contains pointers to parameters of the Repository.CreateNamespacePipeline
-type RepositoryMockCreateNamespacePipelineParamPtrs struct {
-	ctx      *context.Context
-	pipeline **datamodel.Pipeline
-}
-
-// RepositoryMockCreateNamespacePipelineResults contains results of the Repository.CreateNamespacePipeline
-type RepositoryMockCreateNamespacePipelineResults struct {
-	err error
-}
-
-// RepositoryMockCreateNamespacePipelineOrigins contains origins of expectations of the Repository.CreateNamespacePipeline
-type RepositoryMockCreateNamespacePipelineExpectationOrigins struct {
-	origin         string
-	originCtx      string
-	originPipeline string
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmCreateNamespacePipeline *mRepositoryMockCreateNamespacePipeline) Optional() *mRepositoryMockCreateNamespacePipeline {
-	mmCreateNamespacePipeline.optional = true
-	return mmCreateNamespacePipeline
-}
-
-// Expect sets up expected params for Repository.CreateNamespacePipeline
-func (mmCreateNamespacePipeline *mRepositoryMockCreateNamespacePipeline) Expect(ctx context.Context, pipeline *datamodel.Pipeline) *mRepositoryMockCreateNamespacePipeline {
-	if mmCreateNamespacePipeline.mock.funcCreateNamespacePipeline != nil {
-		mmCreateNamespacePipeline.mock.t.Fatalf("RepositoryMock.CreateNamespacePipeline mock is already set by Set")
-	}
-
-	if mmCreateNamespacePipeline.defaultExpectation == nil {
-		mmCreateNamespacePipeline.defaultExpectation = &RepositoryMockCreateNamespacePipelineExpectation{}
-	}
-
-	if mmCreateNamespacePipeline.defaultExpectation.paramPtrs != nil {
-		mmCreateNamespacePipeline.mock.t.Fatalf("RepositoryMock.CreateNamespacePipeline mock is already set by ExpectParams functions")
-	}
-
-	mmCreateNamespacePipeline.defaultExpectation.params = &RepositoryMockCreateNamespacePipelineParams{ctx, pipeline}
-	mmCreateNamespacePipeline.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmCreateNamespacePipeline.expectations {
-		if minimock.Equal(e.params, mmCreateNamespacePipeline.defaultExpectation.params) {
-			mmCreateNamespacePipeline.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreateNamespacePipeline.defaultExpectation.params)
-		}
-	}
-
-	return mmCreateNamespacePipeline
-}
-
-// ExpectCtxParam1 sets up expected param ctx for Repository.CreateNamespacePipeline
-func (mmCreateNamespacePipeline *mRepositoryMockCreateNamespacePipeline) ExpectCtxParam1(ctx context.Context) *mRepositoryMockCreateNamespacePipeline {
-	if mmCreateNamespacePipeline.mock.funcCreateNamespacePipeline != nil {
-		mmCreateNamespacePipeline.mock.t.Fatalf("RepositoryMock.CreateNamespacePipeline mock is already set by Set")
-	}
-
-	if mmCreateNamespacePipeline.defaultExpectation == nil {
-		mmCreateNamespacePipeline.defaultExpectation = &RepositoryMockCreateNamespacePipelineExpectation{}
-	}
-
-	if mmCreateNamespacePipeline.defaultExpectation.params != nil {
-		mmCreateNamespacePipeline.mock.t.Fatalf("RepositoryMock.CreateNamespacePipeline mock is already set by Expect")
-	}
-
-	if mmCreateNamespacePipeline.defaultExpectation.paramPtrs == nil {
-		mmCreateNamespacePipeline.defaultExpectation.paramPtrs = &RepositoryMockCreateNamespacePipelineParamPtrs{}
-	}
-	mmCreateNamespacePipeline.defaultExpectation.paramPtrs.ctx = &ctx
-	mmCreateNamespacePipeline.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
-
-	return mmCreateNamespacePipeline
-}
-
-// ExpectPipelineParam2 sets up expected param pipeline for Repository.CreateNamespacePipeline
-func (mmCreateNamespacePipeline *mRepositoryMockCreateNamespacePipeline) ExpectPipelineParam2(pipeline *datamodel.Pipeline) *mRepositoryMockCreateNamespacePipeline {
-	if mmCreateNamespacePipeline.mock.funcCreateNamespacePipeline != nil {
-		mmCreateNamespacePipeline.mock.t.Fatalf("RepositoryMock.CreateNamespacePipeline mock is already set by Set")
-	}
-
-	if mmCreateNamespacePipeline.defaultExpectation == nil {
-		mmCreateNamespacePipeline.defaultExpectation = &RepositoryMockCreateNamespacePipelineExpectation{}
-	}
-
-	if mmCreateNamespacePipeline.defaultExpectation.params != nil {
-		mmCreateNamespacePipeline.mock.t.Fatalf("RepositoryMock.CreateNamespacePipeline mock is already set by Expect")
-	}
-
-	if mmCreateNamespacePipeline.defaultExpectation.paramPtrs == nil {
-		mmCreateNamespacePipeline.defaultExpectation.paramPtrs = &RepositoryMockCreateNamespacePipelineParamPtrs{}
-	}
-	mmCreateNamespacePipeline.defaultExpectation.paramPtrs.pipeline = &pipeline
-	mmCreateNamespacePipeline.defaultExpectation.expectationOrigins.originPipeline = minimock.CallerInfo(1)
-
-	return mmCreateNamespacePipeline
-}
-
-// Inspect accepts an inspector function that has same arguments as the Repository.CreateNamespacePipeline
-func (mmCreateNamespacePipeline *mRepositoryMockCreateNamespacePipeline) Inspect(f func(ctx context.Context, pipeline *datamodel.Pipeline)) *mRepositoryMockCreateNamespacePipeline {
-	if mmCreateNamespacePipeline.mock.inspectFuncCreateNamespacePipeline != nil {
-		mmCreateNamespacePipeline.mock.t.Fatalf("Inspect function is already set for RepositoryMock.CreateNamespacePipeline")
-	}
-
-	mmCreateNamespacePipeline.mock.inspectFuncCreateNamespacePipeline = f
-
-	return mmCreateNamespacePipeline
-}
-
-// Return sets up results that will be returned by Repository.CreateNamespacePipeline
-func (mmCreateNamespacePipeline *mRepositoryMockCreateNamespacePipeline) Return(err error) *RepositoryMock {
-	if mmCreateNamespacePipeline.mock.funcCreateNamespacePipeline != nil {
-		mmCreateNamespacePipeline.mock.t.Fatalf("RepositoryMock.CreateNamespacePipeline mock is already set by Set")
-	}
-
-	if mmCreateNamespacePipeline.defaultExpectation == nil {
-		mmCreateNamespacePipeline.defaultExpectation = &RepositoryMockCreateNamespacePipelineExpectation{mock: mmCreateNamespacePipeline.mock}
-	}
-	mmCreateNamespacePipeline.defaultExpectation.results = &RepositoryMockCreateNamespacePipelineResults{err}
-	mmCreateNamespacePipeline.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmCreateNamespacePipeline.mock
-}
-
-// Set uses given function f to mock the Repository.CreateNamespacePipeline method
-func (mmCreateNamespacePipeline *mRepositoryMockCreateNamespacePipeline) Set(f func(ctx context.Context, pipeline *datamodel.Pipeline) (err error)) *RepositoryMock {
-	if mmCreateNamespacePipeline.defaultExpectation != nil {
-		mmCreateNamespacePipeline.mock.t.Fatalf("Default expectation is already set for the Repository.CreateNamespacePipeline method")
-	}
-
-	if len(mmCreateNamespacePipeline.expectations) > 0 {
-		mmCreateNamespacePipeline.mock.t.Fatalf("Some expectations are already set for the Repository.CreateNamespacePipeline method")
-	}
-
-	mmCreateNamespacePipeline.mock.funcCreateNamespacePipeline = f
-	mmCreateNamespacePipeline.mock.funcCreateNamespacePipelineOrigin = minimock.CallerInfo(1)
-	return mmCreateNamespacePipeline.mock
-}
-
-// When sets expectation for the Repository.CreateNamespacePipeline which will trigger the result defined by the following
-// Then helper
-func (mmCreateNamespacePipeline *mRepositoryMockCreateNamespacePipeline) When(ctx context.Context, pipeline *datamodel.Pipeline) *RepositoryMockCreateNamespacePipelineExpectation {
-	if mmCreateNamespacePipeline.mock.funcCreateNamespacePipeline != nil {
-		mmCreateNamespacePipeline.mock.t.Fatalf("RepositoryMock.CreateNamespacePipeline mock is already set by Set")
-	}
-
-	expectation := &RepositoryMockCreateNamespacePipelineExpectation{
-		mock:               mmCreateNamespacePipeline.mock,
-		params:             &RepositoryMockCreateNamespacePipelineParams{ctx, pipeline},
-		expectationOrigins: RepositoryMockCreateNamespacePipelineExpectationOrigins{origin: minimock.CallerInfo(1)},
-	}
-	mmCreateNamespacePipeline.expectations = append(mmCreateNamespacePipeline.expectations, expectation)
-	return expectation
-}
-
-// Then sets up Repository.CreateNamespacePipeline return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockCreateNamespacePipelineExpectation) Then(err error) *RepositoryMock {
-	e.results = &RepositoryMockCreateNamespacePipelineResults{err}
-	return e.mock
-}
-
-// Times sets number of times Repository.CreateNamespacePipeline should be invoked
-func (mmCreateNamespacePipeline *mRepositoryMockCreateNamespacePipeline) Times(n uint64) *mRepositoryMockCreateNamespacePipeline {
-	if n == 0 {
-		mmCreateNamespacePipeline.mock.t.Fatalf("Times of RepositoryMock.CreateNamespacePipeline mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmCreateNamespacePipeline.expectedInvocations, n)
-	mmCreateNamespacePipeline.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmCreateNamespacePipeline
-}
-
-func (mmCreateNamespacePipeline *mRepositoryMockCreateNamespacePipeline) invocationsDone() bool {
-	if len(mmCreateNamespacePipeline.expectations) == 0 && mmCreateNamespacePipeline.defaultExpectation == nil && mmCreateNamespacePipeline.mock.funcCreateNamespacePipeline == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmCreateNamespacePipeline.mock.afterCreateNamespacePipelineCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmCreateNamespacePipeline.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// CreateNamespacePipeline implements mm_repository.Repository
-func (mmCreateNamespacePipeline *RepositoryMock) CreateNamespacePipeline(ctx context.Context, pipeline *datamodel.Pipeline) (err error) {
-	mm_atomic.AddUint64(&mmCreateNamespacePipeline.beforeCreateNamespacePipelineCounter, 1)
-	defer mm_atomic.AddUint64(&mmCreateNamespacePipeline.afterCreateNamespacePipelineCounter, 1)
-
-	mmCreateNamespacePipeline.t.Helper()
-
-	if mmCreateNamespacePipeline.inspectFuncCreateNamespacePipeline != nil {
-		mmCreateNamespacePipeline.inspectFuncCreateNamespacePipeline(ctx, pipeline)
-	}
-
-	mm_params := RepositoryMockCreateNamespacePipelineParams{ctx, pipeline}
-
-	// Record call args
-	mmCreateNamespacePipeline.CreateNamespacePipelineMock.mutex.Lock()
-	mmCreateNamespacePipeline.CreateNamespacePipelineMock.callArgs = append(mmCreateNamespacePipeline.CreateNamespacePipelineMock.callArgs, &mm_params)
-	mmCreateNamespacePipeline.CreateNamespacePipelineMock.mutex.Unlock()
-
-	for _, e := range mmCreateNamespacePipeline.CreateNamespacePipelineMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.err
-		}
-	}
-
-	if mmCreateNamespacePipeline.CreateNamespacePipelineMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmCreateNamespacePipeline.CreateNamespacePipelineMock.defaultExpectation.Counter, 1)
-		mm_want := mmCreateNamespacePipeline.CreateNamespacePipelineMock.defaultExpectation.params
-		mm_want_ptrs := mmCreateNamespacePipeline.CreateNamespacePipelineMock.defaultExpectation.paramPtrs
-
-		mm_got := RepositoryMockCreateNamespacePipelineParams{ctx, pipeline}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmCreateNamespacePipeline.t.Errorf("RepositoryMock.CreateNamespacePipeline got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmCreateNamespacePipeline.CreateNamespacePipelineMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.pipeline != nil && !minimock.Equal(*mm_want_ptrs.pipeline, mm_got.pipeline) {
-				mmCreateNamespacePipeline.t.Errorf("RepositoryMock.CreateNamespacePipeline got unexpected parameter pipeline, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmCreateNamespacePipeline.CreateNamespacePipelineMock.defaultExpectation.expectationOrigins.originPipeline, *mm_want_ptrs.pipeline, mm_got.pipeline, minimock.Diff(*mm_want_ptrs.pipeline, mm_got.pipeline))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmCreateNamespacePipeline.t.Errorf("RepositoryMock.CreateNamespacePipeline got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmCreateNamespacePipeline.CreateNamespacePipelineMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmCreateNamespacePipeline.CreateNamespacePipelineMock.defaultExpectation.results
-		if mm_results == nil {
-			mmCreateNamespacePipeline.t.Fatal("No results are set for the RepositoryMock.CreateNamespacePipeline")
-		}
-		return (*mm_results).err
-	}
-	if mmCreateNamespacePipeline.funcCreateNamespacePipeline != nil {
-		return mmCreateNamespacePipeline.funcCreateNamespacePipeline(ctx, pipeline)
-	}
-	mmCreateNamespacePipeline.t.Fatalf("Unexpected call to RepositoryMock.CreateNamespacePipeline. %v %v", ctx, pipeline)
-	return
-}
-
-// CreateNamespacePipelineAfterCounter returns a count of finished RepositoryMock.CreateNamespacePipeline invocations
-func (mmCreateNamespacePipeline *RepositoryMock) CreateNamespacePipelineAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmCreateNamespacePipeline.afterCreateNamespacePipelineCounter)
-}
-
-// CreateNamespacePipelineBeforeCounter returns a count of RepositoryMock.CreateNamespacePipeline invocations
-func (mmCreateNamespacePipeline *RepositoryMock) CreateNamespacePipelineBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmCreateNamespacePipeline.beforeCreateNamespacePipelineCounter)
-}
-
-// Calls returns a list of arguments used in each call to RepositoryMock.CreateNamespacePipeline.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmCreateNamespacePipeline *mRepositoryMockCreateNamespacePipeline) Calls() []*RepositoryMockCreateNamespacePipelineParams {
-	mmCreateNamespacePipeline.mutex.RLock()
-
-	argCopy := make([]*RepositoryMockCreateNamespacePipelineParams, len(mmCreateNamespacePipeline.callArgs))
-	copy(argCopy, mmCreateNamespacePipeline.callArgs)
-
-	mmCreateNamespacePipeline.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockCreateNamespacePipelineDone returns true if the count of the CreateNamespacePipeline invocations corresponds
-// the number of defined expectations
-func (m *RepositoryMock) MinimockCreateNamespacePipelineDone() bool {
-	if m.CreateNamespacePipelineMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.CreateNamespacePipelineMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.CreateNamespacePipelineMock.invocationsDone()
-}
-
-// MinimockCreateNamespacePipelineInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockCreateNamespacePipelineInspect() {
-	for _, e := range m.CreateNamespacePipelineMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.CreateNamespacePipeline at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
-		}
-	}
-
-	afterCreateNamespacePipelineCounter := mm_atomic.LoadUint64(&m.afterCreateNamespacePipelineCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.CreateNamespacePipelineMock.defaultExpectation != nil && afterCreateNamespacePipelineCounter < 1 {
-		if m.CreateNamespacePipelineMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to RepositoryMock.CreateNamespacePipeline at\n%s", m.CreateNamespacePipelineMock.defaultExpectation.returnOrigin)
-		} else {
-			m.t.Errorf("Expected call to RepositoryMock.CreateNamespacePipeline at\n%s with params: %#v", m.CreateNamespacePipelineMock.defaultExpectation.expectationOrigins.origin, *m.CreateNamespacePipelineMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcCreateNamespacePipeline != nil && afterCreateNamespacePipelineCounter < 1 {
-		m.t.Errorf("Expected call to RepositoryMock.CreateNamespacePipeline at\n%s", m.funcCreateNamespacePipelineOrigin)
-	}
-
-	if !m.CreateNamespacePipelineMock.invocationsDone() && afterCreateNamespacePipelineCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.CreateNamespacePipeline at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.CreateNamespacePipelineMock.expectedInvocations), m.CreateNamespacePipelineMock.expectedInvocationsOrigin, afterCreateNamespacePipelineCounter)
-	}
-}
-
-type mRepositoryMockCreateNamespacePipelineRelease struct {
-	optional           bool
-	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockCreateNamespacePipelineReleaseExpectation
-	expectations       []*RepositoryMockCreateNamespacePipelineReleaseExpectation
-
-	callArgs []*RepositoryMockCreateNamespacePipelineReleaseParams
-	mutex    sync.RWMutex
-
-	expectedInvocations       uint64
-	expectedInvocationsOrigin string
-}
-
-// RepositoryMockCreateNamespacePipelineReleaseExpectation specifies expectation struct of the Repository.CreateNamespacePipelineRelease
-type RepositoryMockCreateNamespacePipelineReleaseExpectation struct {
-	mock               *RepositoryMock
-	params             *RepositoryMockCreateNamespacePipelineReleaseParams
-	paramPtrs          *RepositoryMockCreateNamespacePipelineReleaseParamPtrs
-	expectationOrigins RepositoryMockCreateNamespacePipelineReleaseExpectationOrigins
-	results            *RepositoryMockCreateNamespacePipelineReleaseResults
-	returnOrigin       string
-	Counter            uint64
-}
-
-// RepositoryMockCreateNamespacePipelineReleaseParams contains parameters of the Repository.CreateNamespacePipelineRelease
-type RepositoryMockCreateNamespacePipelineReleaseParams struct {
-	ctx             context.Context
-	ownerPermalink  string
-	pipelineUID     uuid.UUID
-	pipelineRelease *datamodel.PipelineRelease
-}
-
-// RepositoryMockCreateNamespacePipelineReleaseParamPtrs contains pointers to parameters of the Repository.CreateNamespacePipelineRelease
-type RepositoryMockCreateNamespacePipelineReleaseParamPtrs struct {
-	ctx             *context.Context
-	ownerPermalink  *string
-	pipelineUID     *uuid.UUID
-	pipelineRelease **datamodel.PipelineRelease
-}
-
-// RepositoryMockCreateNamespacePipelineReleaseResults contains results of the Repository.CreateNamespacePipelineRelease
-type RepositoryMockCreateNamespacePipelineReleaseResults struct {
-	err error
-}
-
-// RepositoryMockCreateNamespacePipelineReleaseOrigins contains origins of expectations of the Repository.CreateNamespacePipelineRelease
-type RepositoryMockCreateNamespacePipelineReleaseExpectationOrigins struct {
-	origin                string
-	originCtx             string
-	originOwnerPermalink  string
-	originPipelineUID     string
-	originPipelineRelease string
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmCreateNamespacePipelineRelease *mRepositoryMockCreateNamespacePipelineRelease) Optional() *mRepositoryMockCreateNamespacePipelineRelease {
-	mmCreateNamespacePipelineRelease.optional = true
-	return mmCreateNamespacePipelineRelease
-}
-
-// Expect sets up expected params for Repository.CreateNamespacePipelineRelease
-func (mmCreateNamespacePipelineRelease *mRepositoryMockCreateNamespacePipelineRelease) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) *mRepositoryMockCreateNamespacePipelineRelease {
-	if mmCreateNamespacePipelineRelease.mock.funcCreateNamespacePipelineRelease != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.CreateNamespacePipelineRelease mock is already set by Set")
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation == nil {
-		mmCreateNamespacePipelineRelease.defaultExpectation = &RepositoryMockCreateNamespacePipelineReleaseExpectation{}
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation.paramPtrs != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.CreateNamespacePipelineRelease mock is already set by ExpectParams functions")
-	}
-
-	mmCreateNamespacePipelineRelease.defaultExpectation.params = &RepositoryMockCreateNamespacePipelineReleaseParams{ctx, ownerPermalink, pipelineUID, pipelineRelease}
-	mmCreateNamespacePipelineRelease.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmCreateNamespacePipelineRelease.expectations {
-		if minimock.Equal(e.params, mmCreateNamespacePipelineRelease.defaultExpectation.params) {
-			mmCreateNamespacePipelineRelease.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreateNamespacePipelineRelease.defaultExpectation.params)
-		}
-	}
-
-	return mmCreateNamespacePipelineRelease
-}
-
-// ExpectCtxParam1 sets up expected param ctx for Repository.CreateNamespacePipelineRelease
-func (mmCreateNamespacePipelineRelease *mRepositoryMockCreateNamespacePipelineRelease) ExpectCtxParam1(ctx context.Context) *mRepositoryMockCreateNamespacePipelineRelease {
-	if mmCreateNamespacePipelineRelease.mock.funcCreateNamespacePipelineRelease != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.CreateNamespacePipelineRelease mock is already set by Set")
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation == nil {
-		mmCreateNamespacePipelineRelease.defaultExpectation = &RepositoryMockCreateNamespacePipelineReleaseExpectation{}
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation.params != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.CreateNamespacePipelineRelease mock is already set by Expect")
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation.paramPtrs == nil {
-		mmCreateNamespacePipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockCreateNamespacePipelineReleaseParamPtrs{}
-	}
-	mmCreateNamespacePipelineRelease.defaultExpectation.paramPtrs.ctx = &ctx
-	mmCreateNamespacePipelineRelease.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
-
-	return mmCreateNamespacePipelineRelease
-}
-
-// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.CreateNamespacePipelineRelease
-func (mmCreateNamespacePipelineRelease *mRepositoryMockCreateNamespacePipelineRelease) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockCreateNamespacePipelineRelease {
-	if mmCreateNamespacePipelineRelease.mock.funcCreateNamespacePipelineRelease != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.CreateNamespacePipelineRelease mock is already set by Set")
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation == nil {
-		mmCreateNamespacePipelineRelease.defaultExpectation = &RepositoryMockCreateNamespacePipelineReleaseExpectation{}
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation.params != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.CreateNamespacePipelineRelease mock is already set by Expect")
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation.paramPtrs == nil {
-		mmCreateNamespacePipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockCreateNamespacePipelineReleaseParamPtrs{}
-	}
-	mmCreateNamespacePipelineRelease.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
-	mmCreateNamespacePipelineRelease.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
-
-	return mmCreateNamespacePipelineRelease
-}
-
-// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.CreateNamespacePipelineRelease
-func (mmCreateNamespacePipelineRelease *mRepositoryMockCreateNamespacePipelineRelease) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockCreateNamespacePipelineRelease {
-	if mmCreateNamespacePipelineRelease.mock.funcCreateNamespacePipelineRelease != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.CreateNamespacePipelineRelease mock is already set by Set")
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation == nil {
-		mmCreateNamespacePipelineRelease.defaultExpectation = &RepositoryMockCreateNamespacePipelineReleaseExpectation{}
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation.params != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.CreateNamespacePipelineRelease mock is already set by Expect")
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation.paramPtrs == nil {
-		mmCreateNamespacePipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockCreateNamespacePipelineReleaseParamPtrs{}
-	}
-	mmCreateNamespacePipelineRelease.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
-	mmCreateNamespacePipelineRelease.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
-
-	return mmCreateNamespacePipelineRelease
-}
-
-// ExpectPipelineReleaseParam4 sets up expected param pipelineRelease for Repository.CreateNamespacePipelineRelease
-func (mmCreateNamespacePipelineRelease *mRepositoryMockCreateNamespacePipelineRelease) ExpectPipelineReleaseParam4(pipelineRelease *datamodel.PipelineRelease) *mRepositoryMockCreateNamespacePipelineRelease {
-	if mmCreateNamespacePipelineRelease.mock.funcCreateNamespacePipelineRelease != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.CreateNamespacePipelineRelease mock is already set by Set")
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation == nil {
-		mmCreateNamespacePipelineRelease.defaultExpectation = &RepositoryMockCreateNamespacePipelineReleaseExpectation{}
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation.params != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.CreateNamespacePipelineRelease mock is already set by Expect")
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation.paramPtrs == nil {
-		mmCreateNamespacePipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockCreateNamespacePipelineReleaseParamPtrs{}
-	}
-	mmCreateNamespacePipelineRelease.defaultExpectation.paramPtrs.pipelineRelease = &pipelineRelease
-	mmCreateNamespacePipelineRelease.defaultExpectation.expectationOrigins.originPipelineRelease = minimock.CallerInfo(1)
-
-	return mmCreateNamespacePipelineRelease
-}
-
-// Inspect accepts an inspector function that has same arguments as the Repository.CreateNamespacePipelineRelease
-func (mmCreateNamespacePipelineRelease *mRepositoryMockCreateNamespacePipelineRelease) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease)) *mRepositoryMockCreateNamespacePipelineRelease {
-	if mmCreateNamespacePipelineRelease.mock.inspectFuncCreateNamespacePipelineRelease != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("Inspect function is already set for RepositoryMock.CreateNamespacePipelineRelease")
-	}
-
-	mmCreateNamespacePipelineRelease.mock.inspectFuncCreateNamespacePipelineRelease = f
-
-	return mmCreateNamespacePipelineRelease
-}
-
-// Return sets up results that will be returned by Repository.CreateNamespacePipelineRelease
-func (mmCreateNamespacePipelineRelease *mRepositoryMockCreateNamespacePipelineRelease) Return(err error) *RepositoryMock {
-	if mmCreateNamespacePipelineRelease.mock.funcCreateNamespacePipelineRelease != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.CreateNamespacePipelineRelease mock is already set by Set")
-	}
-
-	if mmCreateNamespacePipelineRelease.defaultExpectation == nil {
-		mmCreateNamespacePipelineRelease.defaultExpectation = &RepositoryMockCreateNamespacePipelineReleaseExpectation{mock: mmCreateNamespacePipelineRelease.mock}
-	}
-	mmCreateNamespacePipelineRelease.defaultExpectation.results = &RepositoryMockCreateNamespacePipelineReleaseResults{err}
-	mmCreateNamespacePipelineRelease.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmCreateNamespacePipelineRelease.mock
-}
-
-// Set uses given function f to mock the Repository.CreateNamespacePipelineRelease method
-func (mmCreateNamespacePipelineRelease *mRepositoryMockCreateNamespacePipelineRelease) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) (err error)) *RepositoryMock {
-	if mmCreateNamespacePipelineRelease.defaultExpectation != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("Default expectation is already set for the Repository.CreateNamespacePipelineRelease method")
-	}
-
-	if len(mmCreateNamespacePipelineRelease.expectations) > 0 {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("Some expectations are already set for the Repository.CreateNamespacePipelineRelease method")
-	}
-
-	mmCreateNamespacePipelineRelease.mock.funcCreateNamespacePipelineRelease = f
-	mmCreateNamespacePipelineRelease.mock.funcCreateNamespacePipelineReleaseOrigin = minimock.CallerInfo(1)
-	return mmCreateNamespacePipelineRelease.mock
-}
-
-// When sets expectation for the Repository.CreateNamespacePipelineRelease which will trigger the result defined by the following
-// Then helper
-func (mmCreateNamespacePipelineRelease *mRepositoryMockCreateNamespacePipelineRelease) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) *RepositoryMockCreateNamespacePipelineReleaseExpectation {
-	if mmCreateNamespacePipelineRelease.mock.funcCreateNamespacePipelineRelease != nil {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.CreateNamespacePipelineRelease mock is already set by Set")
-	}
-
-	expectation := &RepositoryMockCreateNamespacePipelineReleaseExpectation{
-		mock:               mmCreateNamespacePipelineRelease.mock,
-		params:             &RepositoryMockCreateNamespacePipelineReleaseParams{ctx, ownerPermalink, pipelineUID, pipelineRelease},
-		expectationOrigins: RepositoryMockCreateNamespacePipelineReleaseExpectationOrigins{origin: minimock.CallerInfo(1)},
-	}
-	mmCreateNamespacePipelineRelease.expectations = append(mmCreateNamespacePipelineRelease.expectations, expectation)
-	return expectation
-}
-
-// Then sets up Repository.CreateNamespacePipelineRelease return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockCreateNamespacePipelineReleaseExpectation) Then(err error) *RepositoryMock {
-	e.results = &RepositoryMockCreateNamespacePipelineReleaseResults{err}
-	return e.mock
-}
-
-// Times sets number of times Repository.CreateNamespacePipelineRelease should be invoked
-func (mmCreateNamespacePipelineRelease *mRepositoryMockCreateNamespacePipelineRelease) Times(n uint64) *mRepositoryMockCreateNamespacePipelineRelease {
-	if n == 0 {
-		mmCreateNamespacePipelineRelease.mock.t.Fatalf("Times of RepositoryMock.CreateNamespacePipelineRelease mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmCreateNamespacePipelineRelease.expectedInvocations, n)
-	mmCreateNamespacePipelineRelease.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmCreateNamespacePipelineRelease
-}
-
-func (mmCreateNamespacePipelineRelease *mRepositoryMockCreateNamespacePipelineRelease) invocationsDone() bool {
-	if len(mmCreateNamespacePipelineRelease.expectations) == 0 && mmCreateNamespacePipelineRelease.defaultExpectation == nil && mmCreateNamespacePipelineRelease.mock.funcCreateNamespacePipelineRelease == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmCreateNamespacePipelineRelease.mock.afterCreateNamespacePipelineReleaseCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmCreateNamespacePipelineRelease.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// CreateNamespacePipelineRelease implements mm_repository.Repository
-func (mmCreateNamespacePipelineRelease *RepositoryMock) CreateNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) (err error) {
-	mm_atomic.AddUint64(&mmCreateNamespacePipelineRelease.beforeCreateNamespacePipelineReleaseCounter, 1)
-	defer mm_atomic.AddUint64(&mmCreateNamespacePipelineRelease.afterCreateNamespacePipelineReleaseCounter, 1)
-
-	mmCreateNamespacePipelineRelease.t.Helper()
-
-	if mmCreateNamespacePipelineRelease.inspectFuncCreateNamespacePipelineRelease != nil {
-		mmCreateNamespacePipelineRelease.inspectFuncCreateNamespacePipelineRelease(ctx, ownerPermalink, pipelineUID, pipelineRelease)
-	}
-
-	mm_params := RepositoryMockCreateNamespacePipelineReleaseParams{ctx, ownerPermalink, pipelineUID, pipelineRelease}
-
-	// Record call args
-	mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.mutex.Lock()
-	mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.callArgs = append(mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.callArgs, &mm_params)
-	mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.mutex.Unlock()
-
-	for _, e := range mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.err
-		}
-	}
-
-	if mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.defaultExpectation.Counter, 1)
-		mm_want := mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.defaultExpectation.params
-		mm_want_ptrs := mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.defaultExpectation.paramPtrs
-
-		mm_got := RepositoryMockCreateNamespacePipelineReleaseParams{ctx, ownerPermalink, pipelineUID, pipelineRelease}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmCreateNamespacePipelineRelease.t.Errorf("RepositoryMock.CreateNamespacePipelineRelease got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
-				mmCreateNamespacePipelineRelease.t.Errorf("RepositoryMock.CreateNamespacePipelineRelease got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
-			}
-
-			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
-				mmCreateNamespacePipelineRelease.t.Errorf("RepositoryMock.CreateNamespacePipelineRelease got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
-			}
-
-			if mm_want_ptrs.pipelineRelease != nil && !minimock.Equal(*mm_want_ptrs.pipelineRelease, mm_got.pipelineRelease) {
-				mmCreateNamespacePipelineRelease.t.Errorf("RepositoryMock.CreateNamespacePipelineRelease got unexpected parameter pipelineRelease, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.defaultExpectation.expectationOrigins.originPipelineRelease, *mm_want_ptrs.pipelineRelease, mm_got.pipelineRelease, minimock.Diff(*mm_want_ptrs.pipelineRelease, mm_got.pipelineRelease))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmCreateNamespacePipelineRelease.t.Errorf("RepositoryMock.CreateNamespacePipelineRelease got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmCreateNamespacePipelineRelease.CreateNamespacePipelineReleaseMock.defaultExpectation.results
-		if mm_results == nil {
-			mmCreateNamespacePipelineRelease.t.Fatal("No results are set for the RepositoryMock.CreateNamespacePipelineRelease")
-		}
-		return (*mm_results).err
-	}
-	if mmCreateNamespacePipelineRelease.funcCreateNamespacePipelineRelease != nil {
-		return mmCreateNamespacePipelineRelease.funcCreateNamespacePipelineRelease(ctx, ownerPermalink, pipelineUID, pipelineRelease)
-	}
-	mmCreateNamespacePipelineRelease.t.Fatalf("Unexpected call to RepositoryMock.CreateNamespacePipelineRelease. %v %v %v %v", ctx, ownerPermalink, pipelineUID, pipelineRelease)
-	return
-}
-
-// CreateNamespacePipelineReleaseAfterCounter returns a count of finished RepositoryMock.CreateNamespacePipelineRelease invocations
-func (mmCreateNamespacePipelineRelease *RepositoryMock) CreateNamespacePipelineReleaseAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmCreateNamespacePipelineRelease.afterCreateNamespacePipelineReleaseCounter)
-}
-
-// CreateNamespacePipelineReleaseBeforeCounter returns a count of RepositoryMock.CreateNamespacePipelineRelease invocations
-func (mmCreateNamespacePipelineRelease *RepositoryMock) CreateNamespacePipelineReleaseBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmCreateNamespacePipelineRelease.beforeCreateNamespacePipelineReleaseCounter)
-}
-
-// Calls returns a list of arguments used in each call to RepositoryMock.CreateNamespacePipelineRelease.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmCreateNamespacePipelineRelease *mRepositoryMockCreateNamespacePipelineRelease) Calls() []*RepositoryMockCreateNamespacePipelineReleaseParams {
-	mmCreateNamespacePipelineRelease.mutex.RLock()
-
-	argCopy := make([]*RepositoryMockCreateNamespacePipelineReleaseParams, len(mmCreateNamespacePipelineRelease.callArgs))
-	copy(argCopy, mmCreateNamespacePipelineRelease.callArgs)
-
-	mmCreateNamespacePipelineRelease.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockCreateNamespacePipelineReleaseDone returns true if the count of the CreateNamespacePipelineRelease invocations corresponds
-// the number of defined expectations
-func (m *RepositoryMock) MinimockCreateNamespacePipelineReleaseDone() bool {
-	if m.CreateNamespacePipelineReleaseMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.CreateNamespacePipelineReleaseMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.CreateNamespacePipelineReleaseMock.invocationsDone()
-}
-
-// MinimockCreateNamespacePipelineReleaseInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockCreateNamespacePipelineReleaseInspect() {
-	for _, e := range m.CreateNamespacePipelineReleaseMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.CreateNamespacePipelineRelease at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
-		}
-	}
-
-	afterCreateNamespacePipelineReleaseCounter := mm_atomic.LoadUint64(&m.afterCreateNamespacePipelineReleaseCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.CreateNamespacePipelineReleaseMock.defaultExpectation != nil && afterCreateNamespacePipelineReleaseCounter < 1 {
-		if m.CreateNamespacePipelineReleaseMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to RepositoryMock.CreateNamespacePipelineRelease at\n%s", m.CreateNamespacePipelineReleaseMock.defaultExpectation.returnOrigin)
-		} else {
-			m.t.Errorf("Expected call to RepositoryMock.CreateNamespacePipelineRelease at\n%s with params: %#v", m.CreateNamespacePipelineReleaseMock.defaultExpectation.expectationOrigins.origin, *m.CreateNamespacePipelineReleaseMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcCreateNamespacePipelineRelease != nil && afterCreateNamespacePipelineReleaseCounter < 1 {
-		m.t.Errorf("Expected call to RepositoryMock.CreateNamespacePipelineRelease at\n%s", m.funcCreateNamespacePipelineReleaseOrigin)
-	}
-
-	if !m.CreateNamespacePipelineReleaseMock.invocationsDone() && afterCreateNamespacePipelineReleaseCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.CreateNamespacePipelineRelease at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.CreateNamespacePipelineReleaseMock.expectedInvocations), m.CreateNamespacePipelineReleaseMock.expectedInvocationsOrigin, afterCreateNamespacePipelineReleaseCounter)
-	}
-}
-
 type mRepositoryMockCreateNamespaceSecret struct {
 	optional           bool
 	mock               *RepositoryMock
@@ -3125,6 +2379,752 @@ func (m *RepositoryMock) MinimockCreateNamespaceSecretInspect() {
 	if !m.CreateNamespaceSecretMock.invocationsDone() && afterCreateNamespaceSecretCounter > 0 {
 		m.t.Errorf("Expected %d calls to RepositoryMock.CreateNamespaceSecret at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.CreateNamespaceSecretMock.expectedInvocations), m.CreateNamespaceSecretMock.expectedInvocationsOrigin, afterCreateNamespaceSecretCounter)
+	}
+}
+
+type mRepositoryMockCreatePipeline struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockCreatePipelineExpectation
+	expectations       []*RepositoryMockCreatePipelineExpectation
+
+	callArgs []*RepositoryMockCreatePipelineParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// RepositoryMockCreatePipelineExpectation specifies expectation struct of the Repository.CreatePipeline
+type RepositoryMockCreatePipelineExpectation struct {
+	mock               *RepositoryMock
+	params             *RepositoryMockCreatePipelineParams
+	paramPtrs          *RepositoryMockCreatePipelineParamPtrs
+	expectationOrigins RepositoryMockCreatePipelineExpectationOrigins
+	results            *RepositoryMockCreatePipelineResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// RepositoryMockCreatePipelineParams contains parameters of the Repository.CreatePipeline
+type RepositoryMockCreatePipelineParams struct {
+	ctx      context.Context
+	pipeline *datamodel.Pipeline
+}
+
+// RepositoryMockCreatePipelineParamPtrs contains pointers to parameters of the Repository.CreatePipeline
+type RepositoryMockCreatePipelineParamPtrs struct {
+	ctx      *context.Context
+	pipeline **datamodel.Pipeline
+}
+
+// RepositoryMockCreatePipelineResults contains results of the Repository.CreatePipeline
+type RepositoryMockCreatePipelineResults struct {
+	err error
+}
+
+// RepositoryMockCreatePipelineOrigins contains origins of expectations of the Repository.CreatePipeline
+type RepositoryMockCreatePipelineExpectationOrigins struct {
+	origin         string
+	originCtx      string
+	originPipeline string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmCreatePipeline *mRepositoryMockCreatePipeline) Optional() *mRepositoryMockCreatePipeline {
+	mmCreatePipeline.optional = true
+	return mmCreatePipeline
+}
+
+// Expect sets up expected params for Repository.CreatePipeline
+func (mmCreatePipeline *mRepositoryMockCreatePipeline) Expect(ctx context.Context, pipeline *datamodel.Pipeline) *mRepositoryMockCreatePipeline {
+	if mmCreatePipeline.mock.funcCreatePipeline != nil {
+		mmCreatePipeline.mock.t.Fatalf("RepositoryMock.CreatePipeline mock is already set by Set")
+	}
+
+	if mmCreatePipeline.defaultExpectation == nil {
+		mmCreatePipeline.defaultExpectation = &RepositoryMockCreatePipelineExpectation{}
+	}
+
+	if mmCreatePipeline.defaultExpectation.paramPtrs != nil {
+		mmCreatePipeline.mock.t.Fatalf("RepositoryMock.CreatePipeline mock is already set by ExpectParams functions")
+	}
+
+	mmCreatePipeline.defaultExpectation.params = &RepositoryMockCreatePipelineParams{ctx, pipeline}
+	mmCreatePipeline.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmCreatePipeline.expectations {
+		if minimock.Equal(e.params, mmCreatePipeline.defaultExpectation.params) {
+			mmCreatePipeline.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreatePipeline.defaultExpectation.params)
+		}
+	}
+
+	return mmCreatePipeline
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.CreatePipeline
+func (mmCreatePipeline *mRepositoryMockCreatePipeline) ExpectCtxParam1(ctx context.Context) *mRepositoryMockCreatePipeline {
+	if mmCreatePipeline.mock.funcCreatePipeline != nil {
+		mmCreatePipeline.mock.t.Fatalf("RepositoryMock.CreatePipeline mock is already set by Set")
+	}
+
+	if mmCreatePipeline.defaultExpectation == nil {
+		mmCreatePipeline.defaultExpectation = &RepositoryMockCreatePipelineExpectation{}
+	}
+
+	if mmCreatePipeline.defaultExpectation.params != nil {
+		mmCreatePipeline.mock.t.Fatalf("RepositoryMock.CreatePipeline mock is already set by Expect")
+	}
+
+	if mmCreatePipeline.defaultExpectation.paramPtrs == nil {
+		mmCreatePipeline.defaultExpectation.paramPtrs = &RepositoryMockCreatePipelineParamPtrs{}
+	}
+	mmCreatePipeline.defaultExpectation.paramPtrs.ctx = &ctx
+	mmCreatePipeline.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmCreatePipeline
+}
+
+// ExpectPipelineParam2 sets up expected param pipeline for Repository.CreatePipeline
+func (mmCreatePipeline *mRepositoryMockCreatePipeline) ExpectPipelineParam2(pipeline *datamodel.Pipeline) *mRepositoryMockCreatePipeline {
+	if mmCreatePipeline.mock.funcCreatePipeline != nil {
+		mmCreatePipeline.mock.t.Fatalf("RepositoryMock.CreatePipeline mock is already set by Set")
+	}
+
+	if mmCreatePipeline.defaultExpectation == nil {
+		mmCreatePipeline.defaultExpectation = &RepositoryMockCreatePipelineExpectation{}
+	}
+
+	if mmCreatePipeline.defaultExpectation.params != nil {
+		mmCreatePipeline.mock.t.Fatalf("RepositoryMock.CreatePipeline mock is already set by Expect")
+	}
+
+	if mmCreatePipeline.defaultExpectation.paramPtrs == nil {
+		mmCreatePipeline.defaultExpectation.paramPtrs = &RepositoryMockCreatePipelineParamPtrs{}
+	}
+	mmCreatePipeline.defaultExpectation.paramPtrs.pipeline = &pipeline
+	mmCreatePipeline.defaultExpectation.expectationOrigins.originPipeline = minimock.CallerInfo(1)
+
+	return mmCreatePipeline
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.CreatePipeline
+func (mmCreatePipeline *mRepositoryMockCreatePipeline) Inspect(f func(ctx context.Context, pipeline *datamodel.Pipeline)) *mRepositoryMockCreatePipeline {
+	if mmCreatePipeline.mock.inspectFuncCreatePipeline != nil {
+		mmCreatePipeline.mock.t.Fatalf("Inspect function is already set for RepositoryMock.CreatePipeline")
+	}
+
+	mmCreatePipeline.mock.inspectFuncCreatePipeline = f
+
+	return mmCreatePipeline
+}
+
+// Return sets up results that will be returned by Repository.CreatePipeline
+func (mmCreatePipeline *mRepositoryMockCreatePipeline) Return(err error) *RepositoryMock {
+	if mmCreatePipeline.mock.funcCreatePipeline != nil {
+		mmCreatePipeline.mock.t.Fatalf("RepositoryMock.CreatePipeline mock is already set by Set")
+	}
+
+	if mmCreatePipeline.defaultExpectation == nil {
+		mmCreatePipeline.defaultExpectation = &RepositoryMockCreatePipelineExpectation{mock: mmCreatePipeline.mock}
+	}
+	mmCreatePipeline.defaultExpectation.results = &RepositoryMockCreatePipelineResults{err}
+	mmCreatePipeline.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmCreatePipeline.mock
+}
+
+// Set uses given function f to mock the Repository.CreatePipeline method
+func (mmCreatePipeline *mRepositoryMockCreatePipeline) Set(f func(ctx context.Context, pipeline *datamodel.Pipeline) (err error)) *RepositoryMock {
+	if mmCreatePipeline.defaultExpectation != nil {
+		mmCreatePipeline.mock.t.Fatalf("Default expectation is already set for the Repository.CreatePipeline method")
+	}
+
+	if len(mmCreatePipeline.expectations) > 0 {
+		mmCreatePipeline.mock.t.Fatalf("Some expectations are already set for the Repository.CreatePipeline method")
+	}
+
+	mmCreatePipeline.mock.funcCreatePipeline = f
+	mmCreatePipeline.mock.funcCreatePipelineOrigin = minimock.CallerInfo(1)
+	return mmCreatePipeline.mock
+}
+
+// When sets expectation for the Repository.CreatePipeline which will trigger the result defined by the following
+// Then helper
+func (mmCreatePipeline *mRepositoryMockCreatePipeline) When(ctx context.Context, pipeline *datamodel.Pipeline) *RepositoryMockCreatePipelineExpectation {
+	if mmCreatePipeline.mock.funcCreatePipeline != nil {
+		mmCreatePipeline.mock.t.Fatalf("RepositoryMock.CreatePipeline mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockCreatePipelineExpectation{
+		mock:               mmCreatePipeline.mock,
+		params:             &RepositoryMockCreatePipelineParams{ctx, pipeline},
+		expectationOrigins: RepositoryMockCreatePipelineExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmCreatePipeline.expectations = append(mmCreatePipeline.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.CreatePipeline return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockCreatePipelineExpectation) Then(err error) *RepositoryMock {
+	e.results = &RepositoryMockCreatePipelineResults{err}
+	return e.mock
+}
+
+// Times sets number of times Repository.CreatePipeline should be invoked
+func (mmCreatePipeline *mRepositoryMockCreatePipeline) Times(n uint64) *mRepositoryMockCreatePipeline {
+	if n == 0 {
+		mmCreatePipeline.mock.t.Fatalf("Times of RepositoryMock.CreatePipeline mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmCreatePipeline.expectedInvocations, n)
+	mmCreatePipeline.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmCreatePipeline
+}
+
+func (mmCreatePipeline *mRepositoryMockCreatePipeline) invocationsDone() bool {
+	if len(mmCreatePipeline.expectations) == 0 && mmCreatePipeline.defaultExpectation == nil && mmCreatePipeline.mock.funcCreatePipeline == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmCreatePipeline.mock.afterCreatePipelineCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmCreatePipeline.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// CreatePipeline implements mm_repository.Repository
+func (mmCreatePipeline *RepositoryMock) CreatePipeline(ctx context.Context, pipeline *datamodel.Pipeline) (err error) {
+	mm_atomic.AddUint64(&mmCreatePipeline.beforeCreatePipelineCounter, 1)
+	defer mm_atomic.AddUint64(&mmCreatePipeline.afterCreatePipelineCounter, 1)
+
+	mmCreatePipeline.t.Helper()
+
+	if mmCreatePipeline.inspectFuncCreatePipeline != nil {
+		mmCreatePipeline.inspectFuncCreatePipeline(ctx, pipeline)
+	}
+
+	mm_params := RepositoryMockCreatePipelineParams{ctx, pipeline}
+
+	// Record call args
+	mmCreatePipeline.CreatePipelineMock.mutex.Lock()
+	mmCreatePipeline.CreatePipelineMock.callArgs = append(mmCreatePipeline.CreatePipelineMock.callArgs, &mm_params)
+	mmCreatePipeline.CreatePipelineMock.mutex.Unlock()
+
+	for _, e := range mmCreatePipeline.CreatePipelineMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmCreatePipeline.CreatePipelineMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmCreatePipeline.CreatePipelineMock.defaultExpectation.Counter, 1)
+		mm_want := mmCreatePipeline.CreatePipelineMock.defaultExpectation.params
+		mm_want_ptrs := mmCreatePipeline.CreatePipelineMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockCreatePipelineParams{ctx, pipeline}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmCreatePipeline.t.Errorf("RepositoryMock.CreatePipeline got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreatePipeline.CreatePipelineMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.pipeline != nil && !minimock.Equal(*mm_want_ptrs.pipeline, mm_got.pipeline) {
+				mmCreatePipeline.t.Errorf("RepositoryMock.CreatePipeline got unexpected parameter pipeline, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreatePipeline.CreatePipelineMock.defaultExpectation.expectationOrigins.originPipeline, *mm_want_ptrs.pipeline, mm_got.pipeline, minimock.Diff(*mm_want_ptrs.pipeline, mm_got.pipeline))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmCreatePipeline.t.Errorf("RepositoryMock.CreatePipeline got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmCreatePipeline.CreatePipelineMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmCreatePipeline.CreatePipelineMock.defaultExpectation.results
+		if mm_results == nil {
+			mmCreatePipeline.t.Fatal("No results are set for the RepositoryMock.CreatePipeline")
+		}
+		return (*mm_results).err
+	}
+	if mmCreatePipeline.funcCreatePipeline != nil {
+		return mmCreatePipeline.funcCreatePipeline(ctx, pipeline)
+	}
+	mmCreatePipeline.t.Fatalf("Unexpected call to RepositoryMock.CreatePipeline. %v %v", ctx, pipeline)
+	return
+}
+
+// CreatePipelineAfterCounter returns a count of finished RepositoryMock.CreatePipeline invocations
+func (mmCreatePipeline *RepositoryMock) CreatePipelineAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreatePipeline.afterCreatePipelineCounter)
+}
+
+// CreatePipelineBeforeCounter returns a count of RepositoryMock.CreatePipeline invocations
+func (mmCreatePipeline *RepositoryMock) CreatePipelineBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreatePipeline.beforeCreatePipelineCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.CreatePipeline.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmCreatePipeline *mRepositoryMockCreatePipeline) Calls() []*RepositoryMockCreatePipelineParams {
+	mmCreatePipeline.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockCreatePipelineParams, len(mmCreatePipeline.callArgs))
+	copy(argCopy, mmCreatePipeline.callArgs)
+
+	mmCreatePipeline.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockCreatePipelineDone returns true if the count of the CreatePipeline invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockCreatePipelineDone() bool {
+	if m.CreatePipelineMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.CreatePipelineMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.CreatePipelineMock.invocationsDone()
+}
+
+// MinimockCreatePipelineInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockCreatePipelineInspect() {
+	for _, e := range m.CreatePipelineMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.CreatePipeline at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterCreatePipelineCounter := mm_atomic.LoadUint64(&m.afterCreatePipelineCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.CreatePipelineMock.defaultExpectation != nil && afterCreatePipelineCounter < 1 {
+		if m.CreatePipelineMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to RepositoryMock.CreatePipeline at\n%s", m.CreatePipelineMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.CreatePipeline at\n%s with params: %#v", m.CreatePipelineMock.defaultExpectation.expectationOrigins.origin, *m.CreatePipelineMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcCreatePipeline != nil && afterCreatePipelineCounter < 1 {
+		m.t.Errorf("Expected call to RepositoryMock.CreatePipeline at\n%s", m.funcCreatePipelineOrigin)
+	}
+
+	if !m.CreatePipelineMock.invocationsDone() && afterCreatePipelineCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.CreatePipeline at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.CreatePipelineMock.expectedInvocations), m.CreatePipelineMock.expectedInvocationsOrigin, afterCreatePipelineCounter)
+	}
+}
+
+type mRepositoryMockCreatePipelineRelease struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockCreatePipelineReleaseExpectation
+	expectations       []*RepositoryMockCreatePipelineReleaseExpectation
+
+	callArgs []*RepositoryMockCreatePipelineReleaseParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// RepositoryMockCreatePipelineReleaseExpectation specifies expectation struct of the Repository.CreatePipelineRelease
+type RepositoryMockCreatePipelineReleaseExpectation struct {
+	mock               *RepositoryMock
+	params             *RepositoryMockCreatePipelineReleaseParams
+	paramPtrs          *RepositoryMockCreatePipelineReleaseParamPtrs
+	expectationOrigins RepositoryMockCreatePipelineReleaseExpectationOrigins
+	results            *RepositoryMockCreatePipelineReleaseResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// RepositoryMockCreatePipelineReleaseParams contains parameters of the Repository.CreatePipelineRelease
+type RepositoryMockCreatePipelineReleaseParams struct {
+	ctx             context.Context
+	ownerPermalink  string
+	pipelineUID     uuid.UUID
+	pipelineRelease *datamodel.PipelineRelease
+}
+
+// RepositoryMockCreatePipelineReleaseParamPtrs contains pointers to parameters of the Repository.CreatePipelineRelease
+type RepositoryMockCreatePipelineReleaseParamPtrs struct {
+	ctx             *context.Context
+	ownerPermalink  *string
+	pipelineUID     *uuid.UUID
+	pipelineRelease **datamodel.PipelineRelease
+}
+
+// RepositoryMockCreatePipelineReleaseResults contains results of the Repository.CreatePipelineRelease
+type RepositoryMockCreatePipelineReleaseResults struct {
+	err error
+}
+
+// RepositoryMockCreatePipelineReleaseOrigins contains origins of expectations of the Repository.CreatePipelineRelease
+type RepositoryMockCreatePipelineReleaseExpectationOrigins struct {
+	origin                string
+	originCtx             string
+	originOwnerPermalink  string
+	originPipelineUID     string
+	originPipelineRelease string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmCreatePipelineRelease *mRepositoryMockCreatePipelineRelease) Optional() *mRepositoryMockCreatePipelineRelease {
+	mmCreatePipelineRelease.optional = true
+	return mmCreatePipelineRelease
+}
+
+// Expect sets up expected params for Repository.CreatePipelineRelease
+func (mmCreatePipelineRelease *mRepositoryMockCreatePipelineRelease) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) *mRepositoryMockCreatePipelineRelease {
+	if mmCreatePipelineRelease.mock.funcCreatePipelineRelease != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("RepositoryMock.CreatePipelineRelease mock is already set by Set")
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation == nil {
+		mmCreatePipelineRelease.defaultExpectation = &RepositoryMockCreatePipelineReleaseExpectation{}
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation.paramPtrs != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("RepositoryMock.CreatePipelineRelease mock is already set by ExpectParams functions")
+	}
+
+	mmCreatePipelineRelease.defaultExpectation.params = &RepositoryMockCreatePipelineReleaseParams{ctx, ownerPermalink, pipelineUID, pipelineRelease}
+	mmCreatePipelineRelease.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmCreatePipelineRelease.expectations {
+		if minimock.Equal(e.params, mmCreatePipelineRelease.defaultExpectation.params) {
+			mmCreatePipelineRelease.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreatePipelineRelease.defaultExpectation.params)
+		}
+	}
+
+	return mmCreatePipelineRelease
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.CreatePipelineRelease
+func (mmCreatePipelineRelease *mRepositoryMockCreatePipelineRelease) ExpectCtxParam1(ctx context.Context) *mRepositoryMockCreatePipelineRelease {
+	if mmCreatePipelineRelease.mock.funcCreatePipelineRelease != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("RepositoryMock.CreatePipelineRelease mock is already set by Set")
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation == nil {
+		mmCreatePipelineRelease.defaultExpectation = &RepositoryMockCreatePipelineReleaseExpectation{}
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation.params != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("RepositoryMock.CreatePipelineRelease mock is already set by Expect")
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation.paramPtrs == nil {
+		mmCreatePipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockCreatePipelineReleaseParamPtrs{}
+	}
+	mmCreatePipelineRelease.defaultExpectation.paramPtrs.ctx = &ctx
+	mmCreatePipelineRelease.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmCreatePipelineRelease
+}
+
+// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.CreatePipelineRelease
+func (mmCreatePipelineRelease *mRepositoryMockCreatePipelineRelease) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockCreatePipelineRelease {
+	if mmCreatePipelineRelease.mock.funcCreatePipelineRelease != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("RepositoryMock.CreatePipelineRelease mock is already set by Set")
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation == nil {
+		mmCreatePipelineRelease.defaultExpectation = &RepositoryMockCreatePipelineReleaseExpectation{}
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation.params != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("RepositoryMock.CreatePipelineRelease mock is already set by Expect")
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation.paramPtrs == nil {
+		mmCreatePipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockCreatePipelineReleaseParamPtrs{}
+	}
+	mmCreatePipelineRelease.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
+	mmCreatePipelineRelease.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
+
+	return mmCreatePipelineRelease
+}
+
+// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.CreatePipelineRelease
+func (mmCreatePipelineRelease *mRepositoryMockCreatePipelineRelease) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockCreatePipelineRelease {
+	if mmCreatePipelineRelease.mock.funcCreatePipelineRelease != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("RepositoryMock.CreatePipelineRelease mock is already set by Set")
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation == nil {
+		mmCreatePipelineRelease.defaultExpectation = &RepositoryMockCreatePipelineReleaseExpectation{}
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation.params != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("RepositoryMock.CreatePipelineRelease mock is already set by Expect")
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation.paramPtrs == nil {
+		mmCreatePipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockCreatePipelineReleaseParamPtrs{}
+	}
+	mmCreatePipelineRelease.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
+	mmCreatePipelineRelease.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
+
+	return mmCreatePipelineRelease
+}
+
+// ExpectPipelineReleaseParam4 sets up expected param pipelineRelease for Repository.CreatePipelineRelease
+func (mmCreatePipelineRelease *mRepositoryMockCreatePipelineRelease) ExpectPipelineReleaseParam4(pipelineRelease *datamodel.PipelineRelease) *mRepositoryMockCreatePipelineRelease {
+	if mmCreatePipelineRelease.mock.funcCreatePipelineRelease != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("RepositoryMock.CreatePipelineRelease mock is already set by Set")
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation == nil {
+		mmCreatePipelineRelease.defaultExpectation = &RepositoryMockCreatePipelineReleaseExpectation{}
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation.params != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("RepositoryMock.CreatePipelineRelease mock is already set by Expect")
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation.paramPtrs == nil {
+		mmCreatePipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockCreatePipelineReleaseParamPtrs{}
+	}
+	mmCreatePipelineRelease.defaultExpectation.paramPtrs.pipelineRelease = &pipelineRelease
+	mmCreatePipelineRelease.defaultExpectation.expectationOrigins.originPipelineRelease = minimock.CallerInfo(1)
+
+	return mmCreatePipelineRelease
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.CreatePipelineRelease
+func (mmCreatePipelineRelease *mRepositoryMockCreatePipelineRelease) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease)) *mRepositoryMockCreatePipelineRelease {
+	if mmCreatePipelineRelease.mock.inspectFuncCreatePipelineRelease != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("Inspect function is already set for RepositoryMock.CreatePipelineRelease")
+	}
+
+	mmCreatePipelineRelease.mock.inspectFuncCreatePipelineRelease = f
+
+	return mmCreatePipelineRelease
+}
+
+// Return sets up results that will be returned by Repository.CreatePipelineRelease
+func (mmCreatePipelineRelease *mRepositoryMockCreatePipelineRelease) Return(err error) *RepositoryMock {
+	if mmCreatePipelineRelease.mock.funcCreatePipelineRelease != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("RepositoryMock.CreatePipelineRelease mock is already set by Set")
+	}
+
+	if mmCreatePipelineRelease.defaultExpectation == nil {
+		mmCreatePipelineRelease.defaultExpectation = &RepositoryMockCreatePipelineReleaseExpectation{mock: mmCreatePipelineRelease.mock}
+	}
+	mmCreatePipelineRelease.defaultExpectation.results = &RepositoryMockCreatePipelineReleaseResults{err}
+	mmCreatePipelineRelease.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmCreatePipelineRelease.mock
+}
+
+// Set uses given function f to mock the Repository.CreatePipelineRelease method
+func (mmCreatePipelineRelease *mRepositoryMockCreatePipelineRelease) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) (err error)) *RepositoryMock {
+	if mmCreatePipelineRelease.defaultExpectation != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("Default expectation is already set for the Repository.CreatePipelineRelease method")
+	}
+
+	if len(mmCreatePipelineRelease.expectations) > 0 {
+		mmCreatePipelineRelease.mock.t.Fatalf("Some expectations are already set for the Repository.CreatePipelineRelease method")
+	}
+
+	mmCreatePipelineRelease.mock.funcCreatePipelineRelease = f
+	mmCreatePipelineRelease.mock.funcCreatePipelineReleaseOrigin = minimock.CallerInfo(1)
+	return mmCreatePipelineRelease.mock
+}
+
+// When sets expectation for the Repository.CreatePipelineRelease which will trigger the result defined by the following
+// Then helper
+func (mmCreatePipelineRelease *mRepositoryMockCreatePipelineRelease) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) *RepositoryMockCreatePipelineReleaseExpectation {
+	if mmCreatePipelineRelease.mock.funcCreatePipelineRelease != nil {
+		mmCreatePipelineRelease.mock.t.Fatalf("RepositoryMock.CreatePipelineRelease mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockCreatePipelineReleaseExpectation{
+		mock:               mmCreatePipelineRelease.mock,
+		params:             &RepositoryMockCreatePipelineReleaseParams{ctx, ownerPermalink, pipelineUID, pipelineRelease},
+		expectationOrigins: RepositoryMockCreatePipelineReleaseExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmCreatePipelineRelease.expectations = append(mmCreatePipelineRelease.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.CreatePipelineRelease return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockCreatePipelineReleaseExpectation) Then(err error) *RepositoryMock {
+	e.results = &RepositoryMockCreatePipelineReleaseResults{err}
+	return e.mock
+}
+
+// Times sets number of times Repository.CreatePipelineRelease should be invoked
+func (mmCreatePipelineRelease *mRepositoryMockCreatePipelineRelease) Times(n uint64) *mRepositoryMockCreatePipelineRelease {
+	if n == 0 {
+		mmCreatePipelineRelease.mock.t.Fatalf("Times of RepositoryMock.CreatePipelineRelease mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmCreatePipelineRelease.expectedInvocations, n)
+	mmCreatePipelineRelease.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmCreatePipelineRelease
+}
+
+func (mmCreatePipelineRelease *mRepositoryMockCreatePipelineRelease) invocationsDone() bool {
+	if len(mmCreatePipelineRelease.expectations) == 0 && mmCreatePipelineRelease.defaultExpectation == nil && mmCreatePipelineRelease.mock.funcCreatePipelineRelease == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmCreatePipelineRelease.mock.afterCreatePipelineReleaseCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmCreatePipelineRelease.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// CreatePipelineRelease implements mm_repository.Repository
+func (mmCreatePipelineRelease *RepositoryMock) CreatePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) (err error) {
+	mm_atomic.AddUint64(&mmCreatePipelineRelease.beforeCreatePipelineReleaseCounter, 1)
+	defer mm_atomic.AddUint64(&mmCreatePipelineRelease.afterCreatePipelineReleaseCounter, 1)
+
+	mmCreatePipelineRelease.t.Helper()
+
+	if mmCreatePipelineRelease.inspectFuncCreatePipelineRelease != nil {
+		mmCreatePipelineRelease.inspectFuncCreatePipelineRelease(ctx, ownerPermalink, pipelineUID, pipelineRelease)
+	}
+
+	mm_params := RepositoryMockCreatePipelineReleaseParams{ctx, ownerPermalink, pipelineUID, pipelineRelease}
+
+	// Record call args
+	mmCreatePipelineRelease.CreatePipelineReleaseMock.mutex.Lock()
+	mmCreatePipelineRelease.CreatePipelineReleaseMock.callArgs = append(mmCreatePipelineRelease.CreatePipelineReleaseMock.callArgs, &mm_params)
+	mmCreatePipelineRelease.CreatePipelineReleaseMock.mutex.Unlock()
+
+	for _, e := range mmCreatePipelineRelease.CreatePipelineReleaseMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmCreatePipelineRelease.CreatePipelineReleaseMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmCreatePipelineRelease.CreatePipelineReleaseMock.defaultExpectation.Counter, 1)
+		mm_want := mmCreatePipelineRelease.CreatePipelineReleaseMock.defaultExpectation.params
+		mm_want_ptrs := mmCreatePipelineRelease.CreatePipelineReleaseMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockCreatePipelineReleaseParams{ctx, ownerPermalink, pipelineUID, pipelineRelease}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmCreatePipelineRelease.t.Errorf("RepositoryMock.CreatePipelineRelease got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreatePipelineRelease.CreatePipelineReleaseMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
+				mmCreatePipelineRelease.t.Errorf("RepositoryMock.CreatePipelineRelease got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreatePipelineRelease.CreatePipelineReleaseMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
+			}
+
+			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
+				mmCreatePipelineRelease.t.Errorf("RepositoryMock.CreatePipelineRelease got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreatePipelineRelease.CreatePipelineReleaseMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
+			}
+
+			if mm_want_ptrs.pipelineRelease != nil && !minimock.Equal(*mm_want_ptrs.pipelineRelease, mm_got.pipelineRelease) {
+				mmCreatePipelineRelease.t.Errorf("RepositoryMock.CreatePipelineRelease got unexpected parameter pipelineRelease, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreatePipelineRelease.CreatePipelineReleaseMock.defaultExpectation.expectationOrigins.originPipelineRelease, *mm_want_ptrs.pipelineRelease, mm_got.pipelineRelease, minimock.Diff(*mm_want_ptrs.pipelineRelease, mm_got.pipelineRelease))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmCreatePipelineRelease.t.Errorf("RepositoryMock.CreatePipelineRelease got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmCreatePipelineRelease.CreatePipelineReleaseMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmCreatePipelineRelease.CreatePipelineReleaseMock.defaultExpectation.results
+		if mm_results == nil {
+			mmCreatePipelineRelease.t.Fatal("No results are set for the RepositoryMock.CreatePipelineRelease")
+		}
+		return (*mm_results).err
+	}
+	if mmCreatePipelineRelease.funcCreatePipelineRelease != nil {
+		return mmCreatePipelineRelease.funcCreatePipelineRelease(ctx, ownerPermalink, pipelineUID, pipelineRelease)
+	}
+	mmCreatePipelineRelease.t.Fatalf("Unexpected call to RepositoryMock.CreatePipelineRelease. %v %v %v %v", ctx, ownerPermalink, pipelineUID, pipelineRelease)
+	return
+}
+
+// CreatePipelineReleaseAfterCounter returns a count of finished RepositoryMock.CreatePipelineRelease invocations
+func (mmCreatePipelineRelease *RepositoryMock) CreatePipelineReleaseAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreatePipelineRelease.afterCreatePipelineReleaseCounter)
+}
+
+// CreatePipelineReleaseBeforeCounter returns a count of RepositoryMock.CreatePipelineRelease invocations
+func (mmCreatePipelineRelease *RepositoryMock) CreatePipelineReleaseBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreatePipelineRelease.beforeCreatePipelineReleaseCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.CreatePipelineRelease.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmCreatePipelineRelease *mRepositoryMockCreatePipelineRelease) Calls() []*RepositoryMockCreatePipelineReleaseParams {
+	mmCreatePipelineRelease.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockCreatePipelineReleaseParams, len(mmCreatePipelineRelease.callArgs))
+	copy(argCopy, mmCreatePipelineRelease.callArgs)
+
+	mmCreatePipelineRelease.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockCreatePipelineReleaseDone returns true if the count of the CreatePipelineRelease invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockCreatePipelineReleaseDone() bool {
+	if m.CreatePipelineReleaseMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.CreatePipelineReleaseMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.CreatePipelineReleaseMock.invocationsDone()
+}
+
+// MinimockCreatePipelineReleaseInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockCreatePipelineReleaseInspect() {
+	for _, e := range m.CreatePipelineReleaseMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.CreatePipelineRelease at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterCreatePipelineReleaseCounter := mm_atomic.LoadUint64(&m.afterCreatePipelineReleaseCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.CreatePipelineReleaseMock.defaultExpectation != nil && afterCreatePipelineReleaseCounter < 1 {
+		if m.CreatePipelineReleaseMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to RepositoryMock.CreatePipelineRelease at\n%s", m.CreatePipelineReleaseMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.CreatePipelineRelease at\n%s with params: %#v", m.CreatePipelineReleaseMock.defaultExpectation.expectationOrigins.origin, *m.CreatePipelineReleaseMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcCreatePipelineRelease != nil && afterCreatePipelineReleaseCounter < 1 {
+		m.t.Errorf("Expected call to RepositoryMock.CreatePipelineRelease at\n%s", m.funcCreatePipelineReleaseOrigin)
+	}
+
+	if !m.CreatePipelineReleaseMock.invocationsDone() && afterCreatePipelineReleaseCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.CreatePipelineRelease at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.CreatePipelineReleaseMock.expectedInvocations), m.CreatePipelineReleaseMock.expectedInvocationsOrigin, afterCreatePipelineReleaseCounter)
 	}
 }
 
@@ -4558,783 +4558,6 @@ func (m *RepositoryMock) MinimockDeleteNamespaceConnectionByIDInspect() {
 	}
 }
 
-type mRepositoryMockDeleteNamespacePipelineByID struct {
-	optional           bool
-	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockDeleteNamespacePipelineByIDExpectation
-	expectations       []*RepositoryMockDeleteNamespacePipelineByIDExpectation
-
-	callArgs []*RepositoryMockDeleteNamespacePipelineByIDParams
-	mutex    sync.RWMutex
-
-	expectedInvocations       uint64
-	expectedInvocationsOrigin string
-}
-
-// RepositoryMockDeleteNamespacePipelineByIDExpectation specifies expectation struct of the Repository.DeleteNamespacePipelineByID
-type RepositoryMockDeleteNamespacePipelineByIDExpectation struct {
-	mock               *RepositoryMock
-	params             *RepositoryMockDeleteNamespacePipelineByIDParams
-	paramPtrs          *RepositoryMockDeleteNamespacePipelineByIDParamPtrs
-	expectationOrigins RepositoryMockDeleteNamespacePipelineByIDExpectationOrigins
-	results            *RepositoryMockDeleteNamespacePipelineByIDResults
-	returnOrigin       string
-	Counter            uint64
-}
-
-// RepositoryMockDeleteNamespacePipelineByIDParams contains parameters of the Repository.DeleteNamespacePipelineByID
-type RepositoryMockDeleteNamespacePipelineByIDParams struct {
-	ctx            context.Context
-	ownerPermalink string
-	id             string
-}
-
-// RepositoryMockDeleteNamespacePipelineByIDParamPtrs contains pointers to parameters of the Repository.DeleteNamespacePipelineByID
-type RepositoryMockDeleteNamespacePipelineByIDParamPtrs struct {
-	ctx            *context.Context
-	ownerPermalink *string
-	id             *string
-}
-
-// RepositoryMockDeleteNamespacePipelineByIDResults contains results of the Repository.DeleteNamespacePipelineByID
-type RepositoryMockDeleteNamespacePipelineByIDResults struct {
-	err error
-}
-
-// RepositoryMockDeleteNamespacePipelineByIDOrigins contains origins of expectations of the Repository.DeleteNamespacePipelineByID
-type RepositoryMockDeleteNamespacePipelineByIDExpectationOrigins struct {
-	origin               string
-	originCtx            string
-	originOwnerPermalink string
-	originId             string
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmDeleteNamespacePipelineByID *mRepositoryMockDeleteNamespacePipelineByID) Optional() *mRepositoryMockDeleteNamespacePipelineByID {
-	mmDeleteNamespacePipelineByID.optional = true
-	return mmDeleteNamespacePipelineByID
-}
-
-// Expect sets up expected params for Repository.DeleteNamespacePipelineByID
-func (mmDeleteNamespacePipelineByID *mRepositoryMockDeleteNamespacePipelineByID) Expect(ctx context.Context, ownerPermalink string, id string) *mRepositoryMockDeleteNamespacePipelineByID {
-	if mmDeleteNamespacePipelineByID.mock.funcDeleteNamespacePipelineByID != nil {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineByID mock is already set by Set")
-	}
-
-	if mmDeleteNamespacePipelineByID.defaultExpectation == nil {
-		mmDeleteNamespacePipelineByID.defaultExpectation = &RepositoryMockDeleteNamespacePipelineByIDExpectation{}
-	}
-
-	if mmDeleteNamespacePipelineByID.defaultExpectation.paramPtrs != nil {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineByID mock is already set by ExpectParams functions")
-	}
-
-	mmDeleteNamespacePipelineByID.defaultExpectation.params = &RepositoryMockDeleteNamespacePipelineByIDParams{ctx, ownerPermalink, id}
-	mmDeleteNamespacePipelineByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmDeleteNamespacePipelineByID.expectations {
-		if minimock.Equal(e.params, mmDeleteNamespacePipelineByID.defaultExpectation.params) {
-			mmDeleteNamespacePipelineByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmDeleteNamespacePipelineByID.defaultExpectation.params)
-		}
-	}
-
-	return mmDeleteNamespacePipelineByID
-}
-
-// ExpectCtxParam1 sets up expected param ctx for Repository.DeleteNamespacePipelineByID
-func (mmDeleteNamespacePipelineByID *mRepositoryMockDeleteNamespacePipelineByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockDeleteNamespacePipelineByID {
-	if mmDeleteNamespacePipelineByID.mock.funcDeleteNamespacePipelineByID != nil {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineByID mock is already set by Set")
-	}
-
-	if mmDeleteNamespacePipelineByID.defaultExpectation == nil {
-		mmDeleteNamespacePipelineByID.defaultExpectation = &RepositoryMockDeleteNamespacePipelineByIDExpectation{}
-	}
-
-	if mmDeleteNamespacePipelineByID.defaultExpectation.params != nil {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineByID mock is already set by Expect")
-	}
-
-	if mmDeleteNamespacePipelineByID.defaultExpectation.paramPtrs == nil {
-		mmDeleteNamespacePipelineByID.defaultExpectation.paramPtrs = &RepositoryMockDeleteNamespacePipelineByIDParamPtrs{}
-	}
-	mmDeleteNamespacePipelineByID.defaultExpectation.paramPtrs.ctx = &ctx
-	mmDeleteNamespacePipelineByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
-
-	return mmDeleteNamespacePipelineByID
-}
-
-// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.DeleteNamespacePipelineByID
-func (mmDeleteNamespacePipelineByID *mRepositoryMockDeleteNamespacePipelineByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockDeleteNamespacePipelineByID {
-	if mmDeleteNamespacePipelineByID.mock.funcDeleteNamespacePipelineByID != nil {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineByID mock is already set by Set")
-	}
-
-	if mmDeleteNamespacePipelineByID.defaultExpectation == nil {
-		mmDeleteNamespacePipelineByID.defaultExpectation = &RepositoryMockDeleteNamespacePipelineByIDExpectation{}
-	}
-
-	if mmDeleteNamespacePipelineByID.defaultExpectation.params != nil {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineByID mock is already set by Expect")
-	}
-
-	if mmDeleteNamespacePipelineByID.defaultExpectation.paramPtrs == nil {
-		mmDeleteNamespacePipelineByID.defaultExpectation.paramPtrs = &RepositoryMockDeleteNamespacePipelineByIDParamPtrs{}
-	}
-	mmDeleteNamespacePipelineByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
-	mmDeleteNamespacePipelineByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
-
-	return mmDeleteNamespacePipelineByID
-}
-
-// ExpectIdParam3 sets up expected param id for Repository.DeleteNamespacePipelineByID
-func (mmDeleteNamespacePipelineByID *mRepositoryMockDeleteNamespacePipelineByID) ExpectIdParam3(id string) *mRepositoryMockDeleteNamespacePipelineByID {
-	if mmDeleteNamespacePipelineByID.mock.funcDeleteNamespacePipelineByID != nil {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineByID mock is already set by Set")
-	}
-
-	if mmDeleteNamespacePipelineByID.defaultExpectation == nil {
-		mmDeleteNamespacePipelineByID.defaultExpectation = &RepositoryMockDeleteNamespacePipelineByIDExpectation{}
-	}
-
-	if mmDeleteNamespacePipelineByID.defaultExpectation.params != nil {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineByID mock is already set by Expect")
-	}
-
-	if mmDeleteNamespacePipelineByID.defaultExpectation.paramPtrs == nil {
-		mmDeleteNamespacePipelineByID.defaultExpectation.paramPtrs = &RepositoryMockDeleteNamespacePipelineByIDParamPtrs{}
-	}
-	mmDeleteNamespacePipelineByID.defaultExpectation.paramPtrs.id = &id
-	mmDeleteNamespacePipelineByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
-
-	return mmDeleteNamespacePipelineByID
-}
-
-// Inspect accepts an inspector function that has same arguments as the Repository.DeleteNamespacePipelineByID
-func (mmDeleteNamespacePipelineByID *mRepositoryMockDeleteNamespacePipelineByID) Inspect(f func(ctx context.Context, ownerPermalink string, id string)) *mRepositoryMockDeleteNamespacePipelineByID {
-	if mmDeleteNamespacePipelineByID.mock.inspectFuncDeleteNamespacePipelineByID != nil {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.DeleteNamespacePipelineByID")
-	}
-
-	mmDeleteNamespacePipelineByID.mock.inspectFuncDeleteNamespacePipelineByID = f
-
-	return mmDeleteNamespacePipelineByID
-}
-
-// Return sets up results that will be returned by Repository.DeleteNamespacePipelineByID
-func (mmDeleteNamespacePipelineByID *mRepositoryMockDeleteNamespacePipelineByID) Return(err error) *RepositoryMock {
-	if mmDeleteNamespacePipelineByID.mock.funcDeleteNamespacePipelineByID != nil {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineByID mock is already set by Set")
-	}
-
-	if mmDeleteNamespacePipelineByID.defaultExpectation == nil {
-		mmDeleteNamespacePipelineByID.defaultExpectation = &RepositoryMockDeleteNamespacePipelineByIDExpectation{mock: mmDeleteNamespacePipelineByID.mock}
-	}
-	mmDeleteNamespacePipelineByID.defaultExpectation.results = &RepositoryMockDeleteNamespacePipelineByIDResults{err}
-	mmDeleteNamespacePipelineByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmDeleteNamespacePipelineByID.mock
-}
-
-// Set uses given function f to mock the Repository.DeleteNamespacePipelineByID method
-func (mmDeleteNamespacePipelineByID *mRepositoryMockDeleteNamespacePipelineByID) Set(f func(ctx context.Context, ownerPermalink string, id string) (err error)) *RepositoryMock {
-	if mmDeleteNamespacePipelineByID.defaultExpectation != nil {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("Default expectation is already set for the Repository.DeleteNamespacePipelineByID method")
-	}
-
-	if len(mmDeleteNamespacePipelineByID.expectations) > 0 {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("Some expectations are already set for the Repository.DeleteNamespacePipelineByID method")
-	}
-
-	mmDeleteNamespacePipelineByID.mock.funcDeleteNamespacePipelineByID = f
-	mmDeleteNamespacePipelineByID.mock.funcDeleteNamespacePipelineByIDOrigin = minimock.CallerInfo(1)
-	return mmDeleteNamespacePipelineByID.mock
-}
-
-// When sets expectation for the Repository.DeleteNamespacePipelineByID which will trigger the result defined by the following
-// Then helper
-func (mmDeleteNamespacePipelineByID *mRepositoryMockDeleteNamespacePipelineByID) When(ctx context.Context, ownerPermalink string, id string) *RepositoryMockDeleteNamespacePipelineByIDExpectation {
-	if mmDeleteNamespacePipelineByID.mock.funcDeleteNamespacePipelineByID != nil {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineByID mock is already set by Set")
-	}
-
-	expectation := &RepositoryMockDeleteNamespacePipelineByIDExpectation{
-		mock:               mmDeleteNamespacePipelineByID.mock,
-		params:             &RepositoryMockDeleteNamespacePipelineByIDParams{ctx, ownerPermalink, id},
-		expectationOrigins: RepositoryMockDeleteNamespacePipelineByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
-	}
-	mmDeleteNamespacePipelineByID.expectations = append(mmDeleteNamespacePipelineByID.expectations, expectation)
-	return expectation
-}
-
-// Then sets up Repository.DeleteNamespacePipelineByID return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockDeleteNamespacePipelineByIDExpectation) Then(err error) *RepositoryMock {
-	e.results = &RepositoryMockDeleteNamespacePipelineByIDResults{err}
-	return e.mock
-}
-
-// Times sets number of times Repository.DeleteNamespacePipelineByID should be invoked
-func (mmDeleteNamespacePipelineByID *mRepositoryMockDeleteNamespacePipelineByID) Times(n uint64) *mRepositoryMockDeleteNamespacePipelineByID {
-	if n == 0 {
-		mmDeleteNamespacePipelineByID.mock.t.Fatalf("Times of RepositoryMock.DeleteNamespacePipelineByID mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmDeleteNamespacePipelineByID.expectedInvocations, n)
-	mmDeleteNamespacePipelineByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmDeleteNamespacePipelineByID
-}
-
-func (mmDeleteNamespacePipelineByID *mRepositoryMockDeleteNamespacePipelineByID) invocationsDone() bool {
-	if len(mmDeleteNamespacePipelineByID.expectations) == 0 && mmDeleteNamespacePipelineByID.defaultExpectation == nil && mmDeleteNamespacePipelineByID.mock.funcDeleteNamespacePipelineByID == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmDeleteNamespacePipelineByID.mock.afterDeleteNamespacePipelineByIDCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmDeleteNamespacePipelineByID.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// DeleteNamespacePipelineByID implements mm_repository.Repository
-func (mmDeleteNamespacePipelineByID *RepositoryMock) DeleteNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string) (err error) {
-	mm_atomic.AddUint64(&mmDeleteNamespacePipelineByID.beforeDeleteNamespacePipelineByIDCounter, 1)
-	defer mm_atomic.AddUint64(&mmDeleteNamespacePipelineByID.afterDeleteNamespacePipelineByIDCounter, 1)
-
-	mmDeleteNamespacePipelineByID.t.Helper()
-
-	if mmDeleteNamespacePipelineByID.inspectFuncDeleteNamespacePipelineByID != nil {
-		mmDeleteNamespacePipelineByID.inspectFuncDeleteNamespacePipelineByID(ctx, ownerPermalink, id)
-	}
-
-	mm_params := RepositoryMockDeleteNamespacePipelineByIDParams{ctx, ownerPermalink, id}
-
-	// Record call args
-	mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.mutex.Lock()
-	mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.callArgs = append(mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.callArgs, &mm_params)
-	mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.mutex.Unlock()
-
-	for _, e := range mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.err
-		}
-	}
-
-	if mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.defaultExpectation.Counter, 1)
-		mm_want := mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.defaultExpectation.params
-		mm_want_ptrs := mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.defaultExpectation.paramPtrs
-
-		mm_got := RepositoryMockDeleteNamespacePipelineByIDParams{ctx, ownerPermalink, id}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmDeleteNamespacePipelineByID.t.Errorf("RepositoryMock.DeleteNamespacePipelineByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
-				mmDeleteNamespacePipelineByID.t.Errorf("RepositoryMock.DeleteNamespacePipelineByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
-			}
-
-			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
-				mmDeleteNamespacePipelineByID.t.Errorf("RepositoryMock.DeleteNamespacePipelineByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmDeleteNamespacePipelineByID.t.Errorf("RepositoryMock.DeleteNamespacePipelineByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmDeleteNamespacePipelineByID.DeleteNamespacePipelineByIDMock.defaultExpectation.results
-		if mm_results == nil {
-			mmDeleteNamespacePipelineByID.t.Fatal("No results are set for the RepositoryMock.DeleteNamespacePipelineByID")
-		}
-		return (*mm_results).err
-	}
-	if mmDeleteNamespacePipelineByID.funcDeleteNamespacePipelineByID != nil {
-		return mmDeleteNamespacePipelineByID.funcDeleteNamespacePipelineByID(ctx, ownerPermalink, id)
-	}
-	mmDeleteNamespacePipelineByID.t.Fatalf("Unexpected call to RepositoryMock.DeleteNamespacePipelineByID. %v %v %v", ctx, ownerPermalink, id)
-	return
-}
-
-// DeleteNamespacePipelineByIDAfterCounter returns a count of finished RepositoryMock.DeleteNamespacePipelineByID invocations
-func (mmDeleteNamespacePipelineByID *RepositoryMock) DeleteNamespacePipelineByIDAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmDeleteNamespacePipelineByID.afterDeleteNamespacePipelineByIDCounter)
-}
-
-// DeleteNamespacePipelineByIDBeforeCounter returns a count of RepositoryMock.DeleteNamespacePipelineByID invocations
-func (mmDeleteNamespacePipelineByID *RepositoryMock) DeleteNamespacePipelineByIDBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmDeleteNamespacePipelineByID.beforeDeleteNamespacePipelineByIDCounter)
-}
-
-// Calls returns a list of arguments used in each call to RepositoryMock.DeleteNamespacePipelineByID.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmDeleteNamespacePipelineByID *mRepositoryMockDeleteNamespacePipelineByID) Calls() []*RepositoryMockDeleteNamespacePipelineByIDParams {
-	mmDeleteNamespacePipelineByID.mutex.RLock()
-
-	argCopy := make([]*RepositoryMockDeleteNamespacePipelineByIDParams, len(mmDeleteNamespacePipelineByID.callArgs))
-	copy(argCopy, mmDeleteNamespacePipelineByID.callArgs)
-
-	mmDeleteNamespacePipelineByID.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockDeleteNamespacePipelineByIDDone returns true if the count of the DeleteNamespacePipelineByID invocations corresponds
-// the number of defined expectations
-func (m *RepositoryMock) MinimockDeleteNamespacePipelineByIDDone() bool {
-	if m.DeleteNamespacePipelineByIDMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.DeleteNamespacePipelineByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.DeleteNamespacePipelineByIDMock.invocationsDone()
-}
-
-// MinimockDeleteNamespacePipelineByIDInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockDeleteNamespacePipelineByIDInspect() {
-	for _, e := range m.DeleteNamespacePipelineByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.DeleteNamespacePipelineByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
-		}
-	}
-
-	afterDeleteNamespacePipelineByIDCounter := mm_atomic.LoadUint64(&m.afterDeleteNamespacePipelineByIDCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.DeleteNamespacePipelineByIDMock.defaultExpectation != nil && afterDeleteNamespacePipelineByIDCounter < 1 {
-		if m.DeleteNamespacePipelineByIDMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to RepositoryMock.DeleteNamespacePipelineByID at\n%s", m.DeleteNamespacePipelineByIDMock.defaultExpectation.returnOrigin)
-		} else {
-			m.t.Errorf("Expected call to RepositoryMock.DeleteNamespacePipelineByID at\n%s with params: %#v", m.DeleteNamespacePipelineByIDMock.defaultExpectation.expectationOrigins.origin, *m.DeleteNamespacePipelineByIDMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcDeleteNamespacePipelineByID != nil && afterDeleteNamespacePipelineByIDCounter < 1 {
-		m.t.Errorf("Expected call to RepositoryMock.DeleteNamespacePipelineByID at\n%s", m.funcDeleteNamespacePipelineByIDOrigin)
-	}
-
-	if !m.DeleteNamespacePipelineByIDMock.invocationsDone() && afterDeleteNamespacePipelineByIDCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.DeleteNamespacePipelineByID at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.DeleteNamespacePipelineByIDMock.expectedInvocations), m.DeleteNamespacePipelineByIDMock.expectedInvocationsOrigin, afterDeleteNamespacePipelineByIDCounter)
-	}
-}
-
-type mRepositoryMockDeleteNamespacePipelineReleaseByID struct {
-	optional           bool
-	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockDeleteNamespacePipelineReleaseByIDExpectation
-	expectations       []*RepositoryMockDeleteNamespacePipelineReleaseByIDExpectation
-
-	callArgs []*RepositoryMockDeleteNamespacePipelineReleaseByIDParams
-	mutex    sync.RWMutex
-
-	expectedInvocations       uint64
-	expectedInvocationsOrigin string
-}
-
-// RepositoryMockDeleteNamespacePipelineReleaseByIDExpectation specifies expectation struct of the Repository.DeleteNamespacePipelineReleaseByID
-type RepositoryMockDeleteNamespacePipelineReleaseByIDExpectation struct {
-	mock               *RepositoryMock
-	params             *RepositoryMockDeleteNamespacePipelineReleaseByIDParams
-	paramPtrs          *RepositoryMockDeleteNamespacePipelineReleaseByIDParamPtrs
-	expectationOrigins RepositoryMockDeleteNamespacePipelineReleaseByIDExpectationOrigins
-	results            *RepositoryMockDeleteNamespacePipelineReleaseByIDResults
-	returnOrigin       string
-	Counter            uint64
-}
-
-// RepositoryMockDeleteNamespacePipelineReleaseByIDParams contains parameters of the Repository.DeleteNamespacePipelineReleaseByID
-type RepositoryMockDeleteNamespacePipelineReleaseByIDParams struct {
-	ctx            context.Context
-	ownerPermalink string
-	pipelineUID    uuid.UUID
-	id             string
-}
-
-// RepositoryMockDeleteNamespacePipelineReleaseByIDParamPtrs contains pointers to parameters of the Repository.DeleteNamespacePipelineReleaseByID
-type RepositoryMockDeleteNamespacePipelineReleaseByIDParamPtrs struct {
-	ctx            *context.Context
-	ownerPermalink *string
-	pipelineUID    *uuid.UUID
-	id             *string
-}
-
-// RepositoryMockDeleteNamespacePipelineReleaseByIDResults contains results of the Repository.DeleteNamespacePipelineReleaseByID
-type RepositoryMockDeleteNamespacePipelineReleaseByIDResults struct {
-	err error
-}
-
-// RepositoryMockDeleteNamespacePipelineReleaseByIDOrigins contains origins of expectations of the Repository.DeleteNamespacePipelineReleaseByID
-type RepositoryMockDeleteNamespacePipelineReleaseByIDExpectationOrigins struct {
-	origin               string
-	originCtx            string
-	originOwnerPermalink string
-	originPipelineUID    string
-	originId             string
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmDeleteNamespacePipelineReleaseByID *mRepositoryMockDeleteNamespacePipelineReleaseByID) Optional() *mRepositoryMockDeleteNamespacePipelineReleaseByID {
-	mmDeleteNamespacePipelineReleaseByID.optional = true
-	return mmDeleteNamespacePipelineReleaseByID
-}
-
-// Expect sets up expected params for Repository.DeleteNamespacePipelineReleaseByID
-func (mmDeleteNamespacePipelineReleaseByID *mRepositoryMockDeleteNamespacePipelineReleaseByID) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string) *mRepositoryMockDeleteNamespacePipelineReleaseByID {
-	if mmDeleteNamespacePipelineReleaseByID.mock.funcDeleteNamespacePipelineReleaseByID != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmDeleteNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockDeleteNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation.paramPtrs != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineReleaseByID mock is already set by ExpectParams functions")
-	}
-
-	mmDeleteNamespacePipelineReleaseByID.defaultExpectation.params = &RepositoryMockDeleteNamespacePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id}
-	mmDeleteNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmDeleteNamespacePipelineReleaseByID.expectations {
-		if minimock.Equal(e.params, mmDeleteNamespacePipelineReleaseByID.defaultExpectation.params) {
-			mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmDeleteNamespacePipelineReleaseByID.defaultExpectation.params)
-		}
-	}
-
-	return mmDeleteNamespacePipelineReleaseByID
-}
-
-// ExpectCtxParam1 sets up expected param ctx for Repository.DeleteNamespacePipelineReleaseByID
-func (mmDeleteNamespacePipelineReleaseByID *mRepositoryMockDeleteNamespacePipelineReleaseByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockDeleteNamespacePipelineReleaseByID {
-	if mmDeleteNamespacePipelineReleaseByID.mock.funcDeleteNamespacePipelineReleaseByID != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmDeleteNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockDeleteNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmDeleteNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockDeleteNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmDeleteNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.ctx = &ctx
-	mmDeleteNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
-
-	return mmDeleteNamespacePipelineReleaseByID
-}
-
-// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.DeleteNamespacePipelineReleaseByID
-func (mmDeleteNamespacePipelineReleaseByID *mRepositoryMockDeleteNamespacePipelineReleaseByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockDeleteNamespacePipelineReleaseByID {
-	if mmDeleteNamespacePipelineReleaseByID.mock.funcDeleteNamespacePipelineReleaseByID != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmDeleteNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockDeleteNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmDeleteNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockDeleteNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmDeleteNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
-	mmDeleteNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
-
-	return mmDeleteNamespacePipelineReleaseByID
-}
-
-// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.DeleteNamespacePipelineReleaseByID
-func (mmDeleteNamespacePipelineReleaseByID *mRepositoryMockDeleteNamespacePipelineReleaseByID) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockDeleteNamespacePipelineReleaseByID {
-	if mmDeleteNamespacePipelineReleaseByID.mock.funcDeleteNamespacePipelineReleaseByID != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmDeleteNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockDeleteNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmDeleteNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockDeleteNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmDeleteNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
-	mmDeleteNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
-
-	return mmDeleteNamespacePipelineReleaseByID
-}
-
-// ExpectIdParam4 sets up expected param id for Repository.DeleteNamespacePipelineReleaseByID
-func (mmDeleteNamespacePipelineReleaseByID *mRepositoryMockDeleteNamespacePipelineReleaseByID) ExpectIdParam4(id string) *mRepositoryMockDeleteNamespacePipelineReleaseByID {
-	if mmDeleteNamespacePipelineReleaseByID.mock.funcDeleteNamespacePipelineReleaseByID != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmDeleteNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockDeleteNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmDeleteNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockDeleteNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmDeleteNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.id = &id
-	mmDeleteNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
-
-	return mmDeleteNamespacePipelineReleaseByID
-}
-
-// Inspect accepts an inspector function that has same arguments as the Repository.DeleteNamespacePipelineReleaseByID
-func (mmDeleteNamespacePipelineReleaseByID *mRepositoryMockDeleteNamespacePipelineReleaseByID) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string)) *mRepositoryMockDeleteNamespacePipelineReleaseByID {
-	if mmDeleteNamespacePipelineReleaseByID.mock.inspectFuncDeleteNamespacePipelineReleaseByID != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.DeleteNamespacePipelineReleaseByID")
-	}
-
-	mmDeleteNamespacePipelineReleaseByID.mock.inspectFuncDeleteNamespacePipelineReleaseByID = f
-
-	return mmDeleteNamespacePipelineReleaseByID
-}
-
-// Return sets up results that will be returned by Repository.DeleteNamespacePipelineReleaseByID
-func (mmDeleteNamespacePipelineReleaseByID *mRepositoryMockDeleteNamespacePipelineReleaseByID) Return(err error) *RepositoryMock {
-	if mmDeleteNamespacePipelineReleaseByID.mock.funcDeleteNamespacePipelineReleaseByID != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmDeleteNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockDeleteNamespacePipelineReleaseByIDExpectation{mock: mmDeleteNamespacePipelineReleaseByID.mock}
-	}
-	mmDeleteNamespacePipelineReleaseByID.defaultExpectation.results = &RepositoryMockDeleteNamespacePipelineReleaseByIDResults{err}
-	mmDeleteNamespacePipelineReleaseByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmDeleteNamespacePipelineReleaseByID.mock
-}
-
-// Set uses given function f to mock the Repository.DeleteNamespacePipelineReleaseByID method
-func (mmDeleteNamespacePipelineReleaseByID *mRepositoryMockDeleteNamespacePipelineReleaseByID) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string) (err error)) *RepositoryMock {
-	if mmDeleteNamespacePipelineReleaseByID.defaultExpectation != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("Default expectation is already set for the Repository.DeleteNamespacePipelineReleaseByID method")
-	}
-
-	if len(mmDeleteNamespacePipelineReleaseByID.expectations) > 0 {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("Some expectations are already set for the Repository.DeleteNamespacePipelineReleaseByID method")
-	}
-
-	mmDeleteNamespacePipelineReleaseByID.mock.funcDeleteNamespacePipelineReleaseByID = f
-	mmDeleteNamespacePipelineReleaseByID.mock.funcDeleteNamespacePipelineReleaseByIDOrigin = minimock.CallerInfo(1)
-	return mmDeleteNamespacePipelineReleaseByID.mock
-}
-
-// When sets expectation for the Repository.DeleteNamespacePipelineReleaseByID which will trigger the result defined by the following
-// Then helper
-func (mmDeleteNamespacePipelineReleaseByID *mRepositoryMockDeleteNamespacePipelineReleaseByID) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string) *RepositoryMockDeleteNamespacePipelineReleaseByIDExpectation {
-	if mmDeleteNamespacePipelineReleaseByID.mock.funcDeleteNamespacePipelineReleaseByID != nil {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeleteNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	expectation := &RepositoryMockDeleteNamespacePipelineReleaseByIDExpectation{
-		mock:               mmDeleteNamespacePipelineReleaseByID.mock,
-		params:             &RepositoryMockDeleteNamespacePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id},
-		expectationOrigins: RepositoryMockDeleteNamespacePipelineReleaseByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
-	}
-	mmDeleteNamespacePipelineReleaseByID.expectations = append(mmDeleteNamespacePipelineReleaseByID.expectations, expectation)
-	return expectation
-}
-
-// Then sets up Repository.DeleteNamespacePipelineReleaseByID return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockDeleteNamespacePipelineReleaseByIDExpectation) Then(err error) *RepositoryMock {
-	e.results = &RepositoryMockDeleteNamespacePipelineReleaseByIDResults{err}
-	return e.mock
-}
-
-// Times sets number of times Repository.DeleteNamespacePipelineReleaseByID should be invoked
-func (mmDeleteNamespacePipelineReleaseByID *mRepositoryMockDeleteNamespacePipelineReleaseByID) Times(n uint64) *mRepositoryMockDeleteNamespacePipelineReleaseByID {
-	if n == 0 {
-		mmDeleteNamespacePipelineReleaseByID.mock.t.Fatalf("Times of RepositoryMock.DeleteNamespacePipelineReleaseByID mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmDeleteNamespacePipelineReleaseByID.expectedInvocations, n)
-	mmDeleteNamespacePipelineReleaseByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmDeleteNamespacePipelineReleaseByID
-}
-
-func (mmDeleteNamespacePipelineReleaseByID *mRepositoryMockDeleteNamespacePipelineReleaseByID) invocationsDone() bool {
-	if len(mmDeleteNamespacePipelineReleaseByID.expectations) == 0 && mmDeleteNamespacePipelineReleaseByID.defaultExpectation == nil && mmDeleteNamespacePipelineReleaseByID.mock.funcDeleteNamespacePipelineReleaseByID == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmDeleteNamespacePipelineReleaseByID.mock.afterDeleteNamespacePipelineReleaseByIDCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmDeleteNamespacePipelineReleaseByID.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// DeleteNamespacePipelineReleaseByID implements mm_repository.Repository
-func (mmDeleteNamespacePipelineReleaseByID *RepositoryMock) DeleteNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string) (err error) {
-	mm_atomic.AddUint64(&mmDeleteNamespacePipelineReleaseByID.beforeDeleteNamespacePipelineReleaseByIDCounter, 1)
-	defer mm_atomic.AddUint64(&mmDeleteNamespacePipelineReleaseByID.afterDeleteNamespacePipelineReleaseByIDCounter, 1)
-
-	mmDeleteNamespacePipelineReleaseByID.t.Helper()
-
-	if mmDeleteNamespacePipelineReleaseByID.inspectFuncDeleteNamespacePipelineReleaseByID != nil {
-		mmDeleteNamespacePipelineReleaseByID.inspectFuncDeleteNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id)
-	}
-
-	mm_params := RepositoryMockDeleteNamespacePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id}
-
-	// Record call args
-	mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.mutex.Lock()
-	mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.callArgs = append(mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.callArgs, &mm_params)
-	mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.mutex.Unlock()
-
-	for _, e := range mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.err
-		}
-	}
-
-	if mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation.Counter, 1)
-		mm_want := mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation.params
-		mm_want_ptrs := mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation.paramPtrs
-
-		mm_got := RepositoryMockDeleteNamespacePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmDeleteNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.DeleteNamespacePipelineReleaseByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
-				mmDeleteNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.DeleteNamespacePipelineReleaseByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
-			}
-
-			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
-				mmDeleteNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.DeleteNamespacePipelineReleaseByID got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
-			}
-
-			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
-				mmDeleteNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.DeleteNamespacePipelineReleaseByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmDeleteNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.DeleteNamespacePipelineReleaseByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmDeleteNamespacePipelineReleaseByID.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation.results
-		if mm_results == nil {
-			mmDeleteNamespacePipelineReleaseByID.t.Fatal("No results are set for the RepositoryMock.DeleteNamespacePipelineReleaseByID")
-		}
-		return (*mm_results).err
-	}
-	if mmDeleteNamespacePipelineReleaseByID.funcDeleteNamespacePipelineReleaseByID != nil {
-		return mmDeleteNamespacePipelineReleaseByID.funcDeleteNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id)
-	}
-	mmDeleteNamespacePipelineReleaseByID.t.Fatalf("Unexpected call to RepositoryMock.DeleteNamespacePipelineReleaseByID. %v %v %v %v", ctx, ownerPermalink, pipelineUID, id)
-	return
-}
-
-// DeleteNamespacePipelineReleaseByIDAfterCounter returns a count of finished RepositoryMock.DeleteNamespacePipelineReleaseByID invocations
-func (mmDeleteNamespacePipelineReleaseByID *RepositoryMock) DeleteNamespacePipelineReleaseByIDAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmDeleteNamespacePipelineReleaseByID.afterDeleteNamespacePipelineReleaseByIDCounter)
-}
-
-// DeleteNamespacePipelineReleaseByIDBeforeCounter returns a count of RepositoryMock.DeleteNamespacePipelineReleaseByID invocations
-func (mmDeleteNamespacePipelineReleaseByID *RepositoryMock) DeleteNamespacePipelineReleaseByIDBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmDeleteNamespacePipelineReleaseByID.beforeDeleteNamespacePipelineReleaseByIDCounter)
-}
-
-// Calls returns a list of arguments used in each call to RepositoryMock.DeleteNamespacePipelineReleaseByID.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmDeleteNamespacePipelineReleaseByID *mRepositoryMockDeleteNamespacePipelineReleaseByID) Calls() []*RepositoryMockDeleteNamespacePipelineReleaseByIDParams {
-	mmDeleteNamespacePipelineReleaseByID.mutex.RLock()
-
-	argCopy := make([]*RepositoryMockDeleteNamespacePipelineReleaseByIDParams, len(mmDeleteNamespacePipelineReleaseByID.callArgs))
-	copy(argCopy, mmDeleteNamespacePipelineReleaseByID.callArgs)
-
-	mmDeleteNamespacePipelineReleaseByID.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockDeleteNamespacePipelineReleaseByIDDone returns true if the count of the DeleteNamespacePipelineReleaseByID invocations corresponds
-// the number of defined expectations
-func (m *RepositoryMock) MinimockDeleteNamespacePipelineReleaseByIDDone() bool {
-	if m.DeleteNamespacePipelineReleaseByIDMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.DeleteNamespacePipelineReleaseByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.DeleteNamespacePipelineReleaseByIDMock.invocationsDone()
-}
-
-// MinimockDeleteNamespacePipelineReleaseByIDInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockDeleteNamespacePipelineReleaseByIDInspect() {
-	for _, e := range m.DeleteNamespacePipelineReleaseByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.DeleteNamespacePipelineReleaseByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
-		}
-	}
-
-	afterDeleteNamespacePipelineReleaseByIDCounter := mm_atomic.LoadUint64(&m.afterDeleteNamespacePipelineReleaseByIDCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation != nil && afterDeleteNamespacePipelineReleaseByIDCounter < 1 {
-		if m.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to RepositoryMock.DeleteNamespacePipelineReleaseByID at\n%s", m.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation.returnOrigin)
-		} else {
-			m.t.Errorf("Expected call to RepositoryMock.DeleteNamespacePipelineReleaseByID at\n%s with params: %#v", m.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.origin, *m.DeleteNamespacePipelineReleaseByIDMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcDeleteNamespacePipelineReleaseByID != nil && afterDeleteNamespacePipelineReleaseByIDCounter < 1 {
-		m.t.Errorf("Expected call to RepositoryMock.DeleteNamespacePipelineReleaseByID at\n%s", m.funcDeleteNamespacePipelineReleaseByIDOrigin)
-	}
-
-	if !m.DeleteNamespacePipelineReleaseByIDMock.invocationsDone() && afterDeleteNamespacePipelineReleaseByIDCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.DeleteNamespacePipelineReleaseByID at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.DeleteNamespacePipelineReleaseByIDMock.expectedInvocations), m.DeleteNamespacePipelineReleaseByIDMock.expectedInvocationsOrigin, afterDeleteNamespacePipelineReleaseByIDCounter)
-	}
-}
-
 type mRepositoryMockDeleteNamespaceSecretByID struct {
 	optional           bool
 	mock               *RepositoryMock
@@ -5705,6 +4928,783 @@ func (m *RepositoryMock) MinimockDeleteNamespaceSecretByIDInspect() {
 	if !m.DeleteNamespaceSecretByIDMock.invocationsDone() && afterDeleteNamespaceSecretByIDCounter > 0 {
 		m.t.Errorf("Expected %d calls to RepositoryMock.DeleteNamespaceSecretByID at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.DeleteNamespaceSecretByIDMock.expectedInvocations), m.DeleteNamespaceSecretByIDMock.expectedInvocationsOrigin, afterDeleteNamespaceSecretByIDCounter)
+	}
+}
+
+type mRepositoryMockDeletePipelineByID struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockDeletePipelineByIDExpectation
+	expectations       []*RepositoryMockDeletePipelineByIDExpectation
+
+	callArgs []*RepositoryMockDeletePipelineByIDParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// RepositoryMockDeletePipelineByIDExpectation specifies expectation struct of the Repository.DeletePipelineByID
+type RepositoryMockDeletePipelineByIDExpectation struct {
+	mock               *RepositoryMock
+	params             *RepositoryMockDeletePipelineByIDParams
+	paramPtrs          *RepositoryMockDeletePipelineByIDParamPtrs
+	expectationOrigins RepositoryMockDeletePipelineByIDExpectationOrigins
+	results            *RepositoryMockDeletePipelineByIDResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// RepositoryMockDeletePipelineByIDParams contains parameters of the Repository.DeletePipelineByID
+type RepositoryMockDeletePipelineByIDParams struct {
+	ctx            context.Context
+	ownerPermalink string
+	id             string
+}
+
+// RepositoryMockDeletePipelineByIDParamPtrs contains pointers to parameters of the Repository.DeletePipelineByID
+type RepositoryMockDeletePipelineByIDParamPtrs struct {
+	ctx            *context.Context
+	ownerPermalink *string
+	id             *string
+}
+
+// RepositoryMockDeletePipelineByIDResults contains results of the Repository.DeletePipelineByID
+type RepositoryMockDeletePipelineByIDResults struct {
+	err error
+}
+
+// RepositoryMockDeletePipelineByIDOrigins contains origins of expectations of the Repository.DeletePipelineByID
+type RepositoryMockDeletePipelineByIDExpectationOrigins struct {
+	origin               string
+	originCtx            string
+	originOwnerPermalink string
+	originId             string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmDeletePipelineByID *mRepositoryMockDeletePipelineByID) Optional() *mRepositoryMockDeletePipelineByID {
+	mmDeletePipelineByID.optional = true
+	return mmDeletePipelineByID
+}
+
+// Expect sets up expected params for Repository.DeletePipelineByID
+func (mmDeletePipelineByID *mRepositoryMockDeletePipelineByID) Expect(ctx context.Context, ownerPermalink string, id string) *mRepositoryMockDeletePipelineByID {
+	if mmDeletePipelineByID.mock.funcDeletePipelineByID != nil {
+		mmDeletePipelineByID.mock.t.Fatalf("RepositoryMock.DeletePipelineByID mock is already set by Set")
+	}
+
+	if mmDeletePipelineByID.defaultExpectation == nil {
+		mmDeletePipelineByID.defaultExpectation = &RepositoryMockDeletePipelineByIDExpectation{}
+	}
+
+	if mmDeletePipelineByID.defaultExpectation.paramPtrs != nil {
+		mmDeletePipelineByID.mock.t.Fatalf("RepositoryMock.DeletePipelineByID mock is already set by ExpectParams functions")
+	}
+
+	mmDeletePipelineByID.defaultExpectation.params = &RepositoryMockDeletePipelineByIDParams{ctx, ownerPermalink, id}
+	mmDeletePipelineByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmDeletePipelineByID.expectations {
+		if minimock.Equal(e.params, mmDeletePipelineByID.defaultExpectation.params) {
+			mmDeletePipelineByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmDeletePipelineByID.defaultExpectation.params)
+		}
+	}
+
+	return mmDeletePipelineByID
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.DeletePipelineByID
+func (mmDeletePipelineByID *mRepositoryMockDeletePipelineByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockDeletePipelineByID {
+	if mmDeletePipelineByID.mock.funcDeletePipelineByID != nil {
+		mmDeletePipelineByID.mock.t.Fatalf("RepositoryMock.DeletePipelineByID mock is already set by Set")
+	}
+
+	if mmDeletePipelineByID.defaultExpectation == nil {
+		mmDeletePipelineByID.defaultExpectation = &RepositoryMockDeletePipelineByIDExpectation{}
+	}
+
+	if mmDeletePipelineByID.defaultExpectation.params != nil {
+		mmDeletePipelineByID.mock.t.Fatalf("RepositoryMock.DeletePipelineByID mock is already set by Expect")
+	}
+
+	if mmDeletePipelineByID.defaultExpectation.paramPtrs == nil {
+		mmDeletePipelineByID.defaultExpectation.paramPtrs = &RepositoryMockDeletePipelineByIDParamPtrs{}
+	}
+	mmDeletePipelineByID.defaultExpectation.paramPtrs.ctx = &ctx
+	mmDeletePipelineByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmDeletePipelineByID
+}
+
+// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.DeletePipelineByID
+func (mmDeletePipelineByID *mRepositoryMockDeletePipelineByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockDeletePipelineByID {
+	if mmDeletePipelineByID.mock.funcDeletePipelineByID != nil {
+		mmDeletePipelineByID.mock.t.Fatalf("RepositoryMock.DeletePipelineByID mock is already set by Set")
+	}
+
+	if mmDeletePipelineByID.defaultExpectation == nil {
+		mmDeletePipelineByID.defaultExpectation = &RepositoryMockDeletePipelineByIDExpectation{}
+	}
+
+	if mmDeletePipelineByID.defaultExpectation.params != nil {
+		mmDeletePipelineByID.mock.t.Fatalf("RepositoryMock.DeletePipelineByID mock is already set by Expect")
+	}
+
+	if mmDeletePipelineByID.defaultExpectation.paramPtrs == nil {
+		mmDeletePipelineByID.defaultExpectation.paramPtrs = &RepositoryMockDeletePipelineByIDParamPtrs{}
+	}
+	mmDeletePipelineByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
+	mmDeletePipelineByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
+
+	return mmDeletePipelineByID
+}
+
+// ExpectIdParam3 sets up expected param id for Repository.DeletePipelineByID
+func (mmDeletePipelineByID *mRepositoryMockDeletePipelineByID) ExpectIdParam3(id string) *mRepositoryMockDeletePipelineByID {
+	if mmDeletePipelineByID.mock.funcDeletePipelineByID != nil {
+		mmDeletePipelineByID.mock.t.Fatalf("RepositoryMock.DeletePipelineByID mock is already set by Set")
+	}
+
+	if mmDeletePipelineByID.defaultExpectation == nil {
+		mmDeletePipelineByID.defaultExpectation = &RepositoryMockDeletePipelineByIDExpectation{}
+	}
+
+	if mmDeletePipelineByID.defaultExpectation.params != nil {
+		mmDeletePipelineByID.mock.t.Fatalf("RepositoryMock.DeletePipelineByID mock is already set by Expect")
+	}
+
+	if mmDeletePipelineByID.defaultExpectation.paramPtrs == nil {
+		mmDeletePipelineByID.defaultExpectation.paramPtrs = &RepositoryMockDeletePipelineByIDParamPtrs{}
+	}
+	mmDeletePipelineByID.defaultExpectation.paramPtrs.id = &id
+	mmDeletePipelineByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
+
+	return mmDeletePipelineByID
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.DeletePipelineByID
+func (mmDeletePipelineByID *mRepositoryMockDeletePipelineByID) Inspect(f func(ctx context.Context, ownerPermalink string, id string)) *mRepositoryMockDeletePipelineByID {
+	if mmDeletePipelineByID.mock.inspectFuncDeletePipelineByID != nil {
+		mmDeletePipelineByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.DeletePipelineByID")
+	}
+
+	mmDeletePipelineByID.mock.inspectFuncDeletePipelineByID = f
+
+	return mmDeletePipelineByID
+}
+
+// Return sets up results that will be returned by Repository.DeletePipelineByID
+func (mmDeletePipelineByID *mRepositoryMockDeletePipelineByID) Return(err error) *RepositoryMock {
+	if mmDeletePipelineByID.mock.funcDeletePipelineByID != nil {
+		mmDeletePipelineByID.mock.t.Fatalf("RepositoryMock.DeletePipelineByID mock is already set by Set")
+	}
+
+	if mmDeletePipelineByID.defaultExpectation == nil {
+		mmDeletePipelineByID.defaultExpectation = &RepositoryMockDeletePipelineByIDExpectation{mock: mmDeletePipelineByID.mock}
+	}
+	mmDeletePipelineByID.defaultExpectation.results = &RepositoryMockDeletePipelineByIDResults{err}
+	mmDeletePipelineByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmDeletePipelineByID.mock
+}
+
+// Set uses given function f to mock the Repository.DeletePipelineByID method
+func (mmDeletePipelineByID *mRepositoryMockDeletePipelineByID) Set(f func(ctx context.Context, ownerPermalink string, id string) (err error)) *RepositoryMock {
+	if mmDeletePipelineByID.defaultExpectation != nil {
+		mmDeletePipelineByID.mock.t.Fatalf("Default expectation is already set for the Repository.DeletePipelineByID method")
+	}
+
+	if len(mmDeletePipelineByID.expectations) > 0 {
+		mmDeletePipelineByID.mock.t.Fatalf("Some expectations are already set for the Repository.DeletePipelineByID method")
+	}
+
+	mmDeletePipelineByID.mock.funcDeletePipelineByID = f
+	mmDeletePipelineByID.mock.funcDeletePipelineByIDOrigin = minimock.CallerInfo(1)
+	return mmDeletePipelineByID.mock
+}
+
+// When sets expectation for the Repository.DeletePipelineByID which will trigger the result defined by the following
+// Then helper
+func (mmDeletePipelineByID *mRepositoryMockDeletePipelineByID) When(ctx context.Context, ownerPermalink string, id string) *RepositoryMockDeletePipelineByIDExpectation {
+	if mmDeletePipelineByID.mock.funcDeletePipelineByID != nil {
+		mmDeletePipelineByID.mock.t.Fatalf("RepositoryMock.DeletePipelineByID mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockDeletePipelineByIDExpectation{
+		mock:               mmDeletePipelineByID.mock,
+		params:             &RepositoryMockDeletePipelineByIDParams{ctx, ownerPermalink, id},
+		expectationOrigins: RepositoryMockDeletePipelineByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmDeletePipelineByID.expectations = append(mmDeletePipelineByID.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.DeletePipelineByID return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockDeletePipelineByIDExpectation) Then(err error) *RepositoryMock {
+	e.results = &RepositoryMockDeletePipelineByIDResults{err}
+	return e.mock
+}
+
+// Times sets number of times Repository.DeletePipelineByID should be invoked
+func (mmDeletePipelineByID *mRepositoryMockDeletePipelineByID) Times(n uint64) *mRepositoryMockDeletePipelineByID {
+	if n == 0 {
+		mmDeletePipelineByID.mock.t.Fatalf("Times of RepositoryMock.DeletePipelineByID mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmDeletePipelineByID.expectedInvocations, n)
+	mmDeletePipelineByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmDeletePipelineByID
+}
+
+func (mmDeletePipelineByID *mRepositoryMockDeletePipelineByID) invocationsDone() bool {
+	if len(mmDeletePipelineByID.expectations) == 0 && mmDeletePipelineByID.defaultExpectation == nil && mmDeletePipelineByID.mock.funcDeletePipelineByID == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmDeletePipelineByID.mock.afterDeletePipelineByIDCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmDeletePipelineByID.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// DeletePipelineByID implements mm_repository.Repository
+func (mmDeletePipelineByID *RepositoryMock) DeletePipelineByID(ctx context.Context, ownerPermalink string, id string) (err error) {
+	mm_atomic.AddUint64(&mmDeletePipelineByID.beforeDeletePipelineByIDCounter, 1)
+	defer mm_atomic.AddUint64(&mmDeletePipelineByID.afterDeletePipelineByIDCounter, 1)
+
+	mmDeletePipelineByID.t.Helper()
+
+	if mmDeletePipelineByID.inspectFuncDeletePipelineByID != nil {
+		mmDeletePipelineByID.inspectFuncDeletePipelineByID(ctx, ownerPermalink, id)
+	}
+
+	mm_params := RepositoryMockDeletePipelineByIDParams{ctx, ownerPermalink, id}
+
+	// Record call args
+	mmDeletePipelineByID.DeletePipelineByIDMock.mutex.Lock()
+	mmDeletePipelineByID.DeletePipelineByIDMock.callArgs = append(mmDeletePipelineByID.DeletePipelineByIDMock.callArgs, &mm_params)
+	mmDeletePipelineByID.DeletePipelineByIDMock.mutex.Unlock()
+
+	for _, e := range mmDeletePipelineByID.DeletePipelineByIDMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmDeletePipelineByID.DeletePipelineByIDMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmDeletePipelineByID.DeletePipelineByIDMock.defaultExpectation.Counter, 1)
+		mm_want := mmDeletePipelineByID.DeletePipelineByIDMock.defaultExpectation.params
+		mm_want_ptrs := mmDeletePipelineByID.DeletePipelineByIDMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockDeletePipelineByIDParams{ctx, ownerPermalink, id}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmDeletePipelineByID.t.Errorf("RepositoryMock.DeletePipelineByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeletePipelineByID.DeletePipelineByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
+				mmDeletePipelineByID.t.Errorf("RepositoryMock.DeletePipelineByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeletePipelineByID.DeletePipelineByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
+			}
+
+			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
+				mmDeletePipelineByID.t.Errorf("RepositoryMock.DeletePipelineByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeletePipelineByID.DeletePipelineByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmDeletePipelineByID.t.Errorf("RepositoryMock.DeletePipelineByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmDeletePipelineByID.DeletePipelineByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmDeletePipelineByID.DeletePipelineByIDMock.defaultExpectation.results
+		if mm_results == nil {
+			mmDeletePipelineByID.t.Fatal("No results are set for the RepositoryMock.DeletePipelineByID")
+		}
+		return (*mm_results).err
+	}
+	if mmDeletePipelineByID.funcDeletePipelineByID != nil {
+		return mmDeletePipelineByID.funcDeletePipelineByID(ctx, ownerPermalink, id)
+	}
+	mmDeletePipelineByID.t.Fatalf("Unexpected call to RepositoryMock.DeletePipelineByID. %v %v %v", ctx, ownerPermalink, id)
+	return
+}
+
+// DeletePipelineByIDAfterCounter returns a count of finished RepositoryMock.DeletePipelineByID invocations
+func (mmDeletePipelineByID *RepositoryMock) DeletePipelineByIDAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeletePipelineByID.afterDeletePipelineByIDCounter)
+}
+
+// DeletePipelineByIDBeforeCounter returns a count of RepositoryMock.DeletePipelineByID invocations
+func (mmDeletePipelineByID *RepositoryMock) DeletePipelineByIDBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeletePipelineByID.beforeDeletePipelineByIDCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.DeletePipelineByID.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmDeletePipelineByID *mRepositoryMockDeletePipelineByID) Calls() []*RepositoryMockDeletePipelineByIDParams {
+	mmDeletePipelineByID.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockDeletePipelineByIDParams, len(mmDeletePipelineByID.callArgs))
+	copy(argCopy, mmDeletePipelineByID.callArgs)
+
+	mmDeletePipelineByID.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockDeletePipelineByIDDone returns true if the count of the DeletePipelineByID invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockDeletePipelineByIDDone() bool {
+	if m.DeletePipelineByIDMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.DeletePipelineByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.DeletePipelineByIDMock.invocationsDone()
+}
+
+// MinimockDeletePipelineByIDInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockDeletePipelineByIDInspect() {
+	for _, e := range m.DeletePipelineByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.DeletePipelineByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterDeletePipelineByIDCounter := mm_atomic.LoadUint64(&m.afterDeletePipelineByIDCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.DeletePipelineByIDMock.defaultExpectation != nil && afterDeletePipelineByIDCounter < 1 {
+		if m.DeletePipelineByIDMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to RepositoryMock.DeletePipelineByID at\n%s", m.DeletePipelineByIDMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.DeletePipelineByID at\n%s with params: %#v", m.DeletePipelineByIDMock.defaultExpectation.expectationOrigins.origin, *m.DeletePipelineByIDMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcDeletePipelineByID != nil && afterDeletePipelineByIDCounter < 1 {
+		m.t.Errorf("Expected call to RepositoryMock.DeletePipelineByID at\n%s", m.funcDeletePipelineByIDOrigin)
+	}
+
+	if !m.DeletePipelineByIDMock.invocationsDone() && afterDeletePipelineByIDCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.DeletePipelineByID at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.DeletePipelineByIDMock.expectedInvocations), m.DeletePipelineByIDMock.expectedInvocationsOrigin, afterDeletePipelineByIDCounter)
+	}
+}
+
+type mRepositoryMockDeletePipelineReleaseByID struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockDeletePipelineReleaseByIDExpectation
+	expectations       []*RepositoryMockDeletePipelineReleaseByIDExpectation
+
+	callArgs []*RepositoryMockDeletePipelineReleaseByIDParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// RepositoryMockDeletePipelineReleaseByIDExpectation specifies expectation struct of the Repository.DeletePipelineReleaseByID
+type RepositoryMockDeletePipelineReleaseByIDExpectation struct {
+	mock               *RepositoryMock
+	params             *RepositoryMockDeletePipelineReleaseByIDParams
+	paramPtrs          *RepositoryMockDeletePipelineReleaseByIDParamPtrs
+	expectationOrigins RepositoryMockDeletePipelineReleaseByIDExpectationOrigins
+	results            *RepositoryMockDeletePipelineReleaseByIDResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// RepositoryMockDeletePipelineReleaseByIDParams contains parameters of the Repository.DeletePipelineReleaseByID
+type RepositoryMockDeletePipelineReleaseByIDParams struct {
+	ctx            context.Context
+	ownerPermalink string
+	pipelineUID    uuid.UUID
+	id             string
+}
+
+// RepositoryMockDeletePipelineReleaseByIDParamPtrs contains pointers to parameters of the Repository.DeletePipelineReleaseByID
+type RepositoryMockDeletePipelineReleaseByIDParamPtrs struct {
+	ctx            *context.Context
+	ownerPermalink *string
+	pipelineUID    *uuid.UUID
+	id             *string
+}
+
+// RepositoryMockDeletePipelineReleaseByIDResults contains results of the Repository.DeletePipelineReleaseByID
+type RepositoryMockDeletePipelineReleaseByIDResults struct {
+	err error
+}
+
+// RepositoryMockDeletePipelineReleaseByIDOrigins contains origins of expectations of the Repository.DeletePipelineReleaseByID
+type RepositoryMockDeletePipelineReleaseByIDExpectationOrigins struct {
+	origin               string
+	originCtx            string
+	originOwnerPermalink string
+	originPipelineUID    string
+	originId             string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmDeletePipelineReleaseByID *mRepositoryMockDeletePipelineReleaseByID) Optional() *mRepositoryMockDeletePipelineReleaseByID {
+	mmDeletePipelineReleaseByID.optional = true
+	return mmDeletePipelineReleaseByID
+}
+
+// Expect sets up expected params for Repository.DeletePipelineReleaseByID
+func (mmDeletePipelineReleaseByID *mRepositoryMockDeletePipelineReleaseByID) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string) *mRepositoryMockDeletePipelineReleaseByID {
+	if mmDeletePipelineReleaseByID.mock.funcDeletePipelineReleaseByID != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeletePipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation == nil {
+		mmDeletePipelineReleaseByID.defaultExpectation = &RepositoryMockDeletePipelineReleaseByIDExpectation{}
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation.paramPtrs != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeletePipelineReleaseByID mock is already set by ExpectParams functions")
+	}
+
+	mmDeletePipelineReleaseByID.defaultExpectation.params = &RepositoryMockDeletePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id}
+	mmDeletePipelineReleaseByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmDeletePipelineReleaseByID.expectations {
+		if minimock.Equal(e.params, mmDeletePipelineReleaseByID.defaultExpectation.params) {
+			mmDeletePipelineReleaseByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmDeletePipelineReleaseByID.defaultExpectation.params)
+		}
+	}
+
+	return mmDeletePipelineReleaseByID
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.DeletePipelineReleaseByID
+func (mmDeletePipelineReleaseByID *mRepositoryMockDeletePipelineReleaseByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockDeletePipelineReleaseByID {
+	if mmDeletePipelineReleaseByID.mock.funcDeletePipelineReleaseByID != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeletePipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation == nil {
+		mmDeletePipelineReleaseByID.defaultExpectation = &RepositoryMockDeletePipelineReleaseByIDExpectation{}
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation.params != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeletePipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmDeletePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockDeletePipelineReleaseByIDParamPtrs{}
+	}
+	mmDeletePipelineReleaseByID.defaultExpectation.paramPtrs.ctx = &ctx
+	mmDeletePipelineReleaseByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmDeletePipelineReleaseByID
+}
+
+// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.DeletePipelineReleaseByID
+func (mmDeletePipelineReleaseByID *mRepositoryMockDeletePipelineReleaseByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockDeletePipelineReleaseByID {
+	if mmDeletePipelineReleaseByID.mock.funcDeletePipelineReleaseByID != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeletePipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation == nil {
+		mmDeletePipelineReleaseByID.defaultExpectation = &RepositoryMockDeletePipelineReleaseByIDExpectation{}
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation.params != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeletePipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmDeletePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockDeletePipelineReleaseByIDParamPtrs{}
+	}
+	mmDeletePipelineReleaseByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
+	mmDeletePipelineReleaseByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
+
+	return mmDeletePipelineReleaseByID
+}
+
+// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.DeletePipelineReleaseByID
+func (mmDeletePipelineReleaseByID *mRepositoryMockDeletePipelineReleaseByID) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockDeletePipelineReleaseByID {
+	if mmDeletePipelineReleaseByID.mock.funcDeletePipelineReleaseByID != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeletePipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation == nil {
+		mmDeletePipelineReleaseByID.defaultExpectation = &RepositoryMockDeletePipelineReleaseByIDExpectation{}
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation.params != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeletePipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmDeletePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockDeletePipelineReleaseByIDParamPtrs{}
+	}
+	mmDeletePipelineReleaseByID.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
+	mmDeletePipelineReleaseByID.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
+
+	return mmDeletePipelineReleaseByID
+}
+
+// ExpectIdParam4 sets up expected param id for Repository.DeletePipelineReleaseByID
+func (mmDeletePipelineReleaseByID *mRepositoryMockDeletePipelineReleaseByID) ExpectIdParam4(id string) *mRepositoryMockDeletePipelineReleaseByID {
+	if mmDeletePipelineReleaseByID.mock.funcDeletePipelineReleaseByID != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeletePipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation == nil {
+		mmDeletePipelineReleaseByID.defaultExpectation = &RepositoryMockDeletePipelineReleaseByIDExpectation{}
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation.params != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeletePipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmDeletePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockDeletePipelineReleaseByIDParamPtrs{}
+	}
+	mmDeletePipelineReleaseByID.defaultExpectation.paramPtrs.id = &id
+	mmDeletePipelineReleaseByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
+
+	return mmDeletePipelineReleaseByID
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.DeletePipelineReleaseByID
+func (mmDeletePipelineReleaseByID *mRepositoryMockDeletePipelineReleaseByID) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string)) *mRepositoryMockDeletePipelineReleaseByID {
+	if mmDeletePipelineReleaseByID.mock.inspectFuncDeletePipelineReleaseByID != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.DeletePipelineReleaseByID")
+	}
+
+	mmDeletePipelineReleaseByID.mock.inspectFuncDeletePipelineReleaseByID = f
+
+	return mmDeletePipelineReleaseByID
+}
+
+// Return sets up results that will be returned by Repository.DeletePipelineReleaseByID
+func (mmDeletePipelineReleaseByID *mRepositoryMockDeletePipelineReleaseByID) Return(err error) *RepositoryMock {
+	if mmDeletePipelineReleaseByID.mock.funcDeletePipelineReleaseByID != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeletePipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmDeletePipelineReleaseByID.defaultExpectation == nil {
+		mmDeletePipelineReleaseByID.defaultExpectation = &RepositoryMockDeletePipelineReleaseByIDExpectation{mock: mmDeletePipelineReleaseByID.mock}
+	}
+	mmDeletePipelineReleaseByID.defaultExpectation.results = &RepositoryMockDeletePipelineReleaseByIDResults{err}
+	mmDeletePipelineReleaseByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmDeletePipelineReleaseByID.mock
+}
+
+// Set uses given function f to mock the Repository.DeletePipelineReleaseByID method
+func (mmDeletePipelineReleaseByID *mRepositoryMockDeletePipelineReleaseByID) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string) (err error)) *RepositoryMock {
+	if mmDeletePipelineReleaseByID.defaultExpectation != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("Default expectation is already set for the Repository.DeletePipelineReleaseByID method")
+	}
+
+	if len(mmDeletePipelineReleaseByID.expectations) > 0 {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("Some expectations are already set for the Repository.DeletePipelineReleaseByID method")
+	}
+
+	mmDeletePipelineReleaseByID.mock.funcDeletePipelineReleaseByID = f
+	mmDeletePipelineReleaseByID.mock.funcDeletePipelineReleaseByIDOrigin = minimock.CallerInfo(1)
+	return mmDeletePipelineReleaseByID.mock
+}
+
+// When sets expectation for the Repository.DeletePipelineReleaseByID which will trigger the result defined by the following
+// Then helper
+func (mmDeletePipelineReleaseByID *mRepositoryMockDeletePipelineReleaseByID) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string) *RepositoryMockDeletePipelineReleaseByIDExpectation {
+	if mmDeletePipelineReleaseByID.mock.funcDeletePipelineReleaseByID != nil {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.DeletePipelineReleaseByID mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockDeletePipelineReleaseByIDExpectation{
+		mock:               mmDeletePipelineReleaseByID.mock,
+		params:             &RepositoryMockDeletePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id},
+		expectationOrigins: RepositoryMockDeletePipelineReleaseByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmDeletePipelineReleaseByID.expectations = append(mmDeletePipelineReleaseByID.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.DeletePipelineReleaseByID return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockDeletePipelineReleaseByIDExpectation) Then(err error) *RepositoryMock {
+	e.results = &RepositoryMockDeletePipelineReleaseByIDResults{err}
+	return e.mock
+}
+
+// Times sets number of times Repository.DeletePipelineReleaseByID should be invoked
+func (mmDeletePipelineReleaseByID *mRepositoryMockDeletePipelineReleaseByID) Times(n uint64) *mRepositoryMockDeletePipelineReleaseByID {
+	if n == 0 {
+		mmDeletePipelineReleaseByID.mock.t.Fatalf("Times of RepositoryMock.DeletePipelineReleaseByID mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmDeletePipelineReleaseByID.expectedInvocations, n)
+	mmDeletePipelineReleaseByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmDeletePipelineReleaseByID
+}
+
+func (mmDeletePipelineReleaseByID *mRepositoryMockDeletePipelineReleaseByID) invocationsDone() bool {
+	if len(mmDeletePipelineReleaseByID.expectations) == 0 && mmDeletePipelineReleaseByID.defaultExpectation == nil && mmDeletePipelineReleaseByID.mock.funcDeletePipelineReleaseByID == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmDeletePipelineReleaseByID.mock.afterDeletePipelineReleaseByIDCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmDeletePipelineReleaseByID.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// DeletePipelineReleaseByID implements mm_repository.Repository
+func (mmDeletePipelineReleaseByID *RepositoryMock) DeletePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string) (err error) {
+	mm_atomic.AddUint64(&mmDeletePipelineReleaseByID.beforeDeletePipelineReleaseByIDCounter, 1)
+	defer mm_atomic.AddUint64(&mmDeletePipelineReleaseByID.afterDeletePipelineReleaseByIDCounter, 1)
+
+	mmDeletePipelineReleaseByID.t.Helper()
+
+	if mmDeletePipelineReleaseByID.inspectFuncDeletePipelineReleaseByID != nil {
+		mmDeletePipelineReleaseByID.inspectFuncDeletePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id)
+	}
+
+	mm_params := RepositoryMockDeletePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id}
+
+	// Record call args
+	mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.mutex.Lock()
+	mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.callArgs = append(mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.callArgs, &mm_params)
+	mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.mutex.Unlock()
+
+	for _, e := range mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.defaultExpectation.Counter, 1)
+		mm_want := mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.defaultExpectation.params
+		mm_want_ptrs := mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockDeletePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmDeletePipelineReleaseByID.t.Errorf("RepositoryMock.DeletePipelineReleaseByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
+				mmDeletePipelineReleaseByID.t.Errorf("RepositoryMock.DeletePipelineReleaseByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
+			}
+
+			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
+				mmDeletePipelineReleaseByID.t.Errorf("RepositoryMock.DeletePipelineReleaseByID got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
+			}
+
+			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
+				mmDeletePipelineReleaseByID.t.Errorf("RepositoryMock.DeletePipelineReleaseByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmDeletePipelineReleaseByID.t.Errorf("RepositoryMock.DeletePipelineReleaseByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmDeletePipelineReleaseByID.DeletePipelineReleaseByIDMock.defaultExpectation.results
+		if mm_results == nil {
+			mmDeletePipelineReleaseByID.t.Fatal("No results are set for the RepositoryMock.DeletePipelineReleaseByID")
+		}
+		return (*mm_results).err
+	}
+	if mmDeletePipelineReleaseByID.funcDeletePipelineReleaseByID != nil {
+		return mmDeletePipelineReleaseByID.funcDeletePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id)
+	}
+	mmDeletePipelineReleaseByID.t.Fatalf("Unexpected call to RepositoryMock.DeletePipelineReleaseByID. %v %v %v %v", ctx, ownerPermalink, pipelineUID, id)
+	return
+}
+
+// DeletePipelineReleaseByIDAfterCounter returns a count of finished RepositoryMock.DeletePipelineReleaseByID invocations
+func (mmDeletePipelineReleaseByID *RepositoryMock) DeletePipelineReleaseByIDAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeletePipelineReleaseByID.afterDeletePipelineReleaseByIDCounter)
+}
+
+// DeletePipelineReleaseByIDBeforeCounter returns a count of RepositoryMock.DeletePipelineReleaseByID invocations
+func (mmDeletePipelineReleaseByID *RepositoryMock) DeletePipelineReleaseByIDBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeletePipelineReleaseByID.beforeDeletePipelineReleaseByIDCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.DeletePipelineReleaseByID.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmDeletePipelineReleaseByID *mRepositoryMockDeletePipelineReleaseByID) Calls() []*RepositoryMockDeletePipelineReleaseByIDParams {
+	mmDeletePipelineReleaseByID.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockDeletePipelineReleaseByIDParams, len(mmDeletePipelineReleaseByID.callArgs))
+	copy(argCopy, mmDeletePipelineReleaseByID.callArgs)
+
+	mmDeletePipelineReleaseByID.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockDeletePipelineReleaseByIDDone returns true if the count of the DeletePipelineReleaseByID invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockDeletePipelineReleaseByIDDone() bool {
+	if m.DeletePipelineReleaseByIDMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.DeletePipelineReleaseByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.DeletePipelineReleaseByIDMock.invocationsDone()
+}
+
+// MinimockDeletePipelineReleaseByIDInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockDeletePipelineReleaseByIDInspect() {
+	for _, e := range m.DeletePipelineReleaseByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.DeletePipelineReleaseByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterDeletePipelineReleaseByIDCounter := mm_atomic.LoadUint64(&m.afterDeletePipelineReleaseByIDCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.DeletePipelineReleaseByIDMock.defaultExpectation != nil && afterDeletePipelineReleaseByIDCounter < 1 {
+		if m.DeletePipelineReleaseByIDMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to RepositoryMock.DeletePipelineReleaseByID at\n%s", m.DeletePipelineReleaseByIDMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.DeletePipelineReleaseByID at\n%s with params: %#v", m.DeletePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.origin, *m.DeletePipelineReleaseByIDMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcDeletePipelineReleaseByID != nil && afterDeletePipelineReleaseByIDCounter < 1 {
+		m.t.Errorf("Expected call to RepositoryMock.DeletePipelineReleaseByID at\n%s", m.funcDeletePipelineReleaseByIDOrigin)
+	}
+
+	if !m.DeletePipelineReleaseByIDMock.invocationsDone() && afterDeletePipelineReleaseByIDCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.DeletePipelineReleaseByID at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.DeletePipelineReleaseByIDMock.expectedInvocations), m.DeletePipelineReleaseByIDMock.expectedInvocationsOrigin, afterDeletePipelineReleaseByIDCounter)
 	}
 }
 
@@ -7421,54 +7421,54 @@ func (m *RepositoryMock) MinimockGetHubStatsInspect() {
 	}
 }
 
-type mRepositoryMockGetLatestNamespacePipelineRelease struct {
+type mRepositoryMockGetLatestPipelineRelease struct {
 	optional           bool
 	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockGetLatestNamespacePipelineReleaseExpectation
-	expectations       []*RepositoryMockGetLatestNamespacePipelineReleaseExpectation
+	defaultExpectation *RepositoryMockGetLatestPipelineReleaseExpectation
+	expectations       []*RepositoryMockGetLatestPipelineReleaseExpectation
 
-	callArgs []*RepositoryMockGetLatestNamespacePipelineReleaseParams
+	callArgs []*RepositoryMockGetLatestPipelineReleaseParams
 	mutex    sync.RWMutex
 
 	expectedInvocations       uint64
 	expectedInvocationsOrigin string
 }
 
-// RepositoryMockGetLatestNamespacePipelineReleaseExpectation specifies expectation struct of the Repository.GetLatestNamespacePipelineRelease
-type RepositoryMockGetLatestNamespacePipelineReleaseExpectation struct {
+// RepositoryMockGetLatestPipelineReleaseExpectation specifies expectation struct of the Repository.GetLatestPipelineRelease
+type RepositoryMockGetLatestPipelineReleaseExpectation struct {
 	mock               *RepositoryMock
-	params             *RepositoryMockGetLatestNamespacePipelineReleaseParams
-	paramPtrs          *RepositoryMockGetLatestNamespacePipelineReleaseParamPtrs
-	expectationOrigins RepositoryMockGetLatestNamespacePipelineReleaseExpectationOrigins
-	results            *RepositoryMockGetLatestNamespacePipelineReleaseResults
+	params             *RepositoryMockGetLatestPipelineReleaseParams
+	paramPtrs          *RepositoryMockGetLatestPipelineReleaseParamPtrs
+	expectationOrigins RepositoryMockGetLatestPipelineReleaseExpectationOrigins
+	results            *RepositoryMockGetLatestPipelineReleaseResults
 	returnOrigin       string
 	Counter            uint64
 }
 
-// RepositoryMockGetLatestNamespacePipelineReleaseParams contains parameters of the Repository.GetLatestNamespacePipelineRelease
-type RepositoryMockGetLatestNamespacePipelineReleaseParams struct {
+// RepositoryMockGetLatestPipelineReleaseParams contains parameters of the Repository.GetLatestPipelineRelease
+type RepositoryMockGetLatestPipelineReleaseParams struct {
 	ctx            context.Context
 	ownerPermalink string
 	pipelineUID    uuid.UUID
 	isBasicView    bool
 }
 
-// RepositoryMockGetLatestNamespacePipelineReleaseParamPtrs contains pointers to parameters of the Repository.GetLatestNamespacePipelineRelease
-type RepositoryMockGetLatestNamespacePipelineReleaseParamPtrs struct {
+// RepositoryMockGetLatestPipelineReleaseParamPtrs contains pointers to parameters of the Repository.GetLatestPipelineRelease
+type RepositoryMockGetLatestPipelineReleaseParamPtrs struct {
 	ctx            *context.Context
 	ownerPermalink *string
 	pipelineUID    *uuid.UUID
 	isBasicView    *bool
 }
 
-// RepositoryMockGetLatestNamespacePipelineReleaseResults contains results of the Repository.GetLatestNamespacePipelineRelease
-type RepositoryMockGetLatestNamespacePipelineReleaseResults struct {
+// RepositoryMockGetLatestPipelineReleaseResults contains results of the Repository.GetLatestPipelineRelease
+type RepositoryMockGetLatestPipelineReleaseResults struct {
 	pp1 *datamodel.PipelineRelease
 	err error
 }
 
-// RepositoryMockGetLatestNamespacePipelineReleaseOrigins contains origins of expectations of the Repository.GetLatestNamespacePipelineRelease
-type RepositoryMockGetLatestNamespacePipelineReleaseExpectationOrigins struct {
+// RepositoryMockGetLatestPipelineReleaseOrigins contains origins of expectations of the Repository.GetLatestPipelineRelease
+type RepositoryMockGetLatestPipelineReleaseExpectationOrigins struct {
 	origin               string
 	originCtx            string
 	originOwnerPermalink string
@@ -7481,348 +7481,348 @@ type RepositoryMockGetLatestNamespacePipelineReleaseExpectationOrigins struct {
 // Optional() makes method check to work in '0 or more' mode.
 // It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
 // catch the problems when the expected method call is totally skipped during test run.
-func (mmGetLatestNamespacePipelineRelease *mRepositoryMockGetLatestNamespacePipelineRelease) Optional() *mRepositoryMockGetLatestNamespacePipelineRelease {
-	mmGetLatestNamespacePipelineRelease.optional = true
-	return mmGetLatestNamespacePipelineRelease
+func (mmGetLatestPipelineRelease *mRepositoryMockGetLatestPipelineRelease) Optional() *mRepositoryMockGetLatestPipelineRelease {
+	mmGetLatestPipelineRelease.optional = true
+	return mmGetLatestPipelineRelease
 }
 
-// Expect sets up expected params for Repository.GetLatestNamespacePipelineRelease
-func (mmGetLatestNamespacePipelineRelease *mRepositoryMockGetLatestNamespacePipelineRelease) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool) *mRepositoryMockGetLatestNamespacePipelineRelease {
-	if mmGetLatestNamespacePipelineRelease.mock.funcGetLatestNamespacePipelineRelease != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestNamespacePipelineRelease mock is already set by Set")
+// Expect sets up expected params for Repository.GetLatestPipelineRelease
+func (mmGetLatestPipelineRelease *mRepositoryMockGetLatestPipelineRelease) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool) *mRepositoryMockGetLatestPipelineRelease {
+	if mmGetLatestPipelineRelease.mock.funcGetLatestPipelineRelease != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestPipelineRelease mock is already set by Set")
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation == nil {
-		mmGetLatestNamespacePipelineRelease.defaultExpectation = &RepositoryMockGetLatestNamespacePipelineReleaseExpectation{}
+	if mmGetLatestPipelineRelease.defaultExpectation == nil {
+		mmGetLatestPipelineRelease.defaultExpectation = &RepositoryMockGetLatestPipelineReleaseExpectation{}
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation.paramPtrs != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestNamespacePipelineRelease mock is already set by ExpectParams functions")
+	if mmGetLatestPipelineRelease.defaultExpectation.paramPtrs != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestPipelineRelease mock is already set by ExpectParams functions")
 	}
 
-	mmGetLatestNamespacePipelineRelease.defaultExpectation.params = &RepositoryMockGetLatestNamespacePipelineReleaseParams{ctx, ownerPermalink, pipelineUID, isBasicView}
-	mmGetLatestNamespacePipelineRelease.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmGetLatestNamespacePipelineRelease.expectations {
-		if minimock.Equal(e.params, mmGetLatestNamespacePipelineRelease.defaultExpectation.params) {
-			mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetLatestNamespacePipelineRelease.defaultExpectation.params)
+	mmGetLatestPipelineRelease.defaultExpectation.params = &RepositoryMockGetLatestPipelineReleaseParams{ctx, ownerPermalink, pipelineUID, isBasicView}
+	mmGetLatestPipelineRelease.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetLatestPipelineRelease.expectations {
+		if minimock.Equal(e.params, mmGetLatestPipelineRelease.defaultExpectation.params) {
+			mmGetLatestPipelineRelease.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetLatestPipelineRelease.defaultExpectation.params)
 		}
 	}
 
-	return mmGetLatestNamespacePipelineRelease
+	return mmGetLatestPipelineRelease
 }
 
-// ExpectCtxParam1 sets up expected param ctx for Repository.GetLatestNamespacePipelineRelease
-func (mmGetLatestNamespacePipelineRelease *mRepositoryMockGetLatestNamespacePipelineRelease) ExpectCtxParam1(ctx context.Context) *mRepositoryMockGetLatestNamespacePipelineRelease {
-	if mmGetLatestNamespacePipelineRelease.mock.funcGetLatestNamespacePipelineRelease != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestNamespacePipelineRelease mock is already set by Set")
+// ExpectCtxParam1 sets up expected param ctx for Repository.GetLatestPipelineRelease
+func (mmGetLatestPipelineRelease *mRepositoryMockGetLatestPipelineRelease) ExpectCtxParam1(ctx context.Context) *mRepositoryMockGetLatestPipelineRelease {
+	if mmGetLatestPipelineRelease.mock.funcGetLatestPipelineRelease != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestPipelineRelease mock is already set by Set")
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation == nil {
-		mmGetLatestNamespacePipelineRelease.defaultExpectation = &RepositoryMockGetLatestNamespacePipelineReleaseExpectation{}
+	if mmGetLatestPipelineRelease.defaultExpectation == nil {
+		mmGetLatestPipelineRelease.defaultExpectation = &RepositoryMockGetLatestPipelineReleaseExpectation{}
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation.params != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestNamespacePipelineRelease mock is already set by Expect")
+	if mmGetLatestPipelineRelease.defaultExpectation.params != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestPipelineRelease mock is already set by Expect")
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation.paramPtrs == nil {
-		mmGetLatestNamespacePipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockGetLatestNamespacePipelineReleaseParamPtrs{}
+	if mmGetLatestPipelineRelease.defaultExpectation.paramPtrs == nil {
+		mmGetLatestPipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockGetLatestPipelineReleaseParamPtrs{}
 	}
-	mmGetLatestNamespacePipelineRelease.defaultExpectation.paramPtrs.ctx = &ctx
-	mmGetLatestNamespacePipelineRelease.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+	mmGetLatestPipelineRelease.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetLatestPipelineRelease.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
 
-	return mmGetLatestNamespacePipelineRelease
+	return mmGetLatestPipelineRelease
 }
 
-// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.GetLatestNamespacePipelineRelease
-func (mmGetLatestNamespacePipelineRelease *mRepositoryMockGetLatestNamespacePipelineRelease) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockGetLatestNamespacePipelineRelease {
-	if mmGetLatestNamespacePipelineRelease.mock.funcGetLatestNamespacePipelineRelease != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestNamespacePipelineRelease mock is already set by Set")
+// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.GetLatestPipelineRelease
+func (mmGetLatestPipelineRelease *mRepositoryMockGetLatestPipelineRelease) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockGetLatestPipelineRelease {
+	if mmGetLatestPipelineRelease.mock.funcGetLatestPipelineRelease != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestPipelineRelease mock is already set by Set")
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation == nil {
-		mmGetLatestNamespacePipelineRelease.defaultExpectation = &RepositoryMockGetLatestNamespacePipelineReleaseExpectation{}
+	if mmGetLatestPipelineRelease.defaultExpectation == nil {
+		mmGetLatestPipelineRelease.defaultExpectation = &RepositoryMockGetLatestPipelineReleaseExpectation{}
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation.params != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestNamespacePipelineRelease mock is already set by Expect")
+	if mmGetLatestPipelineRelease.defaultExpectation.params != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestPipelineRelease mock is already set by Expect")
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation.paramPtrs == nil {
-		mmGetLatestNamespacePipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockGetLatestNamespacePipelineReleaseParamPtrs{}
+	if mmGetLatestPipelineRelease.defaultExpectation.paramPtrs == nil {
+		mmGetLatestPipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockGetLatestPipelineReleaseParamPtrs{}
 	}
-	mmGetLatestNamespacePipelineRelease.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
-	mmGetLatestNamespacePipelineRelease.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
+	mmGetLatestPipelineRelease.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
+	mmGetLatestPipelineRelease.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
 
-	return mmGetLatestNamespacePipelineRelease
+	return mmGetLatestPipelineRelease
 }
 
-// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.GetLatestNamespacePipelineRelease
-func (mmGetLatestNamespacePipelineRelease *mRepositoryMockGetLatestNamespacePipelineRelease) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockGetLatestNamespacePipelineRelease {
-	if mmGetLatestNamespacePipelineRelease.mock.funcGetLatestNamespacePipelineRelease != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestNamespacePipelineRelease mock is already set by Set")
+// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.GetLatestPipelineRelease
+func (mmGetLatestPipelineRelease *mRepositoryMockGetLatestPipelineRelease) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockGetLatestPipelineRelease {
+	if mmGetLatestPipelineRelease.mock.funcGetLatestPipelineRelease != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestPipelineRelease mock is already set by Set")
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation == nil {
-		mmGetLatestNamespacePipelineRelease.defaultExpectation = &RepositoryMockGetLatestNamespacePipelineReleaseExpectation{}
+	if mmGetLatestPipelineRelease.defaultExpectation == nil {
+		mmGetLatestPipelineRelease.defaultExpectation = &RepositoryMockGetLatestPipelineReleaseExpectation{}
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation.params != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestNamespacePipelineRelease mock is already set by Expect")
+	if mmGetLatestPipelineRelease.defaultExpectation.params != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestPipelineRelease mock is already set by Expect")
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation.paramPtrs == nil {
-		mmGetLatestNamespacePipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockGetLatestNamespacePipelineReleaseParamPtrs{}
+	if mmGetLatestPipelineRelease.defaultExpectation.paramPtrs == nil {
+		mmGetLatestPipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockGetLatestPipelineReleaseParamPtrs{}
 	}
-	mmGetLatestNamespacePipelineRelease.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
-	mmGetLatestNamespacePipelineRelease.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
+	mmGetLatestPipelineRelease.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
+	mmGetLatestPipelineRelease.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
 
-	return mmGetLatestNamespacePipelineRelease
+	return mmGetLatestPipelineRelease
 }
 
-// ExpectIsBasicViewParam4 sets up expected param isBasicView for Repository.GetLatestNamespacePipelineRelease
-func (mmGetLatestNamespacePipelineRelease *mRepositoryMockGetLatestNamespacePipelineRelease) ExpectIsBasicViewParam4(isBasicView bool) *mRepositoryMockGetLatestNamespacePipelineRelease {
-	if mmGetLatestNamespacePipelineRelease.mock.funcGetLatestNamespacePipelineRelease != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestNamespacePipelineRelease mock is already set by Set")
+// ExpectIsBasicViewParam4 sets up expected param isBasicView for Repository.GetLatestPipelineRelease
+func (mmGetLatestPipelineRelease *mRepositoryMockGetLatestPipelineRelease) ExpectIsBasicViewParam4(isBasicView bool) *mRepositoryMockGetLatestPipelineRelease {
+	if mmGetLatestPipelineRelease.mock.funcGetLatestPipelineRelease != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestPipelineRelease mock is already set by Set")
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation == nil {
-		mmGetLatestNamespacePipelineRelease.defaultExpectation = &RepositoryMockGetLatestNamespacePipelineReleaseExpectation{}
+	if mmGetLatestPipelineRelease.defaultExpectation == nil {
+		mmGetLatestPipelineRelease.defaultExpectation = &RepositoryMockGetLatestPipelineReleaseExpectation{}
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation.params != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestNamespacePipelineRelease mock is already set by Expect")
+	if mmGetLatestPipelineRelease.defaultExpectation.params != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestPipelineRelease mock is already set by Expect")
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation.paramPtrs == nil {
-		mmGetLatestNamespacePipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockGetLatestNamespacePipelineReleaseParamPtrs{}
+	if mmGetLatestPipelineRelease.defaultExpectation.paramPtrs == nil {
+		mmGetLatestPipelineRelease.defaultExpectation.paramPtrs = &RepositoryMockGetLatestPipelineReleaseParamPtrs{}
 	}
-	mmGetLatestNamespacePipelineRelease.defaultExpectation.paramPtrs.isBasicView = &isBasicView
-	mmGetLatestNamespacePipelineRelease.defaultExpectation.expectationOrigins.originIsBasicView = minimock.CallerInfo(1)
+	mmGetLatestPipelineRelease.defaultExpectation.paramPtrs.isBasicView = &isBasicView
+	mmGetLatestPipelineRelease.defaultExpectation.expectationOrigins.originIsBasicView = minimock.CallerInfo(1)
 
-	return mmGetLatestNamespacePipelineRelease
+	return mmGetLatestPipelineRelease
 }
 
-// Inspect accepts an inspector function that has same arguments as the Repository.GetLatestNamespacePipelineRelease
-func (mmGetLatestNamespacePipelineRelease *mRepositoryMockGetLatestNamespacePipelineRelease) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool)) *mRepositoryMockGetLatestNamespacePipelineRelease {
-	if mmGetLatestNamespacePipelineRelease.mock.inspectFuncGetLatestNamespacePipelineRelease != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("Inspect function is already set for RepositoryMock.GetLatestNamespacePipelineRelease")
+// Inspect accepts an inspector function that has same arguments as the Repository.GetLatestPipelineRelease
+func (mmGetLatestPipelineRelease *mRepositoryMockGetLatestPipelineRelease) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool)) *mRepositoryMockGetLatestPipelineRelease {
+	if mmGetLatestPipelineRelease.mock.inspectFuncGetLatestPipelineRelease != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("Inspect function is already set for RepositoryMock.GetLatestPipelineRelease")
 	}
 
-	mmGetLatestNamespacePipelineRelease.mock.inspectFuncGetLatestNamespacePipelineRelease = f
+	mmGetLatestPipelineRelease.mock.inspectFuncGetLatestPipelineRelease = f
 
-	return mmGetLatestNamespacePipelineRelease
+	return mmGetLatestPipelineRelease
 }
 
-// Return sets up results that will be returned by Repository.GetLatestNamespacePipelineRelease
-func (mmGetLatestNamespacePipelineRelease *mRepositoryMockGetLatestNamespacePipelineRelease) Return(pp1 *datamodel.PipelineRelease, err error) *RepositoryMock {
-	if mmGetLatestNamespacePipelineRelease.mock.funcGetLatestNamespacePipelineRelease != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestNamespacePipelineRelease mock is already set by Set")
+// Return sets up results that will be returned by Repository.GetLatestPipelineRelease
+func (mmGetLatestPipelineRelease *mRepositoryMockGetLatestPipelineRelease) Return(pp1 *datamodel.PipelineRelease, err error) *RepositoryMock {
+	if mmGetLatestPipelineRelease.mock.funcGetLatestPipelineRelease != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestPipelineRelease mock is already set by Set")
 	}
 
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation == nil {
-		mmGetLatestNamespacePipelineRelease.defaultExpectation = &RepositoryMockGetLatestNamespacePipelineReleaseExpectation{mock: mmGetLatestNamespacePipelineRelease.mock}
+	if mmGetLatestPipelineRelease.defaultExpectation == nil {
+		mmGetLatestPipelineRelease.defaultExpectation = &RepositoryMockGetLatestPipelineReleaseExpectation{mock: mmGetLatestPipelineRelease.mock}
 	}
-	mmGetLatestNamespacePipelineRelease.defaultExpectation.results = &RepositoryMockGetLatestNamespacePipelineReleaseResults{pp1, err}
-	mmGetLatestNamespacePipelineRelease.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmGetLatestNamespacePipelineRelease.mock
+	mmGetLatestPipelineRelease.defaultExpectation.results = &RepositoryMockGetLatestPipelineReleaseResults{pp1, err}
+	mmGetLatestPipelineRelease.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetLatestPipelineRelease.mock
 }
 
-// Set uses given function f to mock the Repository.GetLatestNamespacePipelineRelease method
-func (mmGetLatestNamespacePipelineRelease *mRepositoryMockGetLatestNamespacePipelineRelease) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool) (pp1 *datamodel.PipelineRelease, err error)) *RepositoryMock {
-	if mmGetLatestNamespacePipelineRelease.defaultExpectation != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("Default expectation is already set for the Repository.GetLatestNamespacePipelineRelease method")
+// Set uses given function f to mock the Repository.GetLatestPipelineRelease method
+func (mmGetLatestPipelineRelease *mRepositoryMockGetLatestPipelineRelease) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool) (pp1 *datamodel.PipelineRelease, err error)) *RepositoryMock {
+	if mmGetLatestPipelineRelease.defaultExpectation != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("Default expectation is already set for the Repository.GetLatestPipelineRelease method")
 	}
 
-	if len(mmGetLatestNamespacePipelineRelease.expectations) > 0 {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("Some expectations are already set for the Repository.GetLatestNamespacePipelineRelease method")
+	if len(mmGetLatestPipelineRelease.expectations) > 0 {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("Some expectations are already set for the Repository.GetLatestPipelineRelease method")
 	}
 
-	mmGetLatestNamespacePipelineRelease.mock.funcGetLatestNamespacePipelineRelease = f
-	mmGetLatestNamespacePipelineRelease.mock.funcGetLatestNamespacePipelineReleaseOrigin = minimock.CallerInfo(1)
-	return mmGetLatestNamespacePipelineRelease.mock
+	mmGetLatestPipelineRelease.mock.funcGetLatestPipelineRelease = f
+	mmGetLatestPipelineRelease.mock.funcGetLatestPipelineReleaseOrigin = minimock.CallerInfo(1)
+	return mmGetLatestPipelineRelease.mock
 }
 
-// When sets expectation for the Repository.GetLatestNamespacePipelineRelease which will trigger the result defined by the following
+// When sets expectation for the Repository.GetLatestPipelineRelease which will trigger the result defined by the following
 // Then helper
-func (mmGetLatestNamespacePipelineRelease *mRepositoryMockGetLatestNamespacePipelineRelease) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool) *RepositoryMockGetLatestNamespacePipelineReleaseExpectation {
-	if mmGetLatestNamespacePipelineRelease.mock.funcGetLatestNamespacePipelineRelease != nil {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestNamespacePipelineRelease mock is already set by Set")
+func (mmGetLatestPipelineRelease *mRepositoryMockGetLatestPipelineRelease) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool) *RepositoryMockGetLatestPipelineReleaseExpectation {
+	if mmGetLatestPipelineRelease.mock.funcGetLatestPipelineRelease != nil {
+		mmGetLatestPipelineRelease.mock.t.Fatalf("RepositoryMock.GetLatestPipelineRelease mock is already set by Set")
 	}
 
-	expectation := &RepositoryMockGetLatestNamespacePipelineReleaseExpectation{
-		mock:               mmGetLatestNamespacePipelineRelease.mock,
-		params:             &RepositoryMockGetLatestNamespacePipelineReleaseParams{ctx, ownerPermalink, pipelineUID, isBasicView},
-		expectationOrigins: RepositoryMockGetLatestNamespacePipelineReleaseExpectationOrigins{origin: minimock.CallerInfo(1)},
+	expectation := &RepositoryMockGetLatestPipelineReleaseExpectation{
+		mock:               mmGetLatestPipelineRelease.mock,
+		params:             &RepositoryMockGetLatestPipelineReleaseParams{ctx, ownerPermalink, pipelineUID, isBasicView},
+		expectationOrigins: RepositoryMockGetLatestPipelineReleaseExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
-	mmGetLatestNamespacePipelineRelease.expectations = append(mmGetLatestNamespacePipelineRelease.expectations, expectation)
+	mmGetLatestPipelineRelease.expectations = append(mmGetLatestPipelineRelease.expectations, expectation)
 	return expectation
 }
 
-// Then sets up Repository.GetLatestNamespacePipelineRelease return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockGetLatestNamespacePipelineReleaseExpectation) Then(pp1 *datamodel.PipelineRelease, err error) *RepositoryMock {
-	e.results = &RepositoryMockGetLatestNamespacePipelineReleaseResults{pp1, err}
+// Then sets up Repository.GetLatestPipelineRelease return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockGetLatestPipelineReleaseExpectation) Then(pp1 *datamodel.PipelineRelease, err error) *RepositoryMock {
+	e.results = &RepositoryMockGetLatestPipelineReleaseResults{pp1, err}
 	return e.mock
 }
 
-// Times sets number of times Repository.GetLatestNamespacePipelineRelease should be invoked
-func (mmGetLatestNamespacePipelineRelease *mRepositoryMockGetLatestNamespacePipelineRelease) Times(n uint64) *mRepositoryMockGetLatestNamespacePipelineRelease {
+// Times sets number of times Repository.GetLatestPipelineRelease should be invoked
+func (mmGetLatestPipelineRelease *mRepositoryMockGetLatestPipelineRelease) Times(n uint64) *mRepositoryMockGetLatestPipelineRelease {
 	if n == 0 {
-		mmGetLatestNamespacePipelineRelease.mock.t.Fatalf("Times of RepositoryMock.GetLatestNamespacePipelineRelease mock can not be zero")
+		mmGetLatestPipelineRelease.mock.t.Fatalf("Times of RepositoryMock.GetLatestPipelineRelease mock can not be zero")
 	}
-	mm_atomic.StoreUint64(&mmGetLatestNamespacePipelineRelease.expectedInvocations, n)
-	mmGetLatestNamespacePipelineRelease.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmGetLatestNamespacePipelineRelease
+	mm_atomic.StoreUint64(&mmGetLatestPipelineRelease.expectedInvocations, n)
+	mmGetLatestPipelineRelease.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetLatestPipelineRelease
 }
 
-func (mmGetLatestNamespacePipelineRelease *mRepositoryMockGetLatestNamespacePipelineRelease) invocationsDone() bool {
-	if len(mmGetLatestNamespacePipelineRelease.expectations) == 0 && mmGetLatestNamespacePipelineRelease.defaultExpectation == nil && mmGetLatestNamespacePipelineRelease.mock.funcGetLatestNamespacePipelineRelease == nil {
+func (mmGetLatestPipelineRelease *mRepositoryMockGetLatestPipelineRelease) invocationsDone() bool {
+	if len(mmGetLatestPipelineRelease.expectations) == 0 && mmGetLatestPipelineRelease.defaultExpectation == nil && mmGetLatestPipelineRelease.mock.funcGetLatestPipelineRelease == nil {
 		return true
 	}
 
-	totalInvocations := mm_atomic.LoadUint64(&mmGetLatestNamespacePipelineRelease.mock.afterGetLatestNamespacePipelineReleaseCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmGetLatestNamespacePipelineRelease.expectedInvocations)
+	totalInvocations := mm_atomic.LoadUint64(&mmGetLatestPipelineRelease.mock.afterGetLatestPipelineReleaseCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetLatestPipelineRelease.expectedInvocations)
 
 	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
 }
 
-// GetLatestNamespacePipelineRelease implements mm_repository.Repository
-func (mmGetLatestNamespacePipelineRelease *RepositoryMock) GetLatestNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool) (pp1 *datamodel.PipelineRelease, err error) {
-	mm_atomic.AddUint64(&mmGetLatestNamespacePipelineRelease.beforeGetLatestNamespacePipelineReleaseCounter, 1)
-	defer mm_atomic.AddUint64(&mmGetLatestNamespacePipelineRelease.afterGetLatestNamespacePipelineReleaseCounter, 1)
+// GetLatestPipelineRelease implements mm_repository.Repository
+func (mmGetLatestPipelineRelease *RepositoryMock) GetLatestPipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool) (pp1 *datamodel.PipelineRelease, err error) {
+	mm_atomic.AddUint64(&mmGetLatestPipelineRelease.beforeGetLatestPipelineReleaseCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetLatestPipelineRelease.afterGetLatestPipelineReleaseCounter, 1)
 
-	mmGetLatestNamespacePipelineRelease.t.Helper()
+	mmGetLatestPipelineRelease.t.Helper()
 
-	if mmGetLatestNamespacePipelineRelease.inspectFuncGetLatestNamespacePipelineRelease != nil {
-		mmGetLatestNamespacePipelineRelease.inspectFuncGetLatestNamespacePipelineRelease(ctx, ownerPermalink, pipelineUID, isBasicView)
+	if mmGetLatestPipelineRelease.inspectFuncGetLatestPipelineRelease != nil {
+		mmGetLatestPipelineRelease.inspectFuncGetLatestPipelineRelease(ctx, ownerPermalink, pipelineUID, isBasicView)
 	}
 
-	mm_params := RepositoryMockGetLatestNamespacePipelineReleaseParams{ctx, ownerPermalink, pipelineUID, isBasicView}
+	mm_params := RepositoryMockGetLatestPipelineReleaseParams{ctx, ownerPermalink, pipelineUID, isBasicView}
 
 	// Record call args
-	mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.mutex.Lock()
-	mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.callArgs = append(mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.callArgs, &mm_params)
-	mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.mutex.Unlock()
+	mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.mutex.Lock()
+	mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.callArgs = append(mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.callArgs, &mm_params)
+	mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.mutex.Unlock()
 
-	for _, e := range mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.expectations {
+	for _, e := range mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.expectations {
 		if minimock.Equal(*e.params, mm_params) {
 			mm_atomic.AddUint64(&e.Counter, 1)
 			return e.results.pp1, e.results.err
 		}
 	}
 
-	if mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.defaultExpectation.Counter, 1)
-		mm_want := mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.defaultExpectation.params
-		mm_want_ptrs := mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.defaultExpectation.paramPtrs
+	if mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.defaultExpectation.params
+		mm_want_ptrs := mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.defaultExpectation.paramPtrs
 
-		mm_got := RepositoryMockGetLatestNamespacePipelineReleaseParams{ctx, ownerPermalink, pipelineUID, isBasicView}
+		mm_got := RepositoryMockGetLatestPipelineReleaseParams{ctx, ownerPermalink, pipelineUID, isBasicView}
 
 		if mm_want_ptrs != nil {
 
 			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmGetLatestNamespacePipelineRelease.t.Errorf("RepositoryMock.GetLatestNamespacePipelineRelease got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+				mmGetLatestPipelineRelease.t.Errorf("RepositoryMock.GetLatestPipelineRelease got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
 			}
 
 			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
-				mmGetLatestNamespacePipelineRelease.t.Errorf("RepositoryMock.GetLatestNamespacePipelineRelease got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
+				mmGetLatestPipelineRelease.t.Errorf("RepositoryMock.GetLatestPipelineRelease got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
 			}
 
 			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
-				mmGetLatestNamespacePipelineRelease.t.Errorf("RepositoryMock.GetLatestNamespacePipelineRelease got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
+				mmGetLatestPipelineRelease.t.Errorf("RepositoryMock.GetLatestPipelineRelease got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
 			}
 
 			if mm_want_ptrs.isBasicView != nil && !minimock.Equal(*mm_want_ptrs.isBasicView, mm_got.isBasicView) {
-				mmGetLatestNamespacePipelineRelease.t.Errorf("RepositoryMock.GetLatestNamespacePipelineRelease got unexpected parameter isBasicView, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.defaultExpectation.expectationOrigins.originIsBasicView, *mm_want_ptrs.isBasicView, mm_got.isBasicView, minimock.Diff(*mm_want_ptrs.isBasicView, mm_got.isBasicView))
+				mmGetLatestPipelineRelease.t.Errorf("RepositoryMock.GetLatestPipelineRelease got unexpected parameter isBasicView, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.defaultExpectation.expectationOrigins.originIsBasicView, *mm_want_ptrs.isBasicView, mm_got.isBasicView, minimock.Diff(*mm_want_ptrs.isBasicView, mm_got.isBasicView))
 			}
 
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmGetLatestNamespacePipelineRelease.t.Errorf("RepositoryMock.GetLatestNamespacePipelineRelease got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+			mmGetLatestPipelineRelease.t.Errorf("RepositoryMock.GetLatestPipelineRelease got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
 		}
 
-		mm_results := mmGetLatestNamespacePipelineRelease.GetLatestNamespacePipelineReleaseMock.defaultExpectation.results
+		mm_results := mmGetLatestPipelineRelease.GetLatestPipelineReleaseMock.defaultExpectation.results
 		if mm_results == nil {
-			mmGetLatestNamespacePipelineRelease.t.Fatal("No results are set for the RepositoryMock.GetLatestNamespacePipelineRelease")
+			mmGetLatestPipelineRelease.t.Fatal("No results are set for the RepositoryMock.GetLatestPipelineRelease")
 		}
 		return (*mm_results).pp1, (*mm_results).err
 	}
-	if mmGetLatestNamespacePipelineRelease.funcGetLatestNamespacePipelineRelease != nil {
-		return mmGetLatestNamespacePipelineRelease.funcGetLatestNamespacePipelineRelease(ctx, ownerPermalink, pipelineUID, isBasicView)
+	if mmGetLatestPipelineRelease.funcGetLatestPipelineRelease != nil {
+		return mmGetLatestPipelineRelease.funcGetLatestPipelineRelease(ctx, ownerPermalink, pipelineUID, isBasicView)
 	}
-	mmGetLatestNamespacePipelineRelease.t.Fatalf("Unexpected call to RepositoryMock.GetLatestNamespacePipelineRelease. %v %v %v %v", ctx, ownerPermalink, pipelineUID, isBasicView)
+	mmGetLatestPipelineRelease.t.Fatalf("Unexpected call to RepositoryMock.GetLatestPipelineRelease. %v %v %v %v", ctx, ownerPermalink, pipelineUID, isBasicView)
 	return
 }
 
-// GetLatestNamespacePipelineReleaseAfterCounter returns a count of finished RepositoryMock.GetLatestNamespacePipelineRelease invocations
-func (mmGetLatestNamespacePipelineRelease *RepositoryMock) GetLatestNamespacePipelineReleaseAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmGetLatestNamespacePipelineRelease.afterGetLatestNamespacePipelineReleaseCounter)
+// GetLatestPipelineReleaseAfterCounter returns a count of finished RepositoryMock.GetLatestPipelineRelease invocations
+func (mmGetLatestPipelineRelease *RepositoryMock) GetLatestPipelineReleaseAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetLatestPipelineRelease.afterGetLatestPipelineReleaseCounter)
 }
 
-// GetLatestNamespacePipelineReleaseBeforeCounter returns a count of RepositoryMock.GetLatestNamespacePipelineRelease invocations
-func (mmGetLatestNamespacePipelineRelease *RepositoryMock) GetLatestNamespacePipelineReleaseBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmGetLatestNamespacePipelineRelease.beforeGetLatestNamespacePipelineReleaseCounter)
+// GetLatestPipelineReleaseBeforeCounter returns a count of RepositoryMock.GetLatestPipelineRelease invocations
+func (mmGetLatestPipelineRelease *RepositoryMock) GetLatestPipelineReleaseBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetLatestPipelineRelease.beforeGetLatestPipelineReleaseCounter)
 }
 
-// Calls returns a list of arguments used in each call to RepositoryMock.GetLatestNamespacePipelineRelease.
+// Calls returns a list of arguments used in each call to RepositoryMock.GetLatestPipelineRelease.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmGetLatestNamespacePipelineRelease *mRepositoryMockGetLatestNamespacePipelineRelease) Calls() []*RepositoryMockGetLatestNamespacePipelineReleaseParams {
-	mmGetLatestNamespacePipelineRelease.mutex.RLock()
+func (mmGetLatestPipelineRelease *mRepositoryMockGetLatestPipelineRelease) Calls() []*RepositoryMockGetLatestPipelineReleaseParams {
+	mmGetLatestPipelineRelease.mutex.RLock()
 
-	argCopy := make([]*RepositoryMockGetLatestNamespacePipelineReleaseParams, len(mmGetLatestNamespacePipelineRelease.callArgs))
-	copy(argCopy, mmGetLatestNamespacePipelineRelease.callArgs)
+	argCopy := make([]*RepositoryMockGetLatestPipelineReleaseParams, len(mmGetLatestPipelineRelease.callArgs))
+	copy(argCopy, mmGetLatestPipelineRelease.callArgs)
 
-	mmGetLatestNamespacePipelineRelease.mutex.RUnlock()
+	mmGetLatestPipelineRelease.mutex.RUnlock()
 
 	return argCopy
 }
 
-// MinimockGetLatestNamespacePipelineReleaseDone returns true if the count of the GetLatestNamespacePipelineRelease invocations corresponds
+// MinimockGetLatestPipelineReleaseDone returns true if the count of the GetLatestPipelineRelease invocations corresponds
 // the number of defined expectations
-func (m *RepositoryMock) MinimockGetLatestNamespacePipelineReleaseDone() bool {
-	if m.GetLatestNamespacePipelineReleaseMock.optional {
+func (m *RepositoryMock) MinimockGetLatestPipelineReleaseDone() bool {
+	if m.GetLatestPipelineReleaseMock.optional {
 		// Optional methods provide '0 or more' call count restriction.
 		return true
 	}
 
-	for _, e := range m.GetLatestNamespacePipelineReleaseMock.expectations {
+	for _, e := range m.GetLatestPipelineReleaseMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
 			return false
 		}
 	}
 
-	return m.GetLatestNamespacePipelineReleaseMock.invocationsDone()
+	return m.GetLatestPipelineReleaseMock.invocationsDone()
 }
 
-// MinimockGetLatestNamespacePipelineReleaseInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockGetLatestNamespacePipelineReleaseInspect() {
-	for _, e := range m.GetLatestNamespacePipelineReleaseMock.expectations {
+// MinimockGetLatestPipelineReleaseInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockGetLatestPipelineReleaseInspect() {
+	for _, e := range m.GetLatestPipelineReleaseMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.GetLatestNamespacePipelineRelease at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+			m.t.Errorf("Expected call to RepositoryMock.GetLatestPipelineRelease at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
 		}
 	}
 
-	afterGetLatestNamespacePipelineReleaseCounter := mm_atomic.LoadUint64(&m.afterGetLatestNamespacePipelineReleaseCounter)
+	afterGetLatestPipelineReleaseCounter := mm_atomic.LoadUint64(&m.afterGetLatestPipelineReleaseCounter)
 	// if default expectation was set then invocations count should be greater than zero
-	if m.GetLatestNamespacePipelineReleaseMock.defaultExpectation != nil && afterGetLatestNamespacePipelineReleaseCounter < 1 {
-		if m.GetLatestNamespacePipelineReleaseMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to RepositoryMock.GetLatestNamespacePipelineRelease at\n%s", m.GetLatestNamespacePipelineReleaseMock.defaultExpectation.returnOrigin)
+	if m.GetLatestPipelineReleaseMock.defaultExpectation != nil && afterGetLatestPipelineReleaseCounter < 1 {
+		if m.GetLatestPipelineReleaseMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to RepositoryMock.GetLatestPipelineRelease at\n%s", m.GetLatestPipelineReleaseMock.defaultExpectation.returnOrigin)
 		} else {
-			m.t.Errorf("Expected call to RepositoryMock.GetLatestNamespacePipelineRelease at\n%s with params: %#v", m.GetLatestNamespacePipelineReleaseMock.defaultExpectation.expectationOrigins.origin, *m.GetLatestNamespacePipelineReleaseMock.defaultExpectation.params)
+			m.t.Errorf("Expected call to RepositoryMock.GetLatestPipelineRelease at\n%s with params: %#v", m.GetLatestPipelineReleaseMock.defaultExpectation.expectationOrigins.origin, *m.GetLatestPipelineReleaseMock.defaultExpectation.params)
 		}
 	}
 	// if func was set then invocations count should be greater than zero
-	if m.funcGetLatestNamespacePipelineRelease != nil && afterGetLatestNamespacePipelineReleaseCounter < 1 {
-		m.t.Errorf("Expected call to RepositoryMock.GetLatestNamespacePipelineRelease at\n%s", m.funcGetLatestNamespacePipelineReleaseOrigin)
+	if m.funcGetLatestPipelineRelease != nil && afterGetLatestPipelineReleaseCounter < 1 {
+		m.t.Errorf("Expected call to RepositoryMock.GetLatestPipelineRelease at\n%s", m.funcGetLatestPipelineReleaseOrigin)
 	}
 
-	if !m.GetLatestNamespacePipelineReleaseMock.invocationsDone() && afterGetLatestNamespacePipelineReleaseCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.GetLatestNamespacePipelineRelease at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.GetLatestNamespacePipelineReleaseMock.expectedInvocations), m.GetLatestNamespacePipelineReleaseMock.expectedInvocationsOrigin, afterGetLatestNamespacePipelineReleaseCounter)
+	if !m.GetLatestPipelineReleaseMock.invocationsDone() && afterGetLatestPipelineReleaseCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.GetLatestPipelineRelease at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetLatestPipelineReleaseMock.expectedInvocations), m.GetLatestPipelineReleaseMock.expectedInvocationsOrigin, afterGetLatestPipelineReleaseCounter)
 	}
 }
 
@@ -8197,878 +8197,6 @@ func (m *RepositoryMock) MinimockGetNamespaceConnectionByIDInspect() {
 	if !m.GetNamespaceConnectionByIDMock.invocationsDone() && afterGetNamespaceConnectionByIDCounter > 0 {
 		m.t.Errorf("Expected %d calls to RepositoryMock.GetNamespaceConnectionByID at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.GetNamespaceConnectionByIDMock.expectedInvocations), m.GetNamespaceConnectionByIDMock.expectedInvocationsOrigin, afterGetNamespaceConnectionByIDCounter)
-	}
-}
-
-type mRepositoryMockGetNamespacePipelineByID struct {
-	optional           bool
-	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockGetNamespacePipelineByIDExpectation
-	expectations       []*RepositoryMockGetNamespacePipelineByIDExpectation
-
-	callArgs []*RepositoryMockGetNamespacePipelineByIDParams
-	mutex    sync.RWMutex
-
-	expectedInvocations       uint64
-	expectedInvocationsOrigin string
-}
-
-// RepositoryMockGetNamespacePipelineByIDExpectation specifies expectation struct of the Repository.GetNamespacePipelineByID
-type RepositoryMockGetNamespacePipelineByIDExpectation struct {
-	mock               *RepositoryMock
-	params             *RepositoryMockGetNamespacePipelineByIDParams
-	paramPtrs          *RepositoryMockGetNamespacePipelineByIDParamPtrs
-	expectationOrigins RepositoryMockGetNamespacePipelineByIDExpectationOrigins
-	results            *RepositoryMockGetNamespacePipelineByIDResults
-	returnOrigin       string
-	Counter            uint64
-}
-
-// RepositoryMockGetNamespacePipelineByIDParams contains parameters of the Repository.GetNamespacePipelineByID
-type RepositoryMockGetNamespacePipelineByIDParams struct {
-	ctx            context.Context
-	ownerPermalink string
-	id             string
-	isBasicView    bool
-	embedReleases  bool
-}
-
-// RepositoryMockGetNamespacePipelineByIDParamPtrs contains pointers to parameters of the Repository.GetNamespacePipelineByID
-type RepositoryMockGetNamespacePipelineByIDParamPtrs struct {
-	ctx            *context.Context
-	ownerPermalink *string
-	id             *string
-	isBasicView    *bool
-	embedReleases  *bool
-}
-
-// RepositoryMockGetNamespacePipelineByIDResults contains results of the Repository.GetNamespacePipelineByID
-type RepositoryMockGetNamespacePipelineByIDResults struct {
-	pp1 *datamodel.Pipeline
-	err error
-}
-
-// RepositoryMockGetNamespacePipelineByIDOrigins contains origins of expectations of the Repository.GetNamespacePipelineByID
-type RepositoryMockGetNamespacePipelineByIDExpectationOrigins struct {
-	origin               string
-	originCtx            string
-	originOwnerPermalink string
-	originId             string
-	originIsBasicView    string
-	originEmbedReleases  string
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) Optional() *mRepositoryMockGetNamespacePipelineByID {
-	mmGetNamespacePipelineByID.optional = true
-	return mmGetNamespacePipelineByID
-}
-
-// Expect sets up expected params for Repository.GetNamespacePipelineByID
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) Expect(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) *mRepositoryMockGetNamespacePipelineByID {
-	if mmGetNamespacePipelineByID.mock.funcGetNamespacePipelineByID != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation == nil {
-		mmGetNamespacePipelineByID.defaultExpectation = &RepositoryMockGetNamespacePipelineByIDExpectation{}
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation.paramPtrs != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by ExpectParams functions")
-	}
-
-	mmGetNamespacePipelineByID.defaultExpectation.params = &RepositoryMockGetNamespacePipelineByIDParams{ctx, ownerPermalink, id, isBasicView, embedReleases}
-	mmGetNamespacePipelineByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmGetNamespacePipelineByID.expectations {
-		if minimock.Equal(e.params, mmGetNamespacePipelineByID.defaultExpectation.params) {
-			mmGetNamespacePipelineByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetNamespacePipelineByID.defaultExpectation.params)
-		}
-	}
-
-	return mmGetNamespacePipelineByID
-}
-
-// ExpectCtxParam1 sets up expected param ctx for Repository.GetNamespacePipelineByID
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockGetNamespacePipelineByID {
-	if mmGetNamespacePipelineByID.mock.funcGetNamespacePipelineByID != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation == nil {
-		mmGetNamespacePipelineByID.defaultExpectation = &RepositoryMockGetNamespacePipelineByIDExpectation{}
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation.params != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by Expect")
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation.paramPtrs == nil {
-		mmGetNamespacePipelineByID.defaultExpectation.paramPtrs = &RepositoryMockGetNamespacePipelineByIDParamPtrs{}
-	}
-	mmGetNamespacePipelineByID.defaultExpectation.paramPtrs.ctx = &ctx
-	mmGetNamespacePipelineByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
-
-	return mmGetNamespacePipelineByID
-}
-
-// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.GetNamespacePipelineByID
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockGetNamespacePipelineByID {
-	if mmGetNamespacePipelineByID.mock.funcGetNamespacePipelineByID != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation == nil {
-		mmGetNamespacePipelineByID.defaultExpectation = &RepositoryMockGetNamespacePipelineByIDExpectation{}
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation.params != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by Expect")
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation.paramPtrs == nil {
-		mmGetNamespacePipelineByID.defaultExpectation.paramPtrs = &RepositoryMockGetNamespacePipelineByIDParamPtrs{}
-	}
-	mmGetNamespacePipelineByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
-	mmGetNamespacePipelineByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
-
-	return mmGetNamespacePipelineByID
-}
-
-// ExpectIdParam3 sets up expected param id for Repository.GetNamespacePipelineByID
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) ExpectIdParam3(id string) *mRepositoryMockGetNamespacePipelineByID {
-	if mmGetNamespacePipelineByID.mock.funcGetNamespacePipelineByID != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation == nil {
-		mmGetNamespacePipelineByID.defaultExpectation = &RepositoryMockGetNamespacePipelineByIDExpectation{}
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation.params != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by Expect")
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation.paramPtrs == nil {
-		mmGetNamespacePipelineByID.defaultExpectation.paramPtrs = &RepositoryMockGetNamespacePipelineByIDParamPtrs{}
-	}
-	mmGetNamespacePipelineByID.defaultExpectation.paramPtrs.id = &id
-	mmGetNamespacePipelineByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
-
-	return mmGetNamespacePipelineByID
-}
-
-// ExpectIsBasicViewParam4 sets up expected param isBasicView for Repository.GetNamespacePipelineByID
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) ExpectIsBasicViewParam4(isBasicView bool) *mRepositoryMockGetNamespacePipelineByID {
-	if mmGetNamespacePipelineByID.mock.funcGetNamespacePipelineByID != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation == nil {
-		mmGetNamespacePipelineByID.defaultExpectation = &RepositoryMockGetNamespacePipelineByIDExpectation{}
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation.params != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by Expect")
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation.paramPtrs == nil {
-		mmGetNamespacePipelineByID.defaultExpectation.paramPtrs = &RepositoryMockGetNamespacePipelineByIDParamPtrs{}
-	}
-	mmGetNamespacePipelineByID.defaultExpectation.paramPtrs.isBasicView = &isBasicView
-	mmGetNamespacePipelineByID.defaultExpectation.expectationOrigins.originIsBasicView = minimock.CallerInfo(1)
-
-	return mmGetNamespacePipelineByID
-}
-
-// ExpectEmbedReleasesParam5 sets up expected param embedReleases for Repository.GetNamespacePipelineByID
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) ExpectEmbedReleasesParam5(embedReleases bool) *mRepositoryMockGetNamespacePipelineByID {
-	if mmGetNamespacePipelineByID.mock.funcGetNamespacePipelineByID != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation == nil {
-		mmGetNamespacePipelineByID.defaultExpectation = &RepositoryMockGetNamespacePipelineByIDExpectation{}
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation.params != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by Expect")
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation.paramPtrs == nil {
-		mmGetNamespacePipelineByID.defaultExpectation.paramPtrs = &RepositoryMockGetNamespacePipelineByIDParamPtrs{}
-	}
-	mmGetNamespacePipelineByID.defaultExpectation.paramPtrs.embedReleases = &embedReleases
-	mmGetNamespacePipelineByID.defaultExpectation.expectationOrigins.originEmbedReleases = minimock.CallerInfo(1)
-
-	return mmGetNamespacePipelineByID
-}
-
-// Inspect accepts an inspector function that has same arguments as the Repository.GetNamespacePipelineByID
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) Inspect(f func(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool)) *mRepositoryMockGetNamespacePipelineByID {
-	if mmGetNamespacePipelineByID.mock.inspectFuncGetNamespacePipelineByID != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.GetNamespacePipelineByID")
-	}
-
-	mmGetNamespacePipelineByID.mock.inspectFuncGetNamespacePipelineByID = f
-
-	return mmGetNamespacePipelineByID
-}
-
-// Return sets up results that will be returned by Repository.GetNamespacePipelineByID
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) Return(pp1 *datamodel.Pipeline, err error) *RepositoryMock {
-	if mmGetNamespacePipelineByID.mock.funcGetNamespacePipelineByID != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineByID.defaultExpectation == nil {
-		mmGetNamespacePipelineByID.defaultExpectation = &RepositoryMockGetNamespacePipelineByIDExpectation{mock: mmGetNamespacePipelineByID.mock}
-	}
-	mmGetNamespacePipelineByID.defaultExpectation.results = &RepositoryMockGetNamespacePipelineByIDResults{pp1, err}
-	mmGetNamespacePipelineByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmGetNamespacePipelineByID.mock
-}
-
-// Set uses given function f to mock the Repository.GetNamespacePipelineByID method
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) Set(f func(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) (pp1 *datamodel.Pipeline, err error)) *RepositoryMock {
-	if mmGetNamespacePipelineByID.defaultExpectation != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("Default expectation is already set for the Repository.GetNamespacePipelineByID method")
-	}
-
-	if len(mmGetNamespacePipelineByID.expectations) > 0 {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("Some expectations are already set for the Repository.GetNamespacePipelineByID method")
-	}
-
-	mmGetNamespacePipelineByID.mock.funcGetNamespacePipelineByID = f
-	mmGetNamespacePipelineByID.mock.funcGetNamespacePipelineByIDOrigin = minimock.CallerInfo(1)
-	return mmGetNamespacePipelineByID.mock
-}
-
-// When sets expectation for the Repository.GetNamespacePipelineByID which will trigger the result defined by the following
-// Then helper
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) When(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) *RepositoryMockGetNamespacePipelineByIDExpectation {
-	if mmGetNamespacePipelineByID.mock.funcGetNamespacePipelineByID != nil {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineByID mock is already set by Set")
-	}
-
-	expectation := &RepositoryMockGetNamespacePipelineByIDExpectation{
-		mock:               mmGetNamespacePipelineByID.mock,
-		params:             &RepositoryMockGetNamespacePipelineByIDParams{ctx, ownerPermalink, id, isBasicView, embedReleases},
-		expectationOrigins: RepositoryMockGetNamespacePipelineByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
-	}
-	mmGetNamespacePipelineByID.expectations = append(mmGetNamespacePipelineByID.expectations, expectation)
-	return expectation
-}
-
-// Then sets up Repository.GetNamespacePipelineByID return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockGetNamespacePipelineByIDExpectation) Then(pp1 *datamodel.Pipeline, err error) *RepositoryMock {
-	e.results = &RepositoryMockGetNamespacePipelineByIDResults{pp1, err}
-	return e.mock
-}
-
-// Times sets number of times Repository.GetNamespacePipelineByID should be invoked
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) Times(n uint64) *mRepositoryMockGetNamespacePipelineByID {
-	if n == 0 {
-		mmGetNamespacePipelineByID.mock.t.Fatalf("Times of RepositoryMock.GetNamespacePipelineByID mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmGetNamespacePipelineByID.expectedInvocations, n)
-	mmGetNamespacePipelineByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmGetNamespacePipelineByID
-}
-
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) invocationsDone() bool {
-	if len(mmGetNamespacePipelineByID.expectations) == 0 && mmGetNamespacePipelineByID.defaultExpectation == nil && mmGetNamespacePipelineByID.mock.funcGetNamespacePipelineByID == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmGetNamespacePipelineByID.mock.afterGetNamespacePipelineByIDCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmGetNamespacePipelineByID.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// GetNamespacePipelineByID implements mm_repository.Repository
-func (mmGetNamespacePipelineByID *RepositoryMock) GetNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) (pp1 *datamodel.Pipeline, err error) {
-	mm_atomic.AddUint64(&mmGetNamespacePipelineByID.beforeGetNamespacePipelineByIDCounter, 1)
-	defer mm_atomic.AddUint64(&mmGetNamespacePipelineByID.afterGetNamespacePipelineByIDCounter, 1)
-
-	mmGetNamespacePipelineByID.t.Helper()
-
-	if mmGetNamespacePipelineByID.inspectFuncGetNamespacePipelineByID != nil {
-		mmGetNamespacePipelineByID.inspectFuncGetNamespacePipelineByID(ctx, ownerPermalink, id, isBasicView, embedReleases)
-	}
-
-	mm_params := RepositoryMockGetNamespacePipelineByIDParams{ctx, ownerPermalink, id, isBasicView, embedReleases}
-
-	// Record call args
-	mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.mutex.Lock()
-	mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.callArgs = append(mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.callArgs, &mm_params)
-	mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.mutex.Unlock()
-
-	for _, e := range mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.pp1, e.results.err
-		}
-	}
-
-	if mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.defaultExpectation.Counter, 1)
-		mm_want := mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.defaultExpectation.params
-		mm_want_ptrs := mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.defaultExpectation.paramPtrs
-
-		mm_got := RepositoryMockGetNamespacePipelineByIDParams{ctx, ownerPermalink, id, isBasicView, embedReleases}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmGetNamespacePipelineByID.t.Errorf("RepositoryMock.GetNamespacePipelineByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
-				mmGetNamespacePipelineByID.t.Errorf("RepositoryMock.GetNamespacePipelineByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
-			}
-
-			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
-				mmGetNamespacePipelineByID.t.Errorf("RepositoryMock.GetNamespacePipelineByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
-			}
-
-			if mm_want_ptrs.isBasicView != nil && !minimock.Equal(*mm_want_ptrs.isBasicView, mm_got.isBasicView) {
-				mmGetNamespacePipelineByID.t.Errorf("RepositoryMock.GetNamespacePipelineByID got unexpected parameter isBasicView, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.defaultExpectation.expectationOrigins.originIsBasicView, *mm_want_ptrs.isBasicView, mm_got.isBasicView, minimock.Diff(*mm_want_ptrs.isBasicView, mm_got.isBasicView))
-			}
-
-			if mm_want_ptrs.embedReleases != nil && !minimock.Equal(*mm_want_ptrs.embedReleases, mm_got.embedReleases) {
-				mmGetNamespacePipelineByID.t.Errorf("RepositoryMock.GetNamespacePipelineByID got unexpected parameter embedReleases, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.defaultExpectation.expectationOrigins.originEmbedReleases, *mm_want_ptrs.embedReleases, mm_got.embedReleases, minimock.Diff(*mm_want_ptrs.embedReleases, mm_got.embedReleases))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmGetNamespacePipelineByID.t.Errorf("RepositoryMock.GetNamespacePipelineByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmGetNamespacePipelineByID.GetNamespacePipelineByIDMock.defaultExpectation.results
-		if mm_results == nil {
-			mmGetNamespacePipelineByID.t.Fatal("No results are set for the RepositoryMock.GetNamespacePipelineByID")
-		}
-		return (*mm_results).pp1, (*mm_results).err
-	}
-	if mmGetNamespacePipelineByID.funcGetNamespacePipelineByID != nil {
-		return mmGetNamespacePipelineByID.funcGetNamespacePipelineByID(ctx, ownerPermalink, id, isBasicView, embedReleases)
-	}
-	mmGetNamespacePipelineByID.t.Fatalf("Unexpected call to RepositoryMock.GetNamespacePipelineByID. %v %v %v %v %v", ctx, ownerPermalink, id, isBasicView, embedReleases)
-	return
-}
-
-// GetNamespacePipelineByIDAfterCounter returns a count of finished RepositoryMock.GetNamespacePipelineByID invocations
-func (mmGetNamespacePipelineByID *RepositoryMock) GetNamespacePipelineByIDAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmGetNamespacePipelineByID.afterGetNamespacePipelineByIDCounter)
-}
-
-// GetNamespacePipelineByIDBeforeCounter returns a count of RepositoryMock.GetNamespacePipelineByID invocations
-func (mmGetNamespacePipelineByID *RepositoryMock) GetNamespacePipelineByIDBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmGetNamespacePipelineByID.beforeGetNamespacePipelineByIDCounter)
-}
-
-// Calls returns a list of arguments used in each call to RepositoryMock.GetNamespacePipelineByID.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmGetNamespacePipelineByID *mRepositoryMockGetNamespacePipelineByID) Calls() []*RepositoryMockGetNamespacePipelineByIDParams {
-	mmGetNamespacePipelineByID.mutex.RLock()
-
-	argCopy := make([]*RepositoryMockGetNamespacePipelineByIDParams, len(mmGetNamespacePipelineByID.callArgs))
-	copy(argCopy, mmGetNamespacePipelineByID.callArgs)
-
-	mmGetNamespacePipelineByID.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockGetNamespacePipelineByIDDone returns true if the count of the GetNamespacePipelineByID invocations corresponds
-// the number of defined expectations
-func (m *RepositoryMock) MinimockGetNamespacePipelineByIDDone() bool {
-	if m.GetNamespacePipelineByIDMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.GetNamespacePipelineByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.GetNamespacePipelineByIDMock.invocationsDone()
-}
-
-// MinimockGetNamespacePipelineByIDInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockGetNamespacePipelineByIDInspect() {
-	for _, e := range m.GetNamespacePipelineByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.GetNamespacePipelineByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
-		}
-	}
-
-	afterGetNamespacePipelineByIDCounter := mm_atomic.LoadUint64(&m.afterGetNamespacePipelineByIDCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.GetNamespacePipelineByIDMock.defaultExpectation != nil && afterGetNamespacePipelineByIDCounter < 1 {
-		if m.GetNamespacePipelineByIDMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to RepositoryMock.GetNamespacePipelineByID at\n%s", m.GetNamespacePipelineByIDMock.defaultExpectation.returnOrigin)
-		} else {
-			m.t.Errorf("Expected call to RepositoryMock.GetNamespacePipelineByID at\n%s with params: %#v", m.GetNamespacePipelineByIDMock.defaultExpectation.expectationOrigins.origin, *m.GetNamespacePipelineByIDMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcGetNamespacePipelineByID != nil && afterGetNamespacePipelineByIDCounter < 1 {
-		m.t.Errorf("Expected call to RepositoryMock.GetNamespacePipelineByID at\n%s", m.funcGetNamespacePipelineByIDOrigin)
-	}
-
-	if !m.GetNamespacePipelineByIDMock.invocationsDone() && afterGetNamespacePipelineByIDCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.GetNamespacePipelineByID at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.GetNamespacePipelineByIDMock.expectedInvocations), m.GetNamespacePipelineByIDMock.expectedInvocationsOrigin, afterGetNamespacePipelineByIDCounter)
-	}
-}
-
-type mRepositoryMockGetNamespacePipelineReleaseByID struct {
-	optional           bool
-	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockGetNamespacePipelineReleaseByIDExpectation
-	expectations       []*RepositoryMockGetNamespacePipelineReleaseByIDExpectation
-
-	callArgs []*RepositoryMockGetNamespacePipelineReleaseByIDParams
-	mutex    sync.RWMutex
-
-	expectedInvocations       uint64
-	expectedInvocationsOrigin string
-}
-
-// RepositoryMockGetNamespacePipelineReleaseByIDExpectation specifies expectation struct of the Repository.GetNamespacePipelineReleaseByID
-type RepositoryMockGetNamespacePipelineReleaseByIDExpectation struct {
-	mock               *RepositoryMock
-	params             *RepositoryMockGetNamespacePipelineReleaseByIDParams
-	paramPtrs          *RepositoryMockGetNamespacePipelineReleaseByIDParamPtrs
-	expectationOrigins RepositoryMockGetNamespacePipelineReleaseByIDExpectationOrigins
-	results            *RepositoryMockGetNamespacePipelineReleaseByIDResults
-	returnOrigin       string
-	Counter            uint64
-}
-
-// RepositoryMockGetNamespacePipelineReleaseByIDParams contains parameters of the Repository.GetNamespacePipelineReleaseByID
-type RepositoryMockGetNamespacePipelineReleaseByIDParams struct {
-	ctx            context.Context
-	ownerPermalink string
-	pipelineUID    uuid.UUID
-	id             string
-	isBasicView    bool
-}
-
-// RepositoryMockGetNamespacePipelineReleaseByIDParamPtrs contains pointers to parameters of the Repository.GetNamespacePipelineReleaseByID
-type RepositoryMockGetNamespacePipelineReleaseByIDParamPtrs struct {
-	ctx            *context.Context
-	ownerPermalink *string
-	pipelineUID    *uuid.UUID
-	id             *string
-	isBasicView    *bool
-}
-
-// RepositoryMockGetNamespacePipelineReleaseByIDResults contains results of the Repository.GetNamespacePipelineReleaseByID
-type RepositoryMockGetNamespacePipelineReleaseByIDResults struct {
-	pp1 *datamodel.PipelineRelease
-	err error
-}
-
-// RepositoryMockGetNamespacePipelineReleaseByIDOrigins contains origins of expectations of the Repository.GetNamespacePipelineReleaseByID
-type RepositoryMockGetNamespacePipelineReleaseByIDExpectationOrigins struct {
-	origin               string
-	originCtx            string
-	originOwnerPermalink string
-	originPipelineUID    string
-	originId             string
-	originIsBasicView    string
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) Optional() *mRepositoryMockGetNamespacePipelineReleaseByID {
-	mmGetNamespacePipelineReleaseByID.optional = true
-	return mmGetNamespacePipelineReleaseByID
-}
-
-// Expect sets up expected params for Repository.GetNamespacePipelineReleaseByID
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool) *mRepositoryMockGetNamespacePipelineReleaseByID {
-	if mmGetNamespacePipelineReleaseByID.mock.funcGetNamespacePipelineReleaseByID != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmGetNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockGetNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by ExpectParams functions")
-	}
-
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.params = &RepositoryMockGetNamespacePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, isBasicView}
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmGetNamespacePipelineReleaseByID.expectations {
-		if minimock.Equal(e.params, mmGetNamespacePipelineReleaseByID.defaultExpectation.params) {
-			mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetNamespacePipelineReleaseByID.defaultExpectation.params)
-		}
-	}
-
-	return mmGetNamespacePipelineReleaseByID
-}
-
-// ExpectCtxParam1 sets up expected param ctx for Repository.GetNamespacePipelineReleaseByID
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockGetNamespacePipelineReleaseByID {
-	if mmGetNamespacePipelineReleaseByID.mock.funcGetNamespacePipelineReleaseByID != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmGetNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockGetNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockGetNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.ctx = &ctx
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
-
-	return mmGetNamespacePipelineReleaseByID
-}
-
-// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.GetNamespacePipelineReleaseByID
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockGetNamespacePipelineReleaseByID {
-	if mmGetNamespacePipelineReleaseByID.mock.funcGetNamespacePipelineReleaseByID != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmGetNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockGetNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockGetNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
-
-	return mmGetNamespacePipelineReleaseByID
-}
-
-// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.GetNamespacePipelineReleaseByID
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockGetNamespacePipelineReleaseByID {
-	if mmGetNamespacePipelineReleaseByID.mock.funcGetNamespacePipelineReleaseByID != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmGetNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockGetNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockGetNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
-
-	return mmGetNamespacePipelineReleaseByID
-}
-
-// ExpectIdParam4 sets up expected param id for Repository.GetNamespacePipelineReleaseByID
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) ExpectIdParam4(id string) *mRepositoryMockGetNamespacePipelineReleaseByID {
-	if mmGetNamespacePipelineReleaseByID.mock.funcGetNamespacePipelineReleaseByID != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmGetNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockGetNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockGetNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.id = &id
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
-
-	return mmGetNamespacePipelineReleaseByID
-}
-
-// ExpectIsBasicViewParam5 sets up expected param isBasicView for Repository.GetNamespacePipelineReleaseByID
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) ExpectIsBasicViewParam5(isBasicView bool) *mRepositoryMockGetNamespacePipelineReleaseByID {
-	if mmGetNamespacePipelineReleaseByID.mock.funcGetNamespacePipelineReleaseByID != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmGetNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockGetNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockGetNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.isBasicView = &isBasicView
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originIsBasicView = minimock.CallerInfo(1)
-
-	return mmGetNamespacePipelineReleaseByID
-}
-
-// Inspect accepts an inspector function that has same arguments as the Repository.GetNamespacePipelineReleaseByID
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool)) *mRepositoryMockGetNamespacePipelineReleaseByID {
-	if mmGetNamespacePipelineReleaseByID.mock.inspectFuncGetNamespacePipelineReleaseByID != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.GetNamespacePipelineReleaseByID")
-	}
-
-	mmGetNamespacePipelineReleaseByID.mock.inspectFuncGetNamespacePipelineReleaseByID = f
-
-	return mmGetNamespacePipelineReleaseByID
-}
-
-// Return sets up results that will be returned by Repository.GetNamespacePipelineReleaseByID
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) Return(pp1 *datamodel.PipelineRelease, err error) *RepositoryMock {
-	if mmGetNamespacePipelineReleaseByID.mock.funcGetNamespacePipelineReleaseByID != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmGetNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockGetNamespacePipelineReleaseByIDExpectation{mock: mmGetNamespacePipelineReleaseByID.mock}
-	}
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.results = &RepositoryMockGetNamespacePipelineReleaseByIDResults{pp1, err}
-	mmGetNamespacePipelineReleaseByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmGetNamespacePipelineReleaseByID.mock
-}
-
-// Set uses given function f to mock the Repository.GetNamespacePipelineReleaseByID method
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool) (pp1 *datamodel.PipelineRelease, err error)) *RepositoryMock {
-	if mmGetNamespacePipelineReleaseByID.defaultExpectation != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("Default expectation is already set for the Repository.GetNamespacePipelineReleaseByID method")
-	}
-
-	if len(mmGetNamespacePipelineReleaseByID.expectations) > 0 {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("Some expectations are already set for the Repository.GetNamespacePipelineReleaseByID method")
-	}
-
-	mmGetNamespacePipelineReleaseByID.mock.funcGetNamespacePipelineReleaseByID = f
-	mmGetNamespacePipelineReleaseByID.mock.funcGetNamespacePipelineReleaseByIDOrigin = minimock.CallerInfo(1)
-	return mmGetNamespacePipelineReleaseByID.mock
-}
-
-// When sets expectation for the Repository.GetNamespacePipelineReleaseByID which will trigger the result defined by the following
-// Then helper
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool) *RepositoryMockGetNamespacePipelineReleaseByIDExpectation {
-	if mmGetNamespacePipelineReleaseByID.mock.funcGetNamespacePipelineReleaseByID != nil {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	expectation := &RepositoryMockGetNamespacePipelineReleaseByIDExpectation{
-		mock:               mmGetNamespacePipelineReleaseByID.mock,
-		params:             &RepositoryMockGetNamespacePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, isBasicView},
-		expectationOrigins: RepositoryMockGetNamespacePipelineReleaseByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
-	}
-	mmGetNamespacePipelineReleaseByID.expectations = append(mmGetNamespacePipelineReleaseByID.expectations, expectation)
-	return expectation
-}
-
-// Then sets up Repository.GetNamespacePipelineReleaseByID return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockGetNamespacePipelineReleaseByIDExpectation) Then(pp1 *datamodel.PipelineRelease, err error) *RepositoryMock {
-	e.results = &RepositoryMockGetNamespacePipelineReleaseByIDResults{pp1, err}
-	return e.mock
-}
-
-// Times sets number of times Repository.GetNamespacePipelineReleaseByID should be invoked
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) Times(n uint64) *mRepositoryMockGetNamespacePipelineReleaseByID {
-	if n == 0 {
-		mmGetNamespacePipelineReleaseByID.mock.t.Fatalf("Times of RepositoryMock.GetNamespacePipelineReleaseByID mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmGetNamespacePipelineReleaseByID.expectedInvocations, n)
-	mmGetNamespacePipelineReleaseByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmGetNamespacePipelineReleaseByID
-}
-
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) invocationsDone() bool {
-	if len(mmGetNamespacePipelineReleaseByID.expectations) == 0 && mmGetNamespacePipelineReleaseByID.defaultExpectation == nil && mmGetNamespacePipelineReleaseByID.mock.funcGetNamespacePipelineReleaseByID == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmGetNamespacePipelineReleaseByID.mock.afterGetNamespacePipelineReleaseByIDCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmGetNamespacePipelineReleaseByID.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// GetNamespacePipelineReleaseByID implements mm_repository.Repository
-func (mmGetNamespacePipelineReleaseByID *RepositoryMock) GetNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool) (pp1 *datamodel.PipelineRelease, err error) {
-	mm_atomic.AddUint64(&mmGetNamespacePipelineReleaseByID.beforeGetNamespacePipelineReleaseByIDCounter, 1)
-	defer mm_atomic.AddUint64(&mmGetNamespacePipelineReleaseByID.afterGetNamespacePipelineReleaseByIDCounter, 1)
-
-	mmGetNamespacePipelineReleaseByID.t.Helper()
-
-	if mmGetNamespacePipelineReleaseByID.inspectFuncGetNamespacePipelineReleaseByID != nil {
-		mmGetNamespacePipelineReleaseByID.inspectFuncGetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, isBasicView)
-	}
-
-	mm_params := RepositoryMockGetNamespacePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, isBasicView}
-
-	// Record call args
-	mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.mutex.Lock()
-	mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.callArgs = append(mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.callArgs, &mm_params)
-	mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.mutex.Unlock()
-
-	for _, e := range mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.pp1, e.results.err
-		}
-	}
-
-	if mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.defaultExpectation.Counter, 1)
-		mm_want := mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.defaultExpectation.params
-		mm_want_ptrs := mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.defaultExpectation.paramPtrs
-
-		mm_got := RepositoryMockGetNamespacePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, isBasicView}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmGetNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.GetNamespacePipelineReleaseByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
-				mmGetNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.GetNamespacePipelineReleaseByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
-			}
-
-			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
-				mmGetNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.GetNamespacePipelineReleaseByID got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
-			}
-
-			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
-				mmGetNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.GetNamespacePipelineReleaseByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
-			}
-
-			if mm_want_ptrs.isBasicView != nil && !minimock.Equal(*mm_want_ptrs.isBasicView, mm_got.isBasicView) {
-				mmGetNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.GetNamespacePipelineReleaseByID got unexpected parameter isBasicView, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originIsBasicView, *mm_want_ptrs.isBasicView, mm_got.isBasicView, minimock.Diff(*mm_want_ptrs.isBasicView, mm_got.isBasicView))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmGetNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.GetNamespacePipelineReleaseByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmGetNamespacePipelineReleaseByID.GetNamespacePipelineReleaseByIDMock.defaultExpectation.results
-		if mm_results == nil {
-			mmGetNamespacePipelineReleaseByID.t.Fatal("No results are set for the RepositoryMock.GetNamespacePipelineReleaseByID")
-		}
-		return (*mm_results).pp1, (*mm_results).err
-	}
-	if mmGetNamespacePipelineReleaseByID.funcGetNamespacePipelineReleaseByID != nil {
-		return mmGetNamespacePipelineReleaseByID.funcGetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, isBasicView)
-	}
-	mmGetNamespacePipelineReleaseByID.t.Fatalf("Unexpected call to RepositoryMock.GetNamespacePipelineReleaseByID. %v %v %v %v %v", ctx, ownerPermalink, pipelineUID, id, isBasicView)
-	return
-}
-
-// GetNamespacePipelineReleaseByIDAfterCounter returns a count of finished RepositoryMock.GetNamespacePipelineReleaseByID invocations
-func (mmGetNamespacePipelineReleaseByID *RepositoryMock) GetNamespacePipelineReleaseByIDAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmGetNamespacePipelineReleaseByID.afterGetNamespacePipelineReleaseByIDCounter)
-}
-
-// GetNamespacePipelineReleaseByIDBeforeCounter returns a count of RepositoryMock.GetNamespacePipelineReleaseByID invocations
-func (mmGetNamespacePipelineReleaseByID *RepositoryMock) GetNamespacePipelineReleaseByIDBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmGetNamespacePipelineReleaseByID.beforeGetNamespacePipelineReleaseByIDCounter)
-}
-
-// Calls returns a list of arguments used in each call to RepositoryMock.GetNamespacePipelineReleaseByID.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmGetNamespacePipelineReleaseByID *mRepositoryMockGetNamespacePipelineReleaseByID) Calls() []*RepositoryMockGetNamespacePipelineReleaseByIDParams {
-	mmGetNamespacePipelineReleaseByID.mutex.RLock()
-
-	argCopy := make([]*RepositoryMockGetNamespacePipelineReleaseByIDParams, len(mmGetNamespacePipelineReleaseByID.callArgs))
-	copy(argCopy, mmGetNamespacePipelineReleaseByID.callArgs)
-
-	mmGetNamespacePipelineReleaseByID.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockGetNamespacePipelineReleaseByIDDone returns true if the count of the GetNamespacePipelineReleaseByID invocations corresponds
-// the number of defined expectations
-func (m *RepositoryMock) MinimockGetNamespacePipelineReleaseByIDDone() bool {
-	if m.GetNamespacePipelineReleaseByIDMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.GetNamespacePipelineReleaseByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.GetNamespacePipelineReleaseByIDMock.invocationsDone()
-}
-
-// MinimockGetNamespacePipelineReleaseByIDInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockGetNamespacePipelineReleaseByIDInspect() {
-	for _, e := range m.GetNamespacePipelineReleaseByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.GetNamespacePipelineReleaseByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
-		}
-	}
-
-	afterGetNamespacePipelineReleaseByIDCounter := mm_atomic.LoadUint64(&m.afterGetNamespacePipelineReleaseByIDCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.GetNamespacePipelineReleaseByIDMock.defaultExpectation != nil && afterGetNamespacePipelineReleaseByIDCounter < 1 {
-		if m.GetNamespacePipelineReleaseByIDMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to RepositoryMock.GetNamespacePipelineReleaseByID at\n%s", m.GetNamespacePipelineReleaseByIDMock.defaultExpectation.returnOrigin)
-		} else {
-			m.t.Errorf("Expected call to RepositoryMock.GetNamespacePipelineReleaseByID at\n%s with params: %#v", m.GetNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.origin, *m.GetNamespacePipelineReleaseByIDMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcGetNamespacePipelineReleaseByID != nil && afterGetNamespacePipelineReleaseByIDCounter < 1 {
-		m.t.Errorf("Expected call to RepositoryMock.GetNamespacePipelineReleaseByID at\n%s", m.funcGetNamespacePipelineReleaseByIDOrigin)
-	}
-
-	if !m.GetNamespacePipelineReleaseByIDMock.invocationsDone() && afterGetNamespacePipelineReleaseByIDCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.GetNamespacePipelineReleaseByID at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.GetNamespacePipelineReleaseByIDMock.expectedInvocations), m.GetNamespacePipelineReleaseByIDMock.expectedInvocationsOrigin, afterGetNamespacePipelineReleaseByIDCounter)
 	}
 }
 
@@ -10788,6 +9916,442 @@ func (m *RepositoryMock) MinimockGetPaginatedPipelineRunsWithPermissionsInspect(
 	}
 }
 
+type mRepositoryMockGetPipelineByID struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockGetPipelineByIDExpectation
+	expectations       []*RepositoryMockGetPipelineByIDExpectation
+
+	callArgs []*RepositoryMockGetPipelineByIDParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// RepositoryMockGetPipelineByIDExpectation specifies expectation struct of the Repository.GetPipelineByID
+type RepositoryMockGetPipelineByIDExpectation struct {
+	mock               *RepositoryMock
+	params             *RepositoryMockGetPipelineByIDParams
+	paramPtrs          *RepositoryMockGetPipelineByIDParamPtrs
+	expectationOrigins RepositoryMockGetPipelineByIDExpectationOrigins
+	results            *RepositoryMockGetPipelineByIDResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// RepositoryMockGetPipelineByIDParams contains parameters of the Repository.GetPipelineByID
+type RepositoryMockGetPipelineByIDParams struct {
+	ctx            context.Context
+	ownerPermalink string
+	id             string
+	isBasicView    bool
+	embedReleases  bool
+}
+
+// RepositoryMockGetPipelineByIDParamPtrs contains pointers to parameters of the Repository.GetPipelineByID
+type RepositoryMockGetPipelineByIDParamPtrs struct {
+	ctx            *context.Context
+	ownerPermalink *string
+	id             *string
+	isBasicView    *bool
+	embedReleases  *bool
+}
+
+// RepositoryMockGetPipelineByIDResults contains results of the Repository.GetPipelineByID
+type RepositoryMockGetPipelineByIDResults struct {
+	pp1 *datamodel.Pipeline
+	err error
+}
+
+// RepositoryMockGetPipelineByIDOrigins contains origins of expectations of the Repository.GetPipelineByID
+type RepositoryMockGetPipelineByIDExpectationOrigins struct {
+	origin               string
+	originCtx            string
+	originOwnerPermalink string
+	originId             string
+	originIsBasicView    string
+	originEmbedReleases  string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) Optional() *mRepositoryMockGetPipelineByID {
+	mmGetPipelineByID.optional = true
+	return mmGetPipelineByID
+}
+
+// Expect sets up expected params for Repository.GetPipelineByID
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) Expect(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) *mRepositoryMockGetPipelineByID {
+	if mmGetPipelineByID.mock.funcGetPipelineByID != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by Set")
+	}
+
+	if mmGetPipelineByID.defaultExpectation == nil {
+		mmGetPipelineByID.defaultExpectation = &RepositoryMockGetPipelineByIDExpectation{}
+	}
+
+	if mmGetPipelineByID.defaultExpectation.paramPtrs != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by ExpectParams functions")
+	}
+
+	mmGetPipelineByID.defaultExpectation.params = &RepositoryMockGetPipelineByIDParams{ctx, ownerPermalink, id, isBasicView, embedReleases}
+	mmGetPipelineByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetPipelineByID.expectations {
+		if minimock.Equal(e.params, mmGetPipelineByID.defaultExpectation.params) {
+			mmGetPipelineByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetPipelineByID.defaultExpectation.params)
+		}
+	}
+
+	return mmGetPipelineByID
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.GetPipelineByID
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockGetPipelineByID {
+	if mmGetPipelineByID.mock.funcGetPipelineByID != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by Set")
+	}
+
+	if mmGetPipelineByID.defaultExpectation == nil {
+		mmGetPipelineByID.defaultExpectation = &RepositoryMockGetPipelineByIDExpectation{}
+	}
+
+	if mmGetPipelineByID.defaultExpectation.params != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by Expect")
+	}
+
+	if mmGetPipelineByID.defaultExpectation.paramPtrs == nil {
+		mmGetPipelineByID.defaultExpectation.paramPtrs = &RepositoryMockGetPipelineByIDParamPtrs{}
+	}
+	mmGetPipelineByID.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetPipelineByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetPipelineByID
+}
+
+// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.GetPipelineByID
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockGetPipelineByID {
+	if mmGetPipelineByID.mock.funcGetPipelineByID != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by Set")
+	}
+
+	if mmGetPipelineByID.defaultExpectation == nil {
+		mmGetPipelineByID.defaultExpectation = &RepositoryMockGetPipelineByIDExpectation{}
+	}
+
+	if mmGetPipelineByID.defaultExpectation.params != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by Expect")
+	}
+
+	if mmGetPipelineByID.defaultExpectation.paramPtrs == nil {
+		mmGetPipelineByID.defaultExpectation.paramPtrs = &RepositoryMockGetPipelineByIDParamPtrs{}
+	}
+	mmGetPipelineByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
+	mmGetPipelineByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
+
+	return mmGetPipelineByID
+}
+
+// ExpectIdParam3 sets up expected param id for Repository.GetPipelineByID
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) ExpectIdParam3(id string) *mRepositoryMockGetPipelineByID {
+	if mmGetPipelineByID.mock.funcGetPipelineByID != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by Set")
+	}
+
+	if mmGetPipelineByID.defaultExpectation == nil {
+		mmGetPipelineByID.defaultExpectation = &RepositoryMockGetPipelineByIDExpectation{}
+	}
+
+	if mmGetPipelineByID.defaultExpectation.params != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by Expect")
+	}
+
+	if mmGetPipelineByID.defaultExpectation.paramPtrs == nil {
+		mmGetPipelineByID.defaultExpectation.paramPtrs = &RepositoryMockGetPipelineByIDParamPtrs{}
+	}
+	mmGetPipelineByID.defaultExpectation.paramPtrs.id = &id
+	mmGetPipelineByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
+
+	return mmGetPipelineByID
+}
+
+// ExpectIsBasicViewParam4 sets up expected param isBasicView for Repository.GetPipelineByID
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) ExpectIsBasicViewParam4(isBasicView bool) *mRepositoryMockGetPipelineByID {
+	if mmGetPipelineByID.mock.funcGetPipelineByID != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by Set")
+	}
+
+	if mmGetPipelineByID.defaultExpectation == nil {
+		mmGetPipelineByID.defaultExpectation = &RepositoryMockGetPipelineByIDExpectation{}
+	}
+
+	if mmGetPipelineByID.defaultExpectation.params != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by Expect")
+	}
+
+	if mmGetPipelineByID.defaultExpectation.paramPtrs == nil {
+		mmGetPipelineByID.defaultExpectation.paramPtrs = &RepositoryMockGetPipelineByIDParamPtrs{}
+	}
+	mmGetPipelineByID.defaultExpectation.paramPtrs.isBasicView = &isBasicView
+	mmGetPipelineByID.defaultExpectation.expectationOrigins.originIsBasicView = minimock.CallerInfo(1)
+
+	return mmGetPipelineByID
+}
+
+// ExpectEmbedReleasesParam5 sets up expected param embedReleases for Repository.GetPipelineByID
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) ExpectEmbedReleasesParam5(embedReleases bool) *mRepositoryMockGetPipelineByID {
+	if mmGetPipelineByID.mock.funcGetPipelineByID != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by Set")
+	}
+
+	if mmGetPipelineByID.defaultExpectation == nil {
+		mmGetPipelineByID.defaultExpectation = &RepositoryMockGetPipelineByIDExpectation{}
+	}
+
+	if mmGetPipelineByID.defaultExpectation.params != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by Expect")
+	}
+
+	if mmGetPipelineByID.defaultExpectation.paramPtrs == nil {
+		mmGetPipelineByID.defaultExpectation.paramPtrs = &RepositoryMockGetPipelineByIDParamPtrs{}
+	}
+	mmGetPipelineByID.defaultExpectation.paramPtrs.embedReleases = &embedReleases
+	mmGetPipelineByID.defaultExpectation.expectationOrigins.originEmbedReleases = minimock.CallerInfo(1)
+
+	return mmGetPipelineByID
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.GetPipelineByID
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) Inspect(f func(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool)) *mRepositoryMockGetPipelineByID {
+	if mmGetPipelineByID.mock.inspectFuncGetPipelineByID != nil {
+		mmGetPipelineByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.GetPipelineByID")
+	}
+
+	mmGetPipelineByID.mock.inspectFuncGetPipelineByID = f
+
+	return mmGetPipelineByID
+}
+
+// Return sets up results that will be returned by Repository.GetPipelineByID
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) Return(pp1 *datamodel.Pipeline, err error) *RepositoryMock {
+	if mmGetPipelineByID.mock.funcGetPipelineByID != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by Set")
+	}
+
+	if mmGetPipelineByID.defaultExpectation == nil {
+		mmGetPipelineByID.defaultExpectation = &RepositoryMockGetPipelineByIDExpectation{mock: mmGetPipelineByID.mock}
+	}
+	mmGetPipelineByID.defaultExpectation.results = &RepositoryMockGetPipelineByIDResults{pp1, err}
+	mmGetPipelineByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetPipelineByID.mock
+}
+
+// Set uses given function f to mock the Repository.GetPipelineByID method
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) Set(f func(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) (pp1 *datamodel.Pipeline, err error)) *RepositoryMock {
+	if mmGetPipelineByID.defaultExpectation != nil {
+		mmGetPipelineByID.mock.t.Fatalf("Default expectation is already set for the Repository.GetPipelineByID method")
+	}
+
+	if len(mmGetPipelineByID.expectations) > 0 {
+		mmGetPipelineByID.mock.t.Fatalf("Some expectations are already set for the Repository.GetPipelineByID method")
+	}
+
+	mmGetPipelineByID.mock.funcGetPipelineByID = f
+	mmGetPipelineByID.mock.funcGetPipelineByIDOrigin = minimock.CallerInfo(1)
+	return mmGetPipelineByID.mock
+}
+
+// When sets expectation for the Repository.GetPipelineByID which will trigger the result defined by the following
+// Then helper
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) When(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) *RepositoryMockGetPipelineByIDExpectation {
+	if mmGetPipelineByID.mock.funcGetPipelineByID != nil {
+		mmGetPipelineByID.mock.t.Fatalf("RepositoryMock.GetPipelineByID mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockGetPipelineByIDExpectation{
+		mock:               mmGetPipelineByID.mock,
+		params:             &RepositoryMockGetPipelineByIDParams{ctx, ownerPermalink, id, isBasicView, embedReleases},
+		expectationOrigins: RepositoryMockGetPipelineByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetPipelineByID.expectations = append(mmGetPipelineByID.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.GetPipelineByID return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockGetPipelineByIDExpectation) Then(pp1 *datamodel.Pipeline, err error) *RepositoryMock {
+	e.results = &RepositoryMockGetPipelineByIDResults{pp1, err}
+	return e.mock
+}
+
+// Times sets number of times Repository.GetPipelineByID should be invoked
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) Times(n uint64) *mRepositoryMockGetPipelineByID {
+	if n == 0 {
+		mmGetPipelineByID.mock.t.Fatalf("Times of RepositoryMock.GetPipelineByID mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetPipelineByID.expectedInvocations, n)
+	mmGetPipelineByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetPipelineByID
+}
+
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) invocationsDone() bool {
+	if len(mmGetPipelineByID.expectations) == 0 && mmGetPipelineByID.defaultExpectation == nil && mmGetPipelineByID.mock.funcGetPipelineByID == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetPipelineByID.mock.afterGetPipelineByIDCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetPipelineByID.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetPipelineByID implements mm_repository.Repository
+func (mmGetPipelineByID *RepositoryMock) GetPipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) (pp1 *datamodel.Pipeline, err error) {
+	mm_atomic.AddUint64(&mmGetPipelineByID.beforeGetPipelineByIDCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetPipelineByID.afterGetPipelineByIDCounter, 1)
+
+	mmGetPipelineByID.t.Helper()
+
+	if mmGetPipelineByID.inspectFuncGetPipelineByID != nil {
+		mmGetPipelineByID.inspectFuncGetPipelineByID(ctx, ownerPermalink, id, isBasicView, embedReleases)
+	}
+
+	mm_params := RepositoryMockGetPipelineByIDParams{ctx, ownerPermalink, id, isBasicView, embedReleases}
+
+	// Record call args
+	mmGetPipelineByID.GetPipelineByIDMock.mutex.Lock()
+	mmGetPipelineByID.GetPipelineByIDMock.callArgs = append(mmGetPipelineByID.GetPipelineByIDMock.callArgs, &mm_params)
+	mmGetPipelineByID.GetPipelineByIDMock.mutex.Unlock()
+
+	for _, e := range mmGetPipelineByID.GetPipelineByIDMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.pp1, e.results.err
+		}
+	}
+
+	if mmGetPipelineByID.GetPipelineByIDMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetPipelineByID.GetPipelineByIDMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetPipelineByID.GetPipelineByIDMock.defaultExpectation.params
+		mm_want_ptrs := mmGetPipelineByID.GetPipelineByIDMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockGetPipelineByIDParams{ctx, ownerPermalink, id, isBasicView, embedReleases}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetPipelineByID.t.Errorf("RepositoryMock.GetPipelineByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetPipelineByID.GetPipelineByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
+				mmGetPipelineByID.t.Errorf("RepositoryMock.GetPipelineByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetPipelineByID.GetPipelineByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
+			}
+
+			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
+				mmGetPipelineByID.t.Errorf("RepositoryMock.GetPipelineByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetPipelineByID.GetPipelineByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			}
+
+			if mm_want_ptrs.isBasicView != nil && !minimock.Equal(*mm_want_ptrs.isBasicView, mm_got.isBasicView) {
+				mmGetPipelineByID.t.Errorf("RepositoryMock.GetPipelineByID got unexpected parameter isBasicView, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetPipelineByID.GetPipelineByIDMock.defaultExpectation.expectationOrigins.originIsBasicView, *mm_want_ptrs.isBasicView, mm_got.isBasicView, minimock.Diff(*mm_want_ptrs.isBasicView, mm_got.isBasicView))
+			}
+
+			if mm_want_ptrs.embedReleases != nil && !minimock.Equal(*mm_want_ptrs.embedReleases, mm_got.embedReleases) {
+				mmGetPipelineByID.t.Errorf("RepositoryMock.GetPipelineByID got unexpected parameter embedReleases, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetPipelineByID.GetPipelineByIDMock.defaultExpectation.expectationOrigins.originEmbedReleases, *mm_want_ptrs.embedReleases, mm_got.embedReleases, minimock.Diff(*mm_want_ptrs.embedReleases, mm_got.embedReleases))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetPipelineByID.t.Errorf("RepositoryMock.GetPipelineByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetPipelineByID.GetPipelineByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetPipelineByID.GetPipelineByIDMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetPipelineByID.t.Fatal("No results are set for the RepositoryMock.GetPipelineByID")
+		}
+		return (*mm_results).pp1, (*mm_results).err
+	}
+	if mmGetPipelineByID.funcGetPipelineByID != nil {
+		return mmGetPipelineByID.funcGetPipelineByID(ctx, ownerPermalink, id, isBasicView, embedReleases)
+	}
+	mmGetPipelineByID.t.Fatalf("Unexpected call to RepositoryMock.GetPipelineByID. %v %v %v %v %v", ctx, ownerPermalink, id, isBasicView, embedReleases)
+	return
+}
+
+// GetPipelineByIDAfterCounter returns a count of finished RepositoryMock.GetPipelineByID invocations
+func (mmGetPipelineByID *RepositoryMock) GetPipelineByIDAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetPipelineByID.afterGetPipelineByIDCounter)
+}
+
+// GetPipelineByIDBeforeCounter returns a count of RepositoryMock.GetPipelineByID invocations
+func (mmGetPipelineByID *RepositoryMock) GetPipelineByIDBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetPipelineByID.beforeGetPipelineByIDCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.GetPipelineByID.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetPipelineByID *mRepositoryMockGetPipelineByID) Calls() []*RepositoryMockGetPipelineByIDParams {
+	mmGetPipelineByID.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockGetPipelineByIDParams, len(mmGetPipelineByID.callArgs))
+	copy(argCopy, mmGetPipelineByID.callArgs)
+
+	mmGetPipelineByID.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetPipelineByIDDone returns true if the count of the GetPipelineByID invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockGetPipelineByIDDone() bool {
+	if m.GetPipelineByIDMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetPipelineByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetPipelineByIDMock.invocationsDone()
+}
+
+// MinimockGetPipelineByIDInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockGetPipelineByIDInspect() {
+	for _, e := range m.GetPipelineByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.GetPipelineByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetPipelineByIDCounter := mm_atomic.LoadUint64(&m.afterGetPipelineByIDCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetPipelineByIDMock.defaultExpectation != nil && afterGetPipelineByIDCounter < 1 {
+		if m.GetPipelineByIDMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to RepositoryMock.GetPipelineByID at\n%s", m.GetPipelineByIDMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.GetPipelineByID at\n%s with params: %#v", m.GetPipelineByIDMock.defaultExpectation.expectationOrigins.origin, *m.GetPipelineByIDMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetPipelineByID != nil && afterGetPipelineByIDCounter < 1 {
+		m.t.Errorf("Expected call to RepositoryMock.GetPipelineByID at\n%s", m.funcGetPipelineByIDOrigin)
+	}
+
+	if !m.GetPipelineByIDMock.invocationsDone() && afterGetPipelineByIDCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.GetPipelineByID at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetPipelineByIDMock.expectedInvocations), m.GetPipelineByIDMock.expectedInvocationsOrigin, afterGetPipelineByIDCounter)
+	}
+}
+
 type mRepositoryMockGetPipelineByIDAdmin struct {
 	optional           bool
 	mock               *RepositoryMock
@@ -11595,6 +11159,442 @@ func (m *RepositoryMock) MinimockGetPipelineByUIDInspect() {
 	if !m.GetPipelineByUIDMock.invocationsDone() && afterGetPipelineByUIDCounter > 0 {
 		m.t.Errorf("Expected %d calls to RepositoryMock.GetPipelineByUID at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.GetPipelineByUIDMock.expectedInvocations), m.GetPipelineByUIDMock.expectedInvocationsOrigin, afterGetPipelineByUIDCounter)
+	}
+}
+
+type mRepositoryMockGetPipelineReleaseByID struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockGetPipelineReleaseByIDExpectation
+	expectations       []*RepositoryMockGetPipelineReleaseByIDExpectation
+
+	callArgs []*RepositoryMockGetPipelineReleaseByIDParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// RepositoryMockGetPipelineReleaseByIDExpectation specifies expectation struct of the Repository.GetPipelineReleaseByID
+type RepositoryMockGetPipelineReleaseByIDExpectation struct {
+	mock               *RepositoryMock
+	params             *RepositoryMockGetPipelineReleaseByIDParams
+	paramPtrs          *RepositoryMockGetPipelineReleaseByIDParamPtrs
+	expectationOrigins RepositoryMockGetPipelineReleaseByIDExpectationOrigins
+	results            *RepositoryMockGetPipelineReleaseByIDResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// RepositoryMockGetPipelineReleaseByIDParams contains parameters of the Repository.GetPipelineReleaseByID
+type RepositoryMockGetPipelineReleaseByIDParams struct {
+	ctx            context.Context
+	ownerPermalink string
+	pipelineUID    uuid.UUID
+	id             string
+	isBasicView    bool
+}
+
+// RepositoryMockGetPipelineReleaseByIDParamPtrs contains pointers to parameters of the Repository.GetPipelineReleaseByID
+type RepositoryMockGetPipelineReleaseByIDParamPtrs struct {
+	ctx            *context.Context
+	ownerPermalink *string
+	pipelineUID    *uuid.UUID
+	id             *string
+	isBasicView    *bool
+}
+
+// RepositoryMockGetPipelineReleaseByIDResults contains results of the Repository.GetPipelineReleaseByID
+type RepositoryMockGetPipelineReleaseByIDResults struct {
+	pp1 *datamodel.PipelineRelease
+	err error
+}
+
+// RepositoryMockGetPipelineReleaseByIDOrigins contains origins of expectations of the Repository.GetPipelineReleaseByID
+type RepositoryMockGetPipelineReleaseByIDExpectationOrigins struct {
+	origin               string
+	originCtx            string
+	originOwnerPermalink string
+	originPipelineUID    string
+	originId             string
+	originIsBasicView    string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) Optional() *mRepositoryMockGetPipelineReleaseByID {
+	mmGetPipelineReleaseByID.optional = true
+	return mmGetPipelineReleaseByID
+}
+
+// Expect sets up expected params for Repository.GetPipelineReleaseByID
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool) *mRepositoryMockGetPipelineReleaseByID {
+	if mmGetPipelineReleaseByID.mock.funcGetPipelineReleaseByID != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation == nil {
+		mmGetPipelineReleaseByID.defaultExpectation = &RepositoryMockGetPipelineReleaseByIDExpectation{}
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation.paramPtrs != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by ExpectParams functions")
+	}
+
+	mmGetPipelineReleaseByID.defaultExpectation.params = &RepositoryMockGetPipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, isBasicView}
+	mmGetPipelineReleaseByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetPipelineReleaseByID.expectations {
+		if minimock.Equal(e.params, mmGetPipelineReleaseByID.defaultExpectation.params) {
+			mmGetPipelineReleaseByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetPipelineReleaseByID.defaultExpectation.params)
+		}
+	}
+
+	return mmGetPipelineReleaseByID
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.GetPipelineReleaseByID
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockGetPipelineReleaseByID {
+	if mmGetPipelineReleaseByID.mock.funcGetPipelineReleaseByID != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation == nil {
+		mmGetPipelineReleaseByID.defaultExpectation = &RepositoryMockGetPipelineReleaseByIDExpectation{}
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation.params != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmGetPipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockGetPipelineReleaseByIDParamPtrs{}
+	}
+	mmGetPipelineReleaseByID.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetPipelineReleaseByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetPipelineReleaseByID
+}
+
+// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.GetPipelineReleaseByID
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockGetPipelineReleaseByID {
+	if mmGetPipelineReleaseByID.mock.funcGetPipelineReleaseByID != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation == nil {
+		mmGetPipelineReleaseByID.defaultExpectation = &RepositoryMockGetPipelineReleaseByIDExpectation{}
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation.params != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmGetPipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockGetPipelineReleaseByIDParamPtrs{}
+	}
+	mmGetPipelineReleaseByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
+	mmGetPipelineReleaseByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
+
+	return mmGetPipelineReleaseByID
+}
+
+// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.GetPipelineReleaseByID
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockGetPipelineReleaseByID {
+	if mmGetPipelineReleaseByID.mock.funcGetPipelineReleaseByID != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation == nil {
+		mmGetPipelineReleaseByID.defaultExpectation = &RepositoryMockGetPipelineReleaseByIDExpectation{}
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation.params != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmGetPipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockGetPipelineReleaseByIDParamPtrs{}
+	}
+	mmGetPipelineReleaseByID.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
+	mmGetPipelineReleaseByID.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
+
+	return mmGetPipelineReleaseByID
+}
+
+// ExpectIdParam4 sets up expected param id for Repository.GetPipelineReleaseByID
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) ExpectIdParam4(id string) *mRepositoryMockGetPipelineReleaseByID {
+	if mmGetPipelineReleaseByID.mock.funcGetPipelineReleaseByID != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation == nil {
+		mmGetPipelineReleaseByID.defaultExpectation = &RepositoryMockGetPipelineReleaseByIDExpectation{}
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation.params != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmGetPipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockGetPipelineReleaseByIDParamPtrs{}
+	}
+	mmGetPipelineReleaseByID.defaultExpectation.paramPtrs.id = &id
+	mmGetPipelineReleaseByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
+
+	return mmGetPipelineReleaseByID
+}
+
+// ExpectIsBasicViewParam5 sets up expected param isBasicView for Repository.GetPipelineReleaseByID
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) ExpectIsBasicViewParam5(isBasicView bool) *mRepositoryMockGetPipelineReleaseByID {
+	if mmGetPipelineReleaseByID.mock.funcGetPipelineReleaseByID != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation == nil {
+		mmGetPipelineReleaseByID.defaultExpectation = &RepositoryMockGetPipelineReleaseByIDExpectation{}
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation.params != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmGetPipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockGetPipelineReleaseByIDParamPtrs{}
+	}
+	mmGetPipelineReleaseByID.defaultExpectation.paramPtrs.isBasicView = &isBasicView
+	mmGetPipelineReleaseByID.defaultExpectation.expectationOrigins.originIsBasicView = minimock.CallerInfo(1)
+
+	return mmGetPipelineReleaseByID
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.GetPipelineReleaseByID
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool)) *mRepositoryMockGetPipelineReleaseByID {
+	if mmGetPipelineReleaseByID.mock.inspectFuncGetPipelineReleaseByID != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.GetPipelineReleaseByID")
+	}
+
+	mmGetPipelineReleaseByID.mock.inspectFuncGetPipelineReleaseByID = f
+
+	return mmGetPipelineReleaseByID
+}
+
+// Return sets up results that will be returned by Repository.GetPipelineReleaseByID
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) Return(pp1 *datamodel.PipelineRelease, err error) *RepositoryMock {
+	if mmGetPipelineReleaseByID.mock.funcGetPipelineReleaseByID != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmGetPipelineReleaseByID.defaultExpectation == nil {
+		mmGetPipelineReleaseByID.defaultExpectation = &RepositoryMockGetPipelineReleaseByIDExpectation{mock: mmGetPipelineReleaseByID.mock}
+	}
+	mmGetPipelineReleaseByID.defaultExpectation.results = &RepositoryMockGetPipelineReleaseByIDResults{pp1, err}
+	mmGetPipelineReleaseByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetPipelineReleaseByID.mock
+}
+
+// Set uses given function f to mock the Repository.GetPipelineReleaseByID method
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool) (pp1 *datamodel.PipelineRelease, err error)) *RepositoryMock {
+	if mmGetPipelineReleaseByID.defaultExpectation != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("Default expectation is already set for the Repository.GetPipelineReleaseByID method")
+	}
+
+	if len(mmGetPipelineReleaseByID.expectations) > 0 {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("Some expectations are already set for the Repository.GetPipelineReleaseByID method")
+	}
+
+	mmGetPipelineReleaseByID.mock.funcGetPipelineReleaseByID = f
+	mmGetPipelineReleaseByID.mock.funcGetPipelineReleaseByIDOrigin = minimock.CallerInfo(1)
+	return mmGetPipelineReleaseByID.mock
+}
+
+// When sets expectation for the Repository.GetPipelineReleaseByID which will trigger the result defined by the following
+// Then helper
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool) *RepositoryMockGetPipelineReleaseByIDExpectation {
+	if mmGetPipelineReleaseByID.mock.funcGetPipelineReleaseByID != nil {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("RepositoryMock.GetPipelineReleaseByID mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockGetPipelineReleaseByIDExpectation{
+		mock:               mmGetPipelineReleaseByID.mock,
+		params:             &RepositoryMockGetPipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, isBasicView},
+		expectationOrigins: RepositoryMockGetPipelineReleaseByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetPipelineReleaseByID.expectations = append(mmGetPipelineReleaseByID.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.GetPipelineReleaseByID return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockGetPipelineReleaseByIDExpectation) Then(pp1 *datamodel.PipelineRelease, err error) *RepositoryMock {
+	e.results = &RepositoryMockGetPipelineReleaseByIDResults{pp1, err}
+	return e.mock
+}
+
+// Times sets number of times Repository.GetPipelineReleaseByID should be invoked
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) Times(n uint64) *mRepositoryMockGetPipelineReleaseByID {
+	if n == 0 {
+		mmGetPipelineReleaseByID.mock.t.Fatalf("Times of RepositoryMock.GetPipelineReleaseByID mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetPipelineReleaseByID.expectedInvocations, n)
+	mmGetPipelineReleaseByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetPipelineReleaseByID
+}
+
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) invocationsDone() bool {
+	if len(mmGetPipelineReleaseByID.expectations) == 0 && mmGetPipelineReleaseByID.defaultExpectation == nil && mmGetPipelineReleaseByID.mock.funcGetPipelineReleaseByID == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetPipelineReleaseByID.mock.afterGetPipelineReleaseByIDCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetPipelineReleaseByID.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetPipelineReleaseByID implements mm_repository.Repository
+func (mmGetPipelineReleaseByID *RepositoryMock) GetPipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool) (pp1 *datamodel.PipelineRelease, err error) {
+	mm_atomic.AddUint64(&mmGetPipelineReleaseByID.beforeGetPipelineReleaseByIDCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetPipelineReleaseByID.afterGetPipelineReleaseByIDCounter, 1)
+
+	mmGetPipelineReleaseByID.t.Helper()
+
+	if mmGetPipelineReleaseByID.inspectFuncGetPipelineReleaseByID != nil {
+		mmGetPipelineReleaseByID.inspectFuncGetPipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, isBasicView)
+	}
+
+	mm_params := RepositoryMockGetPipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, isBasicView}
+
+	// Record call args
+	mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.mutex.Lock()
+	mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.callArgs = append(mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.callArgs, &mm_params)
+	mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.mutex.Unlock()
+
+	for _, e := range mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.pp1, e.results.err
+		}
+	}
+
+	if mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.defaultExpectation.params
+		mm_want_ptrs := mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockGetPipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, isBasicView}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetPipelineReleaseByID.t.Errorf("RepositoryMock.GetPipelineReleaseByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
+				mmGetPipelineReleaseByID.t.Errorf("RepositoryMock.GetPipelineReleaseByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
+			}
+
+			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
+				mmGetPipelineReleaseByID.t.Errorf("RepositoryMock.GetPipelineReleaseByID got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
+			}
+
+			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
+				mmGetPipelineReleaseByID.t.Errorf("RepositoryMock.GetPipelineReleaseByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			}
+
+			if mm_want_ptrs.isBasicView != nil && !minimock.Equal(*mm_want_ptrs.isBasicView, mm_got.isBasicView) {
+				mmGetPipelineReleaseByID.t.Errorf("RepositoryMock.GetPipelineReleaseByID got unexpected parameter isBasicView, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originIsBasicView, *mm_want_ptrs.isBasicView, mm_got.isBasicView, minimock.Diff(*mm_want_ptrs.isBasicView, mm_got.isBasicView))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetPipelineReleaseByID.t.Errorf("RepositoryMock.GetPipelineReleaseByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetPipelineReleaseByID.GetPipelineReleaseByIDMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetPipelineReleaseByID.t.Fatal("No results are set for the RepositoryMock.GetPipelineReleaseByID")
+		}
+		return (*mm_results).pp1, (*mm_results).err
+	}
+	if mmGetPipelineReleaseByID.funcGetPipelineReleaseByID != nil {
+		return mmGetPipelineReleaseByID.funcGetPipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, isBasicView)
+	}
+	mmGetPipelineReleaseByID.t.Fatalf("Unexpected call to RepositoryMock.GetPipelineReleaseByID. %v %v %v %v %v", ctx, ownerPermalink, pipelineUID, id, isBasicView)
+	return
+}
+
+// GetPipelineReleaseByIDAfterCounter returns a count of finished RepositoryMock.GetPipelineReleaseByID invocations
+func (mmGetPipelineReleaseByID *RepositoryMock) GetPipelineReleaseByIDAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetPipelineReleaseByID.afterGetPipelineReleaseByIDCounter)
+}
+
+// GetPipelineReleaseByIDBeforeCounter returns a count of RepositoryMock.GetPipelineReleaseByID invocations
+func (mmGetPipelineReleaseByID *RepositoryMock) GetPipelineReleaseByIDBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetPipelineReleaseByID.beforeGetPipelineReleaseByIDCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.GetPipelineReleaseByID.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetPipelineReleaseByID *mRepositoryMockGetPipelineReleaseByID) Calls() []*RepositoryMockGetPipelineReleaseByIDParams {
+	mmGetPipelineReleaseByID.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockGetPipelineReleaseByIDParams, len(mmGetPipelineReleaseByID.callArgs))
+	copy(argCopy, mmGetPipelineReleaseByID.callArgs)
+
+	mmGetPipelineReleaseByID.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetPipelineReleaseByIDDone returns true if the count of the GetPipelineReleaseByID invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockGetPipelineReleaseByIDDone() bool {
+	if m.GetPipelineReleaseByIDMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetPipelineReleaseByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetPipelineReleaseByIDMock.invocationsDone()
+}
+
+// MinimockGetPipelineReleaseByIDInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockGetPipelineReleaseByIDInspect() {
+	for _, e := range m.GetPipelineReleaseByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.GetPipelineReleaseByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetPipelineReleaseByIDCounter := mm_atomic.LoadUint64(&m.afterGetPipelineReleaseByIDCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetPipelineReleaseByIDMock.defaultExpectation != nil && afterGetPipelineReleaseByIDCounter < 1 {
+		if m.GetPipelineReleaseByIDMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to RepositoryMock.GetPipelineReleaseByID at\n%s", m.GetPipelineReleaseByIDMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.GetPipelineReleaseByID at\n%s with params: %#v", m.GetPipelineReleaseByIDMock.defaultExpectation.expectationOrigins.origin, *m.GetPipelineReleaseByIDMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetPipelineReleaseByID != nil && afterGetPipelineReleaseByIDCounter < 1 {
+		m.t.Errorf("Expected call to RepositoryMock.GetPipelineReleaseByID at\n%s", m.funcGetPipelineReleaseByIDOrigin)
+	}
+
+	if !m.GetPipelineReleaseByIDMock.invocationsDone() && afterGetPipelineReleaseByIDCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.GetPipelineReleaseByID at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetPipelineReleaseByIDMock.expectedInvocations), m.GetPipelineReleaseByIDMock.expectedInvocationsOrigin, afterGetPipelineReleaseByIDCounter)
 	}
 }
 
@@ -13657,1161 +13657,6 @@ func (m *RepositoryMock) MinimockListNamespaceConnectionsInspect() {
 	}
 }
 
-type mRepositoryMockListNamespacePipelineReleases struct {
-	optional           bool
-	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockListNamespacePipelineReleasesExpectation
-	expectations       []*RepositoryMockListNamespacePipelineReleasesExpectation
-
-	callArgs []*RepositoryMockListNamespacePipelineReleasesParams
-	mutex    sync.RWMutex
-
-	expectedInvocations       uint64
-	expectedInvocationsOrigin string
-}
-
-// RepositoryMockListNamespacePipelineReleasesExpectation specifies expectation struct of the Repository.ListNamespacePipelineReleases
-type RepositoryMockListNamespacePipelineReleasesExpectation struct {
-	mock               *RepositoryMock
-	params             *RepositoryMockListNamespacePipelineReleasesParams
-	paramPtrs          *RepositoryMockListNamespacePipelineReleasesParamPtrs
-	expectationOrigins RepositoryMockListNamespacePipelineReleasesExpectationOrigins
-	results            *RepositoryMockListNamespacePipelineReleasesResults
-	returnOrigin       string
-	Counter            uint64
-}
-
-// RepositoryMockListNamespacePipelineReleasesParams contains parameters of the Repository.ListNamespacePipelineReleases
-type RepositoryMockListNamespacePipelineReleasesParams struct {
-	ctx            context.Context
-	ownerPermalink string
-	pipelineUID    uuid.UUID
-	pageSize       int64
-	pageToken      string
-	isBasicView    bool
-	filter         filtering.Filter
-	showDeleted    bool
-	returnCount    bool
-}
-
-// RepositoryMockListNamespacePipelineReleasesParamPtrs contains pointers to parameters of the Repository.ListNamespacePipelineReleases
-type RepositoryMockListNamespacePipelineReleasesParamPtrs struct {
-	ctx            *context.Context
-	ownerPermalink *string
-	pipelineUID    *uuid.UUID
-	pageSize       *int64
-	pageToken      *string
-	isBasicView    *bool
-	filter         *filtering.Filter
-	showDeleted    *bool
-	returnCount    *bool
-}
-
-// RepositoryMockListNamespacePipelineReleasesResults contains results of the Repository.ListNamespacePipelineReleases
-type RepositoryMockListNamespacePipelineReleasesResults struct {
-	ppa1 []*datamodel.PipelineRelease
-	i1   int64
-	s1   string
-	err  error
-}
-
-// RepositoryMockListNamespacePipelineReleasesOrigins contains origins of expectations of the Repository.ListNamespacePipelineReleases
-type RepositoryMockListNamespacePipelineReleasesExpectationOrigins struct {
-	origin               string
-	originCtx            string
-	originOwnerPermalink string
-	originPipelineUID    string
-	originPageSize       string
-	originPageToken      string
-	originIsBasicView    string
-	originFilter         string
-	originShowDeleted    string
-	originReturnCount    string
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) Optional() *mRepositoryMockListNamespacePipelineReleases {
-	mmListNamespacePipelineReleases.optional = true
-	return mmListNamespacePipelineReleases
-}
-
-// Expect sets up expected params for Repository.ListNamespacePipelineReleases
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) *mRepositoryMockListNamespacePipelineReleases {
-	if mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Set")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation == nil {
-		mmListNamespacePipelineReleases.defaultExpectation = &RepositoryMockListNamespacePipelineReleasesExpectation{}
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.paramPtrs != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by ExpectParams functions")
-	}
-
-	mmListNamespacePipelineReleases.defaultExpectation.params = &RepositoryMockListNamespacePipelineReleasesParams{ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount}
-	mmListNamespacePipelineReleases.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmListNamespacePipelineReleases.expectations {
-		if minimock.Equal(e.params, mmListNamespacePipelineReleases.defaultExpectation.params) {
-			mmListNamespacePipelineReleases.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListNamespacePipelineReleases.defaultExpectation.params)
-		}
-	}
-
-	return mmListNamespacePipelineReleases
-}
-
-// ExpectCtxParam1 sets up expected param ctx for Repository.ListNamespacePipelineReleases
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) ExpectCtxParam1(ctx context.Context) *mRepositoryMockListNamespacePipelineReleases {
-	if mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Set")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation == nil {
-		mmListNamespacePipelineReleases.defaultExpectation = &RepositoryMockListNamespacePipelineReleasesExpectation{}
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.params != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelineReleasesParamPtrs{}
-	}
-	mmListNamespacePipelineReleases.defaultExpectation.paramPtrs.ctx = &ctx
-	mmListNamespacePipelineReleases.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelineReleases
-}
-
-// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.ListNamespacePipelineReleases
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockListNamespacePipelineReleases {
-	if mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Set")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation == nil {
-		mmListNamespacePipelineReleases.defaultExpectation = &RepositoryMockListNamespacePipelineReleasesExpectation{}
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.params != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelineReleasesParamPtrs{}
-	}
-	mmListNamespacePipelineReleases.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
-	mmListNamespacePipelineReleases.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelineReleases
-}
-
-// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.ListNamespacePipelineReleases
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockListNamespacePipelineReleases {
-	if mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Set")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation == nil {
-		mmListNamespacePipelineReleases.defaultExpectation = &RepositoryMockListNamespacePipelineReleasesExpectation{}
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.params != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelineReleasesParamPtrs{}
-	}
-	mmListNamespacePipelineReleases.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
-	mmListNamespacePipelineReleases.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelineReleases
-}
-
-// ExpectPageSizeParam4 sets up expected param pageSize for Repository.ListNamespacePipelineReleases
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) ExpectPageSizeParam4(pageSize int64) *mRepositoryMockListNamespacePipelineReleases {
-	if mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Set")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation == nil {
-		mmListNamespacePipelineReleases.defaultExpectation = &RepositoryMockListNamespacePipelineReleasesExpectation{}
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.params != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelineReleasesParamPtrs{}
-	}
-	mmListNamespacePipelineReleases.defaultExpectation.paramPtrs.pageSize = &pageSize
-	mmListNamespacePipelineReleases.defaultExpectation.expectationOrigins.originPageSize = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelineReleases
-}
-
-// ExpectPageTokenParam5 sets up expected param pageToken for Repository.ListNamespacePipelineReleases
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) ExpectPageTokenParam5(pageToken string) *mRepositoryMockListNamespacePipelineReleases {
-	if mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Set")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation == nil {
-		mmListNamespacePipelineReleases.defaultExpectation = &RepositoryMockListNamespacePipelineReleasesExpectation{}
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.params != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelineReleasesParamPtrs{}
-	}
-	mmListNamespacePipelineReleases.defaultExpectation.paramPtrs.pageToken = &pageToken
-	mmListNamespacePipelineReleases.defaultExpectation.expectationOrigins.originPageToken = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelineReleases
-}
-
-// ExpectIsBasicViewParam6 sets up expected param isBasicView for Repository.ListNamespacePipelineReleases
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) ExpectIsBasicViewParam6(isBasicView bool) *mRepositoryMockListNamespacePipelineReleases {
-	if mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Set")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation == nil {
-		mmListNamespacePipelineReleases.defaultExpectation = &RepositoryMockListNamespacePipelineReleasesExpectation{}
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.params != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelineReleasesParamPtrs{}
-	}
-	mmListNamespacePipelineReleases.defaultExpectation.paramPtrs.isBasicView = &isBasicView
-	mmListNamespacePipelineReleases.defaultExpectation.expectationOrigins.originIsBasicView = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelineReleases
-}
-
-// ExpectFilterParam7 sets up expected param filter for Repository.ListNamespacePipelineReleases
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) ExpectFilterParam7(filter filtering.Filter) *mRepositoryMockListNamespacePipelineReleases {
-	if mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Set")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation == nil {
-		mmListNamespacePipelineReleases.defaultExpectation = &RepositoryMockListNamespacePipelineReleasesExpectation{}
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.params != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelineReleasesParamPtrs{}
-	}
-	mmListNamespacePipelineReleases.defaultExpectation.paramPtrs.filter = &filter
-	mmListNamespacePipelineReleases.defaultExpectation.expectationOrigins.originFilter = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelineReleases
-}
-
-// ExpectShowDeletedParam8 sets up expected param showDeleted for Repository.ListNamespacePipelineReleases
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) ExpectShowDeletedParam8(showDeleted bool) *mRepositoryMockListNamespacePipelineReleases {
-	if mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Set")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation == nil {
-		mmListNamespacePipelineReleases.defaultExpectation = &RepositoryMockListNamespacePipelineReleasesExpectation{}
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.params != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelineReleasesParamPtrs{}
-	}
-	mmListNamespacePipelineReleases.defaultExpectation.paramPtrs.showDeleted = &showDeleted
-	mmListNamespacePipelineReleases.defaultExpectation.expectationOrigins.originShowDeleted = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelineReleases
-}
-
-// ExpectReturnCountParam9 sets up expected param returnCount for Repository.ListNamespacePipelineReleases
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) ExpectReturnCountParam9(returnCount bool) *mRepositoryMockListNamespacePipelineReleases {
-	if mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Set")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation == nil {
-		mmListNamespacePipelineReleases.defaultExpectation = &RepositoryMockListNamespacePipelineReleasesExpectation{}
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.params != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelineReleasesParamPtrs{}
-	}
-	mmListNamespacePipelineReleases.defaultExpectation.paramPtrs.returnCount = &returnCount
-	mmListNamespacePipelineReleases.defaultExpectation.expectationOrigins.originReturnCount = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelineReleases
-}
-
-// Inspect accepts an inspector function that has same arguments as the Repository.ListNamespacePipelineReleases
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool)) *mRepositoryMockListNamespacePipelineReleases {
-	if mmListNamespacePipelineReleases.mock.inspectFuncListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("Inspect function is already set for RepositoryMock.ListNamespacePipelineReleases")
-	}
-
-	mmListNamespacePipelineReleases.mock.inspectFuncListNamespacePipelineReleases = f
-
-	return mmListNamespacePipelineReleases
-}
-
-// Return sets up results that will be returned by Repository.ListNamespacePipelineReleases
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) Return(ppa1 []*datamodel.PipelineRelease, i1 int64, s1 string, err error) *RepositoryMock {
-	if mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Set")
-	}
-
-	if mmListNamespacePipelineReleases.defaultExpectation == nil {
-		mmListNamespacePipelineReleases.defaultExpectation = &RepositoryMockListNamespacePipelineReleasesExpectation{mock: mmListNamespacePipelineReleases.mock}
-	}
-	mmListNamespacePipelineReleases.defaultExpectation.results = &RepositoryMockListNamespacePipelineReleasesResults{ppa1, i1, s1, err}
-	mmListNamespacePipelineReleases.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmListNamespacePipelineReleases.mock
-}
-
-// Set uses given function f to mock the Repository.ListNamespacePipelineReleases method
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) (ppa1 []*datamodel.PipelineRelease, i1 int64, s1 string, err error)) *RepositoryMock {
-	if mmListNamespacePipelineReleases.defaultExpectation != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("Default expectation is already set for the Repository.ListNamespacePipelineReleases method")
-	}
-
-	if len(mmListNamespacePipelineReleases.expectations) > 0 {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("Some expectations are already set for the Repository.ListNamespacePipelineReleases method")
-	}
-
-	mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases = f
-	mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleasesOrigin = minimock.CallerInfo(1)
-	return mmListNamespacePipelineReleases.mock
-}
-
-// When sets expectation for the Repository.ListNamespacePipelineReleases which will trigger the result defined by the following
-// Then helper
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) *RepositoryMockListNamespacePipelineReleasesExpectation {
-	if mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("RepositoryMock.ListNamespacePipelineReleases mock is already set by Set")
-	}
-
-	expectation := &RepositoryMockListNamespacePipelineReleasesExpectation{
-		mock:               mmListNamespacePipelineReleases.mock,
-		params:             &RepositoryMockListNamespacePipelineReleasesParams{ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount},
-		expectationOrigins: RepositoryMockListNamespacePipelineReleasesExpectationOrigins{origin: minimock.CallerInfo(1)},
-	}
-	mmListNamespacePipelineReleases.expectations = append(mmListNamespacePipelineReleases.expectations, expectation)
-	return expectation
-}
-
-// Then sets up Repository.ListNamespacePipelineReleases return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockListNamespacePipelineReleasesExpectation) Then(ppa1 []*datamodel.PipelineRelease, i1 int64, s1 string, err error) *RepositoryMock {
-	e.results = &RepositoryMockListNamespacePipelineReleasesResults{ppa1, i1, s1, err}
-	return e.mock
-}
-
-// Times sets number of times Repository.ListNamespacePipelineReleases should be invoked
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) Times(n uint64) *mRepositoryMockListNamespacePipelineReleases {
-	if n == 0 {
-		mmListNamespacePipelineReleases.mock.t.Fatalf("Times of RepositoryMock.ListNamespacePipelineReleases mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmListNamespacePipelineReleases.expectedInvocations, n)
-	mmListNamespacePipelineReleases.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmListNamespacePipelineReleases
-}
-
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) invocationsDone() bool {
-	if len(mmListNamespacePipelineReleases.expectations) == 0 && mmListNamespacePipelineReleases.defaultExpectation == nil && mmListNamespacePipelineReleases.mock.funcListNamespacePipelineReleases == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmListNamespacePipelineReleases.mock.afterListNamespacePipelineReleasesCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmListNamespacePipelineReleases.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// ListNamespacePipelineReleases implements mm_repository.Repository
-func (mmListNamespacePipelineReleases *RepositoryMock) ListNamespacePipelineReleases(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) (ppa1 []*datamodel.PipelineRelease, i1 int64, s1 string, err error) {
-	mm_atomic.AddUint64(&mmListNamespacePipelineReleases.beforeListNamespacePipelineReleasesCounter, 1)
-	defer mm_atomic.AddUint64(&mmListNamespacePipelineReleases.afterListNamespacePipelineReleasesCounter, 1)
-
-	mmListNamespacePipelineReleases.t.Helper()
-
-	if mmListNamespacePipelineReleases.inspectFuncListNamespacePipelineReleases != nil {
-		mmListNamespacePipelineReleases.inspectFuncListNamespacePipelineReleases(ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount)
-	}
-
-	mm_params := RepositoryMockListNamespacePipelineReleasesParams{ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount}
-
-	// Record call args
-	mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.mutex.Lock()
-	mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.callArgs = append(mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.callArgs, &mm_params)
-	mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.mutex.Unlock()
-
-	for _, e := range mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.ppa1, e.results.i1, e.results.s1, e.results.err
-		}
-	}
-
-	if mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.Counter, 1)
-		mm_want := mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.params
-		mm_want_ptrs := mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.paramPtrs
-
-		mm_got := RepositoryMockListNamespacePipelineReleasesParams{ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmListNamespacePipelineReleases.t.Errorf("RepositoryMock.ListNamespacePipelineReleases got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
-				mmListNamespacePipelineReleases.t.Errorf("RepositoryMock.ListNamespacePipelineReleases got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
-			}
-
-			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
-				mmListNamespacePipelineReleases.t.Errorf("RepositoryMock.ListNamespacePipelineReleases got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
-			}
-
-			if mm_want_ptrs.pageSize != nil && !minimock.Equal(*mm_want_ptrs.pageSize, mm_got.pageSize) {
-				mmListNamespacePipelineReleases.t.Errorf("RepositoryMock.ListNamespacePipelineReleases got unexpected parameter pageSize, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.expectationOrigins.originPageSize, *mm_want_ptrs.pageSize, mm_got.pageSize, minimock.Diff(*mm_want_ptrs.pageSize, mm_got.pageSize))
-			}
-
-			if mm_want_ptrs.pageToken != nil && !minimock.Equal(*mm_want_ptrs.pageToken, mm_got.pageToken) {
-				mmListNamespacePipelineReleases.t.Errorf("RepositoryMock.ListNamespacePipelineReleases got unexpected parameter pageToken, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.expectationOrigins.originPageToken, *mm_want_ptrs.pageToken, mm_got.pageToken, minimock.Diff(*mm_want_ptrs.pageToken, mm_got.pageToken))
-			}
-
-			if mm_want_ptrs.isBasicView != nil && !minimock.Equal(*mm_want_ptrs.isBasicView, mm_got.isBasicView) {
-				mmListNamespacePipelineReleases.t.Errorf("RepositoryMock.ListNamespacePipelineReleases got unexpected parameter isBasicView, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.expectationOrigins.originIsBasicView, *mm_want_ptrs.isBasicView, mm_got.isBasicView, minimock.Diff(*mm_want_ptrs.isBasicView, mm_got.isBasicView))
-			}
-
-			if mm_want_ptrs.filter != nil && !minimock.Equal(*mm_want_ptrs.filter, mm_got.filter) {
-				mmListNamespacePipelineReleases.t.Errorf("RepositoryMock.ListNamespacePipelineReleases got unexpected parameter filter, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.expectationOrigins.originFilter, *mm_want_ptrs.filter, mm_got.filter, minimock.Diff(*mm_want_ptrs.filter, mm_got.filter))
-			}
-
-			if mm_want_ptrs.showDeleted != nil && !minimock.Equal(*mm_want_ptrs.showDeleted, mm_got.showDeleted) {
-				mmListNamespacePipelineReleases.t.Errorf("RepositoryMock.ListNamespacePipelineReleases got unexpected parameter showDeleted, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.expectationOrigins.originShowDeleted, *mm_want_ptrs.showDeleted, mm_got.showDeleted, minimock.Diff(*mm_want_ptrs.showDeleted, mm_got.showDeleted))
-			}
-
-			if mm_want_ptrs.returnCount != nil && !minimock.Equal(*mm_want_ptrs.returnCount, mm_got.returnCount) {
-				mmListNamespacePipelineReleases.t.Errorf("RepositoryMock.ListNamespacePipelineReleases got unexpected parameter returnCount, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.expectationOrigins.originReturnCount, *mm_want_ptrs.returnCount, mm_got.returnCount, minimock.Diff(*mm_want_ptrs.returnCount, mm_got.returnCount))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmListNamespacePipelineReleases.t.Errorf("RepositoryMock.ListNamespacePipelineReleases got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmListNamespacePipelineReleases.ListNamespacePipelineReleasesMock.defaultExpectation.results
-		if mm_results == nil {
-			mmListNamespacePipelineReleases.t.Fatal("No results are set for the RepositoryMock.ListNamespacePipelineReleases")
-		}
-		return (*mm_results).ppa1, (*mm_results).i1, (*mm_results).s1, (*mm_results).err
-	}
-	if mmListNamespacePipelineReleases.funcListNamespacePipelineReleases != nil {
-		return mmListNamespacePipelineReleases.funcListNamespacePipelineReleases(ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount)
-	}
-	mmListNamespacePipelineReleases.t.Fatalf("Unexpected call to RepositoryMock.ListNamespacePipelineReleases. %v %v %v %v %v %v %v %v %v", ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount)
-	return
-}
-
-// ListNamespacePipelineReleasesAfterCounter returns a count of finished RepositoryMock.ListNamespacePipelineReleases invocations
-func (mmListNamespacePipelineReleases *RepositoryMock) ListNamespacePipelineReleasesAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmListNamespacePipelineReleases.afterListNamespacePipelineReleasesCounter)
-}
-
-// ListNamespacePipelineReleasesBeforeCounter returns a count of RepositoryMock.ListNamespacePipelineReleases invocations
-func (mmListNamespacePipelineReleases *RepositoryMock) ListNamespacePipelineReleasesBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmListNamespacePipelineReleases.beforeListNamespacePipelineReleasesCounter)
-}
-
-// Calls returns a list of arguments used in each call to RepositoryMock.ListNamespacePipelineReleases.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmListNamespacePipelineReleases *mRepositoryMockListNamespacePipelineReleases) Calls() []*RepositoryMockListNamespacePipelineReleasesParams {
-	mmListNamespacePipelineReleases.mutex.RLock()
-
-	argCopy := make([]*RepositoryMockListNamespacePipelineReleasesParams, len(mmListNamespacePipelineReleases.callArgs))
-	copy(argCopy, mmListNamespacePipelineReleases.callArgs)
-
-	mmListNamespacePipelineReleases.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockListNamespacePipelineReleasesDone returns true if the count of the ListNamespacePipelineReleases invocations corresponds
-// the number of defined expectations
-func (m *RepositoryMock) MinimockListNamespacePipelineReleasesDone() bool {
-	if m.ListNamespacePipelineReleasesMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.ListNamespacePipelineReleasesMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.ListNamespacePipelineReleasesMock.invocationsDone()
-}
-
-// MinimockListNamespacePipelineReleasesInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockListNamespacePipelineReleasesInspect() {
-	for _, e := range m.ListNamespacePipelineReleasesMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.ListNamespacePipelineReleases at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
-		}
-	}
-
-	afterListNamespacePipelineReleasesCounter := mm_atomic.LoadUint64(&m.afterListNamespacePipelineReleasesCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.ListNamespacePipelineReleasesMock.defaultExpectation != nil && afterListNamespacePipelineReleasesCounter < 1 {
-		if m.ListNamespacePipelineReleasesMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to RepositoryMock.ListNamespacePipelineReleases at\n%s", m.ListNamespacePipelineReleasesMock.defaultExpectation.returnOrigin)
-		} else {
-			m.t.Errorf("Expected call to RepositoryMock.ListNamespacePipelineReleases at\n%s with params: %#v", m.ListNamespacePipelineReleasesMock.defaultExpectation.expectationOrigins.origin, *m.ListNamespacePipelineReleasesMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcListNamespacePipelineReleases != nil && afterListNamespacePipelineReleasesCounter < 1 {
-		m.t.Errorf("Expected call to RepositoryMock.ListNamespacePipelineReleases at\n%s", m.funcListNamespacePipelineReleasesOrigin)
-	}
-
-	if !m.ListNamespacePipelineReleasesMock.invocationsDone() && afterListNamespacePipelineReleasesCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.ListNamespacePipelineReleases at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.ListNamespacePipelineReleasesMock.expectedInvocations), m.ListNamespacePipelineReleasesMock.expectedInvocationsOrigin, afterListNamespacePipelineReleasesCounter)
-	}
-}
-
-type mRepositoryMockListNamespacePipelines struct {
-	optional           bool
-	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockListNamespacePipelinesExpectation
-	expectations       []*RepositoryMockListNamespacePipelinesExpectation
-
-	callArgs []*RepositoryMockListNamespacePipelinesParams
-	mutex    sync.RWMutex
-
-	expectedInvocations       uint64
-	expectedInvocationsOrigin string
-}
-
-// RepositoryMockListNamespacePipelinesExpectation specifies expectation struct of the Repository.ListNamespacePipelines
-type RepositoryMockListNamespacePipelinesExpectation struct {
-	mock               *RepositoryMock
-	params             *RepositoryMockListNamespacePipelinesParams
-	paramPtrs          *RepositoryMockListNamespacePipelinesParamPtrs
-	expectationOrigins RepositoryMockListNamespacePipelinesExpectationOrigins
-	results            *RepositoryMockListNamespacePipelinesResults
-	returnOrigin       string
-	Counter            uint64
-}
-
-// RepositoryMockListNamespacePipelinesParams contains parameters of the Repository.ListNamespacePipelines
-type RepositoryMockListNamespacePipelinesParams struct {
-	ctx            context.Context
-	ownerPermalink string
-	pageSize       int64
-	pageToken      string
-	isBasicView    bool
-	filter         filtering.Filter
-	uidAllowList   []uuid.UUID
-	showDeleted    bool
-	embedReleases  bool
-	order          ordering.OrderBy
-}
-
-// RepositoryMockListNamespacePipelinesParamPtrs contains pointers to parameters of the Repository.ListNamespacePipelines
-type RepositoryMockListNamespacePipelinesParamPtrs struct {
-	ctx            *context.Context
-	ownerPermalink *string
-	pageSize       *int64
-	pageToken      *string
-	isBasicView    *bool
-	filter         *filtering.Filter
-	uidAllowList   *[]uuid.UUID
-	showDeleted    *bool
-	embedReleases  *bool
-	order          *ordering.OrderBy
-}
-
-// RepositoryMockListNamespacePipelinesResults contains results of the Repository.ListNamespacePipelines
-type RepositoryMockListNamespacePipelinesResults struct {
-	ppa1 []*datamodel.Pipeline
-	i1   int64
-	s1   string
-	err  error
-}
-
-// RepositoryMockListNamespacePipelinesOrigins contains origins of expectations of the Repository.ListNamespacePipelines
-type RepositoryMockListNamespacePipelinesExpectationOrigins struct {
-	origin               string
-	originCtx            string
-	originOwnerPermalink string
-	originPageSize       string
-	originPageToken      string
-	originIsBasicView    string
-	originFilter         string
-	originUidAllowList   string
-	originShowDeleted    string
-	originEmbedReleases  string
-	originOrder          string
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) Optional() *mRepositoryMockListNamespacePipelines {
-	mmListNamespacePipelines.optional = true
-	return mmListNamespacePipelines
-}
-
-// Expect sets up expected params for Repository.ListNamespacePipelines
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) Expect(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) *mRepositoryMockListNamespacePipelines {
-	if mmListNamespacePipelines.mock.funcListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Set")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation == nil {
-		mmListNamespacePipelines.defaultExpectation = &RepositoryMockListNamespacePipelinesExpectation{}
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.paramPtrs != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by ExpectParams functions")
-	}
-
-	mmListNamespacePipelines.defaultExpectation.params = &RepositoryMockListNamespacePipelinesParams{ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order}
-	mmListNamespacePipelines.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmListNamespacePipelines.expectations {
-		if minimock.Equal(e.params, mmListNamespacePipelines.defaultExpectation.params) {
-			mmListNamespacePipelines.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListNamespacePipelines.defaultExpectation.params)
-		}
-	}
-
-	return mmListNamespacePipelines
-}
-
-// ExpectCtxParam1 sets up expected param ctx for Repository.ListNamespacePipelines
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) ExpectCtxParam1(ctx context.Context) *mRepositoryMockListNamespacePipelines {
-	if mmListNamespacePipelines.mock.funcListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Set")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation == nil {
-		mmListNamespacePipelines.defaultExpectation = &RepositoryMockListNamespacePipelinesExpectation{}
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.params != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelines.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelinesParamPtrs{}
-	}
-	mmListNamespacePipelines.defaultExpectation.paramPtrs.ctx = &ctx
-	mmListNamespacePipelines.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelines
-}
-
-// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.ListNamespacePipelines
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockListNamespacePipelines {
-	if mmListNamespacePipelines.mock.funcListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Set")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation == nil {
-		mmListNamespacePipelines.defaultExpectation = &RepositoryMockListNamespacePipelinesExpectation{}
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.params != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelines.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelinesParamPtrs{}
-	}
-	mmListNamespacePipelines.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
-	mmListNamespacePipelines.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelines
-}
-
-// ExpectPageSizeParam3 sets up expected param pageSize for Repository.ListNamespacePipelines
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) ExpectPageSizeParam3(pageSize int64) *mRepositoryMockListNamespacePipelines {
-	if mmListNamespacePipelines.mock.funcListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Set")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation == nil {
-		mmListNamespacePipelines.defaultExpectation = &RepositoryMockListNamespacePipelinesExpectation{}
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.params != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelines.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelinesParamPtrs{}
-	}
-	mmListNamespacePipelines.defaultExpectation.paramPtrs.pageSize = &pageSize
-	mmListNamespacePipelines.defaultExpectation.expectationOrigins.originPageSize = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelines
-}
-
-// ExpectPageTokenParam4 sets up expected param pageToken for Repository.ListNamespacePipelines
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) ExpectPageTokenParam4(pageToken string) *mRepositoryMockListNamespacePipelines {
-	if mmListNamespacePipelines.mock.funcListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Set")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation == nil {
-		mmListNamespacePipelines.defaultExpectation = &RepositoryMockListNamespacePipelinesExpectation{}
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.params != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelines.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelinesParamPtrs{}
-	}
-	mmListNamespacePipelines.defaultExpectation.paramPtrs.pageToken = &pageToken
-	mmListNamespacePipelines.defaultExpectation.expectationOrigins.originPageToken = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelines
-}
-
-// ExpectIsBasicViewParam5 sets up expected param isBasicView for Repository.ListNamespacePipelines
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) ExpectIsBasicViewParam5(isBasicView bool) *mRepositoryMockListNamespacePipelines {
-	if mmListNamespacePipelines.mock.funcListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Set")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation == nil {
-		mmListNamespacePipelines.defaultExpectation = &RepositoryMockListNamespacePipelinesExpectation{}
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.params != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelines.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelinesParamPtrs{}
-	}
-	mmListNamespacePipelines.defaultExpectation.paramPtrs.isBasicView = &isBasicView
-	mmListNamespacePipelines.defaultExpectation.expectationOrigins.originIsBasicView = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelines
-}
-
-// ExpectFilterParam6 sets up expected param filter for Repository.ListNamespacePipelines
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) ExpectFilterParam6(filter filtering.Filter) *mRepositoryMockListNamespacePipelines {
-	if mmListNamespacePipelines.mock.funcListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Set")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation == nil {
-		mmListNamespacePipelines.defaultExpectation = &RepositoryMockListNamespacePipelinesExpectation{}
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.params != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelines.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelinesParamPtrs{}
-	}
-	mmListNamespacePipelines.defaultExpectation.paramPtrs.filter = &filter
-	mmListNamespacePipelines.defaultExpectation.expectationOrigins.originFilter = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelines
-}
-
-// ExpectUidAllowListParam7 sets up expected param uidAllowList for Repository.ListNamespacePipelines
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) ExpectUidAllowListParam7(uidAllowList []uuid.UUID) *mRepositoryMockListNamespacePipelines {
-	if mmListNamespacePipelines.mock.funcListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Set")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation == nil {
-		mmListNamespacePipelines.defaultExpectation = &RepositoryMockListNamespacePipelinesExpectation{}
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.params != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelines.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelinesParamPtrs{}
-	}
-	mmListNamespacePipelines.defaultExpectation.paramPtrs.uidAllowList = &uidAllowList
-	mmListNamespacePipelines.defaultExpectation.expectationOrigins.originUidAllowList = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelines
-}
-
-// ExpectShowDeletedParam8 sets up expected param showDeleted for Repository.ListNamespacePipelines
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) ExpectShowDeletedParam8(showDeleted bool) *mRepositoryMockListNamespacePipelines {
-	if mmListNamespacePipelines.mock.funcListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Set")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation == nil {
-		mmListNamespacePipelines.defaultExpectation = &RepositoryMockListNamespacePipelinesExpectation{}
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.params != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelines.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelinesParamPtrs{}
-	}
-	mmListNamespacePipelines.defaultExpectation.paramPtrs.showDeleted = &showDeleted
-	mmListNamespacePipelines.defaultExpectation.expectationOrigins.originShowDeleted = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelines
-}
-
-// ExpectEmbedReleasesParam9 sets up expected param embedReleases for Repository.ListNamespacePipelines
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) ExpectEmbedReleasesParam9(embedReleases bool) *mRepositoryMockListNamespacePipelines {
-	if mmListNamespacePipelines.mock.funcListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Set")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation == nil {
-		mmListNamespacePipelines.defaultExpectation = &RepositoryMockListNamespacePipelinesExpectation{}
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.params != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelines.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelinesParamPtrs{}
-	}
-	mmListNamespacePipelines.defaultExpectation.paramPtrs.embedReleases = &embedReleases
-	mmListNamespacePipelines.defaultExpectation.expectationOrigins.originEmbedReleases = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelines
-}
-
-// ExpectOrderParam10 sets up expected param order for Repository.ListNamespacePipelines
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) ExpectOrderParam10(order ordering.OrderBy) *mRepositoryMockListNamespacePipelines {
-	if mmListNamespacePipelines.mock.funcListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Set")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation == nil {
-		mmListNamespacePipelines.defaultExpectation = &RepositoryMockListNamespacePipelinesExpectation{}
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.params != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Expect")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation.paramPtrs == nil {
-		mmListNamespacePipelines.defaultExpectation.paramPtrs = &RepositoryMockListNamespacePipelinesParamPtrs{}
-	}
-	mmListNamespacePipelines.defaultExpectation.paramPtrs.order = &order
-	mmListNamespacePipelines.defaultExpectation.expectationOrigins.originOrder = minimock.CallerInfo(1)
-
-	return mmListNamespacePipelines
-}
-
-// Inspect accepts an inspector function that has same arguments as the Repository.ListNamespacePipelines
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) Inspect(f func(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy)) *mRepositoryMockListNamespacePipelines {
-	if mmListNamespacePipelines.mock.inspectFuncListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("Inspect function is already set for RepositoryMock.ListNamespacePipelines")
-	}
-
-	mmListNamespacePipelines.mock.inspectFuncListNamespacePipelines = f
-
-	return mmListNamespacePipelines
-}
-
-// Return sets up results that will be returned by Repository.ListNamespacePipelines
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) Return(ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error) *RepositoryMock {
-	if mmListNamespacePipelines.mock.funcListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Set")
-	}
-
-	if mmListNamespacePipelines.defaultExpectation == nil {
-		mmListNamespacePipelines.defaultExpectation = &RepositoryMockListNamespacePipelinesExpectation{mock: mmListNamespacePipelines.mock}
-	}
-	mmListNamespacePipelines.defaultExpectation.results = &RepositoryMockListNamespacePipelinesResults{ppa1, i1, s1, err}
-	mmListNamespacePipelines.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmListNamespacePipelines.mock
-}
-
-// Set uses given function f to mock the Repository.ListNamespacePipelines method
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) Set(f func(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error)) *RepositoryMock {
-	if mmListNamespacePipelines.defaultExpectation != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("Default expectation is already set for the Repository.ListNamespacePipelines method")
-	}
-
-	if len(mmListNamespacePipelines.expectations) > 0 {
-		mmListNamespacePipelines.mock.t.Fatalf("Some expectations are already set for the Repository.ListNamespacePipelines method")
-	}
-
-	mmListNamespacePipelines.mock.funcListNamespacePipelines = f
-	mmListNamespacePipelines.mock.funcListNamespacePipelinesOrigin = minimock.CallerInfo(1)
-	return mmListNamespacePipelines.mock
-}
-
-// When sets expectation for the Repository.ListNamespacePipelines which will trigger the result defined by the following
-// Then helper
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) When(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) *RepositoryMockListNamespacePipelinesExpectation {
-	if mmListNamespacePipelines.mock.funcListNamespacePipelines != nil {
-		mmListNamespacePipelines.mock.t.Fatalf("RepositoryMock.ListNamespacePipelines mock is already set by Set")
-	}
-
-	expectation := &RepositoryMockListNamespacePipelinesExpectation{
-		mock:               mmListNamespacePipelines.mock,
-		params:             &RepositoryMockListNamespacePipelinesParams{ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order},
-		expectationOrigins: RepositoryMockListNamespacePipelinesExpectationOrigins{origin: minimock.CallerInfo(1)},
-	}
-	mmListNamespacePipelines.expectations = append(mmListNamespacePipelines.expectations, expectation)
-	return expectation
-}
-
-// Then sets up Repository.ListNamespacePipelines return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockListNamespacePipelinesExpectation) Then(ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error) *RepositoryMock {
-	e.results = &RepositoryMockListNamespacePipelinesResults{ppa1, i1, s1, err}
-	return e.mock
-}
-
-// Times sets number of times Repository.ListNamespacePipelines should be invoked
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) Times(n uint64) *mRepositoryMockListNamespacePipelines {
-	if n == 0 {
-		mmListNamespacePipelines.mock.t.Fatalf("Times of RepositoryMock.ListNamespacePipelines mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmListNamespacePipelines.expectedInvocations, n)
-	mmListNamespacePipelines.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmListNamespacePipelines
-}
-
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) invocationsDone() bool {
-	if len(mmListNamespacePipelines.expectations) == 0 && mmListNamespacePipelines.defaultExpectation == nil && mmListNamespacePipelines.mock.funcListNamespacePipelines == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmListNamespacePipelines.mock.afterListNamespacePipelinesCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmListNamespacePipelines.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// ListNamespacePipelines implements mm_repository.Repository
-func (mmListNamespacePipelines *RepositoryMock) ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error) {
-	mm_atomic.AddUint64(&mmListNamespacePipelines.beforeListNamespacePipelinesCounter, 1)
-	defer mm_atomic.AddUint64(&mmListNamespacePipelines.afterListNamespacePipelinesCounter, 1)
-
-	mmListNamespacePipelines.t.Helper()
-
-	if mmListNamespacePipelines.inspectFuncListNamespacePipelines != nil {
-		mmListNamespacePipelines.inspectFuncListNamespacePipelines(ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
-	}
-
-	mm_params := RepositoryMockListNamespacePipelinesParams{ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order}
-
-	// Record call args
-	mmListNamespacePipelines.ListNamespacePipelinesMock.mutex.Lock()
-	mmListNamespacePipelines.ListNamespacePipelinesMock.callArgs = append(mmListNamespacePipelines.ListNamespacePipelinesMock.callArgs, &mm_params)
-	mmListNamespacePipelines.ListNamespacePipelinesMock.mutex.Unlock()
-
-	for _, e := range mmListNamespacePipelines.ListNamespacePipelinesMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.ppa1, e.results.i1, e.results.s1, e.results.err
-		}
-	}
-
-	if mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.Counter, 1)
-		mm_want := mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.params
-		mm_want_ptrs := mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.paramPtrs
-
-		mm_got := RepositoryMockListNamespacePipelinesParams{ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmListNamespacePipelines.t.Errorf("RepositoryMock.ListNamespacePipelines got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
-				mmListNamespacePipelines.t.Errorf("RepositoryMock.ListNamespacePipelines got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
-			}
-
-			if mm_want_ptrs.pageSize != nil && !minimock.Equal(*mm_want_ptrs.pageSize, mm_got.pageSize) {
-				mmListNamespacePipelines.t.Errorf("RepositoryMock.ListNamespacePipelines got unexpected parameter pageSize, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.expectationOrigins.originPageSize, *mm_want_ptrs.pageSize, mm_got.pageSize, minimock.Diff(*mm_want_ptrs.pageSize, mm_got.pageSize))
-			}
-
-			if mm_want_ptrs.pageToken != nil && !minimock.Equal(*mm_want_ptrs.pageToken, mm_got.pageToken) {
-				mmListNamespacePipelines.t.Errorf("RepositoryMock.ListNamespacePipelines got unexpected parameter pageToken, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.expectationOrigins.originPageToken, *mm_want_ptrs.pageToken, mm_got.pageToken, minimock.Diff(*mm_want_ptrs.pageToken, mm_got.pageToken))
-			}
-
-			if mm_want_ptrs.isBasicView != nil && !minimock.Equal(*mm_want_ptrs.isBasicView, mm_got.isBasicView) {
-				mmListNamespacePipelines.t.Errorf("RepositoryMock.ListNamespacePipelines got unexpected parameter isBasicView, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.expectationOrigins.originIsBasicView, *mm_want_ptrs.isBasicView, mm_got.isBasicView, minimock.Diff(*mm_want_ptrs.isBasicView, mm_got.isBasicView))
-			}
-
-			if mm_want_ptrs.filter != nil && !minimock.Equal(*mm_want_ptrs.filter, mm_got.filter) {
-				mmListNamespacePipelines.t.Errorf("RepositoryMock.ListNamespacePipelines got unexpected parameter filter, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.expectationOrigins.originFilter, *mm_want_ptrs.filter, mm_got.filter, minimock.Diff(*mm_want_ptrs.filter, mm_got.filter))
-			}
-
-			if mm_want_ptrs.uidAllowList != nil && !minimock.Equal(*mm_want_ptrs.uidAllowList, mm_got.uidAllowList) {
-				mmListNamespacePipelines.t.Errorf("RepositoryMock.ListNamespacePipelines got unexpected parameter uidAllowList, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.expectationOrigins.originUidAllowList, *mm_want_ptrs.uidAllowList, mm_got.uidAllowList, minimock.Diff(*mm_want_ptrs.uidAllowList, mm_got.uidAllowList))
-			}
-
-			if mm_want_ptrs.showDeleted != nil && !minimock.Equal(*mm_want_ptrs.showDeleted, mm_got.showDeleted) {
-				mmListNamespacePipelines.t.Errorf("RepositoryMock.ListNamespacePipelines got unexpected parameter showDeleted, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.expectationOrigins.originShowDeleted, *mm_want_ptrs.showDeleted, mm_got.showDeleted, minimock.Diff(*mm_want_ptrs.showDeleted, mm_got.showDeleted))
-			}
-
-			if mm_want_ptrs.embedReleases != nil && !minimock.Equal(*mm_want_ptrs.embedReleases, mm_got.embedReleases) {
-				mmListNamespacePipelines.t.Errorf("RepositoryMock.ListNamespacePipelines got unexpected parameter embedReleases, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.expectationOrigins.originEmbedReleases, *mm_want_ptrs.embedReleases, mm_got.embedReleases, minimock.Diff(*mm_want_ptrs.embedReleases, mm_got.embedReleases))
-			}
-
-			if mm_want_ptrs.order != nil && !minimock.Equal(*mm_want_ptrs.order, mm_got.order) {
-				mmListNamespacePipelines.t.Errorf("RepositoryMock.ListNamespacePipelines got unexpected parameter order, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.expectationOrigins.originOrder, *mm_want_ptrs.order, mm_got.order, minimock.Diff(*mm_want_ptrs.order, mm_got.order))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmListNamespacePipelines.t.Errorf("RepositoryMock.ListNamespacePipelines got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmListNamespacePipelines.ListNamespacePipelinesMock.defaultExpectation.results
-		if mm_results == nil {
-			mmListNamespacePipelines.t.Fatal("No results are set for the RepositoryMock.ListNamespacePipelines")
-		}
-		return (*mm_results).ppa1, (*mm_results).i1, (*mm_results).s1, (*mm_results).err
-	}
-	if mmListNamespacePipelines.funcListNamespacePipelines != nil {
-		return mmListNamespacePipelines.funcListNamespacePipelines(ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
-	}
-	mmListNamespacePipelines.t.Fatalf("Unexpected call to RepositoryMock.ListNamespacePipelines. %v %v %v %v %v %v %v %v %v %v", ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
-	return
-}
-
-// ListNamespacePipelinesAfterCounter returns a count of finished RepositoryMock.ListNamespacePipelines invocations
-func (mmListNamespacePipelines *RepositoryMock) ListNamespacePipelinesAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmListNamespacePipelines.afterListNamespacePipelinesCounter)
-}
-
-// ListNamespacePipelinesBeforeCounter returns a count of RepositoryMock.ListNamespacePipelines invocations
-func (mmListNamespacePipelines *RepositoryMock) ListNamespacePipelinesBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmListNamespacePipelines.beforeListNamespacePipelinesCounter)
-}
-
-// Calls returns a list of arguments used in each call to RepositoryMock.ListNamespacePipelines.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmListNamespacePipelines *mRepositoryMockListNamespacePipelines) Calls() []*RepositoryMockListNamespacePipelinesParams {
-	mmListNamespacePipelines.mutex.RLock()
-
-	argCopy := make([]*RepositoryMockListNamespacePipelinesParams, len(mmListNamespacePipelines.callArgs))
-	copy(argCopy, mmListNamespacePipelines.callArgs)
-
-	mmListNamespacePipelines.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockListNamespacePipelinesDone returns true if the count of the ListNamespacePipelines invocations corresponds
-// the number of defined expectations
-func (m *RepositoryMock) MinimockListNamespacePipelinesDone() bool {
-	if m.ListNamespacePipelinesMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.ListNamespacePipelinesMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.ListNamespacePipelinesMock.invocationsDone()
-}
-
-// MinimockListNamespacePipelinesInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockListNamespacePipelinesInspect() {
-	for _, e := range m.ListNamespacePipelinesMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.ListNamespacePipelines at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
-		}
-	}
-
-	afterListNamespacePipelinesCounter := mm_atomic.LoadUint64(&m.afterListNamespacePipelinesCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.ListNamespacePipelinesMock.defaultExpectation != nil && afterListNamespacePipelinesCounter < 1 {
-		if m.ListNamespacePipelinesMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to RepositoryMock.ListNamespacePipelines at\n%s", m.ListNamespacePipelinesMock.defaultExpectation.returnOrigin)
-		} else {
-			m.t.Errorf("Expected call to RepositoryMock.ListNamespacePipelines at\n%s with params: %#v", m.ListNamespacePipelinesMock.defaultExpectation.expectationOrigins.origin, *m.ListNamespacePipelinesMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcListNamespacePipelines != nil && afterListNamespacePipelinesCounter < 1 {
-		m.t.Errorf("Expected call to RepositoryMock.ListNamespacePipelines at\n%s", m.funcListNamespacePipelinesOrigin)
-	}
-
-	if !m.ListNamespacePipelinesMock.invocationsDone() && afterListNamespacePipelinesCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.ListNamespacePipelines at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.ListNamespacePipelinesMock.expectedInvocations), m.ListNamespacePipelinesMock.expectedInvocationsOrigin, afterListNamespacePipelinesCounter)
-	}
-}
-
 type mRepositoryMockListNamespaceSecrets struct {
 	optional           bool
 	mock               *RepositoryMock
@@ -15590,6 +14435,568 @@ func (m *RepositoryMock) MinimockListPipelineIDsByConnectionIDInspect() {
 	if !m.ListPipelineIDsByConnectionIDMock.invocationsDone() && afterListPipelineIDsByConnectionIDCounter > 0 {
 		m.t.Errorf("Expected %d calls to RepositoryMock.ListPipelineIDsByConnectionID at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.ListPipelineIDsByConnectionIDMock.expectedInvocations), m.ListPipelineIDsByConnectionIDMock.expectedInvocationsOrigin, afterListPipelineIDsByConnectionIDCounter)
+	}
+}
+
+type mRepositoryMockListPipelineReleases struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockListPipelineReleasesExpectation
+	expectations       []*RepositoryMockListPipelineReleasesExpectation
+
+	callArgs []*RepositoryMockListPipelineReleasesParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// RepositoryMockListPipelineReleasesExpectation specifies expectation struct of the Repository.ListPipelineReleases
+type RepositoryMockListPipelineReleasesExpectation struct {
+	mock               *RepositoryMock
+	params             *RepositoryMockListPipelineReleasesParams
+	paramPtrs          *RepositoryMockListPipelineReleasesParamPtrs
+	expectationOrigins RepositoryMockListPipelineReleasesExpectationOrigins
+	results            *RepositoryMockListPipelineReleasesResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// RepositoryMockListPipelineReleasesParams contains parameters of the Repository.ListPipelineReleases
+type RepositoryMockListPipelineReleasesParams struct {
+	ctx            context.Context
+	ownerPermalink string
+	pipelineUID    uuid.UUID
+	pageSize       int64
+	pageToken      string
+	isBasicView    bool
+	filter         filtering.Filter
+	showDeleted    bool
+	returnCount    bool
+}
+
+// RepositoryMockListPipelineReleasesParamPtrs contains pointers to parameters of the Repository.ListPipelineReleases
+type RepositoryMockListPipelineReleasesParamPtrs struct {
+	ctx            *context.Context
+	ownerPermalink *string
+	pipelineUID    *uuid.UUID
+	pageSize       *int64
+	pageToken      *string
+	isBasicView    *bool
+	filter         *filtering.Filter
+	showDeleted    *bool
+	returnCount    *bool
+}
+
+// RepositoryMockListPipelineReleasesResults contains results of the Repository.ListPipelineReleases
+type RepositoryMockListPipelineReleasesResults struct {
+	ppa1 []*datamodel.PipelineRelease
+	i1   int64
+	s1   string
+	err  error
+}
+
+// RepositoryMockListPipelineReleasesOrigins contains origins of expectations of the Repository.ListPipelineReleases
+type RepositoryMockListPipelineReleasesExpectationOrigins struct {
+	origin               string
+	originCtx            string
+	originOwnerPermalink string
+	originPipelineUID    string
+	originPageSize       string
+	originPageToken      string
+	originIsBasicView    string
+	originFilter         string
+	originShowDeleted    string
+	originReturnCount    string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) Optional() *mRepositoryMockListPipelineReleases {
+	mmListPipelineReleases.optional = true
+	return mmListPipelineReleases
+}
+
+// Expect sets up expected params for Repository.ListPipelineReleases
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) *mRepositoryMockListPipelineReleases {
+	if mmListPipelineReleases.mock.funcListPipelineReleases != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Set")
+	}
+
+	if mmListPipelineReleases.defaultExpectation == nil {
+		mmListPipelineReleases.defaultExpectation = &RepositoryMockListPipelineReleasesExpectation{}
+	}
+
+	if mmListPipelineReleases.defaultExpectation.paramPtrs != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by ExpectParams functions")
+	}
+
+	mmListPipelineReleases.defaultExpectation.params = &RepositoryMockListPipelineReleasesParams{ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount}
+	mmListPipelineReleases.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmListPipelineReleases.expectations {
+		if minimock.Equal(e.params, mmListPipelineReleases.defaultExpectation.params) {
+			mmListPipelineReleases.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListPipelineReleases.defaultExpectation.params)
+		}
+	}
+
+	return mmListPipelineReleases
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.ListPipelineReleases
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) ExpectCtxParam1(ctx context.Context) *mRepositoryMockListPipelineReleases {
+	if mmListPipelineReleases.mock.funcListPipelineReleases != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Set")
+	}
+
+	if mmListPipelineReleases.defaultExpectation == nil {
+		mmListPipelineReleases.defaultExpectation = &RepositoryMockListPipelineReleasesExpectation{}
+	}
+
+	if mmListPipelineReleases.defaultExpectation.params != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Expect")
+	}
+
+	if mmListPipelineReleases.defaultExpectation.paramPtrs == nil {
+		mmListPipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListPipelineReleasesParamPtrs{}
+	}
+	mmListPipelineReleases.defaultExpectation.paramPtrs.ctx = &ctx
+	mmListPipelineReleases.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmListPipelineReleases
+}
+
+// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.ListPipelineReleases
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockListPipelineReleases {
+	if mmListPipelineReleases.mock.funcListPipelineReleases != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Set")
+	}
+
+	if mmListPipelineReleases.defaultExpectation == nil {
+		mmListPipelineReleases.defaultExpectation = &RepositoryMockListPipelineReleasesExpectation{}
+	}
+
+	if mmListPipelineReleases.defaultExpectation.params != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Expect")
+	}
+
+	if mmListPipelineReleases.defaultExpectation.paramPtrs == nil {
+		mmListPipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListPipelineReleasesParamPtrs{}
+	}
+	mmListPipelineReleases.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
+	mmListPipelineReleases.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
+
+	return mmListPipelineReleases
+}
+
+// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.ListPipelineReleases
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockListPipelineReleases {
+	if mmListPipelineReleases.mock.funcListPipelineReleases != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Set")
+	}
+
+	if mmListPipelineReleases.defaultExpectation == nil {
+		mmListPipelineReleases.defaultExpectation = &RepositoryMockListPipelineReleasesExpectation{}
+	}
+
+	if mmListPipelineReleases.defaultExpectation.params != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Expect")
+	}
+
+	if mmListPipelineReleases.defaultExpectation.paramPtrs == nil {
+		mmListPipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListPipelineReleasesParamPtrs{}
+	}
+	mmListPipelineReleases.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
+	mmListPipelineReleases.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
+
+	return mmListPipelineReleases
+}
+
+// ExpectPageSizeParam4 sets up expected param pageSize for Repository.ListPipelineReleases
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) ExpectPageSizeParam4(pageSize int64) *mRepositoryMockListPipelineReleases {
+	if mmListPipelineReleases.mock.funcListPipelineReleases != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Set")
+	}
+
+	if mmListPipelineReleases.defaultExpectation == nil {
+		mmListPipelineReleases.defaultExpectation = &RepositoryMockListPipelineReleasesExpectation{}
+	}
+
+	if mmListPipelineReleases.defaultExpectation.params != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Expect")
+	}
+
+	if mmListPipelineReleases.defaultExpectation.paramPtrs == nil {
+		mmListPipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListPipelineReleasesParamPtrs{}
+	}
+	mmListPipelineReleases.defaultExpectation.paramPtrs.pageSize = &pageSize
+	mmListPipelineReleases.defaultExpectation.expectationOrigins.originPageSize = minimock.CallerInfo(1)
+
+	return mmListPipelineReleases
+}
+
+// ExpectPageTokenParam5 sets up expected param pageToken for Repository.ListPipelineReleases
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) ExpectPageTokenParam5(pageToken string) *mRepositoryMockListPipelineReleases {
+	if mmListPipelineReleases.mock.funcListPipelineReleases != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Set")
+	}
+
+	if mmListPipelineReleases.defaultExpectation == nil {
+		mmListPipelineReleases.defaultExpectation = &RepositoryMockListPipelineReleasesExpectation{}
+	}
+
+	if mmListPipelineReleases.defaultExpectation.params != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Expect")
+	}
+
+	if mmListPipelineReleases.defaultExpectation.paramPtrs == nil {
+		mmListPipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListPipelineReleasesParamPtrs{}
+	}
+	mmListPipelineReleases.defaultExpectation.paramPtrs.pageToken = &pageToken
+	mmListPipelineReleases.defaultExpectation.expectationOrigins.originPageToken = minimock.CallerInfo(1)
+
+	return mmListPipelineReleases
+}
+
+// ExpectIsBasicViewParam6 sets up expected param isBasicView for Repository.ListPipelineReleases
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) ExpectIsBasicViewParam6(isBasicView bool) *mRepositoryMockListPipelineReleases {
+	if mmListPipelineReleases.mock.funcListPipelineReleases != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Set")
+	}
+
+	if mmListPipelineReleases.defaultExpectation == nil {
+		mmListPipelineReleases.defaultExpectation = &RepositoryMockListPipelineReleasesExpectation{}
+	}
+
+	if mmListPipelineReleases.defaultExpectation.params != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Expect")
+	}
+
+	if mmListPipelineReleases.defaultExpectation.paramPtrs == nil {
+		mmListPipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListPipelineReleasesParamPtrs{}
+	}
+	mmListPipelineReleases.defaultExpectation.paramPtrs.isBasicView = &isBasicView
+	mmListPipelineReleases.defaultExpectation.expectationOrigins.originIsBasicView = minimock.CallerInfo(1)
+
+	return mmListPipelineReleases
+}
+
+// ExpectFilterParam7 sets up expected param filter for Repository.ListPipelineReleases
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) ExpectFilterParam7(filter filtering.Filter) *mRepositoryMockListPipelineReleases {
+	if mmListPipelineReleases.mock.funcListPipelineReleases != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Set")
+	}
+
+	if mmListPipelineReleases.defaultExpectation == nil {
+		mmListPipelineReleases.defaultExpectation = &RepositoryMockListPipelineReleasesExpectation{}
+	}
+
+	if mmListPipelineReleases.defaultExpectation.params != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Expect")
+	}
+
+	if mmListPipelineReleases.defaultExpectation.paramPtrs == nil {
+		mmListPipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListPipelineReleasesParamPtrs{}
+	}
+	mmListPipelineReleases.defaultExpectation.paramPtrs.filter = &filter
+	mmListPipelineReleases.defaultExpectation.expectationOrigins.originFilter = minimock.CallerInfo(1)
+
+	return mmListPipelineReleases
+}
+
+// ExpectShowDeletedParam8 sets up expected param showDeleted for Repository.ListPipelineReleases
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) ExpectShowDeletedParam8(showDeleted bool) *mRepositoryMockListPipelineReleases {
+	if mmListPipelineReleases.mock.funcListPipelineReleases != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Set")
+	}
+
+	if mmListPipelineReleases.defaultExpectation == nil {
+		mmListPipelineReleases.defaultExpectation = &RepositoryMockListPipelineReleasesExpectation{}
+	}
+
+	if mmListPipelineReleases.defaultExpectation.params != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Expect")
+	}
+
+	if mmListPipelineReleases.defaultExpectation.paramPtrs == nil {
+		mmListPipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListPipelineReleasesParamPtrs{}
+	}
+	mmListPipelineReleases.defaultExpectation.paramPtrs.showDeleted = &showDeleted
+	mmListPipelineReleases.defaultExpectation.expectationOrigins.originShowDeleted = minimock.CallerInfo(1)
+
+	return mmListPipelineReleases
+}
+
+// ExpectReturnCountParam9 sets up expected param returnCount for Repository.ListPipelineReleases
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) ExpectReturnCountParam9(returnCount bool) *mRepositoryMockListPipelineReleases {
+	if mmListPipelineReleases.mock.funcListPipelineReleases != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Set")
+	}
+
+	if mmListPipelineReleases.defaultExpectation == nil {
+		mmListPipelineReleases.defaultExpectation = &RepositoryMockListPipelineReleasesExpectation{}
+	}
+
+	if mmListPipelineReleases.defaultExpectation.params != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Expect")
+	}
+
+	if mmListPipelineReleases.defaultExpectation.paramPtrs == nil {
+		mmListPipelineReleases.defaultExpectation.paramPtrs = &RepositoryMockListPipelineReleasesParamPtrs{}
+	}
+	mmListPipelineReleases.defaultExpectation.paramPtrs.returnCount = &returnCount
+	mmListPipelineReleases.defaultExpectation.expectationOrigins.originReturnCount = minimock.CallerInfo(1)
+
+	return mmListPipelineReleases
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.ListPipelineReleases
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool)) *mRepositoryMockListPipelineReleases {
+	if mmListPipelineReleases.mock.inspectFuncListPipelineReleases != nil {
+		mmListPipelineReleases.mock.t.Fatalf("Inspect function is already set for RepositoryMock.ListPipelineReleases")
+	}
+
+	mmListPipelineReleases.mock.inspectFuncListPipelineReleases = f
+
+	return mmListPipelineReleases
+}
+
+// Return sets up results that will be returned by Repository.ListPipelineReleases
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) Return(ppa1 []*datamodel.PipelineRelease, i1 int64, s1 string, err error) *RepositoryMock {
+	if mmListPipelineReleases.mock.funcListPipelineReleases != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Set")
+	}
+
+	if mmListPipelineReleases.defaultExpectation == nil {
+		mmListPipelineReleases.defaultExpectation = &RepositoryMockListPipelineReleasesExpectation{mock: mmListPipelineReleases.mock}
+	}
+	mmListPipelineReleases.defaultExpectation.results = &RepositoryMockListPipelineReleasesResults{ppa1, i1, s1, err}
+	mmListPipelineReleases.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmListPipelineReleases.mock
+}
+
+// Set uses given function f to mock the Repository.ListPipelineReleases method
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) (ppa1 []*datamodel.PipelineRelease, i1 int64, s1 string, err error)) *RepositoryMock {
+	if mmListPipelineReleases.defaultExpectation != nil {
+		mmListPipelineReleases.mock.t.Fatalf("Default expectation is already set for the Repository.ListPipelineReleases method")
+	}
+
+	if len(mmListPipelineReleases.expectations) > 0 {
+		mmListPipelineReleases.mock.t.Fatalf("Some expectations are already set for the Repository.ListPipelineReleases method")
+	}
+
+	mmListPipelineReleases.mock.funcListPipelineReleases = f
+	mmListPipelineReleases.mock.funcListPipelineReleasesOrigin = minimock.CallerInfo(1)
+	return mmListPipelineReleases.mock
+}
+
+// When sets expectation for the Repository.ListPipelineReleases which will trigger the result defined by the following
+// Then helper
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) *RepositoryMockListPipelineReleasesExpectation {
+	if mmListPipelineReleases.mock.funcListPipelineReleases != nil {
+		mmListPipelineReleases.mock.t.Fatalf("RepositoryMock.ListPipelineReleases mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockListPipelineReleasesExpectation{
+		mock:               mmListPipelineReleases.mock,
+		params:             &RepositoryMockListPipelineReleasesParams{ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount},
+		expectationOrigins: RepositoryMockListPipelineReleasesExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmListPipelineReleases.expectations = append(mmListPipelineReleases.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.ListPipelineReleases return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockListPipelineReleasesExpectation) Then(ppa1 []*datamodel.PipelineRelease, i1 int64, s1 string, err error) *RepositoryMock {
+	e.results = &RepositoryMockListPipelineReleasesResults{ppa1, i1, s1, err}
+	return e.mock
+}
+
+// Times sets number of times Repository.ListPipelineReleases should be invoked
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) Times(n uint64) *mRepositoryMockListPipelineReleases {
+	if n == 0 {
+		mmListPipelineReleases.mock.t.Fatalf("Times of RepositoryMock.ListPipelineReleases mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListPipelineReleases.expectedInvocations, n)
+	mmListPipelineReleases.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmListPipelineReleases
+}
+
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) invocationsDone() bool {
+	if len(mmListPipelineReleases.expectations) == 0 && mmListPipelineReleases.defaultExpectation == nil && mmListPipelineReleases.mock.funcListPipelineReleases == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListPipelineReleases.mock.afterListPipelineReleasesCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListPipelineReleases.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListPipelineReleases implements mm_repository.Repository
+func (mmListPipelineReleases *RepositoryMock) ListPipelineReleases(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) (ppa1 []*datamodel.PipelineRelease, i1 int64, s1 string, err error) {
+	mm_atomic.AddUint64(&mmListPipelineReleases.beforeListPipelineReleasesCounter, 1)
+	defer mm_atomic.AddUint64(&mmListPipelineReleases.afterListPipelineReleasesCounter, 1)
+
+	mmListPipelineReleases.t.Helper()
+
+	if mmListPipelineReleases.inspectFuncListPipelineReleases != nil {
+		mmListPipelineReleases.inspectFuncListPipelineReleases(ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount)
+	}
+
+	mm_params := RepositoryMockListPipelineReleasesParams{ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount}
+
+	// Record call args
+	mmListPipelineReleases.ListPipelineReleasesMock.mutex.Lock()
+	mmListPipelineReleases.ListPipelineReleasesMock.callArgs = append(mmListPipelineReleases.ListPipelineReleasesMock.callArgs, &mm_params)
+	mmListPipelineReleases.ListPipelineReleasesMock.mutex.Unlock()
+
+	for _, e := range mmListPipelineReleases.ListPipelineReleasesMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.ppa1, e.results.i1, e.results.s1, e.results.err
+		}
+	}
+
+	if mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.Counter, 1)
+		mm_want := mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.params
+		mm_want_ptrs := mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockListPipelineReleasesParams{ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListPipelineReleases.t.Errorf("RepositoryMock.ListPipelineReleases got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
+				mmListPipelineReleases.t.Errorf("RepositoryMock.ListPipelineReleases got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
+			}
+
+			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
+				mmListPipelineReleases.t.Errorf("RepositoryMock.ListPipelineReleases got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
+			}
+
+			if mm_want_ptrs.pageSize != nil && !minimock.Equal(*mm_want_ptrs.pageSize, mm_got.pageSize) {
+				mmListPipelineReleases.t.Errorf("RepositoryMock.ListPipelineReleases got unexpected parameter pageSize, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.expectationOrigins.originPageSize, *mm_want_ptrs.pageSize, mm_got.pageSize, minimock.Diff(*mm_want_ptrs.pageSize, mm_got.pageSize))
+			}
+
+			if mm_want_ptrs.pageToken != nil && !minimock.Equal(*mm_want_ptrs.pageToken, mm_got.pageToken) {
+				mmListPipelineReleases.t.Errorf("RepositoryMock.ListPipelineReleases got unexpected parameter pageToken, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.expectationOrigins.originPageToken, *mm_want_ptrs.pageToken, mm_got.pageToken, minimock.Diff(*mm_want_ptrs.pageToken, mm_got.pageToken))
+			}
+
+			if mm_want_ptrs.isBasicView != nil && !minimock.Equal(*mm_want_ptrs.isBasicView, mm_got.isBasicView) {
+				mmListPipelineReleases.t.Errorf("RepositoryMock.ListPipelineReleases got unexpected parameter isBasicView, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.expectationOrigins.originIsBasicView, *mm_want_ptrs.isBasicView, mm_got.isBasicView, minimock.Diff(*mm_want_ptrs.isBasicView, mm_got.isBasicView))
+			}
+
+			if mm_want_ptrs.filter != nil && !minimock.Equal(*mm_want_ptrs.filter, mm_got.filter) {
+				mmListPipelineReleases.t.Errorf("RepositoryMock.ListPipelineReleases got unexpected parameter filter, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.expectationOrigins.originFilter, *mm_want_ptrs.filter, mm_got.filter, minimock.Diff(*mm_want_ptrs.filter, mm_got.filter))
+			}
+
+			if mm_want_ptrs.showDeleted != nil && !minimock.Equal(*mm_want_ptrs.showDeleted, mm_got.showDeleted) {
+				mmListPipelineReleases.t.Errorf("RepositoryMock.ListPipelineReleases got unexpected parameter showDeleted, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.expectationOrigins.originShowDeleted, *mm_want_ptrs.showDeleted, mm_got.showDeleted, minimock.Diff(*mm_want_ptrs.showDeleted, mm_got.showDeleted))
+			}
+
+			if mm_want_ptrs.returnCount != nil && !minimock.Equal(*mm_want_ptrs.returnCount, mm_got.returnCount) {
+				mmListPipelineReleases.t.Errorf("RepositoryMock.ListPipelineReleases got unexpected parameter returnCount, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.expectationOrigins.originReturnCount, *mm_want_ptrs.returnCount, mm_got.returnCount, minimock.Diff(*mm_want_ptrs.returnCount, mm_got.returnCount))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListPipelineReleases.t.Errorf("RepositoryMock.ListPipelineReleases got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListPipelineReleases.ListPipelineReleasesMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListPipelineReleases.t.Fatal("No results are set for the RepositoryMock.ListPipelineReleases")
+		}
+		return (*mm_results).ppa1, (*mm_results).i1, (*mm_results).s1, (*mm_results).err
+	}
+	if mmListPipelineReleases.funcListPipelineReleases != nil {
+		return mmListPipelineReleases.funcListPipelineReleases(ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount)
+	}
+	mmListPipelineReleases.t.Fatalf("Unexpected call to RepositoryMock.ListPipelineReleases. %v %v %v %v %v %v %v %v %v", ctx, ownerPermalink, pipelineUID, pageSize, pageToken, isBasicView, filter, showDeleted, returnCount)
+	return
+}
+
+// ListPipelineReleasesAfterCounter returns a count of finished RepositoryMock.ListPipelineReleases invocations
+func (mmListPipelineReleases *RepositoryMock) ListPipelineReleasesAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListPipelineReleases.afterListPipelineReleasesCounter)
+}
+
+// ListPipelineReleasesBeforeCounter returns a count of RepositoryMock.ListPipelineReleases invocations
+func (mmListPipelineReleases *RepositoryMock) ListPipelineReleasesBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListPipelineReleases.beforeListPipelineReleasesCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.ListPipelineReleases.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListPipelineReleases *mRepositoryMockListPipelineReleases) Calls() []*RepositoryMockListPipelineReleasesParams {
+	mmListPipelineReleases.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockListPipelineReleasesParams, len(mmListPipelineReleases.callArgs))
+	copy(argCopy, mmListPipelineReleases.callArgs)
+
+	mmListPipelineReleases.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListPipelineReleasesDone returns true if the count of the ListPipelineReleases invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockListPipelineReleasesDone() bool {
+	if m.ListPipelineReleasesMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListPipelineReleasesMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListPipelineReleasesMock.invocationsDone()
+}
+
+// MinimockListPipelineReleasesInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockListPipelineReleasesInspect() {
+	for _, e := range m.ListPipelineReleasesMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.ListPipelineReleases at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterListPipelineReleasesCounter := mm_atomic.LoadUint64(&m.afterListPipelineReleasesCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListPipelineReleasesMock.defaultExpectation != nil && afterListPipelineReleasesCounter < 1 {
+		if m.ListPipelineReleasesMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to RepositoryMock.ListPipelineReleases at\n%s", m.ListPipelineReleasesMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.ListPipelineReleases at\n%s with params: %#v", m.ListPipelineReleasesMock.defaultExpectation.expectationOrigins.origin, *m.ListPipelineReleasesMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListPipelineReleases != nil && afterListPipelineReleasesCounter < 1 {
+		m.t.Errorf("Expected call to RepositoryMock.ListPipelineReleases at\n%s", m.funcListPipelineReleasesOrigin)
+	}
+
+	if !m.ListPipelineReleasesMock.invocationsDone() && afterListPipelineReleasesCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.ListPipelineReleases at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.ListPipelineReleasesMock.expectedInvocations), m.ListPipelineReleasesMock.expectedInvocationsOrigin, afterListPipelineReleasesCounter)
 	}
 }
 
@@ -16679,30 +16086,30 @@ type RepositoryMockListPipelinesExpectation struct {
 
 // RepositoryMockListPipelinesParams contains parameters of the Repository.ListPipelines
 type RepositoryMockListPipelinesParams struct {
-	ctx                context.Context
-	pageSize           int64
-	pageToken          string
-	isBasicView        bool
-	filter             filtering.Filter
-	uidAllowList       []uuid.UUID
-	showDeleted        bool
-	embedReleases      bool
-	order              ordering.OrderBy
-	presetNamespaceUID uuid.UUID
+	ctx            context.Context
+	ownerPermalink string
+	pageSize       int64
+	pageToken      string
+	isBasicView    bool
+	filter         filtering.Filter
+	uidAllowList   []uuid.UUID
+	showDeleted    bool
+	embedReleases  bool
+	order          ordering.OrderBy
 }
 
 // RepositoryMockListPipelinesParamPtrs contains pointers to parameters of the Repository.ListPipelines
 type RepositoryMockListPipelinesParamPtrs struct {
-	ctx                *context.Context
-	pageSize           *int64
-	pageToken          *string
-	isBasicView        *bool
-	filter             *filtering.Filter
-	uidAllowList       *[]uuid.UUID
-	showDeleted        *bool
-	embedReleases      *bool
-	order              *ordering.OrderBy
-	presetNamespaceUID *uuid.UUID
+	ctx            *context.Context
+	ownerPermalink *string
+	pageSize       *int64
+	pageToken      *string
+	isBasicView    *bool
+	filter         *filtering.Filter
+	uidAllowList   *[]uuid.UUID
+	showDeleted    *bool
+	embedReleases  *bool
+	order          *ordering.OrderBy
 }
 
 // RepositoryMockListPipelinesResults contains results of the Repository.ListPipelines
@@ -16715,17 +16122,17 @@ type RepositoryMockListPipelinesResults struct {
 
 // RepositoryMockListPipelinesOrigins contains origins of expectations of the Repository.ListPipelines
 type RepositoryMockListPipelinesExpectationOrigins struct {
-	origin                   string
-	originCtx                string
-	originPageSize           string
-	originPageToken          string
-	originIsBasicView        string
-	originFilter             string
-	originUidAllowList       string
-	originShowDeleted        string
-	originEmbedReleases      string
-	originOrder              string
-	originPresetNamespaceUID string
+	origin               string
+	originCtx            string
+	originOwnerPermalink string
+	originPageSize       string
+	originPageToken      string
+	originIsBasicView    string
+	originFilter         string
+	originUidAllowList   string
+	originShowDeleted    string
+	originEmbedReleases  string
+	originOrder          string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -16739,7 +16146,7 @@ func (mmListPipelines *mRepositoryMockListPipelines) Optional() *mRepositoryMock
 }
 
 // Expect sets up expected params for Repository.ListPipelines
-func (mmListPipelines *mRepositoryMockListPipelines) Expect(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) *mRepositoryMockListPipelines {
+func (mmListPipelines *mRepositoryMockListPipelines) Expect(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) *mRepositoryMockListPipelines {
 	if mmListPipelines.mock.funcListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
 	}
@@ -16752,7 +16159,7 @@ func (mmListPipelines *mRepositoryMockListPipelines) Expect(ctx context.Context,
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by ExpectParams functions")
 	}
 
-	mmListPipelines.defaultExpectation.params = &RepositoryMockListPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID}
+	mmListPipelines.defaultExpectation.params = &RepositoryMockListPipelinesParams{ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order}
 	mmListPipelines.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmListPipelines.expectations {
 		if minimock.Equal(e.params, mmListPipelines.defaultExpectation.params) {
@@ -16786,8 +16193,31 @@ func (mmListPipelines *mRepositoryMockListPipelines) ExpectCtxParam1(ctx context
 	return mmListPipelines
 }
 
-// ExpectPageSizeParam2 sets up expected param pageSize for Repository.ListPipelines
-func (mmListPipelines *mRepositoryMockListPipelines) ExpectPageSizeParam2(pageSize int64) *mRepositoryMockListPipelines {
+// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.ListPipelines
+func (mmListPipelines *mRepositoryMockListPipelines) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockListPipelines {
+	if mmListPipelines.mock.funcListPipelines != nil {
+		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
+	}
+
+	if mmListPipelines.defaultExpectation == nil {
+		mmListPipelines.defaultExpectation = &RepositoryMockListPipelinesExpectation{}
+	}
+
+	if mmListPipelines.defaultExpectation.params != nil {
+		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Expect")
+	}
+
+	if mmListPipelines.defaultExpectation.paramPtrs == nil {
+		mmListPipelines.defaultExpectation.paramPtrs = &RepositoryMockListPipelinesParamPtrs{}
+	}
+	mmListPipelines.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
+	mmListPipelines.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
+
+	return mmListPipelines
+}
+
+// ExpectPageSizeParam3 sets up expected param pageSize for Repository.ListPipelines
+func (mmListPipelines *mRepositoryMockListPipelines) ExpectPageSizeParam3(pageSize int64) *mRepositoryMockListPipelines {
 	if mmListPipelines.mock.funcListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
 	}
@@ -16809,8 +16239,8 @@ func (mmListPipelines *mRepositoryMockListPipelines) ExpectPageSizeParam2(pageSi
 	return mmListPipelines
 }
 
-// ExpectPageTokenParam3 sets up expected param pageToken for Repository.ListPipelines
-func (mmListPipelines *mRepositoryMockListPipelines) ExpectPageTokenParam3(pageToken string) *mRepositoryMockListPipelines {
+// ExpectPageTokenParam4 sets up expected param pageToken for Repository.ListPipelines
+func (mmListPipelines *mRepositoryMockListPipelines) ExpectPageTokenParam4(pageToken string) *mRepositoryMockListPipelines {
 	if mmListPipelines.mock.funcListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
 	}
@@ -16832,8 +16262,8 @@ func (mmListPipelines *mRepositoryMockListPipelines) ExpectPageTokenParam3(pageT
 	return mmListPipelines
 }
 
-// ExpectIsBasicViewParam4 sets up expected param isBasicView for Repository.ListPipelines
-func (mmListPipelines *mRepositoryMockListPipelines) ExpectIsBasicViewParam4(isBasicView bool) *mRepositoryMockListPipelines {
+// ExpectIsBasicViewParam5 sets up expected param isBasicView for Repository.ListPipelines
+func (mmListPipelines *mRepositoryMockListPipelines) ExpectIsBasicViewParam5(isBasicView bool) *mRepositoryMockListPipelines {
 	if mmListPipelines.mock.funcListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
 	}
@@ -16855,8 +16285,8 @@ func (mmListPipelines *mRepositoryMockListPipelines) ExpectIsBasicViewParam4(isB
 	return mmListPipelines
 }
 
-// ExpectFilterParam5 sets up expected param filter for Repository.ListPipelines
-func (mmListPipelines *mRepositoryMockListPipelines) ExpectFilterParam5(filter filtering.Filter) *mRepositoryMockListPipelines {
+// ExpectFilterParam6 sets up expected param filter for Repository.ListPipelines
+func (mmListPipelines *mRepositoryMockListPipelines) ExpectFilterParam6(filter filtering.Filter) *mRepositoryMockListPipelines {
 	if mmListPipelines.mock.funcListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
 	}
@@ -16878,8 +16308,8 @@ func (mmListPipelines *mRepositoryMockListPipelines) ExpectFilterParam5(filter f
 	return mmListPipelines
 }
 
-// ExpectUidAllowListParam6 sets up expected param uidAllowList for Repository.ListPipelines
-func (mmListPipelines *mRepositoryMockListPipelines) ExpectUidAllowListParam6(uidAllowList []uuid.UUID) *mRepositoryMockListPipelines {
+// ExpectUidAllowListParam7 sets up expected param uidAllowList for Repository.ListPipelines
+func (mmListPipelines *mRepositoryMockListPipelines) ExpectUidAllowListParam7(uidAllowList []uuid.UUID) *mRepositoryMockListPipelines {
 	if mmListPipelines.mock.funcListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
 	}
@@ -16901,8 +16331,8 @@ func (mmListPipelines *mRepositoryMockListPipelines) ExpectUidAllowListParam6(ui
 	return mmListPipelines
 }
 
-// ExpectShowDeletedParam7 sets up expected param showDeleted for Repository.ListPipelines
-func (mmListPipelines *mRepositoryMockListPipelines) ExpectShowDeletedParam7(showDeleted bool) *mRepositoryMockListPipelines {
+// ExpectShowDeletedParam8 sets up expected param showDeleted for Repository.ListPipelines
+func (mmListPipelines *mRepositoryMockListPipelines) ExpectShowDeletedParam8(showDeleted bool) *mRepositoryMockListPipelines {
 	if mmListPipelines.mock.funcListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
 	}
@@ -16924,8 +16354,8 @@ func (mmListPipelines *mRepositoryMockListPipelines) ExpectShowDeletedParam7(sho
 	return mmListPipelines
 }
 
-// ExpectEmbedReleasesParam8 sets up expected param embedReleases for Repository.ListPipelines
-func (mmListPipelines *mRepositoryMockListPipelines) ExpectEmbedReleasesParam8(embedReleases bool) *mRepositoryMockListPipelines {
+// ExpectEmbedReleasesParam9 sets up expected param embedReleases for Repository.ListPipelines
+func (mmListPipelines *mRepositoryMockListPipelines) ExpectEmbedReleasesParam9(embedReleases bool) *mRepositoryMockListPipelines {
 	if mmListPipelines.mock.funcListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
 	}
@@ -16947,8 +16377,8 @@ func (mmListPipelines *mRepositoryMockListPipelines) ExpectEmbedReleasesParam8(e
 	return mmListPipelines
 }
 
-// ExpectOrderParam9 sets up expected param order for Repository.ListPipelines
-func (mmListPipelines *mRepositoryMockListPipelines) ExpectOrderParam9(order ordering.OrderBy) *mRepositoryMockListPipelines {
+// ExpectOrderParam10 sets up expected param order for Repository.ListPipelines
+func (mmListPipelines *mRepositoryMockListPipelines) ExpectOrderParam10(order ordering.OrderBy) *mRepositoryMockListPipelines {
 	if mmListPipelines.mock.funcListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
 	}
@@ -16970,31 +16400,8 @@ func (mmListPipelines *mRepositoryMockListPipelines) ExpectOrderParam9(order ord
 	return mmListPipelines
 }
 
-// ExpectPresetNamespaceUIDParam10 sets up expected param presetNamespaceUID for Repository.ListPipelines
-func (mmListPipelines *mRepositoryMockListPipelines) ExpectPresetNamespaceUIDParam10(presetNamespaceUID uuid.UUID) *mRepositoryMockListPipelines {
-	if mmListPipelines.mock.funcListPipelines != nil {
-		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
-	}
-
-	if mmListPipelines.defaultExpectation == nil {
-		mmListPipelines.defaultExpectation = &RepositoryMockListPipelinesExpectation{}
-	}
-
-	if mmListPipelines.defaultExpectation.params != nil {
-		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Expect")
-	}
-
-	if mmListPipelines.defaultExpectation.paramPtrs == nil {
-		mmListPipelines.defaultExpectation.paramPtrs = &RepositoryMockListPipelinesParamPtrs{}
-	}
-	mmListPipelines.defaultExpectation.paramPtrs.presetNamespaceUID = &presetNamespaceUID
-	mmListPipelines.defaultExpectation.expectationOrigins.originPresetNamespaceUID = minimock.CallerInfo(1)
-
-	return mmListPipelines
-}
-
 // Inspect accepts an inspector function that has same arguments as the Repository.ListPipelines
-func (mmListPipelines *mRepositoryMockListPipelines) Inspect(f func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID)) *mRepositoryMockListPipelines {
+func (mmListPipelines *mRepositoryMockListPipelines) Inspect(f func(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy)) *mRepositoryMockListPipelines {
 	if mmListPipelines.mock.inspectFuncListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("Inspect function is already set for RepositoryMock.ListPipelines")
 	}
@@ -17019,7 +16426,7 @@ func (mmListPipelines *mRepositoryMockListPipelines) Return(ppa1 []*datamodel.Pi
 }
 
 // Set uses given function f to mock the Repository.ListPipelines method
-func (mmListPipelines *mRepositoryMockListPipelines) Set(f func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error)) *RepositoryMock {
+func (mmListPipelines *mRepositoryMockListPipelines) Set(f func(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error)) *RepositoryMock {
 	if mmListPipelines.defaultExpectation != nil {
 		mmListPipelines.mock.t.Fatalf("Default expectation is already set for the Repository.ListPipelines method")
 	}
@@ -17035,14 +16442,14 @@ func (mmListPipelines *mRepositoryMockListPipelines) Set(f func(ctx context.Cont
 
 // When sets expectation for the Repository.ListPipelines which will trigger the result defined by the following
 // Then helper
-func (mmListPipelines *mRepositoryMockListPipelines) When(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) *RepositoryMockListPipelinesExpectation {
+func (mmListPipelines *mRepositoryMockListPipelines) When(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) *RepositoryMockListPipelinesExpectation {
 	if mmListPipelines.mock.funcListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
 	}
 
 	expectation := &RepositoryMockListPipelinesExpectation{
 		mock:               mmListPipelines.mock,
-		params:             &RepositoryMockListPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID},
+		params:             &RepositoryMockListPipelinesParams{ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order},
 		expectationOrigins: RepositoryMockListPipelinesExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
 	mmListPipelines.expectations = append(mmListPipelines.expectations, expectation)
@@ -17077,17 +16484,17 @@ func (mmListPipelines *mRepositoryMockListPipelines) invocationsDone() bool {
 }
 
 // ListPipelines implements mm_repository.Repository
-func (mmListPipelines *RepositoryMock) ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error) {
+func (mmListPipelines *RepositoryMock) ListPipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error) {
 	mm_atomic.AddUint64(&mmListPipelines.beforeListPipelinesCounter, 1)
 	defer mm_atomic.AddUint64(&mmListPipelines.afterListPipelinesCounter, 1)
 
 	mmListPipelines.t.Helper()
 
 	if mmListPipelines.inspectFuncListPipelines != nil {
-		mmListPipelines.inspectFuncListPipelines(ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID)
+		mmListPipelines.inspectFuncListPipelines(ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
 	}
 
-	mm_params := RepositoryMockListPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID}
+	mm_params := RepositoryMockListPipelinesParams{ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order}
 
 	// Record call args
 	mmListPipelines.ListPipelinesMock.mutex.Lock()
@@ -17106,13 +16513,18 @@ func (mmListPipelines *RepositoryMock) ListPipelines(ctx context.Context, pageSi
 		mm_want := mmListPipelines.ListPipelinesMock.defaultExpectation.params
 		mm_want_ptrs := mmListPipelines.ListPipelinesMock.defaultExpectation.paramPtrs
 
-		mm_got := RepositoryMockListPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID}
+		mm_got := RepositoryMockListPipelinesParams{ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order}
 
 		if mm_want_ptrs != nil {
 
 			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
 				mmListPipelines.t.Errorf("RepositoryMock.ListPipelines got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
 					mmListPipelines.ListPipelinesMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
+				mmListPipelines.t.Errorf("RepositoryMock.ListPipelines got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPipelines.ListPipelinesMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
 			}
 
 			if mm_want_ptrs.pageSize != nil && !minimock.Equal(*mm_want_ptrs.pageSize, mm_got.pageSize) {
@@ -17155,11 +16567,6 @@ func (mmListPipelines *RepositoryMock) ListPipelines(ctx context.Context, pageSi
 					mmListPipelines.ListPipelinesMock.defaultExpectation.expectationOrigins.originOrder, *mm_want_ptrs.order, mm_got.order, minimock.Diff(*mm_want_ptrs.order, mm_got.order))
 			}
 
-			if mm_want_ptrs.presetNamespaceUID != nil && !minimock.Equal(*mm_want_ptrs.presetNamespaceUID, mm_got.presetNamespaceUID) {
-				mmListPipelines.t.Errorf("RepositoryMock.ListPipelines got unexpected parameter presetNamespaceUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListPipelines.ListPipelinesMock.defaultExpectation.expectationOrigins.originPresetNamespaceUID, *mm_want_ptrs.presetNamespaceUID, mm_got.presetNamespaceUID, minimock.Diff(*mm_want_ptrs.presetNamespaceUID, mm_got.presetNamespaceUID))
-			}
-
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
 			mmListPipelines.t.Errorf("RepositoryMock.ListPipelines got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
 				mmListPipelines.ListPipelinesMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
@@ -17172,9 +16579,9 @@ func (mmListPipelines *RepositoryMock) ListPipelines(ctx context.Context, pageSi
 		return (*mm_results).ppa1, (*mm_results).i1, (*mm_results).s1, (*mm_results).err
 	}
 	if mmListPipelines.funcListPipelines != nil {
-		return mmListPipelines.funcListPipelines(ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID)
+		return mmListPipelines.funcListPipelines(ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
 	}
-	mmListPipelines.t.Fatalf("Unexpected call to RepositoryMock.ListPipelines. %v %v %v %v %v %v %v %v %v %v", ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID)
+	mmListPipelines.t.Fatalf("Unexpected call to RepositoryMock.ListPipelines. %v %v %v %v %v %v %v %v %v %v", ctx, ownerPermalink, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
 	return
 }
 
@@ -17743,6 +17150,599 @@ func (m *RepositoryMock) MinimockListPipelinesAdminInspect() {
 	if !m.ListPipelinesAdminMock.invocationsDone() && afterListPipelinesAdminCounter > 0 {
 		m.t.Errorf("Expected %d calls to RepositoryMock.ListPipelinesAdmin at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.ListPipelinesAdminMock.expectedInvocations), m.ListPipelinesAdminMock.expectedInvocationsOrigin, afterListPipelinesAdminCounter)
+	}
+}
+
+type mRepositoryMockListPublicPipelines struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockListPublicPipelinesExpectation
+	expectations       []*RepositoryMockListPublicPipelinesExpectation
+
+	callArgs []*RepositoryMockListPublicPipelinesParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// RepositoryMockListPublicPipelinesExpectation specifies expectation struct of the Repository.ListPublicPipelines
+type RepositoryMockListPublicPipelinesExpectation struct {
+	mock               *RepositoryMock
+	params             *RepositoryMockListPublicPipelinesParams
+	paramPtrs          *RepositoryMockListPublicPipelinesParamPtrs
+	expectationOrigins RepositoryMockListPublicPipelinesExpectationOrigins
+	results            *RepositoryMockListPublicPipelinesResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// RepositoryMockListPublicPipelinesParams contains parameters of the Repository.ListPublicPipelines
+type RepositoryMockListPublicPipelinesParams struct {
+	ctx                context.Context
+	pageSize           int64
+	pageToken          string
+	isBasicView        bool
+	filter             filtering.Filter
+	uidAllowList       []uuid.UUID
+	showDeleted        bool
+	embedReleases      bool
+	order              ordering.OrderBy
+	presetNamespaceUID uuid.UUID
+}
+
+// RepositoryMockListPublicPipelinesParamPtrs contains pointers to parameters of the Repository.ListPublicPipelines
+type RepositoryMockListPublicPipelinesParamPtrs struct {
+	ctx                *context.Context
+	pageSize           *int64
+	pageToken          *string
+	isBasicView        *bool
+	filter             *filtering.Filter
+	uidAllowList       *[]uuid.UUID
+	showDeleted        *bool
+	embedReleases      *bool
+	order              *ordering.OrderBy
+	presetNamespaceUID *uuid.UUID
+}
+
+// RepositoryMockListPublicPipelinesResults contains results of the Repository.ListPublicPipelines
+type RepositoryMockListPublicPipelinesResults struct {
+	ppa1 []*datamodel.Pipeline
+	i1   int64
+	s1   string
+	err  error
+}
+
+// RepositoryMockListPublicPipelinesOrigins contains origins of expectations of the Repository.ListPublicPipelines
+type RepositoryMockListPublicPipelinesExpectationOrigins struct {
+	origin                   string
+	originCtx                string
+	originPageSize           string
+	originPageToken          string
+	originIsBasicView        string
+	originFilter             string
+	originUidAllowList       string
+	originShowDeleted        string
+	originEmbedReleases      string
+	originOrder              string
+	originPresetNamespaceUID string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) Optional() *mRepositoryMockListPublicPipelines {
+	mmListPublicPipelines.optional = true
+	return mmListPublicPipelines
+}
+
+// Expect sets up expected params for Repository.ListPublicPipelines
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) Expect(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) *mRepositoryMockListPublicPipelines {
+	if mmListPublicPipelines.mock.funcListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Set")
+	}
+
+	if mmListPublicPipelines.defaultExpectation == nil {
+		mmListPublicPipelines.defaultExpectation = &RepositoryMockListPublicPipelinesExpectation{}
+	}
+
+	if mmListPublicPipelines.defaultExpectation.paramPtrs != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by ExpectParams functions")
+	}
+
+	mmListPublicPipelines.defaultExpectation.params = &RepositoryMockListPublicPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID}
+	mmListPublicPipelines.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmListPublicPipelines.expectations {
+		if minimock.Equal(e.params, mmListPublicPipelines.defaultExpectation.params) {
+			mmListPublicPipelines.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListPublicPipelines.defaultExpectation.params)
+		}
+	}
+
+	return mmListPublicPipelines
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.ListPublicPipelines
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) ExpectCtxParam1(ctx context.Context) *mRepositoryMockListPublicPipelines {
+	if mmListPublicPipelines.mock.funcListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Set")
+	}
+
+	if mmListPublicPipelines.defaultExpectation == nil {
+		mmListPublicPipelines.defaultExpectation = &RepositoryMockListPublicPipelinesExpectation{}
+	}
+
+	if mmListPublicPipelines.defaultExpectation.params != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Expect")
+	}
+
+	if mmListPublicPipelines.defaultExpectation.paramPtrs == nil {
+		mmListPublicPipelines.defaultExpectation.paramPtrs = &RepositoryMockListPublicPipelinesParamPtrs{}
+	}
+	mmListPublicPipelines.defaultExpectation.paramPtrs.ctx = &ctx
+	mmListPublicPipelines.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmListPublicPipelines
+}
+
+// ExpectPageSizeParam2 sets up expected param pageSize for Repository.ListPublicPipelines
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) ExpectPageSizeParam2(pageSize int64) *mRepositoryMockListPublicPipelines {
+	if mmListPublicPipelines.mock.funcListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Set")
+	}
+
+	if mmListPublicPipelines.defaultExpectation == nil {
+		mmListPublicPipelines.defaultExpectation = &RepositoryMockListPublicPipelinesExpectation{}
+	}
+
+	if mmListPublicPipelines.defaultExpectation.params != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Expect")
+	}
+
+	if mmListPublicPipelines.defaultExpectation.paramPtrs == nil {
+		mmListPublicPipelines.defaultExpectation.paramPtrs = &RepositoryMockListPublicPipelinesParamPtrs{}
+	}
+	mmListPublicPipelines.defaultExpectation.paramPtrs.pageSize = &pageSize
+	mmListPublicPipelines.defaultExpectation.expectationOrigins.originPageSize = minimock.CallerInfo(1)
+
+	return mmListPublicPipelines
+}
+
+// ExpectPageTokenParam3 sets up expected param pageToken for Repository.ListPublicPipelines
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) ExpectPageTokenParam3(pageToken string) *mRepositoryMockListPublicPipelines {
+	if mmListPublicPipelines.mock.funcListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Set")
+	}
+
+	if mmListPublicPipelines.defaultExpectation == nil {
+		mmListPublicPipelines.defaultExpectation = &RepositoryMockListPublicPipelinesExpectation{}
+	}
+
+	if mmListPublicPipelines.defaultExpectation.params != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Expect")
+	}
+
+	if mmListPublicPipelines.defaultExpectation.paramPtrs == nil {
+		mmListPublicPipelines.defaultExpectation.paramPtrs = &RepositoryMockListPublicPipelinesParamPtrs{}
+	}
+	mmListPublicPipelines.defaultExpectation.paramPtrs.pageToken = &pageToken
+	mmListPublicPipelines.defaultExpectation.expectationOrigins.originPageToken = minimock.CallerInfo(1)
+
+	return mmListPublicPipelines
+}
+
+// ExpectIsBasicViewParam4 sets up expected param isBasicView for Repository.ListPublicPipelines
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) ExpectIsBasicViewParam4(isBasicView bool) *mRepositoryMockListPublicPipelines {
+	if mmListPublicPipelines.mock.funcListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Set")
+	}
+
+	if mmListPublicPipelines.defaultExpectation == nil {
+		mmListPublicPipelines.defaultExpectation = &RepositoryMockListPublicPipelinesExpectation{}
+	}
+
+	if mmListPublicPipelines.defaultExpectation.params != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Expect")
+	}
+
+	if mmListPublicPipelines.defaultExpectation.paramPtrs == nil {
+		mmListPublicPipelines.defaultExpectation.paramPtrs = &RepositoryMockListPublicPipelinesParamPtrs{}
+	}
+	mmListPublicPipelines.defaultExpectation.paramPtrs.isBasicView = &isBasicView
+	mmListPublicPipelines.defaultExpectation.expectationOrigins.originIsBasicView = minimock.CallerInfo(1)
+
+	return mmListPublicPipelines
+}
+
+// ExpectFilterParam5 sets up expected param filter for Repository.ListPublicPipelines
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) ExpectFilterParam5(filter filtering.Filter) *mRepositoryMockListPublicPipelines {
+	if mmListPublicPipelines.mock.funcListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Set")
+	}
+
+	if mmListPublicPipelines.defaultExpectation == nil {
+		mmListPublicPipelines.defaultExpectation = &RepositoryMockListPublicPipelinesExpectation{}
+	}
+
+	if mmListPublicPipelines.defaultExpectation.params != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Expect")
+	}
+
+	if mmListPublicPipelines.defaultExpectation.paramPtrs == nil {
+		mmListPublicPipelines.defaultExpectation.paramPtrs = &RepositoryMockListPublicPipelinesParamPtrs{}
+	}
+	mmListPublicPipelines.defaultExpectation.paramPtrs.filter = &filter
+	mmListPublicPipelines.defaultExpectation.expectationOrigins.originFilter = minimock.CallerInfo(1)
+
+	return mmListPublicPipelines
+}
+
+// ExpectUidAllowListParam6 sets up expected param uidAllowList for Repository.ListPublicPipelines
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) ExpectUidAllowListParam6(uidAllowList []uuid.UUID) *mRepositoryMockListPublicPipelines {
+	if mmListPublicPipelines.mock.funcListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Set")
+	}
+
+	if mmListPublicPipelines.defaultExpectation == nil {
+		mmListPublicPipelines.defaultExpectation = &RepositoryMockListPublicPipelinesExpectation{}
+	}
+
+	if mmListPublicPipelines.defaultExpectation.params != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Expect")
+	}
+
+	if mmListPublicPipelines.defaultExpectation.paramPtrs == nil {
+		mmListPublicPipelines.defaultExpectation.paramPtrs = &RepositoryMockListPublicPipelinesParamPtrs{}
+	}
+	mmListPublicPipelines.defaultExpectation.paramPtrs.uidAllowList = &uidAllowList
+	mmListPublicPipelines.defaultExpectation.expectationOrigins.originUidAllowList = minimock.CallerInfo(1)
+
+	return mmListPublicPipelines
+}
+
+// ExpectShowDeletedParam7 sets up expected param showDeleted for Repository.ListPublicPipelines
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) ExpectShowDeletedParam7(showDeleted bool) *mRepositoryMockListPublicPipelines {
+	if mmListPublicPipelines.mock.funcListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Set")
+	}
+
+	if mmListPublicPipelines.defaultExpectation == nil {
+		mmListPublicPipelines.defaultExpectation = &RepositoryMockListPublicPipelinesExpectation{}
+	}
+
+	if mmListPublicPipelines.defaultExpectation.params != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Expect")
+	}
+
+	if mmListPublicPipelines.defaultExpectation.paramPtrs == nil {
+		mmListPublicPipelines.defaultExpectation.paramPtrs = &RepositoryMockListPublicPipelinesParamPtrs{}
+	}
+	mmListPublicPipelines.defaultExpectation.paramPtrs.showDeleted = &showDeleted
+	mmListPublicPipelines.defaultExpectation.expectationOrigins.originShowDeleted = minimock.CallerInfo(1)
+
+	return mmListPublicPipelines
+}
+
+// ExpectEmbedReleasesParam8 sets up expected param embedReleases for Repository.ListPublicPipelines
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) ExpectEmbedReleasesParam8(embedReleases bool) *mRepositoryMockListPublicPipelines {
+	if mmListPublicPipelines.mock.funcListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Set")
+	}
+
+	if mmListPublicPipelines.defaultExpectation == nil {
+		mmListPublicPipelines.defaultExpectation = &RepositoryMockListPublicPipelinesExpectation{}
+	}
+
+	if mmListPublicPipelines.defaultExpectation.params != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Expect")
+	}
+
+	if mmListPublicPipelines.defaultExpectation.paramPtrs == nil {
+		mmListPublicPipelines.defaultExpectation.paramPtrs = &RepositoryMockListPublicPipelinesParamPtrs{}
+	}
+	mmListPublicPipelines.defaultExpectation.paramPtrs.embedReleases = &embedReleases
+	mmListPublicPipelines.defaultExpectation.expectationOrigins.originEmbedReleases = minimock.CallerInfo(1)
+
+	return mmListPublicPipelines
+}
+
+// ExpectOrderParam9 sets up expected param order for Repository.ListPublicPipelines
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) ExpectOrderParam9(order ordering.OrderBy) *mRepositoryMockListPublicPipelines {
+	if mmListPublicPipelines.mock.funcListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Set")
+	}
+
+	if mmListPublicPipelines.defaultExpectation == nil {
+		mmListPublicPipelines.defaultExpectation = &RepositoryMockListPublicPipelinesExpectation{}
+	}
+
+	if mmListPublicPipelines.defaultExpectation.params != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Expect")
+	}
+
+	if mmListPublicPipelines.defaultExpectation.paramPtrs == nil {
+		mmListPublicPipelines.defaultExpectation.paramPtrs = &RepositoryMockListPublicPipelinesParamPtrs{}
+	}
+	mmListPublicPipelines.defaultExpectation.paramPtrs.order = &order
+	mmListPublicPipelines.defaultExpectation.expectationOrigins.originOrder = minimock.CallerInfo(1)
+
+	return mmListPublicPipelines
+}
+
+// ExpectPresetNamespaceUIDParam10 sets up expected param presetNamespaceUID for Repository.ListPublicPipelines
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) ExpectPresetNamespaceUIDParam10(presetNamespaceUID uuid.UUID) *mRepositoryMockListPublicPipelines {
+	if mmListPublicPipelines.mock.funcListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Set")
+	}
+
+	if mmListPublicPipelines.defaultExpectation == nil {
+		mmListPublicPipelines.defaultExpectation = &RepositoryMockListPublicPipelinesExpectation{}
+	}
+
+	if mmListPublicPipelines.defaultExpectation.params != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Expect")
+	}
+
+	if mmListPublicPipelines.defaultExpectation.paramPtrs == nil {
+		mmListPublicPipelines.defaultExpectation.paramPtrs = &RepositoryMockListPublicPipelinesParamPtrs{}
+	}
+	mmListPublicPipelines.defaultExpectation.paramPtrs.presetNamespaceUID = &presetNamespaceUID
+	mmListPublicPipelines.defaultExpectation.expectationOrigins.originPresetNamespaceUID = minimock.CallerInfo(1)
+
+	return mmListPublicPipelines
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.ListPublicPipelines
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) Inspect(f func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID)) *mRepositoryMockListPublicPipelines {
+	if mmListPublicPipelines.mock.inspectFuncListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("Inspect function is already set for RepositoryMock.ListPublicPipelines")
+	}
+
+	mmListPublicPipelines.mock.inspectFuncListPublicPipelines = f
+
+	return mmListPublicPipelines
+}
+
+// Return sets up results that will be returned by Repository.ListPublicPipelines
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) Return(ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error) *RepositoryMock {
+	if mmListPublicPipelines.mock.funcListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Set")
+	}
+
+	if mmListPublicPipelines.defaultExpectation == nil {
+		mmListPublicPipelines.defaultExpectation = &RepositoryMockListPublicPipelinesExpectation{mock: mmListPublicPipelines.mock}
+	}
+	mmListPublicPipelines.defaultExpectation.results = &RepositoryMockListPublicPipelinesResults{ppa1, i1, s1, err}
+	mmListPublicPipelines.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmListPublicPipelines.mock
+}
+
+// Set uses given function f to mock the Repository.ListPublicPipelines method
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) Set(f func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error)) *RepositoryMock {
+	if mmListPublicPipelines.defaultExpectation != nil {
+		mmListPublicPipelines.mock.t.Fatalf("Default expectation is already set for the Repository.ListPublicPipelines method")
+	}
+
+	if len(mmListPublicPipelines.expectations) > 0 {
+		mmListPublicPipelines.mock.t.Fatalf("Some expectations are already set for the Repository.ListPublicPipelines method")
+	}
+
+	mmListPublicPipelines.mock.funcListPublicPipelines = f
+	mmListPublicPipelines.mock.funcListPublicPipelinesOrigin = minimock.CallerInfo(1)
+	return mmListPublicPipelines.mock
+}
+
+// When sets expectation for the Repository.ListPublicPipelines which will trigger the result defined by the following
+// Then helper
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) When(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) *RepositoryMockListPublicPipelinesExpectation {
+	if mmListPublicPipelines.mock.funcListPublicPipelines != nil {
+		mmListPublicPipelines.mock.t.Fatalf("RepositoryMock.ListPublicPipelines mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockListPublicPipelinesExpectation{
+		mock:               mmListPublicPipelines.mock,
+		params:             &RepositoryMockListPublicPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID},
+		expectationOrigins: RepositoryMockListPublicPipelinesExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmListPublicPipelines.expectations = append(mmListPublicPipelines.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.ListPublicPipelines return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockListPublicPipelinesExpectation) Then(ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error) *RepositoryMock {
+	e.results = &RepositoryMockListPublicPipelinesResults{ppa1, i1, s1, err}
+	return e.mock
+}
+
+// Times sets number of times Repository.ListPublicPipelines should be invoked
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) Times(n uint64) *mRepositoryMockListPublicPipelines {
+	if n == 0 {
+		mmListPublicPipelines.mock.t.Fatalf("Times of RepositoryMock.ListPublicPipelines mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListPublicPipelines.expectedInvocations, n)
+	mmListPublicPipelines.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmListPublicPipelines
+}
+
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) invocationsDone() bool {
+	if len(mmListPublicPipelines.expectations) == 0 && mmListPublicPipelines.defaultExpectation == nil && mmListPublicPipelines.mock.funcListPublicPipelines == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListPublicPipelines.mock.afterListPublicPipelinesCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListPublicPipelines.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListPublicPipelines implements mm_repository.Repository
+func (mmListPublicPipelines *RepositoryMock) ListPublicPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error) {
+	mm_atomic.AddUint64(&mmListPublicPipelines.beforeListPublicPipelinesCounter, 1)
+	defer mm_atomic.AddUint64(&mmListPublicPipelines.afterListPublicPipelinesCounter, 1)
+
+	mmListPublicPipelines.t.Helper()
+
+	if mmListPublicPipelines.inspectFuncListPublicPipelines != nil {
+		mmListPublicPipelines.inspectFuncListPublicPipelines(ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID)
+	}
+
+	mm_params := RepositoryMockListPublicPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID}
+
+	// Record call args
+	mmListPublicPipelines.ListPublicPipelinesMock.mutex.Lock()
+	mmListPublicPipelines.ListPublicPipelinesMock.callArgs = append(mmListPublicPipelines.ListPublicPipelinesMock.callArgs, &mm_params)
+	mmListPublicPipelines.ListPublicPipelinesMock.mutex.Unlock()
+
+	for _, e := range mmListPublicPipelines.ListPublicPipelinesMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.ppa1, e.results.i1, e.results.s1, e.results.err
+		}
+	}
+
+	if mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.Counter, 1)
+		mm_want := mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.params
+		mm_want_ptrs := mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockListPublicPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListPublicPipelines.t.Errorf("RepositoryMock.ListPublicPipelines got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.pageSize != nil && !minimock.Equal(*mm_want_ptrs.pageSize, mm_got.pageSize) {
+				mmListPublicPipelines.t.Errorf("RepositoryMock.ListPublicPipelines got unexpected parameter pageSize, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.expectationOrigins.originPageSize, *mm_want_ptrs.pageSize, mm_got.pageSize, minimock.Diff(*mm_want_ptrs.pageSize, mm_got.pageSize))
+			}
+
+			if mm_want_ptrs.pageToken != nil && !minimock.Equal(*mm_want_ptrs.pageToken, mm_got.pageToken) {
+				mmListPublicPipelines.t.Errorf("RepositoryMock.ListPublicPipelines got unexpected parameter pageToken, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.expectationOrigins.originPageToken, *mm_want_ptrs.pageToken, mm_got.pageToken, minimock.Diff(*mm_want_ptrs.pageToken, mm_got.pageToken))
+			}
+
+			if mm_want_ptrs.isBasicView != nil && !minimock.Equal(*mm_want_ptrs.isBasicView, mm_got.isBasicView) {
+				mmListPublicPipelines.t.Errorf("RepositoryMock.ListPublicPipelines got unexpected parameter isBasicView, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.expectationOrigins.originIsBasicView, *mm_want_ptrs.isBasicView, mm_got.isBasicView, minimock.Diff(*mm_want_ptrs.isBasicView, mm_got.isBasicView))
+			}
+
+			if mm_want_ptrs.filter != nil && !minimock.Equal(*mm_want_ptrs.filter, mm_got.filter) {
+				mmListPublicPipelines.t.Errorf("RepositoryMock.ListPublicPipelines got unexpected parameter filter, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.expectationOrigins.originFilter, *mm_want_ptrs.filter, mm_got.filter, minimock.Diff(*mm_want_ptrs.filter, mm_got.filter))
+			}
+
+			if mm_want_ptrs.uidAllowList != nil && !minimock.Equal(*mm_want_ptrs.uidAllowList, mm_got.uidAllowList) {
+				mmListPublicPipelines.t.Errorf("RepositoryMock.ListPublicPipelines got unexpected parameter uidAllowList, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.expectationOrigins.originUidAllowList, *mm_want_ptrs.uidAllowList, mm_got.uidAllowList, minimock.Diff(*mm_want_ptrs.uidAllowList, mm_got.uidAllowList))
+			}
+
+			if mm_want_ptrs.showDeleted != nil && !minimock.Equal(*mm_want_ptrs.showDeleted, mm_got.showDeleted) {
+				mmListPublicPipelines.t.Errorf("RepositoryMock.ListPublicPipelines got unexpected parameter showDeleted, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.expectationOrigins.originShowDeleted, *mm_want_ptrs.showDeleted, mm_got.showDeleted, minimock.Diff(*mm_want_ptrs.showDeleted, mm_got.showDeleted))
+			}
+
+			if mm_want_ptrs.embedReleases != nil && !minimock.Equal(*mm_want_ptrs.embedReleases, mm_got.embedReleases) {
+				mmListPublicPipelines.t.Errorf("RepositoryMock.ListPublicPipelines got unexpected parameter embedReleases, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.expectationOrigins.originEmbedReleases, *mm_want_ptrs.embedReleases, mm_got.embedReleases, minimock.Diff(*mm_want_ptrs.embedReleases, mm_got.embedReleases))
+			}
+
+			if mm_want_ptrs.order != nil && !minimock.Equal(*mm_want_ptrs.order, mm_got.order) {
+				mmListPublicPipelines.t.Errorf("RepositoryMock.ListPublicPipelines got unexpected parameter order, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.expectationOrigins.originOrder, *mm_want_ptrs.order, mm_got.order, minimock.Diff(*mm_want_ptrs.order, mm_got.order))
+			}
+
+			if mm_want_ptrs.presetNamespaceUID != nil && !minimock.Equal(*mm_want_ptrs.presetNamespaceUID, mm_got.presetNamespaceUID) {
+				mmListPublicPipelines.t.Errorf("RepositoryMock.ListPublicPipelines got unexpected parameter presetNamespaceUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.expectationOrigins.originPresetNamespaceUID, *mm_want_ptrs.presetNamespaceUID, mm_got.presetNamespaceUID, minimock.Diff(*mm_want_ptrs.presetNamespaceUID, mm_got.presetNamespaceUID))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListPublicPipelines.t.Errorf("RepositoryMock.ListPublicPipelines got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListPublicPipelines.ListPublicPipelinesMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListPublicPipelines.t.Fatal("No results are set for the RepositoryMock.ListPublicPipelines")
+		}
+		return (*mm_results).ppa1, (*mm_results).i1, (*mm_results).s1, (*mm_results).err
+	}
+	if mmListPublicPipelines.funcListPublicPipelines != nil {
+		return mmListPublicPipelines.funcListPublicPipelines(ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID)
+	}
+	mmListPublicPipelines.t.Fatalf("Unexpected call to RepositoryMock.ListPublicPipelines. %v %v %v %v %v %v %v %v %v %v", ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID)
+	return
+}
+
+// ListPublicPipelinesAfterCounter returns a count of finished RepositoryMock.ListPublicPipelines invocations
+func (mmListPublicPipelines *RepositoryMock) ListPublicPipelinesAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListPublicPipelines.afterListPublicPipelinesCounter)
+}
+
+// ListPublicPipelinesBeforeCounter returns a count of RepositoryMock.ListPublicPipelines invocations
+func (mmListPublicPipelines *RepositoryMock) ListPublicPipelinesBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListPublicPipelines.beforeListPublicPipelinesCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.ListPublicPipelines.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListPublicPipelines *mRepositoryMockListPublicPipelines) Calls() []*RepositoryMockListPublicPipelinesParams {
+	mmListPublicPipelines.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockListPublicPipelinesParams, len(mmListPublicPipelines.callArgs))
+	copy(argCopy, mmListPublicPipelines.callArgs)
+
+	mmListPublicPipelines.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListPublicPipelinesDone returns true if the count of the ListPublicPipelines invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockListPublicPipelinesDone() bool {
+	if m.ListPublicPipelinesMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListPublicPipelinesMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListPublicPipelinesMock.invocationsDone()
+}
+
+// MinimockListPublicPipelinesInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockListPublicPipelinesInspect() {
+	for _, e := range m.ListPublicPipelinesMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.ListPublicPipelines at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterListPublicPipelinesCounter := mm_atomic.LoadUint64(&m.afterListPublicPipelinesCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListPublicPipelinesMock.defaultExpectation != nil && afterListPublicPipelinesCounter < 1 {
+		if m.ListPublicPipelinesMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to RepositoryMock.ListPublicPipelines at\n%s", m.ListPublicPipelinesMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.ListPublicPipelines at\n%s with params: %#v", m.ListPublicPipelinesMock.defaultExpectation.expectationOrigins.origin, *m.ListPublicPipelinesMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListPublicPipelines != nil && afterListPublicPipelinesCounter < 1 {
+		m.t.Errorf("Expected call to RepositoryMock.ListPublicPipelines at\n%s", m.funcListPublicPipelinesOrigin)
+	}
+
+	if !m.ListPublicPipelinesMock.invocationsDone() && afterListPublicPipelinesCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.ListPublicPipelines at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.ListPublicPipelinesMock.expectedInvocations), m.ListPublicPipelinesMock.expectedInvocationsOrigin, afterListPublicPipelinesCounter)
 	}
 }
 
@@ -19171,1653 +19171,6 @@ func (m *RepositoryMock) MinimockUpdateNamespaceConnectionByUIDInspect() {
 	}
 }
 
-type mRepositoryMockUpdateNamespacePipelineByUID struct {
-	optional           bool
-	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockUpdateNamespacePipelineByUIDExpectation
-	expectations       []*RepositoryMockUpdateNamespacePipelineByUIDExpectation
-
-	callArgs []*RepositoryMockUpdateNamespacePipelineByUIDParams
-	mutex    sync.RWMutex
-
-	expectedInvocations       uint64
-	expectedInvocationsOrigin string
-}
-
-// RepositoryMockUpdateNamespacePipelineByUIDExpectation specifies expectation struct of the Repository.UpdateNamespacePipelineByUID
-type RepositoryMockUpdateNamespacePipelineByUIDExpectation struct {
-	mock               *RepositoryMock
-	params             *RepositoryMockUpdateNamespacePipelineByUIDParams
-	paramPtrs          *RepositoryMockUpdateNamespacePipelineByUIDParamPtrs
-	expectationOrigins RepositoryMockUpdateNamespacePipelineByUIDExpectationOrigins
-	results            *RepositoryMockUpdateNamespacePipelineByUIDResults
-	returnOrigin       string
-	Counter            uint64
-}
-
-// RepositoryMockUpdateNamespacePipelineByUIDParams contains parameters of the Repository.UpdateNamespacePipelineByUID
-type RepositoryMockUpdateNamespacePipelineByUIDParams struct {
-	ctx      context.Context
-	uid      uuid.UUID
-	pipeline *datamodel.Pipeline
-}
-
-// RepositoryMockUpdateNamespacePipelineByUIDParamPtrs contains pointers to parameters of the Repository.UpdateNamespacePipelineByUID
-type RepositoryMockUpdateNamespacePipelineByUIDParamPtrs struct {
-	ctx      *context.Context
-	uid      *uuid.UUID
-	pipeline **datamodel.Pipeline
-}
-
-// RepositoryMockUpdateNamespacePipelineByUIDResults contains results of the Repository.UpdateNamespacePipelineByUID
-type RepositoryMockUpdateNamespacePipelineByUIDResults struct {
-	err error
-}
-
-// RepositoryMockUpdateNamespacePipelineByUIDOrigins contains origins of expectations of the Repository.UpdateNamespacePipelineByUID
-type RepositoryMockUpdateNamespacePipelineByUIDExpectationOrigins struct {
-	origin         string
-	originCtx      string
-	originUid      string
-	originPipeline string
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmUpdateNamespacePipelineByUID *mRepositoryMockUpdateNamespacePipelineByUID) Optional() *mRepositoryMockUpdateNamespacePipelineByUID {
-	mmUpdateNamespacePipelineByUID.optional = true
-	return mmUpdateNamespacePipelineByUID
-}
-
-// Expect sets up expected params for Repository.UpdateNamespacePipelineByUID
-func (mmUpdateNamespacePipelineByUID *mRepositoryMockUpdateNamespacePipelineByUID) Expect(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) *mRepositoryMockUpdateNamespacePipelineByUID {
-	if mmUpdateNamespacePipelineByUID.mock.funcUpdateNamespacePipelineByUID != nil {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineByUID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineByUID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineByUID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineByUIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineByUID.defaultExpectation.paramPtrs != nil {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineByUID mock is already set by ExpectParams functions")
-	}
-
-	mmUpdateNamespacePipelineByUID.defaultExpectation.params = &RepositoryMockUpdateNamespacePipelineByUIDParams{ctx, uid, pipeline}
-	mmUpdateNamespacePipelineByUID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmUpdateNamespacePipelineByUID.expectations {
-		if minimock.Equal(e.params, mmUpdateNamespacePipelineByUID.defaultExpectation.params) {
-			mmUpdateNamespacePipelineByUID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdateNamespacePipelineByUID.defaultExpectation.params)
-		}
-	}
-
-	return mmUpdateNamespacePipelineByUID
-}
-
-// ExpectCtxParam1 sets up expected param ctx for Repository.UpdateNamespacePipelineByUID
-func (mmUpdateNamespacePipelineByUID *mRepositoryMockUpdateNamespacePipelineByUID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockUpdateNamespacePipelineByUID {
-	if mmUpdateNamespacePipelineByUID.mock.funcUpdateNamespacePipelineByUID != nil {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineByUID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineByUID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineByUID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineByUIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineByUID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineByUID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineByUID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineByUID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineByUIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineByUID.defaultExpectation.paramPtrs.ctx = &ctx
-	mmUpdateNamespacePipelineByUID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineByUID
-}
-
-// ExpectUidParam2 sets up expected param uid for Repository.UpdateNamespacePipelineByUID
-func (mmUpdateNamespacePipelineByUID *mRepositoryMockUpdateNamespacePipelineByUID) ExpectUidParam2(uid uuid.UUID) *mRepositoryMockUpdateNamespacePipelineByUID {
-	if mmUpdateNamespacePipelineByUID.mock.funcUpdateNamespacePipelineByUID != nil {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineByUID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineByUID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineByUID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineByUIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineByUID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineByUID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineByUID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineByUID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineByUIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineByUID.defaultExpectation.paramPtrs.uid = &uid
-	mmUpdateNamespacePipelineByUID.defaultExpectation.expectationOrigins.originUid = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineByUID
-}
-
-// ExpectPipelineParam3 sets up expected param pipeline for Repository.UpdateNamespacePipelineByUID
-func (mmUpdateNamespacePipelineByUID *mRepositoryMockUpdateNamespacePipelineByUID) ExpectPipelineParam3(pipeline *datamodel.Pipeline) *mRepositoryMockUpdateNamespacePipelineByUID {
-	if mmUpdateNamespacePipelineByUID.mock.funcUpdateNamespacePipelineByUID != nil {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineByUID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineByUID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineByUID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineByUIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineByUID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineByUID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineByUID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineByUID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineByUIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineByUID.defaultExpectation.paramPtrs.pipeline = &pipeline
-	mmUpdateNamespacePipelineByUID.defaultExpectation.expectationOrigins.originPipeline = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineByUID
-}
-
-// Inspect accepts an inspector function that has same arguments as the Repository.UpdateNamespacePipelineByUID
-func (mmUpdateNamespacePipelineByUID *mRepositoryMockUpdateNamespacePipelineByUID) Inspect(f func(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline)) *mRepositoryMockUpdateNamespacePipelineByUID {
-	if mmUpdateNamespacePipelineByUID.mock.inspectFuncUpdateNamespacePipelineByUID != nil {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.UpdateNamespacePipelineByUID")
-	}
-
-	mmUpdateNamespacePipelineByUID.mock.inspectFuncUpdateNamespacePipelineByUID = f
-
-	return mmUpdateNamespacePipelineByUID
-}
-
-// Return sets up results that will be returned by Repository.UpdateNamespacePipelineByUID
-func (mmUpdateNamespacePipelineByUID *mRepositoryMockUpdateNamespacePipelineByUID) Return(err error) *RepositoryMock {
-	if mmUpdateNamespacePipelineByUID.mock.funcUpdateNamespacePipelineByUID != nil {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineByUID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineByUID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineByUID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineByUIDExpectation{mock: mmUpdateNamespacePipelineByUID.mock}
-	}
-	mmUpdateNamespacePipelineByUID.defaultExpectation.results = &RepositoryMockUpdateNamespacePipelineByUIDResults{err}
-	mmUpdateNamespacePipelineByUID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmUpdateNamespacePipelineByUID.mock
-}
-
-// Set uses given function f to mock the Repository.UpdateNamespacePipelineByUID method
-func (mmUpdateNamespacePipelineByUID *mRepositoryMockUpdateNamespacePipelineByUID) Set(f func(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) (err error)) *RepositoryMock {
-	if mmUpdateNamespacePipelineByUID.defaultExpectation != nil {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("Default expectation is already set for the Repository.UpdateNamespacePipelineByUID method")
-	}
-
-	if len(mmUpdateNamespacePipelineByUID.expectations) > 0 {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("Some expectations are already set for the Repository.UpdateNamespacePipelineByUID method")
-	}
-
-	mmUpdateNamespacePipelineByUID.mock.funcUpdateNamespacePipelineByUID = f
-	mmUpdateNamespacePipelineByUID.mock.funcUpdateNamespacePipelineByUIDOrigin = minimock.CallerInfo(1)
-	return mmUpdateNamespacePipelineByUID.mock
-}
-
-// When sets expectation for the Repository.UpdateNamespacePipelineByUID which will trigger the result defined by the following
-// Then helper
-func (mmUpdateNamespacePipelineByUID *mRepositoryMockUpdateNamespacePipelineByUID) When(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) *RepositoryMockUpdateNamespacePipelineByUIDExpectation {
-	if mmUpdateNamespacePipelineByUID.mock.funcUpdateNamespacePipelineByUID != nil {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineByUID mock is already set by Set")
-	}
-
-	expectation := &RepositoryMockUpdateNamespacePipelineByUIDExpectation{
-		mock:               mmUpdateNamespacePipelineByUID.mock,
-		params:             &RepositoryMockUpdateNamespacePipelineByUIDParams{ctx, uid, pipeline},
-		expectationOrigins: RepositoryMockUpdateNamespacePipelineByUIDExpectationOrigins{origin: minimock.CallerInfo(1)},
-	}
-	mmUpdateNamespacePipelineByUID.expectations = append(mmUpdateNamespacePipelineByUID.expectations, expectation)
-	return expectation
-}
-
-// Then sets up Repository.UpdateNamespacePipelineByUID return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockUpdateNamespacePipelineByUIDExpectation) Then(err error) *RepositoryMock {
-	e.results = &RepositoryMockUpdateNamespacePipelineByUIDResults{err}
-	return e.mock
-}
-
-// Times sets number of times Repository.UpdateNamespacePipelineByUID should be invoked
-func (mmUpdateNamespacePipelineByUID *mRepositoryMockUpdateNamespacePipelineByUID) Times(n uint64) *mRepositoryMockUpdateNamespacePipelineByUID {
-	if n == 0 {
-		mmUpdateNamespacePipelineByUID.mock.t.Fatalf("Times of RepositoryMock.UpdateNamespacePipelineByUID mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmUpdateNamespacePipelineByUID.expectedInvocations, n)
-	mmUpdateNamespacePipelineByUID.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmUpdateNamespacePipelineByUID
-}
-
-func (mmUpdateNamespacePipelineByUID *mRepositoryMockUpdateNamespacePipelineByUID) invocationsDone() bool {
-	if len(mmUpdateNamespacePipelineByUID.expectations) == 0 && mmUpdateNamespacePipelineByUID.defaultExpectation == nil && mmUpdateNamespacePipelineByUID.mock.funcUpdateNamespacePipelineByUID == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmUpdateNamespacePipelineByUID.mock.afterUpdateNamespacePipelineByUIDCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmUpdateNamespacePipelineByUID.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// UpdateNamespacePipelineByUID implements mm_repository.Repository
-func (mmUpdateNamespacePipelineByUID *RepositoryMock) UpdateNamespacePipelineByUID(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) (err error) {
-	mm_atomic.AddUint64(&mmUpdateNamespacePipelineByUID.beforeUpdateNamespacePipelineByUIDCounter, 1)
-	defer mm_atomic.AddUint64(&mmUpdateNamespacePipelineByUID.afterUpdateNamespacePipelineByUIDCounter, 1)
-
-	mmUpdateNamespacePipelineByUID.t.Helper()
-
-	if mmUpdateNamespacePipelineByUID.inspectFuncUpdateNamespacePipelineByUID != nil {
-		mmUpdateNamespacePipelineByUID.inspectFuncUpdateNamespacePipelineByUID(ctx, uid, pipeline)
-	}
-
-	mm_params := RepositoryMockUpdateNamespacePipelineByUIDParams{ctx, uid, pipeline}
-
-	// Record call args
-	mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.mutex.Lock()
-	mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.callArgs = append(mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.callArgs, &mm_params)
-	mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.mutex.Unlock()
-
-	for _, e := range mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.err
-		}
-	}
-
-	if mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.defaultExpectation.Counter, 1)
-		mm_want := mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.defaultExpectation.params
-		mm_want_ptrs := mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.defaultExpectation.paramPtrs
-
-		mm_got := RepositoryMockUpdateNamespacePipelineByUIDParams{ctx, uid, pipeline}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmUpdateNamespacePipelineByUID.t.Errorf("RepositoryMock.UpdateNamespacePipelineByUID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.uid != nil && !minimock.Equal(*mm_want_ptrs.uid, mm_got.uid) {
-				mmUpdateNamespacePipelineByUID.t.Errorf("RepositoryMock.UpdateNamespacePipelineByUID got unexpected parameter uid, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.defaultExpectation.expectationOrigins.originUid, *mm_want_ptrs.uid, mm_got.uid, minimock.Diff(*mm_want_ptrs.uid, mm_got.uid))
-			}
-
-			if mm_want_ptrs.pipeline != nil && !minimock.Equal(*mm_want_ptrs.pipeline, mm_got.pipeline) {
-				mmUpdateNamespacePipelineByUID.t.Errorf("RepositoryMock.UpdateNamespacePipelineByUID got unexpected parameter pipeline, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.defaultExpectation.expectationOrigins.originPipeline, *mm_want_ptrs.pipeline, mm_got.pipeline, minimock.Diff(*mm_want_ptrs.pipeline, mm_got.pipeline))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmUpdateNamespacePipelineByUID.t.Errorf("RepositoryMock.UpdateNamespacePipelineByUID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmUpdateNamespacePipelineByUID.UpdateNamespacePipelineByUIDMock.defaultExpectation.results
-		if mm_results == nil {
-			mmUpdateNamespacePipelineByUID.t.Fatal("No results are set for the RepositoryMock.UpdateNamespacePipelineByUID")
-		}
-		return (*mm_results).err
-	}
-	if mmUpdateNamespacePipelineByUID.funcUpdateNamespacePipelineByUID != nil {
-		return mmUpdateNamespacePipelineByUID.funcUpdateNamespacePipelineByUID(ctx, uid, pipeline)
-	}
-	mmUpdateNamespacePipelineByUID.t.Fatalf("Unexpected call to RepositoryMock.UpdateNamespacePipelineByUID. %v %v %v", ctx, uid, pipeline)
-	return
-}
-
-// UpdateNamespacePipelineByUIDAfterCounter returns a count of finished RepositoryMock.UpdateNamespacePipelineByUID invocations
-func (mmUpdateNamespacePipelineByUID *RepositoryMock) UpdateNamespacePipelineByUIDAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmUpdateNamespacePipelineByUID.afterUpdateNamespacePipelineByUIDCounter)
-}
-
-// UpdateNamespacePipelineByUIDBeforeCounter returns a count of RepositoryMock.UpdateNamespacePipelineByUID invocations
-func (mmUpdateNamespacePipelineByUID *RepositoryMock) UpdateNamespacePipelineByUIDBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmUpdateNamespacePipelineByUID.beforeUpdateNamespacePipelineByUIDCounter)
-}
-
-// Calls returns a list of arguments used in each call to RepositoryMock.UpdateNamespacePipelineByUID.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmUpdateNamespacePipelineByUID *mRepositoryMockUpdateNamespacePipelineByUID) Calls() []*RepositoryMockUpdateNamespacePipelineByUIDParams {
-	mmUpdateNamespacePipelineByUID.mutex.RLock()
-
-	argCopy := make([]*RepositoryMockUpdateNamespacePipelineByUIDParams, len(mmUpdateNamespacePipelineByUID.callArgs))
-	copy(argCopy, mmUpdateNamespacePipelineByUID.callArgs)
-
-	mmUpdateNamespacePipelineByUID.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockUpdateNamespacePipelineByUIDDone returns true if the count of the UpdateNamespacePipelineByUID invocations corresponds
-// the number of defined expectations
-func (m *RepositoryMock) MinimockUpdateNamespacePipelineByUIDDone() bool {
-	if m.UpdateNamespacePipelineByUIDMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.UpdateNamespacePipelineByUIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.UpdateNamespacePipelineByUIDMock.invocationsDone()
-}
-
-// MinimockUpdateNamespacePipelineByUIDInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockUpdateNamespacePipelineByUIDInspect() {
-	for _, e := range m.UpdateNamespacePipelineByUIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineByUID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
-		}
-	}
-
-	afterUpdateNamespacePipelineByUIDCounter := mm_atomic.LoadUint64(&m.afterUpdateNamespacePipelineByUIDCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.UpdateNamespacePipelineByUIDMock.defaultExpectation != nil && afterUpdateNamespacePipelineByUIDCounter < 1 {
-		if m.UpdateNamespacePipelineByUIDMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineByUID at\n%s", m.UpdateNamespacePipelineByUIDMock.defaultExpectation.returnOrigin)
-		} else {
-			m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineByUID at\n%s with params: %#v", m.UpdateNamespacePipelineByUIDMock.defaultExpectation.expectationOrigins.origin, *m.UpdateNamespacePipelineByUIDMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcUpdateNamespacePipelineByUID != nil && afterUpdateNamespacePipelineByUIDCounter < 1 {
-		m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineByUID at\n%s", m.funcUpdateNamespacePipelineByUIDOrigin)
-	}
-
-	if !m.UpdateNamespacePipelineByUIDMock.invocationsDone() && afterUpdateNamespacePipelineByUIDCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.UpdateNamespacePipelineByUID at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.UpdateNamespacePipelineByUIDMock.expectedInvocations), m.UpdateNamespacePipelineByUIDMock.expectedInvocationsOrigin, afterUpdateNamespacePipelineByUIDCounter)
-	}
-}
-
-type mRepositoryMockUpdateNamespacePipelineIDByID struct {
-	optional           bool
-	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockUpdateNamespacePipelineIDByIDExpectation
-	expectations       []*RepositoryMockUpdateNamespacePipelineIDByIDExpectation
-
-	callArgs []*RepositoryMockUpdateNamespacePipelineIDByIDParams
-	mutex    sync.RWMutex
-
-	expectedInvocations       uint64
-	expectedInvocationsOrigin string
-}
-
-// RepositoryMockUpdateNamespacePipelineIDByIDExpectation specifies expectation struct of the Repository.UpdateNamespacePipelineIDByID
-type RepositoryMockUpdateNamespacePipelineIDByIDExpectation struct {
-	mock               *RepositoryMock
-	params             *RepositoryMockUpdateNamespacePipelineIDByIDParams
-	paramPtrs          *RepositoryMockUpdateNamespacePipelineIDByIDParamPtrs
-	expectationOrigins RepositoryMockUpdateNamespacePipelineIDByIDExpectationOrigins
-	results            *RepositoryMockUpdateNamespacePipelineIDByIDResults
-	returnOrigin       string
-	Counter            uint64
-}
-
-// RepositoryMockUpdateNamespacePipelineIDByIDParams contains parameters of the Repository.UpdateNamespacePipelineIDByID
-type RepositoryMockUpdateNamespacePipelineIDByIDParams struct {
-	ctx            context.Context
-	ownerPermalink string
-	id             string
-	newID          string
-}
-
-// RepositoryMockUpdateNamespacePipelineIDByIDParamPtrs contains pointers to parameters of the Repository.UpdateNamespacePipelineIDByID
-type RepositoryMockUpdateNamespacePipelineIDByIDParamPtrs struct {
-	ctx            *context.Context
-	ownerPermalink *string
-	id             *string
-	newID          *string
-}
-
-// RepositoryMockUpdateNamespacePipelineIDByIDResults contains results of the Repository.UpdateNamespacePipelineIDByID
-type RepositoryMockUpdateNamespacePipelineIDByIDResults struct {
-	err error
-}
-
-// RepositoryMockUpdateNamespacePipelineIDByIDOrigins contains origins of expectations of the Repository.UpdateNamespacePipelineIDByID
-type RepositoryMockUpdateNamespacePipelineIDByIDExpectationOrigins struct {
-	origin               string
-	originCtx            string
-	originOwnerPermalink string
-	originId             string
-	originNewID          string
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmUpdateNamespacePipelineIDByID *mRepositoryMockUpdateNamespacePipelineIDByID) Optional() *mRepositoryMockUpdateNamespacePipelineIDByID {
-	mmUpdateNamespacePipelineIDByID.optional = true
-	return mmUpdateNamespacePipelineIDByID
-}
-
-// Expect sets up expected params for Repository.UpdateNamespacePipelineIDByID
-func (mmUpdateNamespacePipelineIDByID *mRepositoryMockUpdateNamespacePipelineIDByID) Expect(ctx context.Context, ownerPermalink string, id string, newID string) *mRepositoryMockUpdateNamespacePipelineIDByID {
-	if mmUpdateNamespacePipelineIDByID.mock.funcUpdateNamespacePipelineIDByID != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineIDByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineIDByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineIDByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation.paramPtrs != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineIDByID mock is already set by ExpectParams functions")
-	}
-
-	mmUpdateNamespacePipelineIDByID.defaultExpectation.params = &RepositoryMockUpdateNamespacePipelineIDByIDParams{ctx, ownerPermalink, id, newID}
-	mmUpdateNamespacePipelineIDByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmUpdateNamespacePipelineIDByID.expectations {
-		if minimock.Equal(e.params, mmUpdateNamespacePipelineIDByID.defaultExpectation.params) {
-			mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdateNamespacePipelineIDByID.defaultExpectation.params)
-		}
-	}
-
-	return mmUpdateNamespacePipelineIDByID
-}
-
-// ExpectCtxParam1 sets up expected param ctx for Repository.UpdateNamespacePipelineIDByID
-func (mmUpdateNamespacePipelineIDByID *mRepositoryMockUpdateNamespacePipelineIDByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockUpdateNamespacePipelineIDByID {
-	if mmUpdateNamespacePipelineIDByID.mock.funcUpdateNamespacePipelineIDByID != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineIDByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineIDByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineIDByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineIDByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineIDByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineIDByID.defaultExpectation.paramPtrs.ctx = &ctx
-	mmUpdateNamespacePipelineIDByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineIDByID
-}
-
-// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.UpdateNamespacePipelineIDByID
-func (mmUpdateNamespacePipelineIDByID *mRepositoryMockUpdateNamespacePipelineIDByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockUpdateNamespacePipelineIDByID {
-	if mmUpdateNamespacePipelineIDByID.mock.funcUpdateNamespacePipelineIDByID != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineIDByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineIDByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineIDByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineIDByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineIDByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineIDByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
-	mmUpdateNamespacePipelineIDByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineIDByID
-}
-
-// ExpectIdParam3 sets up expected param id for Repository.UpdateNamespacePipelineIDByID
-func (mmUpdateNamespacePipelineIDByID *mRepositoryMockUpdateNamespacePipelineIDByID) ExpectIdParam3(id string) *mRepositoryMockUpdateNamespacePipelineIDByID {
-	if mmUpdateNamespacePipelineIDByID.mock.funcUpdateNamespacePipelineIDByID != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineIDByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineIDByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineIDByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineIDByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineIDByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineIDByID.defaultExpectation.paramPtrs.id = &id
-	mmUpdateNamespacePipelineIDByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineIDByID
-}
-
-// ExpectNewIDParam4 sets up expected param newID for Repository.UpdateNamespacePipelineIDByID
-func (mmUpdateNamespacePipelineIDByID *mRepositoryMockUpdateNamespacePipelineIDByID) ExpectNewIDParam4(newID string) *mRepositoryMockUpdateNamespacePipelineIDByID {
-	if mmUpdateNamespacePipelineIDByID.mock.funcUpdateNamespacePipelineIDByID != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineIDByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineIDByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineIDByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineIDByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineIDByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineIDByID.defaultExpectation.paramPtrs.newID = &newID
-	mmUpdateNamespacePipelineIDByID.defaultExpectation.expectationOrigins.originNewID = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineIDByID
-}
-
-// Inspect accepts an inspector function that has same arguments as the Repository.UpdateNamespacePipelineIDByID
-func (mmUpdateNamespacePipelineIDByID *mRepositoryMockUpdateNamespacePipelineIDByID) Inspect(f func(ctx context.Context, ownerPermalink string, id string, newID string)) *mRepositoryMockUpdateNamespacePipelineIDByID {
-	if mmUpdateNamespacePipelineIDByID.mock.inspectFuncUpdateNamespacePipelineIDByID != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.UpdateNamespacePipelineIDByID")
-	}
-
-	mmUpdateNamespacePipelineIDByID.mock.inspectFuncUpdateNamespacePipelineIDByID = f
-
-	return mmUpdateNamespacePipelineIDByID
-}
-
-// Return sets up results that will be returned by Repository.UpdateNamespacePipelineIDByID
-func (mmUpdateNamespacePipelineIDByID *mRepositoryMockUpdateNamespacePipelineIDByID) Return(err error) *RepositoryMock {
-	if mmUpdateNamespacePipelineIDByID.mock.funcUpdateNamespacePipelineIDByID != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineIDByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineIDByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineIDByIDExpectation{mock: mmUpdateNamespacePipelineIDByID.mock}
-	}
-	mmUpdateNamespacePipelineIDByID.defaultExpectation.results = &RepositoryMockUpdateNamespacePipelineIDByIDResults{err}
-	mmUpdateNamespacePipelineIDByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmUpdateNamespacePipelineIDByID.mock
-}
-
-// Set uses given function f to mock the Repository.UpdateNamespacePipelineIDByID method
-func (mmUpdateNamespacePipelineIDByID *mRepositoryMockUpdateNamespacePipelineIDByID) Set(f func(ctx context.Context, ownerPermalink string, id string, newID string) (err error)) *RepositoryMock {
-	if mmUpdateNamespacePipelineIDByID.defaultExpectation != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("Default expectation is already set for the Repository.UpdateNamespacePipelineIDByID method")
-	}
-
-	if len(mmUpdateNamespacePipelineIDByID.expectations) > 0 {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("Some expectations are already set for the Repository.UpdateNamespacePipelineIDByID method")
-	}
-
-	mmUpdateNamespacePipelineIDByID.mock.funcUpdateNamespacePipelineIDByID = f
-	mmUpdateNamespacePipelineIDByID.mock.funcUpdateNamespacePipelineIDByIDOrigin = minimock.CallerInfo(1)
-	return mmUpdateNamespacePipelineIDByID.mock
-}
-
-// When sets expectation for the Repository.UpdateNamespacePipelineIDByID which will trigger the result defined by the following
-// Then helper
-func (mmUpdateNamespacePipelineIDByID *mRepositoryMockUpdateNamespacePipelineIDByID) When(ctx context.Context, ownerPermalink string, id string, newID string) *RepositoryMockUpdateNamespacePipelineIDByIDExpectation {
-	if mmUpdateNamespacePipelineIDByID.mock.funcUpdateNamespacePipelineIDByID != nil {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineIDByID mock is already set by Set")
-	}
-
-	expectation := &RepositoryMockUpdateNamespacePipelineIDByIDExpectation{
-		mock:               mmUpdateNamespacePipelineIDByID.mock,
-		params:             &RepositoryMockUpdateNamespacePipelineIDByIDParams{ctx, ownerPermalink, id, newID},
-		expectationOrigins: RepositoryMockUpdateNamespacePipelineIDByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
-	}
-	mmUpdateNamespacePipelineIDByID.expectations = append(mmUpdateNamespacePipelineIDByID.expectations, expectation)
-	return expectation
-}
-
-// Then sets up Repository.UpdateNamespacePipelineIDByID return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockUpdateNamespacePipelineIDByIDExpectation) Then(err error) *RepositoryMock {
-	e.results = &RepositoryMockUpdateNamespacePipelineIDByIDResults{err}
-	return e.mock
-}
-
-// Times sets number of times Repository.UpdateNamespacePipelineIDByID should be invoked
-func (mmUpdateNamespacePipelineIDByID *mRepositoryMockUpdateNamespacePipelineIDByID) Times(n uint64) *mRepositoryMockUpdateNamespacePipelineIDByID {
-	if n == 0 {
-		mmUpdateNamespacePipelineIDByID.mock.t.Fatalf("Times of RepositoryMock.UpdateNamespacePipelineIDByID mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmUpdateNamespacePipelineIDByID.expectedInvocations, n)
-	mmUpdateNamespacePipelineIDByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmUpdateNamespacePipelineIDByID
-}
-
-func (mmUpdateNamespacePipelineIDByID *mRepositoryMockUpdateNamespacePipelineIDByID) invocationsDone() bool {
-	if len(mmUpdateNamespacePipelineIDByID.expectations) == 0 && mmUpdateNamespacePipelineIDByID.defaultExpectation == nil && mmUpdateNamespacePipelineIDByID.mock.funcUpdateNamespacePipelineIDByID == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmUpdateNamespacePipelineIDByID.mock.afterUpdateNamespacePipelineIDByIDCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmUpdateNamespacePipelineIDByID.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// UpdateNamespacePipelineIDByID implements mm_repository.Repository
-func (mmUpdateNamespacePipelineIDByID *RepositoryMock) UpdateNamespacePipelineIDByID(ctx context.Context, ownerPermalink string, id string, newID string) (err error) {
-	mm_atomic.AddUint64(&mmUpdateNamespacePipelineIDByID.beforeUpdateNamespacePipelineIDByIDCounter, 1)
-	defer mm_atomic.AddUint64(&mmUpdateNamespacePipelineIDByID.afterUpdateNamespacePipelineIDByIDCounter, 1)
-
-	mmUpdateNamespacePipelineIDByID.t.Helper()
-
-	if mmUpdateNamespacePipelineIDByID.inspectFuncUpdateNamespacePipelineIDByID != nil {
-		mmUpdateNamespacePipelineIDByID.inspectFuncUpdateNamespacePipelineIDByID(ctx, ownerPermalink, id, newID)
-	}
-
-	mm_params := RepositoryMockUpdateNamespacePipelineIDByIDParams{ctx, ownerPermalink, id, newID}
-
-	// Record call args
-	mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.mutex.Lock()
-	mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.callArgs = append(mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.callArgs, &mm_params)
-	mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.mutex.Unlock()
-
-	for _, e := range mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.err
-		}
-	}
-
-	if mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.defaultExpectation.Counter, 1)
-		mm_want := mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.defaultExpectation.params
-		mm_want_ptrs := mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.defaultExpectation.paramPtrs
-
-		mm_got := RepositoryMockUpdateNamespacePipelineIDByIDParams{ctx, ownerPermalink, id, newID}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmUpdateNamespacePipelineIDByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineIDByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
-				mmUpdateNamespacePipelineIDByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineIDByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
-			}
-
-			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
-				mmUpdateNamespacePipelineIDByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineIDByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
-			}
-
-			if mm_want_ptrs.newID != nil && !minimock.Equal(*mm_want_ptrs.newID, mm_got.newID) {
-				mmUpdateNamespacePipelineIDByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineIDByID got unexpected parameter newID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.defaultExpectation.expectationOrigins.originNewID, *mm_want_ptrs.newID, mm_got.newID, minimock.Diff(*mm_want_ptrs.newID, mm_got.newID))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmUpdateNamespacePipelineIDByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineIDByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmUpdateNamespacePipelineIDByID.UpdateNamespacePipelineIDByIDMock.defaultExpectation.results
-		if mm_results == nil {
-			mmUpdateNamespacePipelineIDByID.t.Fatal("No results are set for the RepositoryMock.UpdateNamespacePipelineIDByID")
-		}
-		return (*mm_results).err
-	}
-	if mmUpdateNamespacePipelineIDByID.funcUpdateNamespacePipelineIDByID != nil {
-		return mmUpdateNamespacePipelineIDByID.funcUpdateNamespacePipelineIDByID(ctx, ownerPermalink, id, newID)
-	}
-	mmUpdateNamespacePipelineIDByID.t.Fatalf("Unexpected call to RepositoryMock.UpdateNamespacePipelineIDByID. %v %v %v %v", ctx, ownerPermalink, id, newID)
-	return
-}
-
-// UpdateNamespacePipelineIDByIDAfterCounter returns a count of finished RepositoryMock.UpdateNamespacePipelineIDByID invocations
-func (mmUpdateNamespacePipelineIDByID *RepositoryMock) UpdateNamespacePipelineIDByIDAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmUpdateNamespacePipelineIDByID.afterUpdateNamespacePipelineIDByIDCounter)
-}
-
-// UpdateNamespacePipelineIDByIDBeforeCounter returns a count of RepositoryMock.UpdateNamespacePipelineIDByID invocations
-func (mmUpdateNamespacePipelineIDByID *RepositoryMock) UpdateNamespacePipelineIDByIDBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmUpdateNamespacePipelineIDByID.beforeUpdateNamespacePipelineIDByIDCounter)
-}
-
-// Calls returns a list of arguments used in each call to RepositoryMock.UpdateNamespacePipelineIDByID.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmUpdateNamespacePipelineIDByID *mRepositoryMockUpdateNamespacePipelineIDByID) Calls() []*RepositoryMockUpdateNamespacePipelineIDByIDParams {
-	mmUpdateNamespacePipelineIDByID.mutex.RLock()
-
-	argCopy := make([]*RepositoryMockUpdateNamespacePipelineIDByIDParams, len(mmUpdateNamespacePipelineIDByID.callArgs))
-	copy(argCopy, mmUpdateNamespacePipelineIDByID.callArgs)
-
-	mmUpdateNamespacePipelineIDByID.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockUpdateNamespacePipelineIDByIDDone returns true if the count of the UpdateNamespacePipelineIDByID invocations corresponds
-// the number of defined expectations
-func (m *RepositoryMock) MinimockUpdateNamespacePipelineIDByIDDone() bool {
-	if m.UpdateNamespacePipelineIDByIDMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.UpdateNamespacePipelineIDByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.UpdateNamespacePipelineIDByIDMock.invocationsDone()
-}
-
-// MinimockUpdateNamespacePipelineIDByIDInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockUpdateNamespacePipelineIDByIDInspect() {
-	for _, e := range m.UpdateNamespacePipelineIDByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineIDByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
-		}
-	}
-
-	afterUpdateNamespacePipelineIDByIDCounter := mm_atomic.LoadUint64(&m.afterUpdateNamespacePipelineIDByIDCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.UpdateNamespacePipelineIDByIDMock.defaultExpectation != nil && afterUpdateNamespacePipelineIDByIDCounter < 1 {
-		if m.UpdateNamespacePipelineIDByIDMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineIDByID at\n%s", m.UpdateNamespacePipelineIDByIDMock.defaultExpectation.returnOrigin)
-		} else {
-			m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineIDByID at\n%s with params: %#v", m.UpdateNamespacePipelineIDByIDMock.defaultExpectation.expectationOrigins.origin, *m.UpdateNamespacePipelineIDByIDMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcUpdateNamespacePipelineIDByID != nil && afterUpdateNamespacePipelineIDByIDCounter < 1 {
-		m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineIDByID at\n%s", m.funcUpdateNamespacePipelineIDByIDOrigin)
-	}
-
-	if !m.UpdateNamespacePipelineIDByIDMock.invocationsDone() && afterUpdateNamespacePipelineIDByIDCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.UpdateNamespacePipelineIDByID at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.UpdateNamespacePipelineIDByIDMock.expectedInvocations), m.UpdateNamespacePipelineIDByIDMock.expectedInvocationsOrigin, afterUpdateNamespacePipelineIDByIDCounter)
-	}
-}
-
-type mRepositoryMockUpdateNamespacePipelineReleaseByID struct {
-	optional           bool
-	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation
-	expectations       []*RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation
-
-	callArgs []*RepositoryMockUpdateNamespacePipelineReleaseByIDParams
-	mutex    sync.RWMutex
-
-	expectedInvocations       uint64
-	expectedInvocationsOrigin string
-}
-
-// RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation specifies expectation struct of the Repository.UpdateNamespacePipelineReleaseByID
-type RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation struct {
-	mock               *RepositoryMock
-	params             *RepositoryMockUpdateNamespacePipelineReleaseByIDParams
-	paramPtrs          *RepositoryMockUpdateNamespacePipelineReleaseByIDParamPtrs
-	expectationOrigins RepositoryMockUpdateNamespacePipelineReleaseByIDExpectationOrigins
-	results            *RepositoryMockUpdateNamespacePipelineReleaseByIDResults
-	returnOrigin       string
-	Counter            uint64
-}
-
-// RepositoryMockUpdateNamespacePipelineReleaseByIDParams contains parameters of the Repository.UpdateNamespacePipelineReleaseByID
-type RepositoryMockUpdateNamespacePipelineReleaseByIDParams struct {
-	ctx             context.Context
-	ownerPermalink  string
-	pipelineUID     uuid.UUID
-	id              string
-	pipelineRelease *datamodel.PipelineRelease
-}
-
-// RepositoryMockUpdateNamespacePipelineReleaseByIDParamPtrs contains pointers to parameters of the Repository.UpdateNamespacePipelineReleaseByID
-type RepositoryMockUpdateNamespacePipelineReleaseByIDParamPtrs struct {
-	ctx             *context.Context
-	ownerPermalink  *string
-	pipelineUID     *uuid.UUID
-	id              *string
-	pipelineRelease **datamodel.PipelineRelease
-}
-
-// RepositoryMockUpdateNamespacePipelineReleaseByIDResults contains results of the Repository.UpdateNamespacePipelineReleaseByID
-type RepositoryMockUpdateNamespacePipelineReleaseByIDResults struct {
-	err error
-}
-
-// RepositoryMockUpdateNamespacePipelineReleaseByIDOrigins contains origins of expectations of the Repository.UpdateNamespacePipelineReleaseByID
-type RepositoryMockUpdateNamespacePipelineReleaseByIDExpectationOrigins struct {
-	origin                string
-	originCtx             string
-	originOwnerPermalink  string
-	originPipelineUID     string
-	originId              string
-	originPipelineRelease string
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) Optional() *mRepositoryMockUpdateNamespacePipelineReleaseByID {
-	mmUpdateNamespacePipelineReleaseByID.optional = true
-	return mmUpdateNamespacePipelineReleaseByID
-}
-
-// Expect sets up expected params for Repository.UpdateNamespacePipelineReleaseByID
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) *mRepositoryMockUpdateNamespacePipelineReleaseByID {
-	if mmUpdateNamespacePipelineReleaseByID.mock.funcUpdateNamespacePipelineReleaseByID != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by ExpectParams functions")
-	}
-
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.params = &RepositoryMockUpdateNamespacePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, pipelineRelease}
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmUpdateNamespacePipelineReleaseByID.expectations {
-		if minimock.Equal(e.params, mmUpdateNamespacePipelineReleaseByID.defaultExpectation.params) {
-			mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdateNamespacePipelineReleaseByID.defaultExpectation.params)
-		}
-	}
-
-	return mmUpdateNamespacePipelineReleaseByID
-}
-
-// ExpectCtxParam1 sets up expected param ctx for Repository.UpdateNamespacePipelineReleaseByID
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockUpdateNamespacePipelineReleaseByID {
-	if mmUpdateNamespacePipelineReleaseByID.mock.funcUpdateNamespacePipelineReleaseByID != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.ctx = &ctx
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineReleaseByID
-}
-
-// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.UpdateNamespacePipelineReleaseByID
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockUpdateNamespacePipelineReleaseByID {
-	if mmUpdateNamespacePipelineReleaseByID.mock.funcUpdateNamespacePipelineReleaseByID != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineReleaseByID
-}
-
-// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.UpdateNamespacePipelineReleaseByID
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockUpdateNamespacePipelineReleaseByID {
-	if mmUpdateNamespacePipelineReleaseByID.mock.funcUpdateNamespacePipelineReleaseByID != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineReleaseByID
-}
-
-// ExpectIdParam4 sets up expected param id for Repository.UpdateNamespacePipelineReleaseByID
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) ExpectIdParam4(id string) *mRepositoryMockUpdateNamespacePipelineReleaseByID {
-	if mmUpdateNamespacePipelineReleaseByID.mock.funcUpdateNamespacePipelineReleaseByID != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.id = &id
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineReleaseByID
-}
-
-// ExpectPipelineReleaseParam5 sets up expected param pipelineRelease for Repository.UpdateNamespacePipelineReleaseByID
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) ExpectPipelineReleaseParam5(pipelineRelease *datamodel.PipelineRelease) *mRepositoryMockUpdateNamespacePipelineReleaseByID {
-	if mmUpdateNamespacePipelineReleaseByID.mock.funcUpdateNamespacePipelineReleaseByID != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineReleaseByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.paramPtrs.pipelineRelease = &pipelineRelease
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.expectationOrigins.originPipelineRelease = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineReleaseByID
-}
-
-// Inspect accepts an inspector function that has same arguments as the Repository.UpdateNamespacePipelineReleaseByID
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease)) *mRepositoryMockUpdateNamespacePipelineReleaseByID {
-	if mmUpdateNamespacePipelineReleaseByID.mock.inspectFuncUpdateNamespacePipelineReleaseByID != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.UpdateNamespacePipelineReleaseByID")
-	}
-
-	mmUpdateNamespacePipelineReleaseByID.mock.inspectFuncUpdateNamespacePipelineReleaseByID = f
-
-	return mmUpdateNamespacePipelineReleaseByID
-}
-
-// Return sets up results that will be returned by Repository.UpdateNamespacePipelineReleaseByID
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) Return(err error) *RepositoryMock {
-	if mmUpdateNamespacePipelineReleaseByID.mock.funcUpdateNamespacePipelineReleaseByID != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation{mock: mmUpdateNamespacePipelineReleaseByID.mock}
-	}
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.results = &RepositoryMockUpdateNamespacePipelineReleaseByIDResults{err}
-	mmUpdateNamespacePipelineReleaseByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmUpdateNamespacePipelineReleaseByID.mock
-}
-
-// Set uses given function f to mock the Repository.UpdateNamespacePipelineReleaseByID method
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) (err error)) *RepositoryMock {
-	if mmUpdateNamespacePipelineReleaseByID.defaultExpectation != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("Default expectation is already set for the Repository.UpdateNamespacePipelineReleaseByID method")
-	}
-
-	if len(mmUpdateNamespacePipelineReleaseByID.expectations) > 0 {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("Some expectations are already set for the Repository.UpdateNamespacePipelineReleaseByID method")
-	}
-
-	mmUpdateNamespacePipelineReleaseByID.mock.funcUpdateNamespacePipelineReleaseByID = f
-	mmUpdateNamespacePipelineReleaseByID.mock.funcUpdateNamespacePipelineReleaseByIDOrigin = minimock.CallerInfo(1)
-	return mmUpdateNamespacePipelineReleaseByID.mock
-}
-
-// When sets expectation for the Repository.UpdateNamespacePipelineReleaseByID which will trigger the result defined by the following
-// Then helper
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) *RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation {
-	if mmUpdateNamespacePipelineReleaseByID.mock.funcUpdateNamespacePipelineReleaseByID != nil {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseByID mock is already set by Set")
-	}
-
-	expectation := &RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation{
-		mock:               mmUpdateNamespacePipelineReleaseByID.mock,
-		params:             &RepositoryMockUpdateNamespacePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, pipelineRelease},
-		expectationOrigins: RepositoryMockUpdateNamespacePipelineReleaseByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
-	}
-	mmUpdateNamespacePipelineReleaseByID.expectations = append(mmUpdateNamespacePipelineReleaseByID.expectations, expectation)
-	return expectation
-}
-
-// Then sets up Repository.UpdateNamespacePipelineReleaseByID return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockUpdateNamespacePipelineReleaseByIDExpectation) Then(err error) *RepositoryMock {
-	e.results = &RepositoryMockUpdateNamespacePipelineReleaseByIDResults{err}
-	return e.mock
-}
-
-// Times sets number of times Repository.UpdateNamespacePipelineReleaseByID should be invoked
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) Times(n uint64) *mRepositoryMockUpdateNamespacePipelineReleaseByID {
-	if n == 0 {
-		mmUpdateNamespacePipelineReleaseByID.mock.t.Fatalf("Times of RepositoryMock.UpdateNamespacePipelineReleaseByID mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmUpdateNamespacePipelineReleaseByID.expectedInvocations, n)
-	mmUpdateNamespacePipelineReleaseByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmUpdateNamespacePipelineReleaseByID
-}
-
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) invocationsDone() bool {
-	if len(mmUpdateNamespacePipelineReleaseByID.expectations) == 0 && mmUpdateNamespacePipelineReleaseByID.defaultExpectation == nil && mmUpdateNamespacePipelineReleaseByID.mock.funcUpdateNamespacePipelineReleaseByID == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmUpdateNamespacePipelineReleaseByID.mock.afterUpdateNamespacePipelineReleaseByIDCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmUpdateNamespacePipelineReleaseByID.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// UpdateNamespacePipelineReleaseByID implements mm_repository.Repository
-func (mmUpdateNamespacePipelineReleaseByID *RepositoryMock) UpdateNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) (err error) {
-	mm_atomic.AddUint64(&mmUpdateNamespacePipelineReleaseByID.beforeUpdateNamespacePipelineReleaseByIDCounter, 1)
-	defer mm_atomic.AddUint64(&mmUpdateNamespacePipelineReleaseByID.afterUpdateNamespacePipelineReleaseByIDCounter, 1)
-
-	mmUpdateNamespacePipelineReleaseByID.t.Helper()
-
-	if mmUpdateNamespacePipelineReleaseByID.inspectFuncUpdateNamespacePipelineReleaseByID != nil {
-		mmUpdateNamespacePipelineReleaseByID.inspectFuncUpdateNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, pipelineRelease)
-	}
-
-	mm_params := RepositoryMockUpdateNamespacePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, pipelineRelease}
-
-	// Record call args
-	mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.mutex.Lock()
-	mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.callArgs = append(mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.callArgs, &mm_params)
-	mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.mutex.Unlock()
-
-	for _, e := range mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.err
-		}
-	}
-
-	if mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.Counter, 1)
-		mm_want := mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.params
-		mm_want_ptrs := mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.paramPtrs
-
-		mm_got := RepositoryMockUpdateNamespacePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, pipelineRelease}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmUpdateNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineReleaseByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
-				mmUpdateNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineReleaseByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
-			}
-
-			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
-				mmUpdateNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineReleaseByID got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
-			}
-
-			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
-				mmUpdateNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineReleaseByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
-			}
-
-			if mm_want_ptrs.pipelineRelease != nil && !minimock.Equal(*mm_want_ptrs.pipelineRelease, mm_got.pipelineRelease) {
-				mmUpdateNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineReleaseByID got unexpected parameter pipelineRelease, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originPipelineRelease, *mm_want_ptrs.pipelineRelease, mm_got.pipelineRelease, minimock.Diff(*mm_want_ptrs.pipelineRelease, mm_got.pipelineRelease))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmUpdateNamespacePipelineReleaseByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineReleaseByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmUpdateNamespacePipelineReleaseByID.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.results
-		if mm_results == nil {
-			mmUpdateNamespacePipelineReleaseByID.t.Fatal("No results are set for the RepositoryMock.UpdateNamespacePipelineReleaseByID")
-		}
-		return (*mm_results).err
-	}
-	if mmUpdateNamespacePipelineReleaseByID.funcUpdateNamespacePipelineReleaseByID != nil {
-		return mmUpdateNamespacePipelineReleaseByID.funcUpdateNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, pipelineRelease)
-	}
-	mmUpdateNamespacePipelineReleaseByID.t.Fatalf("Unexpected call to RepositoryMock.UpdateNamespacePipelineReleaseByID. %v %v %v %v %v", ctx, ownerPermalink, pipelineUID, id, pipelineRelease)
-	return
-}
-
-// UpdateNamespacePipelineReleaseByIDAfterCounter returns a count of finished RepositoryMock.UpdateNamespacePipelineReleaseByID invocations
-func (mmUpdateNamespacePipelineReleaseByID *RepositoryMock) UpdateNamespacePipelineReleaseByIDAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmUpdateNamespacePipelineReleaseByID.afterUpdateNamespacePipelineReleaseByIDCounter)
-}
-
-// UpdateNamespacePipelineReleaseByIDBeforeCounter returns a count of RepositoryMock.UpdateNamespacePipelineReleaseByID invocations
-func (mmUpdateNamespacePipelineReleaseByID *RepositoryMock) UpdateNamespacePipelineReleaseByIDBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmUpdateNamespacePipelineReleaseByID.beforeUpdateNamespacePipelineReleaseByIDCounter)
-}
-
-// Calls returns a list of arguments used in each call to RepositoryMock.UpdateNamespacePipelineReleaseByID.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmUpdateNamespacePipelineReleaseByID *mRepositoryMockUpdateNamespacePipelineReleaseByID) Calls() []*RepositoryMockUpdateNamespacePipelineReleaseByIDParams {
-	mmUpdateNamespacePipelineReleaseByID.mutex.RLock()
-
-	argCopy := make([]*RepositoryMockUpdateNamespacePipelineReleaseByIDParams, len(mmUpdateNamespacePipelineReleaseByID.callArgs))
-	copy(argCopy, mmUpdateNamespacePipelineReleaseByID.callArgs)
-
-	mmUpdateNamespacePipelineReleaseByID.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockUpdateNamespacePipelineReleaseByIDDone returns true if the count of the UpdateNamespacePipelineReleaseByID invocations corresponds
-// the number of defined expectations
-func (m *RepositoryMock) MinimockUpdateNamespacePipelineReleaseByIDDone() bool {
-	if m.UpdateNamespacePipelineReleaseByIDMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.UpdateNamespacePipelineReleaseByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.UpdateNamespacePipelineReleaseByIDMock.invocationsDone()
-}
-
-// MinimockUpdateNamespacePipelineReleaseByIDInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockUpdateNamespacePipelineReleaseByIDInspect() {
-	for _, e := range m.UpdateNamespacePipelineReleaseByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineReleaseByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
-		}
-	}
-
-	afterUpdateNamespacePipelineReleaseByIDCounter := mm_atomic.LoadUint64(&m.afterUpdateNamespacePipelineReleaseByIDCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation != nil && afterUpdateNamespacePipelineReleaseByIDCounter < 1 {
-		if m.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineReleaseByID at\n%s", m.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.returnOrigin)
-		} else {
-			m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineReleaseByID at\n%s with params: %#v", m.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.origin, *m.UpdateNamespacePipelineReleaseByIDMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcUpdateNamespacePipelineReleaseByID != nil && afterUpdateNamespacePipelineReleaseByIDCounter < 1 {
-		m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineReleaseByID at\n%s", m.funcUpdateNamespacePipelineReleaseByIDOrigin)
-	}
-
-	if !m.UpdateNamespacePipelineReleaseByIDMock.invocationsDone() && afterUpdateNamespacePipelineReleaseByIDCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.UpdateNamespacePipelineReleaseByID at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.UpdateNamespacePipelineReleaseByIDMock.expectedInvocations), m.UpdateNamespacePipelineReleaseByIDMock.expectedInvocationsOrigin, afterUpdateNamespacePipelineReleaseByIDCounter)
-	}
-}
-
-type mRepositoryMockUpdateNamespacePipelineReleaseIDByID struct {
-	optional           bool
-	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation
-	expectations       []*RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation
-
-	callArgs []*RepositoryMockUpdateNamespacePipelineReleaseIDByIDParams
-	mutex    sync.RWMutex
-
-	expectedInvocations       uint64
-	expectedInvocationsOrigin string
-}
-
-// RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation specifies expectation struct of the Repository.UpdateNamespacePipelineReleaseIDByID
-type RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation struct {
-	mock               *RepositoryMock
-	params             *RepositoryMockUpdateNamespacePipelineReleaseIDByIDParams
-	paramPtrs          *RepositoryMockUpdateNamespacePipelineReleaseIDByIDParamPtrs
-	expectationOrigins RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectationOrigins
-	results            *RepositoryMockUpdateNamespacePipelineReleaseIDByIDResults
-	returnOrigin       string
-	Counter            uint64
-}
-
-// RepositoryMockUpdateNamespacePipelineReleaseIDByIDParams contains parameters of the Repository.UpdateNamespacePipelineReleaseIDByID
-type RepositoryMockUpdateNamespacePipelineReleaseIDByIDParams struct {
-	ctx            context.Context
-	ownerPermalink string
-	pipelineUID    uuid.UUID
-	id             string
-	newID          string
-}
-
-// RepositoryMockUpdateNamespacePipelineReleaseIDByIDParamPtrs contains pointers to parameters of the Repository.UpdateNamespacePipelineReleaseIDByID
-type RepositoryMockUpdateNamespacePipelineReleaseIDByIDParamPtrs struct {
-	ctx            *context.Context
-	ownerPermalink *string
-	pipelineUID    *uuid.UUID
-	id             *string
-	newID          *string
-}
-
-// RepositoryMockUpdateNamespacePipelineReleaseIDByIDResults contains results of the Repository.UpdateNamespacePipelineReleaseIDByID
-type RepositoryMockUpdateNamespacePipelineReleaseIDByIDResults struct {
-	err error
-}
-
-// RepositoryMockUpdateNamespacePipelineReleaseIDByIDOrigins contains origins of expectations of the Repository.UpdateNamespacePipelineReleaseIDByID
-type RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectationOrigins struct {
-	origin               string
-	originCtx            string
-	originOwnerPermalink string
-	originPipelineUID    string
-	originId             string
-	originNewID          string
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) Optional() *mRepositoryMockUpdateNamespacePipelineReleaseIDByID {
-	mmUpdateNamespacePipelineReleaseIDByID.optional = true
-	return mmUpdateNamespacePipelineReleaseIDByID
-}
-
-// Expect sets up expected params for Repository.UpdateNamespacePipelineReleaseIDByID
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string) *mRepositoryMockUpdateNamespacePipelineReleaseIDByID {
-	if mmUpdateNamespacePipelineReleaseIDByID.mock.funcUpdateNamespacePipelineReleaseIDByID != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by ExpectParams functions")
-	}
-
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.params = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDParams{ctx, ownerPermalink, pipelineUID, id, newID}
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmUpdateNamespacePipelineReleaseIDByID.expectations {
-		if minimock.Equal(e.params, mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.params) {
-			mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.params)
-		}
-	}
-
-	return mmUpdateNamespacePipelineReleaseIDByID
-}
-
-// ExpectCtxParam1 sets up expected param ctx for Repository.UpdateNamespacePipelineReleaseIDByID
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockUpdateNamespacePipelineReleaseIDByID {
-	if mmUpdateNamespacePipelineReleaseIDByID.mock.funcUpdateNamespacePipelineReleaseIDByID != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs.ctx = &ctx
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineReleaseIDByID
-}
-
-// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.UpdateNamespacePipelineReleaseIDByID
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockUpdateNamespacePipelineReleaseIDByID {
-	if mmUpdateNamespacePipelineReleaseIDByID.mock.funcUpdateNamespacePipelineReleaseIDByID != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineReleaseIDByID
-}
-
-// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.UpdateNamespacePipelineReleaseIDByID
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockUpdateNamespacePipelineReleaseIDByID {
-	if mmUpdateNamespacePipelineReleaseIDByID.mock.funcUpdateNamespacePipelineReleaseIDByID != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineReleaseIDByID
-}
-
-// ExpectIdParam4 sets up expected param id for Repository.UpdateNamespacePipelineReleaseIDByID
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) ExpectIdParam4(id string) *mRepositoryMockUpdateNamespacePipelineReleaseIDByID {
-	if mmUpdateNamespacePipelineReleaseIDByID.mock.funcUpdateNamespacePipelineReleaseIDByID != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs.id = &id
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineReleaseIDByID
-}
-
-// ExpectNewIDParam5 sets up expected param newID for Repository.UpdateNamespacePipelineReleaseIDByID
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) ExpectNewIDParam5(newID string) *mRepositoryMockUpdateNamespacePipelineReleaseIDByID {
-	if mmUpdateNamespacePipelineReleaseIDByID.mock.funcUpdateNamespacePipelineReleaseIDByID != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation{}
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.params != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by Expect")
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs == nil {
-		mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDParamPtrs{}
-	}
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.paramPtrs.newID = &newID
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.expectationOrigins.originNewID = minimock.CallerInfo(1)
-
-	return mmUpdateNamespacePipelineReleaseIDByID
-}
-
-// Inspect accepts an inspector function that has same arguments as the Repository.UpdateNamespacePipelineReleaseIDByID
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string)) *mRepositoryMockUpdateNamespacePipelineReleaseIDByID {
-	if mmUpdateNamespacePipelineReleaseIDByID.mock.inspectFuncUpdateNamespacePipelineReleaseIDByID != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.UpdateNamespacePipelineReleaseIDByID")
-	}
-
-	mmUpdateNamespacePipelineReleaseIDByID.mock.inspectFuncUpdateNamespacePipelineReleaseIDByID = f
-
-	return mmUpdateNamespacePipelineReleaseIDByID
-}
-
-// Return sets up results that will be returned by Repository.UpdateNamespacePipelineReleaseIDByID
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) Return(err error) *RepositoryMock {
-	if mmUpdateNamespacePipelineReleaseIDByID.mock.funcUpdateNamespacePipelineReleaseIDByID != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by Set")
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation == nil {
-		mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation{mock: mmUpdateNamespacePipelineReleaseIDByID.mock}
-	}
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.results = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDResults{err}
-	mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmUpdateNamespacePipelineReleaseIDByID.mock
-}
-
-// Set uses given function f to mock the Repository.UpdateNamespacePipelineReleaseIDByID method
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string) (err error)) *RepositoryMock {
-	if mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("Default expectation is already set for the Repository.UpdateNamespacePipelineReleaseIDByID method")
-	}
-
-	if len(mmUpdateNamespacePipelineReleaseIDByID.expectations) > 0 {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("Some expectations are already set for the Repository.UpdateNamespacePipelineReleaseIDByID method")
-	}
-
-	mmUpdateNamespacePipelineReleaseIDByID.mock.funcUpdateNamespacePipelineReleaseIDByID = f
-	mmUpdateNamespacePipelineReleaseIDByID.mock.funcUpdateNamespacePipelineReleaseIDByIDOrigin = minimock.CallerInfo(1)
-	return mmUpdateNamespacePipelineReleaseIDByID.mock
-}
-
-// When sets expectation for the Repository.UpdateNamespacePipelineReleaseIDByID which will trigger the result defined by the following
-// Then helper
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string) *RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation {
-	if mmUpdateNamespacePipelineReleaseIDByID.mock.funcUpdateNamespacePipelineReleaseIDByID != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock is already set by Set")
-	}
-
-	expectation := &RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation{
-		mock:               mmUpdateNamespacePipelineReleaseIDByID.mock,
-		params:             &RepositoryMockUpdateNamespacePipelineReleaseIDByIDParams{ctx, ownerPermalink, pipelineUID, id, newID},
-		expectationOrigins: RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
-	}
-	mmUpdateNamespacePipelineReleaseIDByID.expectations = append(mmUpdateNamespacePipelineReleaseIDByID.expectations, expectation)
-	return expectation
-}
-
-// Then sets up Repository.UpdateNamespacePipelineReleaseIDByID return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockUpdateNamespacePipelineReleaseIDByIDExpectation) Then(err error) *RepositoryMock {
-	e.results = &RepositoryMockUpdateNamespacePipelineReleaseIDByIDResults{err}
-	return e.mock
-}
-
-// Times sets number of times Repository.UpdateNamespacePipelineReleaseIDByID should be invoked
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) Times(n uint64) *mRepositoryMockUpdateNamespacePipelineReleaseIDByID {
-	if n == 0 {
-		mmUpdateNamespacePipelineReleaseIDByID.mock.t.Fatalf("Times of RepositoryMock.UpdateNamespacePipelineReleaseIDByID mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmUpdateNamespacePipelineReleaseIDByID.expectedInvocations, n)
-	mmUpdateNamespacePipelineReleaseIDByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmUpdateNamespacePipelineReleaseIDByID
-}
-
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) invocationsDone() bool {
-	if len(mmUpdateNamespacePipelineReleaseIDByID.expectations) == 0 && mmUpdateNamespacePipelineReleaseIDByID.defaultExpectation == nil && mmUpdateNamespacePipelineReleaseIDByID.mock.funcUpdateNamespacePipelineReleaseIDByID == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmUpdateNamespacePipelineReleaseIDByID.mock.afterUpdateNamespacePipelineReleaseIDByIDCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmUpdateNamespacePipelineReleaseIDByID.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// UpdateNamespacePipelineReleaseIDByID implements mm_repository.Repository
-func (mmUpdateNamespacePipelineReleaseIDByID *RepositoryMock) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string) (err error) {
-	mm_atomic.AddUint64(&mmUpdateNamespacePipelineReleaseIDByID.beforeUpdateNamespacePipelineReleaseIDByIDCounter, 1)
-	defer mm_atomic.AddUint64(&mmUpdateNamespacePipelineReleaseIDByID.afterUpdateNamespacePipelineReleaseIDByIDCounter, 1)
-
-	mmUpdateNamespacePipelineReleaseIDByID.t.Helper()
-
-	if mmUpdateNamespacePipelineReleaseIDByID.inspectFuncUpdateNamespacePipelineReleaseIDByID != nil {
-		mmUpdateNamespacePipelineReleaseIDByID.inspectFuncUpdateNamespacePipelineReleaseIDByID(ctx, ownerPermalink, pipelineUID, id, newID)
-	}
-
-	mm_params := RepositoryMockUpdateNamespacePipelineReleaseIDByIDParams{ctx, ownerPermalink, pipelineUID, id, newID}
-
-	// Record call args
-	mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.mutex.Lock()
-	mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.callArgs = append(mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.callArgs, &mm_params)
-	mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.mutex.Unlock()
-
-	for _, e := range mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.err
-		}
-	}
-
-	if mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.Counter, 1)
-		mm_want := mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.params
-		mm_want_ptrs := mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.paramPtrs
-
-		mm_got := RepositoryMockUpdateNamespacePipelineReleaseIDByIDParams{ctx, ownerPermalink, pipelineUID, id, newID}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmUpdateNamespacePipelineReleaseIDByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
-				mmUpdateNamespacePipelineReleaseIDByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
-			}
-
-			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
-				mmUpdateNamespacePipelineReleaseIDByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
-			}
-
-			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
-				mmUpdateNamespacePipelineReleaseIDByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
-			}
-
-			if mm_want_ptrs.newID != nil && !minimock.Equal(*mm_want_ptrs.newID, mm_got.newID) {
-				mmUpdateNamespacePipelineReleaseIDByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID got unexpected parameter newID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.originNewID, *mm_want_ptrs.newID, mm_got.newID, minimock.Diff(*mm_want_ptrs.newID, mm_got.newID))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmUpdateNamespacePipelineReleaseIDByID.t.Errorf("RepositoryMock.UpdateNamespacePipelineReleaseIDByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmUpdateNamespacePipelineReleaseIDByID.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.results
-		if mm_results == nil {
-			mmUpdateNamespacePipelineReleaseIDByID.t.Fatal("No results are set for the RepositoryMock.UpdateNamespacePipelineReleaseIDByID")
-		}
-		return (*mm_results).err
-	}
-	if mmUpdateNamespacePipelineReleaseIDByID.funcUpdateNamespacePipelineReleaseIDByID != nil {
-		return mmUpdateNamespacePipelineReleaseIDByID.funcUpdateNamespacePipelineReleaseIDByID(ctx, ownerPermalink, pipelineUID, id, newID)
-	}
-	mmUpdateNamespacePipelineReleaseIDByID.t.Fatalf("Unexpected call to RepositoryMock.UpdateNamespacePipelineReleaseIDByID. %v %v %v %v %v", ctx, ownerPermalink, pipelineUID, id, newID)
-	return
-}
-
-// UpdateNamespacePipelineReleaseIDByIDAfterCounter returns a count of finished RepositoryMock.UpdateNamespacePipelineReleaseIDByID invocations
-func (mmUpdateNamespacePipelineReleaseIDByID *RepositoryMock) UpdateNamespacePipelineReleaseIDByIDAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmUpdateNamespacePipelineReleaseIDByID.afterUpdateNamespacePipelineReleaseIDByIDCounter)
-}
-
-// UpdateNamespacePipelineReleaseIDByIDBeforeCounter returns a count of RepositoryMock.UpdateNamespacePipelineReleaseIDByID invocations
-func (mmUpdateNamespacePipelineReleaseIDByID *RepositoryMock) UpdateNamespacePipelineReleaseIDByIDBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmUpdateNamespacePipelineReleaseIDByID.beforeUpdateNamespacePipelineReleaseIDByIDCounter)
-}
-
-// Calls returns a list of arguments used in each call to RepositoryMock.UpdateNamespacePipelineReleaseIDByID.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmUpdateNamespacePipelineReleaseIDByID *mRepositoryMockUpdateNamespacePipelineReleaseIDByID) Calls() []*RepositoryMockUpdateNamespacePipelineReleaseIDByIDParams {
-	mmUpdateNamespacePipelineReleaseIDByID.mutex.RLock()
-
-	argCopy := make([]*RepositoryMockUpdateNamespacePipelineReleaseIDByIDParams, len(mmUpdateNamespacePipelineReleaseIDByID.callArgs))
-	copy(argCopy, mmUpdateNamespacePipelineReleaseIDByID.callArgs)
-
-	mmUpdateNamespacePipelineReleaseIDByID.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockUpdateNamespacePipelineReleaseIDByIDDone returns true if the count of the UpdateNamespacePipelineReleaseIDByID invocations corresponds
-// the number of defined expectations
-func (m *RepositoryMock) MinimockUpdateNamespacePipelineReleaseIDByIDDone() bool {
-	if m.UpdateNamespacePipelineReleaseIDByIDMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.UpdateNamespacePipelineReleaseIDByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.UpdateNamespacePipelineReleaseIDByIDMock.invocationsDone()
-}
-
-// MinimockUpdateNamespacePipelineReleaseIDByIDInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockUpdateNamespacePipelineReleaseIDByIDInspect() {
-	for _, e := range m.UpdateNamespacePipelineReleaseIDByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineReleaseIDByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
-		}
-	}
-
-	afterUpdateNamespacePipelineReleaseIDByIDCounter := mm_atomic.LoadUint64(&m.afterUpdateNamespacePipelineReleaseIDByIDCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation != nil && afterUpdateNamespacePipelineReleaseIDByIDCounter < 1 {
-		if m.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineReleaseIDByID at\n%s", m.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.returnOrigin)
-		} else {
-			m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineReleaseIDByID at\n%s with params: %#v", m.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.origin, *m.UpdateNamespacePipelineReleaseIDByIDMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcUpdateNamespacePipelineReleaseIDByID != nil && afterUpdateNamespacePipelineReleaseIDByIDCounter < 1 {
-		m.t.Errorf("Expected call to RepositoryMock.UpdateNamespacePipelineReleaseIDByID at\n%s", m.funcUpdateNamespacePipelineReleaseIDByIDOrigin)
-	}
-
-	if !m.UpdateNamespacePipelineReleaseIDByIDMock.invocationsDone() && afterUpdateNamespacePipelineReleaseIDByIDCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.UpdateNamespacePipelineReleaseIDByID at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.UpdateNamespacePipelineReleaseIDByIDMock.expectedInvocations), m.UpdateNamespacePipelineReleaseIDByIDMock.expectedInvocationsOrigin, afterUpdateNamespacePipelineReleaseIDByIDCounter)
-	}
-}
-
 type mRepositoryMockUpdateNamespaceSecretByID struct {
 	optional           bool
 	mock               *RepositoryMock
@@ -21219,6 +19572,1653 @@ func (m *RepositoryMock) MinimockUpdateNamespaceSecretByIDInspect() {
 	if !m.UpdateNamespaceSecretByIDMock.invocationsDone() && afterUpdateNamespaceSecretByIDCounter > 0 {
 		m.t.Errorf("Expected %d calls to RepositoryMock.UpdateNamespaceSecretByID at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.UpdateNamespaceSecretByIDMock.expectedInvocations), m.UpdateNamespaceSecretByIDMock.expectedInvocationsOrigin, afterUpdateNamespaceSecretByIDCounter)
+	}
+}
+
+type mRepositoryMockUpdatePipelineByUID struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockUpdatePipelineByUIDExpectation
+	expectations       []*RepositoryMockUpdatePipelineByUIDExpectation
+
+	callArgs []*RepositoryMockUpdatePipelineByUIDParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// RepositoryMockUpdatePipelineByUIDExpectation specifies expectation struct of the Repository.UpdatePipelineByUID
+type RepositoryMockUpdatePipelineByUIDExpectation struct {
+	mock               *RepositoryMock
+	params             *RepositoryMockUpdatePipelineByUIDParams
+	paramPtrs          *RepositoryMockUpdatePipelineByUIDParamPtrs
+	expectationOrigins RepositoryMockUpdatePipelineByUIDExpectationOrigins
+	results            *RepositoryMockUpdatePipelineByUIDResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// RepositoryMockUpdatePipelineByUIDParams contains parameters of the Repository.UpdatePipelineByUID
+type RepositoryMockUpdatePipelineByUIDParams struct {
+	ctx      context.Context
+	uid      uuid.UUID
+	pipeline *datamodel.Pipeline
+}
+
+// RepositoryMockUpdatePipelineByUIDParamPtrs contains pointers to parameters of the Repository.UpdatePipelineByUID
+type RepositoryMockUpdatePipelineByUIDParamPtrs struct {
+	ctx      *context.Context
+	uid      *uuid.UUID
+	pipeline **datamodel.Pipeline
+}
+
+// RepositoryMockUpdatePipelineByUIDResults contains results of the Repository.UpdatePipelineByUID
+type RepositoryMockUpdatePipelineByUIDResults struct {
+	err error
+}
+
+// RepositoryMockUpdatePipelineByUIDOrigins contains origins of expectations of the Repository.UpdatePipelineByUID
+type RepositoryMockUpdatePipelineByUIDExpectationOrigins struct {
+	origin         string
+	originCtx      string
+	originUid      string
+	originPipeline string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdatePipelineByUID *mRepositoryMockUpdatePipelineByUID) Optional() *mRepositoryMockUpdatePipelineByUID {
+	mmUpdatePipelineByUID.optional = true
+	return mmUpdatePipelineByUID
+}
+
+// Expect sets up expected params for Repository.UpdatePipelineByUID
+func (mmUpdatePipelineByUID *mRepositoryMockUpdatePipelineByUID) Expect(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) *mRepositoryMockUpdatePipelineByUID {
+	if mmUpdatePipelineByUID.mock.funcUpdatePipelineByUID != nil {
+		mmUpdatePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdatePipelineByUID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineByUID.defaultExpectation == nil {
+		mmUpdatePipelineByUID.defaultExpectation = &RepositoryMockUpdatePipelineByUIDExpectation{}
+	}
+
+	if mmUpdatePipelineByUID.defaultExpectation.paramPtrs != nil {
+		mmUpdatePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdatePipelineByUID mock is already set by ExpectParams functions")
+	}
+
+	mmUpdatePipelineByUID.defaultExpectation.params = &RepositoryMockUpdatePipelineByUIDParams{ctx, uid, pipeline}
+	mmUpdatePipelineByUID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUpdatePipelineByUID.expectations {
+		if minimock.Equal(e.params, mmUpdatePipelineByUID.defaultExpectation.params) {
+			mmUpdatePipelineByUID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdatePipelineByUID.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdatePipelineByUID
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.UpdatePipelineByUID
+func (mmUpdatePipelineByUID *mRepositoryMockUpdatePipelineByUID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockUpdatePipelineByUID {
+	if mmUpdatePipelineByUID.mock.funcUpdatePipelineByUID != nil {
+		mmUpdatePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdatePipelineByUID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineByUID.defaultExpectation == nil {
+		mmUpdatePipelineByUID.defaultExpectation = &RepositoryMockUpdatePipelineByUIDExpectation{}
+	}
+
+	if mmUpdatePipelineByUID.defaultExpectation.params != nil {
+		mmUpdatePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdatePipelineByUID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineByUID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineByUID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineByUIDParamPtrs{}
+	}
+	mmUpdatePipelineByUID.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUpdatePipelineByUID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineByUID
+}
+
+// ExpectUidParam2 sets up expected param uid for Repository.UpdatePipelineByUID
+func (mmUpdatePipelineByUID *mRepositoryMockUpdatePipelineByUID) ExpectUidParam2(uid uuid.UUID) *mRepositoryMockUpdatePipelineByUID {
+	if mmUpdatePipelineByUID.mock.funcUpdatePipelineByUID != nil {
+		mmUpdatePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdatePipelineByUID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineByUID.defaultExpectation == nil {
+		mmUpdatePipelineByUID.defaultExpectation = &RepositoryMockUpdatePipelineByUIDExpectation{}
+	}
+
+	if mmUpdatePipelineByUID.defaultExpectation.params != nil {
+		mmUpdatePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdatePipelineByUID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineByUID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineByUID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineByUIDParamPtrs{}
+	}
+	mmUpdatePipelineByUID.defaultExpectation.paramPtrs.uid = &uid
+	mmUpdatePipelineByUID.defaultExpectation.expectationOrigins.originUid = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineByUID
+}
+
+// ExpectPipelineParam3 sets up expected param pipeline for Repository.UpdatePipelineByUID
+func (mmUpdatePipelineByUID *mRepositoryMockUpdatePipelineByUID) ExpectPipelineParam3(pipeline *datamodel.Pipeline) *mRepositoryMockUpdatePipelineByUID {
+	if mmUpdatePipelineByUID.mock.funcUpdatePipelineByUID != nil {
+		mmUpdatePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdatePipelineByUID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineByUID.defaultExpectation == nil {
+		mmUpdatePipelineByUID.defaultExpectation = &RepositoryMockUpdatePipelineByUIDExpectation{}
+	}
+
+	if mmUpdatePipelineByUID.defaultExpectation.params != nil {
+		mmUpdatePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdatePipelineByUID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineByUID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineByUID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineByUIDParamPtrs{}
+	}
+	mmUpdatePipelineByUID.defaultExpectation.paramPtrs.pipeline = &pipeline
+	mmUpdatePipelineByUID.defaultExpectation.expectationOrigins.originPipeline = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineByUID
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.UpdatePipelineByUID
+func (mmUpdatePipelineByUID *mRepositoryMockUpdatePipelineByUID) Inspect(f func(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline)) *mRepositoryMockUpdatePipelineByUID {
+	if mmUpdatePipelineByUID.mock.inspectFuncUpdatePipelineByUID != nil {
+		mmUpdatePipelineByUID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.UpdatePipelineByUID")
+	}
+
+	mmUpdatePipelineByUID.mock.inspectFuncUpdatePipelineByUID = f
+
+	return mmUpdatePipelineByUID
+}
+
+// Return sets up results that will be returned by Repository.UpdatePipelineByUID
+func (mmUpdatePipelineByUID *mRepositoryMockUpdatePipelineByUID) Return(err error) *RepositoryMock {
+	if mmUpdatePipelineByUID.mock.funcUpdatePipelineByUID != nil {
+		mmUpdatePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdatePipelineByUID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineByUID.defaultExpectation == nil {
+		mmUpdatePipelineByUID.defaultExpectation = &RepositoryMockUpdatePipelineByUIDExpectation{mock: mmUpdatePipelineByUID.mock}
+	}
+	mmUpdatePipelineByUID.defaultExpectation.results = &RepositoryMockUpdatePipelineByUIDResults{err}
+	mmUpdatePipelineByUID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUpdatePipelineByUID.mock
+}
+
+// Set uses given function f to mock the Repository.UpdatePipelineByUID method
+func (mmUpdatePipelineByUID *mRepositoryMockUpdatePipelineByUID) Set(f func(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) (err error)) *RepositoryMock {
+	if mmUpdatePipelineByUID.defaultExpectation != nil {
+		mmUpdatePipelineByUID.mock.t.Fatalf("Default expectation is already set for the Repository.UpdatePipelineByUID method")
+	}
+
+	if len(mmUpdatePipelineByUID.expectations) > 0 {
+		mmUpdatePipelineByUID.mock.t.Fatalf("Some expectations are already set for the Repository.UpdatePipelineByUID method")
+	}
+
+	mmUpdatePipelineByUID.mock.funcUpdatePipelineByUID = f
+	mmUpdatePipelineByUID.mock.funcUpdatePipelineByUIDOrigin = minimock.CallerInfo(1)
+	return mmUpdatePipelineByUID.mock
+}
+
+// When sets expectation for the Repository.UpdatePipelineByUID which will trigger the result defined by the following
+// Then helper
+func (mmUpdatePipelineByUID *mRepositoryMockUpdatePipelineByUID) When(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) *RepositoryMockUpdatePipelineByUIDExpectation {
+	if mmUpdatePipelineByUID.mock.funcUpdatePipelineByUID != nil {
+		mmUpdatePipelineByUID.mock.t.Fatalf("RepositoryMock.UpdatePipelineByUID mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockUpdatePipelineByUIDExpectation{
+		mock:               mmUpdatePipelineByUID.mock,
+		params:             &RepositoryMockUpdatePipelineByUIDParams{ctx, uid, pipeline},
+		expectationOrigins: RepositoryMockUpdatePipelineByUIDExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUpdatePipelineByUID.expectations = append(mmUpdatePipelineByUID.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.UpdatePipelineByUID return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockUpdatePipelineByUIDExpectation) Then(err error) *RepositoryMock {
+	e.results = &RepositoryMockUpdatePipelineByUIDResults{err}
+	return e.mock
+}
+
+// Times sets number of times Repository.UpdatePipelineByUID should be invoked
+func (mmUpdatePipelineByUID *mRepositoryMockUpdatePipelineByUID) Times(n uint64) *mRepositoryMockUpdatePipelineByUID {
+	if n == 0 {
+		mmUpdatePipelineByUID.mock.t.Fatalf("Times of RepositoryMock.UpdatePipelineByUID mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdatePipelineByUID.expectedInvocations, n)
+	mmUpdatePipelineByUID.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUpdatePipelineByUID
+}
+
+func (mmUpdatePipelineByUID *mRepositoryMockUpdatePipelineByUID) invocationsDone() bool {
+	if len(mmUpdatePipelineByUID.expectations) == 0 && mmUpdatePipelineByUID.defaultExpectation == nil && mmUpdatePipelineByUID.mock.funcUpdatePipelineByUID == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdatePipelineByUID.mock.afterUpdatePipelineByUIDCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdatePipelineByUID.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdatePipelineByUID implements mm_repository.Repository
+func (mmUpdatePipelineByUID *RepositoryMock) UpdatePipelineByUID(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) (err error) {
+	mm_atomic.AddUint64(&mmUpdatePipelineByUID.beforeUpdatePipelineByUIDCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdatePipelineByUID.afterUpdatePipelineByUIDCounter, 1)
+
+	mmUpdatePipelineByUID.t.Helper()
+
+	if mmUpdatePipelineByUID.inspectFuncUpdatePipelineByUID != nil {
+		mmUpdatePipelineByUID.inspectFuncUpdatePipelineByUID(ctx, uid, pipeline)
+	}
+
+	mm_params := RepositoryMockUpdatePipelineByUIDParams{ctx, uid, pipeline}
+
+	// Record call args
+	mmUpdatePipelineByUID.UpdatePipelineByUIDMock.mutex.Lock()
+	mmUpdatePipelineByUID.UpdatePipelineByUIDMock.callArgs = append(mmUpdatePipelineByUID.UpdatePipelineByUIDMock.callArgs, &mm_params)
+	mmUpdatePipelineByUID.UpdatePipelineByUIDMock.mutex.Unlock()
+
+	for _, e := range mmUpdatePipelineByUID.UpdatePipelineByUIDMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmUpdatePipelineByUID.UpdatePipelineByUIDMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdatePipelineByUID.UpdatePipelineByUIDMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdatePipelineByUID.UpdatePipelineByUIDMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdatePipelineByUID.UpdatePipelineByUIDMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockUpdatePipelineByUIDParams{ctx, uid, pipeline}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpdatePipelineByUID.t.Errorf("RepositoryMock.UpdatePipelineByUID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineByUID.UpdatePipelineByUIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.uid != nil && !minimock.Equal(*mm_want_ptrs.uid, mm_got.uid) {
+				mmUpdatePipelineByUID.t.Errorf("RepositoryMock.UpdatePipelineByUID got unexpected parameter uid, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineByUID.UpdatePipelineByUIDMock.defaultExpectation.expectationOrigins.originUid, *mm_want_ptrs.uid, mm_got.uid, minimock.Diff(*mm_want_ptrs.uid, mm_got.uid))
+			}
+
+			if mm_want_ptrs.pipeline != nil && !minimock.Equal(*mm_want_ptrs.pipeline, mm_got.pipeline) {
+				mmUpdatePipelineByUID.t.Errorf("RepositoryMock.UpdatePipelineByUID got unexpected parameter pipeline, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineByUID.UpdatePipelineByUIDMock.defaultExpectation.expectationOrigins.originPipeline, *mm_want_ptrs.pipeline, mm_got.pipeline, minimock.Diff(*mm_want_ptrs.pipeline, mm_got.pipeline))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdatePipelineByUID.t.Errorf("RepositoryMock.UpdatePipelineByUID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUpdatePipelineByUID.UpdatePipelineByUIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdatePipelineByUID.UpdatePipelineByUIDMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdatePipelineByUID.t.Fatal("No results are set for the RepositoryMock.UpdatePipelineByUID")
+		}
+		return (*mm_results).err
+	}
+	if mmUpdatePipelineByUID.funcUpdatePipelineByUID != nil {
+		return mmUpdatePipelineByUID.funcUpdatePipelineByUID(ctx, uid, pipeline)
+	}
+	mmUpdatePipelineByUID.t.Fatalf("Unexpected call to RepositoryMock.UpdatePipelineByUID. %v %v %v", ctx, uid, pipeline)
+	return
+}
+
+// UpdatePipelineByUIDAfterCounter returns a count of finished RepositoryMock.UpdatePipelineByUID invocations
+func (mmUpdatePipelineByUID *RepositoryMock) UpdatePipelineByUIDAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdatePipelineByUID.afterUpdatePipelineByUIDCounter)
+}
+
+// UpdatePipelineByUIDBeforeCounter returns a count of RepositoryMock.UpdatePipelineByUID invocations
+func (mmUpdatePipelineByUID *RepositoryMock) UpdatePipelineByUIDBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdatePipelineByUID.beforeUpdatePipelineByUIDCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.UpdatePipelineByUID.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdatePipelineByUID *mRepositoryMockUpdatePipelineByUID) Calls() []*RepositoryMockUpdatePipelineByUIDParams {
+	mmUpdatePipelineByUID.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockUpdatePipelineByUIDParams, len(mmUpdatePipelineByUID.callArgs))
+	copy(argCopy, mmUpdatePipelineByUID.callArgs)
+
+	mmUpdatePipelineByUID.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdatePipelineByUIDDone returns true if the count of the UpdatePipelineByUID invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockUpdatePipelineByUIDDone() bool {
+	if m.UpdatePipelineByUIDMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdatePipelineByUIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdatePipelineByUIDMock.invocationsDone()
+}
+
+// MinimockUpdatePipelineByUIDInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockUpdatePipelineByUIDInspect() {
+	for _, e := range m.UpdatePipelineByUIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineByUID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUpdatePipelineByUIDCounter := mm_atomic.LoadUint64(&m.afterUpdatePipelineByUIDCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdatePipelineByUIDMock.defaultExpectation != nil && afterUpdatePipelineByUIDCounter < 1 {
+		if m.UpdatePipelineByUIDMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineByUID at\n%s", m.UpdatePipelineByUIDMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineByUID at\n%s with params: %#v", m.UpdatePipelineByUIDMock.defaultExpectation.expectationOrigins.origin, *m.UpdatePipelineByUIDMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdatePipelineByUID != nil && afterUpdatePipelineByUIDCounter < 1 {
+		m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineByUID at\n%s", m.funcUpdatePipelineByUIDOrigin)
+	}
+
+	if !m.UpdatePipelineByUIDMock.invocationsDone() && afterUpdatePipelineByUIDCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.UpdatePipelineByUID at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdatePipelineByUIDMock.expectedInvocations), m.UpdatePipelineByUIDMock.expectedInvocationsOrigin, afterUpdatePipelineByUIDCounter)
+	}
+}
+
+type mRepositoryMockUpdatePipelineIDByID struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockUpdatePipelineIDByIDExpectation
+	expectations       []*RepositoryMockUpdatePipelineIDByIDExpectation
+
+	callArgs []*RepositoryMockUpdatePipelineIDByIDParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// RepositoryMockUpdatePipelineIDByIDExpectation specifies expectation struct of the Repository.UpdatePipelineIDByID
+type RepositoryMockUpdatePipelineIDByIDExpectation struct {
+	mock               *RepositoryMock
+	params             *RepositoryMockUpdatePipelineIDByIDParams
+	paramPtrs          *RepositoryMockUpdatePipelineIDByIDParamPtrs
+	expectationOrigins RepositoryMockUpdatePipelineIDByIDExpectationOrigins
+	results            *RepositoryMockUpdatePipelineIDByIDResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// RepositoryMockUpdatePipelineIDByIDParams contains parameters of the Repository.UpdatePipelineIDByID
+type RepositoryMockUpdatePipelineIDByIDParams struct {
+	ctx            context.Context
+	ownerPermalink string
+	id             string
+	newID          string
+}
+
+// RepositoryMockUpdatePipelineIDByIDParamPtrs contains pointers to parameters of the Repository.UpdatePipelineIDByID
+type RepositoryMockUpdatePipelineIDByIDParamPtrs struct {
+	ctx            *context.Context
+	ownerPermalink *string
+	id             *string
+	newID          *string
+}
+
+// RepositoryMockUpdatePipelineIDByIDResults contains results of the Repository.UpdatePipelineIDByID
+type RepositoryMockUpdatePipelineIDByIDResults struct {
+	err error
+}
+
+// RepositoryMockUpdatePipelineIDByIDOrigins contains origins of expectations of the Repository.UpdatePipelineIDByID
+type RepositoryMockUpdatePipelineIDByIDExpectationOrigins struct {
+	origin               string
+	originCtx            string
+	originOwnerPermalink string
+	originId             string
+	originNewID          string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdatePipelineIDByID *mRepositoryMockUpdatePipelineIDByID) Optional() *mRepositoryMockUpdatePipelineIDByID {
+	mmUpdatePipelineIDByID.optional = true
+	return mmUpdatePipelineIDByID
+}
+
+// Expect sets up expected params for Repository.UpdatePipelineIDByID
+func (mmUpdatePipelineIDByID *mRepositoryMockUpdatePipelineIDByID) Expect(ctx context.Context, ownerPermalink string, id string, newID string) *mRepositoryMockUpdatePipelineIDByID {
+	if mmUpdatePipelineIDByID.mock.funcUpdatePipelineIDByID != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineIDByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation == nil {
+		mmUpdatePipelineIDByID.defaultExpectation = &RepositoryMockUpdatePipelineIDByIDExpectation{}
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation.paramPtrs != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineIDByID mock is already set by ExpectParams functions")
+	}
+
+	mmUpdatePipelineIDByID.defaultExpectation.params = &RepositoryMockUpdatePipelineIDByIDParams{ctx, ownerPermalink, id, newID}
+	mmUpdatePipelineIDByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUpdatePipelineIDByID.expectations {
+		if minimock.Equal(e.params, mmUpdatePipelineIDByID.defaultExpectation.params) {
+			mmUpdatePipelineIDByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdatePipelineIDByID.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdatePipelineIDByID
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.UpdatePipelineIDByID
+func (mmUpdatePipelineIDByID *mRepositoryMockUpdatePipelineIDByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockUpdatePipelineIDByID {
+	if mmUpdatePipelineIDByID.mock.funcUpdatePipelineIDByID != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineIDByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation == nil {
+		mmUpdatePipelineIDByID.defaultExpectation = &RepositoryMockUpdatePipelineIDByIDExpectation{}
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation.params != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineIDByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineIDByIDParamPtrs{}
+	}
+	mmUpdatePipelineIDByID.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUpdatePipelineIDByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineIDByID
+}
+
+// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.UpdatePipelineIDByID
+func (mmUpdatePipelineIDByID *mRepositoryMockUpdatePipelineIDByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockUpdatePipelineIDByID {
+	if mmUpdatePipelineIDByID.mock.funcUpdatePipelineIDByID != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineIDByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation == nil {
+		mmUpdatePipelineIDByID.defaultExpectation = &RepositoryMockUpdatePipelineIDByIDExpectation{}
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation.params != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineIDByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineIDByIDParamPtrs{}
+	}
+	mmUpdatePipelineIDByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
+	mmUpdatePipelineIDByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineIDByID
+}
+
+// ExpectIdParam3 sets up expected param id for Repository.UpdatePipelineIDByID
+func (mmUpdatePipelineIDByID *mRepositoryMockUpdatePipelineIDByID) ExpectIdParam3(id string) *mRepositoryMockUpdatePipelineIDByID {
+	if mmUpdatePipelineIDByID.mock.funcUpdatePipelineIDByID != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineIDByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation == nil {
+		mmUpdatePipelineIDByID.defaultExpectation = &RepositoryMockUpdatePipelineIDByIDExpectation{}
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation.params != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineIDByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineIDByIDParamPtrs{}
+	}
+	mmUpdatePipelineIDByID.defaultExpectation.paramPtrs.id = &id
+	mmUpdatePipelineIDByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineIDByID
+}
+
+// ExpectNewIDParam4 sets up expected param newID for Repository.UpdatePipelineIDByID
+func (mmUpdatePipelineIDByID *mRepositoryMockUpdatePipelineIDByID) ExpectNewIDParam4(newID string) *mRepositoryMockUpdatePipelineIDByID {
+	if mmUpdatePipelineIDByID.mock.funcUpdatePipelineIDByID != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineIDByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation == nil {
+		mmUpdatePipelineIDByID.defaultExpectation = &RepositoryMockUpdatePipelineIDByIDExpectation{}
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation.params != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineIDByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineIDByIDParamPtrs{}
+	}
+	mmUpdatePipelineIDByID.defaultExpectation.paramPtrs.newID = &newID
+	mmUpdatePipelineIDByID.defaultExpectation.expectationOrigins.originNewID = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineIDByID
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.UpdatePipelineIDByID
+func (mmUpdatePipelineIDByID *mRepositoryMockUpdatePipelineIDByID) Inspect(f func(ctx context.Context, ownerPermalink string, id string, newID string)) *mRepositoryMockUpdatePipelineIDByID {
+	if mmUpdatePipelineIDByID.mock.inspectFuncUpdatePipelineIDByID != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.UpdatePipelineIDByID")
+	}
+
+	mmUpdatePipelineIDByID.mock.inspectFuncUpdatePipelineIDByID = f
+
+	return mmUpdatePipelineIDByID
+}
+
+// Return sets up results that will be returned by Repository.UpdatePipelineIDByID
+func (mmUpdatePipelineIDByID *mRepositoryMockUpdatePipelineIDByID) Return(err error) *RepositoryMock {
+	if mmUpdatePipelineIDByID.mock.funcUpdatePipelineIDByID != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineIDByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineIDByID.defaultExpectation == nil {
+		mmUpdatePipelineIDByID.defaultExpectation = &RepositoryMockUpdatePipelineIDByIDExpectation{mock: mmUpdatePipelineIDByID.mock}
+	}
+	mmUpdatePipelineIDByID.defaultExpectation.results = &RepositoryMockUpdatePipelineIDByIDResults{err}
+	mmUpdatePipelineIDByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUpdatePipelineIDByID.mock
+}
+
+// Set uses given function f to mock the Repository.UpdatePipelineIDByID method
+func (mmUpdatePipelineIDByID *mRepositoryMockUpdatePipelineIDByID) Set(f func(ctx context.Context, ownerPermalink string, id string, newID string) (err error)) *RepositoryMock {
+	if mmUpdatePipelineIDByID.defaultExpectation != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("Default expectation is already set for the Repository.UpdatePipelineIDByID method")
+	}
+
+	if len(mmUpdatePipelineIDByID.expectations) > 0 {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("Some expectations are already set for the Repository.UpdatePipelineIDByID method")
+	}
+
+	mmUpdatePipelineIDByID.mock.funcUpdatePipelineIDByID = f
+	mmUpdatePipelineIDByID.mock.funcUpdatePipelineIDByIDOrigin = minimock.CallerInfo(1)
+	return mmUpdatePipelineIDByID.mock
+}
+
+// When sets expectation for the Repository.UpdatePipelineIDByID which will trigger the result defined by the following
+// Then helper
+func (mmUpdatePipelineIDByID *mRepositoryMockUpdatePipelineIDByID) When(ctx context.Context, ownerPermalink string, id string, newID string) *RepositoryMockUpdatePipelineIDByIDExpectation {
+	if mmUpdatePipelineIDByID.mock.funcUpdatePipelineIDByID != nil {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineIDByID mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockUpdatePipelineIDByIDExpectation{
+		mock:               mmUpdatePipelineIDByID.mock,
+		params:             &RepositoryMockUpdatePipelineIDByIDParams{ctx, ownerPermalink, id, newID},
+		expectationOrigins: RepositoryMockUpdatePipelineIDByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUpdatePipelineIDByID.expectations = append(mmUpdatePipelineIDByID.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.UpdatePipelineIDByID return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockUpdatePipelineIDByIDExpectation) Then(err error) *RepositoryMock {
+	e.results = &RepositoryMockUpdatePipelineIDByIDResults{err}
+	return e.mock
+}
+
+// Times sets number of times Repository.UpdatePipelineIDByID should be invoked
+func (mmUpdatePipelineIDByID *mRepositoryMockUpdatePipelineIDByID) Times(n uint64) *mRepositoryMockUpdatePipelineIDByID {
+	if n == 0 {
+		mmUpdatePipelineIDByID.mock.t.Fatalf("Times of RepositoryMock.UpdatePipelineIDByID mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdatePipelineIDByID.expectedInvocations, n)
+	mmUpdatePipelineIDByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUpdatePipelineIDByID
+}
+
+func (mmUpdatePipelineIDByID *mRepositoryMockUpdatePipelineIDByID) invocationsDone() bool {
+	if len(mmUpdatePipelineIDByID.expectations) == 0 && mmUpdatePipelineIDByID.defaultExpectation == nil && mmUpdatePipelineIDByID.mock.funcUpdatePipelineIDByID == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdatePipelineIDByID.mock.afterUpdatePipelineIDByIDCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdatePipelineIDByID.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdatePipelineIDByID implements mm_repository.Repository
+func (mmUpdatePipelineIDByID *RepositoryMock) UpdatePipelineIDByID(ctx context.Context, ownerPermalink string, id string, newID string) (err error) {
+	mm_atomic.AddUint64(&mmUpdatePipelineIDByID.beforeUpdatePipelineIDByIDCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdatePipelineIDByID.afterUpdatePipelineIDByIDCounter, 1)
+
+	mmUpdatePipelineIDByID.t.Helper()
+
+	if mmUpdatePipelineIDByID.inspectFuncUpdatePipelineIDByID != nil {
+		mmUpdatePipelineIDByID.inspectFuncUpdatePipelineIDByID(ctx, ownerPermalink, id, newID)
+	}
+
+	mm_params := RepositoryMockUpdatePipelineIDByIDParams{ctx, ownerPermalink, id, newID}
+
+	// Record call args
+	mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.mutex.Lock()
+	mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.callArgs = append(mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.callArgs, &mm_params)
+	mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.mutex.Unlock()
+
+	for _, e := range mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockUpdatePipelineIDByIDParams{ctx, ownerPermalink, id, newID}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpdatePipelineIDByID.t.Errorf("RepositoryMock.UpdatePipelineIDByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
+				mmUpdatePipelineIDByID.t.Errorf("RepositoryMock.UpdatePipelineIDByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
+			}
+
+			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
+				mmUpdatePipelineIDByID.t.Errorf("RepositoryMock.UpdatePipelineIDByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			}
+
+			if mm_want_ptrs.newID != nil && !minimock.Equal(*mm_want_ptrs.newID, mm_got.newID) {
+				mmUpdatePipelineIDByID.t.Errorf("RepositoryMock.UpdatePipelineIDByID got unexpected parameter newID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.defaultExpectation.expectationOrigins.originNewID, *mm_want_ptrs.newID, mm_got.newID, minimock.Diff(*mm_want_ptrs.newID, mm_got.newID))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdatePipelineIDByID.t.Errorf("RepositoryMock.UpdatePipelineIDByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdatePipelineIDByID.UpdatePipelineIDByIDMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdatePipelineIDByID.t.Fatal("No results are set for the RepositoryMock.UpdatePipelineIDByID")
+		}
+		return (*mm_results).err
+	}
+	if mmUpdatePipelineIDByID.funcUpdatePipelineIDByID != nil {
+		return mmUpdatePipelineIDByID.funcUpdatePipelineIDByID(ctx, ownerPermalink, id, newID)
+	}
+	mmUpdatePipelineIDByID.t.Fatalf("Unexpected call to RepositoryMock.UpdatePipelineIDByID. %v %v %v %v", ctx, ownerPermalink, id, newID)
+	return
+}
+
+// UpdatePipelineIDByIDAfterCounter returns a count of finished RepositoryMock.UpdatePipelineIDByID invocations
+func (mmUpdatePipelineIDByID *RepositoryMock) UpdatePipelineIDByIDAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdatePipelineIDByID.afterUpdatePipelineIDByIDCounter)
+}
+
+// UpdatePipelineIDByIDBeforeCounter returns a count of RepositoryMock.UpdatePipelineIDByID invocations
+func (mmUpdatePipelineIDByID *RepositoryMock) UpdatePipelineIDByIDBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdatePipelineIDByID.beforeUpdatePipelineIDByIDCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.UpdatePipelineIDByID.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdatePipelineIDByID *mRepositoryMockUpdatePipelineIDByID) Calls() []*RepositoryMockUpdatePipelineIDByIDParams {
+	mmUpdatePipelineIDByID.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockUpdatePipelineIDByIDParams, len(mmUpdatePipelineIDByID.callArgs))
+	copy(argCopy, mmUpdatePipelineIDByID.callArgs)
+
+	mmUpdatePipelineIDByID.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdatePipelineIDByIDDone returns true if the count of the UpdatePipelineIDByID invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockUpdatePipelineIDByIDDone() bool {
+	if m.UpdatePipelineIDByIDMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdatePipelineIDByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdatePipelineIDByIDMock.invocationsDone()
+}
+
+// MinimockUpdatePipelineIDByIDInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockUpdatePipelineIDByIDInspect() {
+	for _, e := range m.UpdatePipelineIDByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineIDByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUpdatePipelineIDByIDCounter := mm_atomic.LoadUint64(&m.afterUpdatePipelineIDByIDCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdatePipelineIDByIDMock.defaultExpectation != nil && afterUpdatePipelineIDByIDCounter < 1 {
+		if m.UpdatePipelineIDByIDMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineIDByID at\n%s", m.UpdatePipelineIDByIDMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineIDByID at\n%s with params: %#v", m.UpdatePipelineIDByIDMock.defaultExpectation.expectationOrigins.origin, *m.UpdatePipelineIDByIDMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdatePipelineIDByID != nil && afterUpdatePipelineIDByIDCounter < 1 {
+		m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineIDByID at\n%s", m.funcUpdatePipelineIDByIDOrigin)
+	}
+
+	if !m.UpdatePipelineIDByIDMock.invocationsDone() && afterUpdatePipelineIDByIDCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.UpdatePipelineIDByID at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdatePipelineIDByIDMock.expectedInvocations), m.UpdatePipelineIDByIDMock.expectedInvocationsOrigin, afterUpdatePipelineIDByIDCounter)
+	}
+}
+
+type mRepositoryMockUpdatePipelineReleaseByID struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockUpdatePipelineReleaseByIDExpectation
+	expectations       []*RepositoryMockUpdatePipelineReleaseByIDExpectation
+
+	callArgs []*RepositoryMockUpdatePipelineReleaseByIDParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// RepositoryMockUpdatePipelineReleaseByIDExpectation specifies expectation struct of the Repository.UpdatePipelineReleaseByID
+type RepositoryMockUpdatePipelineReleaseByIDExpectation struct {
+	mock               *RepositoryMock
+	params             *RepositoryMockUpdatePipelineReleaseByIDParams
+	paramPtrs          *RepositoryMockUpdatePipelineReleaseByIDParamPtrs
+	expectationOrigins RepositoryMockUpdatePipelineReleaseByIDExpectationOrigins
+	results            *RepositoryMockUpdatePipelineReleaseByIDResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// RepositoryMockUpdatePipelineReleaseByIDParams contains parameters of the Repository.UpdatePipelineReleaseByID
+type RepositoryMockUpdatePipelineReleaseByIDParams struct {
+	ctx             context.Context
+	ownerPermalink  string
+	pipelineUID     uuid.UUID
+	id              string
+	pipelineRelease *datamodel.PipelineRelease
+}
+
+// RepositoryMockUpdatePipelineReleaseByIDParamPtrs contains pointers to parameters of the Repository.UpdatePipelineReleaseByID
+type RepositoryMockUpdatePipelineReleaseByIDParamPtrs struct {
+	ctx             *context.Context
+	ownerPermalink  *string
+	pipelineUID     *uuid.UUID
+	id              *string
+	pipelineRelease **datamodel.PipelineRelease
+}
+
+// RepositoryMockUpdatePipelineReleaseByIDResults contains results of the Repository.UpdatePipelineReleaseByID
+type RepositoryMockUpdatePipelineReleaseByIDResults struct {
+	err error
+}
+
+// RepositoryMockUpdatePipelineReleaseByIDOrigins contains origins of expectations of the Repository.UpdatePipelineReleaseByID
+type RepositoryMockUpdatePipelineReleaseByIDExpectationOrigins struct {
+	origin                string
+	originCtx             string
+	originOwnerPermalink  string
+	originPipelineUID     string
+	originId              string
+	originPipelineRelease string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) Optional() *mRepositoryMockUpdatePipelineReleaseByID {
+	mmUpdatePipelineReleaseByID.optional = true
+	return mmUpdatePipelineReleaseByID
+}
+
+// Expect sets up expected params for Repository.UpdatePipelineReleaseByID
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) *mRepositoryMockUpdatePipelineReleaseByID {
+	if mmUpdatePipelineReleaseByID.mock.funcUpdatePipelineReleaseByID != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseByIDExpectation{}
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by ExpectParams functions")
+	}
+
+	mmUpdatePipelineReleaseByID.defaultExpectation.params = &RepositoryMockUpdatePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, pipelineRelease}
+	mmUpdatePipelineReleaseByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUpdatePipelineReleaseByID.expectations {
+		if minimock.Equal(e.params, mmUpdatePipelineReleaseByID.defaultExpectation.params) {
+			mmUpdatePipelineReleaseByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdatePipelineReleaseByID.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdatePipelineReleaseByID
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.UpdatePipelineReleaseByID
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockUpdatePipelineReleaseByID {
+	if mmUpdatePipelineReleaseByID.mock.funcUpdatePipelineReleaseByID != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseByIDExpectation{}
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation.params != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineReleaseByIDParamPtrs{}
+	}
+	mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUpdatePipelineReleaseByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineReleaseByID
+}
+
+// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.UpdatePipelineReleaseByID
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockUpdatePipelineReleaseByID {
+	if mmUpdatePipelineReleaseByID.mock.funcUpdatePipelineReleaseByID != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseByIDExpectation{}
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation.params != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineReleaseByIDParamPtrs{}
+	}
+	mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
+	mmUpdatePipelineReleaseByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineReleaseByID
+}
+
+// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.UpdatePipelineReleaseByID
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockUpdatePipelineReleaseByID {
+	if mmUpdatePipelineReleaseByID.mock.funcUpdatePipelineReleaseByID != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseByIDExpectation{}
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation.params != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineReleaseByIDParamPtrs{}
+	}
+	mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
+	mmUpdatePipelineReleaseByID.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineReleaseByID
+}
+
+// ExpectIdParam4 sets up expected param id for Repository.UpdatePipelineReleaseByID
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) ExpectIdParam4(id string) *mRepositoryMockUpdatePipelineReleaseByID {
+	if mmUpdatePipelineReleaseByID.mock.funcUpdatePipelineReleaseByID != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseByIDExpectation{}
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation.params != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineReleaseByIDParamPtrs{}
+	}
+	mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs.id = &id
+	mmUpdatePipelineReleaseByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineReleaseByID
+}
+
+// ExpectPipelineReleaseParam5 sets up expected param pipelineRelease for Repository.UpdatePipelineReleaseByID
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) ExpectPipelineReleaseParam5(pipelineRelease *datamodel.PipelineRelease) *mRepositoryMockUpdatePipelineReleaseByID {
+	if mmUpdatePipelineReleaseByID.mock.funcUpdatePipelineReleaseByID != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseByIDExpectation{}
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation.params != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineReleaseByIDParamPtrs{}
+	}
+	mmUpdatePipelineReleaseByID.defaultExpectation.paramPtrs.pipelineRelease = &pipelineRelease
+	mmUpdatePipelineReleaseByID.defaultExpectation.expectationOrigins.originPipelineRelease = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineReleaseByID
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.UpdatePipelineReleaseByID
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease)) *mRepositoryMockUpdatePipelineReleaseByID {
+	if mmUpdatePipelineReleaseByID.mock.inspectFuncUpdatePipelineReleaseByID != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.UpdatePipelineReleaseByID")
+	}
+
+	mmUpdatePipelineReleaseByID.mock.inspectFuncUpdatePipelineReleaseByID = f
+
+	return mmUpdatePipelineReleaseByID
+}
+
+// Return sets up results that will be returned by Repository.UpdatePipelineReleaseByID
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) Return(err error) *RepositoryMock {
+	if mmUpdatePipelineReleaseByID.mock.funcUpdatePipelineReleaseByID != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseByIDExpectation{mock: mmUpdatePipelineReleaseByID.mock}
+	}
+	mmUpdatePipelineReleaseByID.defaultExpectation.results = &RepositoryMockUpdatePipelineReleaseByIDResults{err}
+	mmUpdatePipelineReleaseByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUpdatePipelineReleaseByID.mock
+}
+
+// Set uses given function f to mock the Repository.UpdatePipelineReleaseByID method
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) (err error)) *RepositoryMock {
+	if mmUpdatePipelineReleaseByID.defaultExpectation != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("Default expectation is already set for the Repository.UpdatePipelineReleaseByID method")
+	}
+
+	if len(mmUpdatePipelineReleaseByID.expectations) > 0 {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("Some expectations are already set for the Repository.UpdatePipelineReleaseByID method")
+	}
+
+	mmUpdatePipelineReleaseByID.mock.funcUpdatePipelineReleaseByID = f
+	mmUpdatePipelineReleaseByID.mock.funcUpdatePipelineReleaseByIDOrigin = minimock.CallerInfo(1)
+	return mmUpdatePipelineReleaseByID.mock
+}
+
+// When sets expectation for the Repository.UpdatePipelineReleaseByID which will trigger the result defined by the following
+// Then helper
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) *RepositoryMockUpdatePipelineReleaseByIDExpectation {
+	if mmUpdatePipelineReleaseByID.mock.funcUpdatePipelineReleaseByID != nil {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseByID mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockUpdatePipelineReleaseByIDExpectation{
+		mock:               mmUpdatePipelineReleaseByID.mock,
+		params:             &RepositoryMockUpdatePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, pipelineRelease},
+		expectationOrigins: RepositoryMockUpdatePipelineReleaseByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUpdatePipelineReleaseByID.expectations = append(mmUpdatePipelineReleaseByID.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.UpdatePipelineReleaseByID return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockUpdatePipelineReleaseByIDExpectation) Then(err error) *RepositoryMock {
+	e.results = &RepositoryMockUpdatePipelineReleaseByIDResults{err}
+	return e.mock
+}
+
+// Times sets number of times Repository.UpdatePipelineReleaseByID should be invoked
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) Times(n uint64) *mRepositoryMockUpdatePipelineReleaseByID {
+	if n == 0 {
+		mmUpdatePipelineReleaseByID.mock.t.Fatalf("Times of RepositoryMock.UpdatePipelineReleaseByID mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdatePipelineReleaseByID.expectedInvocations, n)
+	mmUpdatePipelineReleaseByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUpdatePipelineReleaseByID
+}
+
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) invocationsDone() bool {
+	if len(mmUpdatePipelineReleaseByID.expectations) == 0 && mmUpdatePipelineReleaseByID.defaultExpectation == nil && mmUpdatePipelineReleaseByID.mock.funcUpdatePipelineReleaseByID == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdatePipelineReleaseByID.mock.afterUpdatePipelineReleaseByIDCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdatePipelineReleaseByID.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdatePipelineReleaseByID implements mm_repository.Repository
+func (mmUpdatePipelineReleaseByID *RepositoryMock) UpdatePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) (err error) {
+	mm_atomic.AddUint64(&mmUpdatePipelineReleaseByID.beforeUpdatePipelineReleaseByIDCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdatePipelineReleaseByID.afterUpdatePipelineReleaseByIDCounter, 1)
+
+	mmUpdatePipelineReleaseByID.t.Helper()
+
+	if mmUpdatePipelineReleaseByID.inspectFuncUpdatePipelineReleaseByID != nil {
+		mmUpdatePipelineReleaseByID.inspectFuncUpdatePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, pipelineRelease)
+	}
+
+	mm_params := RepositoryMockUpdatePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, pipelineRelease}
+
+	// Record call args
+	mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.mutex.Lock()
+	mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.callArgs = append(mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.callArgs, &mm_params)
+	mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.mutex.Unlock()
+
+	for _, e := range mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockUpdatePipelineReleaseByIDParams{ctx, ownerPermalink, pipelineUID, id, pipelineRelease}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpdatePipelineReleaseByID.t.Errorf("RepositoryMock.UpdatePipelineReleaseByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
+				mmUpdatePipelineReleaseByID.t.Errorf("RepositoryMock.UpdatePipelineReleaseByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
+			}
+
+			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
+				mmUpdatePipelineReleaseByID.t.Errorf("RepositoryMock.UpdatePipelineReleaseByID got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
+			}
+
+			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
+				mmUpdatePipelineReleaseByID.t.Errorf("RepositoryMock.UpdatePipelineReleaseByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			}
+
+			if mm_want_ptrs.pipelineRelease != nil && !minimock.Equal(*mm_want_ptrs.pipelineRelease, mm_got.pipelineRelease) {
+				mmUpdatePipelineReleaseByID.t.Errorf("RepositoryMock.UpdatePipelineReleaseByID got unexpected parameter pipelineRelease, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.originPipelineRelease, *mm_want_ptrs.pipelineRelease, mm_got.pipelineRelease, minimock.Diff(*mm_want_ptrs.pipelineRelease, mm_got.pipelineRelease))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdatePipelineReleaseByID.t.Errorf("RepositoryMock.UpdatePipelineReleaseByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdatePipelineReleaseByID.UpdatePipelineReleaseByIDMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdatePipelineReleaseByID.t.Fatal("No results are set for the RepositoryMock.UpdatePipelineReleaseByID")
+		}
+		return (*mm_results).err
+	}
+	if mmUpdatePipelineReleaseByID.funcUpdatePipelineReleaseByID != nil {
+		return mmUpdatePipelineReleaseByID.funcUpdatePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, pipelineRelease)
+	}
+	mmUpdatePipelineReleaseByID.t.Fatalf("Unexpected call to RepositoryMock.UpdatePipelineReleaseByID. %v %v %v %v %v", ctx, ownerPermalink, pipelineUID, id, pipelineRelease)
+	return
+}
+
+// UpdatePipelineReleaseByIDAfterCounter returns a count of finished RepositoryMock.UpdatePipelineReleaseByID invocations
+func (mmUpdatePipelineReleaseByID *RepositoryMock) UpdatePipelineReleaseByIDAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdatePipelineReleaseByID.afterUpdatePipelineReleaseByIDCounter)
+}
+
+// UpdatePipelineReleaseByIDBeforeCounter returns a count of RepositoryMock.UpdatePipelineReleaseByID invocations
+func (mmUpdatePipelineReleaseByID *RepositoryMock) UpdatePipelineReleaseByIDBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdatePipelineReleaseByID.beforeUpdatePipelineReleaseByIDCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.UpdatePipelineReleaseByID.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdatePipelineReleaseByID *mRepositoryMockUpdatePipelineReleaseByID) Calls() []*RepositoryMockUpdatePipelineReleaseByIDParams {
+	mmUpdatePipelineReleaseByID.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockUpdatePipelineReleaseByIDParams, len(mmUpdatePipelineReleaseByID.callArgs))
+	copy(argCopy, mmUpdatePipelineReleaseByID.callArgs)
+
+	mmUpdatePipelineReleaseByID.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdatePipelineReleaseByIDDone returns true if the count of the UpdatePipelineReleaseByID invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockUpdatePipelineReleaseByIDDone() bool {
+	if m.UpdatePipelineReleaseByIDMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdatePipelineReleaseByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdatePipelineReleaseByIDMock.invocationsDone()
+}
+
+// MinimockUpdatePipelineReleaseByIDInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockUpdatePipelineReleaseByIDInspect() {
+	for _, e := range m.UpdatePipelineReleaseByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineReleaseByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUpdatePipelineReleaseByIDCounter := mm_atomic.LoadUint64(&m.afterUpdatePipelineReleaseByIDCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdatePipelineReleaseByIDMock.defaultExpectation != nil && afterUpdatePipelineReleaseByIDCounter < 1 {
+		if m.UpdatePipelineReleaseByIDMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineReleaseByID at\n%s", m.UpdatePipelineReleaseByIDMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineReleaseByID at\n%s with params: %#v", m.UpdatePipelineReleaseByIDMock.defaultExpectation.expectationOrigins.origin, *m.UpdatePipelineReleaseByIDMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdatePipelineReleaseByID != nil && afterUpdatePipelineReleaseByIDCounter < 1 {
+		m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineReleaseByID at\n%s", m.funcUpdatePipelineReleaseByIDOrigin)
+	}
+
+	if !m.UpdatePipelineReleaseByIDMock.invocationsDone() && afterUpdatePipelineReleaseByIDCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.UpdatePipelineReleaseByID at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdatePipelineReleaseByIDMock.expectedInvocations), m.UpdatePipelineReleaseByIDMock.expectedInvocationsOrigin, afterUpdatePipelineReleaseByIDCounter)
+	}
+}
+
+type mRepositoryMockUpdatePipelineReleaseIDByID struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockUpdatePipelineReleaseIDByIDExpectation
+	expectations       []*RepositoryMockUpdatePipelineReleaseIDByIDExpectation
+
+	callArgs []*RepositoryMockUpdatePipelineReleaseIDByIDParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// RepositoryMockUpdatePipelineReleaseIDByIDExpectation specifies expectation struct of the Repository.UpdatePipelineReleaseIDByID
+type RepositoryMockUpdatePipelineReleaseIDByIDExpectation struct {
+	mock               *RepositoryMock
+	params             *RepositoryMockUpdatePipelineReleaseIDByIDParams
+	paramPtrs          *RepositoryMockUpdatePipelineReleaseIDByIDParamPtrs
+	expectationOrigins RepositoryMockUpdatePipelineReleaseIDByIDExpectationOrigins
+	results            *RepositoryMockUpdatePipelineReleaseIDByIDResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// RepositoryMockUpdatePipelineReleaseIDByIDParams contains parameters of the Repository.UpdatePipelineReleaseIDByID
+type RepositoryMockUpdatePipelineReleaseIDByIDParams struct {
+	ctx            context.Context
+	ownerPermalink string
+	pipelineUID    uuid.UUID
+	id             string
+	newID          string
+}
+
+// RepositoryMockUpdatePipelineReleaseIDByIDParamPtrs contains pointers to parameters of the Repository.UpdatePipelineReleaseIDByID
+type RepositoryMockUpdatePipelineReleaseIDByIDParamPtrs struct {
+	ctx            *context.Context
+	ownerPermalink *string
+	pipelineUID    *uuid.UUID
+	id             *string
+	newID          *string
+}
+
+// RepositoryMockUpdatePipelineReleaseIDByIDResults contains results of the Repository.UpdatePipelineReleaseIDByID
+type RepositoryMockUpdatePipelineReleaseIDByIDResults struct {
+	err error
+}
+
+// RepositoryMockUpdatePipelineReleaseIDByIDOrigins contains origins of expectations of the Repository.UpdatePipelineReleaseIDByID
+type RepositoryMockUpdatePipelineReleaseIDByIDExpectationOrigins struct {
+	origin               string
+	originCtx            string
+	originOwnerPermalink string
+	originPipelineUID    string
+	originId             string
+	originNewID          string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) Optional() *mRepositoryMockUpdatePipelineReleaseIDByID {
+	mmUpdatePipelineReleaseIDByID.optional = true
+	return mmUpdatePipelineReleaseIDByID
+}
+
+// Expect sets up expected params for Repository.UpdatePipelineReleaseIDByID
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) Expect(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string) *mRepositoryMockUpdatePipelineReleaseIDByID {
+	if mmUpdatePipelineReleaseIDByID.mock.funcUpdatePipelineReleaseIDByID != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseIDByIDExpectation{}
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by ExpectParams functions")
+	}
+
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.params = &RepositoryMockUpdatePipelineReleaseIDByIDParams{ctx, ownerPermalink, pipelineUID, id, newID}
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUpdatePipelineReleaseIDByID.expectations {
+		if minimock.Equal(e.params, mmUpdatePipelineReleaseIDByID.defaultExpectation.params) {
+			mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdatePipelineReleaseIDByID.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdatePipelineReleaseIDByID
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.UpdatePipelineReleaseIDByID
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockUpdatePipelineReleaseIDByID {
+	if mmUpdatePipelineReleaseIDByID.mock.funcUpdatePipelineReleaseIDByID != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseIDByIDExpectation{}
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation.params != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineReleaseIDByIDParamPtrs{}
+	}
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineReleaseIDByID
+}
+
+// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Repository.UpdatePipelineReleaseIDByID
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) ExpectOwnerPermalinkParam2(ownerPermalink string) *mRepositoryMockUpdatePipelineReleaseIDByID {
+	if mmUpdatePipelineReleaseIDByID.mock.funcUpdatePipelineReleaseIDByID != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseIDByIDExpectation{}
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation.params != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineReleaseIDByIDParamPtrs{}
+	}
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.expectationOrigins.originOwnerPermalink = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineReleaseIDByID
+}
+
+// ExpectPipelineUIDParam3 sets up expected param pipelineUID for Repository.UpdatePipelineReleaseIDByID
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) ExpectPipelineUIDParam3(pipelineUID uuid.UUID) *mRepositoryMockUpdatePipelineReleaseIDByID {
+	if mmUpdatePipelineReleaseIDByID.mock.funcUpdatePipelineReleaseIDByID != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseIDByIDExpectation{}
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation.params != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineReleaseIDByIDParamPtrs{}
+	}
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs.pipelineUID = &pipelineUID
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.expectationOrigins.originPipelineUID = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineReleaseIDByID
+}
+
+// ExpectIdParam4 sets up expected param id for Repository.UpdatePipelineReleaseIDByID
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) ExpectIdParam4(id string) *mRepositoryMockUpdatePipelineReleaseIDByID {
+	if mmUpdatePipelineReleaseIDByID.mock.funcUpdatePipelineReleaseIDByID != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseIDByIDExpectation{}
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation.params != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineReleaseIDByIDParamPtrs{}
+	}
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs.id = &id
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineReleaseIDByID
+}
+
+// ExpectNewIDParam5 sets up expected param newID for Repository.UpdatePipelineReleaseIDByID
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) ExpectNewIDParam5(newID string) *mRepositoryMockUpdatePipelineReleaseIDByID {
+	if mmUpdatePipelineReleaseIDByID.mock.funcUpdatePipelineReleaseIDByID != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseIDByIDExpectation{}
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation.params != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineReleaseIDByIDParamPtrs{}
+	}
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.paramPtrs.newID = &newID
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.expectationOrigins.originNewID = minimock.CallerInfo(1)
+
+	return mmUpdatePipelineReleaseIDByID
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.UpdatePipelineReleaseIDByID
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) Inspect(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string)) *mRepositoryMockUpdatePipelineReleaseIDByID {
+	if mmUpdatePipelineReleaseIDByID.mock.inspectFuncUpdatePipelineReleaseIDByID != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.UpdatePipelineReleaseIDByID")
+	}
+
+	mmUpdatePipelineReleaseIDByID.mock.inspectFuncUpdatePipelineReleaseIDByID = f
+
+	return mmUpdatePipelineReleaseIDByID
+}
+
+// Return sets up results that will be returned by Repository.UpdatePipelineReleaseIDByID
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) Return(err error) *RepositoryMock {
+	if mmUpdatePipelineReleaseIDByID.mock.funcUpdatePipelineReleaseIDByID != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by Set")
+	}
+
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation == nil {
+		mmUpdatePipelineReleaseIDByID.defaultExpectation = &RepositoryMockUpdatePipelineReleaseIDByIDExpectation{mock: mmUpdatePipelineReleaseIDByID.mock}
+	}
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.results = &RepositoryMockUpdatePipelineReleaseIDByIDResults{err}
+	mmUpdatePipelineReleaseIDByID.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUpdatePipelineReleaseIDByID.mock
+}
+
+// Set uses given function f to mock the Repository.UpdatePipelineReleaseIDByID method
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) Set(f func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string) (err error)) *RepositoryMock {
+	if mmUpdatePipelineReleaseIDByID.defaultExpectation != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("Default expectation is already set for the Repository.UpdatePipelineReleaseIDByID method")
+	}
+
+	if len(mmUpdatePipelineReleaseIDByID.expectations) > 0 {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("Some expectations are already set for the Repository.UpdatePipelineReleaseIDByID method")
+	}
+
+	mmUpdatePipelineReleaseIDByID.mock.funcUpdatePipelineReleaseIDByID = f
+	mmUpdatePipelineReleaseIDByID.mock.funcUpdatePipelineReleaseIDByIDOrigin = minimock.CallerInfo(1)
+	return mmUpdatePipelineReleaseIDByID.mock
+}
+
+// When sets expectation for the Repository.UpdatePipelineReleaseIDByID which will trigger the result defined by the following
+// Then helper
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) When(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string) *RepositoryMockUpdatePipelineReleaseIDByIDExpectation {
+	if mmUpdatePipelineReleaseIDByID.mock.funcUpdatePipelineReleaseIDByID != nil {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("RepositoryMock.UpdatePipelineReleaseIDByID mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockUpdatePipelineReleaseIDByIDExpectation{
+		mock:               mmUpdatePipelineReleaseIDByID.mock,
+		params:             &RepositoryMockUpdatePipelineReleaseIDByIDParams{ctx, ownerPermalink, pipelineUID, id, newID},
+		expectationOrigins: RepositoryMockUpdatePipelineReleaseIDByIDExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUpdatePipelineReleaseIDByID.expectations = append(mmUpdatePipelineReleaseIDByID.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.UpdatePipelineReleaseIDByID return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockUpdatePipelineReleaseIDByIDExpectation) Then(err error) *RepositoryMock {
+	e.results = &RepositoryMockUpdatePipelineReleaseIDByIDResults{err}
+	return e.mock
+}
+
+// Times sets number of times Repository.UpdatePipelineReleaseIDByID should be invoked
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) Times(n uint64) *mRepositoryMockUpdatePipelineReleaseIDByID {
+	if n == 0 {
+		mmUpdatePipelineReleaseIDByID.mock.t.Fatalf("Times of RepositoryMock.UpdatePipelineReleaseIDByID mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdatePipelineReleaseIDByID.expectedInvocations, n)
+	mmUpdatePipelineReleaseIDByID.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUpdatePipelineReleaseIDByID
+}
+
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) invocationsDone() bool {
+	if len(mmUpdatePipelineReleaseIDByID.expectations) == 0 && mmUpdatePipelineReleaseIDByID.defaultExpectation == nil && mmUpdatePipelineReleaseIDByID.mock.funcUpdatePipelineReleaseIDByID == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdatePipelineReleaseIDByID.mock.afterUpdatePipelineReleaseIDByIDCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdatePipelineReleaseIDByID.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdatePipelineReleaseIDByID implements mm_repository.Repository
+func (mmUpdatePipelineReleaseIDByID *RepositoryMock) UpdatePipelineReleaseIDByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string) (err error) {
+	mm_atomic.AddUint64(&mmUpdatePipelineReleaseIDByID.beforeUpdatePipelineReleaseIDByIDCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdatePipelineReleaseIDByID.afterUpdatePipelineReleaseIDByIDCounter, 1)
+
+	mmUpdatePipelineReleaseIDByID.t.Helper()
+
+	if mmUpdatePipelineReleaseIDByID.inspectFuncUpdatePipelineReleaseIDByID != nil {
+		mmUpdatePipelineReleaseIDByID.inspectFuncUpdatePipelineReleaseIDByID(ctx, ownerPermalink, pipelineUID, id, newID)
+	}
+
+	mm_params := RepositoryMockUpdatePipelineReleaseIDByIDParams{ctx, ownerPermalink, pipelineUID, id, newID}
+
+	// Record call args
+	mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.mutex.Lock()
+	mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.callArgs = append(mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.callArgs, &mm_params)
+	mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.mutex.Unlock()
+
+	for _, e := range mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockUpdatePipelineReleaseIDByIDParams{ctx, ownerPermalink, pipelineUID, id, newID}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpdatePipelineReleaseIDByID.t.Errorf("RepositoryMock.UpdatePipelineReleaseIDByID got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
+				mmUpdatePipelineReleaseIDByID.t.Errorf("RepositoryMock.UpdatePipelineReleaseIDByID got unexpected parameter ownerPermalink, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.originOwnerPermalink, *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
+			}
+
+			if mm_want_ptrs.pipelineUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID) {
+				mmUpdatePipelineReleaseIDByID.t.Errorf("RepositoryMock.UpdatePipelineReleaseIDByID got unexpected parameter pipelineUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.originPipelineUID, *mm_want_ptrs.pipelineUID, mm_got.pipelineUID, minimock.Diff(*mm_want_ptrs.pipelineUID, mm_got.pipelineUID))
+			}
+
+			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
+				mmUpdatePipelineReleaseIDByID.t.Errorf("RepositoryMock.UpdatePipelineReleaseIDByID got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			}
+
+			if mm_want_ptrs.newID != nil && !minimock.Equal(*mm_want_ptrs.newID, mm_got.newID) {
+				mmUpdatePipelineReleaseIDByID.t.Errorf("RepositoryMock.UpdatePipelineReleaseIDByID got unexpected parameter newID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.originNewID, *mm_want_ptrs.newID, mm_got.newID, minimock.Diff(*mm_want_ptrs.newID, mm_got.newID))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdatePipelineReleaseIDByID.t.Errorf("RepositoryMock.UpdatePipelineReleaseIDByID got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdatePipelineReleaseIDByID.UpdatePipelineReleaseIDByIDMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdatePipelineReleaseIDByID.t.Fatal("No results are set for the RepositoryMock.UpdatePipelineReleaseIDByID")
+		}
+		return (*mm_results).err
+	}
+	if mmUpdatePipelineReleaseIDByID.funcUpdatePipelineReleaseIDByID != nil {
+		return mmUpdatePipelineReleaseIDByID.funcUpdatePipelineReleaseIDByID(ctx, ownerPermalink, pipelineUID, id, newID)
+	}
+	mmUpdatePipelineReleaseIDByID.t.Fatalf("Unexpected call to RepositoryMock.UpdatePipelineReleaseIDByID. %v %v %v %v %v", ctx, ownerPermalink, pipelineUID, id, newID)
+	return
+}
+
+// UpdatePipelineReleaseIDByIDAfterCounter returns a count of finished RepositoryMock.UpdatePipelineReleaseIDByID invocations
+func (mmUpdatePipelineReleaseIDByID *RepositoryMock) UpdatePipelineReleaseIDByIDAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdatePipelineReleaseIDByID.afterUpdatePipelineReleaseIDByIDCounter)
+}
+
+// UpdatePipelineReleaseIDByIDBeforeCounter returns a count of RepositoryMock.UpdatePipelineReleaseIDByID invocations
+func (mmUpdatePipelineReleaseIDByID *RepositoryMock) UpdatePipelineReleaseIDByIDBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdatePipelineReleaseIDByID.beforeUpdatePipelineReleaseIDByIDCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.UpdatePipelineReleaseIDByID.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdatePipelineReleaseIDByID *mRepositoryMockUpdatePipelineReleaseIDByID) Calls() []*RepositoryMockUpdatePipelineReleaseIDByIDParams {
+	mmUpdatePipelineReleaseIDByID.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockUpdatePipelineReleaseIDByIDParams, len(mmUpdatePipelineReleaseIDByID.callArgs))
+	copy(argCopy, mmUpdatePipelineReleaseIDByID.callArgs)
+
+	mmUpdatePipelineReleaseIDByID.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdatePipelineReleaseIDByIDDone returns true if the count of the UpdatePipelineReleaseIDByID invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockUpdatePipelineReleaseIDByIDDone() bool {
+	if m.UpdatePipelineReleaseIDByIDMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdatePipelineReleaseIDByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdatePipelineReleaseIDByIDMock.invocationsDone()
+}
+
+// MinimockUpdatePipelineReleaseIDByIDInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockUpdatePipelineReleaseIDByIDInspect() {
+	for _, e := range m.UpdatePipelineReleaseIDByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineReleaseIDByID at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUpdatePipelineReleaseIDByIDCounter := mm_atomic.LoadUint64(&m.afterUpdatePipelineReleaseIDByIDCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdatePipelineReleaseIDByIDMock.defaultExpectation != nil && afterUpdatePipelineReleaseIDByIDCounter < 1 {
+		if m.UpdatePipelineReleaseIDByIDMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineReleaseIDByID at\n%s", m.UpdatePipelineReleaseIDByIDMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineReleaseIDByID at\n%s with params: %#v", m.UpdatePipelineReleaseIDByIDMock.defaultExpectation.expectationOrigins.origin, *m.UpdatePipelineReleaseIDByIDMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdatePipelineReleaseIDByID != nil && afterUpdatePipelineReleaseIDByIDCounter < 1 {
+		m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineReleaseIDByID at\n%s", m.funcUpdatePipelineReleaseIDByIDOrigin)
+	}
+
+	if !m.UpdatePipelineReleaseIDByIDMock.invocationsDone() && afterUpdatePipelineReleaseIDByIDCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.UpdatePipelineReleaseIDByID at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdatePipelineReleaseIDByIDMock.expectedInvocations), m.UpdatePipelineReleaseIDByIDMock.expectedInvocationsOrigin, afterUpdatePipelineReleaseIDByIDCounter)
 	}
 }
 
@@ -22633,11 +22633,11 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockCreateNamespaceConnectionInspect()
 
-			m.MinimockCreateNamespacePipelineInspect()
-
-			m.MinimockCreateNamespacePipelineReleaseInspect()
-
 			m.MinimockCreateNamespaceSecretInspect()
+
+			m.MinimockCreatePipelineInspect()
+
+			m.MinimockCreatePipelineReleaseInspect()
 
 			m.MinimockCreatePipelineRunOnInspect()
 
@@ -22647,11 +22647,11 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockDeleteNamespaceConnectionByIDInspect()
 
-			m.MinimockDeleteNamespacePipelineByIDInspect()
-
-			m.MinimockDeleteNamespacePipelineReleaseByIDInspect()
-
 			m.MinimockDeleteNamespaceSecretByIDInspect()
+
+			m.MinimockDeletePipelineByIDInspect()
+
+			m.MinimockDeletePipelineReleaseByIDInspect()
 
 			m.MinimockDeletePipelineRunOnInspect()
 
@@ -22663,13 +22663,9 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockGetHubStatsInspect()
 
-			m.MinimockGetLatestNamespacePipelineReleaseInspect()
+			m.MinimockGetLatestPipelineReleaseInspect()
 
 			m.MinimockGetNamespaceConnectionByIDInspect()
-
-			m.MinimockGetNamespacePipelineByIDInspect()
-
-			m.MinimockGetNamespacePipelineReleaseByIDInspect()
 
 			m.MinimockGetNamespaceSecretByIDInspect()
 
@@ -22679,9 +22675,13 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockGetPaginatedPipelineRunsWithPermissionsInspect()
 
+			m.MinimockGetPipelineByIDInspect()
+
 			m.MinimockGetPipelineByIDAdminInspect()
 
 			m.MinimockGetPipelineByUIDInspect()
+
+			m.MinimockGetPipelineReleaseByIDInspect()
 
 			m.MinimockGetPipelineReleaseByUIDAdminInspect()
 
@@ -22695,13 +22695,11 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockListNamespaceConnectionsInspect()
 
-			m.MinimockListNamespacePipelineReleasesInspect()
-
-			m.MinimockListNamespacePipelinesInspect()
-
 			m.MinimockListNamespaceSecretsInspect()
 
 			m.MinimockListPipelineIDsByConnectionIDInspect()
+
+			m.MinimockListPipelineReleasesInspect()
 
 			m.MinimockListPipelineRunOnsInspect()
 
@@ -22713,6 +22711,8 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockListPipelinesAdminInspect()
 
+			m.MinimockListPublicPipelinesInspect()
+
 			m.MinimockPinUserInspect()
 
 			m.MinimockTranspileFilterInspect()
@@ -22721,15 +22721,15 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockUpdateNamespaceConnectionByUIDInspect()
 
-			m.MinimockUpdateNamespacePipelineByUIDInspect()
-
-			m.MinimockUpdateNamespacePipelineIDByIDInspect()
-
-			m.MinimockUpdateNamespacePipelineReleaseByIDInspect()
-
-			m.MinimockUpdateNamespacePipelineReleaseIDByIDInspect()
-
 			m.MinimockUpdateNamespaceSecretByIDInspect()
+
+			m.MinimockUpdatePipelineByUIDInspect()
+
+			m.MinimockUpdatePipelineIDByIDInspect()
+
+			m.MinimockUpdatePipelineReleaseByIDInspect()
+
+			m.MinimockUpdatePipelineReleaseIDByIDInspect()
 
 			m.MinimockUpdatePipelineRunInspect()
 
@@ -22765,55 +22765,55 @@ func (m *RepositoryMock) minimockDone() bool {
 		m.MinimockAddPipelineRunsDone() &&
 		m.MinimockCheckPinnedUserDone() &&
 		m.MinimockCreateNamespaceConnectionDone() &&
-		m.MinimockCreateNamespacePipelineDone() &&
-		m.MinimockCreateNamespacePipelineReleaseDone() &&
 		m.MinimockCreateNamespaceSecretDone() &&
+		m.MinimockCreatePipelineDone() &&
+		m.MinimockCreatePipelineReleaseDone() &&
 		m.MinimockCreatePipelineRunOnDone() &&
 		m.MinimockCreatePipelineTagsDone() &&
 		m.MinimockDeleteComponentDefinitionDone() &&
 		m.MinimockDeleteNamespaceConnectionByIDDone() &&
-		m.MinimockDeleteNamespacePipelineByIDDone() &&
-		m.MinimockDeleteNamespacePipelineReleaseByIDDone() &&
 		m.MinimockDeleteNamespaceSecretByIDDone() &&
+		m.MinimockDeletePipelineByIDDone() &&
+		m.MinimockDeletePipelineReleaseByIDDone() &&
 		m.MinimockDeletePipelineRunOnDone() &&
 		m.MinimockDeletePipelineTagsDone() &&
 		m.MinimockGetConnectionByUIDDone() &&
 		m.MinimockGetDefinitionByUIDDone() &&
 		m.MinimockGetHubStatsDone() &&
-		m.MinimockGetLatestNamespacePipelineReleaseDone() &&
+		m.MinimockGetLatestPipelineReleaseDone() &&
 		m.MinimockGetNamespaceConnectionByIDDone() &&
-		m.MinimockGetNamespacePipelineByIDDone() &&
-		m.MinimockGetNamespacePipelineReleaseByIDDone() &&
 		m.MinimockGetNamespaceSecretByIDDone() &&
 		m.MinimockGetPaginatedComponentRunsByPipelineRunIDWithPermissionsDone() &&
 		m.MinimockGetPaginatedPipelineRunsByRequesterDone() &&
 		m.MinimockGetPaginatedPipelineRunsWithPermissionsDone() &&
+		m.MinimockGetPipelineByIDDone() &&
 		m.MinimockGetPipelineByIDAdminDone() &&
 		m.MinimockGetPipelineByUIDDone() &&
+		m.MinimockGetPipelineReleaseByIDDone() &&
 		m.MinimockGetPipelineReleaseByUIDAdminDone() &&
 		m.MinimockGetPipelineRunByUIDDone() &&
 		m.MinimockListAllComponentDefinitionsDone() &&
 		m.MinimockListComponentDefinitionUIDsDone() &&
 		m.MinimockListIntegrationsDone() &&
 		m.MinimockListNamespaceConnectionsDone() &&
-		m.MinimockListNamespacePipelineReleasesDone() &&
-		m.MinimockListNamespacePipelinesDone() &&
 		m.MinimockListNamespaceSecretsDone() &&
 		m.MinimockListPipelineIDsByConnectionIDDone() &&
+		m.MinimockListPipelineReleasesDone() &&
 		m.MinimockListPipelineRunOnsDone() &&
 		m.MinimockListPipelineRunOnsByIdentifierDone() &&
 		m.MinimockListPipelineTagsDone() &&
 		m.MinimockListPipelinesDone() &&
 		m.MinimockListPipelinesAdminDone() &&
+		m.MinimockListPublicPipelinesDone() &&
 		m.MinimockPinUserDone() &&
 		m.MinimockTranspileFilterDone() &&
 		m.MinimockUpdateComponentRunDone() &&
 		m.MinimockUpdateNamespaceConnectionByUIDDone() &&
-		m.MinimockUpdateNamespacePipelineByUIDDone() &&
-		m.MinimockUpdateNamespacePipelineIDByIDDone() &&
-		m.MinimockUpdateNamespacePipelineReleaseByIDDone() &&
-		m.MinimockUpdateNamespacePipelineReleaseIDByIDDone() &&
 		m.MinimockUpdateNamespaceSecretByIDDone() &&
+		m.MinimockUpdatePipelineByUIDDone() &&
+		m.MinimockUpdatePipelineIDByIDDone() &&
+		m.MinimockUpdatePipelineReleaseByIDDone() &&
+		m.MinimockUpdatePipelineReleaseIDByIDDone() &&
 		m.MinimockUpdatePipelineRunDone() &&
 		m.MinimockUpsertComponentDefinitionDone() &&
 		m.MinimockUpsertComponentRunDone() &&

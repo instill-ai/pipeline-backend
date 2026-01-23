@@ -47,7 +47,7 @@ func NewStreamingHandler(mux *runtime.ServeMux, cli pipelinepb.PipelinePublicSer
 	}
 }
 
-// HandleTrigger intercepts TriggerNamespacePipeline endpoints.
+// HandleTrigger intercepts TriggerPipeline endpoints.
 func (h *StreamingHandler) HandleTrigger(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 	ctx := req.Context()
 
@@ -62,7 +62,7 @@ func (h *StreamingHandler) HandleTrigger(w http.ResponseWriter, req *http.Reques
 	var resp protoreflect.ProtoMessage
 	var md runtime.ServerMetadata
 
-	annotatedContext, err = runtime.AnnotateContext(ctx, h.mux, req, "/pipeline.v1beta.PipelinePublicService/TriggerNamespacePipeline", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*}/trigger"))
+	annotatedContext, err = runtime.AnnotateContext(ctx, h.mux, req, "/pipeline.v1beta.PipelinePublicService/TriggerPipeline", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*}/trigger"))
 	if err != nil {
 		runtime.HTTPError(ctx, h.mux, outboundMarshaler, w, req, err)
 		return
@@ -70,13 +70,13 @@ func (h *StreamingHandler) HandleTrigger(w http.ResponseWriter, req *http.Reques
 
 	contentType := req.Header.Get("Content-Type")
 	if strings.Contains(contentType, "multipart/form-data") {
-		resp, md, err = requestPipelinePublicServiceTriggerNamespacePipeline0form(annotatedContext, inboundMarshaler, h.client, req, pathParams, sh)
+		resp, md, err = requestPipelinePublicServiceTriggerPipeline0form(annotatedContext, inboundMarshaler, h.client, req, pathParams, sh)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
 			return
 		}
 	} else {
-		resp, md, err = requestPipelinePublicServiceTriggerNamespacePipeline0(annotatedContext, inboundMarshaler, h.client, req, pathParams, sh)
+		resp, md, err = requestPipelinePublicServiceTriggerPipeline0(annotatedContext, inboundMarshaler, h.client, req, pathParams, sh)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
 			return
@@ -90,10 +90,10 @@ func (h *StreamingHandler) HandleTrigger(w http.ResponseWriter, req *http.Reques
 
 	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 
-	forwardPipelinePublicServiceTriggerNamespacePipeline0(annotatedContext, h.mux, outboundMarshaler, w, req, resp, h.mux.GetForwardResponseOptions()...)
+	forwardPipelinePublicServiceTriggerPipeline0(annotatedContext, h.mux, outboundMarshaler, w, req, resp, h.mux.GetForwardResponseOptions()...)
 }
 
-// HandleTriggerAsync intercepts TriggerAsyncNamespacePipeline endpoints.
+// HandleTriggerAsync intercepts TriggerAsyncPipeline endpoints.
 func (h *StreamingHandler) HandleTriggerAsync(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 	ctx := req.Context()
 
@@ -103,7 +103,7 @@ func (h *StreamingHandler) HandleTriggerAsync(w http.ResponseWriter, req *http.R
 	var resp protoreflect.ProtoMessage
 	var md runtime.ServerMetadata
 
-	annotatedContext, err = runtime.AnnotateContext(ctx, h.mux, req, "/pipeline.v1beta.PipelinePublicService/TriggerAsyncNamespacePipeline", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*}/triggerAsync"))
+	annotatedContext, err = runtime.AnnotateContext(ctx, h.mux, req, "/pipeline.v1beta.PipelinePublicService/TriggerAsyncPipeline", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*}/triggerAsync"))
 	if err != nil {
 		runtime.HTTPError(ctx, h.mux, outboundMarshaler, w, req, err)
 		return
@@ -112,14 +112,14 @@ func (h *StreamingHandler) HandleTriggerAsync(w http.ResponseWriter, req *http.R
 	contentType := req.Header.Get("Content-Type")
 	if strings.Contains(contentType, "multipart/form-data") {
 
-		resp, md, err = requestPipelinePublicServiceTriggerAsyncNamespacePipeline0form(annotatedContext, inboundMarshaler, h.client, req, pathParams)
+		resp, md, err = requestPipelinePublicServiceTriggerAsyncPipeline0form(annotatedContext, inboundMarshaler, h.client, req, pathParams)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
 			return
 		}
 
 	} else {
-		resp, md, err = requestPipelinePublicServiceTriggerAsyncNamespacePipeline0(annotatedContext, inboundMarshaler, h.client, req, pathParams)
+		resp, md, err = requestPipelinePublicServiceTriggerAsyncPipeline0(annotatedContext, inboundMarshaler, h.client, req, pathParams)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
 			return
@@ -128,10 +128,10 @@ func (h *StreamingHandler) HandleTriggerAsync(w http.ResponseWriter, req *http.R
 
 	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 
-	forwardPipelinePublicServiceTriggerNamespacePipeline0(annotatedContext, h.mux, outboundMarshaler, w, req, resp, h.mux.GetForwardResponseOptions()...)
+	forwardPipelinePublicServiceTriggerPipeline0(annotatedContext, h.mux, outboundMarshaler, w, req, resp, h.mux.GetForwardResponseOptions()...)
 }
 
-// HandleTriggerRelease intercepts TriggerNamespacePipelineRelease endpoints.
+// HandleTriggerRelease intercepts TriggerPipelineRelease endpoints.
 func (h *StreamingHandler) HandleTriggerRelease(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 	ctx := req.Context()
 	var sh *streamingHandler
@@ -145,7 +145,7 @@ func (h *StreamingHandler) HandleTriggerRelease(w http.ResponseWriter, req *http
 	var resp protoreflect.ProtoMessage
 	var md runtime.ServerMetadata
 
-	annotatedContext, err = runtime.AnnotateContext(ctx, h.mux, req, "/pipeline.v1beta.PipelinePublicService/TriggerNamespacePipelineRelease", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*/releases/*}/trigger"))
+	annotatedContext, err = runtime.AnnotateContext(ctx, h.mux, req, "/pipeline.v1beta.PipelinePublicService/TriggerPipelineRelease", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*/releases/*}/trigger"))
 	if err != nil {
 		runtime.HTTPError(ctx, h.mux, outboundMarshaler, w, req, err)
 		return
@@ -153,14 +153,14 @@ func (h *StreamingHandler) HandleTriggerRelease(w http.ResponseWriter, req *http
 
 	contentType := req.Header.Get("Content-Type")
 	if strings.Contains(contentType, "multipart/form-data") {
-		resp, md, err = requestPipelinePublicServiceTriggerNamespacePipelineRelease0form(annotatedContext, inboundMarshaler, h.client, req, pathParams, sh)
+		resp, md, err = requestPipelinePublicServiceTriggerPipelineRelease0form(annotatedContext, inboundMarshaler, h.client, req, pathParams, sh)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
 			return
 		}
 
 	} else {
-		resp, md, err = requestPipelinePublicServiceTriggerNamespacePipelineRelease0(annotatedContext, inboundMarshaler, h.client, req, pathParams, sh)
+		resp, md, err = requestPipelinePublicServiceTriggerPipelineRelease0(annotatedContext, inboundMarshaler, h.client, req, pathParams, sh)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
 			return
@@ -174,10 +174,10 @@ func (h *StreamingHandler) HandleTriggerRelease(w http.ResponseWriter, req *http
 
 	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 
-	forwardPipelinePublicServiceTriggerNamespacePipelineRelease0(annotatedContext, h.mux, outboundMarshaler, w, req, resp, h.mux.GetForwardResponseOptions()...)
+	forwardPipelinePublicServiceTriggerPipelineRelease0(annotatedContext, h.mux, outboundMarshaler, w, req, resp, h.mux.GetForwardResponseOptions()...)
 }
 
-// HandleTriggerAsyncRelease intercepts TriggerAsyncNamespacePipelineRelease
+// HandleTriggerAsyncRelease intercepts TriggerAsyncPipelineRelease
 // endpoints.
 func (h *StreamingHandler) HandleTriggerAsyncRelease(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 	ctx := req.Context()
@@ -188,7 +188,7 @@ func (h *StreamingHandler) HandleTriggerAsyncRelease(w http.ResponseWriter, req 
 	var resp protoreflect.ProtoMessage
 	var md runtime.ServerMetadata
 
-	annotatedContext, err = runtime.AnnotateContext(ctx, h.mux, req, "/pipeline.v1beta.PipelinePublicService/TriggerAsyncNamespacePipelineRelease", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*/releases/*}/triggerAsync"))
+	annotatedContext, err = runtime.AnnotateContext(ctx, h.mux, req, "/pipeline.v1beta.PipelinePublicService/TriggerAsyncPipelineRelease", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*/releases/*}/triggerAsync"))
 	if err != nil {
 		runtime.HTTPError(ctx, h.mux, outboundMarshaler, w, req, err)
 		return
@@ -196,14 +196,14 @@ func (h *StreamingHandler) HandleTriggerAsyncRelease(w http.ResponseWriter, req 
 
 	contentType := req.Header.Get("Content-Type")
 	if strings.Contains(contentType, "multipart/form-data") {
-		resp, md, err = requestPipelinePublicServiceTriggerAsyncNamespacePipelineRelease0form(annotatedContext, inboundMarshaler, h.client, req, pathParams)
+		resp, md, err = requestPipelinePublicServiceTriggerAsyncPipelineRelease0form(annotatedContext, inboundMarshaler, h.client, req, pathParams)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
 			return
 		}
 
 	} else {
-		resp, md, err = requestPipelinePublicServiceTriggerAsyncNamespacePipelineRelease0(annotatedContext, inboundMarshaler, h.client, req, pathParams)
+		resp, md, err = requestPipelinePublicServiceTriggerAsyncPipelineRelease0(annotatedContext, inboundMarshaler, h.client, req, pathParams)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, h.mux, outboundMarshaler, w, req, err)
 			return
@@ -212,11 +212,11 @@ func (h *StreamingHandler) HandleTriggerAsyncRelease(w http.ResponseWriter, req 
 
 	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 
-	forwardPipelinePublicServiceTriggerNamespacePipelineRelease0(annotatedContext, h.mux, outboundMarshaler, w, req, resp, h.mux.GetForwardResponseOptions()...)
+	forwardPipelinePublicServiceTriggerPipelineRelease0(annotatedContext, h.mux, outboundMarshaler, w, req, resp, h.mux.GetForwardResponseOptions()...)
 }
 
-var forwardPipelinePublicServiceTriggerNamespacePipeline0 = runtime.ForwardResponseMessage
-var forwardPipelinePublicServiceTriggerNamespacePipelineRelease0 = runtime.ForwardResponseMessage
+var forwardPipelinePublicServiceTriggerPipeline0 = runtime.ForwardResponseMessage
+var forwardPipelinePublicServiceTriggerPipelineRelease0 = runtime.ForwardResponseMessage
 
 func convertFormData(ctx context.Context, req *http.Request) ([]*pipelinepb.TriggerData, error) {
 	err := req.ParseMultipartForm(4 << 20)
@@ -389,8 +389,8 @@ func convertFormData(ctx context.Context, req *http.Request) ([]*pipelinepb.Trig
 }
 
 // ref: the generated protogen-go files
-func requestPipelinePublicServiceTriggerNamespacePipeline0(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq pipelinepb.TriggerNamespacePipelineRequest
+func requestPipelinePublicServiceTriggerPipeline0(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq pipelinepb.TriggerPipelineRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -430,12 +430,12 @@ func requestPipelinePublicServiceTriggerNamespacePipeline0(ctx context.Context, 
 	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s", namespaceID, pipelineID)
 
 	if sh != nil {
-		asyncReq := pipelinepb.TriggerAsyncNamespacePipelineRequest{
+		asyncReq := pipelinepb.TriggerAsyncPipelineRequest{
 			Name:   protoReq.Name,
 			Inputs: protoReq.Inputs,
 			Data:   protoReq.Data,
 		}
-		resp, err := client.TriggerAsyncNamespacePipeline(ctx, &asyncReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+		resp, err := client.TriggerAsyncPipeline(ctx, &asyncReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 		if err != nil {
 			sendPipelineError(ctx, sh, err)
 			return nil, metadata, err
@@ -444,13 +444,13 @@ func requestPipelinePublicServiceTriggerNamespacePipeline0(ctx context.Context, 
 		sh.handle(ctx, triggerID)
 		return nil, metadata, nil
 	}
-	msg, err := client.TriggerNamespacePipeline(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.TriggerPipeline(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
 // ref: the generated protogen-go files
-func requestPipelinePublicServiceTriggerNamespacePipeline0form(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
+func requestPipelinePublicServiceTriggerPipeline0form(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -464,7 +464,7 @@ func requestPipelinePublicServiceTriggerNamespacePipeline0form(ctx context.Conte
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "form-data error")
 	}
-	protoReq := &pipelinepb.TriggerNamespacePipelineRequest{
+	protoReq := &pipelinepb.TriggerPipelineRequest{
 		Data: data,
 	}
 
@@ -489,13 +489,13 @@ func requestPipelinePublicServiceTriggerNamespacePipeline0form(ctx context.Conte
 	// Construct full resource name
 	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s", namespaceID, pipelineID)
 
-	msg, err := client.TriggerNamespacePipeline(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.TriggerPipeline(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func requestPipelinePublicServiceTriggerAsyncNamespacePipeline0(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq pipelinepb.TriggerAsyncNamespacePipelineRequest
+func requestPipelinePublicServiceTriggerAsyncPipeline0(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq pipelinepb.TriggerAsyncPipelineRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -534,13 +534,13 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipeline0(ctx context.Cont
 	// Construct full resource name
 	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s", namespaceID, pipelineID)
 
-	msg, err := client.TriggerAsyncNamespacePipeline(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.TriggerAsyncPipeline(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
 // ref: the generated protogen-go files
-func requestPipelinePublicServiceTriggerAsyncNamespacePipeline0form(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func requestPipelinePublicServiceTriggerAsyncPipeline0form(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -555,7 +555,7 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipeline0form(ctx context.
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "form-data error")
 	}
 
-	protoReq := &pipelinepb.TriggerAsyncNamespacePipelineRequest{
+	protoReq := &pipelinepb.TriggerAsyncPipelineRequest{
 		Data: data,
 	}
 
@@ -580,14 +580,14 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipeline0form(ctx context.
 	// Construct full resource name
 	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s", namespaceID, pipelineID)
 
-	msg, err := client.TriggerAsyncNamespacePipeline(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.TriggerAsyncPipeline(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
 // ref: the generated protogen-go files
-func requestPipelinePublicServiceTriggerNamespacePipelineRelease0(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq pipelinepb.TriggerNamespacePipelineReleaseRequest
+func requestPipelinePublicServiceTriggerPipelineRelease0(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq pipelinepb.TriggerPipelineReleaseRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -636,12 +636,12 @@ func requestPipelinePublicServiceTriggerNamespacePipelineRelease0(ctx context.Co
 	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s/releases/%s", namespaceID, pipelineID, releaseID)
 
 	if sh != nil {
-		asyncReq := pipelinepb.TriggerAsyncNamespacePipelineReleaseRequest{
+		asyncReq := pipelinepb.TriggerAsyncPipelineReleaseRequest{
 			Name:   protoReq.Name,
 			Inputs: protoReq.Inputs,
 			Data:   protoReq.Data,
 		}
-		resp, err := client.TriggerAsyncNamespacePipelineRelease(ctx, &asyncReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+		resp, err := client.TriggerAsyncPipelineRelease(ctx, &asyncReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 		if err != nil {
 			sendPipelineError(ctx, sh, err)
 			return nil, metadata, err
@@ -651,13 +651,13 @@ func requestPipelinePublicServiceTriggerNamespacePipelineRelease0(ctx context.Co
 		return nil, metadata, nil
 	}
 
-	msg, err := client.TriggerNamespacePipelineRelease(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.TriggerPipelineRelease(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
 // ref: the generated protogen-go files
-func requestPipelinePublicServiceTriggerNamespacePipelineRelease0form(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
+func requestPipelinePublicServiceTriggerPipelineRelease0form(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string, sh *streamingHandler) (proto.Message, runtime.ServerMetadata, error) {
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -671,7 +671,7 @@ func requestPipelinePublicServiceTriggerNamespacePipelineRelease0form(ctx contex
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "form-data error")
 	}
-	protoReq := &pipelinepb.TriggerNamespacePipelineReleaseRequest{
+	protoReq := &pipelinepb.TriggerPipelineReleaseRequest{
 		Data: data,
 	}
 
@@ -705,13 +705,13 @@ func requestPipelinePublicServiceTriggerNamespacePipelineRelease0form(ctx contex
 	// Construct full resource name
 	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s/releases/%s", namespaceID, pipelineID, releaseID)
 
-	msg, err := client.TriggerNamespacePipelineRelease(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.TriggerPipelineRelease(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func requestPipelinePublicServiceTriggerAsyncNamespacePipelineRelease0(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq pipelinepb.TriggerAsyncNamespacePipelineReleaseRequest
+func requestPipelinePublicServiceTriggerAsyncPipelineRelease0(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq pipelinepb.TriggerAsyncPipelineReleaseRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -759,13 +759,13 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipelineRelease0(ctx conte
 	// Construct full resource name
 	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s/releases/%s", namespaceID, pipelineID, releaseID)
 
-	msg, err := client.TriggerAsyncNamespacePipelineRelease(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.TriggerAsyncPipelineRelease(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
 // ref: the generated protogen-go files
-func requestPipelinePublicServiceTriggerAsyncNamespacePipelineRelease0form(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func requestPipelinePublicServiceTriggerAsyncPipelineRelease0form(ctx context.Context, marshaler runtime.Marshaler, client pipelinepb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -779,7 +779,7 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipelineRelease0form(ctx c
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "form-data error")
 	}
-	protoReq := &pipelinepb.TriggerAsyncNamespacePipelineReleaseRequest{
+	protoReq := &pipelinepb.TriggerAsyncPipelineReleaseRequest{
 		Data: data,
 	}
 
@@ -813,7 +813,7 @@ func requestPipelinePublicServiceTriggerAsyncNamespacePipelineRelease0form(ctx c
 	// Construct full resource name
 	protoReq.Name = fmt.Sprintf("namespaces/%s/pipelines/%s/releases/%s", namespaceID, pipelineID, releaseID)
 
-	msg, err := client.TriggerAsyncNamespacePipelineRelease(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.TriggerAsyncPipelineRelease(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }

@@ -25,17 +25,17 @@ export function CheckCreate(data) {
 
       // Cannot create a pipeline of a non-exist user
       var createRes = client.invoke(
-        "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/CreatePipeline",
         {
           parent: `${constant.namespace}`,
           pipeline: reqBody,
         },
         constant.paramsGRPCWithInvalidAuth
       );
-      console.log(`[DEBUG] CreateNamespacePipeline with invalid auth - status: ${createRes.status}, error: ${createRes.error}`);
+      console.log(`[DEBUG] CreatePipeline with invalid auth - status: ${createRes.status}, error: ${createRes.error}`);
       check(createRes,
         {
-          [`[with invalid auth] pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response StatusUnauthenticated`]:
+          [`[with invalid auth] pipeline.v1beta.PipelinePublicService/CreatePipeline response StatusUnauthenticated`]:
             (r) => r.status === grpc.StatusUnauthenticated,
         }
       );
@@ -54,14 +54,14 @@ export function CheckList(data) {
     // Cannot list pipelines with invalid auth
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/ListNamespacePipelines",
+        "pipeline.v1beta.PipelinePublicService/ListPipelines",
         {
           parent: `${constant.namespace}`,
         },
         constant.paramsGRPCWithInvalidAuth
       ),
       {
-        [`[with invalid auth] pipeline.v1beta.PipelinePublicService/ListNamespacePipelines response StatusUnauthenticated`]:
+        [`[with invalid auth] pipeline.v1beta.PipelinePublicService/ListPipelines response StatusUnauthenticated`]:
           (r) => r.status === grpc.StatusUnauthenticated,
       }
     );
@@ -85,7 +85,7 @@ export function CheckGet(data) {
     );
 
     var createRes = client.invoke(
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline",
       {
         parent: `${constant.namespace}`,
         pipeline: reqBody,
@@ -93,10 +93,10 @@ export function CheckGet(data) {
       data.metadata
     );
 
-    console.log(`[DEBUG] CheckGet CreateNamespacePipeline - host: ${constant.pipelineGRPCPublicHost}, status: ${createRes.status}, error: ${createRes.error}`);
+    console.log(`[DEBUG] CheckGet CreatePipeline - host: ${constant.pipelineGRPCPublicHost}, status: ${createRes.status}, error: ${createRes.error}`);
 
     check(createRes, {
-      [`pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response StatusOK`]:
+      [`pipeline.v1beta.PipelinePublicService/CreatePipeline response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
     });
 
@@ -111,14 +111,14 @@ export function CheckGet(data) {
     // Cannot get a pipeline with invalid auth
     check(
       client.invoke(
-        "pipeline.v1beta.PipelinePublicService/GetNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/GetPipeline",
         {
           name: `${constant.namespace}/pipelines/${pipelineId}`,
         },
         constant.paramsGRPCWithInvalidAuth
       ),
       {
-        [`[with invalid auth] pipeline.v1beta.PipelinePublicService/GetNamespacePipeline response StatusUnauthenticated`]:
+        [`[with invalid auth] pipeline.v1beta.PipelinePublicService/GetPipeline response StatusUnauthenticated`]:
           (r) => r.status === grpc.StatusUnauthenticated,
       }
     );
@@ -126,14 +126,14 @@ export function CheckGet(data) {
     // Delete the pipeline
     check(
       client.invoke(
-        `pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline`,
+        `pipeline.v1beta.PipelinePublicService/DeletePipeline`,
         {
           name: `${constant.namespace}/pipelines/${pipelineId}`,
         },
         data.metadata
       ),
       {
-        [`pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/DeletePipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
@@ -158,7 +158,7 @@ export function CheckUpdate(data) {
 
       // Create a pipeline
       var resOrigin = client.invoke(
-        "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/CreatePipeline",
         {
           parent: `${constant.namespace}`,
           pipeline: reqBody,
@@ -167,7 +167,7 @@ export function CheckUpdate(data) {
       );
 
       check(resOrigin, {
-        [`pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/CreatePipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       });
 
@@ -188,7 +188,7 @@ export function CheckUpdate(data) {
       // Cannot update a pipeline of a non-exist user
       check(
         client.invoke(
-          "pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline",
+          "pipeline.v1beta.PipelinePublicService/UpdatePipeline",
           {
             pipeline: reqBodyUpdate,
             update_mask: "description",
@@ -196,7 +196,7 @@ export function CheckUpdate(data) {
           constant.paramsGRPCWithInvalidAuth
         ),
         {
-          [`[with invalid auth] pipeline.v1beta.PipelinePublicService/UpdateNamespacePipeline response StatusUnauthenticated`]:
+          [`[with invalid auth] pipeline.v1beta.PipelinePublicService/UpdatePipeline response StatusUnauthenticated`]:
             (r) => r.status === grpc.StatusUnauthenticated,
         }
       );
@@ -204,14 +204,14 @@ export function CheckUpdate(data) {
       // Delete the pipeline
       check(
         client.invoke(
-          `pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline`,
+          `pipeline.v1beta.PipelinePublicService/DeletePipeline`,
           {
             name: `${constant.namespace}/pipelines/${pipelineId}`,
           },
           data.metadata
         ),
         {
-          [`pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline response StatusOK`]:
+          [`pipeline.v1beta.PipelinePublicService/DeletePipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -237,7 +237,7 @@ export function CheckRename(data) {
 
       // Create a pipeline
       var res = client.invoke(
-        "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/CreatePipeline",
         {
           parent: `${constant.namespace}`,
           pipeline: reqBody,
@@ -246,7 +246,7 @@ export function CheckRename(data) {
       );
 
       check(res, {
-        [`pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response StatusOK`]:
+        [`pipeline.v1beta.PipelinePublicService/CreatePipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       });
 
@@ -260,7 +260,7 @@ export function CheckRename(data) {
 
       check(res, {
         // Note: Backend may return either users/admin or namespaces/admin format during transition
-        [`pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline response pipeline name`]:
+        [`pipeline.v1beta.PipelinePublicService/CreatePipeline response pipeline name`]:
           (r) => r.message.pipeline.name && r.message.pipeline.name.endsWith(`/pipelines/${pipelineId}`),
       });
 
@@ -270,7 +270,7 @@ export function CheckRename(data) {
       // Cannot rename a pipeline with invalid auth
       check(
         client.invoke(
-          "pipeline.v1beta.PipelinePublicService/RenameNamespacePipeline",
+          "pipeline.v1beta.PipelinePublicService/RenamePipeline",
           {
             name: `${constant.namespace}/pipelines/${pipelineId}`,
             new_pipeline_id: new_pipeline_id,
@@ -278,7 +278,7 @@ export function CheckRename(data) {
           constant.paramsGRPCWithInvalidAuth
         ),
         {
-          [`[with invalid auth] pipeline.v1beta.PipelinePublicService/RenameNamespacePipeline response StatusUnauthenticated`]:
+          [`[with invalid auth] pipeline.v1beta.PipelinePublicService/RenamePipeline response StatusUnauthenticated`]:
             (r) => r.status === grpc.StatusUnauthenticated,
         }
       );
@@ -286,14 +286,14 @@ export function CheckRename(data) {
       // Delete the pipeline
       check(
         client.invoke(
-          `pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline`,
+          `pipeline.v1beta.PipelinePublicService/DeletePipeline`,
           {
             name: `${constant.namespace}/pipelines/${pipelineId}`,
           },
           data.metadata
         ),
         {
-          [`pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline response StatusOK`]:
+          [`pipeline.v1beta.PipelinePublicService/DeletePipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );

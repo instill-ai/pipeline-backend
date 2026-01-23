@@ -208,7 +208,7 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 				Content:          uploadingFile.Content,
 				ExternalMetadata: uploadingFile.ExternalMetadata,
 			},
-			KnowledgeBaseId: inputStruct.KnowledgeBaseID,
+			KnowledgeBase: inputStruct.KnowledgeBaseID,
 		})
 
 		if err != nil {
@@ -243,7 +243,7 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 				Content:          uploadingFile.Content,
 				ExternalMetadata: uploadingFile.ExternalMetadata,
 			},
-			KnowledgeBaseId: inputStruct.KnowledgeBaseID,
+			KnowledgeBase: inputStruct.KnowledgeBaseID,
 		})
 
 		if err != nil {

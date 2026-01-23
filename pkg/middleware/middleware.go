@@ -26,7 +26,7 @@ func HandleProfileImage(srv service.Service, repo repository.Repository) runtime
 		}
 
 		pipelineID := pathParams["pipelineID"]
-		dbModel, err := repo.GetNamespacePipelineByID(ctx, ns.Permalink(), pipelineID, true, true)
+		dbModel, err := repo.GetPipelineByID(ctx, ns.Permalink(), pipelineID, true, true)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return
