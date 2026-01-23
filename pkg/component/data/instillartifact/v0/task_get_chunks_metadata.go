@@ -47,7 +47,7 @@ func (e *execution) getChunksMetadata(input *structpb.Struct) (*structpb.Struct,
 			EndPosition:     0, // deprecated field
 			TokenCount:      chunkPB.Tokens,
 			CreateTime:      chunkPB.CreateTime.AsTime().Format(time.RFC3339),
-			OriginalFileUID: chunkPB.OriginalFileId,
+			OriginalFileUID: chunkPB.OriginalFile,
 		})
 	}
 
