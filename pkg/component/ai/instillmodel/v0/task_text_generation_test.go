@@ -28,7 +28,7 @@ func TestExecuteTextGeneration(t *testing.T) {
 	// Test case 1: Successful text generation
 	t.Run("successful text generation", func(t *testing.T) {
 		// Create mock response
-		mockResponse := &modelpb.TriggerNamespaceModelResponse{
+		mockResponse := &modelpb.TriggerModelResponse{
 			TaskOutputs: []*structpb.Struct{
 				{
 					Fields: map[string]*structpb.Value{

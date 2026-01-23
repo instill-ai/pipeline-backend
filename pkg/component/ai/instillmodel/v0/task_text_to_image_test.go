@@ -30,7 +30,7 @@ func TestExecuteTextToImage(t *testing.T) {
 		// Create mock response with base64 image data
 		mockImageData := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
 
-		mockResponse := &modelpb.TriggerNamespaceModelResponse{
+		mockResponse := &modelpb.TriggerModelResponse{
 			TaskOutputs: []*structpb.Struct{
 				{
 					Fields: map[string]*structpb.Value{
@@ -89,7 +89,7 @@ func TestExecuteTextToImage(t *testing.T) {
 		mockImageData1 := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
 		mockImageData2 := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
 
-		mockResponse := &modelpb.TriggerNamespaceModelResponse{
+		mockResponse := &modelpb.TriggerModelResponse{
 			TaskOutputs: []*structpb.Struct{
 				{
 					Fields: map[string]*structpb.Value{

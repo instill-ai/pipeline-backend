@@ -79,7 +79,7 @@ export function CheckLookUpPipelineAdmin(data) {
 
     // Create a pipeline via public API
     var createRes = publicClient.invoke(
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline",
       {
         parent: constant.namespace,
         pipeline: reqBody,
@@ -87,7 +87,7 @@ export function CheckLookUpPipelineAdmin(data) {
       data.metadata
     );
     check(createRes, {
-      "CreateNamespacePipeline response StatusOK": (r) => r.status === grpc.StatusOK,
+      "CreatePipeline response StatusOK": (r) => r.status === grpc.StatusOK,
     });
 
     if (createRes.status !== grpc.StatusOK || !createRes.message || !createRes.message.pipeline) {
@@ -109,7 +109,7 @@ export function CheckLookUpPipelineAdmin(data) {
       console.log(`Failed to get pipeline UID for id=${pipelineId}, skipping LookUpAdmin test`);
       // Cleanup
       publicClient.invoke(
-        "pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline",
+        "pipeline.v1beta.PipelinePublicService/DeletePipeline",
         { name: `${constant.namespace}/pipelines/${pipelineId}` },
         data.metadata
       );
@@ -140,7 +140,7 @@ export function CheckLookUpPipelineAdmin(data) {
 
     // Delete the pipeline
     publicClient.invoke(
-      "pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline",
+      "pipeline.v1beta.PipelinePublicService/DeletePipeline",
       {
         name: `${constant.namespace}/pipelines/${pipelineId}`,
       },
@@ -191,7 +191,7 @@ export function CheckListPipelinesAdmin(data) {
 
     // Create a pipeline via public API
     var createRes = publicClient.invoke(
-      "pipeline.v1beta.PipelinePublicService/CreateNamespacePipeline",
+      "pipeline.v1beta.PipelinePublicService/CreatePipeline",
       {
         parent: constant.namespace,
         pipeline: reqBody,
@@ -199,7 +199,7 @@ export function CheckListPipelinesAdmin(data) {
       data.metadata
     );
     check(createRes, {
-      "CreateNamespacePipeline response StatusOK": (r) => r.status === grpc.StatusOK,
+      "CreatePipeline response StatusOK": (r) => r.status === grpc.StatusOK,
     });
 
     if (createRes.status !== grpc.StatusOK || !createRes.message || !createRes.message.pipeline) {
@@ -231,7 +231,7 @@ export function CheckListPipelinesAdmin(data) {
 
     // Delete the pipeline
     publicClient.invoke(
-      "pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline",
+      "pipeline.v1beta.PipelinePublicService/DeletePipeline",
       {
         name: `${constant.namespace}/pipelines/${pipelineId}`,
       },

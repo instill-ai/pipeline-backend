@@ -28,7 +28,7 @@ func TestExecuteTextGenerationChat(t *testing.T) {
 	// Test case 1: Successful text generation chat
 	t.Run("successful text generation chat", func(t *testing.T) {
 		// Create mock response
-		mockResponse := &modelpb.TriggerNamespaceModelResponse{
+		mockResponse := &modelpb.TriggerModelResponse{
 			TaskOutputs: []*structpb.Struct{
 				{
 					Fields: map[string]*structpb.Value{
@@ -91,7 +91,7 @@ func TestExecuteTextGenerationChat(t *testing.T) {
 	// Test case 2: Chat with history
 	t.Run("chat with history", func(t *testing.T) {
 		// Create mock response
-		mockResponse := &modelpb.TriggerNamespaceModelResponse{
+		mockResponse := &modelpb.TriggerModelResponse{
 			TaskOutputs: []*structpb.Struct{
 				{
 					Fields: map[string]*structpb.Value{

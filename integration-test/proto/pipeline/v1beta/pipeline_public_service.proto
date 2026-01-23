@@ -58,7 +58,7 @@ service PipelinePublicService {
   // List accessible pipelines
   //
   // Returns a paginated list of pipelines that are visible to the requester.
-  rpc ListPipelines(ListPipelinesRequest) returns (ListPipelinesResponse) {
+  rpc ListPublicPipelines(ListPublicPipelinesRequest) returns (ListPublicPipelinesResponse) {
     option (google.api.http) = {get: "/v1beta/pipelines"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Pipeline"
@@ -88,7 +88,7 @@ service PipelinePublicService {
   // List namespace pipelines
   //
   // Returns a paginated list of pipelines of a namespace
-  rpc ListNamespacePipelines(ListNamespacePipelinesRequest) returns (ListNamespacePipelinesResponse) {
+  rpc ListPipelines(ListPipelinesRequest) returns (ListPipelinesResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=namespaces/*}/pipelines"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Pipeline"
@@ -102,7 +102,7 @@ service PipelinePublicService {
   // Create a new pipeline
   //
   // Creates a new pipeline under a namespace.
-  rpc CreateNamespacePipeline(CreateNamespacePipelineRequest) returns (CreateNamespacePipelineResponse) {
+  rpc CreatePipeline(CreatePipelineRequest) returns (CreatePipelineResponse) {
     option (google.api.http) = {
       post: "/v1beta/{parent=namespaces/*}/pipelines"
       body: "pipeline"
@@ -119,7 +119,7 @@ service PipelinePublicService {
   // Get a pipeline
   //
   // Returns the details of a pipeline.
-  rpc GetNamespacePipeline(GetNamespacePipelineRequest) returns (GetNamespacePipelineResponse) {
+  rpc GetPipeline(GetPipelineRequest) returns (GetPipelineResponse) {
     option (google.api.http) = {get: "/v1beta/{name=namespaces/*/pipelines/*}"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Pipeline"
@@ -138,7 +138,7 @@ service PipelinePublicService {
   //
   // In REST requests, only the supplied pipeline fields will be taken into
   // account when updating the resource.
-  rpc UpdateNamespacePipeline(UpdateNamespacePipelineRequest) returns (UpdateNamespacePipelineResponse) {
+  rpc UpdatePipeline(UpdatePipelineRequest) returns (UpdatePipelineResponse) {
     option (google.api.http) = {
       patch: "/v1beta/{pipeline.name=namespaces/*/pipelines/*}"
       body: "pipeline"
@@ -157,7 +157,7 @@ service PipelinePublicService {
   // Deletes a pipeline, accesing it by its resource name, which is defined by
   // the parent namespace and the ID of the pipeline. The authenticated
   // namespace must be the parent of the pipeline in order to delete it.
-  rpc DeleteNamespacePipeline(DeleteNamespacePipelineRequest) returns (DeleteNamespacePipelineResponse) {
+  rpc DeletePipeline(DeletePipelineRequest) returns (DeletePipelineResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=namespaces/*/pipelines/*}"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Pipeline"
@@ -175,7 +175,7 @@ service PipelinePublicService {
   //
   // Validation checks the recipe of the pipeline and the status of its
   // components.
-  rpc ValidateNamespacePipeline(ValidateNamespacePipelineRequest) returns (ValidateNamespacePipelineResponse) {
+  rpc ValidatePipeline(ValidatePipelineRequest) returns (ValidatePipelineResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=namespaces/*/pipelines/*}/validate"
       body: "*"
@@ -200,7 +200,7 @@ service PipelinePublicService {
   //
   // The authenticated namespace must be the parent of the pipeline in order to
   // perform this action.
-  rpc RenameNamespacePipeline(RenameNamespacePipelineRequest) returns (RenameNamespacePipelineResponse) {
+  rpc RenamePipeline(RenamePipelineRequest) returns (RenamePipelineResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=namespaces/*/pipelines/*}/rename"
       body: "*"
@@ -218,7 +218,7 @@ service PipelinePublicService {
   //
   // Clones a pipeline owned by a namespace. The new pipeline may have a
   // different parent, and this can be either a namespace or an organization.
-  rpc CloneNamespacePipeline(CloneNamespacePipelineRequest) returns (CloneNamespacePipelineResponse) {
+  rpc ClonePipeline(ClonePipelineRequest) returns (ClonePipelineResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=namespaces/*/pipelines/*}/clone"
       body: "*"
@@ -258,8 +258,8 @@ service PipelinePublicService {
   // namespace and ID of the pipeline.
   //
   // For more information, see [Run
-  // NamespacePipeline](https://instill-ai.dev/docs/pipeline/run-pipeline).
-  rpc TriggerNamespacePipeline(TriggerNamespacePipelineRequest) returns (TriggerNamespacePipelineResponse) {
+  // Pipeline](https://instill-ai.dev/docs/pipeline/run-pipeline).
+  rpc TriggerPipeline(TriggerPipelineRequest) returns (TriggerPipelineResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=namespaces/*/pipelines/*}/trigger"
       body: "*"
@@ -291,7 +291,7 @@ service PipelinePublicService {
   //
   // The pipeline is identified by its resource name, formed by the parent
   // namespace and ID of the pipeline.
-  rpc TriggerNamespacePipelineWithStream(TriggerNamespacePipelineWithStreamRequest) returns (stream TriggerNamespacePipelineWithStreamResponse) {
+  rpc TriggerPipelineWithStream(TriggerPipelineWithStreamRequest) returns (stream TriggerPipelineWithStreamResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=namespaces/*/pipelines/*}/trigger-stream"
       body: "*"
@@ -326,8 +326,8 @@ service PipelinePublicService {
   // namespace and ID of the pipeline.
   //
   // For more information, see [Run
-  // NamespacePipeline](https://instill-ai.dev/docs/pipeline/run-pipeline).
-  rpc TriggerAsyncNamespacePipeline(TriggerAsyncNamespacePipelineRequest) returns (TriggerAsyncNamespacePipelineResponse) {
+  // Pipeline](https://instill-ai.dev/docs/pipeline/run-pipeline).
+  rpc TriggerAsyncPipeline(TriggerAsyncPipelineRequest) returns (TriggerAsyncPipelineResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=namespaces/*/pipelines/*}/trigger-async"
       body: "*"
@@ -358,7 +358,7 @@ service PipelinePublicService {
   //
   // The authenticated namespace must be the parent of the pipeline in order to
   // perform this action.
-  rpc CreateNamespacePipelineRelease(CreateNamespacePipelineReleaseRequest) returns (CreateNamespacePipelineReleaseResponse) {
+  rpc CreatePipelineRelease(CreatePipelineReleaseRequest) returns (CreatePipelineReleaseResponse) {
     option (google.api.http) = {
       post: "/v1beta/{parent=namespaces/*/pipelines/*}/releases"
       body: "release"
@@ -376,7 +376,7 @@ service PipelinePublicService {
   //
   // Lists the commited versions of a pipeline, identified by its resource
   // name, which is formed by the parent namespace and ID of the pipeline.
-  rpc ListNamespacePipelineReleases(ListNamespacePipelineReleasesRequest) returns (ListNamespacePipelineReleasesResponse) {
+  rpc ListPipelineReleases(ListPipelineReleasesRequest) returns (ListPipelineReleasesResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=namespaces/*/pipelines/*}/releases"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Pipeline"
@@ -391,7 +391,7 @@ service PipelinePublicService {
   //
   // Gets the details of a pipeline release, where the pipeline is identified
   // by its resource name, formed by its parent namespace and ID.
-  rpc GetNamespacePipelineRelease(GetNamespacePipelineReleaseRequest) returns (GetNamespacePipelineReleaseResponse) {
+  rpc GetPipelineRelease(GetPipelineReleaseRequest) returns (GetPipelineReleaseResponse) {
     option (google.api.http) = {get: "/v1beta/{name=namespaces/*/pipelines/*/releases/*}"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Pipeline"
@@ -409,7 +409,7 @@ service PipelinePublicService {
   //
   // The authenticated namespace must be the parent of the pipeline in order to
   // perform this action.
-  rpc UpdateNamespacePipelineRelease(UpdateNamespacePipelineReleaseRequest) returns (UpdateNamespacePipelineReleaseResponse) {
+  rpc UpdatePipelineRelease(UpdatePipelineReleaseRequest) returns (UpdatePipelineReleaseResponse) {
     option (google.api.http) = {
       patch: "/v1beta/{release.name=namespaces/*/pipelines/*/releases/*}"
       body: "release"
@@ -430,7 +430,7 @@ service PipelinePublicService {
   //
   // The authenticated namespace must be the parent of the pipeline in order to
   // perform this action.
-  rpc DeleteNamespacePipelineRelease(DeleteNamespacePipelineReleaseRequest) returns (DeleteNamespacePipelineReleaseResponse) {
+  rpc DeletePipelineRelease(DeletePipelineReleaseRequest) returns (DeletePipelineReleaseResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=namespaces/*/pipelines/*/releases/*}"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Pipeline"
@@ -445,7 +445,7 @@ service PipelinePublicService {
   //
   // Clones a pipeline release owned by a namespace. The new pipeline may have a
   // different parent, and this can be either a namespace or an organization.
-  rpc CloneNamespacePipelineRelease(CloneNamespacePipelineReleaseRequest) returns (CloneNamespacePipelineReleaseResponse) {
+  rpc ClonePipelineRelease(ClonePipelineReleaseRequest) returns (ClonePipelineReleaseResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=namespaces/*/pipelines/*/releases/*}/clone"
       body: "*"
@@ -468,7 +468,7 @@ service PipelinePublicService {
   //
   // The pipeline is identified by its resource name, formed by its parent
   // namespace and ID.
-  rpc TriggerNamespacePipelineRelease(TriggerNamespacePipelineReleaseRequest) returns (TriggerNamespacePipelineReleaseResponse) {
+  rpc TriggerPipelineRelease(TriggerPipelineReleaseRequest) returns (TriggerPipelineReleaseResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=namespaces/*/pipelines/*/releases/*}/trigger"
       body: "*"
@@ -501,7 +501,7 @@ service PipelinePublicService {
   //
   // The pipeline is identified by its resource name, formed by its parent
   // namespace and ID.
-  rpc TriggerAsyncNamespacePipelineRelease(TriggerAsyncNamespacePipelineReleaseRequest) returns (TriggerAsyncNamespacePipelineReleaseResponse) {
+  rpc TriggerAsyncPipelineRelease(TriggerAsyncPipelineReleaseRequest) returns (TriggerAsyncPipelineReleaseResponse) {
     option (google.api.http) = {
       post: "/v1beta/{name=namespaces/*/pipelines/*/releases/*}/trigger-async"
       body: "*"

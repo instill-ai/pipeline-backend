@@ -17,11 +17,11 @@ import (
 // mockModelPublicServiceClient is a mock implementation of ModelPublicServiceClient
 type mockModelPublicServiceClient struct {
 	modelpb.ModelPublicServiceClient
-	triggerResponse *modelpb.TriggerNamespaceModelResponse
+	triggerResponse *modelpb.TriggerModelResponse
 	triggerError    error
 }
 
-func (m *mockModelPublicServiceClient) TriggerNamespaceModel(ctx context.Context, req *modelpb.TriggerNamespaceModelRequest, opts ...grpc.CallOption) (*modelpb.TriggerNamespaceModelResponse, error) {
+func (m *mockModelPublicServiceClient) TriggerModel(ctx context.Context, req *modelpb.TriggerModelRequest, opts ...grpc.CallOption) (*modelpb.TriggerModelResponse, error) {
 	if m.triggerError != nil {
 		return nil, m.triggerError
 	}
@@ -50,7 +50,7 @@ func TestExecuteEmbedding(t *testing.T) {
 			vectorValues[i] = structpb.NewNumberValue(v)
 		}
 
-		mockResponse := &modelpb.TriggerNamespaceModelResponse{
+		mockResponse := &modelpb.TriggerModelResponse{
 			TaskOutputs: []*structpb.Struct{
 				{
 					Fields: map[string]*structpb.Value{

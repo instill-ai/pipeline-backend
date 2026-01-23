@@ -112,7 +112,7 @@ export function teardown(data) {
     });
 
     var listRes = pipelineClient.invoke(
-      "pipeline.v1beta.PipelinePublicService/ListNamespacePipelines",
+      "pipeline.v1beta.PipelinePublicService/ListPipelines",
       {
         parent: `${constant.namespace}`,
         pageSize: 1000,
@@ -123,7 +123,7 @@ export function teardown(data) {
     if (listRes.message && listRes.message.pipelines) {
       for (const pipeline of listRes.message.pipelines) {
         var deleteRes = pipelineClient.invoke(
-          `pipeline.v1beta.PipelinePublicService/DeleteNamespacePipeline`,
+          `pipeline.v1beta.PipelinePublicService/DeletePipeline`,
           {
             name: `${constant.namespace}/pipelines/${pipeline.id}`,
           },

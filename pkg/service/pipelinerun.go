@@ -86,7 +86,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 		return nil, fmt.Errorf("invalid namespace: %w", err)
 	}
 
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ns.Permalink(), pipelineID, true, false)
+	dbPipeline, err := s.repository.GetPipelineByID(ctx, ns.Permalink(), pipelineID, true, false)
 	if err != nil {
 		return nil, err
 	}

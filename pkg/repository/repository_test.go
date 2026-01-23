@@ -409,10 +409,10 @@ func TestRepository_AddPipelineRuns(t *testing.T) {
 			UpdateTime: t0,
 		},
 	}
-	err := repo.CreateNamespacePipeline(ctx, p)
+	err := repo.CreatePipeline(ctx, p)
 	c.Assert(err, qt.IsNil)
 
-	got, err := repo.GetNamespacePipelineByID(ctx, ownerPermalink, "test", true, false)
+	got, err := repo.GetPipelineByID(ctx, ownerPermalink, "test", true, false)
 	c.Assert(err, qt.IsNil)
 	c.Check(got.NumberOfRuns, qt.Equals, 0)
 	c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
@@ -420,7 +420,7 @@ func TestRepository_AddPipelineRuns(t *testing.T) {
 	err = repo.AddPipelineRuns(ctx, got.UID)
 	c.Check(err, qt.IsNil)
 
-	got, err = repo.GetNamespacePipelineByID(ctx, ownerPermalink, "test", true, false)
+	got, err = repo.GetPipelineByID(ctx, ownerPermalink, "test", true, false)
 	c.Assert(err, qt.IsNil)
 	c.Check(got.NumberOfRuns, qt.Equals, 1)
 	c.Check(got.LastRunTime.After(t0), qt.IsTrue)
@@ -452,10 +452,10 @@ func TestRepository_UpsertPipelineRun(t *testing.T) {
 			UpdateTime: t0,
 		},
 	}
-	err := repo.CreateNamespacePipeline(ctx, p)
+	err := repo.CreatePipeline(ctx, p)
 	c.Assert(err, qt.IsNil)
 
-	got, err := repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID, true, false)
+	got, err := repo.GetPipelineByID(ctx, ownerPermalink, pipelineID, true, false)
 	c.Assert(err, qt.IsNil)
 	c.Check(got.NumberOfRuns, qt.Equals, 0)
 	c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
@@ -588,10 +588,10 @@ func TestRepository_GetPaginatedPipelineRunsWithPermissions(t *testing.T) {
 					UpdateTime: t0,
 				},
 			}
-			err := repo.CreateNamespacePipeline(ctx, p)
+			err := repo.CreatePipeline(ctx, p)
 			c.Assert(err, qt.IsNil)
 
-			got, err := repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID, true, false)
+			got, err := repo.GetPipelineByID(ctx, ownerPermalink, pipelineID, true, false)
 			c.Assert(err, qt.IsNil)
 			c.Check(got.NumberOfRuns, qt.Equals, 0)
 			c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
@@ -663,7 +663,7 @@ func TestRepository_GetPaginatedPipelineRunsByRequester(t *testing.T) {
 			UpdateTime: t0,
 		},
 	}
-	err := repo.CreateNamespacePipeline(ctx, p)
+	err := repo.CreatePipeline(ctx, p)
 	c.Check(err, qt.IsNil)
 
 	p2 := &datamodel.Pipeline{
@@ -675,15 +675,15 @@ func TestRepository_GetPaginatedPipelineRunsByRequester(t *testing.T) {
 			UpdateTime: t0,
 		},
 	}
-	err = repo.CreateNamespacePipeline(ctx, p2)
+	err = repo.CreatePipeline(ctx, p2)
 	c.Check(err, qt.IsNil)
 
-	got, err := repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID, true, false)
+	got, err := repo.GetPipelineByID(ctx, ownerPermalink, pipelineID, true, false)
 	c.Check(err, qt.IsNil)
 	c.Check(got.NumberOfRuns, qt.Equals, 0)
 	c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
 
-	got, err = repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID2, true, false)
+	got, err = repo.GetPipelineByID(ctx, ownerPermalink, pipelineID2, true, false)
 	c.Check(err, qt.IsNil)
 	c.Check(got.NumberOfRuns, qt.Equals, 0)
 	c.Check(got.LastRunTime.IsZero(), qt.IsTrue)

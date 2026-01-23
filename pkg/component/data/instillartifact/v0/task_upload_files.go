@@ -74,7 +74,7 @@ func (e *execution) uploadFiles(input *structpb.Struct) (*structpb.Struct, error
 				DisplayName: inputStruct.Options.FileNames[i],
 				Content:     content,
 			},
-			KnowledgeBaseId: inputStruct.Options.KnowledgeBaseID,
+			KnowledgeBase: inputStruct.Options.KnowledgeBaseID,
 		})
 
 		if err != nil {

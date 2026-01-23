@@ -194,10 +194,10 @@ func TestService_ListPipelineRuns(t *testing.T) {
 					UpdateTime: t0,
 				},
 			}
-			err := repo.CreateNamespacePipeline(ctx, p)
+			err := repo.CreatePipeline(ctx, p)
 			c.Assert(err, qt.IsNil)
 
-			got, err := repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID, true, false)
+			got, err := repo.GetPipelineByID(ctx, ownerPermalink, pipelineID, true, false)
 			c.Assert(err, qt.IsNil)
 			c.Check(got.NumberOfRuns, qt.Equals, 0)
 			c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
@@ -411,10 +411,10 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 					ShareCode: nil,
 				},
 			}
-			err := repo.CreateNamespacePipeline(ctx, p)
+			err := repo.CreatePipeline(ctx, p)
 			c.Assert(err, qt.IsNil)
 
-			got, err := repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID, true, false)
+			got, err := repo.GetPipelineByID(ctx, ownerPermalink, pipelineID, true, false)
 			c.Assert(err, qt.IsNil)
 			c.Check(got.NumberOfRuns, qt.Equals, 0)
 			c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
@@ -505,10 +505,10 @@ func TestService_ListPipelineRunsByRequester(t *testing.T) {
 			UpdateTime: t0,
 		},
 	}
-	err := repo.CreateNamespacePipeline(ctx, p)
+	err := repo.CreatePipeline(ctx, p)
 	c.Assert(err, qt.IsNil)
 
-	got, err := repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID, true, false)
+	got, err := repo.GetPipelineByID(ctx, ownerPermalink, pipelineID, true, false)
 	c.Assert(err, qt.IsNil)
 
 	pipelineRun := &datamodel.PipelineRun{

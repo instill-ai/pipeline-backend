@@ -46,7 +46,7 @@ func trigger(gRPCClient modelpb.ModelPublicServiceClient, vars map[string]any, n
 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(vars))
 
-	res, err := gRPCClient.TriggerNamespaceModel(ctx, &modelpb.TriggerNamespaceModelRequest{
+	res, err := gRPCClient.TriggerModel(ctx, &modelpb.TriggerModelRequest{
 		Name:       fmt.Sprintf("namespaces/%s/models/%s/versions/%s", nsID, modelID, version),
 		TaskInputs: taskInputs,
 	})
