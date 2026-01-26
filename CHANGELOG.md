@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.61.1](https://github.com/instill-ai/pipeline-backend/compare/v0.61.0...v0.61.1) (2026-01-26)
+
+
+### Features
+
+* **component,data,artifact:** update instillartifact component to latest protobuf ([#1139](https://github.com/instill-ai/pipeline-backend/issues/1139)) ([4c1f508](https://github.com/instill-ai/pipeline-backend/commit/4c1f50807b2220fc67a926f6c91ab7414ccb0ace))
+* **data:** add WebM audio support and improve constant naming ([#1142](https://github.com/instill-ai/pipeline-backend/issues/1142)) ([bd4e10e](https://github.com/instill-ai/pipeline-backend/commit/bd4e10e5b8c3582f74b6b17d5c0697b145fa17ab))
+* **pipeline:** add creator tracking to pipeline resource ([#1147](https://github.com/instill-ai/pipeline-backend/issues/1147)) ([a5ddeed](https://github.com/instill-ai/pipeline-backend/commit/a5ddeed1ecb9546331d34befa8edccc2b8bed5ec))
+
+
+### Bug Fixes
+
+* **document:** resolve audio/video format conversion and HTML-to-PDF issues ([#1141](https://github.com/instill-ai/pipeline-backend/issues/1141)) ([683de3a](https://github.com/instill-ai/pipeline-backend/commit/683de3a3f25c536130b1ee0cbbf2de7c6bccff46))
+* **worker:** prevent concurrent map access race condition ([#1143](https://github.com/instill-ai/pipeline-backend/issues/1143)) ([e24a0b6](https://github.com/instill-ai/pipeline-backend/commit/e24a0b676ee7f4ad124b68f73450dad93aad7af7))
+
+
+### Miscellaneous
+
+* **deps:** bump github.com/weaviate/weaviate from 1.26.0-rc.1 to 1.30.20 ([#1146](https://github.com/instill-ai/pipeline-backend/issues/1146)) ([95a7a61](https://github.com/instill-ai/pipeline-backend/commit/95a7a61de07bd6e85dbf9d8b750642f0a17f656b))
+* **deps:** bump golang.org/x/crypto from 0.36.0 to 0.45.0 in /pkg/component/tools/compogen ([#1144](https://github.com/instill-ai/pipeline-backend/issues/1144)) ([a57ead2](https://github.com/instill-ai/pipeline-backend/commit/a57ead24f55f621e200e087d74f7767bc5f18ae3))
+* **deps:** bump golang.org/x/crypto from 0.39.0 to 0.45.0 ([#1145](https://github.com/instill-ai/pipeline-backend/issues/1145)) ([a64bc3d](https://github.com/instill-ai/pipeline-backend/commit/a64bc3d62f98b03c3285d5f047eed8ade25918e8))
+* **deps:** upgrade Go to 1.25.6 and weaviate-go-client to v5 ([#1150](https://github.com/instill-ai/pipeline-backend/issues/1150)) ([2d74899](https://github.com/instill-ai/pipeline-backend/commit/2d7489964e2fcf786f91700877d17d3e4e77a99c))
+
+
+### Refactor
+
+* **acl:** migrate to shared ACL client library ([#1152](https://github.com/instill-ai/pipeline-backend/issues/1152)) ([eafe245](https://github.com/instill-ai/pipeline-backend/commit/eafe245388410a3806128dba8fea6f59330dd4d4))
+* **api:** adopt flattened namespace prefixes from protobufs ([#1153](https://github.com/instill-ai/pipeline-backend/issues/1153)) ([9cd910c](https://github.com/instill-ai/pipeline-backend/commit/9cd910cf698b8fadb8cc0facef683725f7e515f2))
+* **api:** update tests for AIP-compliant APIs and add private service tests ([#1151](https://github.com/instill-ai/pipeline-backend/issues/1151)) ([dc79b3d](https://github.com/instill-ai/pipeline-backend/commit/dc79b3da6f98bc429eca0bf7bed89e0c7e35fb07))
+* **artifact:** adopt AIP-122 resource name fields from protobufs ([#1154](https://github.com/instill-ai/pipeline-backend/issues/1154)) ([db2b2d9](https://github.com/instill-ai/pipeline-backend/commit/db2b2d9ef5b2924f5eda58b11f421f21bce4aad7))
+* **pipeline:** implement AIP-compliant resource naming with hash-based IDs ([#1149](https://github.com/instill-ai/pipeline-backend/issues/1149)) ([f694e8a](https://github.com/instill-ai/pipeline-backend/commit/f694e8a6a93fc3907f8b391b88441a2ffaac190d))
+* **service:** remove organization support and add internal service bypass ([#1148](https://github.com/instill-ai/pipeline-backend/issues/1148)) ([1f54cc3](https://github.com/instill-ai/pipeline-backend/commit/1f54cc32a6502d870e418eeaec97b7be71386376))
+
 ## [0.61.0](https://github.com/instill-ai/pipeline-backend/compare/v0.60.0...v0.61.0) (2025-10-07)
 
 
