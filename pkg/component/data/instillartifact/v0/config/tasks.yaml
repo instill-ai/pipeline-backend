@@ -1,11 +1,11 @@
 $defs:
   file:
-    description: Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into catalog.
+    description: Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into collection.
     uiOrder: 2
     type: string
     title: File
   files:
-    description: Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML files to be uploaded into catalog.
+    description: Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML files to be uploaded into collection.
     uiOrder: 2
     type: array
     items:
@@ -43,13 +43,13 @@ $defs:
         uiOrder: 5
         title: Size
         type: number
-      catalog-id:
-        description: ID of the catalog that you upload files.
+      collection-id:
+        description: ID of the collection that you upload files.
         uiOrder: 8
-        title: Catalog ID
+        title: Collection ID
         type: string
     required:
-      - catalog-id
+      - collection-id
     title: File
     type: object
   chunk-item:
@@ -215,13 +215,13 @@ $defs:
       - coordinates
     uiOrder: 0
 TASK_CREATE_FILE:
-  shortDescription: Upload and process the files into chunks into Catalog.
+  shortDescription: Upload and process the files into chunks into Collection.
   input:
     description: Input.
     uiOrder: 0
     properties:
       options:
-        description: Choose to upload the files to existing catalog or create a new catalog.
+        description: Choose to upload the files to existing collection or create a new collection.
         title: Options
         additionalProperties: true
         uiOrder: 0
@@ -230,18 +230,18 @@ TASK_CREATE_FILE:
         oneOf:
           - properties:
               option:
-                const: existing catalog
+                const: existing collection
                 title: Option
-                description: Existing catalog.
+                description: Existing collection.
                 uiOrder: 0
                 type: string
               namespace:
                 $ref: "#/$defs/namespace"
-              catalog-id:
-                description: Catalog ID that you input in the Catalog.
+              collection-id:
+                description: Collection ID that you input in the Collection.
                 uiOrder: 1
                 type: string
-                title: Catalog ID
+                title: Collection ID
               file:
                 $ref: "#/$defs/file"
               file-name:
@@ -252,25 +252,25 @@ TASK_CREATE_FILE:
             required:
               - option
               - namespace
-              - catalog-id
+              - collection-id
               - file
               - file-name
-            title: Existing Catalog
+            title: Existing Collection
             type: object
           - properties:
               option:
-                const: create new catalog
+                const: create new collection
                 title: Option
-                description: Create new catalog.
+                description: Create new collection.
                 uiOrder: 0
                 type: string
               namespace:
                 $ref: "#/$defs/namespace"
-              catalog-id:
-                description: Catalog ID for new catalog you want to create.
+              collection-id:
+                description: Collection ID for new collection you want to create.
                 uiOrder: 1
                 type: string
-                title: Catalog ID
+                title: Collection ID
               file:
                 $ref: "#/$defs/file"
               file-name:
@@ -279,12 +279,12 @@ TASK_CREATE_FILE:
                 type: string
                 title: File Name
               description:
-                description: Description of the catalog.
+                description: Description of the collection.
                 uiOrder: 4
                 type: string
                 title: Description
               tags:
-                description: Tags for the catalog.
+                description: Tags for the collection.
                 uiOrder: 5
                 type: array
                 items:
@@ -293,10 +293,10 @@ TASK_CREATE_FILE:
             required:
               - option
               - namespace
-              - catalog-id
+              - collection-id
               - file
               - file-name
-            title: Create New Catalog
+            title: Create New Collection
             type: object
         type: object
     required:
@@ -304,10 +304,10 @@ TASK_CREATE_FILE:
     title: Input
     type: object
   output:
-    description: Result of uploading file into catalog.
+    description: Result of uploading file into collection.
     properties:
       file:
-        description: Result of uploading file into catalog.
+        description: Result of uploading file into collection.
         uiOrder: 0
         properties:
           $ref: "#/$defs/file-item/properties"
@@ -318,7 +318,7 @@ TASK_CREATE_FILE:
           - create-time
           - update-time
           - size
-          - catalog-id
+          - collection-id
         title: File
         type: object
       status:
@@ -332,13 +332,13 @@ TASK_CREATE_FILE:
     title: Output
     type: object
 TASK_CREATE_FILES:
-  shortDescription: Upload and process the files into chunks into Catalog.
+  shortDescription: Upload and process the files into chunks into Collection.
   input:
     description: Input.
     uiOrder: 0
     properties:
       options:
-        description: Choose to upload the files to existing catalog or create a new catalog.
+        description: Choose to upload the files to existing collection or create a new collection.
         title: Options
         additionalProperties: true
         uiOrder: 0
@@ -347,18 +347,18 @@ TASK_CREATE_FILES:
         oneOf:
           - properties:
               option:
-                const: existing catalog
+                const: existing collection
                 title: Option
-                description: Existing catalog.
+                description: Existing collection.
                 uiOrder: 0
                 type: string
               namespace:
                 $ref: "#/$defs/namespace"
-              catalog-id:
-                description: Catalog ID that you input in the Catalog.
+              collection-id:
+                description: Collection ID that you input in the Collection.
                 uiOrder: 1
                 type: string
-                title: Catalog ID
+                title: Collection ID
               files:
                 $ref: "#/$defs/files"
               file-names:
@@ -371,25 +371,25 @@ TASK_CREATE_FILES:
             required:
               - option
               - namespace
-              - catalog-id
+              - collection-id
               - files
               - file-names
-            title: Existing Catalog
+            title: Existing Collection
             type: object
           - properties:
               option:
-                const: create new catalog
+                const: create new collection
                 title: Option
-                description: Create new catalog.
+                description: Create new collection.
                 uiOrder: 0
                 type: string
               namespace:
                 $ref: "#/$defs/namespace"
-              catalog-id:
-                description: Catalog ID for new catalog you want to create.
+              collection-id:
+                description: Collection ID for new collection you want to create.
                 uiOrder: 1
                 type: string
-                title: Catalog ID
+                title: Collection ID
               files:
                 $ref: "#/$defs/files"
               file-names:
@@ -400,12 +400,12 @@ TASK_CREATE_FILES:
                   type: string
                 title: File Names
               description:
-                description: Description of the catalog.
+                description: Description of the collection.
                 uiOrder: 4
                 type: string
                 title: Description
               tags:
-                description: Tags for the catalog.
+                description: Tags for the collection.
                 uiOrder: 5
                 type: array
                 items:
@@ -414,10 +414,10 @@ TASK_CREATE_FILES:
             required:
               - option
               - namespace
-              - catalog-id
+              - collection-id
               - files
               - file-names
-            title: Create New Catalog
+            title: Create New Collection
             type: object
         type: object
     required:
@@ -425,10 +425,10 @@ TASK_CREATE_FILES:
     title: Input
     type: object
   output:
-    description: Result of uploading files into catalog.
+    description: Result of uploading files into collection.
     properties:
       files:
-        description: Files metadata in catalog.
+        description: Files metadata in collection.
         uiOrder: 0
         items:
           $ref: "#/$defs/file-item"
@@ -445,28 +445,28 @@ TASK_CREATE_FILES:
     title: Output
     type: object
 TASK_GET_FILES_METADATA:
-  shortDescription: get the metadata of the files in the catalog.
+  shortDescription: get the metadata of the files in the collection.
   input:
     uiOrder: 0
     properties:
       namespace:
         $ref: "#/$defs/namespace"
-      catalog-id:
-        description: Catalog ID that you input to search files in the Catalog.
+      collection-id:
+        description: Collection ID that you input to search files in the Collection.
         uiOrder: 1
         type: string
-        title: Catalog ID
+        title: Collection ID
     required:
       - namespace
-      - catalog-id
+      - collection-id
     title: Input
     type: object
   output:
-    description: Files metadata into catalog.
+    description: Files metadata into collection.
     uiOrder: 1
     properties:
       files:
-        description: Files metadata in catalog.
+        description: Files metadata in collection.
         uiOrder: 0
         items:
           $ref: "#/$defs/file-item"
@@ -477,17 +477,17 @@ TASK_GET_FILES_METADATA:
     title: Output
     type: object
 TASK_GET_CHUNKS_METADATA:
-  shortDescription: get the metadata of the chunks from a file in the catalog.
+  shortDescription: get the metadata of the chunks from a file in the collection.
   input:
     uiOrder: 0
     properties:
       namespace:
         $ref: "#/$defs/namespace"
-      catalog-id:
-        description: Catalog ID that you input to search files in the Catalog.
+      collection-id:
+        description: Collection ID that you input to search files in the Collection.
         uiOrder: 0
         type: string
-        title: Catalog ID
+        title: Collection ID
       file-uid:
         description: The unique identifier of the file.
         uiOrder: 1
@@ -495,16 +495,16 @@ TASK_GET_CHUNKS_METADATA:
         title: File UID
     required:
       - namespace
-      - catalog-id
+      - collection-id
       - file-uid
     title: Input
     type: object
   output:
-    description: Chunks metadata of the file in catalog.
+    description: Chunks metadata of the file in collection.
     uiOrder: 1
     properties:
       chunks:
-        description: Chunks metadata of the file in catalog.
+        description: Chunks metadata of the file in collection.
         uiOrder: 0
         items:
           properties:
@@ -566,11 +566,11 @@ TASK_GET_FILE_IN_MARKDOWN:
     properties:
       namespace:
         $ref: "#/$defs/namespace"
-      catalog-id:
-        description: Catalog ID that you input to search files in the Catalog.
+      collection-id:
+        description: Collection ID that you input to search files in the Collection.
         uiOrder: 0
         type: string
-        title: Catalog ID
+        title: Collection ID
       file-uid:
         description: The unique identifier of the file.
         uiOrder: 1
@@ -578,7 +578,7 @@ TASK_GET_FILE_IN_MARKDOWN:
         title: File UID
     required:
       - namespace
-      - catalog-id
+      - collection-id
       - file-uid
     title: Input
     type: object
@@ -685,17 +685,17 @@ TASK_SEARCH:
     title: Output
     type: object
 TASK_ASK:
-  shortDescription: Reply the questions based on the files in the catalog.
+  shortDescription: Reply the questions based on the files in the collection.
   input:
     uiOrder: 0
     properties:
       namespace:
         $ref: "#/$defs/namespace"
-      catalog-id:
-        description: Catalog ID that you input to search files in the Catalog.
+      collection-id:
+        description: Collection ID that you input to search files in the Collection.
         uiOrder: 0
         type: string
-        title: Catalog ID
+        title: Collection ID
       question:
         description: The question to reply.
         uiOrder: 1
@@ -718,7 +718,7 @@ TASK_ASK:
         title: File UIDs
     required:
       - namespace
-      - catalog-id
+      - collection-id
       - question
     title: Input
     type: object
@@ -748,11 +748,11 @@ TASK_MATCH_FILE_STATUS:
     properties:
       namespace:
         $ref: "#/$defs/namespace"
-      catalog-id:
-        description: Catalog ID that you input to check files' processing status in the Catalog.
+      collection-id:
+        description: Collection ID that you input to check files' processing status in the Collection.
         uiOrder: 0
         type: string
-        title: Catalog ID
+        title: Collection ID
       file-uid:
         description: The unique identifier of the file.
         uiOrder: 1
@@ -760,7 +760,7 @@ TASK_MATCH_FILE_STATUS:
         title: File UID
     required:
       - namespace
-      - catalog-id
+      - collection-id
       - file-uid
     title: Input
     type: object
@@ -778,7 +778,7 @@ TASK_MATCH_FILE_STATUS:
     type: object
 TASK_SYNC_FILES:
   shortDescription: >-
-    This task synchronizes files from third-party storage to Instill Catalog. New files are uploaded, and updated files are overwritten
+    This task synchronizes files from third-party storage to Instill Collection. New files are uploaded, and updated files are overwritten
     based on third-party metadata. Files added through other channels, like the Artifact API or additional storage services, will not be removed. Currently,
     only Google Drive is supported as a third-party storage service.
   input:
@@ -786,16 +786,16 @@ TASK_SYNC_FILES:
     properties:
       namespace:
         $ref: "#/$defs/namespace"
-      catalog-id:
-        description: Catalog ID that you input to synchronize files from third-party data storage to catalog.
+      collection-id:
+        description: Collection ID that you input to synchronize files from third-party data storage to collection.
         uiOrder: 1
         type: string
-        title: Catalog ID
+        title: Collection ID
       third-party-files:
         $ref: "#/$defs/third-party-files"
     required:
       - namespace
-      - catalog-id
+      - collection-id
       - third-party-files
     title: Input
     type: object
@@ -803,7 +803,7 @@ TASK_SYNC_FILES:
     uiOrder: 1
     properties:
       uploaded-files:
-        description: Files metadata in catalog. The metadata here is from Instill Artifact rather than third-party storage.
+        description: Files metadata in collection. The metadata here is from Instill Artifact rather than third-party storage.
         uiOrder: 0
         items:
           $ref: "#/$defs/file-item"

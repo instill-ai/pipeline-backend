@@ -23,18 +23,18 @@ import (
 
 var (
 	namespace = "namespace123"
-	catalogID = "catalog-id123"
+	collectionID = "col-id123"
 	// To be uploaded file
-	catalogFileUID = "catalog-file-uid123"
+	collectionFileUID = "col-file-uid123"
 	fileID         = "file-id123"
 	fileName       = "file-name123.pdf"
 	// To be updated file
-	catalogFileUID2 = "catalog-file-uid456"
+	collectionFileUID2 = "col-file-uid456"
 	fileID2         = "file-id456"
 	fileName2       = "file-name456.pdf"
 	fakeInput       = map[string]interface{}{
 		"namespace":         namespace,
-		"knowledge-base-id": catalogID,
+		"knowledge-base-id": collectionID,
 		"third-party-files": []map[string]interface{}{
 			{
 				"id":               fileID,
@@ -163,7 +163,7 @@ func Test_ExecuteSyncFiles(t *testing.T) {
 
 // Mock Server functions section
 var (
-	catalogFileUID3 = "catalog-file-uid789"
+	catalogFileUID3 = "col-file-uid789"
 	fileID3         = "file-id789"
 	fileName3       = "file-name789.pdf"
 
@@ -204,8 +204,8 @@ func setListCatalogsMock(s *mock.ArtifactPublicServiceServerMock) {
 		return &artifactpb.ListKnowledgeBasesResponse{
 			KnowledgeBases: []*artifactpb.KnowledgeBase{
 				{
-					Id:   catalogID,
-					Name: "namespaces/" + namespace + "/knowledge-bases/" + catalogID,
+					Id:   collectionID,
+					Name: "namespaces/" + namespace + "/knowledge-bases/" + collectionID,
 				},
 			},
 		}, nil
@@ -231,7 +231,7 @@ func setListCatalogFilesMock(s *mock.ArtifactPublicServiceServerMock) {
 		return &artifactpb.ListFilesResponse{
 			Files: []*artifactpb.File{
 				{
-					Id:               catalogFileUID2,
+					Id:               collectionFileUID2,
 					ExternalMetadata: metadataStruct2,
 				},
 				{
@@ -247,7 +247,7 @@ func setDeleteCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 	s.DeleteFileMock.Times(2).Set(func(ctx context.Context, in *artifactpb.DeleteFileRequest) (*artifactpb.DeleteFileResponse, error) {
 		// Extract file ID from resource name: namespaces/{namespace}/files/{file}
 		expectedNames := []string{
-			"namespaces/" + namespace + "/files/" + catalogFileUID2,
+			"namespaces/" + namespace + "/files/" + collectionFileUID2,
 			"namespaces/" + namespace + "/files/" + catalogFileUID3,
 		}
 		mock.Contains(expectedNames, in.Name)
@@ -259,7 +259,7 @@ func setDeleteCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 
 func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 	s.CreateFileMock.Times(2).Set(func(ctx context.Context, in *artifactpb.CreateFileRequest) (*artifactpb.CreateFileResponse, error) {
-		mock.Equal(in.Parent, "namespaces/"+namespace)
+		mock.Equal(in.Parent, "namespaces/"+namespace+"/knowledgeBases/"+collectionID)
 		mock.NotNil(in.File)
 		mock.NotNil(in.File.Content)
 		mock.NotNil(in.File.ExternalMetadata)
@@ -267,9 +267,9 @@ func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 		var mockFileUID string
 		switch in.File.DisplayName {
 		case fileName:
-			mockFileUID = catalogFileUID
+			mockFileUID = collectionFileUID
 		case fileName2:
-			mockFileUID = catalogFileUID2
+			mockFileUID = collectionFileUID2
 		default:
 			panic("Unexpected file name")
 		}

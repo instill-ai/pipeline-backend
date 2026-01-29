@@ -7,13 +7,13 @@ component:
     type: instill-artifact
     task: TASK_ASK
     input:
-      catalog-id: ${variable.catalog_name}
+      collection-id: ${variable.catalog_name}
       namespace: ${variable.namespace}
       question: ${variable.question}
       top-k: 5
 variable:
   catalog_name:
-    title: catalog-name
+    title: collection-name
     description: The name of your catalog i.e. "instill-ai"
     type: string
   namespace:
@@ -61,7 +61,7 @@ component:
     type: instill-artifact
     input:
       namespace: ${variable.namespace}
-      catalog-id: ${variable.catalog}
+      collection-id: ${variable.catalog}
       third-party-files: ${read-folder.output.files}
     task: TASK_SYNC_FILES
 

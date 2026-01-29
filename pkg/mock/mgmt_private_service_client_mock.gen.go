@@ -60,6 +60,13 @@ type MgmtPrivateServiceClientMock struct {
 	beforeListUsersAdminCounter uint64
 	ListUsersAdminMock          mMgmtPrivateServiceClientMockListUsersAdmin
 
+	funcLookUpConnectionAdmin          func(ctx context.Context, in *mm_mgmtv1beta.LookUpConnectionAdminRequest, opts ...grpc.CallOption) (lp1 *mm_mgmtv1beta.LookUpConnectionAdminResponse, err error)
+	funcLookUpConnectionAdminOrigin    string
+	inspectFuncLookUpConnectionAdmin   func(ctx context.Context, in *mm_mgmtv1beta.LookUpConnectionAdminRequest, opts ...grpc.CallOption)
+	afterLookUpConnectionAdminCounter  uint64
+	beforeLookUpConnectionAdminCounter uint64
+	LookUpConnectionAdminMock          mMgmtPrivateServiceClientMockLookUpConnectionAdmin
+
 	funcLookUpOrganizationAdmin          func(ctx context.Context, in *mm_mgmtv1beta.LookUpOrganizationAdminRequest, opts ...grpc.CallOption) (lp1 *mm_mgmtv1beta.LookUpOrganizationAdminResponse, err error)
 	funcLookUpOrganizationAdminOrigin    string
 	inspectFuncLookUpOrganizationAdmin   func(ctx context.Context, in *mm_mgmtv1beta.LookUpOrganizationAdminRequest, opts ...grpc.CallOption)
@@ -100,6 +107,9 @@ func NewMgmtPrivateServiceClientMock(t minimock.Tester) *MgmtPrivateServiceClien
 
 	m.ListUsersAdminMock = mMgmtPrivateServiceClientMockListUsersAdmin{mock: m}
 	m.ListUsersAdminMock.callArgs = []*MgmtPrivateServiceClientMockListUsersAdminParams{}
+
+	m.LookUpConnectionAdminMock = mMgmtPrivateServiceClientMockLookUpConnectionAdmin{mock: m}
+	m.LookUpConnectionAdminMock.callArgs = []*MgmtPrivateServiceClientMockLookUpConnectionAdminParams{}
 
 	m.LookUpOrganizationAdminMock = mMgmtPrivateServiceClientMockLookUpOrganizationAdmin{mock: m}
 	m.LookUpOrganizationAdminMock.callArgs = []*MgmtPrivateServiceClientMockLookUpOrganizationAdminParams{}
@@ -2356,6 +2366,380 @@ func (m *MgmtPrivateServiceClientMock) MinimockListUsersAdminInspect() {
 	}
 }
 
+type mMgmtPrivateServiceClientMockLookUpConnectionAdmin struct {
+	optional           bool
+	mock               *MgmtPrivateServiceClientMock
+	defaultExpectation *MgmtPrivateServiceClientMockLookUpConnectionAdminExpectation
+	expectations       []*MgmtPrivateServiceClientMockLookUpConnectionAdminExpectation
+
+	callArgs []*MgmtPrivateServiceClientMockLookUpConnectionAdminParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// MgmtPrivateServiceClientMockLookUpConnectionAdminExpectation specifies expectation struct of the MgmtPrivateServiceClient.LookUpConnectionAdmin
+type MgmtPrivateServiceClientMockLookUpConnectionAdminExpectation struct {
+	mock               *MgmtPrivateServiceClientMock
+	params             *MgmtPrivateServiceClientMockLookUpConnectionAdminParams
+	paramPtrs          *MgmtPrivateServiceClientMockLookUpConnectionAdminParamPtrs
+	expectationOrigins MgmtPrivateServiceClientMockLookUpConnectionAdminExpectationOrigins
+	results            *MgmtPrivateServiceClientMockLookUpConnectionAdminResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// MgmtPrivateServiceClientMockLookUpConnectionAdminParams contains parameters of the MgmtPrivateServiceClient.LookUpConnectionAdmin
+type MgmtPrivateServiceClientMockLookUpConnectionAdminParams struct {
+	ctx  context.Context
+	in   *mm_mgmtv1beta.LookUpConnectionAdminRequest
+	opts []grpc.CallOption
+}
+
+// MgmtPrivateServiceClientMockLookUpConnectionAdminParamPtrs contains pointers to parameters of the MgmtPrivateServiceClient.LookUpConnectionAdmin
+type MgmtPrivateServiceClientMockLookUpConnectionAdminParamPtrs struct {
+	ctx  *context.Context
+	in   **mm_mgmtv1beta.LookUpConnectionAdminRequest
+	opts *[]grpc.CallOption
+}
+
+// MgmtPrivateServiceClientMockLookUpConnectionAdminResults contains results of the MgmtPrivateServiceClient.LookUpConnectionAdmin
+type MgmtPrivateServiceClientMockLookUpConnectionAdminResults struct {
+	lp1 *mm_mgmtv1beta.LookUpConnectionAdminResponse
+	err error
+}
+
+// MgmtPrivateServiceClientMockLookUpConnectionAdminOrigins contains origins of expectations of the MgmtPrivateServiceClient.LookUpConnectionAdmin
+type MgmtPrivateServiceClientMockLookUpConnectionAdminExpectationOrigins struct {
+	origin     string
+	originCtx  string
+	originIn   string
+	originOpts string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmLookUpConnectionAdmin *mMgmtPrivateServiceClientMockLookUpConnectionAdmin) Optional() *mMgmtPrivateServiceClientMockLookUpConnectionAdmin {
+	mmLookUpConnectionAdmin.optional = true
+	return mmLookUpConnectionAdmin
+}
+
+// Expect sets up expected params for MgmtPrivateServiceClient.LookUpConnectionAdmin
+func (mmLookUpConnectionAdmin *mMgmtPrivateServiceClientMockLookUpConnectionAdmin) Expect(ctx context.Context, in *mm_mgmtv1beta.LookUpConnectionAdminRequest, opts ...grpc.CallOption) *mMgmtPrivateServiceClientMockLookUpConnectionAdmin {
+	if mmLookUpConnectionAdmin.mock.funcLookUpConnectionAdmin != nil {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin mock is already set by Set")
+	}
+
+	if mmLookUpConnectionAdmin.defaultExpectation == nil {
+		mmLookUpConnectionAdmin.defaultExpectation = &MgmtPrivateServiceClientMockLookUpConnectionAdminExpectation{}
+	}
+
+	if mmLookUpConnectionAdmin.defaultExpectation.paramPtrs != nil {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin mock is already set by ExpectParams functions")
+	}
+
+	mmLookUpConnectionAdmin.defaultExpectation.params = &MgmtPrivateServiceClientMockLookUpConnectionAdminParams{ctx, in, opts}
+	mmLookUpConnectionAdmin.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmLookUpConnectionAdmin.expectations {
+		if minimock.Equal(e.params, mmLookUpConnectionAdmin.defaultExpectation.params) {
+			mmLookUpConnectionAdmin.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmLookUpConnectionAdmin.defaultExpectation.params)
+		}
+	}
+
+	return mmLookUpConnectionAdmin
+}
+
+// ExpectCtxParam1 sets up expected param ctx for MgmtPrivateServiceClient.LookUpConnectionAdmin
+func (mmLookUpConnectionAdmin *mMgmtPrivateServiceClientMockLookUpConnectionAdmin) ExpectCtxParam1(ctx context.Context) *mMgmtPrivateServiceClientMockLookUpConnectionAdmin {
+	if mmLookUpConnectionAdmin.mock.funcLookUpConnectionAdmin != nil {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin mock is already set by Set")
+	}
+
+	if mmLookUpConnectionAdmin.defaultExpectation == nil {
+		mmLookUpConnectionAdmin.defaultExpectation = &MgmtPrivateServiceClientMockLookUpConnectionAdminExpectation{}
+	}
+
+	if mmLookUpConnectionAdmin.defaultExpectation.params != nil {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin mock is already set by Expect")
+	}
+
+	if mmLookUpConnectionAdmin.defaultExpectation.paramPtrs == nil {
+		mmLookUpConnectionAdmin.defaultExpectation.paramPtrs = &MgmtPrivateServiceClientMockLookUpConnectionAdminParamPtrs{}
+	}
+	mmLookUpConnectionAdmin.defaultExpectation.paramPtrs.ctx = &ctx
+	mmLookUpConnectionAdmin.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmLookUpConnectionAdmin
+}
+
+// ExpectInParam2 sets up expected param in for MgmtPrivateServiceClient.LookUpConnectionAdmin
+func (mmLookUpConnectionAdmin *mMgmtPrivateServiceClientMockLookUpConnectionAdmin) ExpectInParam2(in *mm_mgmtv1beta.LookUpConnectionAdminRequest) *mMgmtPrivateServiceClientMockLookUpConnectionAdmin {
+	if mmLookUpConnectionAdmin.mock.funcLookUpConnectionAdmin != nil {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin mock is already set by Set")
+	}
+
+	if mmLookUpConnectionAdmin.defaultExpectation == nil {
+		mmLookUpConnectionAdmin.defaultExpectation = &MgmtPrivateServiceClientMockLookUpConnectionAdminExpectation{}
+	}
+
+	if mmLookUpConnectionAdmin.defaultExpectation.params != nil {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin mock is already set by Expect")
+	}
+
+	if mmLookUpConnectionAdmin.defaultExpectation.paramPtrs == nil {
+		mmLookUpConnectionAdmin.defaultExpectation.paramPtrs = &MgmtPrivateServiceClientMockLookUpConnectionAdminParamPtrs{}
+	}
+	mmLookUpConnectionAdmin.defaultExpectation.paramPtrs.in = &in
+	mmLookUpConnectionAdmin.defaultExpectation.expectationOrigins.originIn = minimock.CallerInfo(1)
+
+	return mmLookUpConnectionAdmin
+}
+
+// ExpectOptsParam3 sets up expected param opts for MgmtPrivateServiceClient.LookUpConnectionAdmin
+func (mmLookUpConnectionAdmin *mMgmtPrivateServiceClientMockLookUpConnectionAdmin) ExpectOptsParam3(opts ...grpc.CallOption) *mMgmtPrivateServiceClientMockLookUpConnectionAdmin {
+	if mmLookUpConnectionAdmin.mock.funcLookUpConnectionAdmin != nil {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin mock is already set by Set")
+	}
+
+	if mmLookUpConnectionAdmin.defaultExpectation == nil {
+		mmLookUpConnectionAdmin.defaultExpectation = &MgmtPrivateServiceClientMockLookUpConnectionAdminExpectation{}
+	}
+
+	if mmLookUpConnectionAdmin.defaultExpectation.params != nil {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin mock is already set by Expect")
+	}
+
+	if mmLookUpConnectionAdmin.defaultExpectation.paramPtrs == nil {
+		mmLookUpConnectionAdmin.defaultExpectation.paramPtrs = &MgmtPrivateServiceClientMockLookUpConnectionAdminParamPtrs{}
+	}
+	mmLookUpConnectionAdmin.defaultExpectation.paramPtrs.opts = &opts
+	mmLookUpConnectionAdmin.defaultExpectation.expectationOrigins.originOpts = minimock.CallerInfo(1)
+
+	return mmLookUpConnectionAdmin
+}
+
+// Inspect accepts an inspector function that has same arguments as the MgmtPrivateServiceClient.LookUpConnectionAdmin
+func (mmLookUpConnectionAdmin *mMgmtPrivateServiceClientMockLookUpConnectionAdmin) Inspect(f func(ctx context.Context, in *mm_mgmtv1beta.LookUpConnectionAdminRequest, opts ...grpc.CallOption)) *mMgmtPrivateServiceClientMockLookUpConnectionAdmin {
+	if mmLookUpConnectionAdmin.mock.inspectFuncLookUpConnectionAdmin != nil {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("Inspect function is already set for MgmtPrivateServiceClientMock.LookUpConnectionAdmin")
+	}
+
+	mmLookUpConnectionAdmin.mock.inspectFuncLookUpConnectionAdmin = f
+
+	return mmLookUpConnectionAdmin
+}
+
+// Return sets up results that will be returned by MgmtPrivateServiceClient.LookUpConnectionAdmin
+func (mmLookUpConnectionAdmin *mMgmtPrivateServiceClientMockLookUpConnectionAdmin) Return(lp1 *mm_mgmtv1beta.LookUpConnectionAdminResponse, err error) *MgmtPrivateServiceClientMock {
+	if mmLookUpConnectionAdmin.mock.funcLookUpConnectionAdmin != nil {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin mock is already set by Set")
+	}
+
+	if mmLookUpConnectionAdmin.defaultExpectation == nil {
+		mmLookUpConnectionAdmin.defaultExpectation = &MgmtPrivateServiceClientMockLookUpConnectionAdminExpectation{mock: mmLookUpConnectionAdmin.mock}
+	}
+	mmLookUpConnectionAdmin.defaultExpectation.results = &MgmtPrivateServiceClientMockLookUpConnectionAdminResults{lp1, err}
+	mmLookUpConnectionAdmin.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmLookUpConnectionAdmin.mock
+}
+
+// Set uses given function f to mock the MgmtPrivateServiceClient.LookUpConnectionAdmin method
+func (mmLookUpConnectionAdmin *mMgmtPrivateServiceClientMockLookUpConnectionAdmin) Set(f func(ctx context.Context, in *mm_mgmtv1beta.LookUpConnectionAdminRequest, opts ...grpc.CallOption) (lp1 *mm_mgmtv1beta.LookUpConnectionAdminResponse, err error)) *MgmtPrivateServiceClientMock {
+	if mmLookUpConnectionAdmin.defaultExpectation != nil {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("Default expectation is already set for the MgmtPrivateServiceClient.LookUpConnectionAdmin method")
+	}
+
+	if len(mmLookUpConnectionAdmin.expectations) > 0 {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("Some expectations are already set for the MgmtPrivateServiceClient.LookUpConnectionAdmin method")
+	}
+
+	mmLookUpConnectionAdmin.mock.funcLookUpConnectionAdmin = f
+	mmLookUpConnectionAdmin.mock.funcLookUpConnectionAdminOrigin = minimock.CallerInfo(1)
+	return mmLookUpConnectionAdmin.mock
+}
+
+// When sets expectation for the MgmtPrivateServiceClient.LookUpConnectionAdmin which will trigger the result defined by the following
+// Then helper
+func (mmLookUpConnectionAdmin *mMgmtPrivateServiceClientMockLookUpConnectionAdmin) When(ctx context.Context, in *mm_mgmtv1beta.LookUpConnectionAdminRequest, opts ...grpc.CallOption) *MgmtPrivateServiceClientMockLookUpConnectionAdminExpectation {
+	if mmLookUpConnectionAdmin.mock.funcLookUpConnectionAdmin != nil {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin mock is already set by Set")
+	}
+
+	expectation := &MgmtPrivateServiceClientMockLookUpConnectionAdminExpectation{
+		mock:               mmLookUpConnectionAdmin.mock,
+		params:             &MgmtPrivateServiceClientMockLookUpConnectionAdminParams{ctx, in, opts},
+		expectationOrigins: MgmtPrivateServiceClientMockLookUpConnectionAdminExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmLookUpConnectionAdmin.expectations = append(mmLookUpConnectionAdmin.expectations, expectation)
+	return expectation
+}
+
+// Then sets up MgmtPrivateServiceClient.LookUpConnectionAdmin return parameters for the expectation previously defined by the When method
+func (e *MgmtPrivateServiceClientMockLookUpConnectionAdminExpectation) Then(lp1 *mm_mgmtv1beta.LookUpConnectionAdminResponse, err error) *MgmtPrivateServiceClientMock {
+	e.results = &MgmtPrivateServiceClientMockLookUpConnectionAdminResults{lp1, err}
+	return e.mock
+}
+
+// Times sets number of times MgmtPrivateServiceClient.LookUpConnectionAdmin should be invoked
+func (mmLookUpConnectionAdmin *mMgmtPrivateServiceClientMockLookUpConnectionAdmin) Times(n uint64) *mMgmtPrivateServiceClientMockLookUpConnectionAdmin {
+	if n == 0 {
+		mmLookUpConnectionAdmin.mock.t.Fatalf("Times of MgmtPrivateServiceClientMock.LookUpConnectionAdmin mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmLookUpConnectionAdmin.expectedInvocations, n)
+	mmLookUpConnectionAdmin.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmLookUpConnectionAdmin
+}
+
+func (mmLookUpConnectionAdmin *mMgmtPrivateServiceClientMockLookUpConnectionAdmin) invocationsDone() bool {
+	if len(mmLookUpConnectionAdmin.expectations) == 0 && mmLookUpConnectionAdmin.defaultExpectation == nil && mmLookUpConnectionAdmin.mock.funcLookUpConnectionAdmin == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmLookUpConnectionAdmin.mock.afterLookUpConnectionAdminCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmLookUpConnectionAdmin.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// LookUpConnectionAdmin implements mm_mgmtv1beta.MgmtPrivateServiceClient
+func (mmLookUpConnectionAdmin *MgmtPrivateServiceClientMock) LookUpConnectionAdmin(ctx context.Context, in *mm_mgmtv1beta.LookUpConnectionAdminRequest, opts ...grpc.CallOption) (lp1 *mm_mgmtv1beta.LookUpConnectionAdminResponse, err error) {
+	mm_atomic.AddUint64(&mmLookUpConnectionAdmin.beforeLookUpConnectionAdminCounter, 1)
+	defer mm_atomic.AddUint64(&mmLookUpConnectionAdmin.afterLookUpConnectionAdminCounter, 1)
+
+	mmLookUpConnectionAdmin.t.Helper()
+
+	if mmLookUpConnectionAdmin.inspectFuncLookUpConnectionAdmin != nil {
+		mmLookUpConnectionAdmin.inspectFuncLookUpConnectionAdmin(ctx, in, opts...)
+	}
+
+	mm_params := MgmtPrivateServiceClientMockLookUpConnectionAdminParams{ctx, in, opts}
+
+	// Record call args
+	mmLookUpConnectionAdmin.LookUpConnectionAdminMock.mutex.Lock()
+	mmLookUpConnectionAdmin.LookUpConnectionAdminMock.callArgs = append(mmLookUpConnectionAdmin.LookUpConnectionAdminMock.callArgs, &mm_params)
+	mmLookUpConnectionAdmin.LookUpConnectionAdminMock.mutex.Unlock()
+
+	for _, e := range mmLookUpConnectionAdmin.LookUpConnectionAdminMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.lp1, e.results.err
+		}
+	}
+
+	if mmLookUpConnectionAdmin.LookUpConnectionAdminMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmLookUpConnectionAdmin.LookUpConnectionAdminMock.defaultExpectation.Counter, 1)
+		mm_want := mmLookUpConnectionAdmin.LookUpConnectionAdminMock.defaultExpectation.params
+		mm_want_ptrs := mmLookUpConnectionAdmin.LookUpConnectionAdminMock.defaultExpectation.paramPtrs
+
+		mm_got := MgmtPrivateServiceClientMockLookUpConnectionAdminParams{ctx, in, opts}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmLookUpConnectionAdmin.t.Errorf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmLookUpConnectionAdmin.LookUpConnectionAdminMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.in != nil && !minimock.Equal(*mm_want_ptrs.in, mm_got.in) {
+				mmLookUpConnectionAdmin.t.Errorf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin got unexpected parameter in, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmLookUpConnectionAdmin.LookUpConnectionAdminMock.defaultExpectation.expectationOrigins.originIn, *mm_want_ptrs.in, mm_got.in, minimock.Diff(*mm_want_ptrs.in, mm_got.in))
+			}
+
+			if mm_want_ptrs.opts != nil && !minimock.Equal(*mm_want_ptrs.opts, mm_got.opts) {
+				mmLookUpConnectionAdmin.t.Errorf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin got unexpected parameter opts, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmLookUpConnectionAdmin.LookUpConnectionAdminMock.defaultExpectation.expectationOrigins.originOpts, *mm_want_ptrs.opts, mm_got.opts, minimock.Diff(*mm_want_ptrs.opts, mm_got.opts))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmLookUpConnectionAdmin.t.Errorf("MgmtPrivateServiceClientMock.LookUpConnectionAdmin got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmLookUpConnectionAdmin.LookUpConnectionAdminMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmLookUpConnectionAdmin.LookUpConnectionAdminMock.defaultExpectation.results
+		if mm_results == nil {
+			mmLookUpConnectionAdmin.t.Fatal("No results are set for the MgmtPrivateServiceClientMock.LookUpConnectionAdmin")
+		}
+		return (*mm_results).lp1, (*mm_results).err
+	}
+	if mmLookUpConnectionAdmin.funcLookUpConnectionAdmin != nil {
+		return mmLookUpConnectionAdmin.funcLookUpConnectionAdmin(ctx, in, opts...)
+	}
+	mmLookUpConnectionAdmin.t.Fatalf("Unexpected call to MgmtPrivateServiceClientMock.LookUpConnectionAdmin. %v %v %v", ctx, in, opts)
+	return
+}
+
+// LookUpConnectionAdminAfterCounter returns a count of finished MgmtPrivateServiceClientMock.LookUpConnectionAdmin invocations
+func (mmLookUpConnectionAdmin *MgmtPrivateServiceClientMock) LookUpConnectionAdminAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmLookUpConnectionAdmin.afterLookUpConnectionAdminCounter)
+}
+
+// LookUpConnectionAdminBeforeCounter returns a count of MgmtPrivateServiceClientMock.LookUpConnectionAdmin invocations
+func (mmLookUpConnectionAdmin *MgmtPrivateServiceClientMock) LookUpConnectionAdminBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmLookUpConnectionAdmin.beforeLookUpConnectionAdminCounter)
+}
+
+// Calls returns a list of arguments used in each call to MgmtPrivateServiceClientMock.LookUpConnectionAdmin.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmLookUpConnectionAdmin *mMgmtPrivateServiceClientMockLookUpConnectionAdmin) Calls() []*MgmtPrivateServiceClientMockLookUpConnectionAdminParams {
+	mmLookUpConnectionAdmin.mutex.RLock()
+
+	argCopy := make([]*MgmtPrivateServiceClientMockLookUpConnectionAdminParams, len(mmLookUpConnectionAdmin.callArgs))
+	copy(argCopy, mmLookUpConnectionAdmin.callArgs)
+
+	mmLookUpConnectionAdmin.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockLookUpConnectionAdminDone returns true if the count of the LookUpConnectionAdmin invocations corresponds
+// the number of defined expectations
+func (m *MgmtPrivateServiceClientMock) MinimockLookUpConnectionAdminDone() bool {
+	if m.LookUpConnectionAdminMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.LookUpConnectionAdminMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.LookUpConnectionAdminMock.invocationsDone()
+}
+
+// MinimockLookUpConnectionAdminInspect logs each unmet expectation
+func (m *MgmtPrivateServiceClientMock) MinimockLookUpConnectionAdminInspect() {
+	for _, e := range m.LookUpConnectionAdminMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to MgmtPrivateServiceClientMock.LookUpConnectionAdmin at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterLookUpConnectionAdminCounter := mm_atomic.LoadUint64(&m.afterLookUpConnectionAdminCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.LookUpConnectionAdminMock.defaultExpectation != nil && afterLookUpConnectionAdminCounter < 1 {
+		if m.LookUpConnectionAdminMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to MgmtPrivateServiceClientMock.LookUpConnectionAdmin at\n%s", m.LookUpConnectionAdminMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to MgmtPrivateServiceClientMock.LookUpConnectionAdmin at\n%s with params: %#v", m.LookUpConnectionAdminMock.defaultExpectation.expectationOrigins.origin, *m.LookUpConnectionAdminMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcLookUpConnectionAdmin != nil && afterLookUpConnectionAdminCounter < 1 {
+		m.t.Errorf("Expected call to MgmtPrivateServiceClientMock.LookUpConnectionAdmin at\n%s", m.funcLookUpConnectionAdminOrigin)
+	}
+
+	if !m.LookUpConnectionAdminMock.invocationsDone() && afterLookUpConnectionAdminCounter > 0 {
+		m.t.Errorf("Expected %d calls to MgmtPrivateServiceClientMock.LookUpConnectionAdmin at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.LookUpConnectionAdminMock.expectedInvocations), m.LookUpConnectionAdminMock.expectedInvocationsOrigin, afterLookUpConnectionAdminCounter)
+	}
+}
+
 type mMgmtPrivateServiceClientMockLookUpOrganizationAdmin struct {
 	optional           bool
 	mock               *MgmtPrivateServiceClientMock
@@ -3120,6 +3504,8 @@ func (m *MgmtPrivateServiceClientMock) MinimockFinish() {
 
 			m.MinimockListUsersAdminInspect()
 
+			m.MinimockLookUpConnectionAdminInspect()
+
 			m.MinimockLookUpOrganizationAdminInspect()
 
 			m.MinimockLookUpUserAdminInspect()
@@ -3152,6 +3538,7 @@ func (m *MgmtPrivateServiceClientMock) minimockDone() bool {
 		m.MinimockGetUserAdminDone() &&
 		m.MinimockListOrganizationsAdminDone() &&
 		m.MinimockListUsersAdminDone() &&
+		m.MinimockLookUpConnectionAdminDone() &&
 		m.MinimockLookUpOrganizationAdminDone() &&
 		m.MinimockLookUpUserAdminDone()
 }
