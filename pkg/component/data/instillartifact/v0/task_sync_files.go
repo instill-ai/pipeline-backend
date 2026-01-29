@@ -202,13 +202,12 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 		}
 
 		createRes, err := artifactClient.CreateFile(ctx, &artifactpb.CreateFileRequest{
-			Parent: fmt.Sprintf("namespaces/%s", inputStruct.Namespace),
+			Parent: fmt.Sprintf("namespaces/%s/knowledgeBases/%s", inputStruct.Namespace, inputStruct.KnowledgeBaseID),
 			File: &artifactpb.File{
 				DisplayName:      uploadingFile.Filename,
 				Content:          uploadingFile.Content,
 				ExternalMetadata: uploadingFile.ExternalMetadata,
 			},
-			KnowledgeBase: inputStruct.KnowledgeBaseID,
 		})
 
 		if err != nil {
@@ -237,13 +236,12 @@ func (e *execution) syncFiles(input *structpb.Struct) (*structpb.Struct, error) 
 		}
 
 		createRes, err := artifactClient.CreateFile(ctx, &artifactpb.CreateFileRequest{
-			Parent: fmt.Sprintf("namespaces/%s", inputStruct.Namespace),
+			Parent: fmt.Sprintf("namespaces/%s/knowledgeBases/%s", inputStruct.Namespace, inputStruct.KnowledgeBaseID),
 			File: &artifactpb.File{
 				DisplayName:      uploadingFile.Filename,
 				Content:          uploadingFile.Content,
 				ExternalMetadata: uploadingFile.ExternalMetadata,
 			},
-			KnowledgeBase: inputStruct.KnowledgeBaseID,
 		})
 
 		if err != nil {

@@ -79,15 +79,15 @@ type Service interface {
 	ListComponentRuns(ctx context.Context, req *pipelinepb.ListComponentRunsRequest, filter filtering.Filter) (*pipelinepb.ListComponentRunsResponse, error)
 	ListPipelineRunsByRequester(ctx context.Context, req *pipelinepb.ListPipelineRunsByRequesterRequest) (*pipelinepb.ListPipelineRunsByRequesterResponse, error)
 
-	GetIntegration(_ context.Context, id string, _ pipelinepb.View) (*pipelinepb.Integration, error)
-	ListIntegrations(context.Context, *pipelinepb.ListIntegrationsRequest) (*pipelinepb.ListIntegrationsResponse, error)
-	CreateNamespaceConnection(context.Context, *pipelinepb.CreateNamespaceConnectionRequest) (*pipelinepb.Connection, error)
-	UpdateNamespaceConnection(context.Context, *pipelinepb.UpdateNamespaceConnectionRequest) (*pipelinepb.Connection, error)
+	GetIntegration(_ context.Context, id string, _ mgmtpb.View) (*mgmtpb.Integration, error)
+	ListIntegrations(context.Context, *mgmtpb.ListIntegrationsRequest) (*mgmtpb.ListIntegrationsResponse, error)
+	CreateNamespaceConnection(context.Context, *mgmtpb.CreateNamespaceConnectionRequest) (*mgmtpb.Connection, error)
+	UpdateNamespaceConnection(context.Context, *mgmtpb.UpdateNamespaceConnectionRequest) (*mgmtpb.Connection, error)
 	DeleteNamespaceConnection(_ context.Context, namespaceID, id string) error
-	GetNamespaceConnection(context.Context, *pipelinepb.GetNamespaceConnectionRequest) (*pipelinepb.Connection, error)
-	ListNamespaceConnections(context.Context, *pipelinepb.ListNamespaceConnectionsRequest) (*pipelinepb.ListNamespaceConnectionsResponse, error)
-	ListPipelineIDsByConnectionID(context.Context, *pipelinepb.ListPipelineIDsByConnectionIDRequest) (*pipelinepb.ListPipelineIDsByConnectionIDResponse, error)
-	GetConnectionByUIDAdmin(context.Context, uuid.UUID, pipelinepb.View) (*pipelinepb.Connection, error)
+	GetNamespaceConnection(context.Context, *mgmtpb.GetNamespaceConnectionRequest) (*mgmtpb.Connection, error)
+	ListNamespaceConnections(context.Context, *mgmtpb.ListNamespaceConnectionsRequest) (*mgmtpb.ListNamespaceConnectionsResponse, error)
+	ListPipelineIDsByConnectionID(context.Context, *mgmtpb.ListPipelineIDsByConnectionIDRequest) (*mgmtpb.ListPipelineIDsByConnectionIDResponse, error)
+	GetConnectionByUIDAdmin(context.Context, uuid.UUID, mgmtpb.View) (*mgmtpb.Connection, error)
 }
 
 // TriggerResult defines a new type to encapsulate the stream data
