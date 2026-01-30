@@ -79,12 +79,12 @@ type Repository interface {
 	DeleteComponentDefinition(context.Context, uuid.UUID) error
 	ListIntegrations(context.Context, ListIntegrationsParams) (IntegrationList, error)
 
-	CreateNamespaceConnection(context.Context, *datamodel.Connection) (*datamodel.Connection, error)
-	UpdateNamespaceConnectionByUID(context.Context, uuid.UUID, *datamodel.Connection) (*datamodel.Connection, error)
-	DeleteNamespaceConnectionByID(_ context.Context, nsUID uuid.UUID, id string) error
-	GetNamespaceConnectionByID(_ context.Context, nsUID uuid.UUID, id string) (*datamodel.Connection, error)
+	CreateConnection(context.Context, *datamodel.Connection) (*datamodel.Connection, error)
+	UpdateConnectionByUID(context.Context, uuid.UUID, *datamodel.Connection) (*datamodel.Connection, error)
+	DeleteConnectionByID(_ context.Context, nsUID uuid.UUID, id string) error
+	GetConnectionByID(_ context.Context, nsUID uuid.UUID, id string) (*datamodel.Connection, error)
 	GetConnectionByUID(context.Context, uuid.UUID) (*datamodel.Connection, error)
-	ListNamespaceConnections(context.Context, ListNamespaceConnectionsParams) (ConnectionList, error)
+	ListConnections(context.Context, ListConnectionsParams) (ConnectionList, error)
 	ListPipelineIDsByConnectionID(context.Context, ListPipelineIDsByConnectionIDParams) (PipelinesByConnectionList, error)
 
 	CreateNamespaceSecret(ctx context.Context, ownerPermalink string, secret *datamodel.Secret) error
@@ -1366,7 +1366,7 @@ func (r *repository) GetPaginatedPipelineRunsByRequester(ctx context.Context, pa
 	return pipelineRuns, totalRows, nil
 }
 
-func (r *repository) CreateNamespaceConnection(ctx context.Context, conn *datamodel.Connection) (*datamodel.Connection, error) {
+func (r *repository) CreateConnection(ctx context.Context, conn *datamodel.Connection) (*datamodel.Connection, error) {
 	db := r.db.WithContext(ctx)
 
 	err := db.Create(conn).Error
@@ -1375,10 +1375,10 @@ func (r *repository) CreateNamespaceConnection(ctx context.Context, conn *datamo
 	}
 
 	// Extra query is used to return the associated integration.
-	return r.GetNamespaceConnectionByID(ctx, conn.NamespaceUID, conn.ID)
+	return r.GetConnectionByID(ctx, conn.NamespaceUID, conn.ID)
 }
 
-func (r *repository) UpdateNamespaceConnectionByUID(ctx context.Context, uid uuid.UUID, conn *datamodel.Connection) (*datamodel.Connection, error) {
+func (r *repository) UpdateConnectionByUID(ctx context.Context, uid uuid.UUID, conn *datamodel.Connection) (*datamodel.Connection, error) {
 	db := r.db.WithContext(ctx)
 
 	result := db.Where("uid = ?", uid).
@@ -1394,10 +1394,10 @@ func (r *repository) UpdateNamespaceConnectionByUID(ctx context.Context, uid uui
 	}
 
 	// Extra query is used to return the associated integration.
-	return r.GetNamespaceConnectionByID(ctx, conn.NamespaceUID, conn.ID)
+	return r.GetConnectionByID(ctx, conn.NamespaceUID, conn.ID)
 }
 
-func (r *repository) DeleteNamespaceConnectionByID(ctx context.Context, nsUID uuid.UUID, id string) error {
+func (r *repository) DeleteConnectionByID(ctx context.Context, nsUID uuid.UUID, id string) error {
 	db := r.db.WithContext(ctx)
 
 	result := db.Where("(id = ? AND namespace_uid = ?)", id, nsUID).Delete(&datamodel.Connection{})
@@ -1411,7 +1411,7 @@ func (r *repository) DeleteNamespaceConnectionByID(ctx context.Context, nsUID uu
 
 	return nil
 }
-func (r *repository) GetNamespaceConnectionByID(ctx context.Context, nsUID uuid.UUID, id string) (*datamodel.Connection, error) {
+func (r *repository) GetConnectionByID(ctx context.Context, nsUID uuid.UUID, id string) (*datamodel.Connection, error) {
 	db := r.db.WithContext(ctx)
 
 	q := db.Preload("Integration").Where("namespace_uid = ? AND id = ?", nsUID, id)
@@ -1435,9 +1435,9 @@ func (r *repository) GetConnectionByUID(ctx context.Context, uid uuid.UUID) (*da
 	return conn, nil
 }
 
-// ListNamespaceConnectionsParams allows clients to request a page of
+// ListConnectionsParams allows clients to request a page of
 // connections.
-type ListNamespaceConnectionsParams struct {
+type ListConnectionsParams struct {
 	NamespaceUID uuid.UUID
 	PageToken    string
 	Limit        int
@@ -1457,7 +1457,7 @@ type connectionCursor struct {
 	CreateTime     time.Time `json:"create_time"`
 }
 
-func (r *repository) ListNamespaceConnections(ctx context.Context, p ListNamespaceConnectionsParams) (ConnectionList, error) {
+func (r *repository) ListConnections(ctx context.Context, p ListConnectionsParams) (ConnectionList, error) {
 	var resp ConnectionList
 
 	db := r.db.WithContext(ctx)

@@ -115,7 +115,7 @@ func (s *service) DispatchPipelineWebhookEvent(ctx context.Context, params Dispa
 						return DispatchPipelineWebhookEventResult{}, err
 					}
 
-					conn, err := s.repository.GetNamespaceConnectionByID(ctx, loadPipelineResult.ns.NsUID, connID)
+					conn, err := s.repository.GetConnectionByID(ctx, loadPipelineResult.ns.NsUID, connID)
 					if err != nil {
 						if errors.Is(err, errorsx.ErrNotFound) {
 							err = errorsx.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))

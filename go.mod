@@ -45,7 +45,7 @@ require (
 	github.com/h2non/filetype v1.1.3
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.14.0
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260129193003-3968ab7c42a9
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260130101410-2df13d165253
 	github.com/instill-ai/x v0.10.1-alpha.0.20260129195415-09e1680f104d
 	github.com/itchyny/gojq v0.12.17
 	github.com/jackc/pgx/v5 v5.7.6

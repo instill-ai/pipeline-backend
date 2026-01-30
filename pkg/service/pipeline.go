@@ -358,7 +358,7 @@ func (s *service) marshalEventSettings(ctx context.Context, ns resource.Namespac
 				return nil, nil, err
 			}
 
-			conn, err := s.repository.GetNamespaceConnectionByID(ctx, ns.NsUID, connID)
+			conn, err := s.repository.GetConnectionByID(ctx, ns.NsUID, connID)
 			if err != nil {
 				if errors.Is(err, errorsx.ErrNotFound) {
 					err = errorsx.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
