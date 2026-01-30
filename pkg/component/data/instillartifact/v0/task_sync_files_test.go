@@ -259,7 +259,7 @@ func setDeleteCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 
 func setUploadCatalogFileMock(s *mock.ArtifactPublicServiceServerMock) {
 	s.CreateFileMock.Times(2).Set(func(ctx context.Context, in *artifactpb.CreateFileRequest) (*artifactpb.CreateFileResponse, error) {
-		mock.Equal(in.Parent, "namespaces/"+namespace+"/knowledgeBases/"+collectionID)
+		mock.Equal(in.Parent, "namespaces/"+namespace+"/knowledge-bases/"+collectionID)
 		mock.NotNil(in.File)
 		mock.NotNil(in.File.Content)
 		mock.NotNil(in.File.ExternalMetadata)

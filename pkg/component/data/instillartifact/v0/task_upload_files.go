@@ -69,7 +69,7 @@ func (e *execution) uploadFiles(input *structpb.Struct) (*structpb.Struct, error
 
 		// CreateFile now handles upload and auto-triggers processing
 		createRes, err := artifactClient.CreateFile(ctx, &artifactpb.CreateFileRequest{
-			Parent: fmt.Sprintf("namespaces/%s/knowledgeBases/%s", inputStruct.Options.Namespace, inputStruct.Options.KnowledgeBaseID),
+			Parent: fmt.Sprintf("namespaces/%s/knowledge-bases/%s", inputStruct.Options.Namespace, inputStruct.Options.KnowledgeBaseID),
 			File: &artifactpb.File{
 				DisplayName: inputStruct.Options.FileNames[i],
 				Content:     content,
