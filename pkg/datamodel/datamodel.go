@@ -18,7 +18,6 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	taskpb "github.com/instill-ai/protogen-go/common/task/v1alpha"
-	mgmtpb "github.com/instill-ai/protogen-go/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/pipeline/v1beta"
 	"github.com/instill-ai/x/resource"
 )
@@ -693,17 +692,17 @@ func (s *Secret) BeforeCreate(db *gorm.DB) error {
 }
 
 // ConnectionMethod is an alias type for the proto enum that allows us to use its string value in the database.
-type ConnectionMethod mgmtpb.Connection_Method
+type ConnectionMethod pipelinepb.Connection_Method
 
 // Scan function for custom GORM type ConnectionMethod
 func (m *ConnectionMethod) Scan(value interface{}) error {
-	*m = ConnectionMethod(mgmtpb.Connection_Method_value[value.(string)])
+	*m = ConnectionMethod(pipelinepb.Connection_Method_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type ConnectionMethod
 func (m ConnectionMethod) Value() (driver.Value, error) {
-	return mgmtpb.Connection_Method(m).String(), nil
+	return pipelinepb.Connection_Method(m).String(), nil
 }
 
 // Connection is the data model for the `integration` table

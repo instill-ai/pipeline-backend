@@ -259,7 +259,7 @@ func TestRepository_Connection(t *testing.T) {
 	}
 
 	c.Run("nok - connection not found", func(c *qt.C) {
-		_, err := newRepo(c).GetNamespaceConnectionByID(ctx, uuid.Must(uuid.NewV4()), "foo")
+		_, err := newRepo(c).GetConnectionByID(ctx, uuid.Must(uuid.NewV4()), "foo")
 		c.Check(errors.Is(err, errorsx.ErrNotFound), qt.IsTrue)
 	})
 
@@ -268,7 +268,7 @@ func TestRepository_Connection(t *testing.T) {
 		conn.ID = "invalid-integration-uid"
 		conn.IntegrationUID = uuid.Must(uuid.NewV4())
 
-		_, err := newRepo(c).CreateNamespaceConnection(ctx, conn)
+		_, err := newRepo(c).CreateConnection(ctx, conn)
 		c.Check(err, qt.ErrorMatches, ".*foreign key.*integration_uid.*")
 	})
 
@@ -278,21 +278,21 @@ func TestRepository_Connection(t *testing.T) {
 		conn.ID = "foo"
 		conn.IntegrationUID = uuid.FromStringOrNil(email.GetUid())
 
-		_, err := repo.CreateNamespaceConnection(ctx, conn)
+		_, err := repo.CreateConnection(ctx, conn)
 		c.Check(err, qt.IsNil)
-		_, err = repo.CreateNamespaceConnection(ctx, conn)
+		_, err = repo.CreateConnection(ctx, conn)
 		c.Check(errors.Is(err, errorsx.ErrAlreadyExists), qt.IsTrue)
 	})
 
 	c.Run("nok - update not found", func(c *qt.C) {
 		repo := newRepo(c)
 		conn := newConn()
-		_, err := repo.UpdateNamespaceConnectionByUID(ctx, uuid.Must(uuid.NewV4()), conn)
+		_, err := repo.UpdateConnectionByUID(ctx, uuid.Must(uuid.NewV4()), conn)
 		c.Check(errors.Is(err, errorsx.ErrNotFound), qt.IsTrue)
 	})
 
 	c.Run("nok - deletion not found", func(c *qt.C) {
-		err := newRepo(c).DeleteNamespaceConnectionByID(ctx, uuid.Must(uuid.NewV4()), "foo")
+		err := newRepo(c).DeleteConnectionByID(ctx, uuid.Must(uuid.NewV4()), "foo")
 		c.Check(errors.Is(err, errorsx.ErrNotFound), qt.IsTrue)
 	})
 
@@ -309,7 +309,7 @@ func TestRepository_Connection(t *testing.T) {
 			conn.ID = id
 			conn.IntegrationUID = uuid.FromStringOrNil(integration.GetUid())
 
-			inserted, err := repo.CreateNamespaceConnection(ctx, conn)
+			inserted, err := repo.CreateConnection(ctx, conn)
 			c.Check(err, qt.IsNil, qt.Commentf(conn.UID.String()))
 			c.Check(inserted.UID, qt.IsNotNil)
 			c.Check(inserted.CreateTime.IsZero(), qt.IsFalse)
@@ -324,7 +324,7 @@ func TestRepository_Connection(t *testing.T) {
 				cmpopts.IgnoreFields(datamodel.Connection{}, "Integration"),
 			)
 
-			fetchedByID, err := repo.GetNamespaceConnectionByID(ctx, conn.NamespaceUID, conn.ID)
+			fetchedByID, err := repo.GetConnectionByID(ctx, conn.NamespaceUID, conn.ID)
 			c.Check(err, qt.IsNil)
 			c.Check(fetchedByID, cmp, inserted)
 
@@ -339,11 +339,11 @@ func TestRepository_Connection(t *testing.T) {
 		}
 
 		// Page one
-		p := ListNamespaceConnectionsParams{
+		p := ListConnectionsParams{
 			NamespaceUID: nsUID,
 			Limit:        2,
 		}
-		connList, err := repo.ListNamespaceConnections(ctx, p)
+		connList, err := repo.ListConnections(ctx, p)
 		c.Check(err, qt.IsNil)
 		c.Check(connList.TotalSize, qt.Equals, int32(4))
 		c.Check(connList.Connections, qt.HasLen, 2)
@@ -353,7 +353,7 @@ func TestRepository_Connection(t *testing.T) {
 
 		// Page two
 		p.PageToken = connList.NextPageToken
-		connList, err = repo.ListNamespaceConnections(ctx, p)
+		connList, err = repo.ListConnections(ctx, p)
 		c.Check(err, qt.IsNil)
 		c.Check(connList.Connections, qt.HasLen, 2)
 		c.Check(connList.Connections[0].ID, qt.Equals, "3rd")
@@ -364,7 +364,7 @@ func TestRepository_Connection(t *testing.T) {
 		c.Check(connList.Connections[0].Integration.Title, qt.Not(qt.HasLen), 0)
 
 		preUpdateConn := connList.Connections[0]
-		conn, err := repo.UpdateNamespaceConnectionByUID(ctx, preUpdateConn.UID, &datamodel.Connection{
+		conn, err := repo.UpdateConnectionByUID(ctx, preUpdateConn.UID, &datamodel.Connection{
 			ID:             "testytest",
 			NamespaceUID:   uuid.Must(uuid.NewV4()),
 			IntegrationUID: uuid.Must(uuid.NewV4()),
@@ -378,9 +378,9 @@ func TestRepository_Connection(t *testing.T) {
 		c.Check([]byte(conn.Setup), qt.JSONEquals, json.RawMessage(`{"foo":"bar"}`))
 
 		// Delete & fetch
-		err = repo.DeleteNamespaceConnectionByID(ctx, nsUID, "1st")
+		err = repo.DeleteConnectionByID(ctx, nsUID, "1st")
 		c.Check(err, qt.IsNil)
-		connList, err = repo.ListNamespaceConnections(ctx, p)
+		connList, err = repo.ListConnections(ctx, p)
 		c.Check(err, qt.IsNil)
 		c.Check(connList.TotalSize, qt.Equals, int32(3))
 	})

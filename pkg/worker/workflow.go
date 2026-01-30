@@ -1171,7 +1171,7 @@ func (w *worker) preTriggerErr(ctx context.Context, workflowID string, wfm *memo
 }
 
 func (w *worker) fetchConnectionAsValue(ctx context.Context, requesterUID uuid.UUID, connectionID string) (format.Value, error) {
-	conn, err := w.repository.GetNamespaceConnectionByID(ctx, requesterUID, connectionID)
+	conn, err := w.repository.GetConnectionByID(ctx, requesterUID, connectionID)
 	if err != nil {
 		if errors.Is(err, errorsx.ErrNotFound) {
 			return nil, errorsx.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connectionID))

@@ -153,7 +153,7 @@ func (c *converter) processSetup(ctx context.Context, ownerPermalink string, set
 				return nil, fmt.Errorf("extracting owner UID: %w", err)
 			}
 
-			return c.repository.GetNamespaceConnectionByID(ctx, nsUID, id)
+			return c.repository.GetConnectionByID(ctx, nsUID, id)
 		}
 
 		setup, err := recipe.FetchReferencedSetup(ctx, v, fetchConn)

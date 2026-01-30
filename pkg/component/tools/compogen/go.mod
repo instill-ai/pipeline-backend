@@ -8,7 +8,7 @@ require (
 	github.com/frankban/quicktest v1.14.6
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/instill-ai/pipeline-backend v0.0.0-00010101000000-000000000000
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260129193003-3968ab7c42a9
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260130101410-2df13d165253
 	github.com/rogpeppe/go-internal v1.14.1
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cobra v1.8.0

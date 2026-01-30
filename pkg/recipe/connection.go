@@ -45,14 +45,14 @@ func ConnectionIDFromReference(ref string) (string, error) {
 func FetchReferencedSetup(
 	ctx context.Context,
 	ref string,
-	getNamespaceConnectionByID func(context.Context, string) (*datamodel.Connection, error),
+	getConnectionByID func(context.Context, string) (*datamodel.Connection, error),
 ) (map[string]any, error) {
 	id, err := ConnectionIDFromReference(ref)
 	if err != nil {
 		return nil, err
 	}
 
-	conn, err := getNamespaceConnectionByID(ctx, id)
+	conn, err := getConnectionByID(ctx, id)
 	if err != nil {
 		if !errors.Is(err, errorsx.ErrNotFound) {
 			return nil, fmt.Errorf("fetching connection: %w", err)
