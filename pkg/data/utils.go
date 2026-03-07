@@ -132,7 +132,8 @@ func isImageContentType(contentType string) bool {
 		contentType == TIFF ||
 		contentType == HEIC ||
 		contentType == HEIF ||
-		contentType == AVIF
+		contentType == AVIF ||
+		contentType == SVG
 }
 
 func isAudioContentType(contentType string) bool {

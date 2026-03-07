@@ -39,6 +39,7 @@ const (
 	HEIC = "image/heic"
 	HEIF = "image/heif"
 	AVIF = "image/avif"
+	SVG  = "image/svg+xml"
 )
 
 var imageGetters = map[string]func(*imageData) (format.Value, error){
@@ -142,6 +143,8 @@ func getImageProperties(raw []byte, contentType string) (width, height int) {
 	case AVIF:
 		width, height = cgo.GetAVIFImageProperties(raw)
 		return
+	case SVG:
+		return 0, 0
 	}
 	if img == nil {
 		return

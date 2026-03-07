@@ -39,6 +39,11 @@ func convertImage(raw []byte, sourceContentType, targetContentType string) ([]by
 		return convertToAVIF(raw, sourceContentType)
 	}
 
+	// Handle SVG specially (XML vector graphics, not decodable by Go's image package)
+	if sourceContentType == SVG {
+		return convertFromSVG(raw, targetContentType)
+	}
+
 	// Define supported formats and their corresponding decode/encode functions
 	formats := map[string]struct {
 		decode func(io.Reader) (image.Image, error)
@@ -279,6 +284,47 @@ func convertToAVIF(raw []byte, sourceContentType string) ([]byte, error) {
 	}
 
 	return avifData, nil
+}
+
+// convertFromSVG converts SVG to raster image formats using chromium headless.
+// SVG is XML-based vector graphics and cannot be decoded by Go's standard image package.
+func convertFromSVG(raw []byte, targetContentType string) ([]byte, error) {
+	tempDir, err := os.MkdirTemp("", "svg_conversion_*")
+	if err != nil {
+		return nil, fmt.Errorf("convert SVG: failed to create temp directory: %w", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	inputFile := filepath.Join(tempDir, "input.svg")
+	outputFile := filepath.Join(tempDir, "output.png")
+
+	if err := os.WriteFile(inputFile, raw, 0644); err != nil {
+		return nil, fmt.Errorf("convert SVG: failed to write input file: %w", err)
+	}
+
+	cmd := exec.Command("chromium",
+		"--headless",
+		"--no-sandbox",
+		"--disable-gpu",
+		"--disable-software-rasterizer",
+		fmt.Sprintf("--screenshot=%s", outputFile),
+		"--default-background-color=00000000",
+		inputFile,
+	)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return nil, fmt.Errorf("convert SVG: chromium rendering failed: %w (output: %s)", err, string(output))
+	}
+
+	pngData, err := os.ReadFile(outputFile)
+	if err != nil {
+		return nil, fmt.Errorf("convert SVG: failed to read output file: %w", err)
+	}
+
+	if targetContentType == PNG {
+		return pngData, nil
+	}
+
+	return convertImage(pngData, PNG, targetContentType)
 }
 
 func convertAudio(raw []byte, sourceContentType, targetContentType string) ([]byte, error) {
