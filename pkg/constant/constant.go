@@ -9,7 +9,7 @@ const (
 )
 
 const MaxBatchSize int = 32
-const MaxPayloadSize = 1024 * 1024 * 256
+const MaxPayloadSize = 2 * GB
 
 // Constants for resource owner
 const DefaultUserID string = "admin"
