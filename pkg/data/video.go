@@ -69,16 +69,16 @@ func createVideoData(b []byte, contentType, filename string, isUnified bool) (*v
 	normalizedContentType := normalizeMIMEType(contentType)
 	finalContentType := normalizedContentType
 
-	// If the video should be unified, convert it to MP4 (the internal unified video format)
+	// All unified videos are normalized to MP4 via ffmpeg, including MP4 inputs.
+	// MP4→MP4 remux ensures Gemini API compatibility (correct stream ordering,
+	// moov atom at front) without re-encoding.
 	if isUnified {
-		if normalizedContentType != MP4 {
-			var err error
-			b, err = convertVideo(b, normalizedContentType, MP4)
-			if err != nil {
-				return nil, fmt.Errorf("failed to convert video to MP4: %w", err)
-			}
-			finalContentType = MP4
+		var err error
+		b, err = convertVideo(b, normalizedContentType, MP4)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert video to MP4: %w", err)
 		}
+		finalContentType = MP4
 	}
 
 	f, err := NewFileFromBytes(b, finalContentType, filename)

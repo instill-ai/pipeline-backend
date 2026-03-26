@@ -384,9 +384,44 @@ func convertVideo(raw []byte, sourceContentType, targetContentType string) ([]by
 		return nil, fmt.Errorf("convert video: failed to write input file: %w", err)
 	}
 
-	cmd := exec.Command("ffmpeg", "-i", inputFile, outputFile)
+	var cmd *exec.Cmd
+	if sourceContentType == targetContentType && targetContentType == MP4 {
+		// MP4→MP4: fast remux (no re-encoding) with Gemini API compliance.
+		// Maps video stream first to ensure correct chunk ordering, moves moov
+		// atom to front, and shifts negative timestamps.
+		cmd = exec.Command("ffmpeg",
+			"-i", inputFile,
+			"-map", "0:v:0", "-map", "0:a?",
+			"-c", "copy",
+			"-movflags", "+faststart",
+			"-avoid_negative_ts", "make_zero",
+			"-y", outputFile,
+		)
+	} else {
+		cmd = exec.Command("ffmpeg",
+			"-i", inputFile,
+			"-map", "0:v:0", "-map", "0:a?",
+			"-movflags", "+faststart",
+			"-y", outputFile,
+		)
+	}
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("convert video: ffmpeg conversion failed: %w", err)
+		if sourceContentType == targetContentType && targetContentType == MP4 {
+			// Fast remux failed (e.g. codec incompatibility); fall back to
+			// re-encoding audio while keeping video stream-copied.
+			cmd = exec.Command("ffmpeg",
+				"-i", inputFile,
+				"-map", "0:v:0", "-map", "0:a?",
+				"-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+				"-movflags", "+faststart",
+				"-y", outputFile,
+			)
+			if err := cmd.Run(); err != nil {
+				return nil, fmt.Errorf("convert video: ffmpeg fallback re-encode failed: %w", err)
+			}
+		} else {
+			return nil, fmt.Errorf("convert video: ffmpeg conversion failed: %w", err)
+		}
 	}
 
 	output, err := os.ReadFile(outputFile)
