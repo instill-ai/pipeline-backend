@@ -16,16 +16,6 @@ jobs:
   build-amd64:
     runs-on: ubuntu-24.04
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          overprovision-lvm: "true"
-          remove-dotnet: "true"
-          build-mount-path: "/var/lib/docker/"
-
-      - name: Restart docker
-        run: sudo service docker restart
-
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.botGitHubToken }}
@@ -91,16 +81,6 @@ jobs:
   build-arm64:
     runs-on: ubuntu-24.04-arm
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          overprovision-lvm: "true"
-          remove-dotnet: "true"
-          build-mount-path: "/var/lib/docker/"
-
-      - name: Restart docker
-        run: sudo service docker restart
-
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.botGitHubToken }}
