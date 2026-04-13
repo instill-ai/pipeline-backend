@@ -36,6 +36,7 @@ const (
 var documentGetters = map[string]func(*documentData) (format.Value, error){
 	"text":   func(d *documentData) (format.Value, error) { return d.Text() },
 	"pdf":    func(d *documentData) (format.Value, error) { return d.PDF() },
+	"xlsx":   func(d *documentData) (format.Value, error) { return d.XLSX() },
 	"images": func(d *documentData) (format.Value, error) { return d.Images() },
 }
 
@@ -181,6 +182,37 @@ func (d *documentData) PDF() (val format.Document, err error) {
 	}
 
 	return NewDocumentFromBytes(b, PDF, d.filename)
+}
+
+func (d *documentData) XLSX() (val format.Document, err error) {
+	if d.contentType == XLSX {
+		return d, nil
+	}
+
+	dataURI, err := d.DataURI()
+	if err != nil {
+		return nil, err
+	}
+
+	ext := ""
+	switch d.contentType {
+	case XLS:
+		ext = "xls"
+	default:
+		return nil, fmt.Errorf("unsupported content type for XLSX conversion: %s", d.contentType)
+	}
+
+	s, err := transformer.ConvertToFormat(dataURI.String(), ext, "xlsx")
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewDocumentFromBytes(b, XLSX, d.filename)
 }
 
 func (d *documentData) Images() (mp Array, err error) {

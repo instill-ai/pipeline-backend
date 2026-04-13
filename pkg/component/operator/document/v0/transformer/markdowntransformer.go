@@ -363,11 +363,10 @@ func encodeFileToBase64(inputPath string) (string, error) {
 	return base64.StdEncoding.EncodeToString(data), nil
 }
 
-// ConvertToPDF converts a base64 encoded document to a PDF using LibreOffice or wkhtmltopdf.
-// It uses a mutex to ensure only one conversion process runs at a time, preventing
-// race conditions and permission issues.
-func ConvertToPDF(base64Encoded, fileExtension string) (string, error) {
-	// Serialize operations to prevent race conditions
+// ConvertToFormat converts a base64 encoded document to the specified target
+// format using LibreOffice (or wkhtmltopdf for HTML-to-PDF). It serializes
+// operations with a mutex to prevent race conditions.
+func ConvertToFormat(base64Encoded, fileExtension, targetFormat string) (string, error) {
 	libreOfficeMutex.Lock()
 	defer libreOfficeMutex.Unlock()
 
@@ -389,7 +388,6 @@ func ConvertToPDF(base64Encoded, fileExtension string) (string, error) {
 	}
 	defer os.RemoveAll(tempDir)
 
-	// Set proper permissions for the temporary directory
 	if err := os.Chmod(tempDir, 0755); err != nil {
 		return "", fmt.Errorf("failed to set permissions on temporary directory: %w", err)
 	}
@@ -397,60 +395,56 @@ func ConvertToPDF(base64Encoded, fileExtension string) (string, error) {
 	var cmd *exec.Cmd
 	var outputFileName string
 
-	// Use wkhtmltopdf for HTML files if available, otherwise use LibreOffice
-	if fileExtension == "html" {
-		// Try wkhtmltopdf first for HTML files (better HTML rendering)
+	// Use wkhtmltopdf for HTML-to-PDF if available, otherwise use LibreOffice
+	if fileExtension == "html" && targetFormat == "pdf" {
 		outputFileName = filepath.Join(tempDir, strings.TrimSuffix(filepath.Base(inputFileName), ".html")+".pdf")
 
-		// Check if wkhtmltopdf is available
 		if _, err := exec.LookPath("wkhtmltopdf"); err == nil {
-			// wkhtmltopdf is available, use it
 			cmd = exec.Command("wkhtmltopdf", inputFileName, outputFileName)
 		} else {
-			// wkhtmltopdf not available, use LibreOffice for HTML with specific HTML import filter
 			cmd = exec.Command("libreoffice", "--headless", "--infilter=HTML", "--convert-to", "pdf", "--outdir", tempDir, inputFileName)
 			cmd.Env = append(os.Environ(), "HOME="+tempDir)
 			outputFileName = filepath.Join(tempDir, strings.TrimSuffix(filepath.Base(inputFileName), ".html")+".pdf")
 		}
 	} else {
-		// Use LibreOffice for all other document types
-		cmd = exec.Command("libreoffice", "--headless", "--convert-to", "pdf", "--outdir", tempDir, inputFileName)
+		cmd = exec.Command("libreoffice", "--headless", "--convert-to", targetFormat, "--outdir", tempDir, inputFileName)
 		cmd.Env = append(os.Environ(), "HOME="+tempDir)
-		outputFileName = filepath.Join(tempDir, strings.TrimSuffix(filepath.Base(inputFileName), "."+fileExtension)+".pdf")
+		outputFileName = filepath.Join(tempDir, strings.TrimSuffix(filepath.Base(inputFileName), "."+fileExtension)+"."+targetFormat)
 	}
 
-	// Capture both stdout and stderr for better error reporting
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("failed to execute conversion command: %s (output: %s)", err.Error(), string(output))
 	}
 
-	// Check if the output file exists
 	if _, err := os.Stat(outputFileName); os.IsNotExist(err) {
-		// For LibreOffice fallback, try the standard LibreOffice output location
 		noPathFileName := filepath.Base(inputFileName)
-		standardPDFName := filepath.Join(tempDir, strings.TrimSuffix(noPathFileName, filepath.Ext(inputFileName))+".pdf")
-		if _, err := os.Stat(standardPDFName); err == nil {
-			outputFileName = standardPDFName
+		standardName := filepath.Join(tempDir, strings.TrimSuffix(noPathFileName, filepath.Ext(inputFileName))+"."+targetFormat)
+		if _, err := os.Stat(standardName); err == nil {
+			outputFileName = standardName
 		} else {
-			return "", fmt.Errorf("output PDF file not found at expected location: %s", outputFileName)
+			return "", fmt.Errorf("output %s file not found at expected location: %s", targetFormat, outputFileName)
 		}
 	}
 
 	defer os.Remove(outputFileName)
 
-	base64PDF, err := encodeFileToBase64(outputFileName)
+	base64Output, err := encodeFileToBase64(outputFileName)
 	if err != nil {
-		// Handle the case when the input is already a PDF
-		if fileExtension == "pdf" {
-			base64PDF, err := encodeFileToBase64(inputFileName)
+		if fileExtension == targetFormat {
+			base64Output, err := encodeFileToBase64(inputFileName)
 			if err != nil {
 				return "", fmt.Errorf("failed to encode file to base64: %w", err)
 			}
-			return base64PDF, nil
+			return base64Output, nil
 		}
-		return "", fmt.Errorf("failed to encode PDF file to base64: %w", err)
+		return "", fmt.Errorf("failed to encode %s file to base64: %w", targetFormat, err)
 	}
 
-	return base64PDF, nil
+	return base64Output, nil
+}
+
+// ConvertToPDF converts a base64 encoded document to PDF.
+func ConvertToPDF(base64Encoded, fileExtension string) (string, error) {
+	return ConvertToFormat(base64Encoded, fileExtension, "pdf")
 }
