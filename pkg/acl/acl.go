@@ -23,7 +23,8 @@ type ACLClientInterface interface {
 	CheckPermission(ctx context.Context, objectType string, objectUID uuid.UUID, role string) (bool, error)
 	CheckPublicExecutable(ctx context.Context, objectType string, objectUID uuid.UUID) (bool, error)
 	DeletePipelinePermission(ctx context.Context, pipelineUID uuid.UUID, user string) error
-	ListPermissions(ctx context.Context, objectType string, role string, isPublic bool) ([]uuid.UUID, error)
+	ListPermissions(ctx context.Context, objectType string, role string) ([]uuid.UUID, error)
+	ListPublicPermissions(ctx context.Context, objectType string, role string) ([]uuid.UUID, error)
 	Purge(ctx context.Context, objectType string, objectUID uuid.UUID) error
 	SetOwner(ctx context.Context, objectType string, objectUID uuid.UUID, ownerType string, ownerUID uuid.UUID) error
 	SetPipelinePermission(ctx context.Context, pipelineUID uuid.UUID, user string, role string, enable bool) error
@@ -171,6 +172,11 @@ func (c *ACLClient) CheckPermission(ctx context.Context, objectType string, obje
 }
 
 // ListPermissions lists all objects of a type that the current user has a role for.
-func (c *ACLClient) ListPermissions(ctx context.Context, objectType string, role string, isPublic bool) ([]uuid.UUID, error) {
-	return c.ACLClient.ListPermissions(ctx, objectType, role, isPublic)
+func (c *ACLClient) ListPermissions(ctx context.Context, objectType string, role string) ([]uuid.UUID, error) {
+	return c.ACLClient.ListPermissions(ctx, objectType, role)
+}
+
+// ListPublicPermissions lists all objects of a type readable by everyone (FGA wildcard user:*).
+func (c *ACLClient) ListPublicPermissions(ctx context.Context, objectType string, role string) ([]uuid.UUID, error) {
+	return c.ACLClient.ListPublicPermissions(ctx, objectType, role)
 }

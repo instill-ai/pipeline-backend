@@ -30,8 +30,14 @@ func initModelPublicServiceClient(serverURL string) (modelpb.ModelPublicServiceC
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
+	const roundRobinSvcConfig = `{"loadBalancingConfig":[{"round_robin":{}}]}`
 	serverURL = util.StripProtocolFromURL(serverURL)
-	clientConn, err := grpc.NewClient(serverURL, clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxPayloadSize), grpc.MaxCallSendMsgSize(maxPayloadSize)))
+	clientConn, err := grpc.NewClient(
+		"dns:///"+serverURL,
+		clientDialOpts,
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxPayloadSize), grpc.MaxCallSendMsgSize(maxPayloadSize)),
+		grpc.WithDefaultServiceConfig(roundRobinSvcConfig),
+	)
 	if err != nil {
 		return nil, nil
 	}

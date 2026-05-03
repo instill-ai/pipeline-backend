@@ -16,6 +16,7 @@ import (
 )
 
 const maxPayloadSize int = 1024 * 1024 * 32
+const roundRobinSvcConfig = `{"loadBalancingConfig":[{"round_robin":{}}]}`
 
 func initArtifactClient(serverURL string) (pbClient artifactpb.ArtifactPublicServiceClient, connection Connection, err error) {
 	var clientDialOpts grpc.DialOption
@@ -27,7 +28,12 @@ func initArtifactClient(serverURL string) (pbClient artifactpb.ArtifactPublicSer
 	}
 
 	serverURL = util.StripProtocolFromURL(serverURL)
-	clientConn, err := grpc.NewClient(serverURL, clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxPayloadSize), grpc.MaxCallSendMsgSize(maxPayloadSize)))
+	clientConn, err := grpc.NewClient(
+		"dns:///"+serverURL,
+		clientDialOpts,
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxPayloadSize), grpc.MaxCallSendMsgSize(maxPayloadSize)),
+		grpc.WithDefaultServiceConfig(roundRobinSvcConfig),
+	)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create client connection: %w", err)
 	}

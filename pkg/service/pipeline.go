@@ -51,7 +51,7 @@ var preserveTags = []string{"featured", "feature"}
 
 func (s *service) GetHubStats(ctx context.Context) (*pipelinepb.GetHubStatsResponse, error) {
 
-	uidAllowList, err := s.aclClient.ListPermissions(ctx, "pipeline", "reader", true)
+	uidAllowList, err := s.aclClient.ListPublicPermissions(ctx, "pipeline", "reader")
 	if err != nil {
 		return &pipelinepb.GetHubStatsResponse{}, err
 	}
@@ -75,16 +75,16 @@ func (s *service) ListPublicPipelines(ctx context.Context, pageSize int32, pageT
 
 	// TODO: optimize the logic
 	if visibility != nil && *visibility == pipelinepb.Pipeline_VISIBILITY_PUBLIC {
-		uidAllowList, err = s.aclClient.ListPermissions(ctx, "pipeline", "reader", true)
+		uidAllowList, err = s.aclClient.ListPublicPermissions(ctx, "pipeline", "reader")
 		if err != nil {
 			return nil, 0, "", err
 		}
 	} else if visibility != nil && *visibility == pipelinepb.Pipeline_VISIBILITY_PRIVATE {
-		allUIDAllowList, err := s.aclClient.ListPermissions(ctx, "pipeline", "reader", false)
+		allUIDAllowList, err := s.aclClient.ListPermissions(ctx, "pipeline", "reader")
 		if err != nil {
 			return nil, 0, "", err
 		}
-		publicUIDAllowList, err := s.aclClient.ListPermissions(ctx, "pipeline", "reader", true)
+		publicUIDAllowList, err := s.aclClient.ListPublicPermissions(ctx, "pipeline", "reader")
 		if err != nil {
 			return nil, 0, "", err
 		}
@@ -94,7 +94,7 @@ func (s *service) ListPublicPipelines(ctx context.Context, pageSize int32, pageT
 			}
 		}
 	} else {
-		uidAllowList, err = s.aclClient.ListPermissions(ctx, "pipeline", "reader", false)
+		uidAllowList, err = s.aclClient.ListPermissions(ctx, "pipeline", "reader")
 		if err != nil {
 			return nil, 0, "", err
 		}
@@ -222,16 +222,16 @@ func (s *service) ListPipelines(ctx context.Context, ns resource.Namespace, page
 
 	// TODO: optimize the logic
 	if visibility != nil && *visibility == pipelinepb.Pipeline_VISIBILITY_PUBLIC {
-		uidAllowList, err = s.aclClient.ListPermissions(ctx, "pipeline", "reader", true)
+		uidAllowList, err = s.aclClient.ListPublicPermissions(ctx, "pipeline", "reader")
 		if err != nil {
 			return nil, 0, "", err
 		}
 	} else if visibility != nil && *visibility == pipelinepb.Pipeline_VISIBILITY_PRIVATE {
-		allUIDAllowList, err := s.aclClient.ListPermissions(ctx, "pipeline", "reader", false)
+		allUIDAllowList, err := s.aclClient.ListPermissions(ctx, "pipeline", "reader")
 		if err != nil {
 			return nil, 0, "", err
 		}
-		publicUIDAllowList, err := s.aclClient.ListPermissions(ctx, "pipeline", "reader", true)
+		publicUIDAllowList, err := s.aclClient.ListPublicPermissions(ctx, "pipeline", "reader")
 		if err != nil {
 			return nil, 0, "", err
 		}
@@ -241,7 +241,7 @@ func (s *service) ListPipelines(ctx context.Context, ns resource.Namespace, page
 			}
 		}
 	} else {
-		uidAllowList, err = s.aclClient.ListPermissions(ctx, "pipeline", "reader", false)
+		uidAllowList, err = s.aclClient.ListPermissions(ctx, "pipeline", "reader")
 		if err != nil {
 			return nil, 0, "", err
 		}

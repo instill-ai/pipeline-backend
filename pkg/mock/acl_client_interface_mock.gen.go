@@ -46,12 +46,19 @@ type ACLClientInterfaceMock struct {
 	beforeDeletePipelinePermissionCounter uint64
 	DeletePipelinePermissionMock          mACLClientInterfaceMockDeletePipelinePermission
 
-	funcListPermissions          func(ctx context.Context, objectType string, role string, isPublic bool) (ua1 []uuid.UUID, err error)
+	funcListPermissions          func(ctx context.Context, objectType string, role string) (ua1 []uuid.UUID, err error)
 	funcListPermissionsOrigin    string
-	inspectFuncListPermissions   func(ctx context.Context, objectType string, role string, isPublic bool)
+	inspectFuncListPermissions   func(ctx context.Context, objectType string, role string)
 	afterListPermissionsCounter  uint64
 	beforeListPermissionsCounter uint64
 	ListPermissionsMock          mACLClientInterfaceMockListPermissions
+
+	funcListPublicPermissions          func(ctx context.Context, objectType string, role string) (ua1 []uuid.UUID, err error)
+	funcListPublicPermissionsOrigin    string
+	inspectFuncListPublicPermissions   func(ctx context.Context, objectType string, role string)
+	afterListPublicPermissionsCounter  uint64
+	beforeListPublicPermissionsCounter uint64
+	ListPublicPermissionsMock          mACLClientInterfaceMockListPublicPermissions
 
 	funcPurge          func(ctx context.Context, objectType string, objectUID uuid.UUID) (err error)
 	funcPurgeOrigin    string
@@ -104,6 +111,9 @@ func NewACLClientInterfaceMock(t minimock.Tester) *ACLClientInterfaceMock {
 
 	m.ListPermissionsMock = mACLClientInterfaceMockListPermissions{mock: m}
 	m.ListPermissionsMock.callArgs = []*ACLClientInterfaceMockListPermissionsParams{}
+
+	m.ListPublicPermissionsMock = mACLClientInterfaceMockListPublicPermissions{mock: m}
+	m.ListPublicPermissionsMock.callArgs = []*ACLClientInterfaceMockListPublicPermissionsParams{}
 
 	m.PurgeMock = mACLClientInterfaceMockPurge{mock: m}
 	m.PurgeMock.callArgs = []*ACLClientInterfaceMockPurgeParams{}
@@ -1708,7 +1718,6 @@ type ACLClientInterfaceMockListPermissionsParams struct {
 	ctx        context.Context
 	objectType string
 	role       string
-	isPublic   bool
 }
 
 // ACLClientInterfaceMockListPermissionsParamPtrs contains pointers to parameters of the ACLClientInterface.ListPermissions
@@ -1716,7 +1725,6 @@ type ACLClientInterfaceMockListPermissionsParamPtrs struct {
 	ctx        *context.Context
 	objectType *string
 	role       *string
-	isPublic   *bool
 }
 
 // ACLClientInterfaceMockListPermissionsResults contains results of the ACLClientInterface.ListPermissions
@@ -1731,7 +1739,6 @@ type ACLClientInterfaceMockListPermissionsExpectationOrigins struct {
 	originCtx        string
 	originObjectType string
 	originRole       string
-	originIsPublic   string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -1745,7 +1752,7 @@ func (mmListPermissions *mACLClientInterfaceMockListPermissions) Optional() *mAC
 }
 
 // Expect sets up expected params for ACLClientInterface.ListPermissions
-func (mmListPermissions *mACLClientInterfaceMockListPermissions) Expect(ctx context.Context, objectType string, role string, isPublic bool) *mACLClientInterfaceMockListPermissions {
+func (mmListPermissions *mACLClientInterfaceMockListPermissions) Expect(ctx context.Context, objectType string, role string) *mACLClientInterfaceMockListPermissions {
 	if mmListPermissions.mock.funcListPermissions != nil {
 		mmListPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPermissions mock is already set by Set")
 	}
@@ -1758,7 +1765,7 @@ func (mmListPermissions *mACLClientInterfaceMockListPermissions) Expect(ctx cont
 		mmListPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPermissions mock is already set by ExpectParams functions")
 	}
 
-	mmListPermissions.defaultExpectation.params = &ACLClientInterfaceMockListPermissionsParams{ctx, objectType, role, isPublic}
+	mmListPermissions.defaultExpectation.params = &ACLClientInterfaceMockListPermissionsParams{ctx, objectType, role}
 	mmListPermissions.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmListPermissions.expectations {
 		if minimock.Equal(e.params, mmListPermissions.defaultExpectation.params) {
@@ -1838,31 +1845,8 @@ func (mmListPermissions *mACLClientInterfaceMockListPermissions) ExpectRoleParam
 	return mmListPermissions
 }
 
-// ExpectIsPublicParam4 sets up expected param isPublic for ACLClientInterface.ListPermissions
-func (mmListPermissions *mACLClientInterfaceMockListPermissions) ExpectIsPublicParam4(isPublic bool) *mACLClientInterfaceMockListPermissions {
-	if mmListPermissions.mock.funcListPermissions != nil {
-		mmListPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPermissions mock is already set by Set")
-	}
-
-	if mmListPermissions.defaultExpectation == nil {
-		mmListPermissions.defaultExpectation = &ACLClientInterfaceMockListPermissionsExpectation{}
-	}
-
-	if mmListPermissions.defaultExpectation.params != nil {
-		mmListPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPermissions mock is already set by Expect")
-	}
-
-	if mmListPermissions.defaultExpectation.paramPtrs == nil {
-		mmListPermissions.defaultExpectation.paramPtrs = &ACLClientInterfaceMockListPermissionsParamPtrs{}
-	}
-	mmListPermissions.defaultExpectation.paramPtrs.isPublic = &isPublic
-	mmListPermissions.defaultExpectation.expectationOrigins.originIsPublic = minimock.CallerInfo(1)
-
-	return mmListPermissions
-}
-
 // Inspect accepts an inspector function that has same arguments as the ACLClientInterface.ListPermissions
-func (mmListPermissions *mACLClientInterfaceMockListPermissions) Inspect(f func(ctx context.Context, objectType string, role string, isPublic bool)) *mACLClientInterfaceMockListPermissions {
+func (mmListPermissions *mACLClientInterfaceMockListPermissions) Inspect(f func(ctx context.Context, objectType string, role string)) *mACLClientInterfaceMockListPermissions {
 	if mmListPermissions.mock.inspectFuncListPermissions != nil {
 		mmListPermissions.mock.t.Fatalf("Inspect function is already set for ACLClientInterfaceMock.ListPermissions")
 	}
@@ -1887,7 +1871,7 @@ func (mmListPermissions *mACLClientInterfaceMockListPermissions) Return(ua1 []uu
 }
 
 // Set uses given function f to mock the ACLClientInterface.ListPermissions method
-func (mmListPermissions *mACLClientInterfaceMockListPermissions) Set(f func(ctx context.Context, objectType string, role string, isPublic bool) (ua1 []uuid.UUID, err error)) *ACLClientInterfaceMock {
+func (mmListPermissions *mACLClientInterfaceMockListPermissions) Set(f func(ctx context.Context, objectType string, role string) (ua1 []uuid.UUID, err error)) *ACLClientInterfaceMock {
 	if mmListPermissions.defaultExpectation != nil {
 		mmListPermissions.mock.t.Fatalf("Default expectation is already set for the ACLClientInterface.ListPermissions method")
 	}
@@ -1903,14 +1887,14 @@ func (mmListPermissions *mACLClientInterfaceMockListPermissions) Set(f func(ctx 
 
 // When sets expectation for the ACLClientInterface.ListPermissions which will trigger the result defined by the following
 // Then helper
-func (mmListPermissions *mACLClientInterfaceMockListPermissions) When(ctx context.Context, objectType string, role string, isPublic bool) *ACLClientInterfaceMockListPermissionsExpectation {
+func (mmListPermissions *mACLClientInterfaceMockListPermissions) When(ctx context.Context, objectType string, role string) *ACLClientInterfaceMockListPermissionsExpectation {
 	if mmListPermissions.mock.funcListPermissions != nil {
 		mmListPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPermissions mock is already set by Set")
 	}
 
 	expectation := &ACLClientInterfaceMockListPermissionsExpectation{
 		mock:               mmListPermissions.mock,
-		params:             &ACLClientInterfaceMockListPermissionsParams{ctx, objectType, role, isPublic},
+		params:             &ACLClientInterfaceMockListPermissionsParams{ctx, objectType, role},
 		expectationOrigins: ACLClientInterfaceMockListPermissionsExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
 	mmListPermissions.expectations = append(mmListPermissions.expectations, expectation)
@@ -1945,17 +1929,17 @@ func (mmListPermissions *mACLClientInterfaceMockListPermissions) invocationsDone
 }
 
 // ListPermissions implements mm_acl.ACLClientInterface
-func (mmListPermissions *ACLClientInterfaceMock) ListPermissions(ctx context.Context, objectType string, role string, isPublic bool) (ua1 []uuid.UUID, err error) {
+func (mmListPermissions *ACLClientInterfaceMock) ListPermissions(ctx context.Context, objectType string, role string) (ua1 []uuid.UUID, err error) {
 	mm_atomic.AddUint64(&mmListPermissions.beforeListPermissionsCounter, 1)
 	defer mm_atomic.AddUint64(&mmListPermissions.afterListPermissionsCounter, 1)
 
 	mmListPermissions.t.Helper()
 
 	if mmListPermissions.inspectFuncListPermissions != nil {
-		mmListPermissions.inspectFuncListPermissions(ctx, objectType, role, isPublic)
+		mmListPermissions.inspectFuncListPermissions(ctx, objectType, role)
 	}
 
-	mm_params := ACLClientInterfaceMockListPermissionsParams{ctx, objectType, role, isPublic}
+	mm_params := ACLClientInterfaceMockListPermissionsParams{ctx, objectType, role}
 
 	// Record call args
 	mmListPermissions.ListPermissionsMock.mutex.Lock()
@@ -1974,7 +1958,7 @@ func (mmListPermissions *ACLClientInterfaceMock) ListPermissions(ctx context.Con
 		mm_want := mmListPermissions.ListPermissionsMock.defaultExpectation.params
 		mm_want_ptrs := mmListPermissions.ListPermissionsMock.defaultExpectation.paramPtrs
 
-		mm_got := ACLClientInterfaceMockListPermissionsParams{ctx, objectType, role, isPublic}
+		mm_got := ACLClientInterfaceMockListPermissionsParams{ctx, objectType, role}
 
 		if mm_want_ptrs != nil {
 
@@ -1993,11 +1977,6 @@ func (mmListPermissions *ACLClientInterfaceMock) ListPermissions(ctx context.Con
 					mmListPermissions.ListPermissionsMock.defaultExpectation.expectationOrigins.originRole, *mm_want_ptrs.role, mm_got.role, minimock.Diff(*mm_want_ptrs.role, mm_got.role))
 			}
 
-			if mm_want_ptrs.isPublic != nil && !minimock.Equal(*mm_want_ptrs.isPublic, mm_got.isPublic) {
-				mmListPermissions.t.Errorf("ACLClientInterfaceMock.ListPermissions got unexpected parameter isPublic, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmListPermissions.ListPermissionsMock.defaultExpectation.expectationOrigins.originIsPublic, *mm_want_ptrs.isPublic, mm_got.isPublic, minimock.Diff(*mm_want_ptrs.isPublic, mm_got.isPublic))
-			}
-
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
 			mmListPermissions.t.Errorf("ACLClientInterfaceMock.ListPermissions got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
 				mmListPermissions.ListPermissionsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
@@ -2010,9 +1989,9 @@ func (mmListPermissions *ACLClientInterfaceMock) ListPermissions(ctx context.Con
 		return (*mm_results).ua1, (*mm_results).err
 	}
 	if mmListPermissions.funcListPermissions != nil {
-		return mmListPermissions.funcListPermissions(ctx, objectType, role, isPublic)
+		return mmListPermissions.funcListPermissions(ctx, objectType, role)
 	}
-	mmListPermissions.t.Fatalf("Unexpected call to ACLClientInterfaceMock.ListPermissions. %v %v %v %v", ctx, objectType, role, isPublic)
+	mmListPermissions.t.Fatalf("Unexpected call to ACLClientInterfaceMock.ListPermissions. %v %v %v", ctx, objectType, role)
 	return
 }
 
@@ -2081,6 +2060,380 @@ func (m *ACLClientInterfaceMock) MinimockListPermissionsInspect() {
 	if !m.ListPermissionsMock.invocationsDone() && afterListPermissionsCounter > 0 {
 		m.t.Errorf("Expected %d calls to ACLClientInterfaceMock.ListPermissions at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.ListPermissionsMock.expectedInvocations), m.ListPermissionsMock.expectedInvocationsOrigin, afterListPermissionsCounter)
+	}
+}
+
+type mACLClientInterfaceMockListPublicPermissions struct {
+	optional           bool
+	mock               *ACLClientInterfaceMock
+	defaultExpectation *ACLClientInterfaceMockListPublicPermissionsExpectation
+	expectations       []*ACLClientInterfaceMockListPublicPermissionsExpectation
+
+	callArgs []*ACLClientInterfaceMockListPublicPermissionsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// ACLClientInterfaceMockListPublicPermissionsExpectation specifies expectation struct of the ACLClientInterface.ListPublicPermissions
+type ACLClientInterfaceMockListPublicPermissionsExpectation struct {
+	mock               *ACLClientInterfaceMock
+	params             *ACLClientInterfaceMockListPublicPermissionsParams
+	paramPtrs          *ACLClientInterfaceMockListPublicPermissionsParamPtrs
+	expectationOrigins ACLClientInterfaceMockListPublicPermissionsExpectationOrigins
+	results            *ACLClientInterfaceMockListPublicPermissionsResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// ACLClientInterfaceMockListPublicPermissionsParams contains parameters of the ACLClientInterface.ListPublicPermissions
+type ACLClientInterfaceMockListPublicPermissionsParams struct {
+	ctx        context.Context
+	objectType string
+	role       string
+}
+
+// ACLClientInterfaceMockListPublicPermissionsParamPtrs contains pointers to parameters of the ACLClientInterface.ListPublicPermissions
+type ACLClientInterfaceMockListPublicPermissionsParamPtrs struct {
+	ctx        *context.Context
+	objectType *string
+	role       *string
+}
+
+// ACLClientInterfaceMockListPublicPermissionsResults contains results of the ACLClientInterface.ListPublicPermissions
+type ACLClientInterfaceMockListPublicPermissionsResults struct {
+	ua1 []uuid.UUID
+	err error
+}
+
+// ACLClientInterfaceMockListPublicPermissionsOrigins contains origins of expectations of the ACLClientInterface.ListPublicPermissions
+type ACLClientInterfaceMockListPublicPermissionsExpectationOrigins struct {
+	origin           string
+	originCtx        string
+	originObjectType string
+	originRole       string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListPublicPermissions *mACLClientInterfaceMockListPublicPermissions) Optional() *mACLClientInterfaceMockListPublicPermissions {
+	mmListPublicPermissions.optional = true
+	return mmListPublicPermissions
+}
+
+// Expect sets up expected params for ACLClientInterface.ListPublicPermissions
+func (mmListPublicPermissions *mACLClientInterfaceMockListPublicPermissions) Expect(ctx context.Context, objectType string, role string) *mACLClientInterfaceMockListPublicPermissions {
+	if mmListPublicPermissions.mock.funcListPublicPermissions != nil {
+		mmListPublicPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPublicPermissions mock is already set by Set")
+	}
+
+	if mmListPublicPermissions.defaultExpectation == nil {
+		mmListPublicPermissions.defaultExpectation = &ACLClientInterfaceMockListPublicPermissionsExpectation{}
+	}
+
+	if mmListPublicPermissions.defaultExpectation.paramPtrs != nil {
+		mmListPublicPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPublicPermissions mock is already set by ExpectParams functions")
+	}
+
+	mmListPublicPermissions.defaultExpectation.params = &ACLClientInterfaceMockListPublicPermissionsParams{ctx, objectType, role}
+	mmListPublicPermissions.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmListPublicPermissions.expectations {
+		if minimock.Equal(e.params, mmListPublicPermissions.defaultExpectation.params) {
+			mmListPublicPermissions.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListPublicPermissions.defaultExpectation.params)
+		}
+	}
+
+	return mmListPublicPermissions
+}
+
+// ExpectCtxParam1 sets up expected param ctx for ACLClientInterface.ListPublicPermissions
+func (mmListPublicPermissions *mACLClientInterfaceMockListPublicPermissions) ExpectCtxParam1(ctx context.Context) *mACLClientInterfaceMockListPublicPermissions {
+	if mmListPublicPermissions.mock.funcListPublicPermissions != nil {
+		mmListPublicPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPublicPermissions mock is already set by Set")
+	}
+
+	if mmListPublicPermissions.defaultExpectation == nil {
+		mmListPublicPermissions.defaultExpectation = &ACLClientInterfaceMockListPublicPermissionsExpectation{}
+	}
+
+	if mmListPublicPermissions.defaultExpectation.params != nil {
+		mmListPublicPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPublicPermissions mock is already set by Expect")
+	}
+
+	if mmListPublicPermissions.defaultExpectation.paramPtrs == nil {
+		mmListPublicPermissions.defaultExpectation.paramPtrs = &ACLClientInterfaceMockListPublicPermissionsParamPtrs{}
+	}
+	mmListPublicPermissions.defaultExpectation.paramPtrs.ctx = &ctx
+	mmListPublicPermissions.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmListPublicPermissions
+}
+
+// ExpectObjectTypeParam2 sets up expected param objectType for ACLClientInterface.ListPublicPermissions
+func (mmListPublicPermissions *mACLClientInterfaceMockListPublicPermissions) ExpectObjectTypeParam2(objectType string) *mACLClientInterfaceMockListPublicPermissions {
+	if mmListPublicPermissions.mock.funcListPublicPermissions != nil {
+		mmListPublicPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPublicPermissions mock is already set by Set")
+	}
+
+	if mmListPublicPermissions.defaultExpectation == nil {
+		mmListPublicPermissions.defaultExpectation = &ACLClientInterfaceMockListPublicPermissionsExpectation{}
+	}
+
+	if mmListPublicPermissions.defaultExpectation.params != nil {
+		mmListPublicPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPublicPermissions mock is already set by Expect")
+	}
+
+	if mmListPublicPermissions.defaultExpectation.paramPtrs == nil {
+		mmListPublicPermissions.defaultExpectation.paramPtrs = &ACLClientInterfaceMockListPublicPermissionsParamPtrs{}
+	}
+	mmListPublicPermissions.defaultExpectation.paramPtrs.objectType = &objectType
+	mmListPublicPermissions.defaultExpectation.expectationOrigins.originObjectType = minimock.CallerInfo(1)
+
+	return mmListPublicPermissions
+}
+
+// ExpectRoleParam3 sets up expected param role for ACLClientInterface.ListPublicPermissions
+func (mmListPublicPermissions *mACLClientInterfaceMockListPublicPermissions) ExpectRoleParam3(role string) *mACLClientInterfaceMockListPublicPermissions {
+	if mmListPublicPermissions.mock.funcListPublicPermissions != nil {
+		mmListPublicPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPublicPermissions mock is already set by Set")
+	}
+
+	if mmListPublicPermissions.defaultExpectation == nil {
+		mmListPublicPermissions.defaultExpectation = &ACLClientInterfaceMockListPublicPermissionsExpectation{}
+	}
+
+	if mmListPublicPermissions.defaultExpectation.params != nil {
+		mmListPublicPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPublicPermissions mock is already set by Expect")
+	}
+
+	if mmListPublicPermissions.defaultExpectation.paramPtrs == nil {
+		mmListPublicPermissions.defaultExpectation.paramPtrs = &ACLClientInterfaceMockListPublicPermissionsParamPtrs{}
+	}
+	mmListPublicPermissions.defaultExpectation.paramPtrs.role = &role
+	mmListPublicPermissions.defaultExpectation.expectationOrigins.originRole = minimock.CallerInfo(1)
+
+	return mmListPublicPermissions
+}
+
+// Inspect accepts an inspector function that has same arguments as the ACLClientInterface.ListPublicPermissions
+func (mmListPublicPermissions *mACLClientInterfaceMockListPublicPermissions) Inspect(f func(ctx context.Context, objectType string, role string)) *mACLClientInterfaceMockListPublicPermissions {
+	if mmListPublicPermissions.mock.inspectFuncListPublicPermissions != nil {
+		mmListPublicPermissions.mock.t.Fatalf("Inspect function is already set for ACLClientInterfaceMock.ListPublicPermissions")
+	}
+
+	mmListPublicPermissions.mock.inspectFuncListPublicPermissions = f
+
+	return mmListPublicPermissions
+}
+
+// Return sets up results that will be returned by ACLClientInterface.ListPublicPermissions
+func (mmListPublicPermissions *mACLClientInterfaceMockListPublicPermissions) Return(ua1 []uuid.UUID, err error) *ACLClientInterfaceMock {
+	if mmListPublicPermissions.mock.funcListPublicPermissions != nil {
+		mmListPublicPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPublicPermissions mock is already set by Set")
+	}
+
+	if mmListPublicPermissions.defaultExpectation == nil {
+		mmListPublicPermissions.defaultExpectation = &ACLClientInterfaceMockListPublicPermissionsExpectation{mock: mmListPublicPermissions.mock}
+	}
+	mmListPublicPermissions.defaultExpectation.results = &ACLClientInterfaceMockListPublicPermissionsResults{ua1, err}
+	mmListPublicPermissions.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmListPublicPermissions.mock
+}
+
+// Set uses given function f to mock the ACLClientInterface.ListPublicPermissions method
+func (mmListPublicPermissions *mACLClientInterfaceMockListPublicPermissions) Set(f func(ctx context.Context, objectType string, role string) (ua1 []uuid.UUID, err error)) *ACLClientInterfaceMock {
+	if mmListPublicPermissions.defaultExpectation != nil {
+		mmListPublicPermissions.mock.t.Fatalf("Default expectation is already set for the ACLClientInterface.ListPublicPermissions method")
+	}
+
+	if len(mmListPublicPermissions.expectations) > 0 {
+		mmListPublicPermissions.mock.t.Fatalf("Some expectations are already set for the ACLClientInterface.ListPublicPermissions method")
+	}
+
+	mmListPublicPermissions.mock.funcListPublicPermissions = f
+	mmListPublicPermissions.mock.funcListPublicPermissionsOrigin = minimock.CallerInfo(1)
+	return mmListPublicPermissions.mock
+}
+
+// When sets expectation for the ACLClientInterface.ListPublicPermissions which will trigger the result defined by the following
+// Then helper
+func (mmListPublicPermissions *mACLClientInterfaceMockListPublicPermissions) When(ctx context.Context, objectType string, role string) *ACLClientInterfaceMockListPublicPermissionsExpectation {
+	if mmListPublicPermissions.mock.funcListPublicPermissions != nil {
+		mmListPublicPermissions.mock.t.Fatalf("ACLClientInterfaceMock.ListPublicPermissions mock is already set by Set")
+	}
+
+	expectation := &ACLClientInterfaceMockListPublicPermissionsExpectation{
+		mock:               mmListPublicPermissions.mock,
+		params:             &ACLClientInterfaceMockListPublicPermissionsParams{ctx, objectType, role},
+		expectationOrigins: ACLClientInterfaceMockListPublicPermissionsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmListPublicPermissions.expectations = append(mmListPublicPermissions.expectations, expectation)
+	return expectation
+}
+
+// Then sets up ACLClientInterface.ListPublicPermissions return parameters for the expectation previously defined by the When method
+func (e *ACLClientInterfaceMockListPublicPermissionsExpectation) Then(ua1 []uuid.UUID, err error) *ACLClientInterfaceMock {
+	e.results = &ACLClientInterfaceMockListPublicPermissionsResults{ua1, err}
+	return e.mock
+}
+
+// Times sets number of times ACLClientInterface.ListPublicPermissions should be invoked
+func (mmListPublicPermissions *mACLClientInterfaceMockListPublicPermissions) Times(n uint64) *mACLClientInterfaceMockListPublicPermissions {
+	if n == 0 {
+		mmListPublicPermissions.mock.t.Fatalf("Times of ACLClientInterfaceMock.ListPublicPermissions mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListPublicPermissions.expectedInvocations, n)
+	mmListPublicPermissions.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmListPublicPermissions
+}
+
+func (mmListPublicPermissions *mACLClientInterfaceMockListPublicPermissions) invocationsDone() bool {
+	if len(mmListPublicPermissions.expectations) == 0 && mmListPublicPermissions.defaultExpectation == nil && mmListPublicPermissions.mock.funcListPublicPermissions == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListPublicPermissions.mock.afterListPublicPermissionsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListPublicPermissions.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListPublicPermissions implements mm_acl.ACLClientInterface
+func (mmListPublicPermissions *ACLClientInterfaceMock) ListPublicPermissions(ctx context.Context, objectType string, role string) (ua1 []uuid.UUID, err error) {
+	mm_atomic.AddUint64(&mmListPublicPermissions.beforeListPublicPermissionsCounter, 1)
+	defer mm_atomic.AddUint64(&mmListPublicPermissions.afterListPublicPermissionsCounter, 1)
+
+	mmListPublicPermissions.t.Helper()
+
+	if mmListPublicPermissions.inspectFuncListPublicPermissions != nil {
+		mmListPublicPermissions.inspectFuncListPublicPermissions(ctx, objectType, role)
+	}
+
+	mm_params := ACLClientInterfaceMockListPublicPermissionsParams{ctx, objectType, role}
+
+	// Record call args
+	mmListPublicPermissions.ListPublicPermissionsMock.mutex.Lock()
+	mmListPublicPermissions.ListPublicPermissionsMock.callArgs = append(mmListPublicPermissions.ListPublicPermissionsMock.callArgs, &mm_params)
+	mmListPublicPermissions.ListPublicPermissionsMock.mutex.Unlock()
+
+	for _, e := range mmListPublicPermissions.ListPublicPermissionsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.ua1, e.results.err
+		}
+	}
+
+	if mmListPublicPermissions.ListPublicPermissionsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListPublicPermissions.ListPublicPermissionsMock.defaultExpectation.Counter, 1)
+		mm_want := mmListPublicPermissions.ListPublicPermissionsMock.defaultExpectation.params
+		mm_want_ptrs := mmListPublicPermissions.ListPublicPermissionsMock.defaultExpectation.paramPtrs
+
+		mm_got := ACLClientInterfaceMockListPublicPermissionsParams{ctx, objectType, role}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListPublicPermissions.t.Errorf("ACLClientInterfaceMock.ListPublicPermissions got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPublicPermissions.ListPublicPermissionsMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.objectType != nil && !minimock.Equal(*mm_want_ptrs.objectType, mm_got.objectType) {
+				mmListPublicPermissions.t.Errorf("ACLClientInterfaceMock.ListPublicPermissions got unexpected parameter objectType, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPublicPermissions.ListPublicPermissionsMock.defaultExpectation.expectationOrigins.originObjectType, *mm_want_ptrs.objectType, mm_got.objectType, minimock.Diff(*mm_want_ptrs.objectType, mm_got.objectType))
+			}
+
+			if mm_want_ptrs.role != nil && !minimock.Equal(*mm_want_ptrs.role, mm_got.role) {
+				mmListPublicPermissions.t.Errorf("ACLClientInterfaceMock.ListPublicPermissions got unexpected parameter role, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPublicPermissions.ListPublicPermissionsMock.defaultExpectation.expectationOrigins.originRole, *mm_want_ptrs.role, mm_got.role, minimock.Diff(*mm_want_ptrs.role, mm_got.role))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListPublicPermissions.t.Errorf("ACLClientInterfaceMock.ListPublicPermissions got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmListPublicPermissions.ListPublicPermissionsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListPublicPermissions.ListPublicPermissionsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListPublicPermissions.t.Fatal("No results are set for the ACLClientInterfaceMock.ListPublicPermissions")
+		}
+		return (*mm_results).ua1, (*mm_results).err
+	}
+	if mmListPublicPermissions.funcListPublicPermissions != nil {
+		return mmListPublicPermissions.funcListPublicPermissions(ctx, objectType, role)
+	}
+	mmListPublicPermissions.t.Fatalf("Unexpected call to ACLClientInterfaceMock.ListPublicPermissions. %v %v %v", ctx, objectType, role)
+	return
+}
+
+// ListPublicPermissionsAfterCounter returns a count of finished ACLClientInterfaceMock.ListPublicPermissions invocations
+func (mmListPublicPermissions *ACLClientInterfaceMock) ListPublicPermissionsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListPublicPermissions.afterListPublicPermissionsCounter)
+}
+
+// ListPublicPermissionsBeforeCounter returns a count of ACLClientInterfaceMock.ListPublicPermissions invocations
+func (mmListPublicPermissions *ACLClientInterfaceMock) ListPublicPermissionsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListPublicPermissions.beforeListPublicPermissionsCounter)
+}
+
+// Calls returns a list of arguments used in each call to ACLClientInterfaceMock.ListPublicPermissions.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListPublicPermissions *mACLClientInterfaceMockListPublicPermissions) Calls() []*ACLClientInterfaceMockListPublicPermissionsParams {
+	mmListPublicPermissions.mutex.RLock()
+
+	argCopy := make([]*ACLClientInterfaceMockListPublicPermissionsParams, len(mmListPublicPermissions.callArgs))
+	copy(argCopy, mmListPublicPermissions.callArgs)
+
+	mmListPublicPermissions.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListPublicPermissionsDone returns true if the count of the ListPublicPermissions invocations corresponds
+// the number of defined expectations
+func (m *ACLClientInterfaceMock) MinimockListPublicPermissionsDone() bool {
+	if m.ListPublicPermissionsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListPublicPermissionsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListPublicPermissionsMock.invocationsDone()
+}
+
+// MinimockListPublicPermissionsInspect logs each unmet expectation
+func (m *ACLClientInterfaceMock) MinimockListPublicPermissionsInspect() {
+	for _, e := range m.ListPublicPermissionsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ACLClientInterfaceMock.ListPublicPermissions at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterListPublicPermissionsCounter := mm_atomic.LoadUint64(&m.afterListPublicPermissionsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListPublicPermissionsMock.defaultExpectation != nil && afterListPublicPermissionsCounter < 1 {
+		if m.ListPublicPermissionsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to ACLClientInterfaceMock.ListPublicPermissions at\n%s", m.ListPublicPermissionsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to ACLClientInterfaceMock.ListPublicPermissions at\n%s with params: %#v", m.ListPublicPermissionsMock.defaultExpectation.expectationOrigins.origin, *m.ListPublicPermissionsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListPublicPermissions != nil && afterListPublicPermissionsCounter < 1 {
+		m.t.Errorf("Expected call to ACLClientInterfaceMock.ListPublicPermissions at\n%s", m.funcListPublicPermissionsOrigin)
+	}
+
+	if !m.ListPublicPermissionsMock.invocationsDone() && afterListPublicPermissionsCounter > 0 {
+		m.t.Errorf("Expected %d calls to ACLClientInterfaceMock.ListPublicPermissions at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.ListPublicPermissionsMock.expectedInvocations), m.ListPublicPermissionsMock.expectedInvocationsOrigin, afterListPublicPermissionsCounter)
 	}
 }
 
@@ -3683,6 +4036,8 @@ func (m *ACLClientInterfaceMock) MinimockFinish() {
 
 			m.MinimockListPermissionsInspect()
 
+			m.MinimockListPublicPermissionsInspect()
+
 			m.MinimockPurgeInspect()
 
 			m.MinimockSetOwnerInspect()
@@ -3718,6 +4073,7 @@ func (m *ACLClientInterfaceMock) minimockDone() bool {
 		m.MinimockCheckPublicExecutableDone() &&
 		m.MinimockDeletePipelinePermissionDone() &&
 		m.MinimockListPermissionsDone() &&
+		m.MinimockListPublicPermissionsDone() &&
 		m.MinimockPurgeDone() &&
 		m.MinimockSetOwnerDone() &&
 		m.MinimockSetPipelinePermissionDone() &&
