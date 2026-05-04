@@ -517,8 +517,8 @@ github.com/influxdata/line-protocol v0.0.0-20210922203350-b1ad95c89adf h1:7JTmne
 github.com/influxdata/line-protocol v0.0.0-20210922203350-b1ad95c89adf/go.mod h1:xaLFMmpvUxqXtVkUJfg9QmT88cDaCJ3ZKgdZ78oO8Qo=
 github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260303010248-9dda50abe5bb h1:y/0EnCVzJv8uof6mtjDKWvhGL27Hx4Vq30iYncFBPDI=
 github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260303010248-9dda50abe5bb/go.mod h1:bCnBosofpaUxKBuTTJM3/I3thAK37kvfBnKByjnLsl4=
-github.com/instill-ai/x v0.10.1-alpha.0.20260503172130-376b2c86aa36 h1:aw347OWqOSOVGM2WhaUkgOzkLCmgZpPKFzxuvMcMUbk=
-github.com/instill-ai/x v0.10.1-alpha.0.20260503172130-376b2c86aa36/go.mod h1:r6kGo7M1dkYtzSqetAWT1kpglpVzqOmPc+ADs6obpKs=
+github.com/instill-ai/x v0.10.1-alpha.0.20260504035013-d46ae1fa56df h1:O6ftLzLEyD6416OANnMY2ABaAkW4PhFcdQybPIq1K7I=
+github.com/instill-ai/x v0.10.1-alpha.0.20260504035013-d46ae1fa56df/go.mod h1:r6kGo7M1dkYtzSqetAWT1kpglpVzqOmPc+ADs6obpKs=
 github.com/itchyny/gojq v0.12.17 h1:8av8eGduDb5+rvEdaOO+zQUjA04MS0m3Ps8HiD+fceg=
 github.com/itchyny/gojq v0.12.17/go.mod h1:WBrEMkgAfAGO1LUcGOckBl5O726KPp+OlkKug0I/FEY=
 github.com/itchyny/timefmt-go v0.1.6 h1:ia3s54iciXDdzWzwaVKXZPbiXzxxnv1SPGFfM/myJ5Q=
