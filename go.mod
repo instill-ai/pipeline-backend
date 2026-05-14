@@ -68,7 +68,7 @@ require (
 	github.com/pkoukk/tiktoken-go v0.1.7
 	github.com/redis/go-redis/v9 v9.9.0
 	github.com/sijms/go-ora v1.3.2
-	github.com/slack-go/slack v0.17.0
+	github.com/slack-go/slack v0.23.1
 	github.com/stretchr/testify v1.11.1
 	github.com/tmc/langchaingo v0.1.13
 	github.com/u2takey/ffmpeg-go v0.5.0
