@@ -8,7 +8,7 @@ require (
 	github.com/frankban/quicktest v1.14.6
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/instill-ai/pipeline-backend v0.0.0-00010101000000-000000000000
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260130101410-2df13d165253
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260303010248-9dda50abe5bb
 	github.com/rogpeppe/go-internal v1.14.1
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cobra v1.8.0
@@ -46,10 +46,10 @@ require (
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/instill-ai/x v0.10.1-alpha.0.20260129195415-09e1680f104d // indirect
+	github.com/instill-ai/x v0.10.1-alpha.0.20260504035013-d46ae1fa56df // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.7.6 // indirect
+	github.com/jackc/pgx/v5 v5.9.2 // indirect
 	github.com/jaytaylor/html2text v0.0.0-20230321000545-74c2419ad056 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
