@@ -48,7 +48,7 @@ require (
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20260303010248-9dda50abe5bb
 	github.com/instill-ai/x v0.10.1-alpha.0.20260504052429-28ea48389e9d
 	github.com/itchyny/gojq v0.12.17
-	github.com/jackc/pgx/v5 v5.7.6
+	github.com/jackc/pgx/v5 v5.9.2
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/json-iterator/go v1.1.12
 	github.com/k3a/html2text v1.2.1
